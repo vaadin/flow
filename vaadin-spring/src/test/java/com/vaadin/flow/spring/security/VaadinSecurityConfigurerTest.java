@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -43,7 +42,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -60,7 +59,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -79,9 +77,6 @@ class VaadinSecurityConfigurerTest {
 
     @MockitoBean
     private ClientRegistrationRepository clientRegistrationRepository;
-
-    @Mock
-    private HttpServletRequest request;
 
     @Mock
     private HttpServletResponse response;
@@ -153,8 +148,8 @@ class VaadinSecurityConfigurerTest {
             @Mock LogoutSuccessHandler handler) throws Exception {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
         SecurityContextHolder.getContext().setAuthentication(auth);
-        when(request.getMethod()).thenReturn("POST");
-        when(request.getPathInfo()).thenReturn("/logout");
+        var request = new MockHttpServletRequest("POST", "/logout");
+        request.setPathInfo("/logout");
 
         var filters = http.with(configurer, c -> {
             c.logoutSuccessHandler(handler);
@@ -172,8 +167,8 @@ class VaadinSecurityConfigurerTest {
             throws Exception {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
         SecurityContextHolder.getContext().setAuthentication(auth);
-        when(request.getMethod()).thenReturn("POST");
-        when(request.getPathInfo()).thenReturn("/logout");
+        var request = new MockHttpServletRequest("POST", "/logout");
+        request.setPathInfo("/logout");
 
         var filters = http.with(configurer, c -> {
             c.addLogoutHandler(handler);
@@ -191,7 +186,8 @@ class VaadinSecurityConfigurerTest {
         var auth = new AnonymousAuthenticationToken("key", "user",
                 List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
         SecurityContextHolder.getContext().setAuthentication(auth);
-        when(request.getPathInfo()).thenReturn("/any");
+        var request = new MockHttpServletRequest("GET", "/any");
+        request.setPathInfo("/any");
 
         var filters = http.with(configurer, c -> {
             c.anyRequest(AuthorizedUrl::anonymous);
@@ -240,11 +236,13 @@ class VaadinSecurityConfigurerTest {
     void requestCache_customRulesAreApplied() throws Exception {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
-        requestCache.ignoreRequests(new AntPathRequestMatcher("/.my-path/**"));
+        requestCache.ignoreRequests(PathPatternRequestMatcher.withDefaults()
+                .matcher("/.my-path/**"));
 
         http.with(configurer, Customizer.withDefaults()).build();
 
-        MockHttpServletRequest request = new MockHttpServletRequest();
+        MockHttpServletRequest request = new MockHttpServletRequest("GET",
+                "/.my-path/foo");
         request.setPathInfo("/.my-path/foo");
         requestCache.saveRequest(request, response);
         assertNull(requestCache.getRequest(request, response),

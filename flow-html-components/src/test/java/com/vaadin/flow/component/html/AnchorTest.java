@@ -16,6 +16,7 @@
 package com.vaadin.flow.component.html;
 
 import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
 import org.junit.After;
@@ -40,7 +41,8 @@ public class AnchorTest extends ComponentTest {
 
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         whitelistProperty("download");
         super.setup();
     }

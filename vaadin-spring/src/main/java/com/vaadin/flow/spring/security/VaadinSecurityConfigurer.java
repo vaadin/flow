@@ -15,14 +15,13 @@
  */
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.ServletContext;
-
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import jakarta.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -53,8 +52,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatchers;
@@ -629,8 +628,8 @@ public final class VaadinSecurityConfigurer
                     getRequestUtil()::isFrameworkInternalRequest);
         }
         if (formLoginPage != null) {
-            configurer.ignoringRequestMatchers(
-                    new AntPathRequestMatcher(formLoginPage));
+            configurer.ignoringRequestMatchers(PathPatternRequestMatcher
+                    .withDefaults().matcher(formLoginPage));
         }
     }
 

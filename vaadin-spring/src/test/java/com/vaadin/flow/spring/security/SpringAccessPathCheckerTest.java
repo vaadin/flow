@@ -29,8 +29,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator;
+import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
@@ -158,17 +160,23 @@ class SpringAccessPathCheckerTest {
         }
 
         @Bean
+        AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer httpServletRequestTransformer() {
+            return new PathPatternRequestTransformer();
+        }
+
+        @Bean
         public SecurityFilterChain testingFilterChain(HttpSecurity http)
                 throws Exception {
             // @formatter:off
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
             http.authorizeHttpRequests(cfg -> cfg
-                    .requestMatchers(new AntPathRequestMatcher("/")).anonymous()
-                    .requestMatchers(new AntPathRequestMatcher("/admin/**")).hasRole("ADMIN")
-                    .requestMatchers(new AntPathRequestMatcher("/guest/**")).hasRole("GUEST")
-                    .requestMatchers(new AntPathRequestMatcher("/protected/**")).authenticated()
-                    .requestMatchers(new AntPathRequestMatcher("/anon/**")).anonymous()
-                    .requestMatchers(new AntPathRequestMatcher("/public/**")).permitAll()
-                    .requestMatchers(new AntPathRequestMatcher("/forbidden/**")).denyAll());
+                    .requestMatchers(matcherBuilder.matcher("/")).anonymous()
+                    .requestMatchers(matcherBuilder.matcher("/admin/**")).hasRole("ADMIN")
+                    .requestMatchers(matcherBuilder.matcher("/guest/**")).hasRole("GUEST")
+                    .requestMatchers(matcherBuilder.matcher("/protected/**")).authenticated()
+                    .requestMatchers(matcherBuilder.matcher("/anon/**")).anonymous()
+                    .requestMatchers(matcherBuilder.matcher("/public/**")).permitAll()
+                    .requestMatchers(matcherBuilder.matcher("/forbidden/**")).denyAll());
            // @formatter:on
             return http.build();
         }

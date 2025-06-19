@@ -124,6 +124,30 @@ public interface Style extends Serializable {
     }
 
     /**
+     * Sets the <code>background-position</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBackgroundPosition(String value) {
+        return set(STYLE_BACKGROUND_POSITION, value);
+    }
+
+    /**
+     * Sets the <code>background-size</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setBackgroundSize(String value) {
+        return set(STYLE_BACKGROUND_SIZE, value);
+    }
+
+    /**
      * Sets the <code>border</code> property.
      *
      * @param value
@@ -266,6 +290,18 @@ public interface Style extends Serializable {
         return set(STYLE_COLOR, value);
     }
 
+    /**
+     * Sets the <code>filter</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setFilter(String value) {
+        return applyOrErase(STYLE_FILTER, value);
+    }
+
     public enum Display {
         INLINE,
         BLOCK,
@@ -334,6 +370,18 @@ public interface Style extends Serializable {
      */
     default Style setFont(String value) {
         return set(STYLE_FONT, value);
+    }
+
+    /**
+     * Sets the <code>gap</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setGap(String value) {
+        return applyOrErase(STYLE_GAP, value);
     }
 
     /**
@@ -573,6 +621,18 @@ public interface Style extends Serializable {
      */
     default Style setPosition(Position value) {
         return applyOrErase(STYLE_POSITION, value);
+    }
+
+    /**
+     * Sets the <code>rotate</code> property.
+     *
+     * @param value
+     *            the style property value (if <code>null</code>, the property
+     *            will be removed)
+     * @return this style instance
+     */
+    default Style setRotate(String value) {
+        return applyOrErase(STYLE_ROTATE, value);
     }
 
     /**

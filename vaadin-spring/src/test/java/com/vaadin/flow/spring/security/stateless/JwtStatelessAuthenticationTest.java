@@ -16,21 +16,18 @@
 
 package com.vaadin.flow.spring.security.stateless;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
-
 import javax.crypto.spec.SecretKeySpec;
-
 import java.util.Arrays;
 import java.util.Base64;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -231,6 +228,7 @@ class JwtStatelessAuthenticationTest {
 
         @Bean
         UserDetailsService userDetailsService() {
+            @SuppressWarnings("deprecation")
             UserDetails user = User.withDefaultPasswordEncoder()
                     .username("user").password("password").roles("USER")
                     .build();

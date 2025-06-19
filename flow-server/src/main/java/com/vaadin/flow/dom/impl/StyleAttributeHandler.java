@@ -18,13 +18,6 @@ package com.vaadin.flow.dom.impl;
 import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
-import com.helger.css.ECSSVersion;
-import com.helger.css.decl.CSSDeclaration;
-import com.helger.css.decl.CSSDeclarationList;
-import com.helger.css.reader.CSSReaderDeclarationList;
-import com.helger.css.reader.errorhandler.CollectingCSSParseErrorHandler;
-import com.helger.css.writer.CSSWriterSettings;
-
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
@@ -38,6 +31,7 @@ import com.vaadin.flow.dom.StyleUtil;
  * @since 1.0
  */
 public class StyleAttributeHandler extends CustomAttribute {
+
     private static final String ERROR_PARSING_STYLE = "Error parsing style '%s': %s";
 
     @Override
@@ -65,6 +59,11 @@ public class StyleAttributeHandler extends CustomAttribute {
         parseStyles(attributeValue).forEach(style::set);
     }
 
+    private static final char COLON = ':';
+    private static final char SEMICOLON = ';';
+    private static final char PARENTHESIS_OPEN = '(';
+    private static final char PARENTHESIS_CLOSED = ')';
+
     /**
      * Parses the given style string and populates the given style object with
      * the found styles.
@@ -75,30 +74,62 @@ public class StyleAttributeHandler extends CustomAttribute {
      */
     public static LinkedHashMap<String, String> parseStyles(
             String styleString) {
-        CollectingCSSParseErrorHandler errorCollector = new CollectingCSSParseErrorHandler();
-        CSSDeclarationList parsed = CSSReaderDeclarationList.readFromString(
-                styleString, ECSSVersion.LATEST, errorCollector);
-        if (errorCollector.hasParseErrors()) {
-            throw new IllegalArgumentException(String
-                    .format(ERROR_PARSING_STYLE, styleString, errorCollector
-                            .getAllParseErrors().get(0).getErrorMessage()));
+        try {
+            LinkedHashMap<String, String> parsedStyles = new LinkedHashMap<>();
+            StringBuilder nameBuffer = new StringBuilder();
+            StringBuilder valueBuffer = new StringBuilder();
+            boolean nameRead = false;
+            int parenthesisOpen = 0;
+            for (int i = 0; i < styleString.length(); i++) {
+                char c = styleString.charAt(i);
+                if (nameRead) {
+                    boolean valueTerminated = false;
+                    if (c == PARENTHESIS_OPEN) {
+                        parenthesisOpen++;
+                    } else if (c == PARENTHESIS_CLOSED) {
+                        parenthesisOpen--;
+                    } else if (parenthesisOpen == 0 && c == SEMICOLON) {
+                        valueTerminated = true;
+                    }
+                    if (valueTerminated) {
+                        addRule(nameBuffer, valueBuffer, parsedStyles);
+                        nameBuffer = new StringBuilder();
+                        valueBuffer = new StringBuilder();
+                        nameRead = false;
+                    } else {
+                        valueBuffer.append(c);
+                    }
+                } else {
+                    if (c == COLON) {
+                        nameRead = true;
+                    } else {
+                        nameBuffer.append(c);
+                    }
+                }
+            }
+            if (nameRead) {
+                addRule(nameBuffer, valueBuffer, parsedStyles);
+            } else if (!nameBuffer.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Value for CSS rule was not found.");
+            }
+            return parsedStyles;
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(ex);
         }
-        if (parsed == null) {
-            // Did not find any styles
-            throw new IllegalArgumentException(String.format(
-                    ERROR_PARSING_STYLE, styleString, "No styles found"));
-        }
+    }
 
-        LinkedHashMap<String, String> parsedStyles = new LinkedHashMap<>();
-        for (CSSDeclaration declaration : parsed.getAllDeclarations()) {
-            String key = declaration.getProperty();
-            String value = declaration.getExpression()
-                    .getAsCSSString(new CSSWriterSettings(ECSSVersion.LATEST)
-                            .setOptimizedOutput(true), 0);
-            parsedStyles.put(StyleUtil.styleAttributeToProperty(key), value);
+    protected static void addRule(StringBuilder nameBuffer,
+            StringBuilder valueBuffer,
+            LinkedHashMap<String, String> parsedStyles)
+            throws IllegalArgumentException {
+        var name = nameBuffer.toString().trim();
+        var value = valueBuffer.toString().trim();
+        if (name.isEmpty() || value.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "Style rule must contain name and value");
         }
-
-        return parsedStyles;
+        parsedStyles.put(name, value);
     }
 
     @Override

@@ -85,18 +85,18 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.5.0</spring.boot.version>
+        <spring.boot.version>4.0.0-SNAPSHOT</spring.boot.version>
         <gwt.version>2.9.0</gwt.version>
-        <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
+        <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.19.0</jackson.version>
+        <jackson.version>2.19.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
-        <jakarta.validation.version>3.0.2</jakarta.validation.version>
-        <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
+        <jakarta.validation.version>3.1.1</jakarta.validation.version>
+        <jakarta.annotation.api.version>3.0.0</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.4.8-jre</guava.version>
-        <jakarta.websocket.version>2.1.1</jakarta.websocket.version>
+        <jakarta.websocket.version>2.2.0</jakarta.websocket.version>
         <javassist.version>3.30.2-GA</javassist.version>
 
         <!-- Plugins -->
@@ -160,6 +160,22 @@
             </snapshots>
         </repository>
         <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+        </repository>
+        <repository>
             <id>${flow.release.repo.id}</id>
             <url>${flow.release.repo.url}</url>
             <snapshots>
@@ -184,6 +200,22 @@
             <snapshots>
                 <enabled>false</enabled>
             </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </pluginRepository>
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <name>Spring Snapshots</name>
+            <url>https://repo.spring.io/snapshot</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
         </pluginRepository>
         <pluginRepository>
             <id>${flow.release.repo.id}</id>
@@ -242,7 +274,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.17.5</version>
+                <version>1.17.6</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>

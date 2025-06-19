@@ -6,6 +6,7 @@
         <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-plugin-base</artifactId>
+    <name>Flow Plugin Base</name>
 
     <properties>
         <bnd.skip>false</bnd.skip>

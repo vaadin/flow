@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.server.VaadinSession;
-import org.springframework.lang.NonNull;
+import java.util.Optional;
+
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import java.util.Optional;
+import com.vaadin.flow.server.VaadinSession;
 
 import static java.util.Objects.requireNonNull;
 

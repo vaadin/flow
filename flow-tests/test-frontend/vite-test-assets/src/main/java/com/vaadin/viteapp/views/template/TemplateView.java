@@ -38,7 +38,7 @@ public class TemplateView extends Div {
         try {
             Class<?> clazz = Class.forName(
                     "com.vaadin.viteapp.views.template.ReflectivelyReferencedComponent");
-            add((Component) clazz.newInstance());
+            add((Component) clazz.getDeclaredConstructor().newInstance());
         } catch (Exception e) {
             e.printStackTrace();
         }

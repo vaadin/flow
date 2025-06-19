@@ -95,11 +95,12 @@ public interface ClassLoaderAwareServletContainerInitializer
                 Method operation = Stream.of(initializer.getMethods()).filter(
                         method -> method.getName().equals(processMethodName))
                         .findFirst().get();
-                operation.invoke(initializer.newInstance(),
+                operation.invoke(
+                        initializer.getDeclaredConstructor().newInstance(),
                         new Object[] { set, ctx });
             } catch (ClassNotFoundException | IllegalAccessException
                     | IllegalArgumentException | InvocationTargetException
-                    | InstantiationException e) {
+                    | InstantiationException | NoSuchMethodException e) {
                 throw new ServletException(e);
             }
         };

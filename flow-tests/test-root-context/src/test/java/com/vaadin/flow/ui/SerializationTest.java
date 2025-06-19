@@ -40,7 +40,8 @@ public class SerializationTest {
             Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
                     getClass().getClassLoader()).getAllViewClasses();
             for (Class<? extends Component> viewClass : viewClasses) {
-                Component view = viewClass.newInstance();
+                Component view = viewClass.getDeclaredConstructor()
+                        .newInstance();
                 // view.onLocationChange(new LocationChangeEvent(new Router(),
                 // ui,
                 // NavigationTrigger.PROGRAMMATIC, new Location(""),

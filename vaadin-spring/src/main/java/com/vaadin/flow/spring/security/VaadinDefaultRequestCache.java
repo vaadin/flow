@@ -29,7 +29,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestHeaderRequestMatcher;
@@ -189,9 +189,9 @@ public class VaadinDefaultRequestCache implements RequestCache {
      * Rules adapted from Spring Security's RequestCacheConfigurer
      */
     private static RequestMatcher createDefaultIgnoreRules() {
-        RequestMatcher favIcon = new AntPathRequestMatcher("/**/favicon.*");
-        RequestMatcher wellKnown = new AntPathRequestMatcher(
-                "/**/.well-known/**");
+        var matcherBuilder = PathPatternRequestMatcher.withDefaults();
+        RequestMatcher favIcon = matcherBuilder.matcher("/favicon.*");
+        RequestMatcher wellKnown = matcherBuilder.matcher("/.well-known/**");
         RequestMatcher xhrRequestedWith = new RequestHeaderRequestMatcher(
                 "X-Requested-With", "XMLHttpRequest");
         List<RequestMatcher> matchers = new ArrayList<>();

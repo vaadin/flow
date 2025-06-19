@@ -114,13 +114,14 @@ public class Jsr303Test {
     }
 
     @Test
-    public void beanBinderWithoutJsr303() throws ClassNotFoundException,
-            NoSuchMethodException, SecurityException, InstantiationException,
-            IllegalAccessException, IllegalArgumentException,
-            InvocationTargetException, IOException, InterruptedException {
+    public void beanBinderWithoutJsr303()
+            throws ClassNotFoundException, NoSuchMethodException,
+            SecurityException, InstantiationException, IllegalAccessException,
+            IllegalArgumentException, InvocationTargetException, IOException {
         try (URLClassLoader loader = new TestClassLoader()) {
             Class<?> clazz = loader.loadClass(Jsr303UnitTest.class.getName());
-            UnitTest test = (UnitTest) clazz.newInstance();
+            UnitTest test = (UnitTest) clazz.getDeclaredConstructor()
+                    .newInstance();
             test.execute();
         }
     }

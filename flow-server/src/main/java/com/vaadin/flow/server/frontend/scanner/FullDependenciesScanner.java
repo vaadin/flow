@@ -386,7 +386,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             themeDefinition = new ThemeDefinition(theme, variant, name);
             try {
                 themeInstance = new ThemeWrapper(theme);
-            } catch (InstantiationException | IllegalAccessException e) {
+            } catch (InstantiationException | IllegalAccessException
+                    | NoSuchMethodException | InvocationTargetException e) {
                 throw new IllegalStateException("Unable to create a new '"
                         + theme.getName() + "' theme instance", e);
             }

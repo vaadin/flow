@@ -19,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 
 public class RangeInputTest extends ComponentTest {
 
@@ -26,7 +27,8 @@ public class RangeInputTest extends ComponentTest {
 
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         whitelistProperty("enabled");

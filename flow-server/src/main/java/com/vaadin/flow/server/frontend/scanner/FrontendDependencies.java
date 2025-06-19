@@ -203,7 +203,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             throw ex;
         } catch (ClassNotFoundException | InstantiationException
-                | IllegalAccessException | IOException e) {
+                | IllegalAccessException | IOException | NoSuchMethodException
+                | InvocationTargetException e) {
             throw new IllegalStateException(
                     "Unable to compute frontend dependencies", e);
         }
@@ -611,7 +612,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * if found in the class-path
      */
     private void computeApplicationTheme() throws ClassNotFoundException,
-            InstantiationException, IllegalAccessException, IOException {
+            InstantiationException, IllegalAccessException, IOException,
+            InvocationTargetException, NoSuchMethodException {
 
         // This really should check entry points and not all classes, but the
         // old behavior is retained.. for now..

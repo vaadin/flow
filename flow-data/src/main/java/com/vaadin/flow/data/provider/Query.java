@@ -116,16 +116,25 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Returns a zero-based page index to be retrieved.
+     * Computes the zero-based page index to be retrieved.
      * <p>
      * Vaadin asks data from the backend in paged manner. This shorthand
      * calculates the page index for backends using paged data access, such as
      * Spring Data repositories.
+     * <p>
+     * If page offset is not evenly divisible with page size raise page size
+     * until it is. Updates the page size value if it has been raised.
      *
      * @return the zero-based page index
      */
     public int getPage() {
         int pageSize = getPageSize();
+        int pageOffset = getOffset();
+        pageSize = validateAndCorrectPageSize(pageSize);
+        return pageOffset / pageSize;
+    }
+
+    private int validateAndCorrectPageSize(int pageSize) {
         int pageOffset = getOffset();
         // If page offset is not evenly divisible with pageSize raise
         // pageSize until it is.
@@ -136,7 +145,7 @@ public class Query<T, F> implements Serializable {
             }
             setPageSize(pageSize);
         }
-        return pageOffset / pageSize;
+        return pageSize;
     }
 
     private void setPageSize(Integer pageSize) {
@@ -144,14 +153,12 @@ public class Query<T, F> implements Serializable {
     }
 
     /**
-     * Returns the page size that should be returned. The amount of items can be
-     * smaller if there is no more items available in the backend.
+     * Returns the current page size. The amount of items can be smaller if
+     * there is no more items available in the backend.
      * <p>
-     * Vaadin asks data from the backend in paged manner.
-     * <p>
-     * This is an alias for {@link #getLimit()} if the page offset can be evenly
-     * divided by the limit. Else the page size will be increased to evenly
-     * divide offset so the items skip for page will go to the correct item.
+     * The page size will be increased if it is not evenly divisible with the
+     * page offset. This will make it so that the page will go to the correct
+     * item.
      *
      * @return the page size used for data access
      */
@@ -159,7 +166,7 @@ public class Query<T, F> implements Serializable {
         if (pageSize != null) {
             return pageSize;
         }
-        return getLimit();
+        return validateAndCorrectPageSize(getLimit());
     }
 
     /**
