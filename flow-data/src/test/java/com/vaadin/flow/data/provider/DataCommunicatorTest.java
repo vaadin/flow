@@ -1372,6 +1372,34 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void fetchFromProvider_itemCountLessThanTwoPages_getPageNotUsed_correctItemsReturned() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 1; i <= 27; i++) {
+            items.add(new Item(i));
+        }
+
+        DataProvider<Item, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    int end = query.getOffset() + query.getPageSize();
+                    if (end > items.size()) {
+                        end = items.size();
+                    }
+                    return items.subList(query.getOffset(), end).stream();
+                }, query -> items.size());
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(20);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // request second page with correct db size.
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(20, 7);
+        List<Item> itemList = itemStream.toList();
+
+        Assert.assertEquals(7, itemList.size());
+        Assert.assertEquals(new Item(21), itemList.get(0));
+
+    }
+
+    @Test
     public void fetchFromProvider_streamIsClosed() {
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
