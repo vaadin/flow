@@ -130,6 +130,12 @@ public class Query<T, F> implements Serializable {
     public int getPage() {
         int pageSize = getPageSize();
         int pageOffset = getOffset();
+        pageSize = validateAndCorrectPageSize(pageSize);
+        return pageOffset / pageSize;
+    }
+
+    private int validateAndCorrectPageSize(int pageSize) {
+        int pageOffset = getOffset();
         // If page offset is not evenly divisible with pageSize raise
         // pageSize until it is.
         // Else we will on the end pick the wrong items due to rounding error.
@@ -139,7 +145,7 @@ public class Query<T, F> implements Serializable {
             }
             setPageSize(pageSize);
         }
-        return pageOffset / pageSize;
+        return pageSize;
     }
 
     private void setPageSize(Integer pageSize) {
@@ -153,11 +159,9 @@ public class Query<T, F> implements Serializable {
      * Vaadin asks data from the backend in paged manner.
      * <p>
      * This is an alias for {@link #getLimit()} if the page size has not been
-     * set.
-     * <p>
-     * {@link #getPage()} will increase page size to evenly divide offset so the
-     * items skip for page will go to the correct item, in case the offset can
-     * not be evenly divided by the limit.
+     * set or page offset is not evenly divisible with pageSize. Else the page
+     * size will be increased to evenly divide offset so the items skip for page
+     * will go to the correct item.
      *
      * @return the page size used for data access
      */
@@ -165,7 +169,7 @@ public class Query<T, F> implements Serializable {
         if (pageSize != null) {
             return pageSize;
         }
-        return getLimit();
+        return validateAndCorrectPageSize(getLimit());
     }
 
     /**
