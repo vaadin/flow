@@ -20,9 +20,10 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
-@Theme("vaadin-prod-bundle")
+@Theme(value = "vaadin-prod-bundle", themeClass = Lumo.class)
 @PWA(name = "vaadin-prod-bundle", shortName = "vaadin-prod-bundle")
 @JsModule("@vaadin/horizontal-layout")
 @NpmPackage(value = "@vaadin/horizontal-layout", version = TestVersion.VAADIN)

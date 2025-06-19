@@ -18,7 +18,8 @@ package com.vaadin.flow.devbuild;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.theme.lumo.Lumo;
 
-@Theme("specific-theme")
+@Theme(value = "specific-theme", themeClass = Lumo.class)
 public class AppShell implements AppShellConfigurator {
 }

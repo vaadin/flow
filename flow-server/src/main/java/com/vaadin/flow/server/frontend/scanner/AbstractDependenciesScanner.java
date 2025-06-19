@@ -58,12 +58,4 @@ abstract class AbstractDependenciesScanner
                 .anyMatch(f -> !f.isEnabled()
                         && className.equals(f.getComponentClassName()));
     }
-
-    protected Class<? extends AbstractTheme> getLumoTheme() {
-        try {
-            return finder.loadClass(LUMO);
-        } catch (ClassNotFoundException ignore) { // NOSONAR
-            return null;
-        }
-    }
 }
