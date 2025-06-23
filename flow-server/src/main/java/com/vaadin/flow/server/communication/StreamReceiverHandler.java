@@ -65,6 +65,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
+import java.net.URLDecoder;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
@@ -353,8 +354,20 @@ public class StreamReceiverHandler implements Serializable {
 
         // These are unknown in filexhr ATM, maybe add to Accept header that
         // is accessible in portlets
-        final String filename = "unknown";
-        final String mimeType = filename;
+        String filename = "unknown";
+        String mimeType = filename;
+        try {
+            mimeType = request.getHeader("Content-Type");
+            String cd = request.getHeader("Content-Disposition");
+            // TODO, this could be improved to check the field headers, now expects in form of name=upload;attachment;filename="myfile.jpg"
+            String name = cd.split(";")[2].split("=")[1].substring(1);
+            name = name.substring(0, name.indexOf("\""));
+            filename = URLDecoder.decode(name, "UTF-8");            
+        } catch (Exception e) {
+            // TODO figure out what to do with exceptions. No idea who calls
+            // this currently. Maybe portlet integration, based on the comment.
+            getLogger().info("Exception reading file details", e);
+        }
         final InputStream stream = request.getInputStream();
 
         boolean success = false;
