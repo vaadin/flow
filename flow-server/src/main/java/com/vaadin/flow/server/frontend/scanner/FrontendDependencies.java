@@ -640,9 +640,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         String themeName = "";
-        if (themes.isEmpty()) {
-            theme = getDefaultTheme();
-        } else {
+        if (!themes.isEmpty()) {
             // we have a proper theme or no-theme for the app
             ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
@@ -656,7 +654,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 if (themeClass != null) {
                     theme = getFinder().loadClass(themeClass);
                 } else {
-                    theme = getDefaultTheme();
+                    theme = getLumoTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
                                 "Lumo dependency needs to be available on the classpath when using a theme name.");
@@ -681,16 +679,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return theme.getThemeName();
         }
         return theme.getThemeClass();
-    }
-
-    /**
-     * Finds the default theme.
-     *
-     * @return Lumo
-     */
-    Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
-        // No theme annotation found by the scanner
-        return getLumoTheme();
     }
 
     /**
