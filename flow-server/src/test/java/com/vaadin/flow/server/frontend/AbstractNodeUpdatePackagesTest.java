@@ -206,6 +206,20 @@ public abstract class AbstractNodeUpdatePackagesTest
     }
 
     @Test
+    public void pnpmIsInUse_packageJsonModified_removePnpmLock()
+            throws IOException {
+        options.withEnablePnpm(true);
+
+        packageUpdater = new TaskUpdatePackages(classFinder,
+                getScanner(classFinder), options);
+        packageCreator.execute();
+        File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
+        pnpmLock.createNewFile();
+        packageUpdater.execute();
+        Assert.assertFalse(pnpmLock.exists());
+    }
+
+    @Test
     public void npmIsInUse_packageJsonContainsFlowDeps_removeFlowDeps()
             throws IOException {
         // Generate package json in a proper format first
