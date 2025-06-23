@@ -1,6 +1,7 @@
 package com.vaadin.signals;
 
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -219,6 +220,10 @@ public abstract class Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
+    private Optional<Object> usageChangeValue(Transaction transaction) {
+        return transaction.read(tree).data(id).map(this::usageChangeValue);
+    }
+
     boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
@@ -384,14 +389,22 @@ public abstract class Signal<T> {
      * @return a usage instance, not <code>null</code>
      */
     protected Usage createUsage(Transaction transaction) {
+        Optional<Object> usageChangeValue = usageChangeValue(transaction);
+        if (usageChangeValue.isEmpty()) {
+            // Node is removed so no usage to track
+            return UsageTracker.NO_USAGE;
+        }
+
         // Capture so that we can use it later
-        Object originalValue = usageChangeValue(data(transaction));
+        Object originalValue = usageChangeValue.get();
 
         return new Usage() {
             @Override
             public boolean hasChanges() {
-                return !Objects.equals(originalValue,
-                        usageChangeValue(data(Transaction.getCurrent())));
+                return usageChangeValue(Transaction.getCurrent())
+                        .map(changeValue -> !Objects.equals(originalValue,
+                                changeValue))
+                        .orElse(Boolean.FALSE);
             }
 
             @Override
