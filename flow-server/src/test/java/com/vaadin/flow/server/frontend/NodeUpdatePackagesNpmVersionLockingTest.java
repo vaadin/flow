@@ -134,15 +134,15 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     public void shouldDoNothingForNpmLocking_whenInPnpmMode()
             throws IOException {
         TaskUpdatePackages packageUpdater = createPackageUpdater(true);
-        JsonObject packageJson = packageUpdater.getPackageJson();
-        packageJson.getObject(DEPENDENCIES).put(TEST_DEPENDENCY,
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
                 PLATFORM_PINNED_DEPENDENCY_VERSION);
-        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.get(OVERRIDES));
 
         packageUpdater.generateVersionsJson(packageJson);
         packageUpdater.lockVersionForNpm(packageJson);
 
-        Assert.assertNull(packageJson.getObject(OVERRIDES));
+        Assert.assertNull(packageJson.get(OVERRIDES));
     }
 
     @Test
