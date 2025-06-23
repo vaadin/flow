@@ -210,8 +210,8 @@ public abstract class AbstractNodeUpdatePackagesTest
             throws IOException {
         options.withEnablePnpm(true);
 
-        packageUpdater = new TaskUpdatePackages(classFinder,
-                getScanner(classFinder), options);
+        packageUpdater = new TaskUpdatePackages(getScanner(classFinder),
+                options);
         packageCreator.execute();
         File pnpmLock = new File(baseDir, "pnpm-lock.yaml");
         pnpmLock.createNewFile();

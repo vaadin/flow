@@ -447,14 +447,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
                 StandardCharsets.UTF_8);
 
         final VersionsJsonFilter versionsJsonFilter = new VersionsJsonFilter(
-                Json.parse(packageJsonContent), NodeUpdater.DEPENDENCIES);
+                JacksonUtils.readTree(packageJsonContent),
+                NodeUpdater.DEPENDENCIES);
         // Platform defines a pinned version
         TaskRunNpmInstall task = createTask(versionsJsonFilter
                 .getFilteredVersions(
-                        Json.parse("{ \"@vaadin/vaadin-overlay\":\""
+                        JacksonUtils.readTree("{ \"@vaadin/vaadin-overlay\":\""
                                 + PINNED_VERSION + "\"}"),
                         "test-versions.json")
-                .toJson());
+                .toString());
         task.execute();
 
         File overlayPackageJson = new File(options.getNodeModulesFolder(),
