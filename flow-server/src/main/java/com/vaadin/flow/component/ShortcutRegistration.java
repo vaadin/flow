@@ -479,25 +479,6 @@ public class ShortcutRegistration implements Registration, Serializable {
     }
 
     /**
-     * {@link Component} which owns the first shortcuts key event listener.
-     *
-     * @return Component
-     * @deprecated This component has now multiple owners so this method has
-     *             been replaced by #getOwners().
-     */
-    @Deprecated
-    public Component getOwner() {
-        if (listenOnComponents == null) {
-            return null;
-        }
-        if (listenOnComponents.length <= 0 || listenOnComponents[0] == null) {
-            throw new IllegalStateException(
-                    "listenOnComponents must not be empty!");
-        }
-        return listenOnComponents[0];
-    }
-
-    /**
      * The {@link Component}s which own the shortcuts key event listeners.
      *
      * @return Component[]

@@ -70,7 +70,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 2) Manually installing a newer version of npx: npm install -g npx"
             + "%n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
-            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml"
+            + "%n        node_modules, package-lock.json, vite.generated.ts, webpack.generated.js, pnpm-lock.yaml"
             + "%n======================================================================================================%n";
 
     private final NodeUpdater packageUpdater;

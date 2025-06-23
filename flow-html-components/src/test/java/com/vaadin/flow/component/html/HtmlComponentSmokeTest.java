@@ -138,7 +138,8 @@ public class HtmlComponentSmokeTest {
             // Test that all setters produce a result
             testSetters(instance);
         } catch (InstantiationException | IllegalAccessException
-                | IllegalArgumentException | InvocationTargetException e) {
+                | IllegalArgumentException | InvocationTargetException
+                | NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
     }
@@ -202,12 +203,6 @@ public class HtmlComponentSmokeTest {
     }
 
     private static boolean isSpecialSetter(Method method) {
-        // Shorthand for Label.setFor(String)
-        if (method.getDeclaringClass() == Label.class
-                && method.getName().equals("setFor")
-                && method.getParameterTypes()[0] == Component.class) {
-            return true;
-        }
         if (method.getDeclaringClass() == NativeLabel.class
                 && method.getName().equals("setFor")
                 && method.getParameterTypes()[0] == Component.class) {
@@ -379,12 +374,13 @@ public class HtmlComponentSmokeTest {
 
     private static HtmlComponent createInstance(
             Class<? extends HtmlComponent> clazz)
-            throws InstantiationException, IllegalAccessException {
+            throws InstantiationException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
         Supplier<HtmlComponent> constructor = customConstructors.get(clazz);
         if (constructor != null) {
             return constructor.get();
         } else {
-            return clazz.newInstance();
+            return clazz.getDeclaredConstructor().newInstance();
         }
     }
 

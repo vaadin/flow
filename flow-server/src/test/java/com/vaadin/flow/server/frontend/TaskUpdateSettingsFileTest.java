@@ -70,7 +70,7 @@ public class TaskUpdateSettingsFileTest {
     public void execute_withWebappResourcesDirectory_useAbsolutePaths()
             throws IOException {
 
-        options.withWebpack(
+        options.withBuildResultFolders(
                 Paths.get(buildDirectory.getPath(), "classes",
                         VAADIN_WEBAPP_RESOURCES).toFile(),
                 Paths.get(buildDirectory.getPath(), "classes",

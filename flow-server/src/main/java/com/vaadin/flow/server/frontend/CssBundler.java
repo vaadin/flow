@@ -75,36 +75,6 @@ public class CssBundler {
      * <p>
      * </p>
      * Along with import resolution and code inline, URLs
-     * ({@code url('image.png')} referencing theme resources rewritten to be
-     * correctly served by Vaadin at runtime.
-     *
-     * @param themeFolder
-     *            location of theme folder on the filesystem.
-     * @param cssFile
-     *            the CSS file to process.
-     * @return the processed stylesheet content, with inlined imports and
-     *         rewritten URLs.
-     * @throws IOException
-     *             if filesystem resources can not be read.
-     * @deprecated this method does not resolve theme assets, use
-     *             {@link #inlineImports(File, File, JsonNode)} instead.
-     */
-    @Deprecated
-    public static String inlineImports(File themeFolder, File cssFile)
-            throws IOException {
-        return inlineImports(themeFolder, cssFile, Set.of());
-    }
-
-    /**
-     * Recurse over CSS import and inlines all ot them into a single CSS block.
-     * <p>
-     * </p>
-     * Unresolvable imports are put on the top of the resulting code, because
-     * {@code @import} statements must come before any other CSS instruction,
-     * otherwise the import is ignored by the browser.
-     * <p>
-     * </p>
-     * Along with import resolution and code inline, URLs
      * ({@code url('image.png')} referencing theme resources or assets are
      * rewritten to be correctly served by Vaadin at runtime.
      *

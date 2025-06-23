@@ -472,29 +472,6 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Get a list of packages that are blocked for class scanning.
-     *
-     * @return blocked packages
-     * @deprecated use {@link #getBlockedPackages()}
-     */
-    @Deprecated(forRemoval = true)
-    public List<String> getBlacklistedPackages() {
-        return Collections.unmodifiableList(blockedPackages);
-    }
-
-    /**
-     * Set list of packages to ignore for class scanning.
-     *
-     * @param blockedPackages
-     *            list of packages to ignore
-     * @deprecated use {@link #setBlockedPackages(List)}
-     */
-    @Deprecated(forRemoval = true)
-    public void setBlacklistedPackages(List<String> blockedPackages) {
-        this.blockedPackages = new ArrayList<>(blockedPackages);
-    }
-
-    /**
      * Get a list of packages that are allowed for class scanning.
      *
      * @return allowed packages
@@ -512,30 +489,6 @@ public class VaadinConfigurationProperties {
      */
     public void setAllowedPackages(List<String> allowedPackages) {
         this.allowedPackages = allowedPackages;
-    }
-
-    /**
-     * Get a list of packages that are allowed for class scanning.
-     *
-     * @return allowed packages
-     * @deprecated use {@link #getAllowedPackages()}
-     */
-    @Deprecated(forRemoval = true)
-    public List<String> getWhitelistedPackages() {
-        return Collections.unmodifiableList(allowedPackages);
-    }
-
-    /**
-     * Set list of packages to be scanned. If <code>allowedPackages</code> is
-     * set then <code>blockedPackages</code> is ignored.
-     *
-     * @param allowedPackages
-     *            list of packages to be scanned
-     * @deprecated use {@link #setAllowedPackages(List)}
-     */
-    @Deprecated(forRemoval = true)
-    public void setWhitelistedPackages(List<String> allowedPackages) {
-        this.allowedPackages = new ArrayList<>(allowedPackages);
     }
 
     /**

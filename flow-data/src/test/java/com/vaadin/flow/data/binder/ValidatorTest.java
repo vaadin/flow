@@ -33,7 +33,8 @@ public class ValidatorTest extends ValidatorTestBase {
     @Test
     public void alwaysPass() {
         Validator<String> alwaysPass = Validator.alwaysPass();
-        ValidationResult result = alwaysPass.apply("foo", new ValueContext());
+        ValidationResult result = alwaysPass.apply("foo",
+                new ValueContext(new Binder()));
         Assert.assertFalse(result.isError());
     }
 
@@ -41,10 +42,11 @@ public class ValidatorTest extends ValidatorTestBase {
     public void from() {
         Validator<String> validator = Validator.from(Objects::nonNull,
                 "Cannot be null");
-        ValidationResult result = validator.apply(null, new ValueContext());
+        ValidationResult result = validator.apply(null,
+                new ValueContext(new Binder()));
         Assert.assertTrue(result.isError());
 
-        result = validator.apply("", new ValueContext());
+        result = validator.apply("", new ValueContext(new Binder()));
         Assert.assertFalse(result.isError());
     }
 

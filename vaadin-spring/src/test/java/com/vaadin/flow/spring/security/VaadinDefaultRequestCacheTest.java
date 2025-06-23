@@ -15,7 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -135,7 +135,8 @@ public class VaadinDefaultRequestCacheTest {
 
     @Test
     public void customMatchers_requestNotSaved() {
-        cache.ignoreRequests(new AntPathRequestMatcher("/dont-save/**"));
+        cache.ignoreRequests(PathPatternRequestMatcher.withDefaults()
+                .matcher("/dont-save/**"));
         HttpServletRequest request = RequestUtilTest
                 .createRequest("/dont-save/me", null);
         HttpServletResponse response = createResponse();
