@@ -753,7 +753,7 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
                 "./generated/jar-resources/ExampleConnector.js",
                 "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./vaadin-mixed-component/src/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 

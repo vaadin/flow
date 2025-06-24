@@ -896,7 +896,7 @@ public class BundleValidationTest {
         ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
         bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
         bundleImports.add("@polymer/paper-input/paper-input.js");
-        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.add("@vaadin/grid/src/vaadin-grid.js");
         bundleImports
                 .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
