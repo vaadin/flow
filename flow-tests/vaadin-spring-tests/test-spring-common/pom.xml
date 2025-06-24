@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>24.9-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-test-spring-common</artifactId>
     <name>Flow Spring Common UI components</name>

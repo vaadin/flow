@@ -3,7 +3,7 @@
     <parent>
         <artifactId>test-express-build</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.8-SNAPSHOT</version>
+        <version>24.9-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>flow-test-parent-theme-express-bundle</artifactId>

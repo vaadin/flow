@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.8-SNAPSHOT</version>
+        <version>24.9-SNAPSHOT</version>
     </parent>
     <artifactId>vite-pwa-custom-offline-path</artifactId>
     <name>Vite PWA app with a custom offline path</name>

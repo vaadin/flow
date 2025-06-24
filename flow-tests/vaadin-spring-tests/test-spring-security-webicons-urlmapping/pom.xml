@@ -5,7 +5,7 @@
 	<parent>
 		<groupId>com.vaadin</groupId>
 		<artifactId>vaadin-spring-tests</artifactId>
-		<version>24.8-SNAPSHOT</version>
+		<version>24.9-SNAPSHOT</version>
 	</parent>
 	<artifactId>test-spring-security-webicons-urlmapping</artifactId>
 	<name>Integration tests for Vaadin Spring Security and Custom PWA icon, Favicon paths and URL mapping</name>
