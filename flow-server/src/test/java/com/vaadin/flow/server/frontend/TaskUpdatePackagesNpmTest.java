@@ -21,6 +21,7 @@ import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 import static org.junit.Assert.assertTrue;
@@ -705,6 +706,29 @@ public class TaskUpdatePackagesNpmTest {
     }
 
     @Test
+    public void oldVersionsJson_shouldDowngrade_verifyPnpmOverrides()
+            throws IOException {
+        // run the basic test to produce an existing package.json
+        runTestWithoutPreexistingPackageJson();
+        // write new versions json and scanned deps
+        final String oldPlatformVersion = "1.0.0";
+        createVaadinVersionsJson(oldPlatformVersion, oldPlatformVersion,
+                oldPlatformVersion);
+
+        final Map<String, String> applicationDependencies = createApplicationDependencies();
+        final String appDependencyVersion = "1.5.0";
+        applicationDependencies.put(VAADIN_DIALOG, appDependencyVersion);
+        final TaskUpdatePackages task = createTask(applicationDependencies,
+                true);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        verifyVersions(appDependencyVersion, oldPlatformVersion,
+                oldPlatformVersion);
+        verifyVersionLockingWithPnpmOverrides(true, true, true);
+    }
+
+    @Test
     public void reactEnabled_scannerDependencies_coreDependenciesNotAdded()
             throws IOException {
         createVaadinVersionsJson(PLATFORM_DIALOG_VERSION,
@@ -1139,6 +1163,45 @@ public class TaskUpdatePackagesNpmTest {
             boolean hasElementMixinLocking, boolean hasOverlayLocking)
             throws IOException {
         JsonObject overrides = getOrCreatePackageJson().getObject(OVERRIDES);
+        Assert.assertNotNull("Object for 'overrides' should exist", overrides);
+
+        if (hasDialogLocking) {
+            Assert.assertTrue("Dialog override was not present",
+                    overrides.hasKey(VAADIN_DIALOG));
+            Assert.assertEquals("$" + VAADIN_DIALOG,
+                    overrides.getString(VAADIN_DIALOG));
+        } else {
+            Assert.assertNull("vaadin-dialog dependency should not be present",
+                    overrides.get(VAADIN_DIALOG));
+        }
+        if (hasElementMixinLocking) {
+            Assert.assertTrue("Element-Mixin override was not present",
+                    overrides.hasKey(VAADIN_ELEMENT_MIXIN));
+            Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN,
+                    overrides.getString(VAADIN_ELEMENT_MIXIN));
+        } else {
+            Assert.assertNull(
+                    "vaadin-element-mixin dependency should not be present",
+                    overrides.get(VAADIN_ELEMENT_MIXIN));
+        }
+        if (hasOverlayLocking) {
+            Assert.assertTrue("Overlay override was not present",
+                    overrides.hasKey(VAADIN_OVERLAY));
+            Assert.assertEquals("$" + VAADIN_OVERLAY,
+                    overrides.getString(VAADIN_OVERLAY));
+        } else {
+            Assert.assertNull("vaadin-overlay dependency should not be present",
+                    overrides.get(VAADIN_OVERLAY));
+        }
+    }
+
+    private void verifyVersionLockingWithPnpmOverrides(boolean hasDialogLocking,
+            boolean hasElementMixinLocking, boolean hasOverlayLocking)
+            throws IOException {
+        JsonObject pnpm = getOrCreatePackageJson().getObject(PNPM);
+        Assert.assertNotNull("Object for 'pnpm' should exist", pnpm);
+        JsonObject overrides = pnpm.getObject(OVERRIDES);
+        Assert.assertNotNull("Object for 'overrides' should exist", overrides);
 
         if (hasDialogLocking) {
             Assert.assertTrue("Dialog override was not present",

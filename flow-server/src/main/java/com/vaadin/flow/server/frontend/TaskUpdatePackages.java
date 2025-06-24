@@ -166,9 +166,32 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private ObjectNode getOverridesSection(ObjectNode packageJson) {
         ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
+        if (options.isEnablePnpm()) {
+            if (overridesSection != null) {
+                // remove npm overrides when moving to pnpm
+                packageJson.remove(OVERRIDES);
+            }
+            JsonNode pnpm = packageJson.get(PNPM);
+            if (pnpm == null) {
+                overridesSection = null;
+            } else {
+                overridesSection = (ObjectNode) pnpm.get(OVERRIDES);
+            }
+        } else if (packageJson.has(PNPM)) {
+            // remove pnpm overrides for npm
+            ((ObjectNode) packageJson.get(PNPM)).remove(OVERRIDES);
+        }
         if (overridesSection == null) {
             overridesSection = JacksonUtils.createObjectNode();
-            packageJson.set(OVERRIDES, overridesSection);
+            if (options.isEnablePnpm()) {
+                ObjectNode pnpmNode = packageJson.has(PNPM)
+                        ? (ObjectNode) packageJson.get(PNPM)
+                        : JacksonUtils.createObjectNode();
+                packageJson.set(PNPM, pnpmNode);
+                pnpmNode.set(OVERRIDES, overridesSection);
+            } else {
+                packageJson.set(OVERRIDES, overridesSection);
+            }
         }
         return overridesSection;
     }
