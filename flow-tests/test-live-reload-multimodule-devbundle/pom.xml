@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>24.8-SNAPSHOT</version>
+        <version>24.9-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-live-reload-multimodule-devbundle</artifactId>
     <name>The main module for a live reload multi module project (dev bundle)</name>

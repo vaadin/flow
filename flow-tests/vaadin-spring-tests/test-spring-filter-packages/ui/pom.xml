@@ -21,7 +21,7 @@
 	<parent>
 		<artifactId>vaadin-test-spring-filter-packages</artifactId>
 		<groupId>com.vaadin</groupId>
-		<version>24.8-SNAPSHOT</version>
+		<version>24.9-SNAPSHOT</version>
 	</parent>
 	<artifactId>vaadin-test-spring-filter-packages-ui</artifactId>
 	<packaging>jar</packaging>

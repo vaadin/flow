@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-frontend</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>24.9-SNAPSHOT</version>
     </parent>
     <artifactId>vite-embedded-webcomponent-resync-long-polling</artifactId>
     <name>Vite embedded app - session resync with long polling PUSH</name>

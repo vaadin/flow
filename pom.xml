@@ -6,7 +6,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>24.8-SNAPSHOT</version>
+    <version>24.9-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>
@@ -694,7 +694,7 @@
                 <module>flow-tests</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>validation</id>
             <properties>
