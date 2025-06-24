@@ -64,6 +64,22 @@ public class ElementData extends NodeMap {
     }
 
     /**
+     * Sets the namespace of the element.
+     */
+    public void setNamespace(String namespace) {
+        put(NodeProperties.NAMESPACE, namespace);
+    }
+
+    /**
+     * Gets the namespace of the element.
+     *
+     * @return namespace
+     */
+    public String getNamespace() {
+        return getOrDefault(NodeProperties.NAMESPACE, null);
+    }
+
+    /**
      * Sets the payload data of the element.
      *
      * @param payload

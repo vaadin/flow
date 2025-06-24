@@ -166,33 +166,28 @@ public class SimpleElementBindingStrategy implements BindingStrategy<Element> {
         }
     }
 
+    private String getNamespace(StateNode node) {
+        return (String) node.getMap(NodeFeatures.ELEMENT_DATA)
+                .getProperty(NodeProperties.NAMESPACE).getValue();
+    }
+
     @Override
     public Element create(StateNode node) {
         String tag = getTag(node);
 
         assert tag != null : "New child must have a tag";
 
-        // HTML5 supports svg & mathml without namespace delarations, with these
-        // checks Flow does as well
-        if (tag.equals("svg")) {
-            return Browser.getDocument()
-                    .createElementNS("http://www.w3.org/2000/svg", "svg");
-        } else if (tag.equals("math")) {
-            return Browser.getDocument().createElementNS(
-                    "http://www.w3.org/1998/Math/MathML", "math");
-        }
-
-        // Else, get the namespace from parent element (svg & mathml elements
-        // inherits their custom ns)
-        if (node.getParent() != null) {
+        String namespace = getNamespace(node);
+        if (namespace != null) {
+            return Browser.getDocument().createElementNS(namespace, tag);
+        } else if (node.getParent() != null) {
             String namespaceURI = node.getParent().getDomNode()
                     .getNamespaceURI();
             if (namespaceURI != null) {
                 return Browser.getDocument().createElementNS(namespaceURI, tag);
             }
-
         }
-        // fallback (some root element!?), use default
+
         return Browser.getDocument().createElement(tag);
     }
 

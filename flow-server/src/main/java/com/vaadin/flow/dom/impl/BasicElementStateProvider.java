@@ -115,6 +115,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
         node.getFeature(ElementData.class).setTag(tag);
 
+        if (tag.equals("svg")) {
+            node.getFeature(ElementData.class)
+                    .setNamespace("http://www.w3.org/2000/svg");
+        } else if (tag.equals("math")) {
+            node.getFeature(ElementData.class)
+                    .setNamespace("http://www.w3.org/1998/Math/MathML");
+        }
+
         return node;
     }
 
