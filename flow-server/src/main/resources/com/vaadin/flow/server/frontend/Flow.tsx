@@ -309,32 +309,23 @@ function useQueuedNavigate(
         blockingNavigate();
     }, [navigate, setNavigateQueueLength]);
 
-    const dequeueNavigationAfterCurrentTask = useCallback(() => {
-        queueMicrotask(dequeueNavigation);
-    }, [dequeueNavigation]);
-
     const enqueueNavigation = useCallback(
         (to: string, callback: boolean, opts?: NavigateOptions) => {
             navigateQueue.push({ to: to, callback: callback, opts: opts });
             setNavigateQueueLength(navigateQueue.length);
             if (navigateQueue.length === 1) {
-                // The first navigation can be started right after any pending sync
-                // jobs, which could add more navigations to the queue.
-                dequeueNavigationAfterCurrentTask();
+                queueMicrotask(dequeueNavigation);
+                setTimeout(dequeueNavigation, 0);
             }
         },
-        [setNavigateQueueLength, dequeueNavigationAfterCurrentTask]
+        [setNavigateQueueLength, dequeueNavigation]
     );
 
-    useEffect(
-        () => () => {
-            // The Flow component has rendered, but history might not be
-            // updated yet, as React Router does it asynchronously.
-            // Use microtask callback for history consistency.
-            dequeueNavigationAfterCurrentTask();
-        },
-        [navigateQueueLength, dequeueNavigationAfterCurrentTask]
-    );
+    useEffect(() => {
+        if (navigateQueueLength > 0) {
+            queueMicrotask(dequeueNavigation);
+        }
+    }, [navigateQueueLength, dequeueNavigation]);
 
     return enqueueNavigation;
 }
