@@ -86,17 +86,15 @@
 
         <!-- Dependencies -->
         <spring.boot.version>4.0.0-SNAPSHOT</spring.boot.version>
+        <jakarta.ee.version>11.0.0</jakarta.ee.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.19.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
-        <jakarta.validation.version>3.1.1</jakarta.validation.version>
-        <jakarta.annotation.api.version>3.0.0</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.4.8-jre</guava.version>
-        <jakarta.websocket.version>2.2.0</jakarta.websocket.version>
         <javassist.version>3.30.2-GA</javassist.version>
 
         <!-- Plugins -->
@@ -229,6 +227,14 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>jakarta.platform</groupId>
+                <artifactId>jakarta.jakartaee-bom</artifactId>
+                <version>${jakarta.ee.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
                 <groupId>com.google.jsinterop</groupId>
                 <artifactId>jsinterop</artifactId>
                 <version>${jsinterop.version}</version>
@@ -257,18 +263,6 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
                 <version>${slf4j.version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.servlet</groupId>
-                <artifactId>jakarta.servlet-api</artifactId>
-                <version>6.0.0</version>
-            </dependency>
-
-            <dependency>
-                <groupId>jakarta.platform</groupId>
-                <artifactId>jakarta.jakartaee-web-api</artifactId>
-                <version>10.0.0</version>
             </dependency>
 
             <dependency>
@@ -726,7 +720,7 @@
                 <module>flow-tests</module>
             </modules>
         </profile>
-        
+
         <profile>
             <id>validation</id>
             <properties>

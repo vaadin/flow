@@ -27,11 +27,6 @@
             <artifactId>flow-data</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>jakarta.platform</groupId>
-            <artifactId>jakarta.jakartaee-web-api</artifactId>
-            <scope>test</scope>
-        </dependency>
 
         <dependency>
             <groupId>com.vaadin</groupId>

@@ -23,7 +23,6 @@
         <dependency>
             <groupId>jakarta.validation</groupId>
             <artifactId>jakarta.validation-api</artifactId>
-            <version>${jakarta.validation.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -66,7 +65,6 @@
         <dependency>
             <groupId>jakarta.annotation</groupId>
             <artifactId>jakarta.annotation-api</artifactId>
-            <version>${jakarta.annotation.api.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
