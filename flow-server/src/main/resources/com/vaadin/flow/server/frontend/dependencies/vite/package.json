@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "dependencies": {},
   "devDependencies": {
-    "vite": "6.3.5",
+    "vite": "7.0.0",
     "@vitejs/plugin-react": "4.6.0",
     "@preact/signals-react-transform": "0.5.2",
     "@rollup/plugin-replace": "6.0.2",
