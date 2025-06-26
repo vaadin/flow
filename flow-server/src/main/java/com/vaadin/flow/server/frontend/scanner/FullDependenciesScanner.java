@@ -404,7 +404,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                         Class<?> themeClass = (Class<?>) getAnnotationValue(
                                 theme, "themeClass");
                         if (themeClass.equals(AbstractTheme.class)) {
-                            themeClassName = getLumoTheme().getName();
+                            themeClassName = FullDependenciesScanner.LUMO;
                         } else {
                             themeClassName = themeClass.getName();
                         }

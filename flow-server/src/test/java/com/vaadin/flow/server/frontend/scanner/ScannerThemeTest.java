@@ -90,7 +90,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_visitDefaultTheme_when_noThemeAnnotationIsGiven() {
+    public void should_notFindAnyTheme_when_noThemeAnnotationIsGiven() {
         DefaultClassFinder finder = spy(
                 new DefaultClassFinder(Collections.singleton(
                         ScannerTestComponents.RootViewWithoutThemeAnnotation.class)));
@@ -111,7 +111,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_defaultToLumoTheme_when_noThemeDefinedByExporter()
+    public void should_useExtendedClassTheme_when_noThemeDefinedByExporter()
             throws Exception {
         // RootViewWithTheme is added to the list just to make sure exporter
         // handles theming default, not the other crawlers
@@ -119,14 +119,10 @@ public class ScannerThemeTest {
                 new HashSet<>(Arrays.asList(NoThemeExporter.class,
                         RootViewWithTheme.class))));
 
-        Mockito.doReturn(Theme4.class).when(finder)
-                .loadClass(FrontendDependencies.LUMO);
-
         FrontendDependencies deps = new FrontendDependencies(finder, true, null,
                 true);
-        assertEquals(
-                "Theme4 should have been returned when default theme was selected",
-                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertEquals("Theme4 should have been returned as theme", Theme4.class,
+                deps.getThemeDefinition().getTheme());
         DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 
