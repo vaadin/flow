@@ -78,23 +78,18 @@ public final class BeanUtil implements Serializable {
 
             return propertyDescriptors;
         }
-        // Oracle bug 4275879: Introspector does not consider superinterfaces of
-        // an interface
-        if (beanType.isInterface()) {
-            List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
+        // Introspector does not consider superinterfaces of
+        // an interface nor does it consider default methods of interfaces.
+        List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
 
-            for (Class<?> cls : beanType.getInterfaces()) {
-                propertyDescriptors.addAll(getBeanPropertyDescriptors(cls));
-            }
-
-            BeanInfo info = Introspector.getBeanInfo(beanType);
-            propertyDescriptors.addAll(getPropertyDescriptors(info));
-
-            return propertyDescriptors;
-        } else {
-            BeanInfo info = Introspector.getBeanInfo(beanType);
-            return getPropertyDescriptors(info);
+        for (Class<?> cls : beanType.getInterfaces()) {
+            propertyDescriptors.addAll(getBeanPropertyDescriptors(cls));
         }
+
+        BeanInfo info = Introspector.getBeanInfo(beanType);
+        propertyDescriptors.addAll(getPropertyDescriptors(info));
+
+        return propertyDescriptors;
     }
 
     /**
