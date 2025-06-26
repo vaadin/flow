@@ -22,6 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -504,8 +507,21 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
-                adapter.servletResourceOutputDirectory());
+        try {
+            File tokenFile = getTokenFile(adapter);
+            Path tempToken = Paths.get(
+                    Files.createTempDirectory("build_temp").toString(),
+                    "flow-build-info.json");
+            Files.move(tokenFile.toPath(), tempToken);
+
+            ProdBundleUtils.compressBundle(
+                    adapter.projectBaseDirectory().toFile(),
+                    adapter.servletResourceOutputDirectory());
+
+            Files.move(tempToken, tokenFile.toPath());
+        } catch (IOException ex) {
+            getLogger().error("Failed to move token file.", ex);
+        }
     }
 
     /**
