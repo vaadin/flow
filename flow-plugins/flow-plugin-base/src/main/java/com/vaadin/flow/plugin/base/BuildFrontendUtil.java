@@ -507,20 +507,25 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
+        String tokenContent = "";
+        File tokenFile = getTokenFile(adapter);
         try {
-            File tokenFile = getTokenFile(adapter);
-            Path tempToken = Paths.get(
-                    Files.createTempDirectory("build_temp").toString(),
-                    "flow-build-info.json");
-            Files.move(tokenFile.toPath(), tempToken);
+            tokenContent = Files.readString(tokenFile.toPath());
+            tokenFile.delete();
+        } catch (IOException ex) {
+            getLogger().error("Failed to read token file content.", ex);
+        }
 
+        try {
             ProdBundleUtils.compressBundle(
                     adapter.projectBaseDirectory().toFile(),
                     adapter.servletResourceOutputDirectory());
-
-            Files.move(tempToken, tokenFile.toPath());
-        } catch (IOException ex) {
-            getLogger().error("Failed to move token file.", ex);
+        } finally {
+            try {
+                Files.writeString(tokenFile.toPath(), tokenContent);
+            } catch (IOException ex) {
+                getLogger().error("Failed to write token file content.", ex);
+            }
         }
     }
 
