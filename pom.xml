@@ -86,14 +86,13 @@
 
         <!-- Dependencies -->
         <spring.boot.version>3.5.3</spring.boot.version>
-        <jakarta.ee.version>11.0.0</jakarta.ee.version>
+        <jakarta.ee.version>10.0.0</jakarta.ee.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.19.1</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
-        <jakarta.annotation.api.version>2.1.1</jakarta.annotation.api.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.4.8-jre</guava.version>
         <javassist.version>3.30.2-GA</javassist.version>
