@@ -665,6 +665,17 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void transaction_updateInReadOnlyTransaction_rejected() {
+        ValueSignal<String> signal = new ValueSignal<>("value");
+
+        Transaction.runInTransaction(() -> {
+            assertThrows(IllegalStateException.class, () -> {
+                signal.update(ignore -> "update");
+            });
+        }, Transaction.Type.READ_ONLY);
+    }
+
+    @Test
     void equalsHashCode() {
         ValueSignal<String> signal = new ValueSignal<>(String.class);
         assertEquals(signal, signal);
