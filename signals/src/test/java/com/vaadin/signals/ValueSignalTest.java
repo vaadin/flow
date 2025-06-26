@@ -454,6 +454,34 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    void usageTracking_removeSignalAfterTracking_hasNoChanges() {
+        ListSignal<String> list = new ListSignal<>(String.class);
+        ValueSignal<String> signal = list.insertLast("value").signal();
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        list.remove(signal);
+
+        assertFalse(usage.hasChanges());
+    }
+
+    @Test
+    void usageTracking_removeSignalBeforeTracking_hasNoChanges() {
+        ListSignal<String> list = new ListSignal<>(String.class);
+        ValueSignal<String> signal = list.insertLast("value").signal();
+
+        list.remove(signal);
+
+        Usage usage = UsageTracker.track(() -> {
+            signal.value();
+        });
+
+        assertFalse(usage.hasChanges());
+    }
+
+    @Test
     void result_successfulOperation_resolvedThroughOverrideDispatcher() {
         TestExecutor dispatcher = useTestOverrideDispatcher();
 
