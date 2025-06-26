@@ -116,7 +116,10 @@ public class UsageTracker {
         Runnable onNextChange(TransientListener listener);
     }
 
-    private static final Usage NO_USAGE = new Usage() {
+    /**
+     * A usage that doesn't have any changes and never fires any events.
+     */
+    public static final Usage NO_USAGE = new Usage() {
         @Override
         public boolean hasChanges() {
             return false;
