@@ -22,6 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -493,8 +496,26 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
-                adapter.servletResourceOutputDirectory());
+        String tokenContent = "";
+        File tokenFile = getTokenFile(adapter);
+        try {
+            tokenContent = Files.readString(tokenFile.toPath());
+            tokenFile.delete();
+        } catch (IOException ex) {
+            getLogger().error("Failed to read token file content.", ex);
+        }
+
+        try {
+            ProdBundleUtils.compressBundle(
+                    adapter.projectBaseDirectory().toFile(),
+                    adapter.servletResourceOutputDirectory());
+        } finally {
+            try {
+                Files.writeString(tokenFile.toPath(), tokenContent);
+            } catch (IOException ex) {
+                getLogger().error("Failed to write token file content.", ex);
+            }
+        }
     }
 
     /**
