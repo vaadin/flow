@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -286,6 +287,21 @@ public class EffectTest extends SignalTestBase {
         signal.insertLast("Two");
         assertEquals(List.of(List.of(), List.of("One"), List.of("One", "Two")),
                 invocations);
+    }
+
+    @Test
+    void changeTracking_changeValueToNull_effectTriggered() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+        ArrayList<String> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+        });
+
+        assertEquals(Arrays.asList("initial"), invocations);
+
+        signal.value(null);
+        assertEquals(Arrays.asList("initial", null), invocations);
     }
 
     @Test
