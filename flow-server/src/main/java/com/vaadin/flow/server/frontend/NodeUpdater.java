@@ -76,6 +76,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
     static final String OVERRIDES = "overrides";
+    static final String PNPM = "pnpm";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
