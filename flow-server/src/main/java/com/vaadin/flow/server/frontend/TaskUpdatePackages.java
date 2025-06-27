@@ -102,6 +102,18 @@ public class TaskUpdatePackages extends NodeUpdater {
                                     """);
                 }
                 writePackageFile(packageJson);
+
+                if (enablePnpm) {
+                    // With pnpm dependency versions are pinned via pnpmfile.js.
+                    // When updating a dependency in package.json, the old
+                    // version may be left in the pnpm-lock.yaml file, causing
+                    // duplicate dependencies. Work around this issue by
+                    // deleting pnpm-lock.yaml ("pnpm install" will
+                    // re-generate). For details, see:
+                    // https://github.com/pnpm/pnpm/issues/2587
+                    // https://github.com/vaadin/flow/issues/9719
+                    deletePnpmLockFile();
+                }
             }
 
         } catch (IOException e) {
@@ -110,6 +122,9 @@ public class TaskUpdatePackages extends NodeUpdater {
     }
 
     boolean lockVersionForNpm(ObjectNode packageJson) throws IOException {
+        if (enablePnpm) {
+            return false;
+        }
         boolean versionLockingUpdated = false;
 
         ObjectNode overridesSection = getOverridesSection(packageJson);
@@ -488,6 +503,13 @@ public class TaskUpdatePackages extends NodeUpdater {
             for (File file : jarResourcesFolder.listFiles()) {
                 file.delete();
             }
+        }
+    }
+
+    private void deletePnpmLockFile() throws IOException {
+        File lockFile = new File(options.getNpmFolder(), "pnpm-lock.yaml");
+        if (lockFile.exists()) {
+            FileUtils.forceDelete(lockFile);
         }
     }
 

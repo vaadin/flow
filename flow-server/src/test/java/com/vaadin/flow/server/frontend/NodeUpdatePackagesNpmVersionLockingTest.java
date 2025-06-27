@@ -131,6 +131,21 @@ public class NodeUpdatePackagesNpmVersionLockingTest
     }
 
     @Test
+    public void shouldDoNothingForNpmLocking_whenInPnpmMode()
+            throws IOException {
+        TaskUpdatePackages packageUpdater = createPackageUpdater(true);
+        ObjectNode packageJson = packageUpdater.getPackageJson();
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put(TEST_DEPENDENCY,
+                PLATFORM_PINNED_DEPENDENCY_VERSION);
+        Assert.assertNull(packageJson.get(OVERRIDES));
+
+        packageUpdater.generateVersionsJson(packageJson);
+        packageUpdater.lockVersionForNpm(packageJson);
+
+        Assert.assertNull(packageJson.get(OVERRIDES));
+    }
+
+    @Test
     public void shouldRemoveUnusedLocking() throws IOException {
         // Test when there is no vaadin-version-core.json available
         Mockito.when(
