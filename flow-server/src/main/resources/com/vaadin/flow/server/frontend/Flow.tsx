@@ -304,9 +304,12 @@ function useQueuedNavigate(
             }
             navigated.current = !navigateArgs.callback;
             navigate(navigateArgs.to, navigateArgs.opts);
-            setNavigateQueueLength(navigateQueue.length);
+            ////////setNavigateQueueLength(navigateQueue.length);
+            const ql = navigateQueue.length;
+            setTimeout(() => setNavigateQueueLength(ql), 0);
         };
-        blockingNavigate();
+      ///////blockingNavigate();
+      setTimeout(blockingNavigate, 0);
     }, [navigate, setNavigateQueueLength]);
 
     const dequeueNavigationAfterCurrentTask = useCallback(() => {
@@ -327,11 +330,15 @@ function useQueuedNavigate(
     );
 
     useEffect(
-        () => () => {
+        () => {
+          setTimeout(dequeueNavigationAfterCurrentTask, 0);
+          return () => {
             // The Flow component has rendered, but history might not be
             // updated yet, as React Router does it asynchronously.
             // Use microtask callback for history consistency.
-            dequeueNavigationAfterCurrentTask();
+            //dequeueNavigationAfterCurrentTask();
+            setTimeout(dequeueNavigationAfterCurrentTask, 0);
+          }
         },
         [navigateQueueLength, dequeueNavigationAfterCurrentTask]
     );
@@ -469,6 +476,7 @@ function Flow() {
     }, []);
 
     useEffect(() => {
+        console.log("================================= useEffect(blocker)", blocker.state, blocker.location);
         if (blocker.state === 'blocked') {
             if (blockerHandled.current) {
                 // Blocker is handled and the new navigation
