@@ -110,7 +110,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // An import without `.js` extension
         expectedLines.add(
-                "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else'");
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else'");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
@@ -157,7 +157,7 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
                 "Use the './' prefix for files in JAR files: 'ExampleConnector.js'",
                 "Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
-                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'");
+                        + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'");
 
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
