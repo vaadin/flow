@@ -149,10 +149,13 @@ public final class Constants implements Serializable {
      */
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
+    public static final String TELEMETRY_OPT_OUT_ENV_VARIABLE = "VAADIN_TELEMETRY_OPT_OUT";
+
     /**
      * The default value for whether usage statistics is enabled.
      */
-    public static final boolean DEFAULT_DEVMODE_STATS = true;
+    public static final boolean DEFAULT_DEVMODE_STATS =
+            System.getenv(Constants.TELEMETRY_OPT_OUT_ENV_VARIABLE) == null;
 
     /**
      * Internal parameter which prevent validation for annotations which are
