@@ -222,8 +222,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      *
      * @deprecated Use {@link #frontendOutputDirectory} instead.
      */
-    @Parameter(defaultValue = "${project.build.outputDirectory}/"
-            + VAADIN_WEBAPP_RESOURCES)
     @Deprecated
     private File webpackOutputDirectory;
 
@@ -678,6 +676,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             if (frontendOutputDirectory == null) {
                 logWarn("'webpackOutputDirectory' property is deprecated and will be removed in future releases. Please use 'frontendOutputDirectory' instead.");
                 frontendOutputDirectory = webpackOutputDirectory;
+                webpackOutputDirectory = null;
+            } else if (webpackOutputDirectory.equals(frontendOutputDirectory)) {
                 webpackOutputDirectory = null;
             } else {
                 logWarn("Both 'frontendOutputDirectory' and 'webpackOutputDirectory' are set. "
