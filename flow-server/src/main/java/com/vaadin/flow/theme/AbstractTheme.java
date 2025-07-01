@@ -36,7 +36,7 @@ public interface AbstractTheme extends Serializable {
      * @return the base component path
      * @deprecated base url will not be translated to the theme url anymore
      */
-    @Deprecated(since = "v25", forRemoval = true)
+    @Deprecated(since = "25.0", forRemoval = true)
     String getBaseUrl();
 
     /**
@@ -47,7 +47,7 @@ public interface AbstractTheme extends Serializable {
      * @return the themed component path
      * @deprecated base url will not be translated to the theme url anymore
      */
-    @Deprecated(since = "v25", forRemoval = true)
+    @Deprecated(since = "25.0", forRemoval = true)
     String getThemeUrl();
 
     /**
@@ -97,7 +97,7 @@ public interface AbstractTheme extends Serializable {
      * @return translated URL if possible or the same given {@code url} if not.
      * @deprecated No translation of the url will be done in 25
      */
-    @Deprecated(since = "v25", forRemoval = true)
+    @Deprecated(since = "25.0", forRemoval = true)
     default String translateUrl(String url) {
         if (url.contains(getBaseUrl())) {
             String baseUrl = getBaseUrl();
