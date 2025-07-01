@@ -272,4 +272,61 @@ public class BeanUtilTest {
         PropertyDescriptor result = BeanUtil.getPropertyDescriptor(TestBean.class, "");
         assertNull(result);
     }
+
+    // Test property with deep nesting
+    @Test
+    public void getPropertyType_deepNestedProperty() throws IntrospectionException {
+        // This would fail because our test bean doesn't have deep nesting, 
+        // but tests the recursive behavior
+        Class<?> result = BeanUtil.getPropertyType(TestBean.class, "nested.nonExistent.value");
+        assertNull(result);
+    }
+
+    // Test getPropertyType with record
+    @Test
+    public void getPropertyType_recordProperty() throws IntrospectionException {
+        Class<?> recordPropertyType = BeanUtil.getPropertyType(TestRecord.class, "recordProperty");
+        assertEquals(String.class, recordPropertyType);
+        
+        Class<?> recordAgeType = BeanUtil.getPropertyType(TestRecord.class, "recordAge");
+        assertEquals(int.class, recordAgeType);
+    }
+
+    // Test interface properties
+    @Test
+    public void getPropertyType_interfaceProperty() throws IntrospectionException {
+        Class<?> interfacePropertyType = BeanUtil.getPropertyType(TestInterface.class, "interfaceProperty");
+        assertEquals(String.class, interfacePropertyType);
+    }
+
+    // Test that Object methods are filtered out
+    @Test
+    public void getPropertyDescriptor_objectMethodsFiltered() throws IntrospectionException {
+        // The "class" property should be filtered out by BeanUtil
+        PropertyDescriptor classProperty = BeanUtil.getPropertyDescriptor(TestBean.class, "class");
+        assertNull("Object.getClass() should be filtered out", classProperty);
+    }
+
+    // Test that getBeanPropertyDescriptors includes all valid properties
+    @Test
+    public void getBeanPropertyDescriptors_includesAllValidProperties() throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestBean.class);
+        
+        // Should include custom properties but not Object properties
+        boolean hasName = false, hasAge = false, hasNested = false, hasClass = false;
+        
+        for (PropertyDescriptor desc : descriptors) {
+            String name = desc.getName();
+            if ("name".equals(name)) hasName = true;
+            else if ("age".equals(name)) hasAge = true;
+            else if ("nested".equals(name)) hasNested = true;
+            else if ("class".equals(name)) hasClass = true;
+        }
+        
+        assertTrue("Should include 'name' property", hasName);
+        assertTrue("Should include 'age' property", hasAge); 
+        assertTrue("Should include 'nested' property", hasNested);
+        // Note: getBeanPropertyDescriptors may include 'class' but getPropertyDescriptor filters it
+        // This test just verifies that our custom properties are present
+    }
 }
