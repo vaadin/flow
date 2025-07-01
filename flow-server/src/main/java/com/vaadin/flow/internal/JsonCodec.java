@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
@@ -41,6 +42,7 @@ import elemental.json.JsonValue;
  * <li>{@link JsonValue} and all its sub types
  * <li>{@link Element} (encoded as a reference to the element)
  * <li>{@link Component} (encoded as a reference to the root element)
+ * <li>Arrays of any supported type
  * </ul>
  *
  * <p>
@@ -126,7 +128,7 @@ public class JsonCodec {
      * Helper for checking whether the type is supported by
      * {@link #encodeWithoutTypeInfo(Object)}. Supported value types are
      * {@link String}, {@link Integer}, {@link Double}, {@link Boolean},
-     * {@link JsonValue}.
+     * {@link JsonValue}, and arrays of supported types.
      *
      * @param type
      *            the type to check
@@ -134,9 +136,19 @@ public class JsonCodec {
      */
     public static boolean canEncodeWithoutTypeInfo(Class<?> type) {
         assert type != null;
-        return String.class.equals(type) || Integer.class.equals(type)
+        if (String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
-                || JsonValue.class.isAssignableFrom(type);
+                || JsonValue.class.isAssignableFrom(type)) {
+            return true;
+        }
+        
+        // Support arrays if the component type is supported
+        if (type.isArray()) {
+            Class<?> componentType = type.getComponentType();
+            return canEncodeWithoutTypeInfo(componentType);
+        }
+        
+        return false;
     }
 
     /**
@@ -180,7 +192,8 @@ public class JsonCodec {
     /**
      * Helper for encoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonValue}. <code>null</code> is also supported.
+     * {@link Boolean}, {@link JsonValue}, and arrays of supported types.
+     * <code>null</code> is also supported.
      *
      * @param value
      *            the value to encode
@@ -202,6 +215,15 @@ public class JsonCodec {
             return Json.create(((Boolean) value).booleanValue());
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return (JsonValue) value;
+        } else if (type.isArray()) {
+            // Convert array to JsonArray
+            int length = Array.getLength(value);
+            JsonArray array = Json.createArray();
+            for (int i = 0; i < length; i++) {
+                Object element = Array.get(value, i);
+                array.set(i, encodeWithoutTypeInfo(element));
+            }
+            return array;
         }
         assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
