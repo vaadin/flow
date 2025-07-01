@@ -39,6 +39,7 @@ public class CleanFrontendUtil {
     public static final String DEPENDENCIES = "dependencies";
     public static final String DEV_DEPENDENCIES = "devDependencies";
     public static final String OVERRIDES = "overrides";
+    public static final String PNPM = "pnpm";
 
     /**
      * Exception thrown when cleaning the frontend fails.
@@ -206,6 +207,9 @@ public class CleanFrontendUtil {
         JsonObject dependencies = packageJson.getObject(DEPENDENCIES);
         JsonObject devDependencies = packageJson.getObject(DEV_DEPENDENCIES);
         JsonObject overridesSection = packageJson.getObject(OVERRIDES);
+        JsonObject pnpmOverridesSection = packageJson.hasKey(PNPM)
+                ? packageJson.getObject(PNPM).getObject(OVERRIDES)
+                : null;
 
         if (packageJson.hasKey(VAADIN)) {
             JsonObject vaadin = packageJson.getObject(VAADIN);
@@ -217,6 +221,7 @@ public class CleanFrontendUtil {
             cleanObject(dependencies, vaadinDependencies);
             cleanObject(devDependencies, vaadinDevDependencies);
             cleanObject(overridesSection, vaadinDependencies, false);
+            cleanObject(pnpmOverridesSection, vaadinDependencies, false);
 
             packageJson.remove(VAADIN);
         }
