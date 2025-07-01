@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import { resolve } from 'node:path';
+import { resolve, relative } from 'node:path';
 import type { RollupOutput } from 'rollup';
 import { build, InlineConfig, Plugin } from 'vite';
 import { getManifest, ManifestTransform } from 'workbox-build';
@@ -97,7 +97,7 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
       return;
     },
     async load(id) {
-      if (id === swSourcePath) {
+      if (relative(id, swSourcePath).length === 0) {
         return buildOutput.output[0].code;
       }
 
