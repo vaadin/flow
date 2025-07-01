@@ -29,6 +29,15 @@ import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for the {@link BeanUtil}.
+ * 
+ * This test class provides comprehensive coverage for all public methods of BeanUtil:
+ * - getBeanPropertyDescriptors(): Tests with regular classes, records, interfaces
+ * - getPropertyType(): Tests simple, nested, record, and interface properties  
+ * - getPropertyDescriptor(): Tests simple and nested property access
+ * - checkBeanValidationAvailable(): Tests JSR-303 availability checking
+ * 
+ * Edge cases covered include null inputs, empty strings, non-existent properties,
+ * deep nesting, and proper filtering of Object.class methods.
  */
 public class BeanUtilTest {
 
