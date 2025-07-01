@@ -33,6 +33,9 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
     private final int clientX;
     private final int clientY;
 
+    private final int relativeX;
+    private final int relativeY;
+
     private final int clickCount;
     private final int button;
     private final boolean ctrlKey;
@@ -61,6 +64,12 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
      * @param clientY
      *            the y coordinate of the click event, relative to the upper
      *            left corner of the browser viewport, -1 if unknown
+     * @param relativeX
+     *            the x coordinate of the click event, relative to the upper
+     *            left corner of the clicked component, -1 if unknown
+     * @param relativeY
+     *            the y coordinate of the click event, relative to the upper
+     *            left corner of the clicked component, -1 if unknown
      * @param clickCount
      *            the number of consecutive clicks recently recorded
      * @param button
@@ -84,6 +93,8 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
             @EventData("event.screenY") int screenY,
             @EventData("event.clientX") int clientX,
             @EventData("event.clientY") int clientY,
+            @EventData("event.clientX - element.getBoundingClientRect().left") int relativeX,
+            @EventData("event.clientY - element.getBoundingClientRect().top") int relativeY,
             @EventData("event.detail") int clickCount,
             @EventData("event.button") int button,
             @EventData("event.ctrlKey") boolean ctrlKey,
@@ -95,6 +106,8 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
         this.screenY = screenY;
         this.clientX = clientX;
         this.clientY = clientY;
+        this.relativeX = relativeX;
+        this.relativeY = relativeY;
         this.clickCount = clickCount;
         this.button = button;
         this.ctrlKey = ctrlKey;
@@ -110,8 +123,8 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
      *            the component that fired the event
      */
     public ClickEvent(Component source) {
-        // source, notClient, 4 coordinates, clickCount, button, 4 modifier keys
-        this(source, false, -1, -1, -1, -1, 1, -1, false, false, false, false);
+        // source, notClient, 4 coordinates, relative coordinates, clickCount, button, 4 modifier keys
+        this(source, false, -1, -1, -1, -1, -1, -1, 1, -1, false, false, false, false);
     }
 
     /**
@@ -152,6 +165,26 @@ public class ClickEvent<C extends Component> extends ComponentEvent<C> {
      */
     public int getScreenY() {
         return screenY;
+    }
+
+    /**
+     * Gets the x coordinate of the click event, relative to the upper left
+     * corner of the clicked component.
+     *
+     * @return the x coordinate, -1 if unknown
+     */
+    public int getRelativeX() {
+        return relativeX;
+    }
+
+    /**
+     * Gets the y coordinate of the click event, relative to the upper left
+     * corner of the clicked component.
+     *
+     * @return the y coordinate, -1 if unknown
+     */
+    public int getRelativeY() {
+        return relativeY;
     }
 
     /**
