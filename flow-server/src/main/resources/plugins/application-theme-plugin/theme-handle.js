@@ -193,9 +193,9 @@ function getThemeProperties(themeFolder, options) {
     };
   }
   let themeJson = JSON.parse(themePropertyFileAsString);
-  if("autoInjectComponents" in themeJson) {
+  if ("autoInjectComponents" in themeJson) {
     themeJson.autoInjectComponents = componentFeature && themeJson.autoInjectComponents;
-  }else {
+  } else {
     themeJson.autoInjectComponents = componentFeature;
   }
   return themeJson;
