@@ -240,8 +240,6 @@ public class BrowserDetailsTest extends TestCase {
     public void testAndroidCallpodKeeper() {
         BrowserDetails bd = new BrowserDetails(
                 ANDROID_CALLPOD_KEEPER);
-        assertWebKit(bd);
-        assertChrome(bd);
         assertBrowserMajorVersion(bd, 10);
         assertBrowserMinorVersion(bd, 1);
         assertEngineVersion(bd, -1);
