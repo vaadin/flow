@@ -79,13 +79,14 @@ public class LegacySecurityConfig extends VaadinWebSecurity {
     public void configure(HttpSecurity http) throws Exception {
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/admin-only/**")
-                    .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/public/**", "/error")
-                    .permitAll());
+                .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
+                .requestMatchers("/public/**", "/error").permitAll()
+                .requestMatchers("/all-logged-in/**").authenticated()
+        );
 
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser").hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/impersonate/exit").hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/switchUser")).hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate/exit")).hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate")).authenticated());
 
         // @formatter:on
         super.configure(http);
@@ -95,7 +96,7 @@ public class LegacySecurityConfig extends VaadinWebSecurity {
         } else {
             setLoginView(http, LoginView.class, getLogoutSuccessUrl());
         }
-        ;
+
         http.logout(cfg -> cfg
                 .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern(
                         HttpMethod.GET, getRootUrl(false) + "doLogout"))

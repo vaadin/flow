@@ -40,6 +40,7 @@ import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyC
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
+import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
 @Configuration
@@ -89,13 +90,18 @@ public class SecurityConfig {
             throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/public/**", "/error").permitAll());
+                .requestMatchers("/public/**", "/error").permitAll()
+                .requestMatchers("/all-logged-in/**", "/private").authenticated()
+                .requestMatchers("/admin").hasAnyRole(ROLE_ADMIN));
 
-        http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser")
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/switchUser")
                 .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(
-                auth -> auth.requestMatchers("/impersonate/exit")
-                        .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/impersonate/exit")
+                .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/impersonate").authenticated());
         http.logout(cfg -> cfg.logoutRequestMatcher(PathPatternRequestMatcher
                 .pathPattern(HttpMethod.GET, getRootUrl(false) + "doLogout")));
         http.with(vaadin(), cfg -> {
