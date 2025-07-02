@@ -357,7 +357,7 @@ public class BrowserDetails implements Serializable {
         }
 
         // DuckDuckGo bot;
-        if (userAgent.contains("duckduckgo")) {
+        if (userAgent.contains("duckduckgo/")) {
             System.err.println(
                     "OS version could not be parsed from DuckDuckGo userAgent: "
                             + userAgent);
