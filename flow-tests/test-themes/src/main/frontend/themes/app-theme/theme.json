@@ -6,6 +6,5 @@
     "@fortawesome/fontawesome-free": {
       "svgs/regular/**": "fortawesome/icons"
     }
-  },
-  "autoInjectComponents": true
+  }
 }
