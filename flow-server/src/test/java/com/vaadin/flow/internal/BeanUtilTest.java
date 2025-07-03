@@ -33,8 +33,7 @@ public class BeanUtilTest {
         }
     }
 
-    public class TestSomething
-            implements FirstInterface, SecondInterface {
+    public class TestSomething implements FirstInterface, SecondInterface {
         public void setExistsInAllPlaces(boolean visible) {
         }
 
@@ -49,13 +48,11 @@ public class BeanUtilTest {
                 .getBeanPropertyDescriptors(TestSomething.class);
         List<PropertyDescriptor> existsInAllPlacesProperties = descriptors
                 .stream()
-                .filter(desc -> desc.getName()
-                        .equals("existsInAllPlaces"))
+                .filter(desc -> desc.getName().equals("existsInAllPlaces"))
                 .toList();
         Assert.assertEquals(
                 "There should be only one 'existsInAllPlaces' property descriptor",
-                1,
-                existsInAllPlacesProperties.size());
+                1, existsInAllPlacesProperties.size());
 
         PropertyDescriptor existsInAllPlacesProperty = existsInAllPlacesProperties
                 .get(0);
@@ -64,16 +61,12 @@ public class BeanUtilTest {
                 existsInAllPlacesProperty.getReadMethod().getDeclaringClass());
 
         List<PropertyDescriptor> oneInterfaceProperties = descriptors.stream()
-                .filter(desc -> desc.getName()
-                        .equals("oneInterface"))
-                .toList();
+                .filter(desc -> desc.getName().equals("oneInterface")).toList();
         Assert.assertEquals(
                 "There should be only one 'oneInterface' property descriptor",
-                1,
-                oneInterfaceProperties.size());
+                1, oneInterfaceProperties.size());
 
-        PropertyDescriptor oneInterfaceProperty = oneInterfaceProperties
-                .get(0);
+        PropertyDescriptor oneInterfaceProperty = oneInterfaceProperties.get(0);
         // The property from thedefault method
         Assert.assertEquals(FirstInterface.class,
                 oneInterfaceProperty.getReadMethod().getDeclaringClass());
