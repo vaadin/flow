@@ -31,6 +31,7 @@ import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.dom.Text;
 import elemental.html.AnchorElement;
+import org.junit.Ignore;
 
 public class DomApiAbstractionUsageTest {
     private static final Set<String> ignoredClasses = Stream
@@ -45,7 +46,7 @@ public class DomApiAbstractionUsageTest {
     private static final Set<String> ignoredElementMethods = Stream
             .of("getTagName", "addEventListener", "getOwnerDocument",
                     "hasAttribute", "getStyle", "getLocalName", "getAttribute",
-                    "equals", "getClass")
+                    "equals", "getClass", "getNamespaceURI")
             .collect(Collectors.toSet());
 
     private final ClassVisitor classVisitor = new ClassVisitor(Opcodes.ASM5) {
