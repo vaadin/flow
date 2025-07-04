@@ -434,6 +434,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Check that imports other than lumo globals are the same
         flowImports.removeAll(updater.webComponentImports);
+
+        // webComponent only has injectGlobalWebcomponentCss and not
+        // injectGlobalCss'
+        Predicate<String> injectGlobal = Pattern.compile("injectGlobalCss.*")
+                .asPredicate();
+        flowImports.removeIf(injectGlobal);
+
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
                 flowImports.stream().allMatch(lumoGlobalsMatcher));
@@ -461,10 +468,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     matcher.find();
                     return matcher.group(1);
                 }).collect(Collectors.toList());
-
-        assertTrue("Import for web-components should also inject global CSS",
-                updater.webComponentImports.stream()
-                        .anyMatch(globalCssImporter));
 
         assertTrue(
                 "Should contain function to import global CSS into embedded component",

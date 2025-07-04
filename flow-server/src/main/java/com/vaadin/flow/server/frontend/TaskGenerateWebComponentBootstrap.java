@@ -17,7 +17,10 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
@@ -36,6 +39,7 @@ public class TaskGenerateWebComponentBootstrap
         extends AbstractTaskClientGenerator {
 
     private final File frontendGeneratedDirectory;
+    private Options options;
 
     /**
      * Create a task to generate <code>vaadin-web-component.ts</code> if
@@ -47,6 +51,7 @@ public class TaskGenerateWebComponentBootstrap
     TaskGenerateWebComponentBootstrap(Options options) {
         this.frontendGeneratedDirectory = new File(
                 options.getFrontendDirectory(), GENERATED);
+        this.options = options;
     }
 
     @Override
@@ -59,7 +64,21 @@ public class TaskGenerateWebComponentBootstrap
                 + "FlowClient.js';");
         lines.add("init();");
 
+        applyCssImportWhenNoTheme(lines);
         return String.join("\n", lines);
+    }
+
+    private void applyCssImportWhenNoTheme(List<String> lines) {
+        ThemeDefinition themeDefinition = options
+                .getFrontendDependenciesScanner().getThemeDefinition();
+
+        // If no theme available add applyTheme for css import
+        if (themeDefinition == null || "".equals(themeDefinition.getName())) {
+            lines.add("import './css.generated.js';");
+            lines.add("import { applyCss } from './css.generated.js';");
+            lines.add("applyCss(document);");
+            lines.add("");
+        }
     }
 
     @Override

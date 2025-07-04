@@ -244,6 +244,8 @@ abstract class AbstractUpdateImports implements Runnable {
             String line) {
         Matcher matcher = INJECT_CSS_PATTERN.matcher(line);
         if (matcher.matches()) {
+            // Remove from body and only add to shadowroot
+            iterator.remove();
             iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
         }
     }
