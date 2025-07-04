@@ -198,7 +198,7 @@ public class SpringSecurityAutoConfiguration {
                 .map(GrantedAuthorityDefaults::getRolePrefix).orElse(null));
     }
 
-    @Bean
+    @Bean(name = "VaadinAuthenticationContext")
     @ConditionalOnMissingBean
     AuthenticationContext authenticationContext() {
         return new AuthenticationContext();
