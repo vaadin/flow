@@ -375,11 +375,13 @@ public class BrowserDetails implements Serializable {
         }
 
         if (userAgent.contains("callpod keeper for android")) {
-            int startIndex = userAgent.indexOf("android 1.0 (");
+            int startIndex = userAgent.indexOf("; android ");
             String osVersionString = safeSubstring(userAgent,
-                    startIndex + "android 1.0 (".length(),
-                    userAgent.indexOf(')', startIndex));
+                    startIndex + "; android ".length(), userAgent.length());
             String[] parts = osVersionString.split("\\.");
+            if (parts.length == 2) {
+                parts[1] = parts[1].substring(0, parts[1].indexOf(";"));
+            }
             parseOsVersion(parts, userAgent);
             return;
         }
