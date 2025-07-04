@@ -50,7 +50,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const outputFolder = options.frontendGeneratedFolder;
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
-  const autoInjectComponents = themeProperties.autoInjectComponents ?? false;
+  const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
   const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? true;
   const globalFilename = 'theme-' + themeName + '.global.generated.js';
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
