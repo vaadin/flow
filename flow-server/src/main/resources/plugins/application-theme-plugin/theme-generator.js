@@ -50,8 +50,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const outputFolder = options.frontendGeneratedFolder;
   const styles = resolve(themeFolder, stylesCssFilename);
   const documentCssFile = resolve(themeFolder, documentCssFilename);
-  const autoInjectComponents = themeProperties.autoInjectComponents ?? true;
-  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? false;
+  const autoInjectComponents = themeProperties.autoInjectComponents ?? false;
+  const autoInjectGlobalCssImports = themeProperties.autoInjectGlobalCssImports ?? true;
   const globalFilename = 'theme-' + themeName + '.global.generated.js';
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
@@ -219,6 +219,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const themeFileApply = `
   let themeRemovers = new WeakMap();
   let targets = [];
+  const fontFaceRegex = /(@font-face\\s*{[\\s\\S]*?})/g;
 
   export const applyTheme = (target) => {
     const removers = [];
@@ -227,6 +228,12 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       ${autoInjectGlobalCssImports ? `
         webcomponentGlobalCssInjector((css) => {
           removers.push(injectGlobalCss(css, '', target));
+          if(fontFaceRegex.test(css)) {
+            const fontFaces = Array.from(css.match(fontFaceRegex));
+            fontFaces.forEach(fontFace => {
+              removers.push(injectGlobalCss(fontFace, '', document));
+            });
+          }
         });
         ` : ''}
     }
