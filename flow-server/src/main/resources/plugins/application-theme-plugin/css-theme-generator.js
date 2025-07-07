@@ -20,55 +20,26 @@
  */
 import { resolve } from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { checkModules } from './theme-copy.js';
 
-const CSSIMPORT_COMMENT = 'CSSImport end';
 const headerImport = `import 'construct-style-sheets-polyfill';
 `;
 
 /**
- * Generate the theme.generated.js file for css imports which collects all required information.
+ * Generate the css.generated.js file for css imports which collects all required information.
  *
  * @param {Object} options build options (e.g. prod or dev mode)
  * @returns {string} theme file content
  */
 function writeCssFiles(options) {
-  const productionMode = !options.devMode;
-  const useDevServerOrInProductionMode = !options.useDevBundle;
   const outputFolder = options.frontendGeneratedFolder;
   const cssFilename = 'css.generated.js';
 
   let cssFileContent = headerImport;
-  let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
 
   cssFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   cssFileContent += `import { webcomponentGlobalCssInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
   cssFileContent += `let needsReloadOnChanges = false;\n`;
-  // const imports = [];
-  // const globalFileContent = [];
-  // const shadowOnlyCss = [];
-
-
-  // if (themeProperties.importCss) {
-  //   const missingModules = checkModules(themeProperties.importCss);
-  //   if (missingModules.length > 0) {
-  //     throw Error(
-  //       "Missing npm modules or files '" +
-  //         missingModules.join("', '") +
-  //         "' for importCss marked in 'theme.json'.\n" +
-  //         "Install or update package(s) by adding a @NpmPackage annotation or install it using 'npm/pnpm/bun i'"
-  //     );
-  //   }
-  //   themeProperties.importCss.forEach((cssPath) => {
-  //     const variable = 'module' + i++;
-  //     globalFileContent.push(`import '${cssPath}';\n`);
-  //     imports.push(`import ${variable} from '${cssPath}?inline';\n`);
-  //     shadowOnlyCss.push(`removers.push(injectGlobalCss(${variable}.toString(), '${CSSIMPORT_COMMENT}', target));\n`);
-  //   });
-  // }
-
-  // themeFileContent += imports.join('');
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
@@ -125,10 +96,6 @@ if (import.meta.hot) {
 }
 
 `;
-
-//   globalImportContent += `
-// ${globalFileContent.join('')}
-// `;
 
   writeIfChanged(resolve(outputFolder, cssFilename), cssFileContent);
 }

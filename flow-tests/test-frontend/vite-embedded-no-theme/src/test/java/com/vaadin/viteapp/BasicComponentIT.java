@@ -51,7 +51,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
         Assert.assertEquals("rgba(211, 211, 211, 1)", h1.getCssValue("color"));
 
         Assert.assertEquals(
-                "Exported webcomponent h1 font-family should come from styles.css",
+                "Exported webcomponent h1 font-family should come from cssimport.css",
                 "Ostrich", h1.getCssValue("font-family"));
 
         TestBenchElement htmlH1 = $("h1").first();
@@ -59,7 +59,7 @@ public class BasicComponentIT extends ChromeDeviceTest {
                 "rgba(0, 0, 0, 1)", htmlH1.getCssValue("color"));
 
         Assert.assertFalse(
-                "body h1 font-family should not come from styles.css",
+                "body h1 font-family should not come from cssimport.css",
                 "Ostrich".equals(htmlH1.getCssValue("font-family")));
     }
 }
