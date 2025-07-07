@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring.security;
 
 import javax.crypto.SecretKey;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -123,6 +124,10 @@ public abstract class VaadinWebSecurity {
     @Autowired
     private ObjectProvider<NavigationAccessControl> accessControlProvider;
 
+    // initialized only for tests, it gets overridden by the injected instance
+    @Autowired
+    private AuthenticationContext authenticationContext = new AuthenticationContext();
+
     private NavigationAccessControl accessControl;
 
     @PostConstruct
@@ -130,8 +135,6 @@ public abstract class VaadinWebSecurity {
         accessControl = accessControlProvider.getIfAvailable();
         authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
     }
-
-    private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
@@ -165,7 +168,6 @@ public abstract class VaadinWebSecurity {
      *
      * @return the authentication-context bean
      */
-    @Bean(name = "VaadinAuthenticationContext")
     public AuthenticationContext getAuthenticationContext() {
         return authenticationContext;
     }
