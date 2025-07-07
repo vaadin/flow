@@ -156,8 +156,9 @@ public class WebComponentGenerator {
                     "import {applyTheme} from 'Frontend/generated/theme.js';\n\n");
             replacements.put("ApplyTheme", "applyTheme(shadow);\n    ");
         } else {
-            replacements.put("ThemeImport", "");
-            replacements.put("ApplyTheme", "");
+            replacements.put("ThemeImport",
+                    "import {applyCss} from 'Frontend/generated/css.generated.js';\n\n");
+            replacements.put("ApplyTheme", "applyCss(shadow);\n    ");
         }
         replacements.put("TagDash", tag);
         replacements.put("TagCamel", SharedUtil
