@@ -17,7 +17,7 @@
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <component.version>24.8.2</component.version>
-        <nimbus-jose-jwt.version>10.3</nimbus-jose-jwt.version>
+        <nimbus-jose-jwt.version>10.3.1</nimbus-jose-jwt.version>
     </properties>
 
     <dependencyManagement>
