@@ -85,8 +85,6 @@ public @interface Theme {
     /**
      * The theme translation handler.
      *
-     * Defaults to Lumo, If not specified.
-     *
      * @return theme handler
      */
     Class<? extends AbstractTheme> themeClass() default AbstractTheme.class;
