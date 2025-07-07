@@ -32,6 +32,7 @@ public class BackNavIT extends ChromeBrowserTest {
     private void navigateAndPressBack(
             Supplier<TestBenchElement> navigationElement) {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
+        waitForDevServer();
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -68,6 +69,7 @@ public class BackNavIT extends ChromeBrowserTest {
     @Test
     public void backButtonWorksAndContentUpdatesAfterPageRefresh() {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
+        waitForDevServer();
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -110,6 +112,7 @@ public class BackNavIT extends ChromeBrowserTest {
     @Test
     public void validateNoAfterNavigationForReplaceState() {
         getDriver().get(getTestURL(getRootURL(), BACK_NAV_FIRST_VIEW, null));
+        waitForDevServer();
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()

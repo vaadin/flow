@@ -15,6 +15,7 @@ public class ForwardTargetIT extends ChromeBrowserTest {
     @Test
     public void testUrlIsCorrectAfterForward() {
         getDriver().get(getTestURL(getRootURL(), FORWARD_TARGET_VIEW, null));
+        waitForDevServer();
 
         try {
             waitUntil(arg -> driver.getCurrentUrl()
@@ -44,6 +45,7 @@ public class ForwardTargetIT extends ChromeBrowserTest {
     public void testSetParameterCalledOnlyOnceAfterForward() {
         getDriver().get(getTestURL(getRootURL(),
                 "/view/com.vaadin.flow.ForwardingToParametersView", null));
+        waitForDevServer();
 
         try {
             waitUntil(arg -> driver.getCurrentUrl().endsWith(
@@ -65,6 +67,7 @@ public class ForwardTargetIT extends ChromeBrowserTest {
         getDriver().get(getTestURL(getRootURL(),
                 "/view/com.vaadin.flow.RouterLinkForwardingToParametersView",
                 null));
+        waitForDevServer();
         $("a").id("forwardViewLink").click();
 
         try {
