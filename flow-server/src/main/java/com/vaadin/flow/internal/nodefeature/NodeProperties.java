@@ -31,6 +31,11 @@ public final class NodeProperties {
     public static final String TAG = "tag";
 
     /**
+     * Key for {@link ElementData#getNamespace()}.
+     */
+    public static final String NAMESPACE = "namespace";
+
+    /**
      * Key for {@link ElementData#getPayload()}.
      */
     public static final String PAYLOAD = "payload";
