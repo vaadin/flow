@@ -19,6 +19,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.NullNode;
 
@@ -29,6 +32,8 @@ import com.fasterxml.jackson.databind.node.NullNode;
  * signal data or an {@link Alias} node that allows multiple signal ids to
  * reference the same data.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME)
+@JsonSubTypes(value = { @Type(Node.Data.class), @Type(Node.Alias.class), })
 public sealed interface Node {
 
     /**

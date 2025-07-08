@@ -18,12 +18,42 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.signals.ListSignal.ListPosition;
 
 /**
  * A command triggered from a signal.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME)
+@JsonSubTypes(value = {
+
+        @Type(SignalCommand.ValueCondition.class),
+        @Type(SignalCommand.PositionCondition.class),
+        @Type(SignalCommand.KeyCondition.class),
+        @Type(SignalCommand.LastUpdateCondition.class),
+
+        @Type(SignalCommand.AdoptAtCommand.class),
+        @Type(SignalCommand.AdoptAsCommand.class),
+
+        @Type(SignalCommand.IncrementCommand.class),
+        @Type(SignalCommand.ClearCommand.class),
+
+        @Type(SignalCommand.RemoveByKeyCommand.class),
+        @Type(SignalCommand.PutCommand.class),
+        @Type(SignalCommand.PutIfAbsentCommand.class),
+
+        @Type(SignalCommand.InsertCommand.class),
+        @Type(SignalCommand.SetCommand.class),
+        @Type(SignalCommand.RemoveCommand.class),
+        @Type(SignalCommand.ClearOwnerCommand.class),
+
+        @Type(SignalCommand.TransactionCommand.class),
+        @Type(SignalCommand.SnapshotCommand.class),
+
+})
 public sealed interface SignalCommand {
     /**
      * A signal command that sets the value of a signal.
