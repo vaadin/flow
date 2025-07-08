@@ -27,31 +27,31 @@ import com.vaadin.signals.ListSignal.ListPosition;
 /**
  * A command triggered from a signal.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME)
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
 @JsonSubTypes(value = {
 
-        @Type(SignalCommand.ValueCondition.class),
-        @Type(SignalCommand.PositionCondition.class),
-        @Type(SignalCommand.KeyCondition.class),
-        @Type(SignalCommand.LastUpdateCondition.class),
+        @Type(value = SignalCommand.ValueCondition.class, name = "value"),
+        @Type(value = SignalCommand.PositionCondition.class, name = "pos"),
+        @Type(value = SignalCommand.KeyCondition.class, name = "key"),
+        @Type(value = SignalCommand.LastUpdateCondition.class, name = "last"),
 
-        @Type(SignalCommand.AdoptAtCommand.class),
-        @Type(SignalCommand.AdoptAsCommand.class),
+        @Type(value = SignalCommand.AdoptAtCommand.class, name = "at"),
+        @Type(value = SignalCommand.AdoptAsCommand.class, name = "as"),
 
-        @Type(SignalCommand.IncrementCommand.class),
-        @Type(SignalCommand.ClearCommand.class),
+        @Type(value = SignalCommand.IncrementCommand.class, name = "inc"),
+        @Type(value = SignalCommand.ClearCommand.class, name = "clear"),
 
-        @Type(SignalCommand.RemoveByKeyCommand.class),
-        @Type(SignalCommand.PutCommand.class),
-        @Type(SignalCommand.PutIfAbsentCommand.class),
+        @Type(value = SignalCommand.RemoveByKeyCommand.class, name = "removeKey"),
+        @Type(value = SignalCommand.PutCommand.class, name = "put"),
+        @Type(value = SignalCommand.PutIfAbsentCommand.class, name = "putAbsent"),
 
-        @Type(SignalCommand.InsertCommand.class),
-        @Type(SignalCommand.SetCommand.class),
-        @Type(SignalCommand.RemoveCommand.class),
-        @Type(SignalCommand.ClearOwnerCommand.class),
+        @Type(value = SignalCommand.InsertCommand.class, name = "insert"),
+        @Type(value = SignalCommand.SetCommand.class, name = "set"),
+        @Type(value = SignalCommand.RemoveCommand.class, name = "remove"),
+        @Type(value = SignalCommand.ClearOwnerCommand.class, name = "clearOwner"),
 
-        @Type(SignalCommand.TransactionCommand.class),
-        @Type(SignalCommand.SnapshotCommand.class),
+        @Type(value = SignalCommand.TransactionCommand.class, name = "tx"),
+        @Type(value = SignalCommand.SnapshotCommand.class, name = "snapshot"),
 
 })
 public sealed interface SignalCommand {

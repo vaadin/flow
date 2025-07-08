@@ -32,8 +32,13 @@ import com.fasterxml.jackson.databind.node.NullNode;
  * signal data or an {@link Alias} node that allows multiple signal ids to
  * reference the same data.
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.SIMPLE_NAME)
-@JsonSubTypes(value = { @Type(Node.Data.class), @Type(Node.Alias.class), })
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonSubTypes(value = {
+
+        @Type(value = Node.Data.class, name = "d"),
+        @Type(value = Node.Alias.class, name = "a")
+
+})
 public sealed interface Node {
 
     /**
