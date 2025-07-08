@@ -93,7 +93,13 @@ public class SecurityConfig {
                 .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(
                         RequestUtil.antMatchers("/public/**", "/error"))
-                .permitAll());
+                .permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/all-logged-in/**"))
+                .authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/private"))
+                .authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/admin"))
+                .hasAnyRole(ROLE_ADMIN));
 
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/switchUser"))
@@ -101,6 +107,9 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(new AntPathRequestMatcher("/impersonate/exit"))
                 .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers(new AntPathRequestMatcher("/impersonate"))
+                .authenticated());
         http.logout(cfg -> cfg.logoutRequestMatcher(new AntPathRequestMatcher(
                 getRootUrl(false) + "doLogout", "GET")));
         http.with(vaadin(), cfg -> {
