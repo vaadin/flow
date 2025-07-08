@@ -46,9 +46,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * <li>Both an annotated bean and a bean with the name
  * {@code VaadinTaskExecutor} cannot exist simultaneously.</li>
  * </ul>
- * <p>
- * To prevent a custom executor from replacing the default one, consider setting
- * {@code @Bean(defaultCandidate=false)} on your bean definition.
  */
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
         ElementType.TYPE, ElementType.ANNOTATION_TYPE })

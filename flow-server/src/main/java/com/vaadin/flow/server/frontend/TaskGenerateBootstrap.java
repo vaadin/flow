@@ -123,6 +123,11 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
             lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
             lines.add("");
+        } else {
+            lines.add("import './css.generated.js';");
+            lines.add("import { applyCss } from './css.generated.js';");
+            lines.add("applyCss(document);");
+            lines.add("");
         }
         return lines;
     }

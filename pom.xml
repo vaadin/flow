@@ -106,7 +106,7 @@
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
         <testbench.version>10.0.0-alpha2</testbench.version>
-        <jetty.version>12.0.22</jetty.version>
+        <jetty.version>12.0.23</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven.version>3.9.10</maven.version>
@@ -366,7 +366,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.6.0</version>
             </plugin>
 
             <plugin>
@@ -466,7 +466,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
-                    <version>3.5.0</version>
+                    <version>3.6.0</version>
                     <dependencies>
                         <dependency>
                             <groupId>de.skuzzle.enforcer</groupId>

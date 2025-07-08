@@ -1,5 +1,4 @@
 {
-  "autoInjectGlobalCssImports": true,
   "documentCss": ["@fortawesome/fontawesome-free/css/all.css"],
   "assets": {
     "@fortawesome/fontawesome-free": {
