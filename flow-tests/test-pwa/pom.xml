@@ -35,6 +35,9 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
                 <version>${project.version}</version>
+                <configuration>
+                    <pnpmEnable>false</pnpmEnable>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
