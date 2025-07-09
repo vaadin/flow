@@ -473,7 +473,7 @@ public class BuildFrontendUtilTest {
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
+                .mockStatic(LicenseChecker.class, Answers.RETURNS_DEEP_STUBS)) {
             licenseChecker
                     .when(() -> LicenseChecker.isValidLicense(Mockito.any(),
                             Mockito.any(), Mockito.any()))
