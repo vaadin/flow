@@ -2,6 +2,8 @@ package com.vaadin.flow.spring.flowsecurity.views;
 
 import java.util.Optional;
 
+import jakarta.annotation.security.PermitAll;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -20,9 +22,12 @@ import com.vaadin.flow.component.tabs.TabsVariant;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
+@PermitAll
+@AnonymousAllowed
 public class MainView extends AppLayout {
 
     private final Tabs menu;
