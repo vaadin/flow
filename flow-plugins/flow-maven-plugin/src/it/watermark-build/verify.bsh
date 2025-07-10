@@ -1,0 +1,45 @@
+import java.nio.file.*;
+import java.util.*;
+
+success = List.of("watermark-enabled", "watermark-enabled-by-system-property");
+failure = List.of("watermark-disabled", "watermark-undefined");
+
+
+for (profile: success) {
+    logFile = basedir.toPath().resolve(profile + ".log");
+    if (!Files.exists(logFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": Missing build logs file " + logFile);
+    }
+    logs = Files.readString(logFile);
+    if (!logs.contains("Application watermark enabled")) {
+        throw new RuntimeException(profile + ": Logs did not contain message about watermarked app");
+    }
+    buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
+    if (!Files.exists(buildInfoFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": flow-build-info.json should have been generated and copied to " + buildInfoFile);
+    }
+    buildInfoJson = Files.readString(buildInfoFile);
+    if (!buildInfoJson.matches("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*")) {
+        throw new RuntimeException(profile + ": watermark.enabled token missing or incorrect in " + buildInfoFile +
+        ":\n" + buildInfoJson);
+    }
+}
+
+for (profile: failure) {
+    logFile = basedir.toPath().resolve(profile + ".log");
+    if (!Files.exists(logFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": Missing build logs file " + logFile);
+    }
+    logs = Files.readString(logFile);
+    var expectedMessage = "Your application contains the following commercial components and no license was found";
+    if (!logs.contains(expectedMessage) && !logs.contains("* vaadin-commercial-component")) {
+        throw new RuntimeException(profile + ": Watermark disable but build did not fail with expected message");
+    }
+    if (!logs.contains("commercialWithWatermark")) {
+        throw new RuntimeException(profile + ": Failed build did not suggest usage of 'commercialWithWatermark' property");
+    }
+    buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
+    if (Files.exists(buildInfoFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": flow-build-info.json should not have been generated but it was copied to " + buildInfoFile);
+    }
+}
