@@ -1,4 +1,4 @@
 {
-  "lumoImports":["typography","color","spacing","badge","utility"],
+  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
   "autoInjectComponents": false
 }
