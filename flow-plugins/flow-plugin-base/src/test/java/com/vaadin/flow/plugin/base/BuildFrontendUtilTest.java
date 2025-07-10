@@ -54,7 +54,10 @@ import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.utils.LookupImpl;
+import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 import com.vaadin.pro.licensechecker.Product;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
@@ -76,8 +79,11 @@ public class BuildFrontendUtilTest {
     @Before
     public void setup() throws Exception {
         baseDir = tmpDir.newFolder();
+        File frontendOutput = tmpDir.newFolder("frontend-output");
 
         adapter = Mockito.mock(PluginAdapterBuild.class);
+        Mockito.when(adapter.frontendOutputDirectory())
+                .thenReturn(frontendOutput);
         Mockito.when(adapter.npmFolder()).thenReturn(baseDir);
         Mockito.when(adapter.generatedTsFolder())
                 .thenReturn(new File(baseDir, "src/main/frontend/generated"));
@@ -181,31 +187,13 @@ public class BuildFrontendUtilTest {
     @Test
     public void detectsUsedCommercialComponents() {
 
-        String statsJson = """
-                    {
-                        "cvdlModules": {
-                        "component": {
-                            "name": "component",
-                            "version":"1.2.3"
-                           },
-                           "comm-component": {
-                            "name":"comm-comp",
-                            "version":"4.6.5"
-                           },
-                           "comm-component2": {
-                            "name":"comm-comp2",
-                            "version":"4.6.5"
-                           }
-                        }
-                    }
-                """;
-
         final FrontendDependenciesScanner scanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
         packages.put("comm-component2", "4.6.5");
         packages.put("@vaadin/button", "1.2.1");
+        String statsJson = statsJsonWithCommercialComponents();
         Mockito.when(scanner.getPackages()).thenReturn(packages);
 
         List<String> modules = new ArrayList<>();
@@ -470,14 +458,167 @@ public class BuildFrontendUtilTest {
         });
     }
 
+    @Test
+    public void updateBuildFile_tokenExisting_watermarkBuildRequired_watermarkBuildEnabled_watermarkFlagAdded()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        File tokenFile = prepareAndAssertTokenFile();
+
+        BuildFrontendUtil.updateBuildFile(adapter, true, true);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
+        Assert.assertTrue(
+                Constants.WATERMARK_TOKEN
+                        + " flag should be active in token file",
+                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_watermarkBuildRequired_watermarkBuildNotEnabled_throws()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(false);
+        prepareAndAssertTokenFile();
+
+        // If watermark is required but not enabled, it means there's an issue
+        // in the plugin license checking mechanism
+        Assert.assertThrows(IllegalStateException.class,
+                () -> BuildFrontendUtil.updateBuildFile(adapter, true, true));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_watermarkBuildNotRequired_watermarkBuildEnabled_watermarkFlagNotAdded()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        File tokenFile = prepareAndAssertTokenFile();
+
+        BuildFrontendUtil.updateBuildFile(adapter, true, false);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse(
+                Constants.WATERMARK_TOKEN
+                        + " flag should not be active in token file",
+                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+    }
+
+    @Test
+    public void updateBuildFile_tokenExisting_licenseNotRequired_watermarkBuildRequired_watermarkFlagNotAdded()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        File tokenFile = prepareAndAssertTokenFile();
+
+        BuildFrontendUtil.updateBuildFile(adapter, false, true);
+        Assert.assertTrue("Token file should still exist", tokenFile.exists());
+        JsonNode buildInfoJsonProd = JacksonUtils
+                .readTree(Files.readString(tokenFile.toPath()));
+        Assert.assertFalse(
+                Constants.WATERMARK_TOKEN
+                        + " flag should not be active in token file",
+                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+    }
+
+    @Test
+    public void validateLicense_commercialProducts_noLocalKeys_buildWithWatermarkDisabled_failsWithWatermarkSuggestion()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(false);
+
+        Files.createDirectories(statsJson.toPath().getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Set<String> commercialProducts = new HashSet<>();
+        commercialProducts.add("comm-comp");
+        commercialProducts.add("comm-comp2");
+
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            LicenseException exception = Assert.assertThrows(
+                    LicenseException.class, () -> BuildFrontendUtil
+                            .validateLicenses(adapter, frontendDependencies));
+            commercialProducts.forEach(product -> Assert.assertTrue(
+                    "Exception should list all commercial products but "
+                            + product + " is missing",
+                    exception.getMessage().contains(product)));
+            Assert.assertTrue(
+                    "Expected exception message to suggest usage of watermark build",
+                    exception.getMessage().contains(
+                            InitParameters.COMMERCIAL_WITH_WATERMARK));
+            Assert.assertFalse(
+                    "Expected output directory to be deleted but was not",
+                    adapter.frontendOutputDirectory().exists());
+        });
+    }
+
+    @Test
+    public void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithWatermarkEnabled_propagateMissingKeyException()
+            throws Exception {
+        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        Path statsJson = adapter.servletResourceOutputDirectory().toPath()
+                .resolve(
+                        Path.of(Constants.VAADIN_CONFIGURATION.replace("/", ""),
+                                "stats.json"));
+        Files.createDirectories(statsJson.getParent());
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+
+        Files.writeString(statsJson, statsJsonWithCommercialComponents());
+        List<String> modules = List.of("comm-component/foo.js",
+                "comm-component2/bar.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+
+        FrontendDependenciesScanner frontendDependencies = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(frontendDependencies.getPackages()).thenReturn(packages);
+        Mockito.when(frontendDependencies.getModules()).thenReturn(modulesMap);
+
+        withMockedLicenseChecker(false, () -> {
+            Assert.assertThrows(MissingLicenseKeyException.class,
+                    () -> BuildFrontendUtil.validateLicenses(adapter,
+                            frontendDependencies));
+            Assert.assertTrue(
+                    "Expected output directory to be preserved but was not",
+                    adapter.frontendOutputDirectory().exists());
+        });
+    }
+
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class, Answers.RETURNS_DEEP_STUBS)) {
+                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
             licenseChecker
                     .when(() -> LicenseChecker.isValidLicense(Mockito.any(),
                             Mockito.any(), Mockito.any()))
                     .thenReturn(isValidLicense);
+            licenseChecker
+                    .when(() -> LicenseChecker.checkLicense(Mockito.anyString(),
+                            Mockito.anyString(), Mockito.any(BuildType.class),
+                            Mockito.isNull()))
+                    .then(i -> {
+                        if (!isValidLicense) {
+                            throw new MissingLicenseKeyException(
+                                    new Product(i.getArgument(0),
+                                            i.getArgument(1)),
+                                    "Simulate missing license keys");
+                        }
+                        return null;
+                    });
             test.run();
         }
     }
@@ -616,5 +757,26 @@ public class BuildFrontendUtilTest {
 
         FileIOUtils.writeIfChanged(tokenFile,
                 buildInfo.toPrettyString() + "\n");
+    }
+
+    private static String statsJsonWithCommercialComponents() {
+        return """
+                    {
+                        "cvdlModules": {
+                           "component": {
+                                "name": "component",
+                                "version":"1.2.3"
+                           },
+                           "comm-component": {
+                                "name":"comm-comp",
+                                "version":"4.6.5"
+                           },
+                           "comm-component2": {
+                                "name":"comm-comp2",
+                                "version":"4.6.5"
+                           }
+                        }
+                    }
+                """;
     }
 }

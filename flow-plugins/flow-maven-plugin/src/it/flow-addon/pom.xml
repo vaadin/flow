@@ -110,6 +110,36 @@
                 </resources>
             </build>
         </profile>
+        <profile>
+            <id>commercial-addon</id>
+            <properties>
+                <custom.source.directory>src/main/commercial-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>commercial-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/commercial-addon/resources</directory>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                                <manifestEntries>
+                                    <CvdlName>vaadin-commercial-component</CvdlName>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
     </profiles>
 
 </project>
