@@ -79,6 +79,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskCopyNpmAssetsFiles.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -246,6 +247,8 @@ public class NodeTasks implements FallibleCommand {
                 && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
+
+        commands.add(new TaskCopyNpmAssetsFiles(options));
 
         String themeName = "";
         PwaConfiguration pwa;

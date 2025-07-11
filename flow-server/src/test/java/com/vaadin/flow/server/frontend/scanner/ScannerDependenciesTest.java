@@ -152,6 +152,7 @@ public class ScannerDependenciesTest {
         DepsTests.assertImportCount(9, deps.getModules());
         assertEquals(1, deps.getPackages().size());
         DepsTests.assertImportCount(6, deps.getScripts());
+        assertEquals(1, deps.getAssets().size());
     }
 
     @Test

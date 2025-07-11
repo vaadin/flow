@@ -20,6 +20,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import jdk.jfr.StackTrace;
 import org.objectweb.asm.AnnotationVisitor;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
@@ -235,8 +237,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         visitClass(annotationName,
                 new DefaultsAnnotationClassVisitor(api, defaults));
 
-        getLogger().debug("Default values for {}: {}", annotationName,
-                defaults);
+        getLogger().info("Default values for {}: {}", annotationName, defaults);
 
         return defaults;
     }
@@ -333,7 +334,9 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            if (isRepeatableContainer) {
+            // System.out.println("array " + name + " repeatable " +
+            // isRepeatableContainer);
+            if (isRepeatableContainer && !"assets".equals(name)) {
                 // For repeatable container annotations, skip array values
                 // but use this instance for visiting items
                 return this;
@@ -348,6 +351,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         // Visited on each annotation attribute
         @Override
         public void visit(String name, Object value) {
+            System.out.println(name + ": " + value);
             info.put(name, value);
         }
 

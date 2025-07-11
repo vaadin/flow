@@ -31,6 +31,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -63,6 +64,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
@@ -96,6 +98,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final HashMap<String, String> devPackages = new HashMap<>();
+    private final HashMap<String, List<String>> assets = new HashMap<>();
+    private final HashMap<String, List<String>> devAssets = new HashMap<>();
     private final Map<String, ClassInfo> visitedClasses = new HashMap<>();
 
     private PwaConfiguration pwaConfiguration;
@@ -260,6 +264,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     @Override
     public Map<String, String> getDevPackages() {
         return devPackages;
+    }
+
+    @Override
+    public Map<String, List<String>> getAssets() {
+        return assets;
+    }
+
+    @Override
+    public Map<String, List<String>> getDevAssets() {
+        return devAssets;
     }
 
     /**
@@ -663,11 +677,27 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE,
                     dependency, DEV);
+            String npmAssets = npmPackageVisitor
+                    .getValuesForKey(VALUE, dependency, ASSETS).stream()
+                    .filter(Objects::nonNull).map(String::valueOf)
+                    .collect(Collectors.joining(", "));
             devs.forEach(dev -> {
                 if (dev != null && dev) {
                     devPackages.put(dependency, version);
                 } else {
                     packages.put(dependency, version);
+                }
+                if (!npmAssets.isBlank()) {
+                    List<String> assetsList = Arrays.stream(npmAssets
+                            .substring(1, npmAssets.length() - 1).split(","))
+                            .toList();
+                    if (!assetsList.isEmpty()) {
+                        if (dev != null && dev) {
+                            devAssets.put(dependency, assetsList);
+                        } else {
+                            assets.put(dependency, assetsList);
+                        }
+                    }
                 }
             });
         }
