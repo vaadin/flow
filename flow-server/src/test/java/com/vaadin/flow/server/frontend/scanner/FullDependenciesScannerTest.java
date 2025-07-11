@@ -32,6 +32,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -360,6 +361,34 @@ public class FullDependenciesScannerTest {
         assertJsModulesClasses(classes);
         Assert.assertTrue(classes.contains(LumoTest.class.getName()));
         Assert.assertFalse(classes.contains(FakeLumoTheme.class.getName()));
+    }
+
+    @Test
+    public void getAllPackageAssets_returnsAllPackages_collectsAssets()
+            throws ClassNotFoundException {
+        FrontendDependenciesScanner scanner = setUpAnnotationScanner(
+                NpmPackage.class);
+
+        Map<String, List<String>> assets = scanner.getAssets();
+        Map<String, List<String>> devAssets = scanner.getDevAssets();
+
+        Assert.assertEquals(2, assets.size());
+        Assert.assertEquals(1, devAssets.size());
+
+        Assert.assertTrue(assets.containsKey("@vaadin/vaadin-button"));
+        Assert.assertTrue(assets.containsKey("images"));
+
+        Assert.assertTrue(devAssets.containsKey("vite-plugin-pwa"));
+
+        Assert.assertEquals(1, assets.get("@vaadin/vaadin-button").size());
+        Assert.assertEquals(2, assets.get("images").size());
+        Assert.assertEquals(1, devAssets.get("vite-plugin-pwa").size());
+
+        Assert.assertEquals("img/arrow*:img",
+                devAssets.get("@vaadin/vaadin-button").get(0));
+
+        Assert.assertEquals("frown/**:pwa",
+                devAssets.get("vite-plugin-pwa").get(0));
     }
 
     private CssData createCssData(String value, String id, String include,
