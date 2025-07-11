@@ -3,13 +3,8 @@ package com.vaadin.flow.spring.flowsecurity.views;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
-import jakarta.annotation.security.PermitAll;
-
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
@@ -39,7 +34,6 @@ import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
-@PermitAll
 @AnonymousAllowed
 public class MainView extends AppLayout {
 
