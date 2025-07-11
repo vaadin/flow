@@ -233,7 +233,7 @@ public class ScannerDependenciesTest {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithNestedDynamicRouteClass.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
-                "dynamic-component.js", "dynamic-route.js",
+                "dynamic-route.js", "dynamic-component.js",
                 "dynamic-layout.js");
     }
 

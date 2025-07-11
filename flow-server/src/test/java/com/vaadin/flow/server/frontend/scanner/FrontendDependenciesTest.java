@@ -237,8 +237,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false);
 
-        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js",
-                "baz.js", "bar.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "baz.js",
+                "bar.js", "foo.js");
     }
 
     @Test
