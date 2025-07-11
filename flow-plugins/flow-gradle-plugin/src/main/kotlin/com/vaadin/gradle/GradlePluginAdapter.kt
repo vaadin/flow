@@ -123,9 +123,10 @@ internal class GradlePluginAdapter private constructor(
                     it.componentFilter { componentId ->
                         // a componentId different ModuleComponentIdentifier
                         // could be a local library, should not be filtered out
-                        val accepted = componentId !is ModuleComponentIdentifier || artifactFilter.test(
-                            componentId.moduleIdentifier
-                        )
+                        val accepted =
+                            componentId !is ModuleComponentIdentifier || artifactFilter.test(
+                                componentId.moduleIdentifier
+                            )
                         accepted
                     }
                 }.files
@@ -314,6 +315,11 @@ internal class GradlePluginAdapter private constructor(
     override fun frontendExtraFileExtensions(): List<String> =
         config.frontendExtraFileExtensions.get()
 
-    override fun isFrontendIgnoreVersionChecks(): Boolean = config.frontendIgnoreVersionChecks.get()
+    override fun isFrontendIgnoreVersionChecks(): Boolean =
+        config.frontendIgnoreVersionChecks.get()
+
+    override fun isWatermarkEnabled(): Boolean {
+        return config.commercialWithWatermark.get()
+    }
 
 }
