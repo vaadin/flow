@@ -614,7 +614,12 @@ public class BuildFrontendUtil {
      * @param frontendDependencies
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
-     * @throws
+     * @throws MissingLicenseKeyException
+     *             if commercial components are used in a watermarked build and
+     *             no license key is present
+     * @throws LicenseException
+     *             if commercial components are used without a license and
+     *             watermarking is not enabled
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
