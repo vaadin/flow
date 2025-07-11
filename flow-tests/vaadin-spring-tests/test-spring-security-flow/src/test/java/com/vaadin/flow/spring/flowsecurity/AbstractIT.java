@@ -19,6 +19,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
@@ -152,6 +154,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertPathShown(String path) {
         waitForClientRouter();
+        Logger log = LoggerFactory.getLogger(AbstractIT.class);
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {
@@ -163,6 +166,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
             if (url.endsWith("continue")) {
                 url = url.substring(0, url.length() - 9);
             }
+            log.debug("trying to match url `{}` to path `{}`", url, path);
             return url.equals(
                     getRootURL() + getUrlMappingBasePath() + "/" + path);
         });
