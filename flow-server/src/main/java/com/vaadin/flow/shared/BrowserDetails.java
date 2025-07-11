@@ -356,12 +356,32 @@ public class BrowserDetails implements Serializable {
             return;
         }
 
+        // DuckDuckGo bot;
+        if (userAgent.contains("duckduckgo/")) {
+            System.err.println(
+                    "OS version could not be parsed from DuckDuckGo userAgent: "
+                            + userAgent);
+            return;
+        }
+
         if (userAgent.contains("ddg_android/")) {
             int startIndex = userAgent.indexOf("ddg_android/");
             String osVersionString = safeSubstring(userAgent,
                     startIndex + "ddg_android/".length(),
                     userAgent.indexOf(' ', startIndex));
             String[] parts = osVersionString.split("\\.");
+            parseOsVersion(parts, userAgent);
+            return;
+        }
+
+        if (userAgent.contains("callpod keeper for android")) {
+            int startIndex = userAgent.indexOf("; android ");
+            String osVersionString = safeSubstring(userAgent,
+                    startIndex + "; android ".length(), userAgent.length());
+            String[] parts = osVersionString.split("\\.");
+            if (parts.length == 2) {
+                parts[1] = parts[1].substring(0, parts[1].indexOf(";"));
+            }
             parseOsVersion(parts, userAgent);
             return;
         }
