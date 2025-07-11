@@ -925,19 +925,6 @@ public class BuildFrontendMojoTest {
         } finally {
             System.setProperty("user.home", userHome);
         }
-        /*
-         * try (MockedStatic<LicenseChecker> licenseChecker =
-         * Mockito.mockStatic( LicenseChecker.class,
-         * Mockito.withSettings().verboseLogging()
-         * .defaultAnswer(Answers.RETURNS_MOCKS))) { licenseChecker .when(() ->
-         * LicenseChecker.isValidLicense(Mockito.any(), Mockito.any(),
-         * Mockito.any())) .thenReturn(false); licenseChecker .when(() ->
-         * LicenseChecker.checkLicense(Mockito.anyString(), Mockito.anyString(),
-         * Mockito.any(BuildType.class), Mockito.isNull())) .then(i -> { throw
-         * new MissingLicenseKeyException( new Product(i.getArgument(0),
-         * i.getArgument(1)), "Simulate missing license keys"); }); test.run();
-         * }
-         */
     }
 
 }
