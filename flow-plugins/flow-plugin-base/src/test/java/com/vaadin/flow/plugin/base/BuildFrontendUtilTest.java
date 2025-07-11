@@ -135,7 +135,7 @@ public class BuildFrontendUtilTest {
 
     @Test
     public void should_useHillaEngine_withNodeUpdater()
-            throws URISyntaxException, ExecutionFailedException, IOException {
+            throws URISyntaxException, ExecutionFailedException {
         setupPluginAdapterDefaults();
 
         MockedConstruction<TaskRunNpmInstall> construction = Mockito
@@ -193,7 +193,7 @@ public class BuildFrontendUtilTest {
         packages.put("comm-component", "4.6.5");
         packages.put("comm-component2", "4.6.5");
         packages.put("@vaadin/button", "1.2.1");
-        String statsJson = statsJsonWithCommercialComponents();
+        String statsJsonContents = statsJsonWithCommercialComponents();
         Mockito.when(scanner.getPackages()).thenReturn(packages);
 
         List<String> modules = new ArrayList<>();
@@ -203,7 +203,7 @@ public class BuildFrontendUtilTest {
         Mockito.when(scanner.getModules()).thenReturn(modulesMap);
 
         List<Product> components = BuildFrontendUtil
-                .findCommercialFrontendComponents(scanner, statsJson);
+                .findCommercialFrontendComponents(scanner, statsJsonContents);
         // Two components are included, only one is used
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
@@ -289,7 +289,7 @@ public class BuildFrontendUtilTest {
             throws Exception {
         fillAdapter();
 
-        BuildFrontendUtil.updateBuildFile(adapter, false);
+        BuildFrontendUtil.updateBuildFile(adapter, false, false);
         File tokenFile = new File(resourceOutput, TOKEN_FILE);
         Assert.assertFalse("Token file should not have been created",
                 tokenFile.exists());
@@ -302,7 +302,7 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonDev = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
 
-        BuildFrontendUtil.updateBuildFile(adapter, false);
+        BuildFrontendUtil.updateBuildFile(adapter, false, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
@@ -320,7 +320,7 @@ public class BuildFrontendUtilTest {
             throws Exception {
         File tokenFile = prepareAndAssertTokenFile();
 
-        BuildFrontendUtil.updateBuildFile(adapter, false);
+        BuildFrontendUtil.updateBuildFile(adapter, false, false);
         Assert.assertTrue("Token file should still exist", tokenFile.exists());
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
@@ -339,7 +339,7 @@ public class BuildFrontendUtilTest {
                     .getProperty("vaadin.subscriptionKey");
             System.setProperty("vaadin.subscriptionKey", "sub-123");
             try {
-                BuildFrontendUtil.updateBuildFile(adapter, true);
+                BuildFrontendUtil.updateBuildFile(adapter, true, false);
             } finally {
                 if (subscriptionKey != null) {
                     System.setProperty("vaadin.subscriptionKey",
@@ -367,7 +367,7 @@ public class BuildFrontendUtilTest {
         String subscriptionKey = System.getProperty("vaadin.subscriptionKey");
         System.setProperty("vaadin.subscriptionKey", "sub-123");
         try {
-            BuildFrontendUtil.updateBuildFile(adapter, false);
+            BuildFrontendUtil.updateBuildFile(adapter, false, false);
         } finally {
             if (subscriptionKey != null) {
                 System.setProperty("vaadin.subscriptionKey", subscriptionKey);
@@ -391,7 +391,7 @@ public class BuildFrontendUtilTest {
                     .getProperty("vaadin.subscriptionKey");
             System.clearProperty("vaadin.subscriptionKey");
             try {
-                BuildFrontendUtil.updateBuildFile(adapter, true);
+                BuildFrontendUtil.updateBuildFile(adapter, true, false);
             } finally {
                 if (subscriptionKey != null) {
                     System.setProperty("vaadin.subscriptionKey",
@@ -425,7 +425,7 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
 
         withMockedLicenseChecker(true, () -> {
-            BuildFrontendUtil.updateBuildFile(adapter, true);
+            BuildFrontendUtil.updateBuildFile(adapter, true, false);
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
             JsonNode buildInfoJsonProd = JacksonUtils
@@ -446,7 +446,7 @@ public class BuildFrontendUtilTest {
         addPremiumFeatureAndDAUFlagTrue(tokenFile);
 
         withMockedLicenseChecker(false, () -> {
-            BuildFrontendUtil.updateBuildFile(adapter, true);
+            BuildFrontendUtil.updateBuildFile(adapter, true, false);
             Assert.assertTrue("Token file should still exist",
                     tokenFile.exists());
             JsonNode buildInfoJsonProd = JacksonUtils
@@ -567,17 +567,14 @@ public class BuildFrontendUtilTest {
     public void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithWatermarkEnabled_propagateMissingKeyException()
             throws Exception {
         Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
-        Path statsJson = adapter.servletResourceOutputDirectory().toPath()
-                .resolve(
-                        Path.of(Constants.VAADIN_CONFIGURATION.replace("/", ""),
-                                "stats.json"));
-        Files.createDirectories(statsJson.getParent());
+        Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");
         packages.put("comm-component2", "4.6.5");
         packages.put("@vaadin/button", "1.2.1");
 
-        Files.writeString(statsJson, statsJsonWithCommercialComponents());
+        Files.writeString(statsJson.toPath(),
+                statsJsonWithCommercialComponents());
         List<String> modules = List.of("comm-component/foo.js",
                 "comm-component2/bar.js");
         Map<ChunkInfo, List<String>> modulesMap = Collections
