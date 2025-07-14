@@ -49,8 +49,8 @@
                 <artifactId>maven-help-plugin</artifactId>
                 <executions>
                     <!--
-                        Prints the active profiles on the STDOUT so verify script
-                        can get it parsing the log file and do specific assertions
+                        Save the active profiles in a file in the fake user home to make sure the directory exists,
+                        otherwise prepare-frontend goal might fail.
                     -->
                     <execution>
                         <id>print-watermark-configuration</id>
@@ -59,7 +59,7 @@
                             <goal>active-profiles</goal>
                         </goals>
                         <configuration>
-                            <output>${project.build.directory}/profiles.txt</output>
+                            <output>${user.home}/profiles.txt</output>
                         </configuration>
                     </execution>
                 </executions>
