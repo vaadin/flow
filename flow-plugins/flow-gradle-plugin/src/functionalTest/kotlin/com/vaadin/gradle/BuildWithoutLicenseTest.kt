@@ -46,7 +46,7 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             }
             repositories {
                 maven {
-                    url = file('${realUserHome}/.m2/repository')
+                    url = '${realUserHome}/.m2/repository'
                 }
                 mavenLocal()
                 mavenCentral()
