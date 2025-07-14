@@ -138,7 +138,7 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
 
         val result = testProject.build(
             "-Duser.home=${testingHomeFolder}",
-            "-2",
+            "-DcommercialWithWatermark",
             "-Pvaadin.productionMode",
             "vaadinBuildFrontend"
         )
