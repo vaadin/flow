@@ -12,7 +12,7 @@ for (profile: success) {
     }
     logs = Files.readString(logFile);
     if (!logs.contains("Application watermark enabled")) {
-        throw new RuntimeException(profile + ": Logs did not contain message about watermarked app");
+        throw new RuntimeException(profile + ": Logs did not contain message about watermarked app.\n\n" + logs);
     }
     buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
     if (!Files.exists(buildInfoFile, new LinkOption[0])) {
@@ -33,10 +33,10 @@ for (profile: failure) {
     logs = Files.readString(logFile);
     var expectedMessage = "Your application contains the following commercial components and no license was found";
     if (!logs.contains(expectedMessage) && !logs.contains("* vaadin-commercial-component")) {
-        throw new RuntimeException(profile + ": Watermark disable but build did not fail with expected message");
+        throw new RuntimeException(profile + ": Watermark disable but build did not fail with expected message.\n\n" + logs);
     }
     if (!logs.contains("commercialWithWatermark")) {
-        throw new RuntimeException(profile + ": Failed build did not suggest usage of 'commercialWithWatermark' property");
+        throw new RuntimeException(profile + ": Failed build did not suggest usage of 'commercialWithWatermark' property.\n\n" + logs);
     }
     buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
     if (Files.exists(buildInfoFile, new LinkOption[0])) {
