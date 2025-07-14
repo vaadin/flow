@@ -125,10 +125,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
                 ), false
             )
         } catch (e: MissingLicenseKeyException) {
-            logger.debug(
-                "Application uses commercial components but no license key is provided. " +
-                        "Build is allowed because '${InitParameters.COMMERCIAL_WITH_WATERMARK}' setting is enabled"
-            )
+            logger.info(e.message)
             Pair(true, true)
         }
 
