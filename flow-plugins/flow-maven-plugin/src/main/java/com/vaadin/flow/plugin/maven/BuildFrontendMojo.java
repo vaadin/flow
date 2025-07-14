@@ -190,11 +190,7 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         } catch (MissingLicenseKeyException ex) {
             licenseRequired = true;
             watermarkRequired = true;
-            getLog().debug(
-                    "Application uses commercial components but no license key is provided. "
-                            + "Build is allowed because '"
-                            + InitParameters.COMMERCIAL_WITH_WATERMARK
-                            + "' setting is enabled");
+            getLog().info(ex.getMessage());
         }
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired,

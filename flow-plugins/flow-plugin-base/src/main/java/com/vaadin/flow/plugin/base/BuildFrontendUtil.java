@@ -665,12 +665,19 @@ public class BuildFrontendUtil {
                 // If a watermarked build has been requested, just forward the
                 // exception and let the caller handle it. Otherwise fail
                 // immediately suggesting the watermarked build.
-                if (adapter.isWatermarkEnabled()) {
-                    throw ex;
-                }
                 String productsList = commercialComponents.stream()
                         .map(product -> "* " + product.getName())
                         .collect(Collectors.joining(System.lineSeparator()));
+                if (adapter.isWatermarkEnabled()) {
+                    throw new MissingLicenseKeyException(
+                            """
+                                    The application contains the unlicensed components listed below and is displaying a watermark.
+                                    %1$s
+
+                                    Go to https://vaadin.com/pricing to obtain a license
+                                    """
+                                    .formatted(productsList));
+                }
                 invalidateOutput(component, outputFolder);
                 throw new LicenseException(String.format(
                         """
