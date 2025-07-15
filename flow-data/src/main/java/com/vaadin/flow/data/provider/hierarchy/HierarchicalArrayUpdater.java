@@ -31,14 +31,16 @@ import elemental.json.JsonValue;
  *
  * @author Vaadin Ltd
  * @since 1.1
- * @deprecated since 24.9 and will be replaced by {@link ArrayUpdater} in Vaadin 25.
+ * @deprecated since 24.9 and will be replaced by {@link ArrayUpdater} in Vaadin
+ *             25.
  */
 public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
     /**
      * Array updater strategy that is aware of hierarchical changes.
      *
-     * @deprecated since 24.9 and will be replaced by {@link Update} in Vaadin 25.
+     * @deprecated since 24.9 and will be replaced by {@link Update} in Vaadin
+     *             25.
      */
     public interface HierarchicalUpdate extends Update {
 
