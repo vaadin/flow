@@ -185,6 +185,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return mapper.fetchRootItems(Range.withLength(offset, limit));
     }
 
+    /**
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Instead,
+     *             {@link #setRequestedRange(int, int)} will handle all
+     *             hierarchy levels.
+     */
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = getKeyMapper().key(parentItem);
         HierarchicalCommunicationController<T> controller = dataControllers
@@ -251,6 +256,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param <F>
      *            Query type
      * @return new {@link HierarchyMapper}
+     * @deprecated since 24.9 and will be removed in Vaadin 25.
      */
     protected <F> HierarchyMapper<T, F> createHierarchyMapper(
             HierarchicalDataProvider<T, F> dataProvider) {
@@ -285,6 +291,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                         + " and subtypes supported.");
     }
 
+    /**
+     * @deprecated since 24.9 and will be removed in Vaadin 25.
+     */
     public void confirmUpdate(int id, String parentKey) {
         Optional.ofNullable(dataControllers.get(parentKey))
                 .ifPresent(controller -> {
@@ -321,6 +330,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param syncClient
      *            {@code true} if the changes should be synchronized to the
      *            client, {@code false} otherwise.
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
+     *             {@link #collapse(T)} instead.
      */
     protected void collapse(T item, boolean syncClient) {
         doCollapse(Arrays.asList(item), syncClient);
@@ -401,6 +412,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param syncClient
      *            {@code true} if the changes should be synchronized to the
      *            client, {@code false} otherwise.
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
+     *             {@link #expand(T)} instead.
      */
     protected void expand(T item, boolean syncClient) {
         doExpand(Arrays.asList(item), syncClient);
@@ -431,6 +444,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param item
      *            the item to test
      * @return {@code true} if item has children; {@code false} if not
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
+     *             {@link HierarchicalDataProvider#hasChildren(Object)} instead.
      */
     public boolean hasChildren(T item) {
         return mapper.hasChildren(item);
@@ -453,6 +468,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param item
      *            the item to find the parent of
      * @return the parent index or {@code null} for top-level items
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
+     *             queries to the data source instead.
      */
     public Integer getParentIndex(T item) {
         return mapper.getParentIndex(item);
@@ -464,6 +481,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param item
      *            the target item
      * @return the index or {@code null} for top-level and non-existing items
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
+     *             queries to the data source instead.
      */
     public Integer getIndex(T item) {
         return Optional.ofNullable(mapper.getIndex(item))
@@ -476,6 +495,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param item
      *            the item to find the parent of
      * @return the parent item or {@code null} for top-level items
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
+     *             queries to the data source instead.
      */
     public T getParentItem(T item) {
         return mapper.getParentOfItem(item);
@@ -532,6 +553,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * Returns the {@code HierarchyMapper} used by this data communicator.
      *
      * @return the hierarchy mapper used by this data communicator
+     * @deprecated since 24.9 and will be removed in Vaadin 25.
      */
     protected HierarchyMapper<T, ?> getHierarchyMapper() {
         return mapper;
@@ -543,6 +565,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return json;
     }
 
+    /**
+     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
+     */
     @Override
     protected Set<String> getPassivatedKeys(Set<String> oldActive) {
         return super.getPassivatedKeys(oldActive).stream().filter(key -> {
@@ -564,6 +589,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }).collect(Collectors.toCollection(HashSet::new));
     }
 
+    /**
+     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
+     */
     @Override
     protected void doUnregister(Integer updateId) {
         Set<String> passivated = passivatedByUpdate.remove(updateId);
