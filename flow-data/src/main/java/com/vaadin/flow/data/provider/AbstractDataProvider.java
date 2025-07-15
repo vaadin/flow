@@ -72,6 +72,10 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
         fireEvent(new DataChangeEvent<>(this));
     }
 
+    /**
+     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
+     *             {@link #refreshAll()} instead.
+     */
     @Override
     public void refreshItem(T item, boolean refreshChildren) {
         fireEvent(new DataRefreshEvent<>(this, item, refreshChildren));
