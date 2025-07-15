@@ -233,6 +233,16 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
                 .remove(FrontendUtils.INDEX_HTML);
 
+        if (isWatermarkConditionChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-watermarked-app-requested", null);
+            return true;
+        }
+        // watermark file hash has already been checked, if needed.
+        // removing it from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
+                .remove(FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS);
+
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
                 frontendDependencies)) {
             UsageStatistics.markAsUsed(
@@ -749,6 +759,42 @@ public final class BundleValidationUtil {
                 return true;
             } else if (!file.exists() && frontendHashes.has(indexFile)) {
                 getLogger().info("Detected deleted {} file", indexFile);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isWatermarkConditionChanged(Options options,
+            JsonNode statsJson) throws IOException {
+        final JsonNode frontendHashes = statsJson
+                .get(FRONTEND_HASHES_STATS_KEY);
+        boolean watermarkRequested = options.isWatermarkEnable();
+        String watermarkPath = FrontendUtils.GENERATED
+                + FrontendUtils.WATERMARK_JS;
+        boolean hasWatermarkHash = frontendHashes.has(watermarkPath);
+        if (!watermarkRequested && hasWatermarkHash) {
+            getLogger().info(
+                    "Detected watermark file but watermark is not enabled");
+            return true;
+        }
+        if (!options.isProductionMode() && hasWatermarkHash) {
+            getLogger().info(
+                    "Detected watermark file but watermark is applied in development bundle");
+            return true;
+        }
+        if (watermarkRequested && options.isProductionMode()) {
+            if (!hasWatermarkHash) {
+                getLogger().info("Detected missing watermark file");
+                return true;
+            }
+
+            List<String> faultyContent = new ArrayList<>();
+            compareFrontendHashes(frontendHashes, faultyContent, watermarkPath,
+                    new TaskGenerateWatermarkComponent(options)
+                            .getFileContent());
+            if (!faultyContent.isEmpty()) {
+                getLogger().info("Detected changed content for watermark file");
                 return true;
             }
         }
