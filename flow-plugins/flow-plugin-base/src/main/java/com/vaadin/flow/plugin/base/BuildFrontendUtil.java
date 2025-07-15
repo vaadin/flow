@@ -372,7 +372,9 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
-                    .withFrontendDependenciesScanner(frontendDependencies);
+                    .withFrontendDependenciesScanner(frontendDependencies)
+                    .withWatermarkEnable(
+                            Boolean.getBoolean("vaadin.watermark"));
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
