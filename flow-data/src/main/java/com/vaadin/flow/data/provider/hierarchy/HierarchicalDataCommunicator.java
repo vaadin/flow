@@ -190,6 +190,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *             {@link #setRequestedRange(int, int)} will handle all
      *             hierarchy levels.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public void setParentRequestedRange(int start, int length, T parentItem) {
         String parentKey = getKeyMapper().key(parentItem);
         HierarchicalCommunicationController<T> controller = dataControllers
@@ -258,6 +259,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return new {@link HierarchyMapper}
      * @deprecated since 24.9 and will be removed in Vaadin 25.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     protected <F> HierarchyMapper<T, F> createHierarchyMapper(
             HierarchicalDataProvider<T, F> dataProvider) {
         return new HierarchyMapper<>(dataProvider);
@@ -294,6 +296,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     /**
      * @deprecated since 24.9 and will be removed in Vaadin 25.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public void confirmUpdate(int id, String parentKey) {
         Optional.ofNullable(dataControllers.get(parentKey))
                 .ifPresent(controller -> {
@@ -333,6 +336,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
      *             {@link #collapse(T)} instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     protected void collapse(T item, boolean syncClient) {
         doCollapse(Arrays.asList(item), syncClient);
     }
@@ -415,6 +419,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
      *             {@link #expand(T)} instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     protected void expand(T item, boolean syncClient) {
         doExpand(Arrays.asList(item), syncClient);
     }
@@ -447,6 +452,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
      *             {@link HierarchicalDataProvider#hasChildren(Object)} instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public boolean hasChildren(T item) {
         return mapper.hasChildren(item);
     }
@@ -471,6 +477,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
      *             queries to the data source instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public Integer getParentIndex(T item) {
         return mapper.getParentIndex(item);
     }
@@ -484,6 +491,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
      *             queries to the data source instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public Integer getIndex(T item) {
         return Optional.ofNullable(mapper.getIndex(item))
                 .filter(index -> index >= 0).orElse(null);
@@ -498,6 +506,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
      *             queries to the data source instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public T getParentItem(T item) {
         return mapper.getParentOfItem(item);
     }
@@ -555,6 +564,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the hierarchy mapper used by this data communicator
      * @deprecated since 24.9 and will be removed in Vaadin 25.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     protected HierarchyMapper<T, ?> getHierarchyMapper() {
         return mapper;
     }
@@ -569,6 +579,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will no longer be called in Vaadin 25.
      */
     @Override
+    @Deprecated(since = "24.9", forRemoval = true)
     protected Set<String> getPassivatedKeys(Set<String> oldActive) {
         return super.getPassivatedKeys(oldActive).stream().filter(key -> {
             T item = getKeyMapper().get(key);
@@ -593,6 +604,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @deprecated since 24.9 and will no longer be called in Vaadin 25.
      */
     @Override
+    @Deprecated(since = "24.9", forRemoval = true)
     protected void doUnregister(Integer updateId) {
         Set<String> passivated = passivatedByUpdate.remove(updateId);
         if (passivated != null) {
