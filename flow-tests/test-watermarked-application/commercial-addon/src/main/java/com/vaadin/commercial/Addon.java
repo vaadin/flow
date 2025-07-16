@@ -12,18 +12,14 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
+package com.vaadin.commercial;
 
-package com.vaadin.flow.watermarked.ui;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.router.Route;
+@Tag("commercial-addon")
+public class Addon extends Component {
 
-@Route("")
-public class MainView extends Div {
-
-    public MainView() {
-        add(new H1("Watermarked application"));
-    }
 }
