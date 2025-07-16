@@ -118,6 +118,10 @@ const moduleWeights = {
   'flow-tests/test-live-reload-multimodule-devbundle/../test-live-reload-multimodule/ui/pom-devbundle.xml': {pos:6},
   'flow-tests/test-live-reload-multimodule-devbundle/../test-live-reload-multimodule/library/pom-devbundle.xml': {pos:6},
   'flow-tests/test-live-reload-multimodule-devbundle/../test-live-reload-multimodule/theme/pom-devbundle.xml': {pos:6},
+  'flow-tests/test-watermarked-application': { pos: 7},
+  'flow-tests/test-watermarked-application/commercial-addon': { pos: 7},
+  'flow-tests/test-watermarked-application/flow-application': { pos: 7},
+  'flow-tests/test-watermarked-application/integration-test': { pos: 7},
   'flow-tests/test-redeployment': { weight: 13 },
   'flow-tests/test-pwa': { weight: 10 },
   'flow-tests/test-frontend/vite-pwa-disabled-offline': { weight: 7 },
@@ -159,7 +163,7 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-production.xml': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
-  'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 }
+  'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
 }
 
 // Set split number for modules with several tests

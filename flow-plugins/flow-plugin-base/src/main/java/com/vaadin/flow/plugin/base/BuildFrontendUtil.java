@@ -373,8 +373,7 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withWatermarkEnable(
-                            Boolean.getBoolean("vaadin.watermark"));
+                    .withWatermarkEnable(adapter.isWatermarkEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
