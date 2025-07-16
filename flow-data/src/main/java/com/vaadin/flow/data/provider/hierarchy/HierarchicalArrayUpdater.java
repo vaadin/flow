@@ -34,6 +34,7 @@ import elemental.json.JsonValue;
  * @deprecated since 24.9 and will be replaced by {@link ArrayUpdater} in Vaadin
  *             25.
  */
+@Deprecated(since = "24.9", forRemoval = true)
 public interface HierarchicalArrayUpdater extends ArrayUpdater {
 
     /**
