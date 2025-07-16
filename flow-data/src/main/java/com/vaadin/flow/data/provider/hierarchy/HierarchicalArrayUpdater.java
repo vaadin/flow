@@ -43,6 +43,7 @@ public interface HierarchicalArrayUpdater extends ArrayUpdater {
      * @deprecated since 24.9 and will be replaced by {@link Update} in Vaadin
      *             25.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public interface HierarchicalUpdate extends Update {
 
         /**
