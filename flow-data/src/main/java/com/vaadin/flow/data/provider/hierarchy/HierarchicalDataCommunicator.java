@@ -449,10 +449,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param item
      *            the item to test
      * @return {@code true} if item has children; {@code false} if not
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link HierarchicalDataProvider#hasChildren(Object)} instead.
      */
-    @Deprecated(since = "24.9", forRemoval = true)
     public boolean hasChildren(T item) {
         return mapper.hasChildren(item);
     }
