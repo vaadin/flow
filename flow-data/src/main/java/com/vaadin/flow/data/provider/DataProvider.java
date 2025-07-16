@@ -124,6 +124,7 @@ public interface DataProvider<T, F> extends Serializable {
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
      *             {@link #refreshAll()} instead.
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     default void refreshItem(T item, boolean refreshChildren) {
         refreshItem(item);
     }

@@ -73,6 +73,7 @@ public class DataChangeEvent<T> extends EventObject {
          *            refreshed as well
          * @deprecated since 24.9 and will be removed in Vaadin 25.
          */
+        @Deprecated(since = "24.9", forRemoval = true)
         public DataRefreshEvent(DataProvider<T, ?> source, T item,
                 boolean refreshChildren) {
             super(source);
@@ -98,6 +99,7 @@ public class DataChangeEvent<T> extends EventObject {
          *         refreshed as well
          * @deprecated since 24.9 and will be removed in Vaadin 25.
          */
+        @Deprecated(since = "24.9", forRemoval = true)
         public boolean isRefreshChildren() {
             return refreshChildren;
         }

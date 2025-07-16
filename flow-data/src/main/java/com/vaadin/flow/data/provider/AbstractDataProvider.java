@@ -77,6 +77,7 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      *             {@link #refreshAll()} instead.
      */
     @Override
+    @Deprecated(since = "24.9", forRemoval = true)
     public void refreshItem(T item, boolean refreshChildren) {
         fireEvent(new DataRefreshEvent<>(this, item, refreshChildren));
     }
