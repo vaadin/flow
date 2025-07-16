@@ -46,6 +46,7 @@ import elemental.json.JsonValue;
  * @since 1.2
  * @deprecated since 24.9 and will be removed in Vaadin 25.
  */
+@Deprecated(since = "24.9", forRemoval = true)
 public class HierarchicalCommunicationController<T> implements Serializable {
 
     private final DataKeyMapper<T> keyMapper;
