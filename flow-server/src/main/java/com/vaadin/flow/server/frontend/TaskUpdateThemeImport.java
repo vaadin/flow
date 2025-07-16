@@ -22,8 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -164,6 +166,18 @@ public class TaskUpdateThemeImport
                                         APPLICATION_THEME_ROOT).getPath()));
             }
         }
+        if (!options.getFeatureFlags()
+                .isEnabled(FeatureFlags.COMPONENT_STYLE_INJECTION)) {
+            File themeComponents = new File(existingAppThemeDirectories.get(0),
+                    "components");
+            if (themeComponents.exists() && themeComponents.isDirectory()
+                    && themeComponents.listFiles().length > 0) {
+                getLogger().warn(
+                        "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be used.",
+                        themeName,
+                        FeatureFlags.COMPONENT_STYLE_INJECTION.getId());
+            }
+        }
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
@@ -183,5 +197,9 @@ public class TaskUpdateThemeImport
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);
+    }
+
+    Logger getLogger() {
+        return LoggerFactory.getLogger(TaskUpdateThemeImport.class);
     }
 }
