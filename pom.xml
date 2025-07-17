@@ -229,7 +229,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.13.4</version>
+                <version>1.13.5</version>
             </dependency>
 
             <dependency>
@@ -281,6 +281,11 @@
                 <artifactId>easymock</artifactId>
                 <version>4.3</version>
             </dependency>
+            <dependency>
+                <groupId>org.lucee</groupId>
+                <artifactId>jcip-annotations</artifactId>
+                <version>1.0.0</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -305,6 +310,12 @@
             <artifactId>hamcrest-all</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.lucee</groupId>
+            <artifactId>jcip-annotations</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
