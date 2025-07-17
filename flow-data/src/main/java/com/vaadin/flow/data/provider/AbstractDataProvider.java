@@ -74,7 +74,12 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
     /**
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #refreshAll()} instead.
+     *             {@link #refreshAll()} instead. Note that while
+     *             {@link #refreshAll()} clears all cached items, it then only
+     *             reloads items that are currently visible in the viewport. It
+     *             does not trigger eager loading of the entire dataset, making
+     *             it a practical replacement without sacrificing performance
+     *             when working with large datasets.
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)

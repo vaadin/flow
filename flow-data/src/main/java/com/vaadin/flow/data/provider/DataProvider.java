@@ -122,7 +122,12 @@ public interface DataProvider<T, F> extends Serializable {
      * @param refreshChildren
      *            whether or not to refresh child items
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #refreshAll()} instead.
+     *             {@link #refreshAll()} instead. Note that while
+     *             {@link #refreshAll()} clears all cached items, it then only
+     *             reloads items that are currently visible in the viewport. It
+     *             does not trigger eager loading of the entire dataset, making
+     *             it a practical replacement without sacrificing performance
+     *             when working with large datasets.
      */
     @Deprecated(since = "24.9", forRemoval = true)
     default void refreshItem(T item, boolean refreshChildren) {
