@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.Answers;
 import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
@@ -472,13 +473,11 @@ public class BuildFrontendUtilTest {
     private void withMockedLicenseChecker(boolean isValidLicense,
             ThrowingRunnable test) throws IOException {
         try (MockedStatic<LicenseChecker> licenseChecker = Mockito
-                .mockStatic(LicenseChecker.class)) {
+                .mockStatic(LicenseChecker.class, Answers.RETURNS_MOCKS)) {
             licenseChecker
                     .when(() -> LicenseChecker.isValidLicense(Mockito.any(),
                             Mockito.any(), Mockito.any()))
                     .thenReturn(isValidLicense);
-            licenseChecker.when(LicenseChecker::getLogger)
-                    .thenReturn(Mockito.mock(org.slf4j.Logger.class));
             test.run();
         }
     }
