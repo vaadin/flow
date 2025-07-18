@@ -347,7 +347,10 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (ex instanceof InvocationTargetException) {
             ex = ex.getCause();
         }
-        StringBuilder errorMessage = new StringBuilder(ex.getMessage());
+        StringBuilder errorMessage = new StringBuilder();
+        if (ex.getMessage() != null) {
+            errorMessage.append(ex.getMessage());
+        }
         Throwable cause = ex.getCause();
         while (cause != null) {
             if (cause.getMessage() != null) {
