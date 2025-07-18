@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -308,6 +309,13 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter
     private FrontendScannerConfig frontendScanner;
+
+    /**
+     * Allows building a watermarked version of the application when commercial
+     * components are used without a license key.
+     */
+    @Parameter(property = InitParameters.COMMERCIAL_WITH_WATERMARK, defaultValue = "false")
+    private boolean commercialWithWatermark;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
@@ -754,6 +762,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public boolean isWatermarkEnabled() {
+        return commercialWithWatermark;
     }
 
     private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {
