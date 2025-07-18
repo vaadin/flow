@@ -376,4 +376,17 @@ public interface PluginAdapterBase {
      * @return {@code true} to ignore node/npm tool version checks
      */
     boolean isFrontendIgnoreVersionChecks();
+
+    /**
+     * Specifies whether to allow building a watermarked version of the
+     * application when commercial components are used without a license key.
+     *
+     * @return {@code true} to enable watermarking when commercial components
+     *         are used without a valid license key, {@code false} to fail the
+     *         build in this situation
+     */
+    default boolean isWatermarkEnabled() {
+        return false;
+    }
+
 }
