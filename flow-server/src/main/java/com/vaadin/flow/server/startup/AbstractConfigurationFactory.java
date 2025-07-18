@@ -46,6 +46,7 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.WATERMARK_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
@@ -196,6 +197,11 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.has(NPM_EXCLUDE_WEB_COMPONENTS)) {
             params.put(NPM_EXCLUDE_WEB_COMPONENTS, String.valueOf(
                     buildInfo.get(NPM_EXCLUDE_WEB_COMPONENTS).booleanValue()));
+        }
+
+        if (buildInfo.has(WATERMARK_TOKEN)) {
+            params.put(WATERMARK_TOKEN, String
+                    .valueOf(buildInfo.get(WATERMARK_TOKEN).booleanValue()));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

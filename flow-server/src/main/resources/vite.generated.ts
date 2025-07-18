@@ -82,6 +82,8 @@ const themeOptions = {
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
+const watermarkComponent = path.resolve(frontendFolder, settings.generatedFolder, 'watermark.js');
+const hasWatermarkComponent = existsSync(watermarkComponent);
 
 const target = ['safari15', 'es2022'];
 
@@ -258,6 +260,10 @@ function statsExtracterPlugin(): PluginOption {
           '\n'
         );
         frontendFiles[`index.ts`] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+      }
+      if (hasWatermarkComponent) {
+        const fileBuffer = readFileSync(watermarkComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/watermark.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
 
       const themeJsonContents: Record<string, string> = {};
@@ -576,6 +582,7 @@ function preserveUsageStats() {
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const productionMode = !devMode && !devBundle
+  const watermark = productionMode && hasWatermarkComponent;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -768,6 +775,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
               attrs: { type: 'module', src: '/generated/vaadin.ts' },
               injectTo: 'head'
             });
+            if (watermark) {
+              scripts.push({
+                tag: 'script',
+                attrs: { type: 'module', src: '/generated/watermark.js' },
+                injectTo: 'head'
+              });
+            }
             return scripts;
           }
         }

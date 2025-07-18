@@ -372,7 +372,8 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
-                    .withFrontendDependenciesScanner(frontendDependencies);
+                    .withFrontendDependenciesScanner(frontendDependencies)
+                    .withWatermarkEnable(adapter.isWatermarkEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

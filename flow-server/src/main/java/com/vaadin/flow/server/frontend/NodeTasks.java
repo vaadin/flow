@@ -66,6 +66,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateReactFiles.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
+            TaskGenerateWatermarkComponent.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
@@ -140,6 +141,7 @@ public class NodeTasks implements FallibleCommand {
                                 "flow/prod-pre-compiled-bundle", null);
                     }
                 } else {
+                    commands.add(new TaskGenerateWatermarkComponent(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
             } else if (options.isBundleBuild()) {
