@@ -1120,11 +1120,11 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private void requestFlush() {
+    protected void requestFlush() {
         requestFlush(false);
     }
 
-    private void requestFlush(boolean forced) {
+    protected void requestFlush(boolean forced) {
         if (!shouldRequestFlush(forced)) {
             return;
         }
