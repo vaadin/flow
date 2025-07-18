@@ -88,9 +88,9 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
      *             providers, see https://github.com/vaadin/platform/issues/7843
      *             for more details.
      *             <p>
-     *             However, the current behavior of this method will still be
-     *             reproducible by collapsing and expanding an item within the
-     *             same round-trip.
+     *             However, a similar effect to {@link #refreshItem(Object)}
+     *             will still be reproducible by collapsing and expanding an
+     *             item within the same round-trip.
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
