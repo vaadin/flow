@@ -74,12 +74,19 @@ public abstract class AbstractDataProvider<T, F> implements DataProvider<T, F> {
 
     /**
      * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #refreshAll()} instead. Note that while
-     *             {@link #refreshAll()} clears all cached items, it then only
-     *             reloads items that are currently visible in the viewport. It
-     *             does not trigger eager loading of the entire dataset, making
-     *             it a practical replacement without sacrificing performance
-     *             when working with large datasets.
+     *             {@link #refreshAll()} instead after changes that affect the
+     *             hierarchy.
+     *             <p>
+     *             Note that while {@code refreshAll} clears all items from the
+     *             cache, it then aims to only reload those that are in the
+     *             viewport. It does not trigger eager loading of the full
+     *             dataset, which makes it an acceptable replacement in terms of
+     *             performance.
+     *             <p>
+     *             In Vaadin 25, {@code refreshAll} will receive an update that
+     *             prevents unexpected scroll jumps when using this method with
+     *             new flat data providers. Follow
+     *             https://github.com/vaadin/platform/issues/7843 for updates.
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
