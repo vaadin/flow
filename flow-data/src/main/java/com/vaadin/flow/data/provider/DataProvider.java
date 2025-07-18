@@ -132,9 +132,13 @@ public interface DataProvider<T, F> extends Serializable {
      *             performance.
      *             <p>
      *             In Vaadin 25, {@code refreshAll} will receive an update that
-     *             prevents unexpected scroll jumps when using this method with
-     *             new flat data providers. Follow
-     *             https://github.com/vaadin/platform/issues/7843 for updates.
+     *             prevents unexpected scroll jumps when used with new flat data
+     *             providers, see https://github.com/vaadin/platform/issues/7843
+     *             for more details.
+     *             <p>
+     *             However, the current behavior of this method will still be
+     *             reproducible by collapsing and expanding an item within the
+     *             same round-trip.
      */
     @Deprecated(since = "24.9", forRemoval = true)
     default void refreshItem(T item, boolean refreshChildren) {
