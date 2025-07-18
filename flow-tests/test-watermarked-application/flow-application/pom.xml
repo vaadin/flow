@@ -46,7 +46,7 @@ import java.io.File;
 newUserHome = new File(project.getProperties().getProperty("fake.user.home"));
 newUserHome.mkdirs();
 log.info("Temporarily switching user.home from " + System.getProperty("user.home") +
-    " to " + newUserHome.getAbsolutePath() + " to build without the application without license keys");
+    " to " + newUserHome.getAbsolutePath() + " to build the application without license keys");
 System.setProperty("user.home", newUserHome.getAbsolutePath());
                             ]]></source>
                         </configuration>

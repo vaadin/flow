@@ -163,7 +163,7 @@ const moduleWeights = {
   'flow-tests/test-npm-only-features/test-npm-bytecode-scanning/pom-production.xml': { weight: 2 },
   'flow-tests/test-theme-no-polymer': { weight: 2 },
   'flow-tests/test-frontend/vite-pwa-production': { weight: 2 },
-  'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 },
+  'flow-tests/test-frontend/vite-pwa-disabled-offline/pom-production.xml': { weight: 2 }
 }
 
 // Set split number for modules with several tests
