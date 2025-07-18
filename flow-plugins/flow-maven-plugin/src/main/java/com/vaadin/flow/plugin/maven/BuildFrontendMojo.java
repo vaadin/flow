@@ -46,6 +46,7 @@ import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
 /**
  * Goal that builds the frontend bundle.
@@ -179,10 +180,21 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             }
         }
         LicenseChecker.setStrictOffline(true);
-        boolean licenseRequired = BuildFrontendUtil.validateLicenses(this,
-                frontendDependencies);
 
-        BuildFrontendUtil.updateBuildFile(this, licenseRequired);
+        boolean licenseRequired;
+        boolean watermarkRequired;
+        try {
+            licenseRequired = BuildFrontendUtil.validateLicenses(this,
+                    frontendDependencies);
+            watermarkRequired = false;
+        } catch (MissingLicenseKeyException ex) {
+            licenseRequired = true;
+            watermarkRequired = true;
+            getLog().info(ex.getMessage());
+        }
+
+        BuildFrontendUtil.updateBuildFile(this, licenseRequired,
+                watermarkRequired);
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");
