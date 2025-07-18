@@ -1,4 +1,8 @@
-import { ServerMessage } from "./vaadin-dev-tools";
+import { ServerMessage } from './vaadin-dev-tools';
+import {
+  preTrialStartFailed,
+  showPreTrialSplashScreen
+} from './pre-trial-splash-screen';
 
 const noLicenseFallbackTimeout = 1000;
 
@@ -7,10 +11,18 @@ export interface Product {
   version: string;
 }
 
+export interface PreTrial {
+  trialName?: String;
+  trialState: String;
+  daysRemaining?: number;
+  daysRemainingUntilRenewal?: number;
+}
+
 export interface ProductAndMessage {
   message: string;
   messageHtml?: string;
   product: Product;
+  preTrial?: PreTrial;
 }
 
 export const findAll = (element: Element | ShadowRoot | Document, tags: string[]): Element[] => {
@@ -53,9 +65,9 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
   const htmlMessage = productAndMessage.messageHtml
     ? productAndMessage.messageHtml
     : `${productAndMessage.message} <p>Component: ${productAndMessage.product.name} ${productAndMessage.product.version}</p>`.replace(
-        /https:([^ ]*)/g,
-        "<a href='https:$1'>https:$1</a>"
-      );
+      /https:([^ ]*)/g,
+      "<a href='https:$1'>https:$1</a>"
+    );
 
   if (element.isConnected) {
     element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;
@@ -140,20 +152,29 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
   }
 };
 
-export const handleLicenseMessage = (message:ServerMessage):boolean =>{
-if (message.command === 'license-check-ok') {
+export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: ShadowRoot | null): boolean => {
+  if (message.command === 'license-check-ok') {
     licenseCheckOk(message.data);
     return true;
   } else if (message.command === 'license-check-failed') {
     licenseCheckFailed(message.data);
     return true;
   } else if (message.command === 'license-check-nokey') {
+    showPreTrialSplashScreen(bodyShadowRoot, message.data);
     licenseCheckNoKey(message.data);
     return true;
+  } else if (message.command === 'license-pretrial-started') {
+    console.debug('Pre-trial period started', message.data);
+    window.location.reload();
+  } else if (message.command === 'license-pretrial-expired') {
+    console.debug('Pre-trial period expired', message.data);
+    preTrialStartFailed(true, bodyShadowRoot);
+  } else if (message.command === 'license-pretrial-failed') {
+    console.debug('Pre-trial period start failed', message.data);
+    preTrialStartFailed(false, bodyShadowRoot);
   }
-
   return false;
-}
+};
 
 export const licenseInit = () => {
   // Process already registered elements
