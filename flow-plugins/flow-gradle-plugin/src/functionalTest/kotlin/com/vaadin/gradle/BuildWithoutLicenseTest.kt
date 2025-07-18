@@ -150,7 +150,7 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
         assertContains(
             buildInfoJson,
             Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enabled token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
     }
 
@@ -176,7 +176,7 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
         assertContains(
             buildInfoJson,
             Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enabled token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
     }
 
@@ -196,7 +196,7 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
         assertContains(
             buildInfoJson,
             Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enabled token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
 
     }
