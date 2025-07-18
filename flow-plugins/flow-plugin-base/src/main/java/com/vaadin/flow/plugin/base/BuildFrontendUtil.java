@@ -23,8 +23,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -612,11 +610,35 @@ public class BuildFrontendUtil {
      * @param adapter
      *            the PluginAdapterBase
      * @param frontendDependencies
+     *            the frontend dependencies scanner
+     * @return {@literal true} if license validation is required because of the
+     *         presence of commercial components, otherwise {@literal false}.
+     * @deprecated to be removed, used
+     *             {@link #validateLicenses(PluginAdapterBase, FrontendDependenciesScanner, boolean)}
+     */
+    @Deprecated(since = "24.8", forRemoval = true)
+    public static boolean validateLicenses(PluginAdapterBase adapter,
+            FrontendDependenciesScanner frontendDependencies) {
+        return validateLicenses(adapter, frontendDependencies, true);
+    }
+
+    /**
+     * Validate pro component licenses.
+     *
+     * @param adapter
+     *            the PluginAdapterBase
+     * @param frontendDependencies
+     *            the frontend dependencies scanner
+     * @param checkOnlyJavaImportedPackages
+     *            {@code true} to only validate components imported by Java
+     *            classes, {@code false} to validate all commercial components
+     *            detected by the frontend build.
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
-            FrontendDependenciesScanner frontendDependencies) {
+            FrontendDependenciesScanner frontendDependencies,
+            boolean checkOnlyJavaImportedPackages) {
         File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
@@ -646,7 +668,8 @@ public class BuildFrontendUtil {
         }
 
         List<Product> commercialComponents = findCommercialFrontendComponents(
-                frontendDependencies, statsJsonContent);
+                frontendDependencies, statsJsonContent,
+                checkOnlyJavaImportedPackages);
         commercialComponents.addAll(findCommercialJavaComponents(adapter));
 
         for (Product component : commercialComponents) {
@@ -674,24 +697,36 @@ public class BuildFrontendUtil {
     }
 
     static List<Product> findCommercialFrontendComponents(
-            FrontendDependenciesScanner scanner, String statsJsonContent) {
-        List<Product> components = new ArrayList<>();
-
+            FrontendDependenciesScanner scanner, String statsJsonContent,
+            boolean checkOnlyJavaImportedPackages) {
+        ArrayList<Product> products = new ArrayList<>();
         final JsonNode statsJson = JacksonUtils.readTree(statsJsonContent);
-        Set<String> usedPackages = getUsedPackages(scanner);
-        if (statsJson.has("cvdlModules")) {
-            final JsonNode cvdlModules = statsJson.get("cvdlModules");
-            for (String key : JacksonUtils.getKeys(cvdlModules)) {
-                if (!usedPackages.contains(key)) {
-                    // If product is not used do not collect it.
-                    continue;
-                }
-                final JsonNode cvdlModule = cvdlModules.get(key);
-                components.add(new Product(cvdlModule.get("name").textValue(),
-                        cvdlModule.get("version").textValue()));
+        if (!statsJson.has("cvdlModules")) {
+            // No commercial components detected by the frontend build
+            return products;
+        }
+
+        final JsonNode cvdlModules = statsJson.get("cvdlModules");
+        Set<String> usedModules = new HashSet<>();
+        if (!checkOnlyJavaImportedPackages) {
+            // The bundle has been rebuilt and lists only actually used
+            // commercial components
+            usedModules.addAll(JacksonUtils.getKeys(cvdlModules));
+        } else {
+            // Only include modules that are actually used by Java classes
+            Set<String> usedPackages = getUsedPackages(scanner);
+            if (!usedPackages.isEmpty()) {
+                usedModules.addAll(JacksonUtils.getKeys(cvdlModules).stream()
+                        .filter(usedPackages::contains).toList());
             }
         }
-        return components;
+
+        usedModules.stream().sorted().map(cvdlModules::get)
+                .map(cvdlModule -> new Product(
+                        cvdlModule.get("name").textValue(),
+                        cvdlModule.get("version").textValue()))
+                .forEach(products::add);
+        return products;
     }
 
     private static Set<String> getUsedPackages(

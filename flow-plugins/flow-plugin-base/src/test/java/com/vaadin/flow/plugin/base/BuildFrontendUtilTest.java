@@ -179,7 +179,7 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void detectsUsedCommercialComponents() {
+    public void detectsUsedCommercialComponents_checkJavaImportedPackagesOnly() {
 
         String statsJson = """
                     {
@@ -215,11 +215,59 @@ public class BuildFrontendUtilTest {
         Mockito.when(scanner.getModules()).thenReturn(modulesMap);
 
         List<Product> components = BuildFrontendUtil
-                .findCommercialFrontendComponents(scanner, statsJson);
+                .findCommercialFrontendComponents(scanner, statsJson, true);
         // Two components are included, only one is used
         Assert.assertEquals(1, components.size());
         Assert.assertEquals("comm-comp", components.get(0).getName());
         Assert.assertEquals("4.6.5", components.get(0).getVersion());
+    }
+
+    @Test
+    public void detectsUsedCommercialComponents_validateAllPackages_bundleRebuilt() {
+
+        String statsJson = """
+                    {
+                        "cvdlModules": {
+                        "component": {
+                            "name": "component",
+                            "version":"1.2.3"
+                           },
+                           "comm-component": {
+                            "name":"comm-comp",
+                            "version":"4.6.5"
+                           },
+                           "comm-component2": {
+                            "name":"comm-comp2",
+                            "version":"4.6.5"
+                           }
+                        }
+                    }
+                """;
+
+        final FrontendDependenciesScanner scanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Map<String, String> packages = new HashMap<>();
+        packages.put("comm-component", "4.6.5");
+        packages.put("comm-component2", "4.6.5");
+        packages.put("@vaadin/button", "1.2.1");
+        Mockito.when(scanner.getPackages()).thenReturn(packages);
+
+        List<String> modules = new ArrayList<>();
+        modules.add("comm-component/foo.js");
+        Map<ChunkInfo, List<String>> modulesMap = Collections
+                .singletonMap(ChunkInfo.GLOBAL, modules);
+        Mockito.when(scanner.getModules()).thenReturn(modulesMap);
+
+        List<Product> components = BuildFrontendUtil
+                .findCommercialFrontendComponents(scanner, statsJson, false);
+        // Two components are included, only one is used
+        Assert.assertEquals(3, components.size());
+        Assert.assertEquals("comm-comp", components.get(0).getName());
+        Assert.assertEquals("4.6.5", components.get(0).getVersion());
+        Assert.assertEquals("comm-comp2", components.get(1).getName());
+        Assert.assertEquals("4.6.5", components.get(1).getVersion());
+        Assert.assertEquals("component", components.get(2).getName());
+        Assert.assertEquals("1.2.3", components.get(2).getVersion());
     }
 
     @Test

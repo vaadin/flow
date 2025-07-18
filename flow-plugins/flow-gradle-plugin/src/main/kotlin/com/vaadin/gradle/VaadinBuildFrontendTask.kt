@@ -116,7 +116,9 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             }
         }
         LicenseChecker.setStrictOffline(true)
-        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get(), frontendDependencies)
+        val onlyValidateJavaImports = !isHillaUsed()
+        logger.info("============================ Only check Java packages? ${onlyValidateJavaImports}")
+        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get(), frontendDependencies, onlyValidateJavaImports)
 
         BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired)
     }
@@ -135,8 +137,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * @return `true` to remove created files, `false` to keep the files
      */
     protected open fun cleanFrontendFiles(): Boolean {
-        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()),
-                        adapter.get().classFinder)) {
+        if (isHillaUsed()) {
             /*
              * Override this to not clean generated frontend files after the
              * build. For Hilla, the generated files can still be useful for
@@ -147,4 +148,8 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         }
         return adapter.get().config.cleanFrontendFiles.get()
     }
+
+    private fun isHillaUsed() : Boolean = FrontendUtils.isHillaUsed(
+        BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()),
+            adapter.get().classFinder)
 }
