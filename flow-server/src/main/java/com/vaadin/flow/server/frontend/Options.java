@@ -139,6 +139,8 @@ public class Options implements Serializable {
 
     private boolean frontendIgnoreVersionChecks = false;
 
+    private boolean watermarkEnable = false;
+
     /**
      * Creates a new instance.
      *
@@ -1015,6 +1017,29 @@ public class Options implements Serializable {
     public Options withFrontendDependenciesScanner(
             FrontendDependenciesScanner frontendDependenciesScanner) {
         this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Checks if the watermark build is enabled.
+     *
+     * @return {@code true} if the watermark build is enabled, {@code false}
+     *         otherwise
+     */
+    public boolean isWatermarkEnable() {
+        return watermarkEnable;
+    }
+
+    /**
+     * Sets whether the build should generate a watermarked application.
+     *
+     * @param watermarkEnable
+     *            a boolean value indicating whether the built application
+     *            should be watermarked.
+     * @return this builder
+     */
+    public Options withWatermarkEnable(boolean watermarkEnable) {
+        this.watermarkEnable = watermarkEnable;
         return this;
     }
 
