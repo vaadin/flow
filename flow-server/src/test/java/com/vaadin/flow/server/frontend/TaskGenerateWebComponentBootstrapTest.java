@@ -19,6 +19,8 @@ import java.io.File;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -44,8 +46,12 @@ public class TaskGenerateWebComponentBootstrapTest {
                 .getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
+        FrontendDependenciesScanner scanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(scanner.getThemeDefinition()).thenReturn(null);
         Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendDirectory);
+                .withFrontendDirectory(frontendDirectory)
+                .withFrontendDependenciesScanner(scanner);
 
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
                 options);

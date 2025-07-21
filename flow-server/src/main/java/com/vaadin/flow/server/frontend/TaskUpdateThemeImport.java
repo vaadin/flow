@@ -76,6 +76,16 @@ public class TaskUpdateThemeImport
                 themeImportFile.delete();
                 themeImportFileDefinition.delete();
             }
+
+            try {
+                writeIfChanged(
+                        new File(options.getFrontendGeneratedFolder(),
+                                "css.generated.d.ts"),
+                        "export declare const applyCss: (target: Node) => void;");
+            } catch (IOException e) {
+                throw new ExecutionFailedException(
+                        "Unable to write theme import file", e);
+            }
             return;
         }
 

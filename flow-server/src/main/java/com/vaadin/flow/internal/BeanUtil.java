@@ -24,6 +24,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.RecordComponent;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.slf4j.LoggerFactory;
@@ -67,6 +69,33 @@ public final class BeanUtil implements Serializable {
      */
     public static List<PropertyDescriptor> getBeanPropertyDescriptors(
             final Class<?> beanType) throws IntrospectionException {
+        List<PropertyDescriptor> descriptorsWithDuplicates = internalGetBeanPropertyDescriptors(
+                beanType);
+
+        // As we scan for default methods, we might get duplicates
+        // for the same property, so we need to remove them.
+        // We prefer to keep a class property over an interface
+        // property.
+        LinkedHashMap<String, PropertyDescriptor> descriptors = new LinkedHashMap<>();
+        for (PropertyDescriptor descriptor : descriptorsWithDuplicates) {
+            String name = descriptor.getName();
+            if (descriptors.containsKey(name)) {
+                PropertyDescriptor existing = descriptors.get(name);
+                // If the existing descriptor is from a class, keep it
+                // otherwise replace it with the new one.
+                if (existing.getReadMethod() != null && !existing
+                        .getReadMethod().getDeclaringClass().isInterface()) {
+                    continue;
+                }
+            }
+            descriptors.put(name, descriptor);
+        }
+
+        return new ArrayList<>(descriptors.values());
+    }
+
+    private static List<PropertyDescriptor> internalGetBeanPropertyDescriptors(
+            Class<?> beanType) throws IntrospectionException {
 
         if (beanType.isRecord()) {
             List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
@@ -75,7 +104,6 @@ public final class BeanUtil implements Serializable {
                 propertyDescriptors.add(new PropertyDescriptor(
                         component.getName(), component.getAccessor(), null));
             }
-
             return propertyDescriptors;
         }
         // Introspector does not consider superinterfaces of
@@ -83,7 +111,7 @@ public final class BeanUtil implements Serializable {
         List<PropertyDescriptor> propertyDescriptors = new ArrayList<>();
 
         for (Class<?> cls : beanType.getInterfaces()) {
-            propertyDescriptors.addAll(getBeanPropertyDescriptors(cls));
+            propertyDescriptors.addAll(internalGetBeanPropertyDescriptors(cls));
         }
 
         BeanInfo info = Introspector.getBeanInfo(beanType);

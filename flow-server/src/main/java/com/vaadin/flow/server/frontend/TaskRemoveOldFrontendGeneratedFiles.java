@@ -155,6 +155,10 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 frontendGeneratedFolder.resolve("file-routes.ts")));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve("file-routes.json")));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("css.generated.js")));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("css.generated.d.ts")));
         knownFiles.addAll(hillaGeneratedFiles());
         return path -> knownFiles.contains(path) || path.getFileName()
                 .toString().matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");

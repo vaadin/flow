@@ -21,6 +21,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { writeThemeFiles } from './theme-generator.js';
+import { writeCssFiles } from './css-theme-generator.js';
 import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
 
 // matches theme name in './theme-my-theme.generated.js'
@@ -69,6 +70,7 @@ function processThemeResources(options, logger) {
 
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
+    writeCssFiles(options);
     // This is needed in the situation that the user decides to comment or
     // remove the @Theme(...) completely to see how the application looks
     // without any theme. Then when the user brings back one of the themes,
@@ -205,7 +207,11 @@ function extractThemeName(frontendGeneratedFolder) {
   if (existsSync(generatedThemeFile)) {
     // read theme name from the 'generated/theme.js' as there we always
     // mark the used theme for webpack to handle.
-    const themeName = nameRegex.exec(readFileSync(generatedThemeFile, { encoding: 'utf8' }))[1];
+    let themeFile = readFileSync(generatedThemeFile, { encoding: 'utf8' });
+    if(!nameRegex.test(themeFile)) {
+      return '';
+    }
+    const themeName = nameRegex.exec(themeFile)[1];
     if (!themeName) {
       throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
     }

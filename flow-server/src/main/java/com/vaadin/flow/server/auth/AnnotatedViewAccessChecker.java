@@ -16,6 +16,9 @@
 
 package com.vaadin.flow.server.auth;
 
+import java.util.Collections;
+import java.util.List;
+
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
@@ -26,6 +29,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.RouteBaseData;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
 
@@ -87,6 +92,29 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                             "Consider adding one of the following annotations "
                                     + "to make the layout accessible: @AnonymousAllowed, "
                                     + "@PermitAll, @RolesAllowed.");
+                }
+            }
+        } else {
+            RouteRegistry registry = context.getRouter().getRegistry();
+            List<Class<? extends RouterLayout>> parents = registry
+                    .getRegisteredRoutes().stream()
+                    .filter(routeData -> routeData.getNavigationTarget()
+                            .equals(targetView))
+                    .map(RouteBaseData::getParentLayouts).findFirst()
+                    .orElse(Collections.emptyList());
+            if (!parents.isEmpty()) {
+                for (Class<? extends RouterLayout> parent : parents) {
+                    boolean hasAccess = accessAnnotationChecker.hasAccess(
+                            parent, context.getPrincipal(), context::hasRole);
+                    if (!hasAccess) {
+                        LOGGER.debug(
+                                "Denied access to view due to parent layout '{}' access rules",
+                                parent.getSimpleName());
+                        return context.deny(
+                                "Consider adding one of the following annotations "
+                                        + "to make the parent layouts accessible: @AnonymousAllowed, "
+                                        + "@PermitAll, @RolesAllowed.");
+                    }
                 }
             }
         }

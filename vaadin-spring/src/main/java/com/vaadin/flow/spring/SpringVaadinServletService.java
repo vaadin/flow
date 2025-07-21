@@ -52,6 +52,8 @@ public class SpringVaadinServletService extends VaadinServletService {
 
     static final String SPRING_BOOT_WEBPROPERTIES_CLASS = "org.springframework.boot.autoconfigure.web.WebProperties";
 
+    private Set<String> multipleExecutorCandidates;
+
     /**
      * Creates an instance connected to the given servlet and using the given
      * configuration with provided application {@code context}.
@@ -147,22 +149,29 @@ public class SpringVaadinServletService extends VaadinServletService {
             // bean
             candidates.remove("applicationTaskExecutor");
         }
-        if (candidates.size() == 1) {
-            return context.getBean(candidates.iterator().next(),
-                    TaskExecutor.class);
+        if (candidates.size() > 1) {
+            multipleExecutorCandidates = candidates;
         }
+        return context.getBean(candidates.iterator().next(),
+                TaskExecutor.class);
+    }
 
-        String message = String.format("Multiple TaskExecutor beans found: %s. "
-                + "Please resolve this conflict by either: "
-                + "(1) Providing a single TaskExecutor bean, or "
-                + "(2) Marking the bean to use with Vaadin by: "
-                + "naming it '%s' (e.g. @Bean(\"%s\")), or "
-                + "applying the @%s qualifier annotation to the bean definition. "
-                + "Note: To prevent an Executor bean from replacing the default one "
-                + "provided by Spring, consider setting '@Bean(defaultCandidate=false)' on its definition.",
-                candidates, VaadinTaskExecutor.NAME, VaadinTaskExecutor.NAME,
-                VaadinTaskExecutor.class.getSimpleName());
-        throw new IllegalStateException(message);
+    @Override
+    public Executor getExecutor() {
+        if (multipleExecutorCandidates != null) {
+            String message = String.format(
+                    "Multiple TaskExecutor beans found: %s. "
+                            + "Please resolve this conflict by either: "
+                            + "(1) Providing a single TaskExecutor bean, or "
+                            + "(2) Marking the bean to use with Vaadin by: "
+                            + "naming it '%s' (e.g. @Bean(\"%s\")), or "
+                            + "applying the @%s qualifier annotation to the bean definition.",
+                    multipleExecutorCandidates, VaadinTaskExecutor.NAME,
+                    VaadinTaskExecutor.NAME,
+                    VaadinTaskExecutor.class.getSimpleName());
+            throw new IllegalStateException(message);
+        }
+        return super.getExecutor();
     }
 
     @Override
