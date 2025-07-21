@@ -235,7 +235,7 @@ public final class BundleValidationUtil {
 
         if (isWatermarkConditionChanged(options, statsJson)) {
             UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-watermarked-app-requested", null);
+                    "flow/rebundle-reason-watermark-condition-changed", null);
             return true;
         }
         // watermark file hash has already been checked, if needed.
