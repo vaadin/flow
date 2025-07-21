@@ -343,6 +343,7 @@
                 <module>test-react-adapter/pom-production.xml</module>
                 <module>test-legacy-frontend</module>
                 <module>test-client-queue</module>
+                <module>test-watermarked-application</module>
             </modules>
         </profile>
         <profile>
