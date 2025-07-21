@@ -10,7 +10,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
@@ -2508,6 +2507,150 @@ public class BundleValidationTest {
                 depScanner, mode);
         Assert.assertTrue(
                 "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.",
+                needsBuild);
+    }
+
+    @Test
+    public void watermarkBuild_watermarkComponentMissing_rebuildRequired() {
+        Assume.assumeTrue(mode.isProduction());
+        options.withWatermarkEnable(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In watermark build mode, missing 'watermark.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void watermarkBuild_watermarkComponentChanged_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withWatermarkEnable(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultWatermarkJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
+                StandardCharsets.UTF_8);
+        String oldWatermarkJS = defaultWatermarkJS.replace("vaadin-watermark",
+                "vaadin-watermark-old");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
+                BundleValidationUtil.calculateHash(oldWatermarkJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In watermark build mode, modified 'watermark.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void watermarkBuild_watermarkComponentNotChanged_rebuildNotRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withWatermarkEnable(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultWatermarkJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
+                StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
+                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In watermark build mode, unmodified 'watermark.js' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void nonWatermarkBuild_watermarkComponentPresent_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withWatermarkEnable(false);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        File frontendGeneratedFolder = temporaryFolder.newFolder(
+                FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED);
+        File watermarkJS = new File(frontendGeneratedFolder,
+                FrontendUtils.WATERMARK_JS);
+        watermarkJS.createNewFile();
+        String defaultWatermarkJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
+                StandardCharsets.UTF_8);
+        FileUtils.write(watermarkJS, defaultWatermarkJS,
+                StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
+                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In non watermark build mode, presence of 'watermark.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void developmentMode_watermarkComponentNotPresent_rebuildNotRequired() {
+        Assume.assumeTrue(!mode.isProduction());
+        options.withWatermarkEnable(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In development mode, absence of 'watermark.js' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void developmentMode_watermarkComponentPresent_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(!mode.isProduction());
+        options.withWatermarkEnable(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultWatermarkJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
+                StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
+                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In development mode, presence of 'watermark.js' should require bundling",
                 needsBuild);
     }
 

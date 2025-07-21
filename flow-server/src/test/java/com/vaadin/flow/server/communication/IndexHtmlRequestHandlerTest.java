@@ -57,6 +57,7 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -1251,6 +1252,63 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
         Assert.assertTrue(verifier.test("1.2.3.4", null));
         Assert.assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
+    }
+
+    @Test
+    public void developmentMode_watermarkNeverApplied() throws IOException {
+        assertHasWatermark(false, false, true);
+        assertHasWatermark(false, false, false);
+        assertHasWatermark(false, false, null);
+    }
+
+    @Test
+    public void productionMode_watermarkEnabled_watermarkApplied()
+            throws IOException {
+        assertHasWatermark(true, true, true);
+    }
+
+    @Test
+    public void productionMode_watermarkNotEnabled_watermarkNotApplied()
+            throws IOException {
+        assertHasWatermark(false, true, false);
+        assertHasWatermark(false, true, null);
+    }
+
+    private void assertHasWatermark(boolean expectWatermark,
+            boolean productionMode, Boolean watermarkFlag) throws IOException {
+        if (!productionMode) {
+            File projectRootFolder = temporaryFolder.newFolder();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        deploymentConfiguration.setProductionMode(productionMode);
+        if (watermarkFlag != null) {
+            deploymentConfiguration.setApplicationOrSystemProperty(
+                    Constants.WATERMARK_TOKEN, Boolean.toString(watermarkFlag));
+        }
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements watermarkScript = document.head().select(
+                "script[type=\"module\"]:containsData(<vaadin-watermark></vaadin-watermark>)");
+        if (expectWatermark) {
+            assertEquals(
+                    "Watermark should be applied in %s mode with watermark token %s"
+                            .formatted(((productionMode) ? "production"
+                                    : "development"), watermarkFlag),
+                    1, watermarkScript.size());
+        } else {
+            assertTrue(
+                    "Watermark should not be applied in %s mode with watermark token %s"
+                            .formatted(((productionMode) ? "production"
+                                    : "development"), watermarkFlag),
+                    watermarkScript.isEmpty());
+        }
     }
 
 }
