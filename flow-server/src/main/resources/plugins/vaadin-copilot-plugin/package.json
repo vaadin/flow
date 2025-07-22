@@ -1,0 +1,30 @@
+{
+  "description": "Vaadin copilot plugin provides API that are required for several features",
+  "keywords": [
+    "plugin",
+    "copilot"
+  ],
+  "repository": "vaadin/copilot",
+  "name": "@vaadin/theme-loader",
+  "version": "0.0.4",
+  "main": "index.ts",
+  "private": true,
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/copilot/issues"
+  },
+  "files": [
+    "index.ts",
+    "consts.ts",
+    "types.ts",
+    "utils.ts",
+    "component-analyzer.ts"
+  ],
+  "peerDependencies": {
+    "vite": "6.x"
+  },
+  "devDependencies": {
+    "@types/node": "22.x"
+  }
+}
