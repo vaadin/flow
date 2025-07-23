@@ -1,9 +1,16 @@
 import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { Product, handleLicenseMessage, licenseCheckFailed, licenseInit } from './License';
+import {
+  Product,
+  handleLicenseMessage,
+  licenseCheckFailed,
+  licenseInit,
+  handlePreTrialMessage
+} from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
+import { preTrialStartFailed } from './pre-trial-splash-screen';
 
 /**
  * Plugin API for the dev tools window.
@@ -85,6 +92,7 @@ const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 export class VaadinDevTools extends LitElement {
   unhandledMessages: ServerMessage[] = [];
   conf: DevToolsConf = { enable: false, url: '', liveReloadPort: -1 };
+  bodyShadowRoot: ShadowRoot | null = null;
 
   static get styles() {
     return [
@@ -719,7 +727,7 @@ export class VaadinDevTools extends LitElement {
   }
   handleFrontendMessage(message: ServerMessage) {
     if (message.command === 'featureFlags') {
-    } else if (handleLicenseMessage(message) || this.handleHmrMessage(message)) {
+    } else if (handleLicenseMessage(message, this.bodyShadowRoot) || this.handleHmrMessage(message)) {
     } else {
       this.unhandledMessages.push(message);
     }
@@ -770,6 +778,9 @@ export class VaadinDevTools extends LitElement {
   connectedCallback() {
     super.connectedCallback();
 
+    this.bodyShadowRoot = document.body.attachShadow({ mode: 'closed' });
+    this.bodyShadowRoot.innerHTML = '<slot></slot>';
+
     this.conf = (window.Vaadin as any).devToolsConf || this.conf;
 
     const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_KEY_IN_SESSION_STORAGE);
@@ -818,6 +829,15 @@ export class VaadinDevTools extends LitElement {
       this.frontendConnection.send('checkLicense', productInfo);
     } else {
       licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+    }
+  }
+
+  startPreTrial() {
+    if (this.frontendConnection) {
+      this.frontendConnection.send('startPreTrialLicense', {});
+    } else {
+      console.error('Cannot start pre-trial: no connection');
+      preTrialStartFailed(false, this.bodyShadowRoot)
     }
   }
 

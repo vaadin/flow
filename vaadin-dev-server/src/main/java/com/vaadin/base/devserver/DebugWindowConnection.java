@@ -44,6 +44,9 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.PreTrial;
+import com.vaadin.pro.licensechecker.PreTrialCreationException;
+import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
 
 import elemental.json.JsonObject;
@@ -322,30 +325,9 @@ public class DebugWindowConnection implements BrowserLiveReload {
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
         } else if ("checkLicense".equals(command)) {
-            String name = data.get("name").textValue();
-            String version = data.get("version").textValue();
-            Product product = new Product(name, version);
-            boolean ok;
-            String errorMessage = "";
-
-            try {
-                LicenseChecker.checkLicense(product.getName(),
-                        product.getVersion(), BuildType.DEVELOPMENT, keyUrl -> {
-                            send(resource, "license-check-nokey",
-                                    new ProductAndMessage(product, keyUrl));
-                        });
-                ok = true;
-            } catch (Exception e) {
-                ok = false;
-                errorMessage = e.getMessage();
-            }
-            if (ok) {
-                send(resource, "license-check-ok", product);
-            } else {
-                ProductAndMessage pm = new ProductAndMessage(product,
-                        errorMessage);
-                send(resource, "license-check-failed", pm);
-            }
+            handleLicenseCheck(resource, data);
+        } else if ("startPreTrialLicense".equals(command)) {
+            handlePreTrialStart(resource, data);
         } else {
             boolean handled = false;
             for (DevToolsMessageHandler plugin : plugins) {
@@ -360,6 +342,47 @@ public class DebugWindowConnection implements BrowserLiveReload {
                 getLogger()
                         .info("Unknown command from the browser: " + command);
             }
+        }
+    }
+
+    private void handleLicenseCheck(AtmosphereResource resource,
+            JsonNode data) {
+        String name = data.get("name").textValue();
+        String version = data.get("version").textValue();
+        Product product = new Product(name, version);
+        PreTrial preTrial = null;
+        String command = null;
+        String errorMessage = "";
+
+        try {
+            LicenseChecker.checkLicense(product.getName(), product.getVersion(),
+                    BuildType.DEVELOPMENT, null);
+        } catch (PreTrialLicenseValidationException e) {
+            errorMessage = e.getMessage();
+            preTrial = e.getPreTrial();
+            command = "license-check-nokey";
+        } catch (Exception e) {
+            errorMessage = e.getMessage();
+            command = "license-check-failed";
+        }
+        if (command == null) {
+            send(resource, "license-check-ok", product);
+        } else {
+            ProductAndMessage pm = new ProductAndMessage(product, preTrial,
+                    errorMessage);
+            send(resource, command, pm);
+        }
+    }
+
+    private void handlePreTrialStart(AtmosphereResource resource,
+            JsonNode data) {
+        try {
+            PreTrial preTrial = LicenseChecker.startPreTrial();
+            send(resource, "license-pretrial-started", preTrial);
+        } catch (PreTrialCreationException.Expired ex) {
+            send(resource, "license-pretrial-expired", null);
+        } catch (Exception ex) {
+            send(resource, "license-pretrial-failed", null);
         }
     }
 
