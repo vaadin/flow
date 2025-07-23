@@ -70,9 +70,6 @@ public class MockUI extends UI {
         MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
         VaadinSession session = setup.getSession();
 
-        // Mockito.when(setup.getService().getDeploymentConfiguration())
-        // .thenReturn(createConfiguration());
-
         if (router != null) {
             setup.getService().setRouter(router);
         }
