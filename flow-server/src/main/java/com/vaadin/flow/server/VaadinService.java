@@ -1203,8 +1203,6 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.setBrowser(new WebBrowser(request));
 
-        session.setConfiguration(getDeploymentConfiguration());
-
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
             setLocale(request, session);

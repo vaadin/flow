@@ -349,6 +349,12 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         lock = service.getSessionLock(session);
     }
 
+    /**
+     * @deprecated with no replacement. There should only be one
+     *             DeploymentConfiguration per VaadinService, no
+     *             VaadinSession-specific instances.
+     */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setConfiguration(DeploymentConfiguration configuration) {
         checkHasLock();
         if (configuration == null) {
@@ -369,13 +375,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the configuration for this session.
+     * Gets the deployment configuration. Delegates the call to
+     * {@link VaadinService#getDeploymentConfiguration()}
      *
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
         checkHasLock();
-        return configuration;
+        return service.getDeploymentConfiguration();
     }
 
     /**
@@ -704,7 +711,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *     }
      * });
      * </pre>
-     *
+     * <p>
      * If you for whatever reason want to do locking manually, you should do it
      * like:
      *
@@ -716,7 +723,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *     session.unlock();
      * }
      * </pre>
-     *
+     * <p>
      * This method will block until the lock can be retrieved.
      * <p>
      * {@link #getLockInstance()} can be used if more control over the locking
@@ -1197,7 +1204,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the timestamp of the most recent lock operation performed on this
      * session.
-     *
+     * <p>
      * Value is expressed as the difference, measured in milliseconds, between
      * the current time and midnight, January 1, 1970 UTC.
      *
@@ -1210,7 +1217,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the timestamp of the most recent unlock operation performed on this
      * session.
-     *
+     * <p>
      * Value is expressed as the difference, measured in milliseconds, between
      * the current time and midnight, January 1, 1970 UTC.
      *
