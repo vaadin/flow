@@ -375,7 +375,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the deployment configuration.
+     * Gets the configuration for this session.
      *
      * @return the deployment configuration
      */
