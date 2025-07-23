@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +26,7 @@ import org.springframework.core.log.LogMessage;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.DefaultRedirectStrategy;
 import org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
@@ -99,15 +101,6 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             }
 
             response.setHeader(RESULT_HEADER, "success");
-            Object springCsrfTokenObject = request
-                    .getAttribute(CsrfToken.class.getName());
-            if (springCsrfTokenObject instanceof CsrfToken) {
-                CsrfToken springCsrfToken = (CsrfToken) springCsrfTokenObject;
-                response.setHeader(SPRING_CSRF_HEADER,
-                        springCsrfToken.getHeaderName());
-                response.setHeader(SPRING_CSRF_TOKEN,
-                        springCsrfToken.getToken());
-            }
         }
     }
 
@@ -170,11 +163,11 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandler
             response.setHeader(DEFAULT_URL_HEADER,
                     determineTargetUrl(request, response));
             if (this.csrfTokenRepository != null) {
-                this.csrfTokenRepository.saveToken(
-                        csrfTokenRepository.generateToken(request), request,
-                        response);
+                CsrfToken csrfToken = this.csrfTokenRepository.generateToken(request);
+                this.csrfTokenRepository.saveToken(csrfToken, request, response);
+                response.setHeader(SPRING_CSRF_HEADER, csrfToken.getHeaderName());
+                response.setHeader(SPRING_CSRF_TOKEN, csrfToken.getToken());
             }
-
         }
 
         SavedRequest savedRequest = this.requestCache.getRequest(request,
