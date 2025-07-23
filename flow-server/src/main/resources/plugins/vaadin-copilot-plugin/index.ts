@@ -28,10 +28,7 @@ import { getNodesInfosInFiles } from './component-analyzer';
 export default function vaadinCopilotPlugin(): Plugin {
   return {
     name: 'vaadin-copilot-plugin',
-    transform(code, id) {
-      if (!id.endsWith('tsx')) {
-        return;
-      }
+    transform(code) {
       const injectCode = `
         window.Vaadin = window.Vaadin || {};
         window.Vaadin.copilot = window.Vaadin.copilot || {};

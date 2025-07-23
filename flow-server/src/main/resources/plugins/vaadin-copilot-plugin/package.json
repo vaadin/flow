@@ -5,7 +5,7 @@
     "copilot"
   ],
   "repository": "vaadin/copilot",
-  "name": "@vaadin/theme-loader",
+  "name": "@vaadin/copilot-plugin",
   "version": "0.0.4",
   "main": "index.ts",
   "private": true,
