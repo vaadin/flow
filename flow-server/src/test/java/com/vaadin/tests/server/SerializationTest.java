@@ -405,7 +405,6 @@ public class SerializationTest {
             return "main-div-id";
         }
 
-
         @Override
         public DeploymentConfiguration getDeploymentConfiguration() {
             MockDeploymentConfiguration config = new MockDeploymentConfiguration();
