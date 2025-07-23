@@ -12,7 +12,10 @@ if (!appPath) {
   );
 }
 
-const vaadinFilePath = path.join(appPath, 'frontend', 'generated', 'vaadin.ts');
+let vaadinFilePath = path.join(appPath, 'src', 'main', 'frontend', 'generated', 'vaadin.ts');
+if (!fs.existsSync(vaadinFilePath)) {
+  vaadinFilePath = path.join(appPath, 'frontend', 'generated', 'vaadin.ts');
+}
 if (!fs.existsSync(vaadinFilePath)) {
   throw new Error(
     `Application path does not contain a ./src/main/frontend/generated directory: ${vaadinFilePath}. Make sure to start the app first.`
