@@ -375,14 +375,13 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * Gets the deployment configuration. Delegates the call to
-     * {@link VaadinService#getDeploymentConfiguration()}
+     * Gets the deployment configuration.
      *
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
         checkHasLock();
-        return service.getDeploymentConfiguration();
+        return configuration;
     }
 
     /**

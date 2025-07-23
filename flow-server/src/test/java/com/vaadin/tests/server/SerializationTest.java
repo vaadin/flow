@@ -99,6 +99,8 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
+                Mockito.withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
         session.addUI(ui);
@@ -275,6 +277,8 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
+        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
+                withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
         session.addUI(ui);
@@ -403,13 +407,6 @@ public class SerializationTest {
         public String getMainDivId(VaadinSession session,
                 VaadinRequest request) {
             return "main-div-id";
-        }
-
-        @Override
-        public DeploymentConfiguration getDeploymentConfiguration() {
-            MockDeploymentConfiguration config = new MockDeploymentConfiguration();
-            config.setProductionMode(productionMode);
-            return config;
         }
     }
 
