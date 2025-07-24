@@ -18,12 +18,42 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.vaadin.signals.ListSignal.ListPosition;
 
 /**
  * A command triggered from a signal.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonSubTypes(value = {
+
+        @Type(value = SignalCommand.ValueCondition.class, name = "value"),
+        @Type(value = SignalCommand.PositionCondition.class, name = "pos"),
+        @Type(value = SignalCommand.KeyCondition.class, name = "key"),
+        @Type(value = SignalCommand.LastUpdateCondition.class, name = "last"),
+
+        @Type(value = SignalCommand.AdoptAtCommand.class, name = "at"),
+        @Type(value = SignalCommand.AdoptAsCommand.class, name = "as"),
+
+        @Type(value = SignalCommand.IncrementCommand.class, name = "inc"),
+        @Type(value = SignalCommand.ClearCommand.class, name = "clear"),
+
+        @Type(value = SignalCommand.RemoveByKeyCommand.class, name = "removeKey"),
+        @Type(value = SignalCommand.PutCommand.class, name = "put"),
+        @Type(value = SignalCommand.PutIfAbsentCommand.class, name = "putAbsent"),
+
+        @Type(value = SignalCommand.InsertCommand.class, name = "insert"),
+        @Type(value = SignalCommand.SetCommand.class, name = "set"),
+        @Type(value = SignalCommand.RemoveCommand.class, name = "remove"),
+        @Type(value = SignalCommand.ClearOwnerCommand.class, name = "clearOwner"),
+
+        @Type(value = SignalCommand.TransactionCommand.class, name = "tx"),
+        @Type(value = SignalCommand.SnapshotCommand.class, name = "snapshot"),
+
+})
 public sealed interface SignalCommand {
     /**
      * A signal command that sets the value of a signal.

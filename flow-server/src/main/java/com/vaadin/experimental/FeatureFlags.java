@@ -49,12 +49,6 @@ public class FeatureFlags implements Serializable {
 
     public static final String PROPERTIES_FILENAME = "vaadin-featureflags.properties";
 
-    /**
-     * @deprecated Use {@link #SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL} instead.
-     */
-    @Deprecated
-    public static final String SYSTEM_PROPERTY_PREFIX = "vaadin.";
-
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
     public static final Feature EXAMPLE = new Feature(
@@ -67,16 +61,6 @@ public class FeatureFlags implements Serializable {
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
 
-    public static final Feature FORM_FILLER_ADDON = new Feature(
-            "Form Filler Add-on", "formFillerAddon",
-            "https://github.com/vaadin/form-filler-addon", true,
-            "com.vaadin.flow.ai.formfiller.FormFiller");
-
-    public static final Feature HILLA_I18N = new Feature("Hilla I18n API",
-            "hillaI18n",
-            "https://github.com/vaadin/hilla/tree/main/packages/ts/react-i18n",
-            true, null);
-
     public static final Feature COPILOT_EXPERIMENTAL = new Feature(
             "Copilot experimental features", "copilotExperimentalFeatures",
             "https://vaadin.com/docs/latest/tools/copilot", false, null);
@@ -85,15 +69,9 @@ public class FeatureFlags implements Serializable {
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
-    public static final Feature DASHBOARD_COMPONENT = new Feature(
-            "Dashboard component (Pro)", "dashboardComponent",
-            "https://github.com/vaadin/platform/issues/6626", true,
-            "com.vaadin.flow.component.dashboard.Dashboard");
-
-    public static final Feature CARD_COMPONENT = new Feature("Card component",
-            "cardComponent",
-            "https://github.com/vaadin/web-components/issues/5340", true,
-            "com.vaadin.flow.component.card.Card");
+    public static final Feature FLOW_FULLSTACK_SIGNALS = new Feature(
+            "Flow Full-stack Signals", "flowFullstackSignals",
+            "https://github.com/vaadin/platform/issues/7373", true, null);
 
     public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
             "Master Detail Layout component", "masterDetailLayoutComponent",
@@ -141,12 +119,9 @@ public class FeatureFlags implements Serializable {
         this.lookup = lookup;
         features.add(new Feature(EXAMPLE));
         features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(FORM_FILLER_ADDON));
-        features.add(new Feature(HILLA_I18N));
         features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
+        features.add(new Feature(FLOW_FULLSTACK_SIGNALS));
         features.add(new Feature(COPILOT_EXPERIMENTAL));
-        features.add(new Feature(DASHBOARD_COMPONENT));
-        features.add(new Feature(CARD_COMPONENT));
         features.add(new Feature(MASTER_DETAIL_LAYOUT_COMPONENT));
         features.add(new Feature(REACT19));
         features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
@@ -247,11 +222,8 @@ public class FeatureFlags implements Serializable {
 
             // Disable all features if no file exists
             for (Feature f : features) {
-                f.setEnabled(
-                        Boolean.getBoolean(SYSTEM_PROPERTY_PREFIX + f.getId())
-                                || Boolean.getBoolean(
-                                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
-                                                + f.getId()));
+                f.setEnabled(Boolean.getBoolean(
+                        SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId()));
             }
         } else {
             try (FileInputStream propertiesStream = new FileInputStream(
@@ -282,9 +254,7 @@ public class FeatureFlags implements Serializable {
                 // Allow users to override a feature flag with a system property
                 String propertyValue = System.getProperty(
                         SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL + f.getId(),
-                        System.getProperty(SYSTEM_PROPERTY_PREFIX + f.getId(),
-                                props.getProperty(
-                                        getFilePropertyName(f.getId()))));
+                        props.getProperty(getFilePropertyName(f.getId())));
                 f.setEnabled(Boolean.parseBoolean(propertyValue));
             }
 

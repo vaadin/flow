@@ -34,6 +34,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1457,5 +1458,14 @@ public class UIInternals implements Serializable {
     public String getContainerTag() {
         return "flow-container-" + getFullAppId().toLowerCase(Locale.ENGLISH);
 
+    }
+
+    /**
+     * Returns the Deployment Configuration for the application
+     *
+     * @return The Deployment Configuration
+     */
+    public DeploymentConfiguration getDeploymentConfiguration() {
+        return getSession().getService().getDeploymentConfiguration();
     }
 }

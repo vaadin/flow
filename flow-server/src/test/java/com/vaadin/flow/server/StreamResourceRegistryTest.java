@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 public class StreamResourceRegistryTest {
 

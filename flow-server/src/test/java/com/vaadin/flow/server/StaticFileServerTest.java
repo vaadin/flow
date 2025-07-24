@@ -176,8 +176,6 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getMode()).thenAnswer(q -> {
             if (configuration.isProductionMode()) {
                 return Mode.PRODUCTION_CUSTOM;
-            } else if (configuration.frontendHotdeploy()) {
-                return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
             } else {
                 return Mode.DEVELOPMENT_BUNDLE;
             }
@@ -1205,7 +1203,6 @@ public class StaticFileServerTest implements Serializable {
         TestUtil.createStyleCssStubInFrontend(projectRootFolder, "my-theme",
                 styles);
 
-        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
@@ -1226,7 +1223,6 @@ public class StaticFileServerTest implements Serializable {
         TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme",
                 styles);
 
-        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
         Mockito.when(configuration.isProductionMode()).thenReturn(false);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
@@ -1247,7 +1243,6 @@ public class StaticFileServerTest implements Serializable {
         TestUtil.createStylesCssStubInBundle(projectRootFolder, "my-theme",
                 styles);
 
-        Mockito.when(configuration.frontendHotdeploy()).thenReturn(false);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);

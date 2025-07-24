@@ -64,11 +64,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v22.14.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.3.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.9.2";
+    public static final String DEFAULT_NPM_VERSION = "11.4.2";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
@@ -215,114 +215,6 @@ public class FrontendTools {
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
         this(createSettings(applicationConfiguration, projectRoot));
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            boolean forceAlternativeNode) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(Platform.guess().getNodeDownloadRoot()),
-                forceAlternativeNode, false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The Node.js version to be used when Node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download Node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the Node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                false, false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The Node.js version to be used when Node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download Node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the Node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     * @param useGlobalPnpm
-     *            use globally installed pnpm instead of the default one (see
-     *            {@link #DEFAULT_PNPM_VERSION})
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot,
-            boolean forceAlternativeNode, boolean useGlobalPnpm) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                forceAlternativeNode, useGlobalPnpm, false);
     }
 
     /**
@@ -830,7 +722,10 @@ public class FrontendTools {
      * https://github.com/vaadin/flow/issues/12649
      *
      * @return the flags
+     * @deprecated Webpack is not used anymore, this method is obsolete and have
+     *             no replacements.
      */
+    @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
         Map<String, String> environment = new HashMap<>();
         ProcessBuilder processBuilder = new ProcessBuilder()

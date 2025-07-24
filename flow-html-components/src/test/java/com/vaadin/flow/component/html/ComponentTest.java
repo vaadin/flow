@@ -48,7 +48,8 @@ public abstract class ComponentTest {
 
     @Before
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         component = createComponent();
         whitelistProperty("visible");
         addProperties();
@@ -122,9 +123,11 @@ public abstract class ComponentTest {
     }
 
     protected Component createComponent() throws InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            NoSuchMethodException, InvocationTargetException {
         String componentClass = getClass().getName().replace("Test", "");
-        return (Component) Class.forName(componentClass).newInstance();
+        return (Component) Class.forName(componentClass)
+                .getDeclaredConstructor().newInstance();
     }
 
     protected Component getComponent() {

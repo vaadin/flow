@@ -188,14 +188,13 @@ public class ValueSignal<T> extends Signal<T> {
          * Cannot easily optimize this to directly submit a transaction command
          * since we need the previous value from the set command result
          */
-        SignalOperation<T> setOperation = Transaction.runWithoutTransaction(
-                () -> Transaction.runInTransaction(() -> {
-                    T value = peek();
-                    verifyValue(value);
+        SignalOperation<T> setOperation = Transaction.runInTransaction(() -> {
+            T value = peek();
+            verifyValue(value);
 
-                    T newValue = updater.apply(value);
-                    return value(newValue);
-                }).returnValue());
+            T newValue = updater.apply(value);
+            return value(newValue);
+        }).returnValue();
 
         setOperation.result().whenComplete((result, error) -> {
             if (error != null) {

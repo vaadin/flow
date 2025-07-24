@@ -443,6 +443,10 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
+        boolean reactEnabled = ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled();
+        Location currentLocation = ui.getInternals().getActiveViewLocation();
+        NavigationTrigger eventTrigger = event.getTrigger();
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
@@ -450,18 +454,15 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.REFRESH != event.getTrigger()
+        } else if (NavigationTrigger.REFRESH != eventTrigger
                 && !event.isForwardTo()
-                && (event.getUI().getInternals().getActiveViewLocation() == null
-                        || !event.getLocation().getPathWithQueryParameters()
-                                .equals(event.getUI().getInternals()
-                                        .getActiveViewLocation()
-                                        .getPathWithQueryParameters()))) {
+                && (currentLocation == null || !event.getLocation()
+                        .getPathWithQueryParameters().equals(currentLocation
+                                .getPathWithQueryParameters()))) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
-        } else if (ui.getInternals().getSession().getService()
-                .getDeploymentConfiguration().isReactEnabled()) {
+        } else if (reactEnabled) {
             if (shouldPushHistoryState(event)) {
                 pushHistoryState(event);
             }
@@ -1096,9 +1097,11 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route) {
-
+        Instantiator instantiator = navigationEvent.getUI().getSession()
+                .getService().getInstantiator();
         Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
-                routeTarget).map(PageTitle::value).orElse("");
+                instantiator.getApplicationClass(routeTarget))
+                .map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1112,9 +1115,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static Optional<PageTitle> lookForTitleInTarget(
-            Component routeTarget) {
-        return Optional.ofNullable(
-                routeTarget.getClass().getAnnotation(PageTitle.class));
+            Class<?> routeTarget) {
+        return Optional.ofNullable(routeTarget.getAnnotation(PageTitle.class));
     }
 
     private static boolean isPreserveOnRefreshTarget(

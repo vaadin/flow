@@ -997,11 +997,15 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ElementFactory.createDiv().setProperty("className", "foo");
     }
 
+    @Test
     public void setStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         Assert.assertEquals("bar", s.get("foo"));
+        s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
+        Assert.assertEquals("hsl(12, 12%, 12%)",
+                s.get("--lumo-primary-text-color"));
     }
 
     @Test
@@ -1096,7 +1100,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
-
+        Assert.assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1108,14 +1112,31 @@ public class ElementJacksonTest extends AbstractNodeTest {
         testStyleAttribute("width:calc(100% - 80px)");
         testStyleAttribute("width:var(--widthB)");
         testStyleAttribute("color:var(--mainColor)");
-        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
-        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
+        testStyleAttribute(
+                "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
+        var style = testStyleAttribute(
+                "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
+        testStyleAttribute(
+                "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
+        style = testStyleAttribute(
+                "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        Assert.assertEquals("var(--widthB)", style.get("width"));
+        Assert.assertEquals("var(--mainColor)", style.get("color"));
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
     }
 
-    private void testStyleAttribute(String style) {
+    private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
+        return e.getStyle();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -2183,7 +2204,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         span.appendChild(button);
 
         Assert.assertEquals("<div>\n"
-                + " <span>\n  <button>hello</button></span>\n" + "</div>",
+                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
                 div.getOuterHTML());
     }
 
@@ -2214,7 +2235,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         Html html = new Html(
                 "<div style='background:green'><span><button>hello</button></span></div>");
         Assert.assertEquals("<div style=\"background:green\">\n"
-                + " <span>\n  <button>hello</button></span>\n" + "</div>",
+                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
                 html.getElement().getOuterHTML());
     }
 

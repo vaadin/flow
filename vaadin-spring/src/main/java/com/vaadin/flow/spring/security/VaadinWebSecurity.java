@@ -19,15 +19,14 @@ import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 import javax.crypto.SecretKey;
-
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -58,7 +58,7 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CsrfException;
 import org.springframework.security.web.savedrequest.RequestCache;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
 import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
@@ -66,13 +66,11 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -295,13 +293,14 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        Stream.Builder<String> paths = Stream.builder();
-        Stream.of(HandlerHelper.getPublicResourcesRequiringSecurityContext())
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        String[] paths = HandlerHelper
+                .getPublicResourcesRequiringSecurityContext();
+        assert paths.length > 0;
+        return new OrRequestMatcher(Stream.of(paths)
                 .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
-                .forEach(paths::add);
-
-        return new OrRequestMatcher(paths.build()
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+                .map(builder::matcher).toArray(RequestMatcher[]::new));
     }
 
     /**
@@ -329,14 +328,25 @@ public abstract class VaadinWebSecurity {
             String urlMapping) {
         Objects.requireNonNull(urlMapping,
                 "Vaadin servlet url mapping is required");
-        Stream<String> mappingRelativePaths = Stream
-                .of(HandlerHelper.getPublicResources())
-                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path));
-        Stream<String> rootPaths = Stream
-                .of(HandlerHelper.getPublicResourcesRoot());
-        return new OrRequestMatcher(Stream
-                .concat(mappingRelativePaths, rootPaths)
-                .map(AntPathRequestMatcher::new).collect(Collectors.toList()));
+
+        List<RequestMatcher> matchers = new ArrayList<>();
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+
+        String[] publicResources = HandlerHelper.getPublicResources();
+        assert publicResources.length > 0;
+
+        Stream.of(publicResources)
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(builder::matcher).forEach(matchers::add);
+
+        String[] publicResourcesRoot = HandlerHelper.getPublicResourcesRoot();
+        assert publicResourcesRoot.length > 0;
+
+        Stream.of(publicResourcesRoot).map(builder::matcher)
+                .forEach(matchers::add);
+
+        return new OrRequestMatcher(matchers);
     }
 
     /**
@@ -346,7 +356,10 @@ public abstract class VaadinWebSecurity {
      *            ant patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #pathMatchers(String...)} instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] antMatchers(String... patterns) {
         return RequestUtil.antMatchers(patterns);
     }
@@ -359,10 +372,52 @@ public abstract class VaadinWebSecurity {
      *            ant patterns
      * @return an array or {@link RequestMatcher} instances for the given
      *         patterns.
+     * @deprecated AntPathRequestMatcher is deprecated and will be removed, use
+     *             {@link #routePathMatchers(String...)} instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public RequestMatcher[] routeMatchers(String... patterns) {
         return RequestUtil.routeMatchers(Stream.of(patterns)
                 .map(this::applyUrlMapping).toArray(String[]::new));
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s from path patterns.
+     *
+     * @param patterns
+     *            path patterns, as described in
+     *            {@link org.springframework.web.util.pattern.PathPattern}
+     *            javadoc.
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     * @see org.springframework.web.util.pattern.PathPattern
+     */
+    public RequestMatcher[] pathMatchers(String... patterns) {
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        return Stream.of(patterns).map(builder::matcher)
+                .toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
+     * patterns and HTTP get method.
+     *
+     * @param patterns
+     *            path patterns, as described in
+     *            {@link org.springframework.web.util.pattern.PathPattern}
+     *            javadoc.
+     * @return an array or {@link RequestMatcher} instances for the given
+     *         patterns.
+     * @see org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher#matcher(HttpServletRequest)
+     * @see org.springframework.web.util.pattern.PathPattern
+     */
+    public RequestMatcher[] routePathMatchers(String... patterns) {
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        return Stream.of(patterns).map(p -> builder.matcher(HttpMethod.GET, p))
+                .toArray(RequestMatcher[]::new);
     }
 
     /**
@@ -489,8 +544,8 @@ public abstract class VaadinWebSecurity {
                     getVaadinSavedRequestAwareAuthenticationSuccessHandler(
                             http));
         });
-        http.csrf(cfg -> cfg.ignoringRequestMatchers(
-                new AntPathRequestMatcher(completeLoginPath)));
+        http.csrf(cfg -> cfg.ignoringRequestMatchers(PathPatternRequestMatcher
+                .withDefaults().matcher(completeLoginPath)));
         configureLogout(http, logoutSuccessUrl);
         http.exceptionHandling(cfg -> cfg.defaultAuthenticationEntryPointFor(
                 new LoginUrlAuthenticationEntryPoint(completeLoginPath),
@@ -634,7 +689,7 @@ public abstract class VaadinWebSecurity {
     protected void setStatelessAuthentication(HttpSecurity http,
             SecretKey secretKey, String issuer, long expiresIn)
             throws Exception {
-        VaadinStatelessSecurityConfigurer.apply(http,
+        http.with(new VaadinStatelessSecurityConfigurer<>(),
                 cfg -> cfg.withSecretKey().secretKey(secretKey).and()
                         .issuer(issuer).expiresIn(expiresIn));
     }
@@ -651,34 +706,6 @@ public abstract class VaadinWebSecurity {
      */
     protected String applyUrlMapping(String path) {
         return requestUtil.applyUrlMapping(path);
-    }
-
-    /**
-     * Vaadin views access checker bean.
-     * <p>
-     * This getter can be used in implementing class to override logic of
-     * <code>VaadinWebSecurity.setLoginView</code> methods and call
-     * {@link ViewAccessChecker} methods explicitly.
-     * <p>
-     * Note that this bean is a field-autowired, thus this getter returns
-     * <code>null</code> when called from the constructor of implementing class.
-     *
-     * @return {@link ViewAccessChecker} bean used by this VaadinWebSecurity
-     *         configuration.
-     * @deprecated ViewAccessChecker is not used anymore by VaadinWebSecurity,
-     *             and has been replaced by {@link NavigationAccessControl}.
-     *             Calling this method will get a stub implementation that
-     *             delegates to the {@link NavigationAccessControl} instance.
-     */
-    @Deprecated(forRemoval = true, since = "24.3")
-    protected ViewAccessChecker getViewAccessChecker() {
-        LoggerFactory.getLogger(getClass()).warn(
-                "ViewAccessChecker is not used anymore by VaadinWebSecurity "
-                        + "and has been replaced by NavigationAccessControl. "
-                        + "'VaadinWebSecurity.getViewAccessChecker()' returns a stub instance that "
-                        + "delegates calls to NavigationAccessControl. "
-                        + "Usages of 'getViewAccessChecker()' should be replaced by calls to 'getNavigationAccessControl()'.");
-        return new DeprecateViewAccessCheckerDelegator(accessControl);
     }
 
     /**
@@ -765,36 +792,4 @@ public abstract class VaadinWebSecurity {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
-
-    private static class DeprecateViewAccessCheckerDelegator
-            extends ViewAccessChecker {
-
-        private final NavigationAccessControl accessControl;
-
-        public DeprecateViewAccessCheckerDelegator(
-                NavigationAccessControl acc) {
-            this.accessControl = acc;
-        }
-
-        @Override
-        public void enable() {
-            accessControl.setEnabled(true);
-        }
-
-        @Override
-        public void setLoginView(Class<? extends Component> loginView) {
-            accessControl.setLoginView(loginView);
-        }
-
-        @Override
-        public void setLoginView(String loginUrl) {
-            accessControl.setLoginView(loginUrl);
-        }
-
-        @Override
-        public void beforeEnter(BeforeEnterEvent beforeEnterEvent) {
-            accessControl.beforeEnter(beforeEnterEvent);
-        }
-    }
-
 }

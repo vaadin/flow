@@ -9,7 +9,7 @@
   },
   "devDependencies": {
     "async": "3.2.6",
-    "glob": "11.0.1",
+    "glob": "11.0.3",
     "typescript": "5.8.3",
     "workbox-core": "7.3.0",
     "workbox-precaching": "7.3.0",

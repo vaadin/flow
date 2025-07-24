@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>test-frontend</artifactId>
     <name>Frontend build (npm + Webpack + Vite)</name>
@@ -38,11 +38,14 @@
                 <module>vite-pwa</module>
                 <module>vite-pwa-custom-offline-path</module>
                 <module>vite-pwa-custom-offline-path/pom-production.xml</module>
+                <module>vite-pwa-custom-sw</module>
                 <module>vite-pwa-disabled-offline</module>
                 <module>vite-pwa-disabled-offline/pom-production.xml</module>
                 <module>vite-pwa-production</module>
                 <module>vite-embedded</module>
                 <module>vite-embedded/pom-production.xml</module>
+                <module>vite-embedded-no-theme</module>
+                <module>vite-embedded-no-theme/pom-production.xml</module>
                 <!-- npm and pnpm dev mode and prod mode -->
                 <!-- run production build before dev build as dev build has npm i in thread -->
                 <module>vite-embedded-webcomponent-resync</module>

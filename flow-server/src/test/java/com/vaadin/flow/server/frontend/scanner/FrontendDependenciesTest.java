@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -239,13 +240,13 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js",
-                "baz.js", "bar.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "baz.js",
+                "bar.js", "foo.js");
     }
 
     @Test
     public void defaultThemeIsLoadedForExporters() throws Exception {
-        FakeLumo.class.newInstance();
+        FakeLumo.class.getDeclaredConstructor().newInstance();
         Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(MyExporter.class)
                         .collect(Collectors.toSet()));
@@ -304,9 +305,9 @@ public class FrontendDependenciesTest {
 
     @Test // #9861
     public void visitedExporter_previousEntryPointsNotOverridden()
-            throws InstantiationException, IllegalAccessException {
+            throws Exception {
 
-        FakeLumo.class.newInstance();
+        FakeLumo.class.getDeclaredConstructor().newInstance();
         // Reference found through first entry point
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(ReferenceExporter.class));

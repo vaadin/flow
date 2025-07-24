@@ -219,7 +219,7 @@ public abstract class Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
-    private boolean isValid(SignalCommand command) {
+    boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
         } else if (command instanceof SignalCommand.TransactionCommand tx) {
@@ -384,14 +384,22 @@ public abstract class Signal<T> {
      * @return a usage instance, not <code>null</code>
      */
     protected Usage createUsage(Transaction transaction) {
+        Data data = data(transaction);
+        if (data == null) {
+            // Node is removed so no usage to track
+            return UsageTracker.NO_USAGE;
+        }
+
         // Capture so that we can use it later
-        Object originalValue = usageChangeValue(data(transaction));
+        Object originalValue = usageChangeValue(data);
 
         return new Usage() {
             @Override
             public boolean hasChanges() {
-                return !Objects.equals(originalValue,
-                        usageChangeValue(data(Transaction.getCurrent())));
+                Data currentData = data(Transaction.getCurrent());
+
+                return currentData != null && !Objects.equals(originalValue,
+                        usageChangeValue(currentData));
             }
 
             @Override

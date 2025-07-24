@@ -15,13 +15,7 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import javax.crypto.SecretKey;
-
 import java.io.IOException;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -29,6 +23,10 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.Customizer;
@@ -45,7 +43,6 @@ import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
-import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
@@ -67,8 +64,7 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
  * <li>{@link SecurityContextRepository} is populated with a
  * {@link JwtSecurityContextRepository}</li>
  * <li>{@link CsrfConfigurer#csrfTokenRepository(CsrfTokenRepository)} is used
- * to set {@link LazyCsrfTokenRepository} that delegates to
- * {@link CookieCsrfTokenRepository}</li>
+ * to set {@link CookieCsrfTokenRepository}</li>
  * </ul>
  *
  * <h2>Shared Objects Used</h2>
@@ -98,26 +94,6 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     private SecretKeyConfigurer secretKeyConfigurer;
 
     /**
-     * Sets {@link JwtSecurityContextRepository} as a shared object to be used
-     * by multiple {@code SecurityConfigurer}.
-     *
-     * @param http
-     *            the http security builder to store the shared object.
-     * @deprecated to be removed. There is no direct replacement for this
-     *             method. Shared object setup must be done along with other
-     *             required configurations by calling
-     *             {@link #apply(HttpSecurity, Customizer)}.
-     * @see #apply(HttpSecurity, Customizer)
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public void setSharedObjects(HttpSecurity http) {
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
-                new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(SecurityContextRepository.class,
-                jwtSecurityContextRepository);
-    }
-
-    /**
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
@@ -130,29 +106,37 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @deprecated use
+     *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
+     *             instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public static void apply(HttpSecurity http,
             Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
             throws Exception {
-
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
-                new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(JwtSecurityContextRepository.class,
-                jwtSecurityContextRepository);
-        http.securityContext(cfg -> {
-            DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
-                    jwtSecurityContextRepository,
-                    new RequestAttributeSecurityContextRepository());
-            cfg.securityContextRepository(repository);
-        });
-
         VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
         http.with(vaadinStatelessSecurityConfigurer, customizer);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(H http) {
+    public void init(H http) throws Exception {
+
+        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
+                new SerializedJwtSplitCookieRepository());
+        http.setSharedObject(JwtSecurityContextRepository.class,
+                jwtSecurityContextRepository);
+        // This class should not be parameterized but only accept HttpSecurity
+        // It has not been refactored for compatibility reason. The following
+        // cast is only a hack to work around the generic type definition.
+        if (http instanceof HttpSecurity httpSecurity) {
+            httpSecurity.securityContext(cfg -> {
+                DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
+                        jwtSecurityContextRepository,
+                        new RequestAttributeSecurityContextRepository());
+                cfg.securityContextRepository(repository);
+            });
+        }
 
         CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
         if (csrf != null) {

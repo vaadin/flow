@@ -28,7 +28,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NavigationTriggerIT extends ChromeBrowserTest {
 
-    @Ignore("https://github.com/vaadin/flow/issues/19494")
     @Test
     public void testNavigationTriggers() {
         String url = getTestURL() + "/abc/";

@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>flow-servlet-containers-test</artifactId>
     <name>flow-servlet-containers-test</name>
@@ -27,7 +27,7 @@
                 <plugin>
                     <groupId>org.codehaus.cargo</groupId>
                     <artifactId>cargo-maven3-plugin</artifactId>
-                    <version>1.10.19</version>
+                    <version>1.10.20</version>
                     <configuration>
                         <configuration>
                             <type>standalone</type>

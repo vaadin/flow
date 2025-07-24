@@ -172,6 +172,16 @@ public interface VaadinResponse {
     void setContentLength(int len);
 
     /**
+     * Sets the length of the content body in the response In HTTP servlets,
+     * this method sets the HTTP Content-Length header.
+     *
+     * @param len
+     *            a long specifying the length of the content being returned to
+     *            the client
+     */
+    void setContentLengthLong(long len);
+
+    /**
      * Sets all conceivable headers that might prevent a response from being
      * stored in any caches.
      *

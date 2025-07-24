@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>vaadin-spring-tests</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>test-ts-mvc-without-endpoints</artifactId>
     <name>Integration tests for a Spring MVC project without using endpoints</name>

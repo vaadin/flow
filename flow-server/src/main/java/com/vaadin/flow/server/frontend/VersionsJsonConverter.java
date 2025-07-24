@@ -43,9 +43,9 @@ class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
     static final String VAADIN_BUNDLES = "@vaadin/bundles";
-    private static final String JS_VERSION = "jsVersion";
-    private static final String NPM_NAME = "npmName";
-    private static final String NPM_VERSION = "npmVersion";
+    static final String JS_VERSION = "jsVersion";
+    static final String NPM_NAME = "npmName";
+    static final String NPM_VERSION = "npmVersion";
 
     /**
      * Key for exclusions array.

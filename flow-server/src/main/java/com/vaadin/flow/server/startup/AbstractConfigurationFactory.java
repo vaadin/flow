@@ -53,7 +53,6 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
@@ -138,9 +137,6 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.has(FRONTEND_HOTDEPLOY)) {
             params.put(FRONTEND_HOTDEPLOY, String
                     .valueOf(buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue()));
-        } else if (buildInfo.has(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            params.put(FRONTEND_HOTDEPLOY, String.valueOf(buildInfo
-                    .get(SERVLET_PARAMETER_ENABLE_DEV_SERVER).booleanValue()));
         }
         if (buildInfo.has(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
             params.put(SERVLET_PARAMETER_REUSE_DEV_SERVER,

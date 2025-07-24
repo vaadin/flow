@@ -10,7 +10,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 public class RouterLinkIT extends ChromeBrowserTest {
 
     @Test
-    @Ignore("Ignored because of issue in fusion : https://github.com/vaadin/flow/issues/7575")
     public void testRoutingLinks_insideServletMapping_updateLocation() {
         open();
 
@@ -57,12 +56,11 @@ public class RouterLinkIT extends ChromeBrowserTest {
 
         // Chrome changes url to whatever it can, removing www part, forcing
         // https.
-        Assert.assertTrue("Invalid URL: " + currentUrl,
-                currentUrl.equals("https://example.net/"));
+        Assert.assertEquals("Invalid URL: " + currentUrl,
+                "https://example.net/", currentUrl);
     }
 
     @Test
-    @Ignore("Ignored because of issue in fusion : https://github.com/vaadin/flow/issues/7575")
     public void testImageInsideRouterLink() {
         open();
 

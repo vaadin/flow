@@ -1,0 +1,8 @@
+h1 {
+    color: rgb(211, 211, 211);
+    font-family: "Ostrich";
+}
+@font-face {
+    font-family: "Ostrich";
+    src: url("./fonts/ostrich-sans-regular.ttf") format("TrueType");
+}
