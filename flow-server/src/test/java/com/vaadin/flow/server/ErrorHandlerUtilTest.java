@@ -142,7 +142,6 @@ public class ErrorHandlerUtilTest {
         Mockito.when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
         Mockito.when(vaadinService.getRouter())
                 .thenReturn(Mockito.mock(Router.class));
 
