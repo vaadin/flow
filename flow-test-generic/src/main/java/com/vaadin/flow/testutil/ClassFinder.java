@@ -146,10 +146,14 @@ public abstract class ClassFinder {
         }
 
         // Test classes with a @Test annotation on some method
-        for (Method method : cls.getMethods()) {
-            if (method.isAnnotationPresent(Test.class)) {
-                return true;
+        try {
+            for (Method method : cls.getMethods()) {
+                if (method.isAnnotationPresent(Test.class)) {
+                    return true;
+                }
             }
+        } catch (NoClassDefFoundError e) {
+            System.out.println("HERE ===> " + cls.getName() + " ");
         }
 
         return false;
