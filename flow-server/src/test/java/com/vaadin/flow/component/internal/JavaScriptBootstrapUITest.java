@@ -5,6 +5,10 @@ import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,6 +43,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.router.internal.NavigationStateRendererTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -176,6 +181,16 @@ public class JavaScriptBootstrapUITest {
                 Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
+
+        Class<? extends ProductView> routeProxyClass = new ByteBuddy()
+                .subclass(ProductView.class)
+                .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC).make()
+                .load(ProductView.class.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+        mocks.getService().getRouter().getRegistry().setRoute("proxy-product",
+                routeProxyClass, Collections.emptyList());
+
         mocks.getService().getRouter().getRegistry().setRoute("exception",
                 FailOnException.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute(
@@ -522,6 +537,14 @@ public class JavaScriptBootstrapUITest {
         ui.navigate("empty");
         assertNull(ui.getInternals().getTitle());
         ui.navigate("product");
+        assertEquals("my-product", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_updatePageTitle_when_serverNavigationToProxyViewClass() {
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("proxy-product");
         assertEquals("my-product", ui.getInternals().getTitle());
     }
 

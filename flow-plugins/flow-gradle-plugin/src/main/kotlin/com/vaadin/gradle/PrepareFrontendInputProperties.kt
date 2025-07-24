@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
 import com.vaadin.experimental.FeatureFlags
@@ -44,8 +44,8 @@ internal class PrepareFrontendInputProperties(
 
     @Input
     @Optional
-    fun getWebpackOutputDirectory(): Provider<String> =
-        config.webpackOutputDirectory
+    fun getFrontendOutputDirectory(): Provider<String> =
+        config.frontendOutputDirectory
             .filterExists()
             .absolutePath
 
@@ -53,7 +53,8 @@ internal class PrepareFrontendInputProperties(
     fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
-    fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
+    fun getFrontendDirectory(): Provider<String> =
+        config.frontendDirectory.absolutePath
 
     @Input
     fun getGenerateBundle(): Provider<Boolean> = config.generateBundle

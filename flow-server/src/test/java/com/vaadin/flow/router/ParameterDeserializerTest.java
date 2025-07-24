@@ -17,6 +17,7 @@ package com.vaadin.flow.router;
 
 import org.junit.Test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -61,6 +62,50 @@ public class ParameterDeserializerTest {
                 OptionalParameter.class));
         assertTrue(ParameterDeserializer.isAnnotatedParameter(
                 GenericAnnotated.class, OptionalParameter.class));
+    }
+
+    @Test
+    public void getClassType_concreteClass_parameterFromInterface() {
+        Class<?> type = ParameterDeserializer.getClassType(Simple.class);
+        assertEquals(String.class, type);
+        type = ParameterDeserializer.getClassType(SimpleAnnotated.class);
+        assertEquals(String.class, type);
+    }
+
+    @Test
+    public void getClassType_concreteClass_parameterFromExtendedInterface() {
+        Class<?> type = ParameterDeserializer.getClassType(Normal.class);
+        assertEquals(String.class, type);
+        type = ParameterDeserializer.getClassType(NormalAnnotated.class);
+        assertEquals(String.class, type);
+    }
+
+    @Test
+    public void getClassType_concreteClass_parameterFromSuperclass() {
+        Class<?> type = ParameterDeserializer
+                .getClassType(ParameterizedViaSuperClass.class);
+        assertEquals(String.class, type);
+        type = ParameterDeserializer
+                .getClassType(ParameterizedAnnotatedClass.class);
+        assertEquals(String.class, type);
+    }
+
+    @Test
+    public void getClassType_parameterizedClass_parameterFromInterface() {
+        Class<?> type = ParameterDeserializer
+                .getClassType(ParameterizedClass.class);
+        assertEquals(String.class, type);
+        type = ParameterDeserializer
+                .getClassType(ParameterizedAnnotatedClass.class);
+        assertEquals(String.class, type);
+    }
+
+    @Test
+    public void getClassType_parameterizedClass_parameterFromParameterizedInterface() {
+        Class<?> type = ParameterDeserializer.getClassType(Generic.class);
+        assertEquals(String.class, type);
+        type = ParameterDeserializer.getClassType(GenericAnnotated.class);
+        assertEquals(String.class, type);
     }
 
     public static class Simple implements HasUrlParameter<String> {

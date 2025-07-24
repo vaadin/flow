@@ -22,6 +22,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -153,7 +156,7 @@ public class BuildFrontendUtil {
                 .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
-                .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                .withBuildResultFolders(adapter.frontendOutputDirectory(),
                         adapter.servletResourceOutputDirectory())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
@@ -337,7 +340,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
@@ -410,7 +413,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
@@ -504,8 +507,26 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
-                adapter.servletResourceOutputDirectory());
+        String tokenContent = "";
+        File tokenFile = getTokenFile(adapter);
+        try {
+            tokenContent = Files.readString(tokenFile.toPath());
+            tokenFile.delete();
+        } catch (IOException ex) {
+            getLogger().error("Failed to read token file content.", ex);
+        }
+
+        try {
+            ProdBundleUtils.compressBundle(
+                    adapter.projectBaseDirectory().toFile(),
+                    adapter.servletResourceOutputDirectory());
+        } finally {
+            try {
+                Files.writeString(tokenFile.toPath(), tokenContent);
+            } catch (IOException ex) {
+                getLogger().error("Failed to write token file content.", ex);
+            }
+        }
     }
 
     /**
@@ -596,7 +617,7 @@ public class BuildFrontendUtil {
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
-        File outputFolder = adapter.webpackOutputDirectory();
+        File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
         try {
@@ -736,21 +757,6 @@ public class BuildFrontendUtil {
         }
 
         return components;
-    }
-
-    /**
-     * Updates the build info after the bundle has been built by build-frontend.
-     * <p>
-     * Removes the abstract folder paths as they should not be used for prebuilt
-     * bundles and ensures production mode is set to true.
-     *
-     * @param adapter
-     *            - the PluginAdapterBase.
-     * @deprecated use {@link #updateBuildFile(PluginAdapterBuild, boolean)}
-     */
-    @Deprecated
-    public static void updateBuildFile(PluginAdapterBuild adapter) {
-        updateBuildFile(adapter, false);
     }
 
     /**

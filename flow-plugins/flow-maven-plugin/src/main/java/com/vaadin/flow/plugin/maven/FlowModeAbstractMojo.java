@@ -16,7 +16,6 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
-
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -219,10 +218,19 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * The folder where the frontend build tool should output index.js and other
      * generated files.
+     *
+     * @deprecated Use {@link #frontendOutputDirectory} instead.
+     */
+    @Deprecated
+    private File webpackOutputDirectory;
+
+    /**
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
      */
     @Parameter(defaultValue = "${project.build.outputDirectory}/"
             + VAADIN_WEBAPP_RESOURCES)
-    private File webpackOutputDirectory;
+    private File frontendOutputDirectory;
 
     /**
      * Build directory for the project.
@@ -381,34 +389,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     protected void triggerRefresh(File file) {
         if (buildContextRefresher != null) {
             buildContextRefresher.accept(file);
-        }
-    }
-
-    /**
-     * Generates a List of ClasspathElements (Run and CompileTime) from a
-     * MavenProject.
-     *
-     * @param project
-     *            a given MavenProject
-     * @return List of ClasspathElements
-     * @deprecated will be removed without replacement.
-     */
-    @Deprecated(forRemoval = true)
-    public static List<String> getClasspathElements(MavenProject project) {
-
-        try {
-            final Stream<String> classpathElements = Stream
-                    .of(project.getRuntimeClasspathElements().stream(),
-                            project.getSystemClasspathElements().stream(),
-                            project.getCompileClasspathElements().stream()
-                                    .filter(s -> s.matches(
-                                            INCLUDE_FROM_COMPILE_DEPS_REGEX)))
-                    .flatMap(Function.identity());
-            return classpathElements.collect(Collectors.toList());
-        } catch (DependencyResolutionRequiredException e) {
-            throw new IllegalStateException(String.format(
-                    "Failed to retrieve runtime classpath elements from project '%s'",
-                    project), e);
         }
     }
 
@@ -650,8 +630,26 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public File webpackOutputDirectory() {
+        return frontendOutputDirectory();
+    }
 
-        return webpackOutputDirectory;
+    @Override
+    public File frontendOutputDirectory() {
+        if (webpackOutputDirectory != null) {
+            if (frontendOutputDirectory == null) {
+                logWarn("'webpackOutputDirectory' property is deprecated and will be removed in future releases. Please use 'frontendOutputDirectory' instead.");
+                frontendOutputDirectory = webpackOutputDirectory;
+                webpackOutputDirectory = null;
+            } else if (webpackOutputDirectory.equals(frontendOutputDirectory)) {
+                webpackOutputDirectory = null;
+            } else {
+                logWarn("Both 'frontendOutputDirectory' and 'webpackOutputDirectory' are set. "
+                        + "'webpackOutputDirectory' property will be removed in future releases and will be ignored. "
+                        + "Please use only 'frontendOutputDirectory'.");
+                webpackOutputDirectory = null;
+            }
+        }
+        return frontendOutputDirectory;
     }
 
     @Override

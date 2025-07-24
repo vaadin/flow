@@ -134,7 +134,8 @@ public class MenuRegistry {
                     value.loginRequired(),
                     getMenuLink(entry.getValue(), entry.getKey()), value.lazy(),
                     value.register(), value.menu(), value.children(),
-                    value.routeParameters(), value.flowLayout());
+                    value.routeParameters(), value.flowLayout(),
+                    value.detail());
         }).sorted(getMenuOrderComparator(
                 (locale != null ? Collator.getInstance(locale)
                         : Collator.getInstance())))
@@ -208,7 +209,8 @@ public class MenuRegistry {
             Map<String, RouteParamType> parameters = getParameters(route);
             menuRoutes.put(url,
                     new AvailableViewInfo(title, null, false, url, false, false,
-                            route.getMenuData(), null, parameters, false));
+                            route.getMenuData(), null, parameters, false,
+                            null));
         }
     }
 
@@ -440,7 +442,7 @@ public class MenuRegistry {
         return new AvailableViewInfo(source.title(), source.rolesAllowed(),
                 source.loginRequired(), source.route(), source.lazy(),
                 source.register(), newMenuData, source.children(),
-                source.routeParameters(), source.flowLayout());
+                source.routeParameters(), source.flowLayout(), source.detail());
     }
 
     public static final String FILE_ROUTES_JSON_NAME = "file-routes.json";

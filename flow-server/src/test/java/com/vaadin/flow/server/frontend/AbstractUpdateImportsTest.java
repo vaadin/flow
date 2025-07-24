@@ -313,7 +313,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         List<String> expectedLines = new ArrayList<>();
         getExpectedImports().stream().filter(imp -> imp.equals("/foo.css"))
                 .forEach(imp -> expectedLines
-                        .add("import '" + addWebpackPrefix(imp) + "';"));
+                        .add("import '" + addFrontendAlias(imp) + "';"));
 
         // An import without `.js` extension
         expectedLines.add(
@@ -434,6 +434,13 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Check that imports other than lumo globals are the same
         flowImports.removeAll(updater.webComponentImports);
+
+        // webComponent only has injectGlobalWebcomponentCss and not
+        // injectGlobalCss'
+        Predicate<String> injectGlobal = Pattern.compile("injectGlobalCss.*")
+                .asPredicate();
+        flowImports.removeIf(injectGlobal);
+
         assertTrue(
                 "Flow and web-component imports must be the same, except for lumo globals",
                 flowImports.stream().allMatch(lumoGlobalsMatcher));
@@ -461,10 +468,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                     matcher.find();
                     return matcher.group(1);
                 }).collect(Collectors.toList());
-
-        assertTrue("Import for web-components should also inject global CSS",
-                updater.webComponentImports.stream()
-                        .anyMatch(globalCssImporter));
 
         assertTrue(
                 "Should contain function to import global CSS into embedded component",
@@ -781,7 +784,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private void assertContainsImports(boolean contains, String... imports) {
         for (String line : imports) {
             boolean result = updater.getMergedOutput()
-                    .contains("import '" + addWebpackPrefix(line) + "';");
+                    .contains("import '" + addFrontendAlias(line) + "';");
             String message = "\n  " + (contains ? "NOT " : "") + "FOUND '"
                     + line + " IN: \n" + updater.getMergedOutput();
             if (contains) {
@@ -795,7 +798,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     private void assertImportOrder(String... imports) {
         int curIndex = -1;
         for (String line : imports) {
-            String prefixed = addWebpackPrefix(line);
+            String prefixed = addFrontendAlias(line);
             int nextIndex = updater.getMergedOutput()
                     .indexOf("import '" + prefixed + "';");
             assertTrue("import '" + prefixed + "' not found", nextIndex != -1);

@@ -27,8 +27,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -102,7 +100,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             throws VaadinInitializerException {
         shutdownExecutorService();
         executorService = Executors.newFixedThreadPool(4,
-                new InternalThreadFactory());
+                new NamedDaemonThreadFactory("vaadin-dev-server"));
         setDevModeHandler(DevModeInitializer.initDevModeHandler(classes,
                 context, executorService));
         CompletableFuture.runAsync(() -> {
@@ -247,17 +245,4 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
 
-    private static class InternalThreadFactory implements ThreadFactory {
-        private final AtomicInteger threadNumber = new AtomicInteger(1);
-
-        @Override
-        public Thread newThread(Runnable runnable) {
-            String threadName = "vaadin-dev-server-"
-                    + threadNumber.getAndIncrement();
-            Thread thread = new Thread(runnable, threadName);
-            thread.setDaemon(true);
-            thread.setPriority(Thread.NORM_PRIORITY);
-            return thread;
-        }
-    }
 }

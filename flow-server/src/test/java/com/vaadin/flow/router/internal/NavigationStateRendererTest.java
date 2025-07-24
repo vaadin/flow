@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
@@ -646,7 +647,8 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("b",
                                 Collections.emptyList()))),
-                ui, NavigationTrigger.ROUTER_LINK, Json.createObject(), false);
+                ui, NavigationTrigger.ROUTER_LINK,
+                new ObjectMapper().createObjectNode(), false);
         renderer.handle(event);
 
         Assert.assertFalse(ui.isClosing());
@@ -804,7 +806,7 @@ public class NavigationStateRendererTest {
                     .thenReturn(Collections.singletonMap("/client-route",
                             new AvailableViewInfo("", null, false,
                                     "/client-route", false, false, null, null,
-                                    null, false)));
+                                    null, false, null)));
 
             // This should not call attach or beforeEnter on root route
             renderer.handle(
@@ -1104,7 +1106,7 @@ public class NavigationStateRendererTest {
                     .thenReturn(Collections.singletonMap("/client-route",
                             new AvailableViewInfo("Client", null, false,
                                     "/client-route", false, false, null, null,
-                                    null, clientRouteHasFlowLayout)));
+                                    null, clientRouteHasFlowLayout, null)));
 
             NavigationEvent event = new NavigationEvent(
                     new Router(new TestRouteRegistry()),

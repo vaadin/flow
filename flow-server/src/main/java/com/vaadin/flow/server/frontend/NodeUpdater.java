@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
@@ -77,6 +76,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
     static final String OVERRIDES = "overrides";
+    static final String PNPM = "pnpm";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -219,7 +219,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
-        removeWebpackPlugins(packageJson);
+        removePlugins(packageJson);
 
         return packageJson;
     }
@@ -229,7 +229,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         computeIfAbsent(json, DEV_DEPENDENCIES, JacksonUtils::createObjectNode);
     }
 
-    private void removeWebpackPlugins(ObjectNode packageJson) {
+    private void removePlugins(ObjectNode packageJson) {
         Path targetFolder = Paths.get(options.getNpmFolder().toString(),
                 options.getBuildDirectoryName(),
                 FrontendPluginsUtil.PLUGIN_TARGET);

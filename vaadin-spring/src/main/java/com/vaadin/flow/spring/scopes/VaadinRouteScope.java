@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.lang.NonNull;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
@@ -89,6 +89,11 @@ public class VaadinRouteScope extends AbstractScope {
                         uiInstance -> routeStores
                                 .remove(getUIStoreKey(uiInstance)));
                 routeStores.put(key, beanStore);
+            }
+            if (!ui.equals(beanStore.currentUI)) {
+                // Reloading for new UI on same window name. Update UI for
+                // beanStore.
+                beanStore.currentUI = ui;
             }
             return beanStore;
         }

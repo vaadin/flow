@@ -40,7 +40,7 @@ public class SignalEnvironment {
 
     private static final AtomicReference<InitializationState> state = new AtomicReference<>();
 
-    private static final List<Supplier<Executor>> dispacherOverrides = new CopyOnWriteArrayList<>();
+    private static final List<Supplier<Executor>> dispatcherOverrides = new CopyOnWriteArrayList<>();
 
     private SignalEnvironment() {
         // Only static stuff
@@ -99,9 +99,9 @@ public class SignalEnvironment {
      */
     public static Runnable addDispatcherOverride(
             Supplier<Executor> dispatcherOverride) {
-        dispacherOverrides.add(0, Objects.requireNonNull(dispatcherOverride));
+        dispatcherOverrides.add(0, Objects.requireNonNull(dispatcherOverride));
         return () -> {
-            dispacherOverrides.remove(dispatcherOverride);
+            dispatcherOverrides.remove(dispatcherOverride);
         };
     }
 
@@ -171,7 +171,7 @@ public class SignalEnvironment {
     }
 
     private static Executor resolveDispatcher(Executor baseline) {
-        for (Supplier<Executor> supplier : dispacherOverrides) {
+        for (Supplier<Executor> supplier : dispatcherOverrides) {
             Executor override = supplier.get();
             if (override != null) {
                 return override;

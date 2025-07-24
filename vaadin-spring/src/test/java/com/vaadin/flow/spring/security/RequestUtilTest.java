@@ -1,11 +1,10 @@
 package com.vaadin.flow.spring.security;
 
-import jakarta.annotation.security.RolesAllowed;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,10 +13,10 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.Component;
@@ -55,13 +54,13 @@ public class RequestUtilTest {
     @Autowired
     NavigationAccessControl accessControl;
 
-    @MockBean
+    @MockitoBean
     VaadinConfigurationProperties vaadinConfigurationProperties;
 
-    @MockBean
+    @MockitoBean
     private RoutePathAccessChecker accessPathChecker;
 
-    @MockBean
+    @MockitoBean
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
     @Before

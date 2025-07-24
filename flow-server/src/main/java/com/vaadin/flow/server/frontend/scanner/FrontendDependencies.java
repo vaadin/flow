@@ -28,6 +28,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -102,65 +103,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private Class<? extends Annotation> routeClass;
     private Set<String> eagerRoutes = null;
 
-    /**
-     * Default Constructor.
-     *
-     * @param finder
-     *            the class finder
-     * @deprecated Use
-     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
-     *             instead.
-     */
-    @Deprecated
-    public FrontendDependencies(ClassFinder finder) {
-        this(finder, true, null);
-    }
-
-    /**
-     * Secondary constructor, which allows declaring whether embeddable web
-     * components should be checked for resource dependencies.
-     *
-     * @param finder
-     *            the class finder
-     * @param generateEmbeddableWebComponents
-     *            {@code true} checks the
-     *            {@link com.vaadin.flow.component.WebComponentExporter} classes
-     *            for dependencies. {@code true} is default for
-     *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
-     * @deprecated Use
-     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
-     *             instead.
-     */
-    @Deprecated
-    public FrontendDependencies(ClassFinder finder,
-            boolean generateEmbeddableWebComponents) {
-        this(finder, generateEmbeddableWebComponents, null);
-    }
-
-    /**
-     * Tertiary constructor, which allows declaring whether embeddable web
-     * components should be checked for resource dependencies.
-     *
-     * @param finder
-     *            the class finder
-     * @param generateEmbeddableWebComponents
-     *            {@code true} checks the
-     *            {@link com.vaadin.flow.component.WebComponentExporter} classes
-     *            for dependencies. {@code true} is default for
-     *            {@link FrontendDependencies#FrontendDependencies(ClassFinder)}
-     * @param featureFlags
-     *            available feature flags and their status
-     * @deprecated Use
-     *             {@link FrontendDependencies#FrontendDependencies(ClassFinder, boolean, FeatureFlags, boolean)}
-     *             instead.
-     */
-    @Deprecated
-    public FrontendDependencies(ClassFinder finder,
-            boolean generateEmbeddableWebComponents,
-            FeatureFlags featureFlags) {
-        this(finder, generateEmbeddableWebComponents, featureFlags, true);
-    }
-
     public FrontendDependencies(ClassFinder finder,
             boolean generateEmbeddableWebComponents, FeatureFlags featureFlags,
             boolean reactEnabled) {
@@ -203,7 +145,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             throw ex;
         } catch (ClassNotFoundException | InstantiationException
-                | IllegalAccessException | IOException e) {
+                | IllegalAccessException | IOException | NoSuchMethodException
+                | InvocationTargetException e) {
             throw new IllegalStateException(
                     "Unable to compute frontend dependencies", e);
         }
@@ -254,7 +197,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {
-        Set<String> classes = new HashSet<>();
+        Set<String> classes = new LinkedHashSet<>();
         collectReachableClasses(entryPointData.getName(), classes);
 
         return classes;
@@ -611,7 +554,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      * if found in the class-path
      */
     private void computeApplicationTheme() throws ClassNotFoundException,
-            InstantiationException, IllegalAccessException, IOException {
+            InstantiationException, IllegalAccessException, IOException,
+            InvocationTargetException, NoSuchMethodException {
 
         // This really should check entry points and not all classes, but the
         // old behavior is retained.. for now..

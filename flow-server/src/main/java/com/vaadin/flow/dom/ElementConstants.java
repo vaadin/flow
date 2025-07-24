@@ -60,6 +60,14 @@ public class ElementConstants {
      */
     public static final String STYLE_BACKGROUND_IMAGE = "background-image";
     /**
+     * The style property for background-position.
+     */
+    public static final String STYLE_BACKGROUND_POSITION = "background-position";
+    /**
+     * The style property for background-size.
+     */
+    public static final String STYLE_BACKGROUND_SIZE = "background-size";
+    /**
      * The style property for color.
      */
     public static final String STYLE_COLOR = "color";
@@ -112,9 +120,17 @@ public class ElementConstants {
      */
     public static final String STYLE_FLOAT = "float";
     /**
+     * The style property for filter.
+     */
+    public static final String STYLE_FILTER = "filter";
+    /**
      * The style property for font.
      */
     public static final String STYLE_FONT = "font";
+    /**
+     * The style property for gap.
+     */
+    public static final String STYLE_GAP = "gap";
     /**
      * The style property for margin.
      */
@@ -183,6 +199,10 @@ public class ElementConstants {
      * The style property for scale.
      */
     public static final String STYLE_SCALE = "scale";
+    /**
+     * The style property for rotate.
+     */
+    public static final String STYLE_ROTATE = "rotate";
     /**
      * The style property for text-align.
      */
@@ -280,12 +300,6 @@ public class ElementConstants {
      * The label property.
      */
     public static final String LABEL_PROPERTY_NAME = "label";
-    /**
-     * The aria-label property.
-     *
-     * @deprecated use {@link #ARIA_LABEL_ATTRIBUTE_NAME} instead
-     */
-    public static final String ARIA_LABEL_PROPERTY_NAME = "aria-label";
     /**
      * The aria-label attribute.
      */

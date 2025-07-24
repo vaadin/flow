@@ -15,7 +15,6 @@ public class MockDeploymentConfiguration
         extends AbstractDeploymentConfiguration {
 
     private boolean productionMode = false;
-    private boolean frontendHotdeploy = false;
     private boolean reuseDevServer = true;
     private boolean xsrfProtectionEnabled = true;
     private int heartbeatInterval = 300;
@@ -53,15 +52,6 @@ public class MockDeploymentConfiguration
 
     public void setProductionMode(boolean productionMode) {
         this.productionMode = productionMode;
-    }
-
-    public void setFrontendHotdeploy(boolean frontendHotdeploy) {
-        this.frontendHotdeploy = frontendHotdeploy;
-    }
-
-    @Override
-    public boolean frontendHotdeploy() {
-        return frontendHotdeploy;
     }
 
     public void setReuseDevServer(boolean reuseDevServer) {

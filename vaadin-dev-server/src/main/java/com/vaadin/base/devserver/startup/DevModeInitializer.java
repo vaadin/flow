@@ -170,34 +170,6 @@ public class DevModeInitializer implements Serializable {
     /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
-     * <p>
-     * </p>
-     * Uses common ForkJoin pool to execute asynchronous tasks. It is
-     * recommended to use
-     * {@link #initDevModeHandler(Set, VaadinContext, Executor)} and provide a a
-     * custom executor if initialization starts long-running tasks.
-     *
-     * @param classes
-     *            classes to check for npm- and js modules
-     * @param context
-     *            VaadinContext we are running in
-     * @return the initialized dev mode handler or {@code null} if none was
-     *         created
-     *
-     * @throws VaadinInitializerException
-     *             if dev mode can't be initialized
-     * @deprecated use {@link #initDevModeHandler(Set, VaadinContext, Executor)}
-     *             providing a custom executor.
-     */
-    @Deprecated(forRemoval = true)
-    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
-            VaadinContext context) throws VaadinInitializerException {
-        return initDevModeHandler(classes, context, ForkJoinPool.commonPool());
-    }
-
-    /**
-     * Initialize the devmode server if not in production mode or compatibility
-     * mode.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -370,12 +342,12 @@ public class DevModeInitializer implements Serializable {
         }
     }
 
-    private static List<String> getFrontendExtraFileExtensions(
+    static List<String> getFrontendExtraFileExtensions(
             ApplicationConfiguration config) {
-        List<String> stringProperty = Arrays.asList(config
+        List<String> stringProperty = Arrays.stream(config
                 .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
-                .split(","));
-        return stringProperty;
+                .split(",")).filter(input -> !input.isBlank()).toList();
+        return stringProperty.isEmpty() ? null : stringProperty;
     }
 
     private static Logger log() {

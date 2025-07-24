@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
 import java.net.URI
@@ -233,8 +233,10 @@ internal class GradlePluginAdapter private constructor(
         return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
     }
 
-    override fun webpackOutputDirectory(): File =
-        config.webpackOutputDirectory.get()
+    override fun webpackOutputDirectory(): File = frontendOutputDirectory()
+
+    override fun frontendOutputDirectory(): File =
+        config.frontendOutputDirectory.get()
 
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()

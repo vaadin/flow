@@ -34,6 +34,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.Layout;
@@ -56,8 +57,6 @@ import com.vaadin.flow.server.auth.AccessCheckDecision;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.shared.Registration;
 
 import static java.util.stream.Collectors.toList;
@@ -234,10 +233,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
 
         List<NavigationAccessControl> navigationAccessControls = findListOf(
                 NavigationAccessControl.class, accessControls);
-        List<ViewAccessChecker> legacyViewAccessCheckers = findListOf(
-                ViewAccessChecker.class, accessControls);
-        if (navigationAccessControls.isEmpty()
-                && legacyViewAccessCheckers.isEmpty()) {
+        if (navigationAccessControls.isEmpty()) {
             return getMenuRouteCandidates().toList();
         }
         return getMenuRouteCandidates().filter(route -> navigationAccessControls
@@ -249,18 +245,7 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
                                     vaadinRequest);
                     return accessControl.checkAccess(navigationContext, true)
                             .decision() == AccessCheckDecision.ALLOW;
-                })).filter(route -> legacyViewAccessCheckers.stream()
-                        .allMatch(legacyAccessChecker -> {
-                            NavigationContext navigationContext = legacyAccessChecker
-                                    .createNavigationContext(
-                                            route.getNavigationTarget(),
-                                            route.getTemplate(), vaadinService,
-                                            vaadinRequest);
-                            return legacyAccessChecker
-                                    .checkAccess(navigationContext)
-                                    .decision() == AccessCheckDecision.ALLOW;
-                        }))
-                .toList();
+                })).toList();
     }
 
     private Stream<RouteData> getMenuRouteCandidates() {

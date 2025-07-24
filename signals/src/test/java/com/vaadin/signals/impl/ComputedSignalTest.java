@@ -161,6 +161,29 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void effect_signalUpdatedInTransaction_effectIsUpdated() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+
+        AtomicInteger computeCount = new AtomicInteger();
+        Signal<String> signal = Signal.computed(() -> {
+            computeCount.incrementAndGet();
+            return source.value();
+        });
+
+        ArrayList<String> invocations = new ArrayList<>();
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+        });
+
+        Signal.runInTransaction(() -> {
+            source.value("update");
+        });
+
+        assertEquals(2, computeCount.intValue());
+        assertEquals(List.of("value", "update"), invocations);
+    }
+
+    @Test
     void effect_closedEffect_computedGarbageCollected() {
         ValueSignal<String> source = new ValueSignal<>("value");
 

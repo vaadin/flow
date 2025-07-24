@@ -30,26 +30,6 @@ public record MenuData(String title, Double order, boolean exclude, String icon,
         Class<? extends Component> menuClass) implements Serializable {
 
     /**
-     * MenuData constructor.
-     *
-     * @param title
-     *            title of the menu item
-     * @param order
-     *            order of the menu item
-     * @param exclude
-     *            whether the menu item should be excluded
-     * @param icon
-     *            the icon of the menu item
-     *
-     * @deprecated Use {@link #MenuData(String, Double, boolean, String, Class)}
-     *             instead.
-     */
-    @Deprecated(forRemoval = true)
-    public MenuData(String title, Double order, boolean exclude, String icon) {
-        this(title, order, exclude, icon, null);
-    }
-
-    /**
      * Gets the title of the menu item.
      *
      * @return the title of the menu item

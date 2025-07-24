@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import org.gradle.api.internal.artifacts.DefaultModuleIdentifier
 import org.junit.Test

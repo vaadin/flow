@@ -195,7 +195,7 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 .contains("https://fonts.googleapis.com/css?family=Poppins"));
         Assert.assertTrue("Link with media query was not found", linkUrls
                 .contains("https://fonts.googleapis.com/css?family=Oswald"));
-        Assert.assertFalse("Found import that webpack should have resolved",
+        Assert.assertFalse("Found import that Vite should have resolved",
                 linkUrls.contains("docImport.css"));
 
         final List<WebElement> mediaLinks = links.stream()
@@ -232,8 +232,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
         Assert.assertEquals(
-                "Project contains 3 css injections to document and all should be hashed",
-                3l, getCommandExecutor().executeScript(
+                "Project contains 2 css injections to document and all should be hashed",
+                2l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
@@ -268,8 +268,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final DivElement element = $(DivElement.class).withId("cssimport")
                 .waitForFirst();
         Assert.assertEquals(
-                "CssImport styles (colors) should have been applied to elements in embedding page",
-                "rgba(255, 215, 0, 1)", element.getCssValue("color"));
+                "CssImport styles (colors) should not have been applied to elements outside embedded component",
+                "rgba(0, 0, 0, 1)", element.getCssValue("color"));
 
     }
 
