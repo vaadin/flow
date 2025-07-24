@@ -574,14 +574,6 @@ public class VaadinSessionTest {
 
         public TestVaadinSession() {
             super(new MockVaadinServletService());
-            try {
-                Field serviceField = getClass().getSuperclass()
-                        .getDeclaredField("service");
-                serviceField.setAccessible(true);
-                serviceField.set(this, null);
-            } catch (NoSuchFieldException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
