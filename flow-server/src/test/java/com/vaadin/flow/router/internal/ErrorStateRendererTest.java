@@ -223,9 +223,7 @@ public class ErrorStateRendererTest {
         };
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
-        MockUI ui = new MockUI(session);
-        return ui;
+        return new MockUI(session);
     }
 }
