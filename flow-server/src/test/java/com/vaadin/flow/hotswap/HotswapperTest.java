@@ -1375,16 +1375,12 @@ public class HotswapperTest {
         WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
         when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
 
-        MockVaadinSession session = new MockVaadinSession(service) {
+        return new MockVaadinSession(service) {
             @Override
             public WrappedSession getSession() {
                 return wrappedSession;
             }
         };
-        session.getLockInstance().lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
-        session.getLockInstance().unlock();
-        return session;
     }
 
     private String[] toClassNameArray(Collection<Class<?>> classes) {

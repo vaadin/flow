@@ -394,7 +394,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui1 = new MockUI(session);
@@ -463,7 +462,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
@@ -516,7 +514,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -562,7 +559,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -615,7 +611,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -671,7 +666,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -729,7 +723,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -779,7 +772,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -828,7 +820,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -908,7 +899,6 @@ public class NavigationStateRendererTest {
         // When using react router we have the sever do the update in all cases
         // to control the correct timing for url updates
         configuration.setReactEnabled(false);
-        session.setConfiguration(configuration);
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)
