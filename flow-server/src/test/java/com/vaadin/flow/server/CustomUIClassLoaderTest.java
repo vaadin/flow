@@ -53,7 +53,6 @@ public class CustomUIClassLoaderTest {
     @Test
     public void testWithDefaultClassLoader() throws Exception {
         VaadinSession application = createStubApplication();
-        application.setConfiguration(createConfigurationMock());
 
         Class<? extends UI> uiClass = BootstrapHandler
                 .getUIClass(createRequestMock(getClass().getClassLoader()));
