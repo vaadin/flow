@@ -182,19 +182,19 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
         LicenseChecker.setStrictOffline(true);
 
         boolean licenseRequired;
-        boolean watermarkRequired;
+        boolean commercialBannerRequired;
         try {
             licenseRequired = BuildFrontendUtil.validateLicenses(this,
                     frontendDependencies);
-            watermarkRequired = false;
+            commercialBannerRequired = false;
         } catch (MissingLicenseKeyException ex) {
             licenseRequired = true;
-            watermarkRequired = true;
+            commercialBannerRequired = true;
             getLog().info(ex.getMessage());
         }
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired,
-                watermarkRequired);
+                commercialBannerRequired);
 
         long ms = (System.nanoTime() - start) / 1000000;
         getLog().info("Build frontend completed in " + ms + " ms.");

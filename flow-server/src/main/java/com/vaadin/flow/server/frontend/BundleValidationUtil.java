@@ -233,15 +233,16 @@ public final class BundleValidationUtil {
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
                 .remove(FrontendUtils.INDEX_HTML);
 
-        if (isWatermarkConditionChanged(options, statsJson)) {
+        if (isCommercialBannerConditionChanged(options, statsJson)) {
             UsageStatistics.markAsUsed(
-                    "flow/rebundle-reason-watermark-condition-changed", null);
+                    "flow/rebundle-reason-commercial-banner-condition-changed",
+                    null);
             return true;
         }
-        // watermark file hash has already been checked, if needed.
+        // commercial banner file hash has already been checked, if needed.
         // removing it from hashes map to prevent other unnecessary checks
-        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
-                .remove(FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS);
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
                 frontendDependencies)) {
@@ -765,36 +766,38 @@ public final class BundleValidationUtil {
         return false;
     }
 
-    private static boolean isWatermarkConditionChanged(Options options,
+    private static boolean isCommercialBannerConditionChanged(Options options,
             JsonNode statsJson) throws IOException {
         final JsonNode frontendHashes = statsJson
                 .get(FRONTEND_HASHES_STATS_KEY);
-        boolean watermarkRequested = options.isWatermarkEnable();
-        String watermarkPath = FrontendUtils.GENERATED
-                + FrontendUtils.WATERMARK_JS;
-        boolean hasWatermarkHash = frontendHashes.has(watermarkPath);
-        if (!watermarkRequested && hasWatermarkHash) {
+        boolean commercialBannerRequested = options.isCommercialBannerEnabled();
+        String commercialBannerPath = FrontendUtils.GENERATED
+                + FrontendUtils.COMMERCIAL_BANNER_JS;
+        boolean hasCommercialBannerHash = frontendHashes
+                .has(commercialBannerPath);
+        if (!commercialBannerRequested && hasCommercialBannerHash) {
             getLogger().info(
-                    "Detected watermark file but watermark is not enabled");
+                    "Detected commercial banner file but commercial banner is not enabled");
             return true;
         }
-        if (!options.isProductionMode() && hasWatermarkHash) {
+        if (!options.isProductionMode() && hasCommercialBannerHash) {
             getLogger().info(
-                    "Detected watermark file but watermark is applied in development bundle");
+                    "Detected commercial banner file but commercial banner is not applied in development bundle");
             return true;
         }
-        if (watermarkRequested && options.isProductionMode()) {
-            if (!hasWatermarkHash) {
-                getLogger().info("Detected missing watermark file");
+        if (commercialBannerRequested && options.isProductionMode()) {
+            if (!hasCommercialBannerHash) {
+                getLogger().info("Detected missing commercial banner file");
                 return true;
             }
 
             List<String> faultyContent = new ArrayList<>();
-            compareFrontendHashes(frontendHashes, faultyContent, watermarkPath,
-                    new TaskGenerateWatermarkComponent(options)
-                            .getFileContent());
+            compareFrontendHashes(frontendHashes, faultyContent,
+                    commercialBannerPath,
+                    new TaskGenerateCommercialBanner(options).getFileContent());
             if (!faultyContent.isEmpty()) {
-                getLogger().info("Detected changed content for watermark file");
+                getLogger().info(
+                        "Detected changed content for commercial banner file");
                 return true;
             }
         }

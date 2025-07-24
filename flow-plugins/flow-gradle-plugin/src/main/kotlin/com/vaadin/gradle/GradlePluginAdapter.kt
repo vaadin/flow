@@ -318,8 +318,8 @@ internal class GradlePluginAdapter private constructor(
     override fun isFrontendIgnoreVersionChecks(): Boolean =
         config.frontendIgnoreVersionChecks.get()
 
-    override fun isWatermarkEnabled(): Boolean {
-        return config.commercialWithWatermark.get()
+    override fun isCommercialBannerEnabled(): Boolean {
+        return config.commercialWithBanner.get()
     }
 
 }

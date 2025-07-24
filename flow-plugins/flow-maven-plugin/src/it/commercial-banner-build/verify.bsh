@@ -1,0 +1,45 @@
+import java.nio.file.*;
+import java.util.*;
+
+success = List.of("commercial-banner-enabled", "commercial-banner-enabled-by-system-property");
+failure = List.of("commercial-banner-disabled", "commercial-banner-undefined");
+
+
+for (profile: success) {
+    logFile = basedir.toPath().resolve(profile + ".log");
+    if (!Files.exists(logFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": Missing build logs file " + logFile);
+    }
+    logs = Files.readString(logFile);
+    if (!logs.contains("Application commercial banner enabled")) {
+        throw new RuntimeException(profile + ": Logs did not contain message about commercial banner.\n\n" + logs);
+    }
+    buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
+    if (!Files.exists(buildInfoFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": flow-build-info.json should have been generated and copied to " + buildInfoFile);
+    }
+    buildInfoJson = Files.readString(buildInfoFile);
+    if (!buildInfoJson.matches("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*")) {
+        throw new RuntimeException(profile + ": commercialBanner.enabled token missing or incorrect in " + buildInfoFile +
+        ":\n" + buildInfoJson);
+    }
+}
+
+for (profile: failure) {
+    logFile = basedir.toPath().resolve(profile + ".log");
+    if (!Files.exists(logFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": Missing build logs file " + logFile);
+    }
+    logs = Files.readString(logFile);
+    var expectedMessage = "Your application contains the following commercial components and no license was found";
+    if (!logs.contains(expectedMessage) && !logs.contains("* vaadin-commercial-component")) {
+        throw new RuntimeException(profile + ": Commercial banner disable but build did not fail with expected message.\n\n" + logs);
+    }
+    if (!logs.contains("vaadin.commercialWithBanner")) {
+        throw new RuntimeException(profile + ": Failed build did not suggest usage of 'vaadin.commercialWithBanner' property.\n\n" + logs);
+    }
+    buildInfoFile = basedir.toPath().resolve("outcome").resolve(profile).resolve("flow-build-info.json");
+    if (Files.exists(buildInfoFile, new LinkOption[0])) {
+        throw new RuntimeException(profile + ": flow-build-info.json should not have been generated but it was copied to " + buildInfoFile);
+    }
+}

@@ -107,15 +107,15 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             "Commercial features require a subscription."
         )
         assertContains(result.output, "* vaadin-commercial-component")
-        assertContains(result.output, "commercialWithWatermark")
+        assertContains(result.output, "commercialWithBanner")
     }
 
     @Test
-    fun testBuildFrontendInProductionMode_watermarkBuildDisabled_buildFails() {
+    fun testBuildFrontendInProductionMode_commercialBannerBuildDisabled_buildFails() {
         testProject.buildFile.appendText(
             """
             vaadin {
-                commercialWithWatermark = false
+                commercialWithBanner = false
             }
         """.trimIndent()
         )
@@ -130,36 +130,36 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             "Commercial features require a subscription."
         )
         assertContains(result.output, "* vaadin-commercial-component")
-        assertContains(result.output, "commercialWithWatermark")
+        assertContains(result.output, "commercialWithBanner")
     }
 
     @Test
-    fun testBuildFrontendInProductionMode_watermarkBuildEnabledBySystemProperty_buildSucceeds() {
+    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabledBySystemProperty_buildSucceeds() {
 
         val result = testProject.build(
             "-Duser.home=${testingHomeFolder}",
-            "-DcommercialWithWatermark",
+            "-Dvaadin.commercialWithBanner",
             "-Pvaadin.productionMode",
             "vaadinBuildFrontend"
         )
         result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application watermark enabled")
+        assertContains(result.output, "Application commercial banner enabled")
 
         assertTrue { buildInfo.exists() }
         val buildInfoJson = buildInfo.readText()
         assertContains(
             buildInfoJson,
-            Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
+            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
     }
 
     @Test
-    fun testBuildFrontendInProductionMode_watermarkBuildEnabled_buildSucceeds() {
+    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabled_buildSucceeds() {
         testProject.buildFile.appendText(
             """
             vaadin {
-                commercialWithWatermark = true
+                commercialWithBanner = true
             }
         """.trimIndent()
         )
@@ -169,34 +169,34 @@ class BuildWithoutLicenseTest : AbstractGradleTest() {
             "vaadinBuildFrontend"
         )
         result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application watermark enabled")
+        assertContains(result.output, "Application commercial banner enabled")
 
         assertTrue { buildInfo.exists() }
         val buildInfoJson = buildInfo.readText()
         assertContains(
             buildInfoJson,
-            Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
+            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
     }
 
     @Test
-    fun testBuildFrontendInProductionMode_watermarkBuildEnabledByGradleProperty_buildSucceeds() {
+    fun testBuildFrontendInProductionMode_commercialBannerBuildEnabledByGradleProperty_buildSucceeds() {
         val result = testProject.build(
             "-Duser.home=${testingHomeFolder}",
-            "-Pvaadin.commercialWithWatermark",
+            "-Pvaadin.commercialWithBanner",
             "-Pvaadin.productionMode",
             "vaadinBuildFrontend"
         )
         result.expectTaskOutcome("vaadinBuildFrontend", TaskOutcome.SUCCESS)
-        assertContains(result.output, "Application watermark enabled")
+        assertContains(result.output, "Application commercial banner enabled")
 
         assertTrue { buildInfo.exists() }
         val buildInfoJson = buildInfo.readText()
         assertContains(
             buildInfoJson,
-            Regex("(?s).*\"watermark\\.enable\"\\s*:\\s*true.*"),
-            "watermark.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
+            Regex("(?s).*\"commercialBanner\\.enable\"\\s*:\\s*true.*"),
+            "commercialBanner.enable token missing or incorrect in ${buildInfo.absolutePath}: ${buildInfoJson}"
         )
 
     }

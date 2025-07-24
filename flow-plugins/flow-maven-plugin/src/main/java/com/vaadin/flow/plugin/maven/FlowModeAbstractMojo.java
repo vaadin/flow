@@ -306,11 +306,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private FrontendScannerConfig frontendScanner;
 
     /**
-     * Allows building a watermarked version of the application when commercial
-     * components are used without a license key.
+     * Allows building a version of the application with a commercial banner
+     * when commercial components are used without a license key.
      */
-    @Parameter(property = InitParameters.COMMERCIAL_WITH_WATERMARK, defaultValue = "false")
-    private boolean commercialWithWatermark;
+    @Parameter(property = "vaadin."
+            + InitParameters.COMMERCIAL_WITH_BANNER, defaultValue = "false")
+    private boolean commercialWithBanner;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
@@ -734,8 +735,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean isWatermarkEnabled() {
-        return commercialWithWatermark;
+    public boolean isCommercialBannerEnabled() {
+        return commercialWithBanner;
     }
 
     private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {

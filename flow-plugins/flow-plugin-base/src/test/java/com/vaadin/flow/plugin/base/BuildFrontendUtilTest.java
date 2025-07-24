@@ -459,9 +459,9 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_watermarkBuildRequired_watermarkBuildEnabled_watermarkFlagAdded()
+    public void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildEnabled_commercialBannerFlagAdded()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, true);
@@ -469,27 +469,28 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertTrue(
-                Constants.WATERMARK_TOKEN
+                Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should be active in token file",
-                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+                buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN));
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_watermarkBuildRequired_watermarkBuildNotEnabled_throws()
+    public void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildNotEnabled_throws()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(false);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
         prepareAndAssertTokenFile();
 
-        // If watermark is required but not enabled, it means there's an issue
+        // If commercial banner is required but not enabled, it means there's an
+        // issue
         // in the plugin license checking mechanism
         Assert.assertThrows(IllegalStateException.class,
                 () -> BuildFrontendUtil.updateBuildFile(adapter, true, true));
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_watermarkBuildNotRequired_watermarkBuildEnabled_watermarkFlagNotAdded()
+    public void updateBuildFile_tokenExisting_commercialBannerBuildNotRequired_commercialBannerBuildEnabled_commercialBannerFlagNotAdded()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, true, false);
@@ -497,15 +498,15 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertFalse(
-                Constants.WATERMARK_TOKEN
+                Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should not be active in token file",
-                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+                buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN));
     }
 
     @Test
-    public void updateBuildFile_tokenExisting_licenseNotRequired_watermarkBuildRequired_watermarkFlagNotAdded()
+    public void updateBuildFile_tokenExisting_licenseNotRequired_commercialBannerBuildRequired_commercialBannerFlagNotAdded()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         File tokenFile = prepareAndAssertTokenFile();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, true);
@@ -513,15 +514,15 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertFalse(
-                Constants.WATERMARK_TOKEN
+                Constants.COMMERCIAL_BANNER_TOKEN
                         + " flag should not be active in token file",
-                buildInfoJsonProd.has(Constants.WATERMARK_TOKEN));
+                buildInfoJsonProd.has(Constants.COMMERCIAL_BANNER_TOKEN));
     }
 
     @Test
-    public void validateLicense_commercialProducts_noLocalKeys_buildWithWatermarkDisabled_failsWithWatermarkSuggestion()
+    public void validateLicense_commercialProducts_noLocalKeys_buildWithCommercialBannerDisabled_failsWithCommercialBannerSuggestion()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(false);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(false);
 
         Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
@@ -554,9 +555,9 @@ public class BuildFrontendUtilTest {
                             + product + " is missing",
                     exception.getMessage().contains(product)));
             Assert.assertTrue(
-                    "Expected exception message to suggest usage of watermark build",
-                    exception.getMessage().contains(
-                            InitParameters.COMMERCIAL_WITH_WATERMARK));
+                    "Expected exception message to suggest usage of commercial banner build",
+                    exception.getMessage()
+                            .contains(InitParameters.COMMERCIAL_WITH_BANNER));
             Assert.assertFalse(
                     "Expected output directory to be deleted but was not",
                     adapter.frontendOutputDirectory().exists());
@@ -564,9 +565,9 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
-    public void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithWatermarkEnabled_propagateMissingKeyException()
+    public void validateLicense_commercialFrontendProducts_noLocalKeys_buildWithCommercialBannerEnabled_propagateMissingKeyException()
             throws Exception {
-        Mockito.when(adapter.isWatermarkEnabled()).thenReturn(true);
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
         Files.createDirectories(statsJson.toPath().getParent());
         Map<String, String> packages = new HashMap<>();
         packages.put("comm-component", "4.6.5");

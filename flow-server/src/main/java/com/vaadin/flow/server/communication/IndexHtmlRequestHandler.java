@@ -202,7 +202,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // page is constructed
         service.modifyIndexHtmlResponse(indexHtmlResponse);
 
-        addWatermark(service.getDeploymentConfiguration(), indexDocument);
+        addCommercialBanner(service.getDeploymentConfiguration(),
+                indexDocument);
 
         try {
             response.getOutputStream()
@@ -634,18 +635,18 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
     }
 
-    private static void addWatermark(DeploymentConfiguration config,
+    private static void addCommercialBanner(DeploymentConfiguration config,
             Document indexDocument) {
-        System.clearProperty("vaadin." + Constants.WATERMARK_TOKEN);
+        System.clearProperty("vaadin." + Constants.COMMERCIAL_BANNER_TOKEN);
         if (config.isProductionMode() && config
-                .getBooleanProperty(Constants.WATERMARK_TOKEN, false)) {
+                .getBooleanProperty(Constants.COMMERCIAL_BANNER_TOKEN, false)) {
             Element elm = new Element(SCRIPT);
             elm.attr(SCRIPT_INITIAL, "");
             elm.attr("type", "module");
             elm.appendChild(new DataNode(
                     """
                             const root = document.body.attachShadow({ mode: 'closed' })
-                            root.innerHTML = '<slot></slot><vaadin-watermark></vaadin-watermark>'
+                            root.innerHTML = '<slot></slot><vaadin-commercial-banner></vaadin-commercial-banner>'
                             """));
             indexDocument.head().insertChildren(0, elm);
         }

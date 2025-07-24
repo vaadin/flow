@@ -314,10 +314,10 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
 
     /**
-     * Allows building a watermarked version of the application when commercial
-     * components are used without a license key.
+     * Allows building a version of the application with a commercial banner
+     * when commercial components are used without a license key.
      */
-    public abstract val commercialWithWatermark: Property<Boolean>
+    public abstract val commercialWithBanner: Property<Boolean>
 
     public fun filterClasspath(
         @DelegatesTo(
@@ -599,14 +599,11 @@ public class PluginEffectiveConfiguration(
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
-    public val commercialWithWatermark: Provider<Boolean> =
-        extension.commercialWithWatermark.convention(false)
-            .overrideWithSystemPropertyFlag(
-                project, InitParameters.COMMERCIAL_WITH_WATERMARK
-            )
+    public val commercialWithBanner: Provider<Boolean> =
+        extension.commercialWithBanner.convention(false)
             .overrideWithSystemPropertyFlag(
                 project,
-                "vaadin.${InitParameters.COMMERCIAL_WITH_WATERMARK}"
+                "vaadin.${InitParameters.COMMERCIAL_WITH_BANNER}"
             )
 
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
@@ -684,7 +681,7 @@ public class PluginEffectiveConfiguration(
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
             "npmExcludeWebComponents=${npmExcludeWebComponents.get()}" +
-            "commercialWithWatermark=${commercialWithWatermark.get()}" +
+            "commercialWithBanner=${commercialWithBanner.get()}" +
             ")"
 
     public companion object {
