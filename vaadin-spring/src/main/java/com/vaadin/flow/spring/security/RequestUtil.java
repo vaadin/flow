@@ -3,6 +3,8 @@ package com.vaadin.flow.spring.security;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -149,6 +151,20 @@ public class RequestUtil {
     }
 
     /**
+     * Checks whether the request targets a Flow route that requires
+     * authentication, i.e. marked as @{@link PermitAll}
+     * or @{@link RolesAllowed}.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a route requiring
+     *         authentication, {@code false} otherwise
+     */
+    public boolean isAuthenticatedRoute(HttpServletRequest request) {
+        return isAuthenticatedRouteInternal(request);
+    }
+
+    /**
      * Checks whether the request targets a custom PWA icon or Favicon path.
      *
      * @param request
@@ -231,21 +247,44 @@ public class RequestUtil {
                 .toArray(RequestMatcher[]::new);
     }
 
-    private boolean isAnonymousRouteInternal(HttpServletRequest request) {
-        String vaadinMapping = configurationProperties.getUrlMapping();
-        String requestedPath = HandlerHelper
-                .getRequestPathInsideContext(request);
-        Optional<String> maybePath = HandlerHelper
-                .getPathIfInsideServlet(vaadinMapping, requestedPath);
-        if (maybePath.isEmpty()) {
+    private boolean isAuthenticatedRouteInternal(HttpServletRequest request) {
+        String path = getRequestRoutePath(request);
+        if (path == null)
+            return false;
+
+        SpringServlet servlet = springServletRegistration.getServlet();
+        VaadinService service = servlet.getService();
+        if (service == null) {
+            // The service has not yet been initialized. We cannot know if this
+            // is an anonymous route, so better say it is not.
             return false;
         }
-        String path = maybePath.get();
-        if (path.startsWith("/")) {
-            // Requested path includes a beginning "/" but route mapping is done
-            // without one
-            path = path.substring(1);
+        Router router = service.getRouter();
+        RouteRegistry routeRegistry = router.getRegistry();
+
+        NavigationRouteTarget target = routeRegistry
+                .getNavigationRouteTarget(path);
+        if (target == null) {
+            return false;
         }
+        RouteTarget routeTarget = target.getRouteTarget();
+        if (routeTarget == null) {
+            return false;
+        }
+        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
+                .getTarget();
+        if (targetView == null) {
+            return false;
+        }
+
+        return targetView.isAnnotationPresent(PermitAll.class)
+                || targetView.isAnnotationPresent(RolesAllowed.class);
+    }
+
+    private boolean isAnonymousRouteInternal(HttpServletRequest request) {
+        String path = getRequestRoutePath(request);
+        if (path == null)
+            return false;
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -303,6 +342,24 @@ public class RequestUtil {
                     path, result.reason());
         }
         return isAllowed;
+    }
+
+    private String getRequestRoutePath(HttpServletRequest request) {
+        String vaadinMapping = configurationProperties.getUrlMapping();
+        String requestedPath = HandlerHelper
+                .getRequestPathInsideContext(request);
+        Optional<String> maybePath = HandlerHelper
+                .getPathIfInsideServlet(vaadinMapping, requestedPath);
+        if (maybePath.isEmpty()) {
+            return null;
+        }
+        String path = maybePath.get();
+        if (path.startsWith("/")) {
+            // Requested path includes a beginning "/" but route mapping is done
+            // without one
+            path = path.substring(1);
+        }
+        return path;
     }
 
     String getUrlMapping() {

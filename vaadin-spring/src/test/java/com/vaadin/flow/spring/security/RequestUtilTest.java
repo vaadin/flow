@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import org.junit.Assert;
 import org.junit.Before;
@@ -190,6 +191,12 @@ public class RequestUtilTest {
     @Route("admin")
     @RolesAllowed("admin")
     public static class AdminView extends Component {
+
+    }
+
+    @Route("all")
+    @PermitAll
+    public static class AllUsersView extends Component {
 
     }
 
@@ -397,6 +404,132 @@ public class RequestUtilTest {
         } finally {
             accessControl.setEnabled(true);
         }
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_publicView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("other");
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_notAView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("other");
+        request.setServletPath("/bar");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_privateView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, AdminView.class);
+        addRoute(servlet, AllUsersView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/admin");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest(null);
+        request.setServletPath("/all");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_fooMappedServlet_publicView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/foo/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("");
+        request.setServletPath("/foo/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("/");
+        request.setServletPath("/foo/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("other");
+        request.setServletPath("/foo/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_fooMappedServlet_notAView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/foo/bar");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest("other");
+        request.setServletPath("/foo/bar");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_fooMappedServlet_privateView() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, AdminView.class);
+        addRoute(servlet, AllUsersView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/foo/admin");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+
+        request = createRequest(null);
+        request.setServletPath("/foo/all");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_fooMappedServlet_publicViewPathOutsideServlet() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, PublicRootView.class);
+        addRoute(servlet, AnotherPublicView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        request = createRequest("other");
+        request.setServletPath("/");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
     }
 
     private SpringServlet setupMockServlet() {

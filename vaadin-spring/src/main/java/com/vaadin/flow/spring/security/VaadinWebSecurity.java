@@ -223,6 +223,9 @@ public abstract class VaadinWebSecurity {
             // matcher for custom PWA icons and favicon
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
+            // private routes require authentication
+            urlRegistry.requestMatchers(requestUtil::isAuthenticatedRoute)
+                    .authenticated();
 
             // all other requests are denied
         });
