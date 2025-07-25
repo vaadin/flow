@@ -90,6 +90,8 @@ public class SecurityConfig {
                     .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/home", "/hey/**"))
                     .permitAll()
+                .requestMatchers(antMatchers("/all-logged-in/**"))
+                    .authenticated()
                 );
         // @formatter:on
         http.with(vaadin(),

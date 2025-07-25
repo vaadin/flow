@@ -25,6 +25,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
@@ -34,7 +35,6 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
@@ -88,19 +88,34 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
             throws Exception {
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(
-                        RequestUtil.antMatchers("/public/**", "/error"))
-                .permitAll());
+        http.authorizeHttpRequests(
+                auth -> auth
+                        .requestMatchers(PathPatternRequestMatcher
+                                .withDefaults().matcher("/admin-only/**"))
+                        .hasAnyRole(ROLE_ADMIN)
+                        .requestMatchers(PathPatternRequestMatcher
+                                .withDefaults().matcher("/public/**"))
+                        .permitAll()
+                        .requestMatchers(PathPatternRequestMatcher
+                                .withDefaults().matcher("/error"))
+                        .permitAll()
+                        .requestMatchers(PathPatternRequestMatcher
+                                .withDefaults().matcher("/all-logged-in/**"))
+                        .authenticated());
 
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/switchUser"))
+                .requestMatchers(PathPatternRequestMatcher.withDefaults()
+                        .matcher("/switchUser"))
                 .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/impersonate/exit"))
+                .requestMatchers(PathPatternRequestMatcher.withDefaults()
+                        .matcher("/impersonate/exit"))
                 .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(
+                auth -> auth
+                        .requestMatchers(PathPatternRequestMatcher
+                                .withDefaults().matcher("/impersonate"))
+                        .authenticated());
         http.logout(cfg -> cfg.logoutRequestMatcher(new AntPathRequestMatcher(
                 getRootUrl(false) + "doLogout", "GET")));
         http.with(vaadin(), cfg -> {
