@@ -1,6 +1,8 @@
 package com.vaadin.flow.spring.security;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -21,11 +23,16 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.router.Layout;
+import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
+import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -532,6 +539,98 @@ public class RequestUtilTest {
         Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
     }
 
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_publicParentLayout() {
+        @AnonymousAllowed
+        class ParentView extends Component implements RouterLayout {
+        }
+        @Route(value = "child", layout = ParentView.class)
+        class ChildView extends Component {
+        }
+
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, ChildView.class);
+        registerParentLayout(servlet, ChildView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/child");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_privateParentLayout() {
+        @PermitAll
+        class ParentView extends Component implements RouterLayout {
+        }
+        @Route(value = "child", layout = ParentView.class)
+        class ChildView extends Component {
+        }
+
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, ChildView.class);
+        registerParentLayout(servlet, ChildView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/child");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_privateParentLayouts() {
+        class ParentView extends Component implements RouterLayout {
+        }
+        @Route(value = "parent-child", layout = ParentView.class)
+        @RolesAllowed("role")
+        class ParentChildView extends Component implements RouterLayout {
+        }
+        @Route(value = "child", layout = ParentChildView.class)
+        class ChildView extends Component {
+        }
+
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, ChildView.class);
+        addRoute(servlet, ParentChildView.class);
+        registerParentLayout(servlet, ChildView.class, ParentChildView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/child");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+    }
+
+    @Test
+    public void testAuthenticatedRoute_rootMappedServlet_privateAutoLayout() {
+        @Layout
+        @PermitAll
+        class LayoutView extends Component implements RouterLayout {
+        }
+        @Route(value = "child")
+        class ChildView extends Component {
+        }
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        SpringServlet servlet = setupMockServlet();
+        addRoute(servlet, ChildView.class);
+
+        MockHttpServletRequest request = createRequest(null);
+        request.setServletPath("/child");
+        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+
+        Mockito.when(servlet.getService().getRouter().getRegistry()
+                .hasLayout("child")).thenReturn(true);
+        Mockito.when(servlet.getService().getRouter().getRegistry()
+                .getLayout("child")).thenReturn((Class) LayoutView.class);
+
+        request = createRequest(null);
+        request.setServletPath("/child");
+        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+    }
+
     private SpringServlet setupMockServlet() {
         return setupMockServlet(true);
     }
@@ -555,6 +654,33 @@ public class RequestUtilTest {
                 .thenReturn(deploymentConfiguration);
         Mockito.when(router.getRegistry()).thenReturn(routeRegistry);
         return servlet;
+    }
+
+    @SafeVarargs
+    private void registerParentLayout(SpringServlet servlet,
+            Class<? extends Component>... views) {
+        List<RouteData> routeDataList = new ArrayList<>();
+        for (Class<? extends Component> view : views) {
+            Optional<Route> route = AnnotationReader.getAnnotationFor(view,
+                    Route.class);
+
+            if (route.isEmpty()) {
+                throw new IllegalArgumentException(
+                        "Unable find a @Route annotation");
+            }
+
+            if (route.get().layout() != UI.class) {
+                // supports only one
+                RouteData routeData = Mockito.mock(RouteData.class);
+                Mockito.when(routeData.getNavigationTarget())
+                        .thenReturn((Class) view);
+                Mockito.when(routeData.getParentLayouts())
+                        .thenReturn(List.of(route.get().layout()));
+                routeDataList.add(routeData);
+            }
+        }
+        Mockito.when(servlet.getService().getRouter().getRegistry()
+                .getRegisteredRoutes()).thenReturn(routeDataList);
     }
 
     private void addRoute(SpringServlet servlet,
