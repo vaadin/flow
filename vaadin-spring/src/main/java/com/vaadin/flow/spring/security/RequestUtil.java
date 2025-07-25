@@ -260,7 +260,7 @@ public class RequestUtil {
         VaadinService service = servlet.getService();
         if (service == null) {
             // The service has not yet been initialized. We cannot know if this
-            // is an anonymous route, so better say it is not.
+            // is an authenticated route, so better say it is not.
             return false;
         }
         Router router = service.getRouter();
@@ -347,18 +347,12 @@ public class RequestUtil {
         String vaadinMapping = configurationProperties.getUrlMapping();
         String requestedPath = HandlerHelper
                 .getRequestPathInsideContext(request);
-        Optional<String> maybePath = HandlerHelper
-                .getPathIfInsideServlet(vaadinMapping, requestedPath);
-        if (maybePath.isEmpty()) {
-            return null;
-        }
-        String path = maybePath.get();
-        if (path.startsWith("/")) {
-            // Requested path includes a beginning "/" but route mapping is done
-            // without one
-            path = path.substring(1);
-        }
-        return path;
+        return HandlerHelper
+                .getPathIfInsideServlet(vaadinMapping, requestedPath)
+                // Requested path includes a beginning "/" but route mapping is
+                // done without one
+                .map(path -> path.startsWith("/") ? path.substring(1) : path)
+                .orElse(null);
     }
 
     String getUrlMapping() {
