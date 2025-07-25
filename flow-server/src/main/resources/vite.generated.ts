@@ -741,14 +741,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (path !== '/web-component.html') {
               return;
             }
-
-            return [
+            const scripts = [
               {
                 tag: 'script',
                 attrs: { type: 'module', src: `/generated/vaadin-web-component.ts` },
                 injectTo: 'head'
               }
             ];
+            if (commercialBanner) {
+              scripts.push({
+                tag: 'script',
+                attrs: { type: 'module', src: '/generated/commercial-banner.js' },
+                injectTo: 'head'
+              });
+            }
+            return scripts;
           }
         }
       },
