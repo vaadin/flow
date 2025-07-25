@@ -44,6 +44,6 @@ public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
         // This only asserts that Flow routes do not overwrite other spring
         // paths
         Assert.assertTrue(
-                getDriver().getPageSource().contains("type=Bad Request"));
+                getDriver().getPageSource().contains("invalid_request"));
     }
 }

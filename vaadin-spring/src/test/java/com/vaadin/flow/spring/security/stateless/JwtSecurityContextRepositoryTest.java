@@ -330,7 +330,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
-        Assert.assertThrows(IllegalArgumentException.class,
+        Assert.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.loadDeferredContext(request)
                         .get());
     }
@@ -343,7 +343,7 @@ public class JwtSecurityContextRepositoryTest {
                 .loadSerializedJwt(request);
         jwtSecurityContextRepository.setJwkSource(null);
 
-        Assert.assertThrows(IllegalArgumentException.class,
+        Assert.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.loadDeferredContext(request)
                         .get());
     }
@@ -516,7 +516,7 @@ public class JwtSecurityContextRepositoryTest {
                 .when(securityContext).getAuthentication();
         jwtSecurityContextRepository.setJwsAlgorithm(null);
 
-        Assert.assertThrows(IllegalArgumentException.class,
+        Assert.assertThrows(NullPointerException.class,
                 () -> jwtSecurityContextRepository.saveContext(securityContext,
                         request, response));
 

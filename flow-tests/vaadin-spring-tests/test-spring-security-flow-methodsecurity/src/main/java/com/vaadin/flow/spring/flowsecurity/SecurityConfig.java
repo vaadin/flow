@@ -19,7 +19,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
@@ -73,9 +73,12 @@ public class SecurityConfig {
     SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
+
+                .requestMatchers(
+                        PathPatternRequestMatcher.pathPattern("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(new AntPathRequestMatcher("/public/**"))
+                .requestMatchers(
+                        PathPatternRequestMatcher.pathPattern("/public/**"))
                 .permitAll());
         http.with(vaadin(), cfg -> {
             String logoutSuccessUrl = getLogoutSuccessUrl();
