@@ -46,6 +46,8 @@ public class TransferProgressListenerIT extends AbstractStreamResourceIT {
                 "File download whenComplete status: completed");
         waitForStatus(TransferProgressListenerView.ON_ERROR_ID,
                 "File download onError status: error");
+        waitForStatus(TransferProgressListenerView.ON_CALLBACK_ERROR_ID,
+                "File download onError status: callback error");
     }
 
     private void waitForStatus(String id, String status) {
