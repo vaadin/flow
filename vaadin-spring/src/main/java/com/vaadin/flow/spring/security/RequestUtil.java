@@ -1,7 +1,5 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -22,12 +20,9 @@ import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.QueryParameters;
-import com.vaadin.flow.router.RouteBaseData;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
-import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinService;
@@ -156,17 +151,15 @@ public class RequestUtil {
     }
 
     /**
-     * Checks whether the request targets a Flow route that requires
-     * authentication, i.e. marked as @{@link PermitAll}
-     * or @{@link RolesAllowed}.
+     * Checks whether the request targets a Flow route.
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting a route requiring
-     *         authentication, {@code false} otherwise
+     * @return {@code true} if the request is targeting a Flow route ,
+     *         {@code false} otherwise
      */
-    public boolean isAuthenticatedRoute(HttpServletRequest request) {
-        return isAuthenticatedRouteInternal(request);
+    public boolean isFlowRoute(HttpServletRequest request) {
+        return isFlowRouteInternal(request);
     }
 
     /**
@@ -252,7 +245,7 @@ public class RequestUtil {
                 .toArray(RequestMatcher[]::new);
     }
 
-    private boolean isAuthenticatedRouteInternal(HttpServletRequest request) {
+    private boolean isFlowRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
         if (path == null)
             return false;
@@ -278,41 +271,7 @@ public class RequestUtil {
         }
         Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
                 .getTarget();
-        if (targetView == null) {
-            return false;
-        }
-
-        if (isAuthenticationNeeded(targetView)) {
-            return true;
-        }
-        // check auto-layout and parent layouts
-        if (RouteUtil.isAutolayoutEnabled(targetView, path)) {
-            boolean noParents = routeRegistry.getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(data -> data.getParentLayouts().isEmpty()).findFirst()
-                    .orElse(true);
-            if (noParents && routeRegistry.hasLayout(path)) {
-                Class<?> layout = routeRegistry.getLayout(path);
-                return isAuthenticationNeeded(layout);
-            }
-        } else {
-            List<Class<? extends RouterLayout>> parents = routeRegistry
-                    .getRegisteredRoutes().stream()
-                    .filter(routeData -> routeData.getNavigationTarget()
-                            .equals(targetView))
-                    .map(RouteBaseData::getParentLayouts).findFirst()
-                    .orElse(Collections.emptyList());
-            if (!parents.isEmpty()) {
-                for (Class<? extends RouterLayout> parent : parents) {
-                    if (isAuthenticationNeeded(parent)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
+        return targetView != null;
     }
 
     private boolean isAuthenticationNeeded(Class<?> targetViewOrLayout) {

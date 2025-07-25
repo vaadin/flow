@@ -735,8 +735,7 @@ public final class VaadinSecurityConfigurer
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
         registry.requestMatchers(defaultPermitMatcher()).permitAll()
-                .requestMatchers(getRequestUtil()::isAuthenticatedRoute)
-                .authenticated();
+                .requestMatchers(getRequestUtil()::isFlowRoute).authenticated();
     }
 
     private ApplicationContext getApplicationContext() {

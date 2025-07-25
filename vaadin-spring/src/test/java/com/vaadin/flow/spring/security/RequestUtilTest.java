@@ -26,13 +26,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.router.Layout;
-import com.vaadin.flow.router.ParentLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.NavigationRouteTarget;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -414,7 +411,7 @@ public class RequestUtilTest {
     }
 
     @Test
-    public void testAuthenticatedRoute_rootMappedServlet_publicView() {
+    public void testFlowRoute_rootMappedServlet_publicView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
@@ -423,15 +420,15 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_rootMappedServlet_notAView() {
+    public void testFlowRoute_rootMappedServlet_notAView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
@@ -440,15 +437,15 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_rootMappedServlet_privateView() {
+    public void testFlowRoute_rootMappedServlet_privateView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/*");
         SpringServlet servlet = setupMockServlet();
@@ -457,15 +454,15 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/admin");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/all");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_fooMappedServlet_publicView() {
+    public void testFlowRoute_fooMappedServlet_publicView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
@@ -474,23 +471,23 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest("");
         request.setServletPath("/foo/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest("/");
         request.setServletPath("/foo/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_fooMappedServlet_notAView() {
+    public void testFlowRoute_fooMappedServlet_notAView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
@@ -499,15 +496,15 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_fooMappedServlet_privateView() {
+    public void testFlowRoute_fooMappedServlet_privateView() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
@@ -516,15 +513,15 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/admin");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/foo/all");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertTrue(requestUtil.isFlowRoute(request));
     }
 
     @Test
-    public void testAuthenticatedRoute_fooMappedServlet_publicViewPathOutsideServlet() {
+    public void testFlowRoute_fooMappedServlet_publicViewPathOutsideServlet() {
         Mockito.when(vaadinConfigurationProperties.getUrlMapping())
                 .thenReturn("/foo/*");
         SpringServlet servlet = setupMockServlet();
@@ -533,102 +530,10 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
-    }
-
-    @Test
-    public void testAuthenticatedRoute_rootMappedServlet_publicParentLayout() {
-        @AnonymousAllowed
-        class ParentView extends Component implements RouterLayout {
-        }
-        @Route(value = "child", layout = ParentView.class)
-        class ChildView extends Component {
-        }
-
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
-        SpringServlet servlet = setupMockServlet();
-        addRoute(servlet, ChildView.class);
-        registerParentLayout(servlet, ChildView.class);
-
-        MockHttpServletRequest request = createRequest(null);
-        request.setServletPath("/child");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
-    }
-
-    @Test
-    public void testAuthenticatedRoute_rootMappedServlet_privateParentLayout() {
-        @PermitAll
-        class ParentView extends Component implements RouterLayout {
-        }
-        @Route(value = "child", layout = ParentView.class)
-        class ChildView extends Component {
-        }
-
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
-        SpringServlet servlet = setupMockServlet();
-        addRoute(servlet, ChildView.class);
-        registerParentLayout(servlet, ChildView.class);
-
-        MockHttpServletRequest request = createRequest(null);
-        request.setServletPath("/child");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
-    }
-
-    @Test
-    public void testAuthenticatedRoute_rootMappedServlet_privateParentLayouts() {
-        class ParentView extends Component implements RouterLayout {
-        }
-        @Route(value = "parent-child", layout = ParentView.class)
-        @RolesAllowed("role")
-        class ParentChildView extends Component implements RouterLayout {
-        }
-        @Route(value = "child", layout = ParentChildView.class)
-        class ChildView extends Component {
-        }
-
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
-        SpringServlet servlet = setupMockServlet();
-        addRoute(servlet, ChildView.class);
-        addRoute(servlet, ParentChildView.class);
-        registerParentLayout(servlet, ChildView.class, ParentChildView.class);
-
-        MockHttpServletRequest request = createRequest(null);
-        request.setServletPath("/child");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
-    }
-
-    @Test
-    public void testAuthenticatedRoute_rootMappedServlet_privateAutoLayout() {
-        @Layout
-        @PermitAll
-        class LayoutView extends Component implements RouterLayout {
-        }
-        @Route(value = "child")
-        class ChildView extends Component {
-        }
-        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
-                .thenReturn("/*");
-        SpringServlet servlet = setupMockServlet();
-        addRoute(servlet, ChildView.class);
-
-        MockHttpServletRequest request = createRequest(null);
-        request.setServletPath("/child");
-        Assert.assertFalse(requestUtil.isAuthenticatedRoute(request));
-
-        Mockito.when(servlet.getService().getRouter().getRegistry()
-                .hasLayout("child")).thenReturn(true);
-        Mockito.when(servlet.getService().getRouter().getRegistry()
-                .getLayout("child")).thenReturn((Class) LayoutView.class);
-
-        request = createRequest(null);
-        request.setServletPath("/child");
-        Assert.assertTrue(requestUtil.isAuthenticatedRoute(request));
+        Assert.assertFalse(requestUtil.isFlowRoute(request));
     }
 
     private SpringServlet setupMockServlet() {
