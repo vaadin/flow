@@ -246,6 +246,12 @@ public class RequestUtil {
     }
 
     private boolean isFlowRouteInternal(HttpServletRequest request) {
+        NavigationAccessControl navigationAccessControl = accessControl
+                .getObject();
+        if (!navigationAccessControl.isEnabled()) {
+            return false;
+        }
+
         String path = getRequestRoutePath(request);
         if (path == null)
             return false;
@@ -272,11 +278,6 @@ public class RequestUtil {
         Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
                 .getTarget();
         return targetView != null;
-    }
-
-    private boolean isAuthenticationNeeded(Class<?> targetViewOrLayout) {
-        return targetViewOrLayout.isAnnotationPresent(PermitAll.class)
-                || targetViewOrLayout.isAnnotationPresent(RolesAllowed.class);
     }
 
     private boolean isAnonymousRouteInternal(HttpServletRequest request) {
