@@ -224,7 +224,7 @@ public abstract class VaadinWebSecurity {
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
             // private routes require authentication
-            urlRegistry.requestMatchers(requestUtil::isAuthenticatedRoute)
+            urlRegistry.requestMatchers(requestUtil::isFlowRoute)
                     .authenticated();
 
             // all other requests are denied
