@@ -47,8 +47,16 @@ public class InputStreamDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
-        DownloadResponse download = callback.complete(downloadEvent);
         VaadinResponse response = downloadEvent.getResponse();
+        DownloadResponse download;
+        try {
+            download = callback.complete(downloadEvent);
+        } catch (IOException ioe) {
+            // Set status before output is closed (see #8740)
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            notifyError(downloadEvent, ioe);
+            throw ioe;
+        }
         if (download.hasError()) {
             response.setStatus(download.getError());
             return;
