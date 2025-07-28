@@ -241,7 +241,7 @@ public class FrontendUtils {
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
-    public static final String WATERMARK_JS = "watermark.js";
+    public static final String COMMERCIAL_BANNER_JS = "commercial-banner.js";
 
     public static final String ROUTES_TS = "routes.ts";
 
