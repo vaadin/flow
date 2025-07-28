@@ -19,6 +19,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Optional;
 import java.util.Properties;
 
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
@@ -85,9 +86,11 @@ public class UidlRequestHandlerTest {
 
         Mockito.when(service.findUI(request)).thenReturn(null);
 
-        boolean result = handler.synchronizedHandleRequest(session, request,
-                response);
-        Assert.assertTrue("Result should be true", result);
+        Optional<SynchronizedRequestHandler.ResponseWriter> result = handler
+                .synchronizedHandleRequest(session, request, response, null);
+        Assert.assertTrue("ResponseWriter should be present",
+                result.isPresent());
+        result.get().writeResponse();
 
         String responseContent = CommunicationUtil
                 .getStringWhenWriteString(outputStream);
