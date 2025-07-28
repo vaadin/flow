@@ -450,9 +450,9 @@ public class ServerRpcHandler implements Serializable {
         }
         try {
             Optional<Runnable> handle = handler.handle(ui, invocationJson);
-            assert !handle.isPresent() : "RPC handler "
-                    + handler.getClass().getName()
-                    + " returned a Runnable even though it shouldn't";
+            assert !handle.isPresent()
+                    : "RPC handler " + handler.getClass().getName()
+                            + " returned a Runnable even though it shouldn't";
         } catch (Throwable throwable) {
             ui.getSession().getErrorHandler().error(new ErrorEvent(throwable));
         }
