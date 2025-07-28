@@ -14,7 +14,7 @@
  * the License.
  */
 
-package com.vaadin.flow.watermarked.ui;
+package com.vaadin.flow.commercialbanner.ui;
 
 import org.junit.Assert;
 import org.junit.Test;

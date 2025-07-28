@@ -14,20 +14,17 @@
  * the License.
  */
 
-package com.vaadin.flow.watermarked.ui;
+package com.vaadin.flow.commercialbanner.ui;
 
-import com.vaadin.flow.component.WebComponentExporter;
-import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.router.Route;
 
-public class MainViewExporter extends WebComponentExporter<MainView> {
+@Route("")
+public class MainView extends Div {
 
-    public MainViewExporter() {
-        super("commercial-embed");
+    public MainView() {
+        add(new H1("Application with commercial banner"));
     }
 
-    @Override
-    protected void configureInstance(WebComponent<MainView> webComponent,
-            MainView component) {
-
-    }
 }
