@@ -161,9 +161,12 @@ public class TaskRemoveOldFrontendGeneratedFilesTest {
                                 "generated-flow-webcomponent-imports.js"))
                         .toFile(),
                 new File(generatedFolder, "routes.tsx"),
-                new File(generatedFolder, "routes.ts"), generatedFolder.toPath()
-                        .resolve(Path.of("flow", "Flow.tsx")).toFile(),
-                new File(generatedFolder, "file-routes.ts"));
+                new File(generatedFolder, "routes.ts"),
+                generatedFolder.toPath().resolve(Path.of("flow", "Flow.tsx"))
+                        .toFile(),
+                new File(generatedFolder, "file-routes.ts"),
+                new File(generatedFolder, "css.generated.js"),
+                new File(generatedFolder, "css.generated.d.ts"));
         for (File file : knownFiles) {
             file.getParentFile().mkdirs();
             Files.writeString(file.toPath(), "TEST");

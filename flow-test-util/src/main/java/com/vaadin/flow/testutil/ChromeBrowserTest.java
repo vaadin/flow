@@ -173,6 +173,14 @@ public class ChromeBrowserTest extends ViewOrUITest {
     static ChromeOptions createHeadlessChromeOptions() {
         final ChromeOptions options = new ChromeOptions();
         options.addArguments("--headless=new", "--disable-gpu");
+
+        // When running tests in parallel, a tab may be treated as backgrounded
+        // if its window is occluded (aka obscured) by another. This can prevent
+        // requestAnimationFrame callbacks and other timing-sensitive events
+        // from running, which may cause tests to fail. This flag disables that
+        // behavior.
+        options.addArguments("--disable-backgrounding-occluded-windows");
+
         return options;
     }
 }

@@ -454,4 +454,13 @@ public class AccessControlTestClasses {
             implements RouterLayout {
     }
 
+    @Tag(Tag.DIV)
+    public static class NoPermitParent extends Component
+            implements RouterLayout {
+    }
+
+    @PermitAll
+    @Route(value = "permitall", layout = NoPermitParent.class)
+    public static class PermitAllWithEmptyParentView extends Component {
+    }
 }
