@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Optional;
@@ -158,7 +157,6 @@ public class FrontendDependenciesTest {
 
         Assert.assertEquals("Faulty default theme received", FakeLumo.class,
                 dependencies.getThemeDefinition().getTheme());
-
     }
 
     @Test
@@ -173,7 +171,6 @@ public class FrontendDependenciesTest {
                 dependencies.getThemeDefinition().getTheme());
         Assert.assertEquals("Faulty variant received", "dark",
                 dependencies.getThemeDefinition().getVariant());
-
     }
 
     @Test
@@ -245,7 +242,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void defaultThemeIsLoadedForExporters() throws Exception {
+    public void defaultThemeIsNotLoadedForExporters() throws Exception {
         FakeLumo.class.getDeclaredConstructor().newInstance();
         Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(MyExporter.class)
@@ -254,8 +251,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
 
-        Assert.assertNotNull(dependencies.getTheme());
-        Assert.assertNotNull(dependencies.getThemeDefinition());
+        Assert.assertNull(dependencies.getTheme());
+        Assert.assertNull(dependencies.getThemeDefinition());
     }
 
     @Test // #9861
