@@ -231,7 +231,7 @@ public class HierarchicalCommunicatorTest {
         final String secondRoot = "SECONDROOT";
 
         treeData.addItem(null, secondRoot);
-        communicator.setRequestedRange(0, 2);
+        communicator.setViewportRange(0, 2);
 
         invokeFlush();
 
