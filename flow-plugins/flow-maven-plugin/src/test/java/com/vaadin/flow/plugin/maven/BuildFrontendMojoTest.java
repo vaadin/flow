@@ -77,11 +77,11 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.pro.licensechecker.LicenseException;
 
+import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.Constants.WATERMARK_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
@@ -621,7 +621,7 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void commercialComponent_noLicenseKey_watermarkEnabled_buildsWithWatermarkFlag()
+    public void commercialComponent_noLicenseKey_commercialBannerEnabled_buildsWithCommercialBannerFlag()
             throws Throwable {
 
         ObjectNode initialBuildInfo = JacksonUtils.createObjectNode();
@@ -632,8 +632,8 @@ public class BuildFrontendMojoTest {
 
         DefaultArtifact commercialComponent = createCommercialComponent();
         mojo.project.getArtifacts().add(commercialComponent);
-        ReflectionUtils.setVariableValueInObject(mojo,
-                "commercialWithWatermark", true);
+        ReflectionUtils.setVariableValueInObject(mojo, "commercialWithBanner",
+                true);
 
         runWithoutLicenseKeys(() -> {
             mojo.execute();
@@ -641,13 +641,14 @@ public class BuildFrontendMojoTest {
             String json = Files.readString(tokenFile.toPath(),
                     StandardCharsets.UTF_8);
             ObjectNode buildInfo = JacksonUtils.readTree(json);
-            Assert.assertTrue("Watermark build token not written on token file",
-                    buildInfo.get(WATERMARK_TOKEN).booleanValue());
+            Assert.assertTrue(
+                    "Commercial banner build token not written on token file",
+                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue());
         });
     }
 
     @Test
-    public void commercialComponent_noLicenseKey_watermarkNotEnabled_buildFails()
+    public void commercialComponent_noLicenseKey_commercialBannerNotEnabled_buildFails()
             throws Throwable {
         DefaultArtifact commercialComponent = createCommercialComponent();
         mojo.project.getArtifacts().add(commercialComponent);
@@ -666,7 +667,7 @@ public class BuildFrontendMojoTest {
                     "Expected the build to fail because of LicenseException, but not found in stack trace",
                     exception);
             Assert.assertTrue(exception.getMessage()
-                    .contains(InitParameters.COMMERCIAL_WITH_WATERMARK));
+                    .contains(InitParameters.COMMERCIAL_WITH_BANNER));
         });
     }
 

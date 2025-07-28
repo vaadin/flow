@@ -166,10 +166,10 @@ public class DefaultApplicationConfigurationFactoryTest {
     }
 
     @Test
-    public void create_tokenFileWithWatermarkFlag_watermarkFlagIsPropagatedToDeploymentConfiguration()
+    public void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
         assertTokenAttributeIsPropagatedToDeploymentConfiguration(
-                Constants.WATERMARK_TOKEN, true);
+                Constants.COMMERCIAL_BANNER_TOKEN, true);
     }
 
     private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(
