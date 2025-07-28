@@ -1255,27 +1255,29 @@ public class IndexHtmlRequestHandlerTest {
     }
 
     @Test
-    public void developmentMode_watermarkNeverApplied() throws IOException {
-        assertHasWatermark(false, false, true);
-        assertHasWatermark(false, false, false);
-        assertHasWatermark(false, false, null);
+    public void developmentMode_commercialBannerNeverApplied()
+            throws IOException {
+        assertHasCommercialBanner(false, false, true);
+        assertHasCommercialBanner(false, false, false);
+        assertHasCommercialBanner(false, false, null);
     }
 
     @Test
-    public void productionMode_watermarkEnabled_watermarkApplied()
+    public void productionMode_commercialBannerEnabled_commercialBannerApplied()
             throws IOException {
-        assertHasWatermark(true, true, true);
+        assertHasCommercialBanner(true, true, true);
     }
 
     @Test
-    public void productionMode_watermarkNotEnabled_watermarkNotApplied()
+    public void productionMode_commercialBannerNotEnabled_commercialBannerNotApplied()
             throws IOException {
-        assertHasWatermark(false, true, false);
-        assertHasWatermark(false, true, null);
+        assertHasCommercialBanner(false, true, false);
+        assertHasCommercialBanner(false, true, null);
     }
 
-    private void assertHasWatermark(boolean expectWatermark,
-            boolean productionMode, Boolean watermarkFlag) throws IOException {
+    private void assertHasCommercialBanner(boolean expectBanner,
+            boolean productionMode, Boolean commercialBannerFlag)
+            throws IOException {
         if (!productionMode) {
             File projectRootFolder = temporaryFolder.newFolder();
             TestUtil.createIndexHtmlStub(projectRootFolder);
@@ -1283,9 +1285,10 @@ public class IndexHtmlRequestHandlerTest {
             deploymentConfiguration.setProjectFolder(projectRootFolder);
         }
         deploymentConfiguration.setProductionMode(productionMode);
-        if (watermarkFlag != null) {
+        if (commercialBannerFlag != null) {
             deploymentConfiguration.setApplicationOrSystemProperty(
-                    Constants.WATERMARK_TOKEN, Boolean.toString(watermarkFlag));
+                    Constants.COMMERCIAL_BANNER_TOKEN,
+                    Boolean.toString(commercialBannerFlag));
         }
 
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
@@ -1294,20 +1297,24 @@ public class IndexHtmlRequestHandlerTest {
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
         Document document = Jsoup.parse(indexHtml);
 
-        Elements watermarkScript = document.head().select(
-                "script[type=\"module\"]:containsData(<vaadin-watermark></vaadin-watermark>)");
-        if (expectWatermark) {
+        Elements commercialBannerScript = document.head().select(
+                "script[type=\"module\"]:containsData(<vaadin-commercial-banner></vaadin-commercial-banner>)");
+        if (expectBanner) {
             assertEquals(
-                    "Watermark should be applied in %s mode with watermark token %s"
-                            .formatted(((productionMode) ? "production"
-                                    : "development"), watermarkFlag),
-                    1, watermarkScript.size());
+                    "Commercial banner should be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    1, commercialBannerScript.size());
         } else {
             assertTrue(
-                    "Watermark should not be applied in %s mode with watermark token %s"
-                            .formatted(((productionMode) ? "production"
-                                    : "development"), watermarkFlag),
-                    watermarkScript.isEmpty());
+                    "Commercial banner should not be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    commercialBannerScript.isEmpty());
         }
     }
 

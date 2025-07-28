@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-test-commercial-banner</artifactId>
+        <version>24.9-SNAPSHOT</version>
+    </parent>
+    <artifactId>flow-test-commercial-banner-webapp</artifactId>
+    <name>Test Flow commercial banner application</name>
+
+    <packaging>war</packaging>
+    <properties>
+        <maven.deploy.skip>true</maven.deploy.skip>
+        <maven.test.skip>true</maven.test.skip>
+        <real.user.home>${user.home}</real.user.home>
+        <fake.user.home>${project.build.directory}/fake-home</fake.user.home>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-test-commercial-addon</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.6.1</version>
+                <executions>
+                    <execution>
+                        <id>pre</id>
+                        <phase>initialize</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source><![CDATA[
+import java.io.File;
+
+newUserHome = new File(project.getProperties().getProperty("fake.user.home"));
+newUserHome.mkdirs();
+log.info("Temporarily switching user.home from " + System.getProperty("user.home") +
+    " to " + newUserHome.getAbsolutePath() + " to build the application without license keys");
+System.setProperty("user.home", newUserHome.getAbsolutePath());
+                            ]]></source>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post</id>
+                        <phase>process-classes</phase>
+                        <goals>
+                            <goal>bsh-property</goal>
+                        </goals>
+                        <configuration>
+                            <source><![CDATA[
+realUserHome = project.getProperties().getProperty("real.user.home");
+log.info("Restoring user.home from " + System.getProperty("user.home") +
+    " to " + realUserHome);
+System.setProperty("user.home", realUserHome);
+                            ]]></source>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.vaadin</groupId>
+                <artifactId>flow-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-frontend</goal>
+                            <goal>build-frontend</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <forceProductionBuild>true</forceProductionBuild>
+                    <commercialWithBanner>true</commercialWithBanner>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

@@ -373,7 +373,7 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withWatermarkEnable(adapter.isWatermarkEnabled());
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -613,14 +613,15 @@ public class BuildFrontendUtil {
      * @param adapter
      *            the PluginAdapterBase
      * @param frontendDependencies
+     *            frontend dependencies scanner
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
      * @throws MissingLicenseKeyException
-     *             if commercial components are used in a watermarked build and
-     *             no license key is present
+     *             if commercial components are used in a commercial
+     *             banner-enabled build and no license key is present
      * @throws LicenseException
      *             if commercial components are used without a license and
-     *             watermarking is not enabled
+     *             commercial banner is not enabled
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
@@ -663,16 +664,16 @@ public class BuildFrontendUtil {
             } catch (MissingLicenseKeyException ex) {
                 // Commercial product in use but no license key present,
                 // no need to check further.
-                // If a watermarked build has been requested, just forward the
-                // exception and let the caller handle it. Otherwise fail
-                // immediately suggesting the watermarked build.
+                // If a commercial banner build has been requested, just forward
+                // the exception and let the caller handle it. Otherwise fail
+                // immediately suggesting the commercial banner build.
                 String productsList = commercialComponents.stream()
                         .map(product -> "* " + product.getName())
                         .collect(Collectors.joining(System.lineSeparator()));
-                if (adapter.isWatermarkEnabled()) {
+                if (adapter.isCommercialBannerEnabled()) {
                     throw new MissingLicenseKeyException(
                             """
-                                    The application contains the unlicensed components listed below and is displaying a watermark.
+                                    The application contains the unlicensed components listed below and is displaying a commercial banner.
                                     %1$s
 
                                     Go to https://vaadin.com/pricing to obtain a license
@@ -691,10 +692,9 @@ public class BuildFrontendUtil {
 
                                 You can also build a watermarked version of the application configuring
                                 the '%2$s' property of the Maven or Gradle plugin
-                                or run the build with the '-D%2$s' system parameter
+                                or run the build with the '-Dvaadin.%2$s' system parameter
                                 """,
-                        productsList,
-                        InitParameters.COMMERCIAL_WITH_WATERMARK));
+                        productsList, InitParameters.COMMERCIAL_WITH_BANNER));
             } catch (Exception e) {
                 invalidateOutput(component, outputFolder);
                 throw e;
@@ -852,19 +852,19 @@ public class BuildFrontendUtil {
      * @param licenseRequired
      *            {@literal true} if a license was required for the production
      *            build.
-     * @param needsWatermark
-     *            {@literal true} if a watermark should be applied to the
-     *            application at runtime.
+     * @param needsCommercialBanner
+     *            {@literal true} if a commercial banner should be applied to
+     *            the application at runtime.
      */
     public static void updateBuildFile(PluginAdapterBuild adapter,
-            boolean licenseRequired, boolean needsWatermark) {
-        if (needsWatermark && !adapter.isWatermarkEnabled()) {
+            boolean licenseRequired, boolean needsCommercialBanner) {
+        if (needsCommercialBanner && !adapter.isCommercialBannerEnabled()) {
             throw new IllegalStateException(
                     """
-                            Watermark is required for this build but has not been enabled in the Maven or Gradle plugin configuration. \
+                            Commercial banner is required for this build but has not been enabled in the Maven or Gradle plugin configuration. \
                             This should never happen and is caused by a bug in the Vaadin plugin. \
                             Please report the error at https://github.com/vaadin/flow/issues. \
-                            As a workaround, enable the watermark setting in the plugin configuration.""");
+                            As a workaround, enable the commercial banner setting in the plugin configuration.""");
         }
         File tokenFile = getTokenFile(adapter);
         if (!tokenFile.exists()) {
@@ -902,7 +902,7 @@ public class BuildFrontendUtil {
             // license-server
             buildInfo.remove(Constants.PREMIUM_FEATURES);
             buildInfo.remove(Constants.DAU_TOKEN);
-            buildInfo.remove(Constants.WATERMARK_TOKEN);
+            buildInfo.remove(Constants.COMMERCIAL_BANNER_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
@@ -913,9 +913,10 @@ public class BuildFrontendUtil {
                     buildInfo.put(Constants.DAU_TOKEN, true);
                     checkLicenseCheckerAtRuntime(adapter);
                 }
-                if (needsWatermark && adapter.isWatermarkEnabled()) {
-                    adapter.logInfo("Application watermark enabled");
-                    buildInfo.put(Constants.WATERMARK_TOKEN, true);
+                if (needsCommercialBanner
+                        && adapter.isCommercialBannerEnabled()) {
+                    adapter.logInfo("Application commercial banner enabled");
+                    buildInfo.put(Constants.COMMERCIAL_BANNER_TOKEN, true);
                 }
             }
             if (isControlCenterAvailable(adapter.getClassFinder())
