@@ -17,20 +17,16 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.streams.DownloadEvent;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.StreamRegistration;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -88,7 +84,7 @@ public class DownloadHandlerView extends Div {
         inputStreamDownload.setId("download-handler-input-stream");
 
         Anchor inputStreamErrorDownload = new Anchor("",
-                "InputStream DownloadHandler shorthand");
+                "InputStream DownloadHandler shorthand (ERROR)");
         inputStreamErrorDownload
                 .setHref(DownloadHandler
                         .fromInputStream(downloadEvent -> DownloadResponse
@@ -96,8 +92,18 @@ public class DownloadHandlerView extends Div {
                         .inline());
         inputStreamErrorDownload.setId("download-handler-input-stream-error");
 
+        Anchor inputStreamCallbackError = new Anchor("",
+                "InputStream DownloadHandler callback shorthand (CALLBACK EXCEPTION)");
+        inputStreamCallbackError
+                .setHref(DownloadHandler.fromInputStream(downloadEvent -> {
+                    throw new IOException("Callback exception");
+                }).inline());
+        inputStreamCallbackError
+                .setId("download-handler-input-stream-callback-error");
+
         add(handlerDownload, fileDownload, classDownload, servletDownload,
-                inputStreamDownload, inputStreamErrorDownload);
+                inputStreamDownload, inputStreamErrorDownload,
+                inputStreamCallbackError);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
