@@ -2511,9 +2511,9 @@ public class BundleValidationTest {
     }
 
     @Test
-    public void watermarkBuild_watermarkComponentMissing_rebuildRequired() {
+    public void commercialBannerBuild_commercialBannerComponentMissing_rebuildRequired() {
         Assume.assumeTrue(mode.isProduction());
-        options.withWatermarkEnable(true);
+        options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2523,98 +2523,98 @@ public class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue(
-                "In watermark build mode, missing 'watermark.js' should require bundling",
+                "In commercial banner build mode, missing 'commercial-banner.js' should require bundling",
                 needsBuild);
     }
 
     @Test
-    public void watermarkBuild_watermarkComponentChanged_rebuildRequired()
+    public void commercialBannerBuild_commercialBannerComponentChanged_rebuildRequired()
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
-        options.withWatermarkEnable(true);
+        options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        String defaultWatermarkJS = new String(getClass()
-                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
-                StandardCharsets.UTF_8);
-        String oldWatermarkJS = defaultWatermarkJS.replace("vaadin-watermark",
-                "vaadin-watermark-old");
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        String oldCommercialBannerJS = defaultCommercialBannerJS.replace(
+                "vaadin-commercial-banner", "vaadin-commercial-banner-old");
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
-                BundleValidationUtil.calculateHash(oldWatermarkJS));
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(oldCommercialBannerJS));
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue(
-                "In watermark build mode, modified 'watermark.js' should require bundling",
+                "In commercial banner build mode, modified 'commercial-banner.js' should require bundling",
                 needsBuild);
     }
 
     @Test
-    public void watermarkBuild_watermarkComponentNotChanged_rebuildNotRequired()
+    public void commercialBannerBuild_commercialBannerComponentNotChanged_rebuildNotRequired()
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
-        options.withWatermarkEnable(true);
+        options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        String defaultWatermarkJS = new String(getClass()
-                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
-                StandardCharsets.UTF_8);
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
-                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertFalse(
-                "In watermark build mode, unmodified 'watermark.js' should not require bundling",
+                "In commercial banner build mode, unmodified 'commercial-banner.js' should not require bundling",
                 needsBuild);
     }
 
     @Test
-    public void nonWatermarkBuild_watermarkComponentPresent_rebuildRequired()
+    public void nonCommercialBannerBuild_commercialBannerComponentPresent_rebuildRequired()
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
-        options.withWatermarkEnable(false);
+        options.withCommercialBanner(false);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
         File frontendGeneratedFolder = temporaryFolder.newFolder(
                 FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED);
-        File watermarkJS = new File(frontendGeneratedFolder,
-                FrontendUtils.WATERMARK_JS);
-        watermarkJS.createNewFile();
-        String defaultWatermarkJS = new String(getClass()
-                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
-                StandardCharsets.UTF_8);
-        FileUtils.write(watermarkJS, defaultWatermarkJS,
+        File commercialBannerJS = new File(frontendGeneratedFolder,
+                FrontendUtils.COMMERCIAL_BANNER_JS);
+        commercialBannerJS.createNewFile();
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        FileUtils.write(commercialBannerJS, defaultCommercialBannerJS,
                 StandardCharsets.UTF_8);
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
-                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue(
-                "In non watermark build mode, presence of 'watermark.js' should require bundling",
+                "In non commercial banner build mode, presence of 'commercial-banner.js' should require bundling",
                 needsBuild);
     }
 
     @Test
-    public void developmentMode_watermarkComponentNotPresent_rebuildNotRequired() {
+    public void developmentMode_commercialBannerComponentNotPresent_rebuildNotRequired() {
         Assume.assumeTrue(!mode.isProduction());
-        options.withWatermarkEnable(true);
+        options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -2625,32 +2625,32 @@ public class BundleValidationTest {
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertFalse(
-                "In development mode, absence of 'watermark.js' should not require bundling",
+                "In development mode, absence of 'commercial-banner.js' should not require bundling",
                 needsBuild);
     }
 
     @Test
-    public void developmentMode_watermarkComponentPresent_rebuildRequired()
+    public void developmentMode_commercialBannerComponentPresent_rebuildRequired()
             throws IOException {
         Assume.assumeTrue(!mode.isProduction());
-        options.withWatermarkEnable(true);
+        options.withCommercialBanner(true);
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
 
-        String defaultWatermarkJS = new String(getClass()
-                .getResourceAsStream(FrontendUtils.WATERMARK_JS).readAllBytes(),
-                StandardCharsets.UTF_8);
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
         ObjectNode stats = getBasicStats();
         ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
-                FrontendUtils.GENERATED + FrontendUtils.WATERMARK_JS,
-                BundleValidationUtil.calculateHash(defaultWatermarkJS));
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
         setupFrontendUtilsMock(stats);
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue(
-                "In development mode, presence of 'watermark.js' should require bundling",
+                "In development mode, presence of 'commercial-banner.js' should require bundling",
                 needsBuild);
     }
 

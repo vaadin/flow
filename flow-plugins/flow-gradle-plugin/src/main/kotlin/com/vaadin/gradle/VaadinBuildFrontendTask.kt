@@ -117,7 +117,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             }
         }
         LicenseChecker.setStrictOffline(true)
-        val (licenseRequired: Boolean, watermarkRequired: Boolean) = try {
+        val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
             Pair(
                 BuildFrontendUtil.validateLicenses(
                     adapter.get(),
@@ -129,7 +129,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             Pair(true, true)
         }
 
-        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, watermarkRequired
+        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
         )
     }
 
