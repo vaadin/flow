@@ -187,7 +187,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * @deprecated since 24.9 and will be removed in Vaadin 25. Instead,
-     *             {@link #setRequestedRange(int, int)} will handle all
+     *             {@link #setViewportRange(int, int)} will handle all
      *             hierarchy levels.
      */
     @Deprecated(since = "24.9", forRemoval = true)
