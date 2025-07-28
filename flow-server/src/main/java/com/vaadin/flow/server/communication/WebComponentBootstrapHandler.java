@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -37,6 +38,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +67,9 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static com.vaadin.flow.server.Constants.PUSH_MAPPING;
 import static com.vaadin.flow.server.communication.IndexHtmlRequestHandler.addCommercialBanner;
+import static com.vaadin.flow.server.communication.IndexHtmlRequestHandler.addDevTools;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -164,6 +168,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
 
                 setupCss(head, context);
 
+                addDevTools(context.getSession(), context.getRequest(),
+                        deploymentConfiguration, document);
                 addCommercialBanner(deploymentConfiguration, document);
 
                 return document;
@@ -316,7 +322,6 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 response::setDateHeader);
 
         String serviceUrl = getServiceUrl(request, response);
-
         Document document = getPageBuilder().getBootstrapPage(context);
         writeBootstrapPage(response, document.head(), serviceUrl);
         UsageStatistics.markAsUsed(Constants.STATISTICS_EXPORTED_WC, null);
@@ -409,6 +414,11 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 // set cleaned html as innerHTML for the element
                 String elementHtml = element.html();
                 if (elementHtml != null && elementHtml.length() > 0) {
+                    // Fix url in dev tools configuration
+                    if (elementHtml.contains("window.Vaadin.devToolsConf")) {
+                        elementHtml = modifyDevToolsConfigURL(serviceUrl,
+                                elementHtml);
+                    }
                     writer.append(varName).append(".innerHTML=\"")
                             .append(inlineHTML(elementHtml)).append("\";");
                 }
@@ -417,6 +427,13 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if (conditionalFilename != null) {
                     writer.append("}\n");
                 }
+            }
+            // Transfer dev-tools
+            Elements devTools = head.ownerDocument().body()
+                    .getElementsByTag("vaadin-dev-tools");
+            if (!devTools.isEmpty()) {
+                writer.append(
+                        "document.body.appendChild(document.createElement('vaadin-dev-tools'));");
             }
             writer.append("})();");
         }
@@ -449,6 +466,26 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         WebComponentConfigurationRegistry
                 .getInstance(response.getService().getContext())
                 .setShadowDomElements(elementsForShadows);
+    }
+
+    private String modifyDevToolsConfigURL(String serviceUrl,
+            String elementHtml) {
+        if (elementHtml.contains(PUSH_MAPPING)) {
+            // Find and replace quoted strings containing VAADIN/push
+            Pattern pattern = Pattern
+                    .compile("\"([^\"]*(" + PUSH_MAPPING + ")[^\"]*)\"");
+            Matcher matcher = pattern.matcher(elementHtml);
+            StringBuilder sb = new StringBuilder();
+            while (matcher.find()) {
+                String quotedPath = matcher.group(1);
+                String modifiedPath = modifyPath(serviceUrl, quotedPath);
+                matcher.appendReplacement(sb,
+                        "\"" + modifiedPath.replace("$", "\\$") + "\"");
+            }
+            matcher.appendTail(sb);
+            elementHtml = sb.toString();
+        }
+        return elementHtml;
     }
 
     private static String getVaadinFilenameIfVaadinScript(Element element) {

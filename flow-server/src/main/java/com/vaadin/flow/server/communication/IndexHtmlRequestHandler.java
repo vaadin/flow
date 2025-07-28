@@ -179,6 +179,27 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         addDevBundleTheme(indexDocument, context);
         applyThemeVariant(indexDocument, context);
 
+        addDevTools(session, request, config, indexDocument);
+
+        // this invokes any custom listeners and should be run when the whole
+        // page is constructed
+        service.modifyIndexHtmlResponse(indexHtmlResponse);
+
+        addCommercialBanner(service.getDeploymentConfiguration(),
+                indexDocument);
+
+        try {
+            response.getOutputStream()
+                    .write(indexDocument.html().getBytes(UTF_8));
+        } catch (IOException e) {
+            getLogger().error("Error writing 'index.html' to response", e);
+            return false;
+        }
+        return true;
+    }
+
+    static void addDevTools(VaadinSession session, VaadinRequest request,
+            DeploymentConfiguration config, Document indexDocument) {
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
             catchErrorsInDevMode(indexDocument);
@@ -197,22 +218,6 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                             };
                             """);
         }
-
-        // this invokes any custom listeners and should be run when the whole
-        // page is constructed
-        service.modifyIndexHtmlResponse(indexHtmlResponse);
-
-        addCommercialBanner(service.getDeploymentConfiguration(),
-                indexDocument);
-
-        try {
-            response.getOutputStream()
-                    .write(indexDocument.html().getBytes(UTF_8));
-        } catch (IOException e) {
-            getLogger().error("Error writing 'index.html' to response", e);
-            return false;
-        }
-        return true;
     }
 
     private void initializeFeatureFlags(Document indexDocument,
@@ -297,7 +302,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 """);
     }
 
-    private void catchErrorsInDevMode(Document indexDocument) {
+    private static void catchErrorsInDevMode(Document indexDocument) {
         addScript(indexDocument, "" + //
                 "window.Vaadin = window.Vaadin || {};" + //
                 "window.Vaadin.ConsoleErrors = window.Vaadin.ConsoleErrors || [];"
@@ -383,7 +388,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void addDevTools(Document indexDocument,
+    private static void addDevTools(Document indexDocument,
             DeploymentConfiguration config, VaadinSession session,
             VaadinRequest request) {
         VaadinService service = session.getService();

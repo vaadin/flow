@@ -25,6 +25,7 @@ import com.vaadin.flow.theme.ThemeDefinition;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.server.frontend.TaskGenerateBootstrap.DEV_TOOLS_IMPORT;
 
 /**
  * A task for generating the bootstrap file for exported web components
@@ -58,6 +59,9 @@ public class TaskGenerateWebComponentBootstrap
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
         lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
+        if (!options.isProductionMode()) {
+            lines.add(DEV_TOOLS_IMPORT);
+        }
         lines.add("import 'Frontend/generated/flow/"
                 + FrontendUtils.IMPORTS_WEB_COMPONENT_NAME + "';");
         lines.add("import { init } from '" + FrontendUtils.JAR_RESOURCES_IMPORT
