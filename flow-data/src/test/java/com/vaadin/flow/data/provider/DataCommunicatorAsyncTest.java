@@ -141,7 +141,7 @@ public class DataCommunicatorAsyncTest {
         ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
     }
 
@@ -151,7 +151,7 @@ public class DataCommunicatorAsyncTest {
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertNotEquals("Expected initial reset not yet done.",
