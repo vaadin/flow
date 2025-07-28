@@ -139,7 +139,7 @@ public class Options implements Serializable {
 
     private boolean frontendIgnoreVersionChecks = false;
 
-    private boolean watermarkEnable = false;
+    private boolean commercialBannerEnabled = false;
 
     /**
      * Creates a new instance.
@@ -1021,25 +1021,26 @@ public class Options implements Serializable {
     }
 
     /**
-     * Checks if the watermark build is enabled.
+     * Checks if the commercial banner is enabled for the build.
      *
-     * @return {@code true} if the watermark build is enabled, {@code false}
+     * @return {@code true} if the commercial banner is enabled, {@code false}
      *         otherwise
      */
-    public boolean isWatermarkEnable() {
-        return watermarkEnable;
+    public boolean isCommercialBannerEnabled() {
+        return commercialBannerEnabled;
     }
 
     /**
-     * Sets whether the build should generate a watermarked application.
+     * Sets whether the build could generate an application with a commercial
+     * banner.
      *
-     * @param watermarkEnable
-     *            a boolean value indicating whether the built application
-     *            should be watermarked.
+     * @param enableCommercialBanner
+     *            a boolean value indicating whether the built application could
+     *            add a commercial banner.
      * @return this builder
      */
-    public Options withWatermarkEnable(boolean watermarkEnable) {
-        this.watermarkEnable = watermarkEnable;
+    public Options withCommercialBanner(boolean enableCommercialBanner) {
+        this.commercialBannerEnabled = enableCommercialBanner;
         return this;
     }
 
