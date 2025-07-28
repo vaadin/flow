@@ -357,7 +357,7 @@ public class BrowserDetails implements Serializable {
         }
 
         // DuckDuckGo bot;
-        if (userAgent.contains("com.duckduckgo.mobile.android")) {
+        if (userAgent.startsWith("duckduckgo/")) {
             System.err.println(
                     "OS version could not be parsed from DuckDuckGo userAgent: "
                             + userAgent);
@@ -378,8 +378,8 @@ public class BrowserDetails implements Serializable {
             String token = "; android ";
             int startIndex = userAgent.indexOf(token) + token.length();
             int endIndex = userAgent.indexOf(";", startIndex);
-            String osVersionString = safeSubstring(userAgent,
-                    startIndex, endIndex);
+            String osVersionString = safeSubstring(userAgent, startIndex,
+                    endIndex);
             String[] parts = osVersionString.split("\\.");
             if (parts.length == 2) {
                 parts[1] = parts[1].substring(0, parts[1].indexOf(";"));
