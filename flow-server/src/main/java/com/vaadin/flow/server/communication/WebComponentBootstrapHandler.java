@@ -65,6 +65,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static com.vaadin.flow.server.communication.IndexHtmlRequestHandler.addCommercialBanner;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -161,6 +162,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
 
                 setupCss(head, context);
+
+                addCommercialBanner(deploymentConfiguration, document);
 
                 return document;
             } catch (IOException e) {
