@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator;
+package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -37,9 +37,8 @@ import com.vaadin.flow.function.SerializablePredicate;
  *
  * @param <T>
  *            the type of items in the cache
- * @private
  */
-public class Cache<T> implements Serializable {
+class Cache<T> implements Serializable {
     private final RootCache<T> rootCache;
     private final Cache<T> parentCache;
     private final int parentIndex;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator;
+package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -32,9 +32,8 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            the type of items in the cache
- * @private
  */
-public class RootCache<T> extends Cache<T> {
+class RootCache<T> extends Cache<T> {
     private final ValueProvider<T, Object> itemIdProvider;
     private final Map<Object, ItemContext<T>> itemIdToContext = new HashMap<>();
 

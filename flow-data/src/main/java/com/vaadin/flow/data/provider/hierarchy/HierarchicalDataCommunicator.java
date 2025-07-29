@@ -38,8 +38,6 @@ import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ExecutionContext;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator.Cache;
-import com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator.RootCache;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
