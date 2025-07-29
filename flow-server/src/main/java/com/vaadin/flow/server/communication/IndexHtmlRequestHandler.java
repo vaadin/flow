@@ -635,7 +635,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
     }
 
-    private static void addCommercialBanner(DeploymentConfiguration config,
+    static void addCommercialBanner(DeploymentConfiguration config,
             Document indexDocument) {
         System.clearProperty("vaadin." + Constants.COMMERCIAL_BANNER_TOKEN);
         if (config.isProductionMode() && config
