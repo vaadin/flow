@@ -13,200 +13,392 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
-import com.vaadin.flow.data.provider.QuerySortOrder;
-import com.vaadin.flow.data.provider.hierarchy.HierarchicalArrayUpdater.HierarchicalUpdate;
-import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalQuery;
+import com.vaadin.flow.data.provider.hierarchy.TreeData;
+import com.vaadin.flow.data.provider.hierarchy.TreeDataProvider;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator.Cache;
+import com.vaadin.flow.data.provider.hierarchy.hierarchicaldatacommunicator.RootCache;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-/**
- * Data communicator that handles requesting hierarchical data from
- * {@link HierarchicalDataProvider} and sending it to client side.
- *
- * @param <T>
- *            the bean type
- * @author Vaadin Ltd
- * @since 1.2
- */
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
-
-    private final HierarchicalArrayUpdater arrayUpdater;
+    private final Set<Object> expandedItemIds = new HashSet<>();
     private final StateNode stateNode;
-    private HierarchyMapper<T, ?> mapper;
-    private DataGenerator<T> dataGenerator;
-    private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
+    private final ArrayUpdater arrayUpdater;
+    private final DataGenerator<T> dataGenerator;
 
-    private final Map<String, HierarchicalCommunicationController<T>> dataControllers = new HashMap<>();
+    private RootCache<T> rootCache;
+    private boolean pendingFlush = false;
+    private Range viewportRange;
+    private int nextUpdateId = 0;
 
-    /**
-     * Construct a new hierarchical data communicator backed by a
-     * {@link TreeDataProvider}.
-     *
-     * @param dataGenerator
-     *            the data generator function
-     * @param arrayUpdater
-     *            array updater strategy
-     * @param dataUpdater
-     *            data updater strategy
-     * @param stateNode
-     *            the state node used to communicate for
-     * @param uniqueKeyProviderSupplier
-     *            Unique key provider for a row. If null, then using Grid's
-     *            default key generator.
-     */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
-            HierarchicalArrayUpdater arrayUpdater,
+            ArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
-        super(dataGenerator, arrayUpdater, dataUpdater, stateNode);
-        this.dataGenerator = dataGenerator;
-        this.arrayUpdater = arrayUpdater;
+        super(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
         this.stateNode = stateNode;
-        this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
+        this.arrayUpdater = arrayUpdater;
+        this.dataGenerator = dataGenerator;
 
-        KeyMapperWrapper<T> keyMapperWrapper = new KeyMapperWrapper<>();
-        setKeyMapper(keyMapperWrapper);
+        KeyMapper<T> keyMapper = createKeyMapper(uniqueKeyProviderSupplier);
+        setKeyMapper(keyMapper);
 
-        dataGenerator.addDataGenerator(this::generateTreeData);
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
+
+        stateNode.addAttachListener(this::onAttach);
+        stateNode.addDetachListener(this::onDetach);
     }
 
-    private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(mapper.getParentOfItem(item))
-                .ifPresent(parent -> jsonObject.put("parentUniqueKey",
-                        getKeyMapper().key(parent)));
+    private void onAttach() {
+        requestFlush();
     }
 
-    private void requestFlush(HierarchicalUpdate update) {
-        SerializableConsumer<ExecutionContext> flushRequest = context -> update
-                .commit();
+    private void onDetach() {
+
+    }
+
+    private void requestFlush() {
+        if (pendingFlush) {
+            return;
+        }
+
+        pendingFlush = true;
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, flushRequest));
+                .beforeClientResponse(stateNode, this::flush));
     }
 
-    private void requestFlush(HierarchicalCommunicationController<T> update) {
-        SerializableConsumer<ExecutionContext> flushRequest = context -> update
-                .flush();
-        stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
-                .beforeClientResponse(stateNode, flushRequest));
-    }
-
-    /**
-     * Resets all the data.
-     * <p>
-     * It effectively resends all available data.
-     */
+    /** @see DataCommunicator#reset() */
     @Override
     public void reset() {
-        super.reset();
+        getKeyMapper().removeAll();
+        dataGenerator.destroyAllData();
 
-        if (!dataControllers.isEmpty()) {
-            dataControllers.values().forEach(
-                    HierarchicalCommunicationController::unregisterPassivatedKeys);
-            dataControllers.clear();
-        }
-
-        if (mapper != null) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(mapper.getRootSize());
-            update.enqueue("$connector.ensureHierarchy");
-
-            Collection<T> expandedItems = mapper.getExpandedItems();
-            if (!expandedItems.isEmpty()) {
-                update.enqueue("$connector.expandItems", expandedItems.stream()
-                        .map(getKeyMapper()::key).map(key -> {
-                            JsonObject json = Json.createObject();
-                            json.put("key", key);
-                            return json;
-                        }).collect(JsonUtils.asArray()));
-            }
-
-            requestFlush(update);
-        }
+        rootCache = null;
+        requestFlush();
     }
 
+    /** @see DataCommunicator#handleDataRefreshEvent() */
     @Override
     protected void handleDataRefreshEvent(
             DataChangeEvent.DataRefreshEvent<T> event) {
-        if (event.isRefreshChildren()) {
-            T item = event.getItem();
-            if (isExpanded(item)) {
-                String parentKey = getKeyMapper().key(item);
+        refresh(event.getItem(), event.isRefreshChildren());
+    }
 
-                if (!dataControllers.containsKey(parentKey)) {
-                    setParentRequestedRange(0, mapper.countChildItems(item),
-                            item);
-                }
-                HierarchicalCommunicationController<T> dataController = dataControllers
-                        .get(parentKey);
-                if (dataController != null) {
-                    dataController.setResendEntireRange(true);
-                    requestFlush(dataController);
-                }
+    /** @see DataCommunicator#refresh() */
+    @Override
+    public void refresh(T item) {
+        refresh(item, false);
+    }
+
+    private void refresh(T item, boolean refreshChildren) {
+        Objects.requireNonNull(item, "Item cannot be null");
+
+        getKeyMapper().refresh(item);
+        dataGenerator.refreshData(item);
+
+        if (rootCache == null) {
+            return;
+        }
+
+        var itemContext = rootCache.getItemContext(item);
+        if (itemContext == null) {
+            return;
+        }
+
+        var cache = itemContext.cache();
+        var index = itemContext.index();
+        cache.refreshItem(item);
+
+        if (refreshChildren) {
+            var subCache = cache.getCache(index);
+            subCache.clear();
+            subCache.setSize(getDataProviderChildCount(item));
+        }
+
+        requestFlush();
+    }
+
+    /** @see DataCommunicator#setViewportRange(int, int) */
+    @Override
+    public void setViewportRange(int start, int length) {
+        viewportRange = computeViewportRange(start, length);
+        requestFlush();
+    }
+
+    /** @see DataCommunicator#confirmUpdate() */
+    @Override
+    public void confirmUpdate(int updateId) {
+        // NO-OP
+    }
+
+    protected int resolveIndexPath(int... path) {
+        var rootCache = ensureRootCache();
+        resolveIndexPath(rootCache, path);
+        return rootCache.getFlatIndexByPath(path);
+    }
+
+    private void resolveIndexPath(Cache<T> cache, int... path) {
+        var index = path[0];
+
+        if (index < 0) {
+            // If the index is negative, it is relative to the end of the
+            // cache.
+            index = cache.getSize() + index;
+        }
+
+        if (!cache.hasItem(index)) {
+            var items = fetchDataProviderChildren(cache.getParentItem(),
+                    Range.withOnly(index)).toList();
+            cache.setItems(index, items);
+        }
+
+        if (!cache.hasItem(index)) {
+            return;
+        }
+
+        var item = cache.getItem(index);
+        if (isExpanded(item)) {
+            if (!cache.hasCache(index)) {
+                cache.createCache(index, getDataProviderChildCount(item));
+                requestFlush();
+            }
+
+            var subCache = cache.getCache(index);
+            var restPath = Arrays.copyOfRange(path, 1, path.length);
+            if (restPath.length > 0) {
+                resolveIndexPath(subCache, restPath);
             }
         }
-        super.handleDataRefreshEvent(event);
     }
 
-    @Override
-    public Stream<T> fetchFromProvider(int offset, int limit) {
-        // Instead of adding logic to this class, delegate request to the
-        // separate object handling hierarchies.
-        return mapper.fetchRootItems(Range.withLength(offset, limit));
+    protected List<T> preloadRange(int start, int length) {
+        var rootCache = ensureRootCache();
+
+        // +1 = forward
+        // -1 = backward
+        var direction = Math.signum(length);
+
+        List<T> result = new ArrayList<>();
+
+        while (result.size() < Math.abs(length)) {
+            var context = rootCache.getFlatIndexContext(start);
+            if (context == null) {
+                break;
+            }
+            var cache = context.cache();
+            var index = context.index();
+
+            if (!cache.hasItem(index)) {
+                var remainingLength = Math.abs(length) - result.size();
+
+                var range = direction > 0
+                        ? Range.between(index, index + remainingLength)
+                        : Range.between(index + 1 - remainingLength, index + 1);
+
+                range = range.restrictTo(Range.withLength(0, cache.getSize()));
+
+                var items = fetchDataProviderChildren(cache.getParentItem(),
+                        range).toList();
+                cache.setItems(range.getStart(), items);
+            }
+
+            var item = cache.getItem(index);
+
+            if (isExpanded(item) && !cache.hasCache(index)
+                    && (direction > 0 || result.size() > 0)) {
+                var subCache = cache.createCache(index,
+                        getDataProviderChildCount(item));
+
+                if (direction < 0) {
+                    start += subCache.getSize();
+                    continue;
+                }
+            }
+
+            if (direction > 0) {
+                start++;
+                result.add(item);
+            } else {
+                start--;
+                result.add(0, item);
+            }
+        }
+
+        return result;
     }
 
-    /**
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Instead,
-     *             {@link #setViewportRange(int, int)} will handle all hierarchy
-     *             levels.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    public void setParentRequestedRange(int start, int length, T parentItem) {
-        String parentKey = getKeyMapper().key(parentItem);
-        HierarchicalCommunicationController<T> controller = dataControllers
-                .computeIfAbsent(parentKey,
-                        key -> new HierarchicalCommunicationController<>(
-                                parentKey, getKeyMapper(), mapper,
-                                dataGenerator,
-                                size -> arrayUpdater
-                                        .startUpdate(getDataProviderSize()),
-                                (pkey, range) -> mapper.fetchChildItems(
-                                        getKeyMapper().get(pkey), range)));
-        controller.setHasUniqueKeyProviderSupplier(
-                uniqueKeyProviderSupplier.get() != null);
-        Range range = computeRequestedRange(start, length);
-        controller.setRequestRange(range.getStart(), range.length());
-        requestFlush(controller);
+    private void flush(ExecutionContext context) {
+        if (!context.isClientSideInitialized()) {
+            reset();
+            arrayUpdater.initialize();
+        }
+
+        var rootCache = ensureRootCache();
+
+        if (viewportRange.getStart() >= rootCache.getFlatSize()) {
+            viewportRange = Range.withLength(0, viewportRange.length());
+        }
+
+        var length = viewportRange.length();
+        var start = viewportRange.getStart();
+        var end = viewportRange.getEnd();
+
+        var result = preloadRange(start, length);
+
+        var flatSize = rootCache.getFlatSize();
+
+        var update = arrayUpdater.startUpdate(flatSize);
+        if (start > 0) {
+            update.clear(0, start);
+        }
+        update.clear(end, flatSize - end);
+        update.set(start, result.stream().map(this::generateItemJson).toList());
+        update.commit(nextUpdateId++);
+
+        pendingFlush = false;
+    }
+
+    /** @see HierarchicalDataCommunicator#hasChildren(T) */
+    public boolean hasChildren(T item) {
+        return getDataProvider().hasChildren(item);
+    }
+
+    /** @see HierarchicalDataCommunicator#getDepth(T) */
+    public int getDepth(T item) {
+        if (rootCache == null) {
+            return -1;
+        }
+
+        var itemContext = rootCache.getItemContext(item);
+        if (itemContext == null) {
+            return -1;
+        }
+        return itemContext.cache().getDepth();
+    }
+
+    /** @see HierarchicalDataCommunicator#isExpanded(T) */
+    public boolean isExpanded(T item) {
+        if (item == null) {
+            // Root nodes are always visible.
+            return true;
+        }
+        return expandedItemIds.contains(getDataProvider().getId(item));
+    }
+
+    /** @see HierarchicalDataCommunicator#expand(T item) */
+    public void expand(T item) {
+        expand(Arrays.asList(item));
+    }
+
+    /** @see HierarchicalDataCommunicator#expand(Collection) */
+    public Collection<T> expand(Collection<T> items) {
+        var expandedItems = items.stream().filter(item -> {
+            if (!hasChildren(item)) {
+                return false;
+            }
+
+            return expandedItemIds.add(getDataProvider().getId(item));
+        }).toList();
+
+        requestFlush();
+
+        return expandedItems;
+    }
+
+    /** @see HierarchicalDataCommunicator#collapse(T) */
+    public void collapse(T item) {
+        collapse(Arrays.asList(item));
+    }
+
+    /** @see HierarchicalDataCommunicator#collapse(Collection) */
+    public Collection<T> collapse(Collection<T> items) {
+        var collapsedItems = items.stream().filter(
+                item -> expandedItemIds.remove(getDataProvider().getId(item)))
+                .toList();
+
+        if (rootCache != null) {
+            rootCache.removeDescendantCacheIf(
+                    (cache) -> !isExpanded(cache.getParentItem()));
+            requestFlush();
+        }
+
+        return collapsedItems;
+    }
+
+    private JsonValue generateItemJson(T item) {
+        JsonObject json = Json.createObject();
+        json.put("key", getKeyMapper().key(item));
+        dataGenerator.generateData(item, json);
+        return json;
+    }
+
+    private KeyMapper<T> createKeyMapper(
+            SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
+        return new KeyMapper<T>() {
+            private T object;
+
+            @Override
+            public String key(T o) {
+                object = o;
+                try {
+                    return super.key(o);
+                } finally {
+                    object = null;
+                }
+            }
+
+            @Override
+            protected String createKey() {
+                var uniqueKeyProvider = uniqueKeyProviderSupplier.get();
+                return uniqueKeyProvider != null
+                        ? uniqueKeyProvider.apply(object)
+                        : super.createKey();
+            }
+        };
+    }
+
+    private RootCache<T> ensureRootCache() {
+        if (rootCache == null) {
+            rootCache = new RootCache<>(getDataProviderChildCount(null),
+                    getDataProvider()::getId) {
+                @Override
+                protected void removeItemContext(T item) {
+                    super.removeItemContext(item);
+
+                    getKeyMapper().remove(item);
+                    dataGenerator.destroyData(item);
+                }
+            };
+        }
+        return rootCache;
     }
 
     @Override
@@ -214,379 +406,71 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return (HierarchicalDataProvider<T, ?>) super.getDataProvider();
     }
 
-    /**
-     * Set the current hierarchical data provider for this communicator.
-     *
-     * @param dataProvider
-     *            the data provider to set, not <code>null</code>
-     * @param initialFilter
-     *            the initial filter value to use, or <code>null</code> to not
-     *            use any initial filter value
-     *
-     * @param <F>
-     *            the filter type
-     *
-     * @return a consumer that accepts a new filter value to use
-     */
-    public <F> SerializableConsumer<F> setDataProvider(
-            HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
-        // Remove old mapper before super.setDataProvider(...) prevents calling
-        // reset() before clearing the already expanded items:
-        if (mapper != null) {
-            mapper.destroyAllData();
-        }
-        mapper = new HierarchyMapper<>(dataProvider);
-
-        SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
-                initialFilter);
-
-        // Set up mapper for requests
-        mapper.setBackEndSorting(getBackEndSorting());
-        mapper.setInMemorySorting(getInMemorySorting());
-        mapper.setFilter(getFilter());
-
-        return consumer;
-    }
-
-    /**
-     * Set the current hierarchical data provider for this communicator.
-     *
-     * @param dataProvider
-     *            the data provider to set, must extend
-     *            {@link HierarchicalDataProvider}, not <code>null</code>
-     * @param initialFilter
-     *            the initial filter value to use, or <code>null</code> to not
-     *            use any initial filter value
-     *
-     * @param <F>
-     *            the filter type
-     *
-     * @return a consumer that accepts a new filter value to use
-     */
     @Override
     public <F> SerializableConsumer<F> setDataProvider(
             DataProvider<T, F> dataProvider, F initialFilter) {
-        if (dataProvider instanceof HierarchicalDataProvider) {
-            return setDataProvider(
-                    (HierarchicalDataProvider<T, F>) dataProvider,
-                    initialFilter);
-        }
-        throw new IllegalArgumentException(
-                "Only " + HierarchicalDataProvider.class.getName()
-                        + " and subtypes supported.");
+        return setDataProvider(asHierarchicalDataProvider(dataProvider),
+                initialFilter);
     }
 
-    /**
-     * @deprecated since 24.9 and will be removed in Vaadin 25.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    public void confirmUpdate(int id, String parentKey) {
-        Optional.ofNullable(dataControllers.get(parentKey))
-                .ifPresent(controller -> {
-                    controller.confirmUpdate(id);
-
-                    // Not absolutely necessary, but doing it right away to
-                    // release
-                    // memory earlier
-                    requestFlush(controller);
-                });
+    @Override
+    public <F> SerializableConsumer<Filter<F>> setDataProvider(
+            DataProvider<T, F> dataProvider, F initialFilter,
+            boolean notifiesOnChange) {
+        return setDataProvider(asHierarchicalDataProvider(dataProvider),
+                initialFilter, notifiesOnChange);
     }
 
-    /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
-     * <p>
-     * Changes are synchronized to the client.
-     *
-     * @param item
-     *            the item to collapse
-     */
-    public void collapse(T item) {
-        collapse(Arrays.asList(item));
+    public <F> SerializableConsumer<F> setDataProvider(
+            HierarchicalDataProvider<T, F> dataProvider, F initialFilter) {
+        return super.setDataProvider(dataProvider, initialFilter);
     }
 
-    /**
-     * Collapses the given items and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
-     * <p>
-     * Changes are synchronized to the client.
-     *
-     * @param items
-     *            the items to collapse
-     * @return the collapsed items
-     */
-    public Collection<T> collapse(Collection<T> items) {
-        List<T> collapsedItems = new ArrayList<>();
-        items.forEach(item -> {
-            if (mapper.collapse(item)) {
-                collapsedItems.add(item);
-                HierarchicalCommunicationController<T> controller = dataControllers
-                        .remove(getKeyMapper().key(item));
-                if (controller != null) {
-                    controller.unregisterPassivatedKeys();
-                }
-            }
-        });
-        if (!collapsedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(mapper.getRootSize());
-            update.enqueue("$connector.collapseItems",
-                    collapsedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
-            requestFlush(update);
-        }
-        return collapsedItems;
+    public <F> SerializableConsumer<Filter<F>> setDataProvider(
+            HierarchicalDataProvider<T, F> dataProvider, F initialFilter,
+            boolean notifiesOnChange) {
+        expandedItemIds.clear();
+
+        return super.setDataProvider(dataProvider, initialFilter,
+                notifiesOnChange);
     }
 
-    /**
-     * Expands the given item. Calling this method will have no effect if the
-     * item is already expanded or if it has no children.
-     * <p>
-     * Changes are synchronized to the client.
-     *
-     * @param item
-     *            the item to expand
-     */
-    public void expand(T item) {
-        expand(Arrays.asList(item));
-    }
-
-    /**
-     * Expands the given items. Calling this method will have no effect if the
-     * item is already expanded or if it has no children.
-     * <p>
-     * Changes are synchronized to the client.
-     *
-     * @param items
-     *            the items to expand
-     * @return the expanded items
-     */
-    public Collection<T> expand(Collection<T> items) {
-        List<T> expandedItems = new ArrayList<>();
-        items.forEach(item -> {
-            if (mapper.expand(item)) {
-                expandedItems.add(item);
-            }
-        });
-        if (!expandedItems.isEmpty()) {
-            HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(mapper.getRootSize());
-            update.enqueue("$connector.expandItems",
-                    expandedItems.stream()
-                            .map(this::generateJsonForExpandedOrCollapsedItem)
-                            .collect(JsonUtils.asArray()));
-            requestFlush(update);
-        }
-        return expandedItems;
-    }
-
-    /**
-     * Returns whether given item has children.
-     *
-     * @param item
-     *            the item to test
-     * @return {@code true} if item has children; {@code false} if not
-     */
-    public boolean hasChildren(T item) {
-        return getDataProvider().hasChildren(item);
-    }
-
-    /**
-     * Returns whether given item is expanded.
-     *
-     * @param item
-     *            the item to test
-     * @return {@code true} if item is expanded; {@code false} if not
-     */
-    public boolean isExpanded(T item) {
-        return mapper.isExpanded(item);
-    }
-
-    /**
-     * Returns depth of item in the tree starting from zero representing a root.
-     *
-     * @param item
-     *            Target item
-     * @return depth of item in the tree or -1 if item is null
-     */
-    public int getDepth(T item) {
-        return mapper.getDepth(item);
-    }
-
+    /** @see DataCommunicator#getDataProviderSize() */
     @Override
     public int getDataProviderSize() {
-        return mapper.getRootSize();
+        return getDataProviderChildCount(null);
     }
 
+    /** @see DataCommunicator#fetchFromProvider() */
     @Override
-    public void setBackEndSorting(List<QuerySortOrder> sortOrder) {
-        if (mapper != null) {
-            mapper.setBackEndSorting(sortOrder);
-        }
-        super.setBackEndSorting(sortOrder);
+    public Stream<T> fetchFromProvider(int offset, int limit) {
+        return fetchDataProviderChildren(null, Range.withLength(offset, limit));
     }
 
-    @Override
-    public void setInMemorySorting(SerializableComparator<T> comparator) {
-        if (mapper != null) {
-            mapper.setInMemorySorting(comparator);
-        }
-        super.setInMemorySorting(comparator);
+    @SuppressWarnings("unchecked")
+    private Stream<T> fetchDataProviderChildren(T parent, Range range) {
+        var query = new HierarchicalQuery<>(range.getStart(), range.length(),
+                getBackEndSorting(), getInMemorySorting(), getFilter(), parent);
+
+        return ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                .fetchChildren(query);
     }
 
-    protected <F> void setFilter(F filter) {
-        if (mapper != null) {
-            mapper.setFilter(filter);
-        }
+    @SuppressWarnings("unchecked")
+    private int getDataProviderChildCount(T parent) {
+        var query = new HierarchicalQuery<>(getFilter(), parent);
+
+        return ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                .getChildCount(query);
     }
 
-    /**
-     * Returns true if there is any expanded items.
-     *
-     * @return {@code true} if there is any expanded items.
-     */
-    public boolean hasExpandedItems() {
-        return mapper.hasExpandedItems();
-    }
-
-    private JsonValue generateJsonForExpandedOrCollapsedItem(T item) {
-        JsonObject json = Json.createObject();
-        json.put("key", getKeyMapper().key(item));
-        return json;
-    }
-
-    /**
-     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
-     */
-    @Override
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected Set<String> getPassivatedKeys(Set<String> oldActive) {
-        return super.getPassivatedKeys(oldActive).stream().filter(key -> {
-            T item = getKeyMapper().get(key);
-            if (item != null) {
-                T parent = mapper.getParentOfItem(item);
-                /* Short-circuit root item passivation */
-                if (parent == null) {
-                    return !isExpanded(item);
-                }
-                while (parent != null) {
-                    if (!isItemActive(parent) || !isExpanded(parent)) {
-                        return true;
-                    }
-                    parent = mapper.getParentOfItem(parent);
-                }
-            }
-            return false;
-        }).collect(Collectors.toCollection(HashSet::new));
-    }
-
-    /**
-     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
-     */
-    @Override
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected void doUnregister(Integer updateId) {
-        Set<String> passivated = passivatedByUpdate.remove(updateId);
-        if (passivated != null) {
-            passivated.forEach(key -> {
-                T item = getKeyMapper().get(key);
-                if (item != null) {
-                    // If item has an active child list, do not remove it from
-                    // keyMapper
-                    if (!mapper.hasCurrentlyActiveChild(item)) {
-                        dataGenerator.destroyData(item);
-                        getKeyMapper().remove(item);
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * KeyMapper extension delegating row key creation to the
-     * <code>uniqueKeyProviderSupplier</code> passed to the hierarchical data
-     * communicator constructor from the component.
-     * <p>
-     * If <code>uniqueKeyProviderSupplier</code> is not present, this class uses
-     * {@link KeyMapper#createKey()} for key creation.
-     *
-     * @param <V>
-     *            the bean type
-     */
-    private class KeyMapperWrapper<V> extends KeyMapper<T> {
-
-        private T object;
-
-        @Override
-        public String key(T o) {
-            this.object = o;
-            try {
-                return super.key(o);
-            } finally {
-                this.object = null;
-            }
+    private <F> HierarchicalDataProvider<T, F> asHierarchicalDataProvider(
+            DataProvider<T, F> dataProvider) {
+        if (dataProvider instanceof HierarchicalDataProvider<T, F> hierarchicalDataProvider) {
+            return hierarchicalDataProvider;
         }
 
-        @Override
-        protected String createKey() {
-            return Optional.ofNullable(uniqueKeyProviderSupplier.get())
-                    .map(provider -> provider.apply(object))
-                    .orElse(super.createKey());
-        }
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator
-     */
-    @Override
-    public void setItemCountEstimate(int itemCountEstimate) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator
-     */
-    @Override
-    public int getItemCountEstimate() {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator
-     */
-    @Override
-    public void setItemCountEstimateIncrease(int itemCountEstimateIncrease) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator
-     */
-    @Override
-    public int getItemCountEstimateIncrease() {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator
-     */
-    @Override
-    public void setDefinedSize(boolean definedSize) {
-        throw new UnsupportedOperationException(
-                "Not supported in HierarchicalDataCommunicator");
-    }
-
-    /**
-     * Estimates are not supported in HierarchicalDataCommunicator. Therefore
-     * this method will always return {@literal true}
-     */
-    @Override
-    public boolean isDefinedSize() {
-        return true;
+        throw new IllegalArgumentException(
+                "Only HierarchicalDataCommunicator and its subtypes are supported");
     }
 }
