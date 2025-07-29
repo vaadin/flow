@@ -25,7 +25,7 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
@@ -40,7 +40,6 @@ import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyC
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
-import static org.springframework.security.web.util.matcher.AntPathRequestMatcher.antMatcher;
 
 @EnableWebSecurity
 @Configuration
@@ -89,20 +88,16 @@ public class SecurityConfig {
     SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
             throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(
-                        RequestUtil.antMatchers("/public/**", "/error"))
-                .permitAll());
+                .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
+                .requestMatchers("/public/**", "/error").permitAll());
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/switchUser"))
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser")
                 .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/impersonate/exit"))
-                .hasRole("PREVIOUS_ADMINISTRATOR"));
-        http.logout(cfg -> cfg.logoutRequestMatcher(new AntPathRequestMatcher(
-                getRootUrl(false) + "doLogout", "GET")));
+        http.authorizeHttpRequests(
+                auth -> auth.requestMatchers("/impersonate/exit")
+                        .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.logout(cfg -> cfg.logoutRequestMatcher(PathPatternRequestMatcher
+                .pathPattern(HttpMethod.GET, getRootUrl(false) + "doLogout")));
         http.with(vaadin(), cfg -> {
             cfg.loginView(LoginView.class)
                     .logoutSuccessHandler(this::onLogoutOnNonVaadinUrl)
@@ -163,10 +158,11 @@ public class SecurityConfig {
     public SwitchUserFilter switchUserFilter() {
         SwitchUserFilter filter = new SwitchUserFilter();
         filter.setUserDetailsService(userDetailsService());
-        filter.setSwitchUserMatcher(antMatcher(HttpMethod.GET, "/impersonate"));
+        filter.setSwitchUserMatcher(PathPatternRequestMatcher
+                .pathPattern(HttpMethod.GET, "/impersonate"));
         filter.setSwitchFailureUrl("/switchUser");
-        filter.setExitUserMatcher(
-                antMatcher(HttpMethod.GET, "/impersonate/exit"));
+        filter.setExitUserMatcher(PathPatternRequestMatcher
+                .pathPattern(HttpMethod.GET, "/impersonate/exit"));
         filter.setTargetUrl("/");
         return filter;
     }
