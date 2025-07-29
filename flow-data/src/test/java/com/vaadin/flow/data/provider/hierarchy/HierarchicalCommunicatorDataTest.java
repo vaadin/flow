@@ -290,13 +290,13 @@ public class HierarchicalCommunicatorDataTest {
         dataProvider = new TreeDataProvider<>(treeData);
         communicator.setDataProvider(dataProvider, null);
 
-        communicator.setRequestedRange(0, requestedRangeLength);
+        communicator.setViewportRange(0, requestedRangeLength);
         fakeClientCommunication();
         Assert.assertTrue(communicator.getKeyMapper().has(itemToTest));
         String initialKey = communicator.getKeyMapper().key(itemToTest);
 
         communicator.expand(itemToTest);
-        communicator.setRequestedRange(requestedRangeLength * 2,
+        communicator.setViewportRange(requestedRangeLength * 2,
                 requestedRangeLength);
         fakeClientCommunication();
         assertKeyItemPairIsPresentInKeyMapper(initialKey, itemToTest);

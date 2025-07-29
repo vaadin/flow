@@ -203,7 +203,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setProjectFolder(projectRootFolder);
@@ -241,7 +240,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setProjectFolder(projectRootFolder);
@@ -309,7 +307,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setProjectFolder(projectRootFolder);
@@ -345,7 +342,6 @@ public class WebComponentBootstrapHandlerViteTest {
 
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setApplicationOrSystemProperty(SERVLET_PARAMETER_STATISTICS_JSON,
@@ -374,7 +370,6 @@ public class WebComponentBootstrapHandlerViteTest {
         VaadinServletService service = new MockVaadinServletService();
         VaadinSession session = new MockVaadinSession(service);
         session.lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
         MockDeploymentConfiguration config = (MockDeploymentConfiguration) service
                 .getDeploymentConfiguration();
         config.setProjectFolder(projectRootFolder);

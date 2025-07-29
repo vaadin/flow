@@ -1842,7 +1842,6 @@ public class RouterTest extends RoutingTestBase {
         super.init();
         ui = new RouterTestMockUI(router);
         ui.getSession().lock();
-        ui.getSession().setConfiguration(configuration);
 
         VaadinService.setCurrent(service);
 

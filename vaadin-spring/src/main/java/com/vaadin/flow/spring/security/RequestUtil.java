@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
@@ -177,9 +176,9 @@ public class RequestUtil {
     /**
      * Utility to create {@link RequestMatcher}s from ant patterns.
      * <p>
-     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
-     * callers of this method should be updated to use
-     * {@link PathPatternRequestMatcher} instead.
+     * Since org.springframework.security.web.util.matcher.AntPathRequestMatcher
+     * is deprecated and will be removed, callers of this method should be
+     * updated to use {@link PathPatternRequestMatcher} instead.
      *
      * <pre>
      * {@code
@@ -198,7 +197,7 @@ public class RequestUtil {
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
-        return Stream.of(patterns).map(AntPathRequestMatcher::new)
+        return Stream.of(patterns).map(PathPatternRequestMatcher::pathPattern)
                 .toArray(RequestMatcher[]::new);
     }
 
@@ -206,9 +205,9 @@ public class RequestUtil {
      * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
      * patterns and HTTP get method.
      * <p>
-     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
-     * callers of this method should be updated to use
-     * {@link PathPatternRequestMatcher} instead.
+     * Since org.springframework.security.web.util.matcher.AntPathRequestMatcher
+     * is deprecated and will be removed, callers of this method should be
+     * updated to use {@link PathPatternRequestMatcher} instead.
      *
      * <pre>
      * {@code
@@ -227,8 +226,8 @@ public class RequestUtil {
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
-        return Stream.of(patterns)
-                .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
+        return Stream.of(patterns).map(
+                p -> PathPatternRequestMatcher.pathPattern(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
     }
 
