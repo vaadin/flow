@@ -16,13 +16,12 @@
 
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -58,14 +57,15 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletResponse;
-
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
+
 import elemental.json.JsonValue;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
+@ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
+        VaadinSecurityConfigurerTest.TestConfig.class })
 public class AuthenticationContextTest {
 
     @Autowired

@@ -18,7 +18,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
@@ -64,10 +63,9 @@ public class LegacySecurityConfig extends VaadinWebSecurity {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
+                .requestMatchers(antMatchers("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(new AntPathRequestMatcher("/public/**"))
-                .permitAll());
+                .requestMatchers(antMatchers("/public/**")).permitAll());
         super.configure(http);
         if (getLogoutSuccessUrl().equals("/")) {
             // Test the default url with empty context path
