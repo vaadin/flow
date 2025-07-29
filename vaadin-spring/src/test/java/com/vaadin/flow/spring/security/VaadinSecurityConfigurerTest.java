@@ -14,7 +14,10 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
@@ -63,7 +66,8 @@ import static org.mockito.Mockito.verify;
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class,
-        ObjectPostProcessorConfiguration.class })
+        ObjectPostProcessorConfiguration.class,
+        VaadinSecurityConfigurerTest.TestConfig.class })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
@@ -251,5 +255,14 @@ class VaadinSecurityConfigurerTest {
 
     @Route
     static class TestLoginView extends Component {
+    }
+
+    @TestConfiguration(proxyBeanMethods = false)
+    static class TestConfig {
+
+        @Bean
+        PathPatternRequestMatcher.Builder pathMatcherBuilder() {
+            return PathPatternRequestMatcher.withDefaults();
+        }
     }
 }
