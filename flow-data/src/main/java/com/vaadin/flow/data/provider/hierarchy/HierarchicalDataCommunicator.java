@@ -46,12 +46,10 @@ import elemental.json.JsonValue;
 
 /**
  * {@link HierarchicalDataCommunicator} is a middleware layer between
- * {@link HierarchicalDataProvider} and the client-side.
- * <p>
- * It handles the loading and caching of hierarchical data from the data
- * provider, tracks expanded and collapsed items, and delivers data to the
- * client based on the {@link #setViewportRange(int, int) current viewport
- * range}.
+ * {@link HierarchicalDataProvider} and the client-side. It handles the loading
+ * and caching of hierarchical data from the data provider, tracks expanded and
+ * collapsed items, and delivers data to the client based on the
+ * {@link #setViewportRange(int, int) requested viewport range}.
  * <p>
  * Internally, it stores data in a hierarchical cache structure where each level
  * is represented by a {@link Cache} object, and the root by {@link RootCache}.
@@ -59,8 +57,13 @@ import elemental.json.JsonValue;
  * Before sending data to the client, the visible range is flattened into a
  * linear list. This allows the client to work with a simplified view, without
  * handling hierarchical structure directly. The {@link #getDepth(Object)}
- * method can be used to get an item's depth and apply indentation or other
- * visual styling based on hierarchy level.
+ * method should be used by the component to get an item's depth and apply
+ * indentation or other visual styling based on hierarchy level.
+ * <p>
+ * For each item in the visible range, the communicator generates a client-side
+ * key using {@link KeyMapper}. This key is used to identify the item on the
+ * server when the client sends updates or interaction events for that item such
+ * as selection, expansion, etc.
  * <p>
  * WARNING: It's not recommended to rely on this class directly in application
  * code. Instead, the API provided by the component should be used. Direct use
