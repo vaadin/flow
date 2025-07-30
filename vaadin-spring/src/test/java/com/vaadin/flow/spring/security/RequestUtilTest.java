@@ -420,11 +420,11 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -437,11 +437,11 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/bar");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -454,11 +454,11 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/admin");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/all");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -471,19 +471,19 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("/");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -496,11 +496,11 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest("other");
         request.setServletPath("/foo/bar");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -513,11 +513,11 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/foo/admin");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
 
         request = createRequest(null);
         request.setServletPath("/foo/all");
-        Assert.assertTrue(requestUtil.isFlowRoute(request));
+        Assert.assertTrue(requestUtil.isSecuredFlowRoute(request));
     }
 
     @Test
@@ -530,10 +530,10 @@ public class RequestUtilTest {
 
         MockHttpServletRequest request = createRequest(null);
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
         request = createRequest("other");
         request.setServletPath("/");
-        Assert.assertFalse(requestUtil.isFlowRoute(request));
+        Assert.assertFalse(requestUtil.isSecuredFlowRoute(request));
     }
 
     private SpringServlet setupMockServlet() {

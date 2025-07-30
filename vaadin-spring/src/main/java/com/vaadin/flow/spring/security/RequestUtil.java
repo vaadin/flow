@@ -1,10 +1,7 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -151,15 +148,16 @@ public class RequestUtil {
     }
 
     /**
-     * Checks whether the request targets a Flow route.
+     * Checks whether the request targets a Flow route secured with navigation
+     * access control.
      *
      * @param request
      *            the servlet request
-     * @return {@code true} if the request is targeting a Flow route ,
-     *         {@code false} otherwise
+     * @return {@code true} if the request is targeting a Flow route secured
+     *         with navigation access control, {@code false} otherwise
      */
-    public boolean isFlowRoute(HttpServletRequest request) {
-        return isFlowRouteInternal(request);
+    public boolean isSecuredFlowRoute(HttpServletRequest request) {
+        return isSecuredFlowRouteInternal(request);
     }
 
     /**
@@ -245,13 +243,16 @@ public class RequestUtil {
                 .toArray(RequestMatcher[]::new);
     }
 
-    private boolean isFlowRouteInternal(HttpServletRequest request) {
+    private boolean isSecuredFlowRouteInternal(HttpServletRequest request) {
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
         if (!navigationAccessControl.isEnabled()) {
             return false;
         }
+        return isFlowRouteInternal(request);
+    }
 
+    private boolean isFlowRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
         if (path == null)
             return false;
