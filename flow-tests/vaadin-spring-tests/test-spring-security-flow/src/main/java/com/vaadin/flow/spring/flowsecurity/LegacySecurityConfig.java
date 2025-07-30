@@ -84,9 +84,9 @@ public class LegacySecurityConfig extends VaadinWebSecurity {
                 .requestMatchers("/all-logged-in/**").authenticated()
         );
 
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/switchUser")).hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate/exit")).hasRole("PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/impersonate")).authenticated());
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser").hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/impersonate/exit").hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/impersonate").authenticated());
 
         // @formatter:on
         super.configure(http);
