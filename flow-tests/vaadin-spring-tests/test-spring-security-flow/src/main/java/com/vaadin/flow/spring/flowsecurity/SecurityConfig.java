@@ -89,17 +89,15 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
                 .requestMatchers("/public/**", "/error").permitAll()
-                .requestMatchers("/all-logged-in/**", "/private").authenticated()
-                .requestMatchers("/admin").hasAnyRole(ROLE_ADMIN));
+                .requestMatchers("/all-logged-in/**").authenticated());
 
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/switchUser")
+        http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser")
                 .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/impersonate/exit")
-                .hasRole("PREVIOUS_ADMINISTRATOR"));
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/impersonate").authenticated());
+        http.authorizeHttpRequests(
+                auth -> auth.requestMatchers("/impersonate/exit")
+                        .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(
+                auth -> auth.requestMatchers("/impersonate").authenticated());
         http.logout(cfg -> cfg.logoutRequestMatcher(PathPatternRequestMatcher
                 .pathPattern(HttpMethod.GET, getRootUrl(false) + "doLogout")));
         http.with(vaadin(), cfg -> {
