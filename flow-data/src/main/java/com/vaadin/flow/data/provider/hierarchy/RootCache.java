@@ -97,17 +97,17 @@ class RootCache<T> extends Cache<T> {
         return itemIdToContext.get(itemId);
     }
 
-    protected void addItemContext(T item, Cache<T> cache, int index) {
+    void addItemContext(T item, Cache<T> cache, int index) {
         Object itemId = getItemId(item);
         itemIdToContext.put(itemId, new ItemContext<>(itemId, cache, index));
     }
 
-    protected void removeItemContext(T item) {
+    void removeItemContext(T item) {
         Object itemId = getItemId(item);
         itemIdToContext.remove(itemId);
     }
 
-    protected Object getItemId(T item) {
+    Object getItemId(T item) {
         return itemIdProvider.apply(item);
     }
 }
