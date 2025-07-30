@@ -362,7 +362,8 @@ public abstract class VaadinService implements Serializable {
         FeatureFlags featureFlags = FeatureFlags.get(getContext());
         if (featureFlags
                 .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-            signalsExecutor = this.executor;
+            // Use getter method to trigger a multiple TaskExecutor check
+            signalsExecutor = getExecutor();
             flowDispatcherOverride = () -> {
                 UI owner = UI.getCurrent();
                 if (owner == null) {
@@ -1202,7 +1203,12 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.setBrowser(new WebBrowser(request));
 
-        session.setConfiguration(getDeploymentConfiguration());
+        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
+                .isProductionMode()
+                        ? getDeploymentConfiguration()
+                                .getSessionLockCheckStrategy()
+                        : SessionLockCheckStrategy.THROW;
+        assert sessionLockCheckStrategy != null;
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
