@@ -83,7 +83,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private RootCache<T> rootCache;
     private boolean pendingFlush = false;
-    private Range viewportRange;
+    private Range viewportRange = Range.withLength(0, 0);
     private int nextUpdateId = 0;
 
     /**
@@ -516,7 +516,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (start > 0) {
             update.clear(0, start);
         }
-        update.clear(end, flatSize - end);
+        if (end < flatSize) {
+            update.clear(end, flatSize - end);
+        }
         update.set(start, result.stream().map(this::generateItemJson).toList());
         update.commit(nextUpdateId++);
 
