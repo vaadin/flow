@@ -104,6 +104,12 @@
             </exclusions>
         </dependency>
 
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.34.0</version> <!-- CDP for Chrome 138. -->
+        </dependency>
+
         <!-- JDK 9+ dependencies -->
         <dependency>
             <groupId>javax.activation</groupId>
