@@ -143,10 +143,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     @Override
     public void reset() {
-        getKeyMapper().removeAll();
-        dataGenerator.destroyAllData();
+        if (rootCache != null) {
+            rootCache = null;
+            getKeyMapper().removeAll();
+            dataGenerator.destroyAllData();
+        }
 
-        rootCache = null;
         requestFlush();
     }
 
