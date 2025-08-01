@@ -29,7 +29,8 @@ export default function vaadinCopilotPlugin(): Plugin {
   return {
     name: 'vaadin-copilot-plugin',
     transform(code, id) {
-      if (!id.endsWith('tsx')) {
+      const [bareId] = id.split('?');
+      if (!bareId.endsWith('.tsx')) {
         return;
       }
       const injectCode = `
