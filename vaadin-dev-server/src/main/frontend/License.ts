@@ -166,12 +166,15 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
   } else if (message.command === 'license-pretrial-started') {
     console.debug('Pre-trial period started', message.data);
     window.location.reload();
+    return true;
   } else if (message.command === 'license-pretrial-expired') {
     console.debug('Pre-trial period expired', message.data);
     preTrialStartFailed(true, bodyShadowRoot);
+    return true;
   } else if (message.command === 'license-pretrial-failed') {
     console.debug('Pre-trial period start failed', message.data);
     preTrialStartFailed(false, bodyShadowRoot);
+    return true;
   }
   return false;
 };
