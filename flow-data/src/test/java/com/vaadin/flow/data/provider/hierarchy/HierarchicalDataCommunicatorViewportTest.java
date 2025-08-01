@@ -1,7 +1,5 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
-import java.util.Arrays;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,7 +10,6 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 
 import elemental.json.JsonArray;
@@ -25,7 +22,6 @@ public class HierarchicalDataCommunicatorViewportTest
     private TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
             treeData);
 
-    private ValueProvider<Item, String> uniqueKeyProvider = null;
     private CompositeDataGenerator<Item> dataGenerator = new CompositeDataGenerator<>();
     private SerializableConsumer<JsonArray> dataUpdater = (items) -> {
     };
@@ -84,7 +80,7 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(50, 2);
-        assertArrayUpdateItems("name", "Item 50", "Item 51"));
+        assertArrayUpdateItems("name", "Item 50", "Item 51");
 }
 
     @Test
