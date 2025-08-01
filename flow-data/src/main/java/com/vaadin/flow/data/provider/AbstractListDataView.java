@@ -286,6 +286,15 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         return this;
     }
 
+    @Override
+    public AbstractListDataView<T> setItems(Collection<T> items) {
+        Objects.requireNonNull(items, NULL_COLLECTION_ERROR_MESSAGE);
+        final ListDataProvider<T> dataProvider = getDataProvider();
+        dataProvider.getItems().clear();
+        dataProvider.getItems().addAll(items);
+        dataProvider.refreshAll();
+        return this;
+    }
     /**
      * Validate that index is inside bounds of the data available.
      *

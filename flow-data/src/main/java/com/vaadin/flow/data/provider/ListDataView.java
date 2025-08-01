@@ -283,6 +283,15 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeItems(Collection<T> items);
 
     /**
+     * Remove all the items in the list and adds given items to the data list.
+     *
+     * @param items
+     *            collection of items to set
+     * @return this ListDataView instance
+     */
+    V setItems(Collection<T> items);
+
+    /**
      * Sets a filter to be applied to the data. The filter replaces any filter
      * that has been set or added previously. {@code null} will clear all
      * filters.
