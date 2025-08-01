@@ -179,6 +179,25 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
+    public void access_restricted_to_all_by_default() {
+        String path = "restricted/secret.txt";
+
+        openResource(path);
+        assertLoginViewShown();
+        loginUser();
+        assertForbiddenPage();
+        logout();
+
+        openResource(path);
+        loginAdmin();
+        assertForbiddenPage();
+        logout();
+
+        openResource(path);
+        assertLoginViewShown();
+    }
+
+    @Test
     public void access_restricted_to_admin() {
         String contents = "Secret document for admin";
         String path = "admin-only/secret.txt";
