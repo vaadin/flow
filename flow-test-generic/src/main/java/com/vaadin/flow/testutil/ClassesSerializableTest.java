@@ -165,6 +165,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.server\\.startup\\.DeferredServletContextInitializers(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.DevModeInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.LookupServletContainerInitializer(\\$.*)?",
+                "com\\.vaadin\\.flow\\.server\\.startup\\.BaseLicenseCheckerServiceInitListener(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.communication.JSR356WebsocketInitializer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.BootstrapHandler(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.InlineTargets",
