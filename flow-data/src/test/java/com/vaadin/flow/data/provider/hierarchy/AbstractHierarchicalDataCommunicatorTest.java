@@ -53,12 +53,8 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     @Captor
     protected ArgumentCaptor<List<JsonValue>> arrayUpdateItemsCaptor;
 
-    protected HierarchicalDataCommunicator<Item> dataCommunicator;
-
-    protected TreeData<Item> treeData = new TreeData<>();
-
-    protected TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
-            treeData);
+    @Captor
+    protected ArgumentCaptor<Integer> arrayUpdateSizeCaptor;
 
     @Before
     public void init() {
@@ -74,42 +70,53 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
                         .toList());
     }
 
+    protected void assertArrayUpdateRange(int start, int length) {
+        int size = captureArrayUpdateSize();
+        int end = start + length;
+
+        Mockito.verify(arrayUpdate,
+                start > 0 ? Mockito.times(1) : Mockito.never()).clear(0, start);
+        Mockito.verify(arrayUpdate,
+                end < size ? Mockito.times(1) : Mockito.never())
+                .clear(end, size - end);
+        Mockito.verify(arrayUpdate, Mockito.times(1)).set(Mockito.eq(start),
+                Mockito.anyList());
+    }
+
+    protected void assertArrayUpdateSize(int size) {
+        Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
+    }
+
+    protected void assertArrayUpdaterInitialized() {
+        Mockito.verify(arrayUpdater, Mockito.times(1)).initialize();
+    }
+
     protected List<JsonValue> captureArrayUpdateItems() {
         Mockito.verify(arrayUpdate).set(Mockito.anyInt(),
                 arrayUpdateItemsCaptor.capture());
         return arrayUpdateItemsCaptor.getValue();
     }
 
-    protected void assertArrayUpdate(int size, int rangeStart,
-            int rangeLength) {
-        int rangeEnd = rangeStart + rangeLength;
-
-        Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
-
-        Mockito.verify(arrayUpdate,
-                rangeStart > 0 ? Mockito.times(1) : Mockito.never())
-                .clear(0, rangeStart);
-        Mockito.verify(arrayUpdate,
-                rangeEnd < size ? Mockito.times(1) : Mockito.never())
-                .clear(rangeEnd, size - rangeEnd);
-
-        Mockito.verify(arrayUpdate, Mockito.times(1))
-                .set(Mockito.eq(rangeStart), Mockito.anyList());
+    protected int captureArrayUpdateSize() {
+        Mockito.verify(arrayUpdater)
+                .startUpdate(arrayUpdateSizeCaptor.capture());
+        return arrayUpdateSizeCaptor.getValue();
     }
 
-    protected void fixtureTreeData(int... levelSizes) {
+    protected void fixtureTreeData(TreeData<Item> treeData, int... levelSizes) {
         treeData.clear();
-        fixtureTreeData(null, levelSizes);
+        fixtureTreeData(treeData, null, levelSizes);
     }
 
-    private void fixtureTreeData(Item parentItem, int... levelSizes) {
+    private void fixtureTreeData(TreeData<Item> treeData, Item parentItem,
+            int... levelSizes) {
         for (int i = 0; i < levelSizes[0]; i++) {
             Item item = new Item(
                     parentItem != null ? parentItem + "-" + i : "Item " + i);
             treeData.addItem(parentItem, item);
 
             if (levelSizes.length > 1) {
-                fixtureTreeData(item,
+                fixtureTreeData(treeData, item,
                         Arrays.copyOfRange(levelSizes, 1, levelSizes.length));
             }
         }
