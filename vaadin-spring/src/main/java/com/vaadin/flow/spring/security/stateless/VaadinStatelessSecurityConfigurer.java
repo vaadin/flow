@@ -52,7 +52,6 @@ import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.OnCommittedResponseWrapper;
-import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;

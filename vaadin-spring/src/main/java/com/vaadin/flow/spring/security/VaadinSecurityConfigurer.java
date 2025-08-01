@@ -698,6 +698,15 @@ public final class VaadinSecurityConfigurer
         getSharedObject(RequestCache.class)
                 .filter(cache -> !(cache instanceof VaadinDefaultRequestCache))
                 .ifPresent(vaadinDefaultRequestCache::setDelegateRequestCache);
+        // VaadinSavedRequestAwareAuthenticationSuccessHandler
+        // uses RequestCache for client-side redirects after TypeScript login
+        getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
+                .ifPresent(
+                        vaadinSavedRequestAwareAuthenticationSuccessHandler -> {
+                            vaadinSavedRequestAwareAuthenticationSuccessHandler
+                                    .setRequestCache(vaadinDefaultRequestCache);
+                        });
         configurer.requestCache(vaadinDefaultRequestCache);
     }
 
