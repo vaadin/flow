@@ -63,8 +63,8 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     }
 
     protected void assertArrayUpdateItems(String property,
-            List<String> expected) {
-        Assert.assertEquals(expected,
+            String... expected) {
+        Assert.assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().stream()
                         .map((item) -> ((JsonObject) item).getString(property))
                         .toList());
@@ -103,12 +103,13 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         return arrayUpdateSizeCaptor.getValue();
     }
 
-    protected void fixtureTreeData(TreeData<Item> treeData, int... levelSizes) {
+    protected void populateTreeData(TreeData<Item> treeData,
+            int... levelSizes) {
         treeData.clear();
-        fixtureTreeData(treeData, null, levelSizes);
+        populateTreeData(treeData, null, levelSizes);
     }
 
-    private void fixtureTreeData(TreeData<Item> treeData, Item parentItem,
+    private void populateTreeData(TreeData<Item> treeData, Item parentItem,
             int... levelSizes) {
         for (int i = 0; i < levelSizes[0]; i++) {
             Item item = new Item(
@@ -116,7 +117,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
             treeData.addItem(parentItem, item);
 
             if (levelSizes.length > 1) {
-                fixtureTreeData(treeData, item,
+                populateTreeData(treeData, item,
                         Arrays.copyOfRange(levelSizes, 1, levelSizes.length));
             }
         }

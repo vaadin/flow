@@ -1,7 +1,5 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
-import java.io.Serializable;
-
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -85,18 +83,37 @@ public class HierarchicalDataCommunicatorBasicTest
     @Test
     public void setDataProvider_getDataProvider() {
         TreeData<Item> treeData = new TreeData<>();
-        TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(treeData);
+        TreeDataProvider<Item> treeDataProvider = new TreeDataProvider<>(
+                treeData);
 
         dataCommunicator.setDataProvider(treeDataProvider, null);
-        Assert.assertEquals(treeDataProvider, dataCommunicator.getDataProvider());
+        Assert.assertEquals(treeDataProvider,
+                dataCommunicator.getDataProvider());
+    }
+
+    @Test
+    public void setDataProvider_expandItem_setAnotherDataProvider_expandedItemsCleared() {
+        TreeData<Item> treeData = new TreeData<>();
+        populateTreeData(treeData, 100, 2, 2);
+
+        dataCommunicator.setDataProvider(new TreeDataProvider<Item>(treeData),
+                null);
+        dataCommunicator.expand(new Item("Item 0"));
+        Assert.assertTrue(dataCommunicator.isExpanded(new Item("Item 0")));
+
+        dataCommunicator.setDataProvider(new TreeDataProvider<Item>(treeData),
+                null);
+        Assert.assertFalse(dataCommunicator.isExpanded(new Item("Item 0")));
     }
 
     @Test
     public void setIncompatibleDataProvider_throws() {
-        ListDataProvider<Item> incompatibleDataProvider = DataProvider.ofItems(new Item("Item 0"));
+        ListDataProvider<Item> incompatibleDataProvider = DataProvider
+                .ofItems(new Item("Item 0"));
 
         Assert.assertThrows(IllegalArgumentException.class,
-                () -> dataCommunicator.setDataProvider(incompatibleDataProvider, null));
+                () -> dataCommunicator.setDataProvider(incompatibleDataProvider,
+                        null));
     }
 
     private void fakeClientCommunication() {
