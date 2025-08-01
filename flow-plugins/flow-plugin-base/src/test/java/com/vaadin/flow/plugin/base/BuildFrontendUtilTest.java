@@ -459,6 +459,36 @@ public class BuildFrontendUtilTest {
     }
 
     @Test
+    public void updateBuildFile_tokenExisting_commercialBannerBuildRequiredAndIsPremiumLike_premiumFeaturesFlagAdded()
+            throws Exception {
+        Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
+        File tokenFile = prepareAndAssertTokenFile();
+
+        addPremiumFeatureAndDAUFlagTrue(tokenFile);
+
+        ClassLoader classLoader = new URLClassLoader(
+                new URL[] { new File(baseDir, "target/test-classes/").toURI()
+                        .toURL() },
+                BuildFrontendUtilTest.class.getClassLoader());
+        ClassFinder classFinder = new ClassFinder.DefaultClassFinder(
+                classLoader);
+        Mockito.when(adapter.getClassFinder()).thenReturn(classFinder);
+
+        withMockedLicenseChecker(false, () -> {
+            BuildFrontendUtil.updateBuildFile(adapter, true, true);
+            Assert.assertTrue("Token file should still exist",
+                    tokenFile.exists());
+            JsonNode buildInfoJsonProd = JacksonUtils
+                    .readTree(Files.readString(tokenFile.toPath()));
+            Assert.assertTrue(
+                    Constants.PREMIUM_FEATURES
+                            + " flag should be active in token file",
+                    buildInfoJsonProd.get(Constants.PREMIUM_FEATURES)
+                            .booleanValue());
+        });
+    }
+
+    @Test
     public void updateBuildFile_tokenExisting_commercialBannerBuildRequired_commercialBannerBuildEnabled_commercialBannerFlagAdded()
             throws Exception {
         Mockito.when(adapter.isCommercialBannerEnabled()).thenReturn(true);
