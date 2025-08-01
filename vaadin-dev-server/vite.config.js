@@ -20,7 +20,7 @@ export default defineConfig({
       // Do not resolve the following imports, these modules
       // will be provided by the application that hosts the dev tools.
       external: [
-        /^construct-style-sheets-polyfill.*/,
+        /^construct-style-sheets-polyfill.*/, // not added by Flow since v25.
         /^lit.*/,
         /^@vaadin.*/,
       ]
