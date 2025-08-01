@@ -68,24 +68,29 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
 
     protected void assertArrayUpdateItems(String property,
             List<String> expected) {
-        Mockito.verify(arrayUpdate).set(Mockito.anyInt(),
-                arrayUpdateItemsCaptor.capture());
-
-        List<JsonValue> items = arrayUpdateItemsCaptor.getValue();
         Assert.assertEquals(expected,
-                items.stream()
+                captureArrayUpdateItems().stream()
                         .map((item) -> ((JsonObject) item).getString(property))
                         .toList());
     }
 
-    protected void assertArrayUpdate(int size, int rangeStart, int rangeLength) {
+    protected List<JsonValue> captureArrayUpdateItems() {
+        Mockito.verify(arrayUpdate).set(Mockito.anyInt(),
+                arrayUpdateItemsCaptor.capture());
+        return arrayUpdateItemsCaptor.getValue();
+    }
+
+    protected void assertArrayUpdate(int size, int rangeStart,
+            int rangeLength) {
         int rangeEnd = rangeStart + rangeLength;
 
         Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
 
-        Mockito.verify(arrayUpdate, Mockito.times(rangeStart > 0 ? 1 : 0))
+        Mockito.verify(arrayUpdate,
+                rangeStart > 0 ? Mockito.times(1) : Mockito.never())
                 .clear(0, rangeStart);
-        Mockito.verify(arrayUpdate, Mockito.times(rangeEnd < size ? 1 : 0))
+        Mockito.verify(arrayUpdate,
+                rangeEnd < size ? Mockito.times(1) : Mockito.never())
                 .clear(rangeEnd, size - rangeEnd);
 
         Mockito.verify(arrayUpdate, Mockito.times(1))
@@ -97,11 +102,10 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         fixtureTreeData(null, levelSizes);
     }
 
-    protected void fixtureTreeData(Item parentItem, int... levelSizes) {
+    private void fixtureTreeData(Item parentItem, int... levelSizes) {
         for (int i = 0; i < levelSizes[0]; i++) {
             Item item = new Item(
-                    parentItem != null ? parentItem + "-" + i
-                            : "Item " + i);
+                    parentItem != null ? parentItem + "-" + i : "Item " + i);
             treeData.addItem(parentItem, item);
 
             if (levelSizes.length > 1) {

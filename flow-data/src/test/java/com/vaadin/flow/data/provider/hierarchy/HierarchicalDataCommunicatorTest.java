@@ -67,6 +67,7 @@ public class HierarchicalDataCommunicatorTest
         dataCommunicator.setDataProvider(treeDataProvider, null);
         fakeClientCommunication();
 
+        Mockito.verify(arrayUpdater, Mockito.times(1)).initialize();
         assertArrayUpdate(100, 0, 0);
     }
 
@@ -77,31 +78,36 @@ public class HierarchicalDataCommunicatorTest
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
 
+        Mockito.verify(arrayUpdater, Mockito.times(1)).initialize();
         assertArrayUpdate(100, 0, 5);
         assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 1",
                 "Item 2", "Item 3", "Item 4"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
-        dataCommunicator.setViewportRange(50, 5);
-        fakeClientCommunication();
-
-        assertArrayUpdate(100, 50, 5);
-        assertArrayUpdateItems("name", Arrays.asList("Item 50", "Item 51",
-                "Item 52", "Item 53", "Item 54"));
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
-
         dataCommunicator.setViewportRange(95, 5);
         fakeClientCommunication();
 
+        Mockito.verify(arrayUpdater, Mockito.never()).initialize();
         assertArrayUpdate(100, 95, 5);
         assertArrayUpdateItems("name", Arrays.asList("Item 95", "Item 96",
                 "Item 97", "Item 98", "Item 99"));
     }
 
     @Test
-    public void setDataProvider_toggleItems_flush_viewportRangeUpdated() {
+    public void setDataProvider_setViewportRangeMultipleTimes_flush_onlyLastRangeSent() {
+        fixtureTreeData(100, 2, 2);
+        dataCommunicator.setDataProvider(treeDataProvider, null);
+        dataCommunicator.setViewportRange(0, 10);
+        dataCommunicator.setViewportRange(50, 2);
+        fakeClientCommunication();
+
+        assertArrayUpdate(100, 50, 2);
+        assertArrayUpdateItems("name", Arrays.asList("Item 50", "Item 51"));
+    }
+
+    @Test
+    public void setDataProvider_setViewportRange_toggleItems_updatedRangeSent() {
         fixtureTreeData(100, 2, 2);
         dataCommunicator.setDataProvider(treeDataProvider, null);
         dataCommunicator.setViewportRange(0, 6);
@@ -124,40 +130,53 @@ public class HierarchicalDataCommunicatorTest
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
+        dataCommunicator.collapse(new Item("Item 0-0"));
+        fakeClientCommunication();
+
+        assertArrayUpdate(102, 0, 6);
+        assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 0-0",
+                "Item 0-1", "Item 1", "Item 2", "Item 3"));
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.collapse(new Item("Item 0"));
+        fakeClientCommunication();
+
+        assertArrayUpdate(100, 0, 6);
+        assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 1",
+                "Item 2", "Item 3", "Item 4", "Item 5"));
     }
 
-    // @Test
-    // public void
-    // setDataProvider_toggleItem_setViewportRange_flush_requestedRangeUpdated()
-    // {
-    // fixtureTreeData(1000, 2, 2);
-    // dataCommunicator.setDataProvider(treeDataProvider, null);
-    // dataCommunicator.expand(treeData.getRootItems().get(0));
-    // dataCommunicator.setViewportRange(0, 4);
-    // fakeClientCommunication();
+    @Test
+    public void setDataProvider_setViewportRange_toggleItemWithPreExpandedChildren_updatedRangeSent() {
+        fixtureTreeData(100, 2, 2);
+        dataCommunicator.setDataProvider(treeDataProvider, null);
+        dataCommunicator.setViewportRange(0, 6);
+        dataCommunicator.expand(new Item("Item 0-0"));
+        fakeClientCommunication();
 
-    // assertArrayUpdate(1000, 0, 4);
-    // assertArrayUpdateItems("name", Arrays.asList("Item 1", "Item 2", "Item
-    // 3", "Item 4"));
+        assertArrayUpdate(100, 0, 6);
+        assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 1",
+                "Item 2", "Item 3", "Item 4", "Item 5"));
 
-    // Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
-    // dataCommunicator.setViewportRange(998, 4);
-    // fakeClientCommunication();
+        dataCommunicator.expand(new Item("Item 0"));
+        fakeClientCommunication();
 
-    // assertArrayUpdate(1000, 998, 4);
-    // assertArrayUpdateItems("name", Arrays.asList("Item 996", "Item 997",
-    // "Item 998", "Item 999"));
+        assertArrayUpdate(104, 0, 6);
+        assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 0-0",
+                "Item 0-0-0", "Item 0-0-1", "Item 0-1", "Item 1"));
 
-    // Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
-    // dataCommunicator.setViewportRange(2, 4);
-    // fakeClientCommunication();
+        dataCommunicator.collapse(new Item("Item 0"));
+        fakeClientCommunication();
 
-    // assertArrayUpdate(1000, 2, 4);
-    // assertArrayUpdateItems("name", Arrays.asList("Item 3", "Item 4", "Item
-    // 5", "Item 6"));
-    // }
+        assertArrayUpdate(100, 0, 6);
+        assertArrayUpdateItems("name", Arrays.asList("Item 0", "Item 1",
+                "Item 2", "Item 3", "Item 4", "Item 5"));
+    }
 
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
