@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -720,6 +721,27 @@ public class AbstractListDataViewTest {
     @Test
     public void removeItems_emptyCollectionPassed_dataNotChanged() {
         dataView.removeItems(Collections.emptyList());
+        Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
+                dataView.getItems().toArray(String[]::new));
+    }
+
+    @Test
+    public void setItems_nullCollectionPassed_throwsException() {
+        exceptionRule.expect(NullPointerException.class);
+        exceptionRule.expectMessage("Items collection cannot be null");
+
+        dataView.setItems(null);
+    }
+
+    @Test
+    public void setItems_emptyCollectionPassed_dataEmpty() {
+        dataView.setItems(Collections.emptyList());
+        Assert.assertTrue(dataView.getItems().toList().isEmpty());
+    }
+
+    @Test
+    public void setItems_collectionPassed_dataFilled() {
+        dataView.setItems(List.of("first", "middle", "last"));
         Assert.assertArrayEquals(new String[] { "first", "middle", "last" },
                 dataView.getItems().toArray(String[]::new));
     }
