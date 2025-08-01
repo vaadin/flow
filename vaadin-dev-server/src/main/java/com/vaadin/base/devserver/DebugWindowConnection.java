@@ -324,6 +324,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     data.get("enabled").booleanValue());
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
+        } else if ("downloadLicense".equals(command)) {
+            handleLicenseKeyDownload(resource, data);
         } else if ("checkLicense".equals(command)) {
             handleLicenseCheck(resource, data);
         } else if ("startPreTrialLicense".equals(command)) {
@@ -372,6 +374,18 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     errorMessage);
             send(resource, command, pm);
         }
+    }
+
+    private void handleLicenseKeyDownload(AtmosphereResource resource,
+            JsonNode data) {
+        String name = data.get("name").textValue();
+        String version = data.get("version").textValue();
+        Product product = new Product(name, version);
+
+        LicenseChecker.checkLicenseAsync(product.getName(),
+                product.getVersion(), BuildType.DEVELOPMENT,
+                new LicenseDownloadCallback(resource, product));
+        send(resource, "license-download-started", product);
     }
 
     private void handlePreTrialStart(AtmosphereResource resource,
@@ -431,4 +445,24 @@ public class DebugWindowConnection implements BrowserLiveReload {
         broadcast(msg);
     }
 
+    private class LicenseDownloadCallback implements LicenseChecker.Callback {
+        private final AtmosphereResource resource;
+        private final Product product;
+
+        public LicenseDownloadCallback(AtmosphereResource resource,
+                Product product) {
+            this.resource = resource;
+            this.product = product;
+        }
+
+        @Override
+        public void ok() {
+            send(resource, "license-download-completed", product);
+        }
+
+        @Override
+        public void failed(Exception e) {
+            send(resource, "license-download-failed", product);
+        }
+    }
 }

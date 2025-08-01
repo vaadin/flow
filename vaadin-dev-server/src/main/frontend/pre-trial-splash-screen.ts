@@ -1,10 +1,11 @@
-import { ProductAndMessage } from './License';
+import { ProductAndMessage, startPreTrial, tryAcquireLicense } from './License';
 
 class PreTrial extends HTMLElement {
   #parentObserver: MutationObserver | null;
   #shadowRoot: ShadowRoot;
   #trialExpired: boolean;
   #startFailed: boolean | null;
+  #licenseDownloadStatus: string | null;
   private remove: Function;
 
   constructor() {
@@ -13,6 +14,7 @@ class PreTrial extends HTMLElement {
     this.#parentObserver = null;
     this.#trialExpired = false;
     this.#startFailed = null;
+    this.#licenseDownloadStatus = null;
 
     // Create a shadow DOM for encapsulation
     this.#shadowRoot = this.attachShadow({ mode: 'closed' });
@@ -24,7 +26,7 @@ class PreTrial extends HTMLElement {
 
   // Define the observed attributes for the web component
   static get observedAttributes(): string[] {
-    return ['expired', 'start-failure'];
+    return ['expired', 'start-failure', 'license-download'];
   }
 
   private render(): void {
@@ -154,9 +156,11 @@ class PreTrial extends HTMLElement {
       <p>
         This trial includes all commercial tools and components. Production builds during the trial will be watermarked.
       </p>
+      ${this.#licenseDownloadStatus === 'started' ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>' : ''}
+      ${this.#licenseDownloadStatus === 'failed' ? '<div class="error">Failed to download the license key. Please try again later.</div>' : ''}
       <div class='button-container'>
-        <button class='action-button'>${this.#trialExpired ? 'Extend trial 30 days' : 'Try for 7 days'}</button>
-        <button class='login-button'>
+        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='action-button'>${this.#trialExpired ? 'Extend trial 30 days' : 'Try for 7 days'}</button>
+        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='login-button'>
           Log in / Sign up
           <svg xmlns='http://www.w3.org/2000/svg'  width='16' height='16' viewBox='0 0 16 16'>
             <path fill='#444' d='M14 16v-11l-1 1v9h-12v-12h9l1-1h-11v14z'></path>
@@ -172,12 +176,13 @@ class PreTrial extends HTMLElement {
       if (this.#trialExpired) {
         this.openNewWindow('https://vaadin.com/pricing');
       } else {
-        (window as any).Vaadin.devTools.startPreTrial();
+        startPreTrial();
       }
     });
     const loginButton = this.#shadowRoot.querySelector('button.login-button')!;
     loginButton.addEventListener('click', () => {
-      this.openNewWindow('https://vaadin.com/my/account');
+      //this.openNewWindow('https://vaadin.com/my/account');
+      tryAcquireLicense();
     });
   }
 
@@ -201,6 +206,15 @@ class PreTrial extends HTMLElement {
       this.handleExpiredChange(newValue !== null && newValue !== 'false');
     } else if (name === 'start-failure') {
       this.handleStartFailed(newValue === 'expired');
+    } else if (name === 'license-download') {
+      this.handleLicenseDownload(newValue);
+    }
+  }
+
+  private handleLicenseDownload(value: string | null) {
+    if (this.#licenseDownloadStatus !== value) {
+      this.#licenseDownloadStatus = value;
+      this.render();
     }
   }
 
@@ -323,5 +337,11 @@ export const preTrialStartFailed = (expired: boolean, shadowRoot: ShadowRoot | n
   if (shadowRoot) {
     const element = shadowRoot.querySelector('vaadin-pretrial');
     element?.setAttribute('start-failure', expired ? 'expired' : '');
+  }
+};
+export const updateLicenseDownloadStatus = (action: 'started' | 'failed' | 'completed', shadowRoot: ShadowRoot | null) => {
+  if (shadowRoot) {
+    const element = shadowRoot.querySelector('vaadin-pretrial');
+    element?.setAttribute('license-download', action);
   }
 };
