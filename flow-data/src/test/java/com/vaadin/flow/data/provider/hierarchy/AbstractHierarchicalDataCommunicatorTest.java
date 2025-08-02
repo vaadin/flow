@@ -11,7 +11,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.junit.MockitoJUnitRunner;
 
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
@@ -19,7 +18,6 @@ import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
-@RunWith(MockitoJUnitRunner.class)
 abstract public class AbstractHierarchicalDataCommunicatorTest {
     public static class Item {
         private String name;
@@ -58,6 +56,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
 
     @Before
     public void init() {
+        MockitoAnnotations.openMocks(this);
         Mockito.when(arrayUpdater.startUpdate(Mockito.anyInt()))
                 .thenAnswer((answer) -> arrayUpdate);
     }
