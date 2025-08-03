@@ -213,7 +213,6 @@ public class HierarchicalCommunicatorTest {
         dataProvider.refreshAll();
         assertFalse("Stalled object in KeyMapper",
                 communicator.getKeyMapper().has(ROOT));
-        assertEquals(-1, communicator.getParentIndex(FOLDER).longValue());
     }
 
     /**

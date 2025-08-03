@@ -34,9 +34,13 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
+import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.session.SessionCreationEvent;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -48,6 +52,7 @@ import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.util.OnCommittedResponseWrapper;
+import org.springframework.web.bind.annotation.RequestAttribute;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
@@ -152,6 +157,12 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             CsrfTokenRequestHandler requestHandler = delegate::handle;
             csrf.csrfTokenRepository(csrfTokenRepository);
             csrf.csrfTokenRequestHandler(requestHandler);
+
+            // Disables removing CSRF token upon successful authentication,
+            // which happens in every request when using stateless JWT
+            // authentication.
+            csrf.sessionAuthenticationStrategy(
+                    new NullAuthenticatedSessionStrategy());
 
             http.getSharedObject(
                     VaadinSavedRequestAwareAuthenticationSuccessHandler.class)
