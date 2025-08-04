@@ -160,6 +160,11 @@ public class HasHierarchicalDataProviderTest {
         }
 
         @Override
+        public TestListDataView setItems(Collection<String> items) {
+            return null;
+        }
+
+        @Override
         public TestListDataView setFilter(
                 SerializablePredicate<String> filter) {
             return null;
