@@ -111,7 +111,7 @@
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
         <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
-
+c
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.15.3</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
@@ -212,7 +212,7 @@
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.12.0</version>
+                <version>3.18.0</version>
             </dependency>
 
             <dependency>
