@@ -295,6 +295,7 @@ public abstract class AbstractListDataView<T> extends AbstractDataView<T>
         dataProvider.refreshAll();
         return this;
     }
+
     /**
      * Validate that index is inside bounds of the data available.
      *
