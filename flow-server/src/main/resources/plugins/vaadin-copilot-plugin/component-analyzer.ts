@@ -62,7 +62,7 @@ function findImportDeclaration(
     },
   };
   for (const decl of symbol.declarations ?? []) {
-    const file = decl.getSourceFile().fileName;
+    const file = decl.getSourceFile().fileName.replace(/\\/g, '/');
     if (file.indexOf('@vaadin') !== -1) {
       result.vaadinComponent = true;
       break;
