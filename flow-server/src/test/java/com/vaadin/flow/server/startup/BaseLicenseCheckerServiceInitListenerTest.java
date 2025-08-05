@@ -38,10 +38,10 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.withSettings;
 
 @SuppressWarnings("unchecked")
 public class BaseLicenseCheckerServiceInitListenerTest {
@@ -142,14 +142,64 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                     .modifyIndexHtmlResponse(indexHtmlResponse);
 
             String headHTML = document.head().html();
-            Assert.assertTrue(
-                    headHTML.contains("product.constructor['cvdlName'] = '%s';"
-                            .formatted(PRODUCT_NAME)));
-            Assert.assertTrue(
-                    headHTML.contains("product.constructor['version'] = '%s';"
-                            .formatted(PRODUCT_VERSION)));
             Assert.assertTrue(headHTML.contains(
-                    "window.Vaadin.devTools.createdCvdlElements.push(product)"));
+                    "window.Vaadin.devTools.createdCvdlElements.push(product);"));
+            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+                    .formatted(PRODUCT_NAME, PRODUCT_VERSION)));
+        }
+    }
+
+    @Test
+    public void serviceInit_devToolsEnabled_missingLicense_multipleListenersCollectedIntoSingleScript() {
+        config.setProductionMode(false);
+        config.setDevToolsEnabled(true);
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
+            licenseChecker.when(() -> LicenseChecker.checkLicense(anyString(),
+                    anyString(), isNull(BuildType.class), any(Consumer.class),
+                    eq(0))).then(i -> {
+                        i.<Consumer<String>> getArgument(3).accept("URL");
+                        return null;
+                    });
+
+            listener.serviceInit(event);
+            licenseChecker.verify(
+                    () -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), isNull(BuildType.class)),
+                    never());
+            new BaseLicenseCheckerServiceInitListener("productB", "1.0.0") {
+            }.serviceInit(event);
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq("productB"),
+                            eq("1.0.0"), isNull(BuildType.class)), never());
+            new BaseLicenseCheckerServiceInitListener("productC", "2.4.6") {
+            }.serviceInit(event);
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq("productC"),
+                            eq("2.4.6"), isNull(BuildType.class)), never());
+
+            var indexHtmlRequestListeners = event
+                    .getAddedIndexHtmlRequestListeners().toList();
+            Assert.assertEquals(
+                    "Expected a single index html request listener to be installed",
+                    1, indexHtmlRequestListeners.size());
+            Document document = Jsoup
+                    .parse("<html><head></head><body></body></html>");
+            IndexHtmlResponse indexHtmlResponse = new IndexHtmlResponse(
+                    Mockito.mock(VaadinRequest.class),
+                    Mockito.mock(VaadinResponse.class), document);
+            indexHtmlRequestListeners.get(0)
+                    .modifyIndexHtmlResponse(indexHtmlResponse);
+
+            String headHTML = document.head().html();
+            Assert.assertTrue(headHTML.contains(
+                    "window.Vaadin.devTools.createdCvdlElements.push(product);"));
+            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+                    .formatted(PRODUCT_NAME, PRODUCT_VERSION)));
+            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+                    .formatted("productB", "1.0.0")));
+            Assert.assertTrue(headHTML.contains("registerProduct('%s','%s');"
+                    .formatted("productC", "2.4.6")));
         }
     }
 
@@ -157,8 +207,8 @@ public class BaseLicenseCheckerServiceInitListenerTest {
     public void serviceInit_devToolsEnabled_invalidLicense_throws() {
         config.setProductionMode(false);
         config.setDevToolsEnabled(true);
-        try (MockedStatic<LicenseChecker> licenseChecker = Mockito.mockStatic(
-                LicenseChecker.class, withSettings().verboseLogging())) {
+        try (MockedStatic<LicenseChecker> licenseChecker = Mockito
+                .mockStatic(LicenseChecker.class)) {
             LicenseException checkerException = new LicenseException(
                     "Invalid or missing license");
             licenseChecker

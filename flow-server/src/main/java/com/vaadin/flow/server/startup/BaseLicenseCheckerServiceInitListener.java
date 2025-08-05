@@ -16,12 +16,16 @@
 
 package com.vaadin.flow.server.startup;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
@@ -96,8 +100,8 @@ public abstract class BaseLicenseCheckerServiceInitListener
                             "Missing license key for {} {} will be handled by Vaadin Dev Server",
                             productName, productVersion);
                     // instruct dev tools to check license at runtime
-                    event.addIndexHtmlRequestListener(new CheckProductLicense(
-                            productName, productVersion));
+                    CheckProductLicense.register(event, productName,
+                            productVersion);
                 }
             } else {
                 // Fallback to online validation waiting for license key
@@ -117,34 +121,53 @@ public abstract class BaseLicenseCheckerServiceInitListener
     private static final class CheckProductLicense
             implements IndexHtmlRequestListener {
 
-        private final String productName;
-        private final String productVersion;
+        private final Set<Pair<String, String>> products = new LinkedHashSet<>();
 
-        public CheckProductLicense(String productName, String productVersion) {
-            this.productName = productName;
-            this.productVersion = productVersion;
+        private CheckProductLicense() {
+        }
+
+        static void register(ServiceInitEvent event, String productName,
+                String productVersion) {
+            event.getAddedIndexHtmlRequestListeners()
+                    .filter(CheckProductLicense.class::isInstance)
+                    .map(CheckProductLicense.class::cast).findFirst()
+                    .orElseGet(() -> {
+                        var listener = new CheckProductLicense();
+                        event.addIndexHtmlRequestListener(listener);
+                        return listener;
+                    }).addProduct(productName, productVersion);
+        }
+
+        void addProduct(String productName, String productVersion) {
+            this.products.add(new Pair<>(productName, productVersion));
         }
 
         @Override
         public void modifyIndexHtmlResponse(
                 IndexHtmlResponse indexHtmlResponse) {
 
-            String script = """
-                    window.Vaadin = window.Vaadin || {};
-                    window.Vaadin.devTools = window.Vaadin.devTools || {};
-                    window.Vaadin.devTools.createdCvdlElements =
-                    window.Vaadin.devTools.createdCvdlElements || []; const product =
-                    {}; product.constructor['cvdlName'] = '%1$s';
-                    product.constructor['version'] = '%2$s'; product.tagName =
-                    '--%1$s';
-                    window.Vaadin.devTools.createdCvdlElements.push(product);
+            StringBuilder script = new StringBuilder(
                     """
-                    .formatted(productName, productVersion);
+                            window.Vaadin = window.Vaadin || {};
+                            window.Vaadin.devTools = window.Vaadin.devTools || {};
+                            window.Vaadin.devTools.createdCvdlElements =
+                            window.Vaadin.devTools.createdCvdlElements || [];
 
+                            const registerProduct = function(productName,productVersion) {
+                                const product = {};
+                                product.constructor['cvdlName'] = productName;
+                                product.constructor['version'] = productVersion
+                                product.tagName = `--${productName}`;
+                                window.Vaadin.devTools.createdCvdlElements.push(product);
+                            };
+                            """);
+            products.forEach(product -> script.append(
+                    "registerProduct('%s','%s');".formatted(product.getFirst(),
+                            product.getSecond())));
             Document document = indexHtmlResponse.getDocument();
             Element elm = new Element("script");
             elm.attr("initial", "");
-            elm.appendChild(new DataNode(script));
+            elm.appendChild(new DataNode(script.toString()));
             document.head().insertChildren(0, elm);
         }
     }
