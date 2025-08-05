@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.ByteArrayInputStream;
+import java.net.URLConnection;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -26,6 +28,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 
@@ -114,6 +117,36 @@ public class Image extends HtmlContainer
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
         setAlt(alt);
+    }
+
+    /**
+     * Creates an image with the given byte array content and image name.
+     * <p>
+     * This constructor provides a convenient way to create images from byte array
+     * data, automatically handling the creation of the appropriate download
+     * handler and setting the content type based on the image name.
+     * <p>
+     * The image name is used as both the file name for the download response
+     * and as the alternative text for the image.
+     * <p>
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for the created download handler.
+     *
+     * @param imageContent
+     *            the byte array containing the image data, not null
+     * @param imageName
+     *            the name of the image file, used for content type detection
+     *            and as alternative text, not null
+     *
+     * @see #setSrc(DownloadHandler)
+     * @see #setAlt(String)
+     */
+    public Image(byte[] imageContent, String imageName) {
+        setSrc(DownloadHandler.fromInputStream(event -> {
+            return new DownloadResponse(new ByteArrayInputStream(imageContent), imageName,
+                URLConnection.guessContentTypeFromName(imageName), imageContent.length);
+        }).inline());
+        setAlt(imageName);
     }
 
     /**
