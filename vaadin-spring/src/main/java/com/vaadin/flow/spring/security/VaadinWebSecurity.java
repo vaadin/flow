@@ -99,7 +99,29 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * }
  * </code>
  * </pre>
+ *
+ * @deprecated Use {@link VaadinSecurityConfigurer} instead. It follows the
+ *             Spring's SecurityConfigurer pattern and we recommend use it to
+ *             configure Spring Security with Vaadin:
+ *
+ *             <pre>
+ * <code>&#64;Configuration
+ * &#64;EnableWebSecurity
+ * &#64;Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
+ * public class SecurityConfig {
+ *     &#64;Bean
+ *     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+ *         return http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {}).build();
+ *     }
+ * }
+ * </code>
+ *             </pre>
+ *
+ *             Read more details in <a href=
+ *             "https://vaadin.com/docs/latest/flow/security/vaadin-security-configurer">Security
+ *             Configurer documentation.</a>
  */
+@Deprecated(since = "24.9", forRemoval = true)
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
