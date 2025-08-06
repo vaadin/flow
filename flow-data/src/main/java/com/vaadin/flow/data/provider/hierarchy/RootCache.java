@@ -37,11 +37,30 @@ class RootCache<T> extends Cache<T> {
     private final ValueProvider<T, Object> itemIdProvider;
     private final Map<Object, ItemContext<T>> itemIdToContext = new HashMap<>();
 
+    /**
+     * Creates a new root cache instance with the specified size and item ID
+     * provider.
+     *
+     * @param size
+     *            the size of the cache
+     * @param itemIdProvider
+     *            the item ID provider
+     */
     public RootCache(int size, ValueProvider<T, Object> itemIdProvider) {
         super(null, -1, size);
         this.itemIdProvider = itemIdProvider;
     }
 
+    /**
+     * Retrieves the hierarchical context for an item by its position in the
+     * flattened view of the entire hierarchy. The result includes a reference
+     * to the cache that contains the item and the item's local index within
+     * that cache.
+     *
+     * @param flatIndex
+     *            the flat index to get the context for
+     * @return an {@link FlatIndexContext} record, or {@code null} if not found
+     */
     public FlatIndexContext<T> getFlatIndexContext(int flatIndex) {
         return getFlatIndexContext(this, flatIndex);
     }
@@ -70,6 +89,20 @@ class RootCache<T> extends Cache<T> {
         return new FlatIndexContext<>(cache, index);
     }
 
+    /**
+     * Retrieves the position of an item in the flattened view of the entire
+     * hierarchy by following its hierarchical path.
+     * <p>
+     * The path is an array of integers, where each integer represents the index
+     * of a child item within its parent's sub-cache. Traversal starts at the
+     * root cache, using the first integer to select an item. The next integer
+     * is then used to select a child of that item, and so on — each step going
+     * one level deeper in the hierarchy.
+     *
+     * @param path
+     *            the path to the item
+     * @return the flat index of the item, or -1 if not found
+     */
     public int getFlatIndexByPath(int... path) {
         return getFlatIndexByPath(this, path);
     }
@@ -92,6 +125,15 @@ class RootCache<T> extends Cache<T> {
         return flatIndex;
     }
 
+    /**
+     * Retrieves the hierarchical context for the specified item. The result
+     * includes the item's ID, a reference to the cache that contains the item
+     * and the item's local index within that cache.
+     *
+     * @param item
+     *            the item to get the context for
+     * @return an {@link ItemContext} record, or {@code null} if not found
+     */
     public ItemContext<T> getItemContext(T item) {
         Object itemId = getItemId(item);
         return itemIdToContext.get(itemId);

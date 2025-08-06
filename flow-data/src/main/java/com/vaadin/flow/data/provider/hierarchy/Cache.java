@@ -113,7 +113,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Checks if this cache contains an item at the specified index.
+     * Checks if this cache contains an item at the specified local index.
      *
      * @param index
      *            the index to check
@@ -124,7 +124,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets the item at the specified index in this cache.
+     * Gets the item at the specified local index in this cache.
      *
      * @param index
      *            the index of the item to retrieve
@@ -148,7 +148,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Sets the items in this cache starting from the specified index.
+     * Sets the items in this cache starting from the specified local index.
      *
      * @param startIndex
      *            the index to start setting items
@@ -169,7 +169,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Removes all items and their sub-caches from this cache.
+     * Removes all items and sub-caches from this cache.
      */
     public void clear() {
         indexToCache.values().forEach((cache) -> {
@@ -187,7 +187,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Checks if this cache has a sub-cache at the specified index.
+     * Checks if this cache has a sub-cache at the specified local index.
      *
      * @param index
      *            the index to check
@@ -198,7 +198,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets the sub-cache at the specified index.
+     * Gets the sub-cache at the specified local index.
      *
      * @param index
      *            the index to check
@@ -210,7 +210,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets all sub-caches of this cache ordered by their index.
+     * Gets all sub-caches of this cache ordered by their indexes.
      *
      * @return a set of entries where the key is the index of the sub-cache and
      *         the value is the sub-cache itself
@@ -220,7 +220,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Creates a new sub-cache at the specified index with the given size.
+     * Creates a new sub-cache at the specified local index with the given size.
      *
      * @param index
      *            the index of the new sub-cache
@@ -253,12 +253,26 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Returns the flat index for the given index in the current cache. This
-     * index represents the item's position in a flattened list of all items
-     * from this cache and its descendants.
+     * Maps a local cache index to its corresponding position in the flattened
+     * list that includes all items from this cache and its descendants.
+     * <p>
+     * For example:
+     *
+     * <pre>
+     * Cache A (current cache)
+     * ├── Item 0
+     * │   └── Cache B (sub cache)
+     * │       ├── Item 0-0
+     * │       └── Item 0-1
+     * └── Item 1
+     * </pre>
+     *
+     * In this example, the local index {@code 1} (referring to {@code Item 1}
+     * in Cache A) will correspond to flat index {@code 3}.
      *
      * @param index
-     * @return
+     *            the index of the item in this cache
+     * @return the flat index of the item
      */
     public int getFlatIndex(int index) {
         return indexToCache.entrySet().stream().reduce(index, (prev, entry) -> {
