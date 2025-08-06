@@ -181,7 +181,6 @@ class PreTrial extends HTMLElement {
     });
     const loginButton = this.#shadowRoot.querySelector('button.login-button')!;
     loginButton.addEventListener('click', () => {
-      //this.openNewWindow('https://vaadin.com/my/account');
       tryAcquireLicense();
     });
   }
