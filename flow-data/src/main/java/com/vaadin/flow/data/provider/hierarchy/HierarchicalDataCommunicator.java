@@ -423,35 +423,29 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private void resolveIndexPath(Cache<T> cache, int... path) {
         var index = path[0];
+        var restPath = Arrays.copyOfRange(path, 1, path.length);
 
         if (index < 0) {
-            // If the index is negative, it is relative to the end of the
-            // cache.
+            // Negative index means counting from the end
             index = cache.getSize() + index;
         }
 
         if (!cache.hasItem(index)) {
-            var items = fetchDataProviderChildren(cache.getParentItem(),
-                    Range.withOnly(index)).toList();
-            cache.setItems(index, items);
+            // If the item is not found, load it from the data provider.
+            preloadRange(cache, index, 1);
         }
 
         if (!cache.hasItem(index)) {
+            // If the item is still not found, it means the path is invalid
+            // or the item does not exist in the data provider, so stop
+            // traversing further.
             return;
         }
 
         var item = cache.getItem(index);
-        if (isExpanded(item)) {
-            if (!cache.hasCache(index)) {
-                cache.createCache(index, getDataProviderChildCount(item));
-                requestFlush();
-            }
-
-            var subCache = cache.getCache(index);
-            var restPath = Arrays.copyOfRange(path, 1, path.length);
-            if (restPath.length > 0) {
-                resolveIndexPath(subCache, restPath);
-            }
+        if (restPath.length > 0 && isExpanded(item)) {
+            var subCache = ensureSubCache(cache, index);
+            resolveIndexPath(subCache, restPath);
         }
     }
 
@@ -495,25 +489,27 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (!cache.hasItem(index)) {
                 var remainingLength = Math.abs(length) - result.size();
 
-                var range = direction > 0
-                        ? Range.between(index, index + remainingLength)
-                        : Range.between(index + 1 - remainingLength, index + 1);
-
-                range = range.restrictTo(Range.withLength(0, cache.getSize()));
-
-                var items = fetchDataProviderChildren(cache.getParentItem(),
-                        range).toList();
-                cache.setItems(range.getStart(), items);
+                if (direction > 0) {
+                    // Preload items before the current index
+                    preloadRange(cache, index, remainingLength);
+                } else {
+                    // Preload items after the current index
+                    preloadRange(cache, index + 1 - remainingLength,
+                            remainingLength);
+                }
             }
 
             var item = cache.getItem(index);
 
             if (isExpanded(item) && !cache.hasCache(index)
                     && (direction > 0 || result.size() > 0)) {
-                var subCache = cache.createCache(index,
-                        getDataProviderChildCount(item));
+                var subCache = ensureSubCache(cache, index);
 
                 if (direction < 0) {
+                    // When preloading backward, shift the start index
+                    // to the end of the new sub-cache to continue from its
+                    // last item and maintain the correct order of items in
+                    // the flattened list.
                     start += subCache.getSize();
                     continue;
                 }
@@ -529,6 +525,23 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
 
         return result;
+    }
+
+    private void preloadRange(Cache<T> cache, int start, int length) {
+        var range = Range.withLength(start, length)
+                .restrictTo(Range.withLength(0, cache.getSize()));
+        var items = fetchDataProviderChildren(cache.getParentItem(), range)
+                .toList();
+        cache.setItems(start, items);
+    }
+
+    private Cache<T> ensureSubCache(Cache<T> cache, int index) {
+        if (cache.hasItem(index) && !cache.hasCache(index)) {
+            var item = cache.getItem(index);
+            var size = getDataProviderChildCount(item);
+            cache.createCache(index, size);
+        }
+        return cache.getCache(index);
     }
 
     @Override
