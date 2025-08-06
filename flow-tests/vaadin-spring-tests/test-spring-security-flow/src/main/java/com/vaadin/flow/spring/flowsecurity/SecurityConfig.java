@@ -34,7 +34,6 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
@@ -89,13 +88,16 @@ public class SecurityConfig {
             throws Exception {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/public/**", "/error").permitAll());
+                .requestMatchers("/public/**", "/error").permitAll()
+                .requestMatchers("/all-logged-in/**").authenticated());
 
         http.authorizeHttpRequests(auth -> auth.requestMatchers("/switchUser")
                 .hasAnyRole("ADMIN", "PREVIOUS_ADMINISTRATOR"));
         http.authorizeHttpRequests(
                 auth -> auth.requestMatchers("/impersonate/exit")
                         .hasRole("PREVIOUS_ADMINISTRATOR"));
+        http.authorizeHttpRequests(
+                auth -> auth.requestMatchers("/impersonate").authenticated());
         http.logout(cfg -> cfg.logoutRequestMatcher(PathPatternRequestMatcher
                 .pathPattern(HttpMethod.GET, getRootUrl(false) + "doLogout")));
         http.with(vaadin(), cfg -> {

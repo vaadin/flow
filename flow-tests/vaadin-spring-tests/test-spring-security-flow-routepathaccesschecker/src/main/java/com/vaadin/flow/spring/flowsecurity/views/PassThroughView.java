@@ -16,12 +16,15 @@
 
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import jakarta.annotation.security.PermitAll;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
 import com.vaadin.flow.router.Route;
 
 @Route(value = "passthrough/:type(forward|reroute)")
+@PermitAll
 public class PassThroughView extends Div implements BeforeEnterObserver {
 
     @Override
