@@ -1,7 +1,8 @@
 import { ServerMessage } from './vaadin-dev-tools';
 import {
   preTrialStartFailed,
-  showPreTrialSplashScreen
+  showPreTrialSplashScreen,
+  updateLicenseDownloadStatus
 } from './pre-trial-splash-screen';
 
 const noLicenseFallbackTimeout = 1000;
@@ -175,8 +176,28 @@ export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: Sha
     console.debug('Pre-trial period start failed', message.data);
     preTrialStartFailed(false, bodyShadowRoot);
     return true;
+  } else if (message.command === 'license-download-completed') {
+    console.debug('License downloaded');
+    window.location.reload();
+    return true;
+  } else if (message.command === 'license-download-started') {
+    updateLicenseDownloadStatus('started', bodyShadowRoot);
+    return true;
+  } else if (message.command === 'license-download-failed') {
+    updateLicenseDownloadStatus('failed', bodyShadowRoot);
+    return true;
   }
   return false;
+};
+
+export const startPreTrial = () => {
+  (window as any).Vaadin.devTools.startPreTrial();
+};
+export const tryAcquireLicense = () => {
+  const products = Object.values(productMissingLicense);
+  if (products.length > 0) {
+    (window as any).Vaadin.devTools.downloadLicense(products[0].product);
+  }
 };
 
 export const licenseInit = () => {

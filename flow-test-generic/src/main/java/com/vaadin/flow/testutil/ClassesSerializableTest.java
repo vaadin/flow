@@ -78,6 +78,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLauncher",
                 "com\\.vaadin\\.base\\.devserver\\.BrowserLiveReloadAccessorImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DebugWindowConnection",
+                "com\\.vaadin\\.base\\.devserver\\.DebugWindowConnection\\$LicenseDownloadCallback",
                 "com\\.vaadin\\.base\\.devserver\\.DebugWindowConnection\\$DevToolsInterfaceImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DevModeHandlerManagerImpl",
                 "com\\.vaadin\\.base\\.devserver\\.DevServerWatchDog",
