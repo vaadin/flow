@@ -134,7 +134,7 @@ public class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
+    public void transferProgressListener_addListener_errorOccurred_errorListenerInvoked()
             throws IOException {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
@@ -173,7 +173,7 @@ public class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_callbackErrorOccured_errorlistenerInvoked() {
+    public void transferProgressListener_addListener_callbackIOExceptionOccurred_errorListenerInvoked() {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
@@ -195,6 +195,65 @@ public class InputStreamDownloadHandlerTest {
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackUncheckedExceptionOccurred_errorListenerInvoked() {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
+        DownloadHandler handler = DownloadHandler.fromInputStream(req -> {
+            throw new RuntimeException("I/O exception");
+        }, transferListener).whenComplete((context, success) -> {
+            whenCompleteResult.set(success);
+        });
+
+        try {
+            handler.handleDownloadRequest(event);
+            Assert.fail("Expected an exception to be thrown");
+        } catch (Exception e) {
+        }
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackResponseError_errorListenerInvoked()
+            throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
+        DownloadHandler handler = DownloadHandler.fromInputStream(
+                req -> DownloadResponse.error(500, "I/O exception"),
+                transferListener).whenComplete((context, success) -> {
+                    whenCompleteResult.set(success);
+                });
+
+        handler.handleDownloadRequest(event);
         Assert.assertEquals(List.of("onError"), transferListener.invocations);
         Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
                 whenCompleteResult.get());
