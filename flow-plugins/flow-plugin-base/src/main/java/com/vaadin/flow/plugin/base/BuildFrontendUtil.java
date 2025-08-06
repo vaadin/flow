@@ -892,22 +892,23 @@ public class BuildFrontendUtil {
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
+            boolean applyCommercialBanner = needsCommercialBanner
+                    && adapter.isCommercialBannerEnabled();
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
                     buildInfo.put(Constants.DAU_TOKEN, true);
                     checkLicenseCheckerAtRuntime(adapter);
                 }
-                if (needsCommercialBanner
-                        && adapter.isCommercialBannerEnabled()) {
+                if (applyCommercialBanner) {
                     adapter.logInfo("Application commercial banner enabled");
                     buildInfo.put(Constants.COMMERCIAL_BANNER_TOKEN, true);
                 }
             }
             if (isControlCenterAvailable(adapter.getClassFinder())
-                    && LicenseChecker.isValidLicense(
+                    && (applyCommercialBanner || LicenseChecker.isValidLicense(
                             "vaadin-commercial-cc-client", null,
-                            BuildType.PRODUCTION)) {
+                            BuildType.PRODUCTION))) {
                 adapter.logInfo("Premium Features are enabled");
                 buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }
