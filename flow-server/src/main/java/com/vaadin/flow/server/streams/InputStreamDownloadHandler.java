@@ -19,6 +19,7 @@ package com.vaadin.flow.server.streams;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
@@ -51,14 +52,27 @@ public class InputStreamDownloadHandler
         DownloadResponse download;
         try {
             download = callback.complete(downloadEvent);
-        } catch (IOException ioe) {
+        } catch (IOException | RuntimeException e) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            notifyError(downloadEvent, ioe);
-            throw ioe;
+            IOException cause;
+            if (e instanceof IOException ioe) {
+                cause = ioe;
+            } else if (e instanceof UncheckedIOException uioe) {
+                cause = uioe.getCause();
+            } else {
+                cause = new IOException(e.getMessage(), e);
+            }
+            notifyError(downloadEvent, cause);
+            throw e;
         }
         if (download.hasError()) {
             response.setStatus(download.getError());
+            String message = download.getErrorMessage();
+            if (message == null) {
+                message = "Download failed with code " + download.getError();
+            }
+            notifyError(downloadEvent, new IOException(message));
             return;
         }
 
