@@ -17,6 +17,7 @@ package com.vaadin.base.devserver;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -42,7 +43,9 @@ import com.vaadin.pro.licensechecker.PreTrialCreationException;
 import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.ArgumentMatchers.same;
 
 public class DebugWindowConnectionLicenseCheckTest {
@@ -151,6 +154,36 @@ public class DebugWindowConnectionLicenseCheckTest {
         Assert.assertEquals("license-pretrial-failed", message.getCommand());
     }
 
+    @Test
+    public void downloadLicenseKey_licenseKeyAvailable_notifiesDownloadStartAndSuccess() {
+        AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
+        DebugWindowMessage message = doDownloadKey(true, callbackHolder);
+        Assert.assertEquals("license-download-started", message.getCommand());
+        Assert.assertEquals(TEST_PRODUCT.toString(),
+                message.getData().toString());
+        callbackHolder.get().run();
+        Assert.assertEquals(1, receiver.messages.size());
+        Assert.assertEquals("license-download-completed",
+                receiver.messages.get(0).getCommand());
+        Assert.assertEquals(TEST_PRODUCT.toString(),
+                receiver.messages.get(0).getData().toString());
+    }
+
+    @Test
+    public void downloadLicenseKey_licenseKeyNotAvailable_notifiesDownloadStartAndFailure() {
+        AtomicReference<Runnable> callbackHolder = new AtomicReference<>();
+        DebugWindowMessage message = doDownloadKey(false, callbackHolder);
+        Assert.assertEquals("license-download-started", message.getCommand());
+        Assert.assertEquals(TEST_PRODUCT.toString(),
+                message.getData().toString());
+        callbackHolder.get().run();
+        Assert.assertEquals(1, receiver.messages.size());
+        Assert.assertEquals("license-download-failed",
+                receiver.messages.get(0).getCommand());
+        Assert.assertEquals(TEST_PRODUCT.toString(),
+                receiver.messages.get(0).getData().toString());
+    }
+
     private enum LicenseCheckResult {
         VALID, INVALID, MISSING_KEYS
     }
@@ -181,6 +214,32 @@ public class DebugWindowConnectionLicenseCheckTest {
                             "Pre trial not allowed");
                     };
                 }));
+    }
+
+    private DebugWindowMessage doDownloadKey(boolean success,
+            AtomicReference<Runnable> callbackHolder) {
+        ObjectNode command = OBJECT_MAPPER.createObjectNode();
+        command.put("command", "downloadLicense");
+        command.putPOJO("data", TEST_PRODUCT);
+        return sendAndReceive(command,
+                licenseChecker -> licenseChecker.when(() -> LicenseChecker
+                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                                eq(TEST_PRODUCT.getVersion()),
+                                eq(BuildType.DEVELOPMENT),
+                                any(LicenseChecker.Callback.class)))
+                        .then(i -> {
+                            LicenseChecker.Callback callback = i.getArgument(3,
+                                    LicenseChecker.Callback.class);
+                            callbackHolder.set(() -> {
+                                if (success) {
+                                    callback.ok();
+                                } else {
+                                    callback.failed(
+                                            new LicenseException("BOOM"));
+                                }
+                            });
+                            return null;
+                        }));
     }
 
     private DebugWindowMessage sendAndReceive(ObjectNode command,
@@ -259,7 +318,8 @@ public class DebugWindowConnectionLicenseCheckTest {
             JsonNode json = OBJECT_MAPPER.readTree(message);
             String command = json.get("command").textValue();
             JsonNode data = json.get("data");
-            if (command.startsWith("license-check-")) {
+            if (command.startsWith("license-check-")
+                    || command.startsWith("license-download-")) {
                 if (data.has("message") && data.has("product")) {
                     PreTrial preTrial = null;
                     if (data.hasNonNull("preTrial")) {
