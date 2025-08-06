@@ -153,7 +153,9 @@ public abstract class ClassFinder {
                 }
             }
         } catch (NoClassDefFoundError e) {
-            System.out.println("HERE ===> " + cls.getName() + " ");
+            LoggerFactory.getLogger(ClassFinder.class).warn(
+                    "Class {} cannot be loaded. Perhaps missing from test classpath",
+                    cls.getName());
         }
 
         return false;

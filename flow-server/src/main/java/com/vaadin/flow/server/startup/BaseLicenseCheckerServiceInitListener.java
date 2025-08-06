@@ -46,9 +46,9 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
  * With Vaadin dev tools enabled, if the license check fails because of missing
  * license keys, handling is delegated to the Vaadin Dev Server so it can, for
  * example, display the pre-trial splash screen. However, if dev tools are
- * disabled, the License Checker will open the vaadin.com "My Account" page in a
- * browser window to let the user log in or register and then try to download a
- * valid license.
+ * disabled, the License Checker will open the vaadin.com "Validate license"
+ * page in a browser window to let the user log in or register and then try to
+ * download a valid license.
  * <p>
  * Subclasses are expected to provide the product name and version required for
  * the license validation by invoking the constructor of this class and to
@@ -138,7 +138,7 @@ public abstract class BaseLicenseCheckerServiceInitListener
                     }).addProduct(productName, productVersion);
         }
 
-        void addProduct(String productName, String productVersion) {
+        private void addProduct(String productName, String productVersion) {
             this.products.add(new Pair<>(productName, productVersion));
         }
 
