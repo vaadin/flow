@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -416,7 +417,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the flat index of the target item after resolving all ancestors
      */
     protected int resolveIndexPath(int... path) {
-        var rootCache = ensureRootCache();
+        ensureRootCache();
         resolveIndexPath(rootCache, path);
         return rootCache.getFlatIndexByPath(path);
     }
@@ -450,19 +451,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
     }
 
+    private void preloadRange(Cache<T> cache, int start, int length) {
+        var range = Range.withLength(start, length)
+                .restrictTo(Range.withLength(0, cache.getSize()));
+        var items = fetchDataProviderChildren(cache.getParentItem(), range)
+                .toList();
+        cache.setItems(start, items);
+    }
+
     /**
-     * Preloads a range of items from the data provider into the cache based on
-     * the specified start index and length.
+     * Preloads and returns a range of items from the flattened hierarchy,
+     * starting at the specified flat index and spanning the given length. Items
+     * are preloaded in the backward direction, beginning from the given
+     * {@code start} index and continuing toward lower indexes until the
+     * specified {@code length} is reached.
      * <p>
-     * If {@code length} is positive, items are preloaded in the forward
-     * direction, starting from the given {@code start} and continuing toward
-     * higher indexes.
-     * <p>
-     * If {@code length} is negative, items are preloaded in the backward
-     * direction, starting from the given {@code start} and continuing toward
-     * lower indexes. Backward preloading can affect the position of the start
-     * index in the flat list, so it may need to be recalculated if it's used
-     * after this method call.
+     * NOTE: Backward preloading can affect the position of the start index in
+     * the flat list, so it may need to be recalculated if it's used after this
+     * method call.
      *
      * @param start
      *            the start index of the range to preload
@@ -470,16 +476,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the length of the range to preload
      * @return a list of items preloaded in the specified range
      */
-    protected List<T> preloadRange(int start, int length) {
-        var rootCache = ensureRootCache();
+    protected List<T> preloadFlatRangeBackward(int start, int length) {
+        ensureRootCache();
 
-        // +1 = forward
-        // -1 = backward
-        var direction = Math.signum(length);
-
-        List<T> result = new ArrayList<>();
-
-        while (result.size() < Math.abs(length)) {
+        LinkedList<T> result = new LinkedList<>();
+        while (result.size() < length) {
             var context = rootCache.getFlatIndexContext(start);
             if (context == null) {
                 break;
@@ -488,53 +489,69 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             var index = context.index();
 
             if (!cache.hasItem(index)) {
-                var remainingLength = Math.abs(length) - result.size();
+                var remainingLength = length - result.size();
 
-                if (direction > 0) {
-                    // Preload items before the current index
-                    preloadRange(cache, index, remainingLength);
-                } else {
-                    // Preload items after the current index
-                    preloadRange(cache, index + 1 - remainingLength,
-                            remainingLength);
-                }
+                preloadRange(cache, index + 1 - remainingLength,
+                        remainingLength);
             }
 
             var item = cache.getItem(index);
-
-            if (isExpanded(item) && !cache.hasSubCache(index)
-                    && (direction > 0 || result.size() > 0)) {
+            if (isExpanded(item) && !cache.hasSubCache(index)) {
                 var subCache = cache.ensureSubCache(index,
                         () -> getDataProviderChildCount(item));
 
-                if (direction < 0) {
-                    // When preloading backward, shift the start index
-                    // to the end of the new sub-cache to continue from its
-                    // last item and maintain the correct order of items in
-                    // the flattened list.
-                    start += subCache.getSize();
-                    continue;
-                }
+                // Shift the start index to the end of the created sub-cache to
+                // continue from its last item and maintain the expected order
+                // of items in the flattened list.
+                start += subCache.getSize();
+                continue;
             }
 
-            if (direction > 0) {
-                start++;
-                result.add(item);
-            } else {
-                start--;
-                result.add(0, item);
-            }
+            start--;
+            result.addFirst(item);
         }
-
         return result;
     }
 
-    private void preloadRange(Cache<T> cache, int start, int length) {
-        var range = Range.withLength(start, length)
-                .restrictTo(Range.withLength(0, cache.getSize()));
-        var items = fetchDataProviderChildren(cache.getParentItem(), range)
-                .toList();
-        cache.setItems(start, items);
+    /**
+     * Preloads and returns a range of items from the flattened hierarchy,
+     * starting at the specified flat index and spanning the given length. Items
+     * are preloaded in the forward direction, beginning from the given
+     * {@code start} index and continuing toward higher indexes until the
+     * specified {@code length} is reached.
+     *
+     * @param start
+     *            the start index of the range to preload
+     * @param length
+     *            the length of the range to preload
+     * @return a list of items preloaded in the specified range
+     */
+    protected List<T> preloadFlatRangeForward(int start, int length) {
+        ensureRootCache();
+
+        LinkedList<T> result = new LinkedList<>();
+        while (result.size() < length) {
+            var context = rootCache.getFlatIndexContext(start);
+            if (context == null) {
+                break;
+            }
+            var cache = context.cache();
+            var index = context.index();
+
+            if (!cache.hasItem(index)) {
+                preloadRange(cache, index, length - result.size());
+            }
+
+            var item = cache.getItem(index);
+            if (isExpanded(item)) {
+                cache.ensureSubCache(index,
+                        () -> getDataProviderChildCount(item));
+            }
+
+            start++;
+            result.addLast(item);
+        }
+        return result;
     }
 
     @Override
@@ -549,7 +566,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             arrayUpdater.initialize();
         }
 
-        var rootCache = ensureRootCache();
+        ensureRootCache();
 
         if (viewportRange.getStart() >= rootCache.getFlatSize()) {
             viewportRange = Range.withLength(0, viewportRange.length());
@@ -559,7 +576,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var start = viewportRange.getStart();
         var end = viewportRange.getEnd();
 
-        var result = preloadRange(start, length);
+        var result = preloadFlatRangeForward(start, length);
 
         var flatSize = rootCache.getFlatSize();
 
