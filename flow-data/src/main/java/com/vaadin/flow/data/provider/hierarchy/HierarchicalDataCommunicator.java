@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
@@ -456,7 +455,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 .restrictTo(Range.withLength(0, cache.getSize()));
         var items = fetchDataProviderChildren(cache.getParentItem(), range)
                 .toList();
-        cache.setItems(start, items);
+        cache.setItems(range.getStart(), items);
     }
 
     /**
@@ -496,7 +495,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
 
             var item = cache.getItem(index);
-            if (isExpanded(item) && !cache.hasSubCache(index)) {
+            if (isExpanded(item) && !cache.hasSubCache(index)
+                    && result.size() > 0) {
                 var subCache = cache.ensureSubCache(index,
                         () -> getDataProviderChildCount(item));
 
