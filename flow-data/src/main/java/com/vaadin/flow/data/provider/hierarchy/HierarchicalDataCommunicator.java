@@ -208,7 +208,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var index = itemContext.index();
         cache.refreshItem(item);
 
-        var subCache = cache.getCache(index);
+        var subCache = cache.getSubCache(index);
         if (refreshChildren && subCache != null) {
             subCache.clear();
             subCache.setSize(getDataProviderChildCount(item));
@@ -444,7 +444,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         var item = cache.getItem(index);
         if (restPath.length > 0 && isExpanded(item)) {
-            var subCache = ensureSubCache(cache, index);
+            var subCache = cache.ensureSubCache(index,
+                    () -> getDataProviderChildCount(item));
             resolveIndexPath(subCache, restPath);
         }
     }
@@ -501,9 +502,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
             var item = cache.getItem(index);
 
-            if (isExpanded(item) && !cache.hasCache(index)
+            if (isExpanded(item) && !cache.hasSubCache(index)
                     && (direction > 0 || result.size() > 0)) {
-                var subCache = ensureSubCache(cache, index);
+                var subCache = cache.ensureSubCache(index,
+                        () -> getDataProviderChildCount(item));
 
                 if (direction < 0) {
                     // When preloading backward, shift the start index
@@ -533,15 +535,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var items = fetchDataProviderChildren(cache.getParentItem(), range)
                 .toList();
         cache.setItems(start, items);
-    }
-
-    private Cache<T> ensureSubCache(Cache<T> cache, int index) {
-        if (cache.hasItem(index) && !cache.hasCache(index)) {
-            var item = cache.getItem(index);
-            var size = getDataProviderChildCount(item);
-            cache.createCache(index, size);
-        }
-        return cache.getCache(index);
     }
 
     @Override
