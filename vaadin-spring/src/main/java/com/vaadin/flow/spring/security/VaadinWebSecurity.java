@@ -76,8 +76,8 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
 /**
  * Provides basic Vaadin component-based security configuration for the project.
  * <p>
- * Sets up security rules for a Vaadin application and restricts all URLs except
- * for public resources and internal Vaadin URLs to authenticated user.
+ * Sets up security rules for a Vaadin application and fully restricts all URLs
+ * except for public resources and internal Vaadin URLs.
  * <p>
  * The default behavior can be altered by extending the public/protected methods
  * in the class.
@@ -223,9 +223,11 @@ public abstract class VaadinWebSecurity {
             // matcher for custom PWA icons and favicon
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
+            // private routes require authentication
+            urlRegistry.requestMatchers(requestUtil::isSecuredFlowRoute)
+                    .authenticated();
 
-            // all other requests require authentication
-            urlRegistry.anyRequest().authenticated();
+            // all other requests are denied
         });
 
         accessControl.setEnabled(enableNavigationAccessControl());

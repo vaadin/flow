@@ -161,7 +161,7 @@ public final class VaadinSecurityConfigurer
 
     private boolean enableAuthorizedRequestsConfiguration = true;
 
-    private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::authenticated;
+    private Consumer<AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizedUrl> anyRequestAuthorizeRule = AuthorizedUrl::denyAll;
 
     private boolean enableNavigationAccessControl = true;
 
@@ -426,8 +426,8 @@ public final class VaadinSecurityConfigurer
      * Configures the access rule for any request not matching other configured
      * rules.
      * <p>
-     * The default rule is to require authentication, which is the equivalent of
-     * passing {@link AuthorizedUrl#authenticated()} to this method.
+     * The default rule is to restrict access, which is the equivalent of
+     * passing {@link AuthorizedUrl#denyAll()} to this method.
      *
      * @param anyRequestAuthorizeRule
      *            the access rule for any request not matching other rules, or
@@ -743,7 +743,9 @@ public final class VaadinSecurityConfigurer
 
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
-        registry.requestMatchers(defaultPermitMatcher()).permitAll();
+        registry.requestMatchers(defaultPermitMatcher()).permitAll()
+                .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
+                .authenticated();
     }
 
     private ApplicationContext getApplicationContext() {
