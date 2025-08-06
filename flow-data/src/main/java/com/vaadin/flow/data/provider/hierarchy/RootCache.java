@@ -69,7 +69,7 @@ class RootCache<T> extends Cache<T> {
             int localFlatIndex) {
         int index = localFlatIndex;
 
-        for (Entry<Integer, Cache<T>> entry : cache.getCaches()) {
+        for (Entry<Integer, Cache<T>> entry : cache.getSubCaches()) {
             var subCacheIndex = entry.getKey();
             var subCache = entry.getValue();
 
@@ -114,7 +114,7 @@ class RootCache<T> extends Cache<T> {
         }
 
         var flatIndex = cache.getFlatIndex(index);
-        var subCache = cache.getCache(index);
+        var subCache = cache.getSubCache(index);
         var restPath = Arrays.copyOfRange(path, 1, path.length);
 
         if (subCache != null && subCache.getFlatSize() > 0

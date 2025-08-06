@@ -25,6 +25,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.function.SerializableSupplier;
 
 /**
  * A cache for hierarchical data. Each instance of {@link Cache} represents a
@@ -193,7 +194,7 @@ class Cache<T> implements Serializable {
      *            the index to check
      * @return {@code true} if a sub-cache is found, {@code false} otherwise
      */
-    public boolean hasCache(int index) {
+    public boolean hasSubCache(int index) {
         return indexToCache.containsKey(index);
     }
 
@@ -205,7 +206,7 @@ class Cache<T> implements Serializable {
      * @return the sub-cache at the specified index, or {@code null} if not
      *         found
      */
-    public Cache<T> getCache(int index) {
+    public Cache<T> getSubCache(int index) {
         return indexToCache.get(index);
     }
 
@@ -215,23 +216,25 @@ class Cache<T> implements Serializable {
      * @return a set of entries where the key is the index of the sub-cache and
      *         the value is the sub-cache itself
      */
-    public Set<Entry<Integer, Cache<T>>> getCaches() {
+    public Set<Entry<Integer, Cache<T>>> getSubCaches() {
         return indexToCache.entrySet();
     }
 
     /**
-     * Creates a new sub-cache at the specified local index with the given size.
+     * Returns a sub-cache at the specified local index or creates a new one if
+     * it does not exist. The new sub-cache is initialized with the size
+     * provided by the given supplier.
      *
      * @param index
      *            the index of the new sub-cache
-     * @param size
-     *            the size of the new sub-cache
-     * @return the newly created sub-cache
+     * @param sizeSupplier
+     *            a supplier that provides the size of the new sub-cache
+     * @return the sub-cache instance
      */
-    public Cache<T> createCache(int index, int size) {
-        var cache = new Cache<>(this, index, size);
-        indexToCache.put(index, cache);
-        return cache;
+    public Cache<T> ensureSubCache(int index,
+            SerializableSupplier<Integer> sizeSupplier) {
+        return indexToCache.computeIfAbsent(index,
+                (_key) -> new Cache<>(this, index, sizeSupplier.get()));
     }
 
     /**
