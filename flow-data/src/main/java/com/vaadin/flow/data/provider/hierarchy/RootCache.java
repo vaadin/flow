@@ -66,8 +66,8 @@ class RootCache<T> extends Cache<T> {
     }
 
     private FlatIndexContext<T> getFlatIndexContext(Cache<T> cache,
-            int flatIndex) {
-        int index = flatIndex;
+            int localFlatIndex) {
+        int index = localFlatIndex;
 
         for (Entry<Integer, Cache<T>> entry : cache.getCaches()) {
             var subCacheIndex = entry.getKey();
