@@ -5,12 +5,15 @@ import {
   handleLicenseMessage,
   licenseCheckFailed,
   licenseInit,
-  handlePreTrialMessage
+  handlePreTrialMessage, licenseDownloadFailed
 } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
-import { preTrialStartFailed } from './pre-trial-splash-screen';
+import {
+  preTrialStartFailed,
+  updateLicenseDownloadStatus
+} from './pre-trial-splash-screen';
 
 /**
  * Plugin API for the dev tools window.
@@ -838,6 +841,13 @@ export class VaadinDevTools extends LitElement {
     } else {
       console.error('Cannot start pre-trial: no connection');
       preTrialStartFailed(false, this.bodyShadowRoot)
+    }
+  }
+  downloadLicense(productInfo: Product) {
+    if (this.frontendConnection) {
+      this.frontendConnection.send('downloadLicense', productInfo);
+    } else {
+      updateLicenseDownloadStatus('failed', this.bodyShadowRoot);
     }
   }
 
