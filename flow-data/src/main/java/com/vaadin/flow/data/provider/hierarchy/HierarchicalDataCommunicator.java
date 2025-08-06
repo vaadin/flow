@@ -102,8 +102,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void generateTreeData(T item, JsonObject jsonObject) {
-        Optional.ofNullable(getParentItem(item)).ifPresent(parent -> jsonObject
-                .put("parentUniqueKey", getKeyMapper().key(parent)));
+        Optional.ofNullable(mapper.getParentOfItem(item))
+                .ifPresent(parent -> jsonObject.put("parentUniqueKey",
+                        getKeyMapper().key(parent)));
     }
 
     private void requestFlush(HierarchicalUpdate update) {
@@ -135,13 +136,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             dataControllers.clear();
         }
 
-        if (getHierarchyMapper() != null) {
+        if (mapper != null) {
             HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
+                    .startUpdate(mapper.getRootSize());
             update.enqueue("$connector.ensureHierarchy");
 
-            Collection<T> expandedItems = getHierarchyMapper()
-                    .getExpandedItems();
+            Collection<T> expandedItems = mapper.getExpandedItems();
             if (!expandedItems.isEmpty()) {
                 update.enqueue("$connector.expandItems", expandedItems.stream()
                         .map(getKeyMapper()::key).map(key -> {
@@ -235,7 +235,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (mapper != null) {
             mapper.destroyAllData();
         }
-        mapper = createHierarchyMapper(dataProvider);
+        mapper = new HierarchyMapper<>(dataProvider);
 
         SerializableConsumer<F> consumer = super.setDataProvider(dataProvider,
                 initialFilter);
@@ -246,23 +246,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         mapper.setFilter(getFilter());
 
         return consumer;
-    }
-
-    /**
-     * Create new {@code HierarchyMapper} for the given data provider. May be
-     * overridden in subclasses.
-     *
-     * @param dataProvider
-     *            the data provider
-     * @param <F>
-     *            Query type
-     * @return new {@link HierarchyMapper}
-     * @deprecated since 24.9 and will be removed in Vaadin 25.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected <F> HierarchyMapper<T, F> createHierarchyMapper(
-            HierarchicalDataProvider<T, F> dataProvider) {
-        return new HierarchyMapper<>(dataProvider);
     }
 
     /**
@@ -319,26 +302,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the item to collapse
      */
     public void collapse(T item) {
-        collapse(item, true);
-    }
-
-    /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
-     * {@code syncClient} indicates whether the changes should be synchronized
-     * to the client.
-     *
-     * @param item
-     *            the item to collapse
-     * @param syncClient
-     *            {@code true} if the changes should be synchronized to the
-     *            client, {@code false} otherwise.
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #collapse(T)} instead.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected void collapse(T item, boolean syncClient) {
-        doCollapse(Arrays.asList(item), syncClient);
+        collapse(Arrays.asList(item));
     }
 
     /**
@@ -352,10 +316,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the collapsed items
      */
     public Collection<T> collapse(Collection<T> items) {
-        return doCollapse(items, true);
-    }
-
-    private Collection<T> doCollapse(Collection<T> items, boolean syncClient) {
         List<T> collapsedItems = new ArrayList<>();
         items.forEach(item -> {
             if (mapper.collapse(item)) {
@@ -367,9 +327,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 }
             }
         });
-        if (syncClient && !collapsedItems.isEmpty()) {
+        if (!collapsedItems.isEmpty()) {
             HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
+                    .startUpdate(mapper.getRootSize());
             update.enqueue("$connector.collapseItems",
                     collapsedItems.stream()
                             .map(this::generateJsonForExpandedOrCollapsedItem)
@@ -389,7 +349,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the item to expand
      */
     public void expand(T item) {
-        expand(item, true);
+        expand(Arrays.asList(item));
     }
 
     /**
@@ -403,37 +363,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return the expanded items
      */
     public Collection<T> expand(Collection<T> items) {
-        return doExpand(items, true);
-    }
-
-    /**
-     * Expands the given item. Calling this method will have no effect if the
-     * item is already expanded or if it has no children. {@code syncClient}
-     * indicates whether the changes should be synchronized to the client.
-     *
-     * @param item
-     *            the item to expand
-     * @param syncClient
-     *            {@code true} if the changes should be synchronized to the
-     *            client, {@code false} otherwise.
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #expand(T)} instead.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected void expand(T item, boolean syncClient) {
-        doExpand(Arrays.asList(item), syncClient);
-    }
-
-    private Collection<T> doExpand(Collection<T> items, boolean syncClient) {
         List<T> expandedItems = new ArrayList<>();
         items.forEach(item -> {
             if (mapper.expand(item)) {
                 expandedItems.add(item);
             }
         });
-        if (syncClient && !expandedItems.isEmpty()) {
+        if (!expandedItems.isEmpty()) {
             HierarchicalUpdate update = arrayUpdater
-                    .startUpdate(getHierarchyMapper().getRootSize());
+                    .startUpdate(mapper.getRootSize());
             update.enqueue("$connector.expandItems",
                     expandedItems.stream()
                             .map(this::generateJsonForExpandedOrCollapsedItem)
@@ -451,7 +389,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return {@code true} if item has children; {@code false} if not
      */
     public boolean hasChildren(T item) {
-        return mapper.hasChildren(item);
+        return getDataProvider().hasChildren(item);
     }
 
     /**
@@ -463,49 +401,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     public boolean isExpanded(T item) {
         return mapper.isExpanded(item);
-    }
-
-    /**
-     * Returns parent index for the row or {@code null}.
-     *
-     * @param item
-     *            the item to find the parent of
-     * @return the parent index or {@code null} for top-level items
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
-     *             queries to the data source instead.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    public Integer getParentIndex(T item) {
-        return mapper.getParentIndex(item);
-    }
-
-    /**
-     * Returns index for the row or {@code null}.
-     *
-     * @param item
-     *            the target item
-     * @return the index or {@code null} for top-level and non-existing items
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
-     *             queries to the data source instead.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    public Integer getIndex(T item) {
-        return Optional.ofNullable(mapper.getIndex(item))
-                .filter(index -> index >= 0).orElse(null);
-    }
-
-    /**
-     * Returns parent item for the row or {@code null}.
-     *
-     * @param item
-     *            the item to find the parent of
-     * @return the parent item or {@code null} for top-level items
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use direct
-     *             queries to the data source instead.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    public T getParentItem(T item) {
-        return mapper.getParentOfItem(item);
     }
 
     /**
@@ -555,17 +450,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return mapper.hasExpandedItems();
     }
 
-    /**
-     * Returns the {@code HierarchyMapper} used by this data communicator.
-     *
-     * @return the hierarchy mapper used by this data communicator
-     * @deprecated since 24.9 and will be removed in Vaadin 25.
-     */
-    @Deprecated(since = "24.9", forRemoval = true)
-    protected HierarchyMapper<T, ?> getHierarchyMapper() {
-        return mapper;
-    }
-
     private JsonValue generateJsonForExpandedOrCollapsedItem(T item) {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
@@ -581,7 +465,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return super.getPassivatedKeys(oldActive).stream().filter(key -> {
             T item = getKeyMapper().get(key);
             if (item != null) {
-                T parent = getParentItem(item);
+                T parent = mapper.getParentOfItem(item);
                 /* Short-circuit root item passivation */
                 if (parent == null) {
                     return !isExpanded(item);
@@ -590,7 +474,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                     if (!isItemActive(parent) || !isExpanded(parent)) {
                         return true;
                     }
-                    parent = getParentItem(parent);
+                    parent = mapper.getParentOfItem(parent);
                 }
             }
             return false;

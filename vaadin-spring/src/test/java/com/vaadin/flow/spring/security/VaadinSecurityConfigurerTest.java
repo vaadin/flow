@@ -12,6 +12,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -61,6 +62,7 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @WebAppConfiguration
@@ -251,6 +253,25 @@ class VaadinSecurityConfigurerTest {
         requestCache.saveRequest(request, response);
         assertNull(requestCache.getRequest(request, response),
                 "Request should not have been saved");
+    }
+
+    @Test
+    void loginView_requestCacheApplied() throws Exception {
+        VaadinDefaultRequestCache requestCache = applicationContext
+                .getBean(VaadinDefaultRequestCache.class);
+
+        var mockSuccessHandler = Mockito.mock(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        http.setSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+                mockSuccessHandler);
+
+        http.with(configurer, c -> {
+            c.loginView("/login");
+        }).build();
+
+        Mockito.verify(mockSuccessHandler, times(1))
+                .setRequestCache(Mockito.eq(requestCache));
     }
 
     @Route
