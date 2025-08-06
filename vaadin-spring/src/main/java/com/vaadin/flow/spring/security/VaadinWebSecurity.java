@@ -117,8 +117,8 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * </code>
  *             </pre>
  *
- *             Read more details in
- *             <a href="https://github.com/vaadin/docs/pull/4420">Security
+ *             Read more details in <a href=
+ *             "https://vaadin.com/docs/latest/flow/security/vaadin-security-configurer">Security
  *             Configurer documentation.</a>
  */
 @Deprecated(since = "24.9", forRemoval = true)
