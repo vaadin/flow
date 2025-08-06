@@ -121,7 +121,7 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  *             <a href="https://github.com/vaadin/docs/pull/4420">Security
  *             Configurer documentation.</a>
  */
-@Deprecated(since = "24.8", forRemoval = true)
+@Deprecated(since = "24.9", forRemoval = true)
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
