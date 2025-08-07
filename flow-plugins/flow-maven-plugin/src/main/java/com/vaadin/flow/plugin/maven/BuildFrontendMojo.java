@@ -179,8 +179,9 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             }
         }
         LicenseChecker.setStrictOffline(true);
+        boolean onlyValidateJavaImports = !isHillaUsed(frontendDirectory());
         boolean licenseRequired = BuildFrontendUtil.validateLicenses(this,
-                frontendDependencies);
+                frontendDependencies, onlyValidateJavaImports);
 
         BuildFrontendUtil.updateBuildFile(this, licenseRequired);
 
