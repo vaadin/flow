@@ -153,7 +153,7 @@ class Cache<T> implements Serializable {
 
             indexToItemId.put(index, itemId);
             itemIdToItem.put(itemId, item);
-            rootCache.addItemContext(itemId, this, index);
+            rootCache.addItemContext(item, this, index);
 
             index++;
         }
@@ -166,7 +166,9 @@ class Cache<T> implements Serializable {
         indexToCache.values().forEach(Cache::clear);
         indexToCache.clear();
 
-        indexToItemId.values().forEach(rootCache::removeItemContext);
+        indexToItemId.values().forEach(itemId -> {
+            rootCache.removeItemContext(itemIdToItem.get(itemId));
+        });
         indexToItemId.clear();
 
         itemIdToItem.clear();
