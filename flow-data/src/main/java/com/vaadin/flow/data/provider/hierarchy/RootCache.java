@@ -52,6 +52,20 @@ class RootCache<T> extends Cache<T> {
     }
 
     /**
+     * Gets the total size of the hierarchy (including all descendant caches).
+     *
+     * @return the total number of items in this cache and all its descendant
+     */
+    public int getFlatSize() {
+        return getFlatSize(this);
+    }
+
+    private int getFlatSize(Cache<T> cache) {
+        return cache.getSize() + cache.getSubCaches().stream()
+                .mapToInt((entry) -> getFlatSize(entry.getValue())).sum();
+    }
+
+    /**
      * Retrieves the hierarchical context for an item by its position in the
      * flattened view of the entire hierarchy. The result includes a reference
      * to the cache that contains the item and the item's local index within
@@ -70,16 +84,17 @@ class RootCache<T> extends Cache<T> {
         int index = localFlatIndex;
 
         for (Entry<Integer, Cache<T>> entry : cache.getSubCaches()) {
-            var subCacheIndex = entry.getKey();
             var subCache = entry.getValue();
+            var subCacheIndex = entry.getKey();
+            var subCacheFlatSize = getFlatSize(subCache);
 
             if (index <= subCacheIndex) {
                 break;
             }
-            if (index <= subCacheIndex + subCache.getFlatSize()) {
+            if (index <= subCacheIndex + subCacheFlatSize) {
                 return getFlatIndexContext(subCache, index - subCacheIndex - 1);
             }
-            index -= subCache.getFlatSize();
+            index -= subCacheFlatSize;
         }
 
         if (index >= cache.getSize() || index < 0) {
@@ -109,20 +124,49 @@ class RootCache<T> extends Cache<T> {
 
     private int getFlatIndexByPath(Cache<T> cache, int... path) {
         var index = path[0];
+        var restPath = Arrays.copyOfRange(path, 1, path.length);
+
         if (index < 0) {
             index = cache.getSize() + index;
         }
 
-        var flatIndex = cache.getFlatIndex(index);
+        var flatIndex = flattenIndex(cache, index);
         var subCache = cache.getSubCache(index);
-        var restPath = Arrays.copyOfRange(path, 1, path.length);
-
-        if (subCache != null && subCache.getFlatSize() > 0
+        if (subCache != null && getFlatSize(subCache) > 0
                 && restPath.length > 0) {
             return flatIndex + 1 + getFlatIndexByPath(subCache, restPath);
         }
 
         return flatIndex;
+    }
+
+    /**
+     * Converts a local cache index into its corresponding position in the
+     * flattened list that includes all items from this cache and its
+     * descendants.
+     * <p>
+     * For example:
+     *
+     * <pre>
+     * Cache A (current cache)
+     * ├── Item 0
+     * │   └── Cache B (sub cache)
+     * │       ├── Item 0-0
+     * │       └── Item 0-1
+     * └── Item 1
+     * </pre>
+     *
+     * In this example, the local index {@code 1} (referring to {@code Item 1}
+     * in Cache A) will correspond to flat index {@code 3}.
+     *
+     * @param index
+     *            the index of the item in this cache
+     * @return the flat index of the item
+     */
+    private int flattenIndex(Cache<T> cache, int index) {
+        return cache.getSubCaches().stream()
+                .filter((entry) -> entry.getKey() <= index)
+                .mapToInt((entry) -> getFlatSize(entry.getValue())).sum();
     }
 
     /**
@@ -139,13 +183,11 @@ class RootCache<T> extends Cache<T> {
         return itemIdToContext.get(itemId);
     }
 
-    void addItemContext(T item, Cache<T> cache, int index) {
-        Object itemId = getItemId(item);
-        itemIdToContext.put(itemId, new ItemContext<>(itemId, cache, index));
+    void addItemContext(Object itemId, Cache<T> cache, int index) {
+        itemIdToContext.put(itemId, new ItemContext<>(cache, index));
     }
 
-    void removeItemContext(T item) {
-        Object itemId = getItemId(item);
+    void removeItemContext(Object itemId) {
         itemIdToContext.remove(itemId);
     }
 
