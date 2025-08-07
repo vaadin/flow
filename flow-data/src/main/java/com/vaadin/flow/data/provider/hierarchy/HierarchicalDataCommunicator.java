@@ -81,10 +81,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
-    private RootCache<T> rootCache;
     private boolean pendingFlush = false;
     private Range viewportRange = Range.withLength(0, 0);
     private int nextUpdateId = 0;
+
+    // package private for testing purposes
+    RootCache<T> rootCache;
 
     /**
      * Construct a new hierarchical data communicator backed by a
