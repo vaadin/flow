@@ -492,18 +492,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (!cache.hasItem(index)) {
                 var remainingLength = length - result.size();
 
-                preloadRange(cache, index + 1 - remainingLength,
+                // NOTE: Subtracting 1 from the remaining length ensures
+                // the item at the current index is included in the range.
+                preloadRange(cache, index - (remainingLength - 1),
                         remainingLength);
             }
 
             var item = cache.getItem(index);
+
+            // Checking result.size() > 0 ensures that the start item
+            // won't be expanded and its descendants won't be included
+            // in the result.
             if (isExpanded(item) && !cache.hasSubCache(index)
                     && result.size() > 0) {
                 var subCache = cache.ensureSubCache(index,
                         () -> getDataProviderChildCount(item));
 
                 // Shift the start index to the end of the created sub-cache to
-                // continue from its last item and maintain the expected order
+                // continue from its last item and maintain the sequential order
                 // of items in the flattened list.
                 start += subCache.getSize();
                 continue;
