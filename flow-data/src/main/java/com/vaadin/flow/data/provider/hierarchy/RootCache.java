@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -73,13 +74,13 @@ class RootCache<T> extends Cache<T> {
      *
      * @param flatIndex
      *            the flat index to get the context for
-     * @return an {@link FlatIndexContext} record, or {@code null} if not found
+     * @return an {@link ItemContext} record, or {@code null} if not found
      */
-    public FlatIndexContext<T> getFlatIndexContext(int flatIndex) {
-        return getFlatIndexContext(this, flatIndex);
+    public ItemContext<T> getContextByFlatIndex(int flatIndex) {
+        return getContextByFlatIndex(this, flatIndex);
     }
 
-    private FlatIndexContext<T> getFlatIndexContext(Cache<T> cache,
+    private ItemContext<T> getContextByFlatIndex(Cache<T> cache,
             int localFlatIndex) {
         int index = localFlatIndex;
 
@@ -92,7 +93,8 @@ class RootCache<T> extends Cache<T> {
                 break;
             }
             if (index <= subCacheIndex + subCacheFlatSize) {
-                return getFlatIndexContext(subCache, index - subCacheIndex - 1);
+                return getContextByFlatIndex(subCache,
+                        index - subCacheIndex - 1);
             }
             index -= subCacheFlatSize;
         }
@@ -101,7 +103,7 @@ class RootCache<T> extends Cache<T> {
             return null;
         }
 
-        return new FlatIndexContext<>(cache, index);
+        return new ItemContext<>(cache, index);
     }
 
     /**
@@ -178,7 +180,7 @@ class RootCache<T> extends Cache<T> {
      *            the item to get the context for
      * @return an {@link ItemContext} record, or {@code null} if not found
      */
-    public ItemContext<T> getItemContext(T item) {
+    public ItemContext<T> getContextByItem(T item) {
         Object itemId = getItemId(item);
         return itemIdToContext.get(itemId);
     }
@@ -195,5 +197,16 @@ class RootCache<T> extends Cache<T> {
 
     Object getItemId(T item) {
         return itemIdProvider.apply(item);
+    }
+
+    /**
+     * A record that includes a reference to the cache that contains the item
+     * and the item's local index within that cache.
+     *
+     * @param <T>
+     *            the type of items in the cache
+     */
+    static record ItemContext<T>(Cache<T> cache,
+            int index) implements Serializable {
     }
 }

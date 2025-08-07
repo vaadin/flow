@@ -199,7 +199,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return;
         }
 
-        var itemContext = rootCache.getItemContext(item);
+        var itemContext = rootCache.getContextByItem(item);
         if (itemContext == null) {
             return;
         }
@@ -386,7 +386,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return -1;
         }
 
-        var itemContext = rootCache.getItemContext(item);
+        var itemContext = rootCache.getContextByItem(item);
         if (itemContext == null) {
             return -1;
         }
@@ -480,7 +480,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         LinkedList<T> result = new LinkedList<>();
         while (result.size() < length) {
-            var context = rootCache.getFlatIndexContext(start);
+            var context = rootCache.getContextByFlatIndex(start);
             if (context == null) {
                 break;
             }
@@ -531,7 +531,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         LinkedList<T> result = new LinkedList<>();
         while (result.size() < length) {
-            var context = rootCache.getFlatIndexContext(start);
+            var context = rootCache.getContextByFlatIndex(start);
             if (context == null) {
                 break;
             }
@@ -613,7 +613,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             rootCache = new RootCache<>(getDataProviderChildCount(null),
                     getDataProvider()::getId) {
                 @Override
-                protected void removeItemContext(T item) {
+                void removeItemContext(T item) {
                     super.removeItemContext(item);
 
                     getKeyMapper().remove(item);
