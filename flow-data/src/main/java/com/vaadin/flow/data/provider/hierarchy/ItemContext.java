@@ -18,8 +18,8 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.io.Serializable;
 
 /**
- * A record that contains the item ID, the cache holding the item, and the
- * item's local index within that cache.
+ * A record that includes a reference to the cache that contains the item, and
+ * the item's local index within that cache.
  * <p>
  * WARNING: This record is intended for internal use only and may change at any
  * time without notice. It is not part of the public API and should not be used
@@ -28,6 +28,5 @@ import java.io.Serializable;
  * @param <T>
  *            the type of items in the cache
  */
-final record ItemContext<T>(Object id, Cache<T> cache,
-        int index) implements Serializable {
+final record ItemContext<T>(Cache<T> cache, int index) implements Serializable {
 }

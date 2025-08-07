@@ -104,17 +104,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets the total size of this cache, including all descendant caches.
-     *
-     * @return the total number of items in this cache and all its descendant
-     */
-    public int getFlatSize() {
-        return size + indexToCache.values().stream()
-                .mapToInt(Cache::getFlatSize).sum();
-    }
-
-    /**
-     * Checks if this cache contains an item at the specified local index.
+     * Checks if this cache contains an item at the specified index.
      *
      * @param index
      *            the index to check
@@ -125,7 +115,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets the item at the specified local index in this cache.
+     * Gets the item at the specified index in this cache.
      *
      * @param index
      *            the index of the item to retrieve
@@ -149,7 +139,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Sets the items in this cache starting from the specified local index.
+     * Sets the items in this cache starting from the specified index.
      *
      * @param startIndex
      *            the index to start setting items
@@ -157,15 +147,15 @@ class Cache<T> implements Serializable {
      *            the list of items to set
      */
     public void setItems(int startIndex, List<T> items) {
-        for (int i = 0; i < items.size(); i++) {
-            var item = items.get(i);
+        var index = startIndex;
+        for (T item : items) {
             var itemId = rootCache.getItemId(item);
-            var index = startIndex + i;
 
             indexToItemId.put(index, itemId);
             itemIdToItem.put(itemId, item);
+            rootCache.addItemContext(itemId, this, index);
 
-            rootCache.addItemContext(item, this, index);
+            index++;
         }
     }
 
@@ -173,22 +163,17 @@ class Cache<T> implements Serializable {
      * Removes all items and sub-caches from this cache.
      */
     public void clear() {
-        indexToCache.values().forEach((cache) -> {
-            cache.clear();
-        });
-
-        indexToItemId.values().forEach((itemId) -> {
-            T item = itemIdToItem.get(itemId);
-            rootCache.removeItemContext(item);
-        });
-
+        indexToCache.values().forEach(Cache::clear);
         indexToCache.clear();
+
+        indexToItemId.values().forEach(rootCache::removeItemContext);
         indexToItemId.clear();
+
         itemIdToItem.clear();
     }
 
     /**
-     * Checks if this cache has a sub-cache at the specified local index.
+     * Checks if this cache has a sub-cache at the specified index.
      *
      * @param index
      *            the index to check
@@ -199,7 +184,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Gets the sub-cache at the specified local index.
+     * Gets the sub-cache at the specified index.
      *
      * @param index
      *            the index to check
@@ -221,9 +206,9 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Returns a sub-cache at the specified local index or creates a new one if
-     * it does not exist. The new sub-cache is initialized with the size
-     * provided by the given supplier.
+     * Returns a sub-cache at the specified index or creates a new one if it
+     * does not exist. The new sub-cache is initialized with the size provided
+     * by the given supplier.
      *
      * @param index
      *            the index of the new sub-cache
@@ -253,35 +238,5 @@ class Cache<T> implements Serializable {
             cache.removeDescendantCacheIf(predicate);
             return false;
         });
-    }
-
-    /**
-     * Maps a local cache index to its corresponding position in the flattened
-     * list that includes all items from this cache and its descendants.
-     * <p>
-     * For example:
-     *
-     * <pre>
-     * Cache A (current cache)
-     * ├── Item 0
-     * │   └── Cache B (sub cache)
-     * │       ├── Item 0-0
-     * │       └── Item 0-1
-     * └── Item 1
-     * </pre>
-     *
-     * In this example, the local index {@code 1} (referring to {@code Item 1}
-     * in Cache A) will correspond to flat index {@code 3}.
-     *
-     * @param index
-     *            the index of the item in this cache
-     * @return the flat index of the item
-     */
-    public int getFlatIndex(int index) {
-        return indexToCache.entrySet().stream().reduce(index, (prev, entry) -> {
-            var subCacheIndex = entry.getKey();
-            var subCache = entry.getValue();
-            return index > subCacheIndex ? prev + subCache.getFlatSize() : prev;
-        }, Integer::sum);
     }
 }
