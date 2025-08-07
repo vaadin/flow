@@ -581,7 +581,9 @@ abstract class AbstractUpdateImports implements Runnable {
             String translatedModulePath = originalModulePath;
             String localModulePath = null;
             if (theme != null
-                    && translatedModulePath.contains(theme.getBaseUrl())) {
+                    && (originalModulePath.startsWith(theme.getBaseUrl())
+                            || originalModulePath
+                                    .startsWith("./" + theme.getBaseUrl()))) {
                 translatedModulePath = theme.translateUrl(translatedModulePath);
                 localModulePath = themeToLocalPathConverter
                         .apply(translatedModulePath);
@@ -896,8 +898,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         File file = getImportedFrontendFile(resolvedPath);
                         if (file == null && !importedPath.startsWith("./")) {
                             // In case such file doesn't exist it may be
-                            // external: inside
-                            // node_modules folder
+                            // external: inside node_modules folder
                             file = getFile(options.getNodeModulesFolder(),
                                     importedPath);
                             if (!file.exists()) {
@@ -916,13 +917,17 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 
         for (String resolvedPath : resolvedPaths) {
-            if (resolvedPath.contains(theme.getBaseUrl())) {
+            if (resolvedPath.startsWith(theme.getBaseUrl())
+                    || resolvedPath.startsWith("./" + theme.getBaseUrl())) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
                         && importedFileExists(translatedPath)) {
                     visitedImports.add(translatedPath);
                     imports.add(normalizeImportPath(translatedPath));
                 }
+            } else {
+                visitedImports.add(resolvedPath);
+                imports.add(normalizeImportPath(resolvedPath));
             }
             handleImports(resolvedPath, theme, imports, visitedImports);
         }

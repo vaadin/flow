@@ -155,17 +155,17 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/client-side-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"),
-                CoreMatchers.containsString(
-                        "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/main-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/client-side-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import '@vaadin/vaadin-button/src/vaadin-button.js';"));
+        MatcherAssert.assertThat(content,
                 CoreMatchers.not(CoreMatchers.containsString(
-                        "import 'theme/myTheme/wrong-themed-template.js';"))));
+                        "import 'theme/myTheme/wrong-themed-template.js';")));
     }
 
     @Test
@@ -176,7 +176,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
         int count = StringUtils.countMatches(content,
-                "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
+                "import '@vaadin/vaadin-button/src/vaadin-button.js';");
         Assert.assertEquals(
                 "Import entries in the imports file should be unique.", 1,
                 count);
