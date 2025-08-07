@@ -78,7 +78,8 @@ const themeOptions = {
   projectStaticAssetsOutputFolder: devBundle
     ? path.resolve(devBundleFolder, '../assets')
     : path.resolve(__dirname, settings.staticOutput),
-  frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
+  frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder),
+  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput)
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
