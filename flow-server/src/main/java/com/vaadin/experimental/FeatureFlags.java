@@ -97,6 +97,10 @@ public class FeatureFlags implements Serializable {
             "defaultAutoResponsiveFormLayout",
             "https://github.com/vaadin/platform/issues/7172", true, null);
 
+    public static final Feature COMPONENT_STYLE_INJECTION = new Feature(
+            "Enable theme component style injection", "themeComponentStyles",
+            "https://github.com/vaadin/flow/issues/21608", true, null);
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
@@ -127,6 +131,7 @@ public class FeatureFlags implements Serializable {
         features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
         features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
         features.add(new Feature(DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT));
+        features.add(new Feature(COMPONENT_STYLE_INJECTION));
         loadProperties();
     }
 

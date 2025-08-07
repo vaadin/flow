@@ -37,6 +37,7 @@ public class ThemeIT extends ViteDevModeIT {
         Assert.assertEquals("rgb(173, 216, 230)", fieldBackground);
     }
 
+    // Feature flag should not override theme.json setting
     @Test
     public void autoInjectComponentsIsFalse_cssNotImported() {
         String fieldBorder = (String) executeScript(
