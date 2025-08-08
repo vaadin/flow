@@ -125,11 +125,12 @@ class RootCache<T> extends Cache<T> {
     }
 
     private int getFlatIndexByPath(Cache<T> cache, int... path) {
-        var index = path[0];
         var restPath = Arrays.copyOfRange(path, 1, path.length);
 
+        var index = Math.min(path[0], cache.getSize() - 1);
         if (index < 0) {
-            index = cache.getSize() + index;
+            // Negative index means counting from the end
+            index = Math.max(cache.getSize() + index, 0);
         }
 
         var flatIndex = flattenIndex(cache, index);
@@ -166,9 +167,11 @@ class RootCache<T> extends Cache<T> {
      * @return the flat index of the item
      */
     private int flattenIndex(Cache<T> cache, int index) {
-        return cache.getSubCaches().stream()
-                .filter((entry) -> entry.getKey() <= index)
-                .mapToInt((entry) -> getFlatSize(entry.getValue())).sum();
+        return cache.getSubCaches().stream().reduce(index, (prev, entry) -> {
+            var subCacheIndex = entry.getKey();
+            var subCache = entry.getValue();
+            return index > subCacheIndex ? prev + getFlatSize(subCache) : prev;
+        }, Integer::sum);
     }
 
     /**

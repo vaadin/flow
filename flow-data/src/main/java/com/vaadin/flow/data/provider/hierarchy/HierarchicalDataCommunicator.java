@@ -424,12 +424,12 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     private void resolveIndexPath(Cache<T> cache, int... path) {
-        var index = path[0];
         var restPath = Arrays.copyOfRange(path, 1, path.length);
 
+        var index = Math.min(path[0], cache.getSize() - 1);
         if (index < 0) {
             // Negative index means counting from the end
-            index = cache.getSize() + index;
+            index = Math.max(cache.getSize() + index, 0);
         }
 
         if (!cache.hasItem(index)) {
