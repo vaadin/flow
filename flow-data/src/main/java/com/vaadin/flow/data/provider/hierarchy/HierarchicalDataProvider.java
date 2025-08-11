@@ -27,7 +27,9 @@ import com.vaadin.flow.function.SerializableFunction;
 
 /**
  * A common interface for fetching hierarchical data from a data source, such as
- * an in-memory collection or a backend database.
+ * an in-memory collection or a backend database. It supports two hierarchy
+ * formats: {@link HierarchyFormat#NESTED} and
+ * {@link HierarchyFormat#FLATTENED}.
  *
  * @author Vaadin Ltd
  *
@@ -38,16 +40,210 @@ import com.vaadin.flow.function.SerializableFunction;
  * @since 1.2
  */
 public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
+    public enum HierarchyFormat {
+        /**
+         * The nested hierarchy format refers to a data provider implementation
+         * in which each expanded parent's children are fetched via a separate
+         * request, on demand:
+         *
+         * <pre>
+         * └── Item 0               | Fetched in 1st request
+         *     └── Item 0-0         | Fetched in 2nd request
+         *         └── Item 0-0-0   | Fetched in 3rd request
+         * └── Item 1               | Fetched in 1st request
+         * </pre>
+         *
+         * Each request to the data provider returns a paginated list containing
+         * only the direct children of the {@link HierarchicalQuery#getParent()
+         * requested parent}. The component decides when to request deeper
+         * levels and how much to load based on the current viewport and the
+         * expansion state of items, storing the loaded hierarchy state in
+         * memory.
+         * <p>
+         * Example:
+         *
+         * <pre>
+         * class MyDataProvider
+         *         implements HierarchicalDataProvider<String, Void> {
+         *     private HashMap<String, List<String>> data = new HashMap<>() {
+         *         {
+         *             put(null, List.of("Item 0", "Item 1"));
+         *             put("Item 0", List.of("Item 0-0"));
+         *             put("Item 0-0", List.of("Item 0-0-0"));
+         *         }
+         *     };
+         *
+         *     &#64;Override
+         *     public HierarchyFormat getHierarchyFormat() {
+         *         return HierarchyFormat.NESTED;
+         *     }
+         *
+         *     &#64;Override
+         *     public Stream<String> fetchChildren(
+         *             HierarchicalQuery<String, Void> query) {
+         *         return data.get(query.getParent()).stream()
+         *                 .skip(query.getOffset()).limit(query.getLimit());
+         *     }
+         *
+         *     &#64;Override
+         *     public int getChildCount(HierarchicalQuery<String, Void> query) {
+         *         return data.get(query.getParent()).size();
+         *     }
+         * }
+         * </pre>
+         *
+         * Pros:
+         * <ul>
+         * <li>Simple and fast data queries by avoiding hierarchy construction –
+         * each request fetches only the direct children, which are then cached
+         * hierarchically.
+         * </ul>
+         *
+         * Cons:
+         * <ul>
+         * <li>The full size and structure of the tree remains unknown without
+         * recursively fetching the entire hierarchy, which is impractical due
+         * to potentially a lot of consecutive requests and heavy memory usage.
+         * As a result, the scroll position cannot be restored automatically
+         * after using {@link HierarchicalDataProvider#refreshAll()} which
+         * resets the cached hierarchy state.
+         * <li>The scroll container size updates dynamically while the user
+         * scrolls, which can cause them to jump over and miss some levels when
+         * scrolling quickly.
+         * </ul>
+         */
+        NESTED,
+
+        /**
+         * The flattened hierarchy format refers to a data provider
+         * implementation that returns the entire subtree of the
+         * {@link HierarchicalQuery#getParent() requested parent} in a single,
+         * flattened, paginated list:
+         *
+         * <pre>
+         * └── Item 0
+         * └── Item 0-0
+         * └── Item 0-0-0
+         * └── Item 1
+         * </pre>
+         *
+         * The list contains all expanded descendants, arranged in depth-first
+         * order: starting from the parent, then its children and their
+         * descendants, before the next sibling. The component delegates
+         * hierarchy construction entirely to the data provider by supplying a
+         * {@link HierarchicalQuery} where:
+         * <ul>
+         * <li>{@link HierarchicalQuery#getOffset()} points to the start of the
+         * requested range across all flattened descendants
+         * <li>{@link HierarchicalQuery#getLimit()} specifies the number of
+         * items to return
+         * <li>{@link HierarchicalQuery#getExpandedItemIds()} contains the set
+         * of expanded item IDs
+         * </ul>
+         * The flattened format also requires the data provider to implement
+         * {@link HierarchicalDataProvider#getDepth(T)}, which the component
+         * uses to make items appear as a hierarchy by applying visual
+         * indentation.
+         * <p>
+         * Example:
+         *
+         * <pre>
+         * class MyDataProvider
+         *         implements HierarchicalDataProvider<String, Void> {
+         *     private HashMap<String, List<String>> data = new HashMap<>() {
+         *         {
+         *             put(null, List.of("Item 0", "Item 1"));
+         *             put("Item 0", List.of("Item 0-0"));
+         *             put("Item 0-0", List.of("Item 0-0-0"));
+         *         }
+         *     };
+         *
+         *     &#64;Override
+         *     public HierarchyFormat getHierarchyFormat() {
+         *         return HierarchyFormat.FLATTENED;
+         *     }
+         *
+         *     &#64;Override
+         *     public Stream<String> fetchChildren(
+         *             HierarchicalQuery<String, Void> query) {
+         *         return flatten(query.getParent(), query.getExpandedItemIds())
+         *                 .skip(query.getOffset()).limit(query.getLimit());
+         *     }
+         *
+         *     &#64;Override
+         *     public int getChildCount(HierarchicalQuery<String, Void> query) {
+         *         return flatten(query.getParent(), query.getExpandedItemIds())
+         *                 .count();
+         *     }
+         *
+         *     &#64;Override
+         *     public int getDepth(String item) {
+         *         return item.split("-").length - 1;
+         *     }
+         *
+         *     private Stream<String> flatten(String parent,
+         *             Set<Object> expandedItemIds) {
+         *         return data.getOrDefault(parent, List.of()).stream().flatMap(
+         *                 child -> expandedItemIds.contains(getId(child))
+         *                         ? Stream.concat(Stream.of(child),
+         *                                 flatten(child, expandedItemIds))
+         *                         : Stream.of(child));
+         *     }
+         * }
+         * </pre>
+         *
+         * Pros:
+         * <ul>
+         * <li>The component can fetch the total size of the tree upfront and
+         * set a fixed scroll container size that does not change while
+         * scrolling, resulting in more predictable behavior.
+         * <li>{@link #refreshAll()} avoids unexpected scroll jumps by
+         * refetching the total tree size and retaining the size of expanded
+         * items whose nested structure hasn't changed.
+         * <li>The developer has full control over how data is queried, making
+         * it possible to leverage more advanced optimizations and storage
+         * strategies at the database level.
+         * </ul>
+         *
+         * Cons:
+         * <ul>
+         * <li>Increased complexity and potentially heavier data queries due to
+         * the need for hierarchy reconstruction, which may require, for
+         * example, the use of recursive CTEs (Common Table Expressions) to
+         * retrieve all descendants of an item in a single SQL query.
+         * </ul>
+         *
+         * @since 25.0
+         */
+        FLATTENED,
+    }
 
     /**
-     * Get the number of immediate child data items for the parent item returned
-     * by a given query.
+     * Specifies the format in which the data provider returns hierarchical
+     * data. The default format is {@link HierarchyFormat#NESTED}.
+     * <p>
+     * The component uses this method to determine how to fetch and render
+     * hierarchical data with this data provider.
+     *
+     * @since 25.0
+     * @return the hierarchy format
+     */
+    default public HierarchyFormat getHierarchyFormat() {
+        return HierarchyFormat.NESTED;
+    }
+
+    /**
+     * Gets the number of children based on the given hierarchical query.
+     * <p>
+     * The behavior of this method depends on the implemented hierarchy format,
+     * see {@link #getHierarchyFormat()} and
+     * {@link #getChildCount(HierarchicalQuery)}
      *
      * @param query
      *            given query to request the count for
-     * @return the count of child data items for the data item
-     *         {@link HierarchicalQuery#getParent()}
-     *
+     * @return the count of children for the parent item
+     *         {@link HierarchicalQuery#getParent()} or the root level if
+     *         {@code null}
      * @throws IllegalArgumentException
      *             if the query is not of type HierarchicalQuery
      */
@@ -61,15 +257,17 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     }
 
     /**
-     * Fetches data from this HierarchicalDataProvider using given
-     * {@code query}. Only the immediate children of
-     * {@link HierarchicalQuery#getParent()} will be returned. The returned
-     * stream must not contain null values.
+     * Fetches children based on the given hierarchical query.
+     * <p>
+     * The behavior of this method depends on the implemented hierarchy format,
+     * see {@link #getHierarchyFormat()} and
+     * {@link #fetchChildren(HierarchicalQuery)}
      *
      * @param query
      *            given query to request data with
-     * @return a stream of data objects resulting from the query
-     *
+     * @return a stream of data objects for the
+     *         {@link HierarchicalQuery#getParent() parent item} or the root
+     *         level if the parent is {@code null}, must not contain null values
      * @throws IllegalArgumentException
      *             if the query is not of type HierarchicalQuery
      */
@@ -83,25 +281,29 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     }
 
     /**
-     * Get the number of immediate child data items for the parent item returned
-     * by a given query.
+     * Gets the number of children based on the given hierarchical query.
+     * <p>
+     * This method must be implemented in accordance with the selected hierarchy
+     * type, see {@link #getHierarchyFormat()} and {@link HierarchyFormat}.
      *
      * @param query
      *            given query to request the count for
-     * @return the count of child data items for the data item
-     *         {@link HierarchicalQuery#getParent()}
+     * @return the count of children for the parent item or the root level if
+     *         the parent is {@code null}
      */
     public int getChildCount(HierarchicalQuery<T, F> query);
 
     /**
-     * Fetches data from this HierarchicalDataProvider using given
-     * {@code query}. Only the immediate children of
-     * {@link HierarchicalQuery#getParent()} will be returned. The returned
-     * stream must not contain null values.
+     * Fetches children based on the given hierarchical query.
+     * <p>
+     * This method must be implemented in accordance with the selected hierarchy
+     * type, see {@link #getHierarchyFormat()} and {@link HierarchyFormat}.
      *
      * @param query
      *            given query to request data with
-     * @return a stream of data objects resulting from the query
+     * @return a stream of data objects for the
+     *         {@link HierarchicalQuery#getParent() parent item} or the root
+     *         level if the parent is {@code null}, must not contain null values
      */
     public Stream<T> fetchChildren(HierarchicalQuery<T, F> query);
 
@@ -113,6 +315,33 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @return whether the given item has children
      */
     public boolean hasChildren(T item);
+
+    /**
+     * Gets the depth of a given item in the hierarchy, starting from zero
+     * (root).
+     * <p>
+     * This method must be implemented for data providers that implement the
+     * flattened hierarchy format, see {@link #getHierarchyFormat()} and
+     * {@link HierarchyFormat#FLATTENED}.
+     *
+     * @param item
+     *            the item to get the depth for
+     * @return the depth of the item in the hierarchy
+     * @throws UnsupportedOperationException
+     *             if not implemented
+     */
+    default public int getDepth(T item) {
+        if (HierarchyFormat.FLATTENED.equals(getHierarchyFormat())) {
+            throw new UnsupportedOperationException(
+                    """
+                            The getDepth method must be implemented when getHierarchyFormat() \
+                            is configured as HierarchyFormat#FLATTENED
+                            """);
+        }
+
+        throw new UnsupportedOperationException(
+                "The getDepth method is not implemented for this data provider");
+    }
 
     @SuppressWarnings("serial")
     @Override
