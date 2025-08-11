@@ -10,7 +10,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
-import com.vaadin.flow.dom.Element;
 
 import elemental.json.JsonObject;
 
@@ -28,11 +27,9 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     public void init() {
         super.init();
 
-        Element element = new Element("div");
-
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 compositeDataGenerator, arrayUpdater, (items) -> {
-                }, element.getNode(), () -> null);
+                }, ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         keyMapper = dataCommunicator.getKeyMapper();
@@ -41,8 +38,6 @@ public class HierarchicalDataCommunicatorDataRefreshTest
             json.put("name", item.getName());
             json.put("state", item.getState());
         });
-
-        ui.getElement().appendChild(element);
     }
 
     @Test

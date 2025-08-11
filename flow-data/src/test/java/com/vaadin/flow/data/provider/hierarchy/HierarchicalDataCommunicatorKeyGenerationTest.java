@@ -7,7 +7,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.ValueProvider;
 
 public class HierarchicalDataCommunicatorKeyGenerationTest
@@ -25,16 +24,12 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
     public void init() {
         super.init();
 
-        Element element = new Element("div");
-
         dataCommunicator = new HierarchicalDataCommunicator<>(dataGenerator,
                 arrayUpdater, (items) -> {
-                }, element.getNode(), () -> uniqueKeyProvider);
+                }, ui.getElement().getNode(), () -> uniqueKeyProvider);
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         keyMapper = dataCommunicator.getKeyMapper();
-
-        ui.getElement().appendChild(element);
     }
 
     @Test

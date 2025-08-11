@@ -368,10 +368,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @return {@code true} if item is expanded; {@code false} if not
      */
     public boolean isExpanded(T item) {
-        if (item == null) {
-            // Root nodes are always visible.
-            return true;
-        }
+        Objects.requireNonNull(item, "Item cannot be null");
         return expandedItemIds.contains(getDataProvider().getId(item));
     }
 
@@ -384,6 +381,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *         the cache
      */
     public int getDepth(T item) {
+        Objects.requireNonNull(item, "Item cannot be null");
+
         if (rootCache == null) {
             return -1;
         }
@@ -435,13 +434,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (!cache.hasItem(index)) {
             // If the item is not found, load it from the data provider.
             preloadRange(cache, index, 1);
-        }
-
-        if (!cache.hasItem(index)) {
-            // If the item is still not found, it means the path is invalid
-            // or the item does not exist in the data provider, so stop
-            // traversing further.
-            return;
         }
 
         var item = cache.getItem(index);
@@ -605,15 +597,25 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 getBackEndSorting(), getInMemorySorting(), getFilter(), parent);
 
         return ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                .fetchChildren(query);
+                .fetchChildren(query).peek((item) -> {
+                    if (item == null) {
+                        throw new IllegalStateException(
+                                "Data provider returned a null item. Null values are not supported");
+                    }
+                });
     }
 
     @SuppressWarnings("unchecked")
     private int getDataProviderChildCount(T parent) {
         var query = new HierarchicalQuery<>(getFilter(), parent);
 
-        return ((HierarchicalDataProvider<T, Object>) getDataProvider())
+        var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
                 .getChildCount(query);
+        if (count < 0) {
+            throw new IllegalStateException(
+                    "Data provider returned a negative child count. Negative values are not supported");
+        }
+        return count;
     }
 
     private RootCache<T> ensureRootCache() {

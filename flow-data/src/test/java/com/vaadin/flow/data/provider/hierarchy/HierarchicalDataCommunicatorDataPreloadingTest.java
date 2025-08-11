@@ -9,7 +9,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
-import com.vaadin.flow.dom.Element;
 
 public class HierarchicalDataCommunicatorDataPreloadingTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -19,18 +18,14 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
     public void init() {
         super.init();
 
-        Element element = new Element("div");
-
         var treeData = new TreeData<Item>();
         populateTreeData(treeData, 20, 2, 2);
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 new CompositeDataGenerator<Item>(), arrayUpdater, (items) -> {
-                }, element.getNode(), () -> null);
+                }, ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
-
-        ui.getElement().appendChild(element);
     }
 
     @Test

@@ -1,6 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -28,11 +29,15 @@ public class HierarchicalDataCommunicatorBasicTest
     public void init() {
         super.init();
 
-        Element element = new Element("div");
+        var element = new Element("div");
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 compositeDataGenerator, arrayUpdater, (items) -> {
                 }, element.getNode(), () -> null);
+
+        compositeDataGenerator.addDataGenerator((item, json) -> {
+            json.put("name", item.getName());
+        });
 
         ui.getElement().appendChild(element);
     }
@@ -107,6 +112,61 @@ public class HierarchicalDataCommunicatorBasicTest
     }
 
     @Test
+    public void setDataProviderWithNullItems_setViewport_throws() {
+        dataCommunicator.setDataProvider(
+                new AbstractBackEndHierarchicalDataProvider<Item, Void>() {
+                    @Override
+                    public Stream<Item> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<Item, Void> query) {
+                        return Stream.of(null, null, null);
+                    }
+
+                    @Override
+                    public int getChildCount(
+                            HierarchicalQuery<Item, Void> query) {
+                        return 3;
+                    }
+
+                    @Override
+                    public boolean hasChildren(Item item) {
+                        return false;
+                    }
+                }, null);
+        dataCommunicator.setViewportRange(0, 3);
+
+        Assert.assertThrows(IllegalStateException.class,
+                () -> fakeClientCommunication());
+    }
+
+    @Test
+    public void setDataProviderWithNegativeChildCount_setViewport_throws() {
+        dataCommunicator.setDataProvider(
+                new AbstractBackEndHierarchicalDataProvider<Item, Void>() {
+                    @Override
+                    public Stream<Item> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<Item, Void> query) {
+                        return Stream.of(new Item("Item 0"), new Item("Item 1"),
+                                new Item("Item 2"));
+                    }
+
+                    @Override
+                    public int getChildCount(
+                            HierarchicalQuery<Item, Void> query) {
+                        return -3;
+                    }
+
+                    @Override
+                    public boolean hasChildren(Item item) {
+                        return false;
+                    }
+                }, null);
+        dataCommunicator.setViewportRange(0, 3);
+
+        Assert.assertThrows(IllegalStateException.class,
+                () -> fakeClientCommunication());
+    }
+
+    @Test
     public void getDepth_returnsDepthForCachedItemsAfterTheyAreLoaded() {
         populateTreeData(treeData, 100, 1, 1);
         dataCommunicator.setDataProvider(treeDataProvider, null);
@@ -120,8 +180,6 @@ public class HierarchicalDataCommunicatorBasicTest
         Assert.assertEquals(-1,
                 dataCommunicator.getDepth(new Item("Item 0-0-0")));
         Assert.assertEquals(-1, dataCommunicator.getDepth(new Item("Item 1")));
-        Assert.assertEquals(-1,
-                dataCommunicator.getDepth(new Item("NOT EXISTING")));
 
         fakeClientCommunication();
 
@@ -130,14 +188,23 @@ public class HierarchicalDataCommunicatorBasicTest
         Assert.assertEquals(2,
                 dataCommunicator.getDepth(new Item("Item 0-0-0")));
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 1")));
-        Assert.assertEquals(-1,
-                dataCommunicator.getDepth(new Item("NOT EXISTING")));
 
         dataCommunicator.setViewportRange(4, 4);
         fakeClientCommunication();
 
         Assert.assertEquals(1, dataCommunicator.getDepth(new Item("Item 0-0")));
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 5")));
+    }
+
+    @Test
+    public void getDepth_doesNotReturnDepthForNonExistingItems() {
+        populateTreeData(treeData, 100, 1, 1);
+        dataCommunicator.setDataProvider(treeDataProvider, null);
+        dataCommunicator.setViewportRange(0, 4);
+        fakeClientCommunication();
+
+        Assert.assertEquals(-1,
+                dataCommunicator.getDepth(new Item("NOT EXISTING")));
     }
 
     @Test
@@ -227,5 +294,19 @@ public class HierarchicalDataCommunicatorBasicTest
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-1"));
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-0"));
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-1"));
+    }
+
+    @Test
+    public void setInitialFilter_filterApplied() {
+        populateTreeData(treeData, 3, 2, 1);
+        dataCommunicator.setDataProvider(treeDataProvider,
+                (item) -> item.equals(new Item("Item 1"))
+                        || item.equals(new Item("Item 1-1")));
+        dataCommunicator.expand(new Item("Item 1"));
+        dataCommunicator.setViewportRange(0, 10);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(2);
+        assertArrayUpdateItems("name", "Item 1", "Item 1-1");
     }
 }

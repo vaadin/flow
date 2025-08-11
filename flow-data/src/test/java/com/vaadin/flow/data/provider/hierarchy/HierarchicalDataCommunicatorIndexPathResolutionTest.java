@@ -7,7 +7,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
-import com.vaadin.flow.dom.Element;
 
 public class HierarchicalDataCommunicatorIndexPathResolutionTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -20,15 +19,11 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         var treeData = new TreeData<Item>();
         populateTreeData(treeData, 3, 2, 1);
 
-        var element = new Element("div");
-
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 new CompositeDataGenerator<Item>(), arrayUpdater, (items) -> {
-                }, element.getNode(), () -> null);
+                }, ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
-
-        ui.getElement().appendChild(element);
     }
 
     @Test

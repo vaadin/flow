@@ -22,8 +22,6 @@ public class HierarchicalDataCommunicatorViewportTest
     public void init() {
         super.init();
 
-        Element element = new Element("div");
-
         var compositeDataGenerator = new CompositeDataGenerator<Item>();
         compositeDataGenerator.addDataGenerator((item, json) -> {
             json.put("name", item.getName());
@@ -31,10 +29,8 @@ public class HierarchicalDataCommunicatorViewportTest
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
                 compositeDataGenerator, arrayUpdater, (items) -> {
-                }, element.getNode(), () -> null);
+                }, ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(treeDataProvider, null);
-
-        ui.getElement().appendChild(element);
     }
 
     @Test
