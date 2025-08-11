@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataCommunicator;
-import com.vaadin.flow.dom.Element;
 
 public class HierarchicalDataCommunicatorViewportTest
         extends AbstractHierarchicalDataCommunicatorTest {

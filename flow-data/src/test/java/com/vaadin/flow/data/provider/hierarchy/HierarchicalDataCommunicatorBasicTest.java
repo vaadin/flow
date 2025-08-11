@@ -1,6 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 import org.junit.Assert;
@@ -297,7 +298,7 @@ public class HierarchicalDataCommunicatorBasicTest
     }
 
     @Test
-    public void setInitialFilter_filterApplied() {
+    public void setFilterViaDataProvider_filterApplied() {
         populateTreeData(treeData, 3, 2, 1);
         dataCommunicator.setDataProvider(treeDataProvider,
                 (item) -> item.equals(new Item("Item 1"))
@@ -308,5 +309,53 @@ public class HierarchicalDataCommunicatorBasicTest
 
         assertArrayUpdateSize(2);
         assertArrayUpdateItems("name", "Item 1", "Item 1-1");
+    }
+
+    @Test
+    public void setFilterViaCallback_filterApplied() {
+        populateTreeData(treeData, 3, 2, 1);
+        var filterCallback = dataCommunicator.setDataProvider(treeDataProvider,
+                null);
+        dataCommunicator.expand(new Item("Item 1"));
+        dataCommunicator.setViewportRange(0, 10);
+
+        filterCallback.accept(item -> item.equals(new Item("Item 1"))
+                || item.equals(new Item("Item 1-1")));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(2);
+        assertArrayUpdateItems("name", "Item 1", "Item 1-1");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        filterCallback.accept(item -> item.equals(new Item("Item 0")));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(1);
+        assertArrayUpdateItems("name", "Item 0");
+    }
+
+    @Test
+    public void setInMemorySorting_sortingApplied() {
+        populateTreeData(treeData, 3, 2, 1);
+        dataCommunicator.setDataProvider(treeDataProvider, null);
+        dataCommunicator.expand(new Item("Item 1"));
+        dataCommunicator.setViewportRange(0, 10);
+        dataCommunicator.setInMemorySorting((item0, item1) -> Comparator
+                .comparing(Item::getName).reversed().compare(item0, item1));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(5);
+        assertArrayUpdateItems("name", "Item 2", "Item 1", "Item 1-1",
+                "Item 1-0", "Item 0");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setInMemorySorting((item0, item1) -> Comparator
+                .comparing(Item::getName).compare(item0, item1));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(5);
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0", "Item 1-1", "Item 2");
     }
 }
