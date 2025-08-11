@@ -1,6 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
@@ -13,6 +14,10 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
+import com.vaadin.flow.data.provider.SortDirection;
+import com.vaadin.flow.data.provider.SortOrder;
+import com.vaadin.flow.data.provider.SortOrderBuilder;
 import com.vaadin.flow.dom.Element;
 
 import elemental.json.JsonObject;
@@ -309,6 +314,15 @@ public class HierarchicalDataCommunicatorBasicTest
 
         assertArrayUpdateSize(2);
         assertArrayUpdateItems("name", "Item 1", "Item 1-1");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setDataProvider(treeDataProvider,
+                (item) -> item.equals(new Item("Item 0")));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(1);
+        assertArrayUpdateItems("name", "Item 0");
     }
 
     @Test
@@ -341,8 +355,9 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setDataProvider(treeDataProvider, null);
         dataCommunicator.expand(new Item("Item 1"));
         dataCommunicator.setViewportRange(0, 10);
-        dataCommunicator.setInMemorySorting((item0, item1) -> Comparator
-                .comparing(Item::getName).reversed().compare(item0, item1));
+
+        dataCommunicator.setInMemorySorting(
+                Comparator.comparing(Item::getName).reversed()::compare);
         fakeClientCommunication();
 
         assertArrayUpdateSize(5);
@@ -351,11 +366,73 @@ public class HierarchicalDataCommunicatorBasicTest
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
-        dataCommunicator.setInMemorySorting((item0, item1) -> Comparator
-                .comparing(Item::getName).compare(item0, item1));
+        dataCommunicator.setInMemorySorting(null);
         fakeClientCommunication();
 
         assertArrayUpdateSize(5);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0", "Item 1-1", "Item 2");
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
+                "Item 1-1", "Item 2");
+    }
+
+    @Test
+    public void setBackendSorting_sortingApplied() {
+        populateTreeData(treeData, 3, 2, 1);
+        dataCommunicator.setDataProvider(
+                new AbstractBackEndHierarchicalDataProvider<Item, Void>() {
+                    @Override
+                    public Stream<Item> fetchChildrenFromBackEnd(
+                            HierarchicalQuery<Item, Void> query) {
+                        Comparator<Item> sortComparator = null;
+
+                        if (!query.getSortOrders().isEmpty()) {
+                            var sortOrder = query.getSortOrders().get(0);
+                            if (sortOrder.getSorted().equals("name")) {
+                                sortComparator = Comparator
+                                        .comparing(Item::getName);
+                            }
+                            if (sortOrder.getDirection()
+                                    .equals(SortDirection.DESCENDING)) {
+                                sortComparator = sortComparator.reversed();
+                            }
+                        }
+
+                        var items = treeData.getChildren(query.getParent())
+                                .stream();
+                        if (sortComparator != null) {
+                            items = items.sorted(sortComparator);
+                        }
+                        return items;
+                    }
+
+                    @Override
+                    public int getChildCount(
+                            HierarchicalQuery<Item, Void> query) {
+                        return treeData.getChildren(query.getParent()).size();
+                    }
+
+                    @Override
+                    public boolean hasChildren(Item item) {
+                        return !treeData.getChildren(item).isEmpty();
+                    }
+                }, null);
+        dataCommunicator.expand(new Item("Item 1"));
+        dataCommunicator.setViewportRange(0, 10);
+
+        dataCommunicator.setBackEndSorting(
+                new QuerySortOrderBuilder().thenDesc("name").build());
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(5);
+        assertArrayUpdateItems("name", "Item 2", "Item 1", "Item 1-1",
+                "Item 1-0", "Item 0");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setBackEndSorting(Collections.emptyList());
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(5);
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
+                "Item 1-1", "Item 2");
     }
 }
