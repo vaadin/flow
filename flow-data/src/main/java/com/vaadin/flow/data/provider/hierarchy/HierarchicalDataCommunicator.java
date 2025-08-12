@@ -399,6 +399,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return getDataProviderChildCount(null);
     }
 
+    /**
+     * Returns true if there is any expanded items.
+     *
+     * @return {@code true} if there is any expanded items.
+     */
+    public boolean hasExpandedItems() {
+        return !expandedItemIds.isEmpty();
+    }
+
     private JsonValue generateItemJson(T item) {
         JsonObject json = Json.createObject();
         json.put("key", getKeyMapper().key(item));
