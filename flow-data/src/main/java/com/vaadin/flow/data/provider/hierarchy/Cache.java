@@ -36,6 +36,8 @@ import com.vaadin.flow.function.SerializableSupplier;
  * time without notice. It is not part of the public API and should not be used
  * directly in your applications.
  *
+ * @since 25.0
+ *
  * @param <T>
  *            the type of items in the cache
  */
