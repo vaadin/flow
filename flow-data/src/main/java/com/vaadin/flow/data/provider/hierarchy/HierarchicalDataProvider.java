@@ -63,8 +63,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     /**
      * Fetches data from this HierarchicalDataProvider using given
      * {@code query}. Only the immediate children of
-     * {@link HierarchicalQuery#getParent()} will be returned. The returned
-     * stream must not contain null values.
+     * {@link HierarchicalQuery#getParent()} will be returned.
      *
      * @param query
      *            given query to request data with
@@ -96,8 +95,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     /**
      * Fetches data from this HierarchicalDataProvider using given
      * {@code query}. Only the immediate children of
-     * {@link HierarchicalQuery#getParent()} will be returned. The returned
-     * stream must not contain null values.
+     * {@link HierarchicalQuery#getParent()} will be returned.
      *
      * @param query
      *            given query to request data with
