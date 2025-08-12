@@ -186,9 +186,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Instead,
-     *             {@link #setViewportRange(int, int)} will handle all hierarchy
-     *             levels.
+     * @deprecated since 24.9 and will be removed in Vaadin 25 where
+     *             HierarchicalDataCommunicator will be refactored to handle
+     *             hierarchy management entirely on the server side and
+     *             {@link #setViewportRange(int, int)} will be the method
+     *             responsible for managing the entire viewport range, see
+     *             https://github.com/vaadin/platform/issues/7843 for more
+     *             details.
      */
     @Deprecated(since = "24.9", forRemoval = true)
     public void setParentRequestedRange(int start, int length, T parentItem) {
@@ -277,7 +281,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * @deprecated since 24.9 and will be removed in Vaadin 25.
+     * @deprecated since 24.9 and will be removed in Vaadin 25 where
+     *             HierarchicalDataCommunicator will be refactored to handle
+     *             hierarchy management entirely on the server side and
+     *             {@link #confirmUpdate(int)} will be the only method called
+     *             for confirming updates, see
+     *             https://github.com/vaadin/platform/issues/7843 for more
+     *             details.
      */
     @Deprecated(since = "24.9", forRemoval = true)
     public void confirmUpdate(int id, String parentKey) {
@@ -435,6 +445,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         super.setInMemorySorting(comparator);
     }
 
+    /**
+     * @deprecated since 24.9 and will be removed in Vaadin 25. To control the
+     *             filter from {@link HierarchicalDataCommunicator}, override
+     *             {@link #setDataProvider(HierarchicalDataProvider, Object)}
+     *             and store the returned filter consumer.
+     */
+    @Deprecated(since = "24.9", forRemoval = true)
     protected <F> void setFilter(F filter) {
         if (mapper != null) {
             mapper.setFilter(filter);
@@ -457,7 +474,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
+     * @deprecated since 24.9 and will no longer be called in Vaadin 25 where
+     *             HierarchicalDataCommunicator will be refactored to handle
+     *             hierarchy management entirely on the server side, see
+     *             https://github.com/vaadin/platform/issues/7843 for more
+     *             details.
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)
@@ -482,7 +503,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * @deprecated since 24.9 and will no longer be called in Vaadin 25.
+     * @deprecated since 24.9 and will no longer be called in Vaadin 25 where
+     *             HierarchicalDataCommunicator will be refactored to handle
+     *             hierarchy management entirely on the server side, see
+     *             https://github.com/vaadin/platform/issues/7843 for more
+     *             details.
      */
     @Override
     @Deprecated(since = "24.9", forRemoval = true)

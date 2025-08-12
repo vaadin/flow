@@ -51,7 +51,10 @@ import com.vaadin.flow.internal.Range;
  * @param <F>
  *            the filter type
  * @since 1.2
- * @deprecated since 24.9 and will be removed in Vaadin 25.
+ * @deprecated since 24.9 and will be removed in Vaadin 25 where
+ *             HierarchicalDataCommunicator will be refactored to store data in
+ *             a hierarchical cache structure instead, see
+ *             https://github.com/vaadin/platform/issues/7843 for more details.
  */
 @Deprecated(since = "24.9", forRemoval = true)
 public class HierarchyMapper<T, F> implements Serializable {
