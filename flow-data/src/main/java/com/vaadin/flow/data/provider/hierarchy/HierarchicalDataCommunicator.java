@@ -186,6 +186,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * flattened hierarchy size and result in the viewport range pointing to a
      * different set of items than before the refresh.
      *
+     * @since 25.0
      * @param item
      *            the item to refresh
      * @param refreshChildren
@@ -420,6 +421,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * cache, starting from the root level, and returns the flat index of the
      * target item.
      *
+     * @since 25.0
      * @param path
      *            the hierarchical path to the item, where each element
      *            represents the index within its respective level
@@ -472,6 +474,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * the flat list, so it may need to be recalculated if it's used after this
      * method call.
      *
+     * @since 25.0
      * @param start
      *            the start index of the range to preload
      * @param length
@@ -529,6 +532,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * {@code start} index and continuing toward higher indexes until the
      * specified {@code length} is reached.
      *
+     * @since 25.0
      * @param start
      *            the start index of the range to preload
      * @param length
