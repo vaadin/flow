@@ -393,11 +393,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void cssFileNotFound_throws() {
+    public void cssFileNotFound_loggerReports() {
         assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
-        exception.expect(IllegalStateException.class);
         updater.run();
+        String output = logger.getLogs();
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+                "Failed to find the following css files in the `node_modules`"));
+        MatcherAssert.assertThat(output, CoreMatchers
+                .containsString("@vaadin/vaadin-mixed-component/bar.css"));
     }
 
     @Test
