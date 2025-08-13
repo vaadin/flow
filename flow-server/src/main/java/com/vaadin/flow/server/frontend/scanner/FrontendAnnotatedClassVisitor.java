@@ -334,8 +334,6 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            // System.out.println("array " + name + " repeatable " +
-            // isRepeatableContainer);
             if (isRepeatableContainer && !"assets".equals(name)) {
                 // For repeatable container annotations, skip array values
                 // but use this instance for visiting items
@@ -351,7 +349,6 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         // Visited on each annotation attribute
         @Override
         public void visit(String name, Object value) {
-            System.out.println(name + ": " + value);
             info.put(name, value);
         }
 

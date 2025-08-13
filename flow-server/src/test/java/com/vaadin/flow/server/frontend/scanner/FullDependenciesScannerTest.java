@@ -176,8 +176,9 @@ public class FullDependenciesScannerTest {
         Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
                 "2.2.10");
+        Assert.assertEquals(packages.get("images"), "1.1.1");
 
-        Assert.assertEquals(4, packages.size());
+        Assert.assertEquals(5, packages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(
@@ -204,10 +205,11 @@ public class FullDependenciesScannerTest {
         Assert.assertEquals(packages.get("@foo/var-component"), "1.1.0");
         Assert.assertEquals(packages.get("@webcomponents/webcomponentsjs"),
                 "2.2.10");
+        Assert.assertEquals(packages.get("images"), "1.1.1");
 
         Assert.assertEquals(devPackages.get("vite-plugin-pwa"), "0.16.5");
 
-        Assert.assertEquals(4, packages.size());
+        Assert.assertEquals(5, packages.size());
         Assert.assertEquals(1, devPackages.size());
 
         Set<String> visitedClasses = scanner.getClasses();
@@ -385,7 +387,7 @@ public class FullDependenciesScannerTest {
         Assert.assertEquals(1, devAssets.get("vite-plugin-pwa").size());
 
         Assert.assertEquals("img/arrow*:img",
-                devAssets.get("@vaadin/vaadin-button").get(0));
+                assets.get("@vaadin/vaadin-button").get(0));
 
         Assert.assertEquals("frown/**:pwa",
                 devAssets.get("vite-plugin-pwa").get(0));
