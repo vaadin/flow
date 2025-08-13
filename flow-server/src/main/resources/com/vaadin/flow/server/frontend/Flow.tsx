@@ -277,6 +277,7 @@ type NavigateOpts = {
 
 type NavigateFn = (to: string, callback: boolean, opts?: NavigateOptions) => void;
 
+let navigateInProgress = false;
 /**
  * A hook providing the `navigate(path: string, opts?: NavigateOptions)` function
  * with React Router API that has more consistent history updates. Uses internal
@@ -291,6 +292,11 @@ function useQueuedNavigate(
     const [navigateQueueLength, setNavigateQueueLength] = useState(0);
 
     const dequeueNavigation = useCallback(() => {
+        if (navigateInProgress) {
+            dequeueNavigationAfterCurrentTask();
+            return;
+        }
+
         const navigateArgs = navigateQueue.shift();
         if (navigateArgs === undefined) {
             // Empty queue, do nothing.
@@ -303,6 +309,7 @@ function useQueuedNavigate(
                 waitReference.current = undefined;
             }
             navigated.current = !navigateArgs.callback;
+            navigateInProgress = true;
             navigate(navigateArgs.to, navigateArgs.opts);
             setNavigateQueueLength(navigateQueue.length);
         };
@@ -310,7 +317,7 @@ function useQueuedNavigate(
     }, [navigate, setNavigateQueueLength]);
 
     const dequeueNavigationAfterCurrentTask = useCallback(() => {
-        queueMicrotask(dequeueNavigation);
+        setTimeout(dequeueNavigation, 0);
     }, [dequeueNavigation]);
 
     const enqueueNavigation = useCallback(
@@ -499,6 +506,7 @@ function Flow() {
             if (navigated.current && !fromAnchor.current) {
                 blocker.proceed();
                 blockingPromise.resolve();
+                navigateInProgress = false;
                 return;
             }
             fromAnchor.current = false;
@@ -516,12 +524,14 @@ function Flow() {
                         prevent() {
                             blocker.reset();
                             blockingPromise.resolve();
+                            navigateInProgress = false;
                             navigated.current = false;
                         },
                         redirect,
                         continue() {
                             blocker.proceed();
                             blockingPromise.resolve();
+                            navigateInProgress = false;
                         }
                     },
                     router
@@ -545,16 +555,17 @@ function Flow() {
                         containerRef.current.serverConnected = (cancel) => {
                             if (cancel) {
                                 blocker.reset();
-                                blockingPromise.resolve();
                             } else {
                                 blocker.proceed();
-                                blockingPromise.resolve();
                             }
+                            blockingPromise.resolve();
+                            navigateInProgress = false;
                         };
                     } else {
                         // permitted navigation: proceed with the blocker
                         blocker.proceed();
                         blockingPromise.resolve();
+                        navigateInProgress = false;
                     }
                 });
             }
