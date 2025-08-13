@@ -500,8 +500,12 @@ abstract class AbstractUpdateImports implements Runnable {
                                 + "then make sure it's correctly configured (e.g. set '%s' property)",
                         FrontendUtils.PARAM_FRONTEND_DIR);
             }
-            throw new IllegalStateException(
-                    notFoundMessage(cssNotFound, prefix, suffix));
+
+            boolean needsNodeModules = options.isFrontendHotdeploy()
+                    || options.isBundleBuild();
+            if (getLogger().isInfoEnabled() && needsNodeModules) {
+                getLogger().info(notFoundMessage(cssNotFound, prefix, suffix));
+            }
         }
         return lines;
     }
