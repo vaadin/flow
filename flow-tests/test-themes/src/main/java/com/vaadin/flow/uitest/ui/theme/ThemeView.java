@@ -61,9 +61,9 @@ public class ThemeView extends Div {
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
+        // Test npm asset
         Image snowFlake = new Image(
-                "themes/app-theme/fortawesome/icons/snowflake.svg",
-                "snowflake");
+                "VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
