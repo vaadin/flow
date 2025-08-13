@@ -93,42 +93,24 @@ public class TaskCopyNpmAssetsFiles
             return;
         }
 
-        long start = System.nanoTime();
-
-        Set<String> existingFiles;
-        try {
-            existingFiles = getFilesInDirectory(staticOutput);
-        } catch (IOException e) {
-            // If we do not find the existing files, we will not delete anything
-            existingFiles = new HashSet<>();
-            log().error("Unable to list contents of the directory "
-                    + staticOutput.getAbsolutePath());
-        }
-
-        Set<String> handledFiles = new HashSet<>();
-
         if (hasAssets()) {
+            long start = System.nanoTime();
             log().info("Copying npm assets from node_modules ...");
 
             Map<String, List<String>> assets = options
                     .getFrontendDependenciesScanner().getAssets();
-            copyNpmAssets(assets, handledFiles);
+            copyNpmAssets(assets);
 
             if (!options.isProductionMode()) {
                 assets = options.getFrontendDependenciesScanner()
                         .getDevAssets();
-                copyNpmAssets(assets, handledFiles);
+                copyNpmAssets(assets);
             }
 
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Copying npm assets done. Took {} ms.", ms);
         }
 
-        existingFiles.removeAll(handledFiles);
-        existingFiles
-                .forEach(filename -> new File(staticOutput, filename).delete());
-        track(handledFiles.stream().map(relativePath -> staticOutput.toPath()
-                .resolve(relativePath).toFile()).toList());
     }
 
     private boolean hasAssets() {
@@ -137,8 +119,7 @@ public class TaskCopyNpmAssetsFiles
                         .isEmpty();
     }
 
-    private void copyNpmAssets(Map<String, List<String>> npmAssets,
-            Set<String> handledFiles) {
+    private void copyNpmAssets(Map<String, List<String>> npmAssets) {
         npmAssets.forEach((npmModule, npmAssetList) -> {
             npmAssetList.forEach(npmAsset -> {
                 if (npmAsset.isBlank()) {
@@ -163,7 +144,6 @@ public class TaskCopyNpmAssetsFiles
                             file.getAbsolutePath(), destFile.getAbsolutePath());
                     try {
                         FileUtils.copyFile(file, destFile);
-                        handledFiles.add(destFile.getAbsolutePath());
                     } catch (IOException e) {
                         throw new UncheckedIOException(String.format(
                                 "Failed to copy project frontend resources from '%s' to '%s'",

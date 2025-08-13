@@ -235,7 +235,8 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
         visitClass(annotationName,
                 new DefaultsAnnotationClassVisitor(api, defaults));
 
-        getLogger().debug("Default values for {}: {}", annotationName, defaults);
+        getLogger().debug("Default values for {}: {}", annotationName,
+                defaults);
 
         return defaults;
     }
