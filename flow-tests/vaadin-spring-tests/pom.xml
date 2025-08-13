@@ -296,7 +296,6 @@
             <modules>
                 <module>test-spring-helpers</module>
                 <module>test-spring-common</module>
-                <module>test-spring-security-flow</module>
             </modules>
         </profile>
 
