@@ -66,6 +66,34 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void getDynamicDownloadHandlerFileResourceUnicodeName()
+            throws IOException {
+        open();
+
+        WebElement link = findElement(By.id("download-handler-file-unicode"));
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
+                link.getAttribute("router-ignore"));
+        String url = link.getAttribute("href");
+
+        getDriver().manage().timeouts()
+                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
+
+        try (InputStream stream = download(url)) {
+            List<String> lines = IOUtils.readLines(stream,
+                    StandardCharsets.UTF_8);
+            Assert.assertEquals("""
+                    {
+                      "download": true
+                    }""", String.join("\n", lines));
+        }
+        // Special characters in the file name in URL are encoded.
+        Assert.assertEquals(
+                "download-%C5%98%C5%99%C3%BC%C3%B1%C3%AE%C3%A7%C3%B8d%C3%AB.json",
+                FilenameUtils.getName(url));
+    }
+
+    @Test
     public void getDynamicDownloadHandlerClassResource() throws IOException {
         open();
 

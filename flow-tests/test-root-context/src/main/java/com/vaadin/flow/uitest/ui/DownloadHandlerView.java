@@ -54,9 +54,18 @@ public class DownloadHandlerView extends Div {
         File jsonFile = new File(getClass().getClassLoader()
                 .getResource("download.json").getFile());
 
+        File jsonFileUnicodeName = new File(getClass().getClassLoader()
+                .getResource("download.json").getFile());
+
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
         fileDownload.setHref(DownloadHandler.forFile(jsonFile).inline());
         fileDownload.setId("download-handler-file");
+
+        Anchor fileDownloadUnicodeName = new Anchor("",
+                "File (unicode name) DownloadHandler shorthand");
+        fileDownloadUnicodeName.setHref(DownloadHandler
+                .forFile(jsonFileUnicodeName, "download-Řřüñîçødë.json"));
+        fileDownloadUnicodeName.setId("download-handler-file-unicode");
 
         Anchor classDownload = new Anchor("",
                 "Class resource DownloadHandler shorthand");
@@ -117,9 +126,10 @@ public class DownloadHandlerView extends Div {
         inputStreamCallbackError
                 .setId("download-handler-input-stream-callback-error");
 
-        add(handlerDownload, fileDownload, classDownload, servletDownload,
-                inputStreamDownload, inputStreamErrorDownload,
-                inputStreamExceptionDownload, inputStreamCallbackError);
+        add(handlerDownload, fileDownload, fileDownloadUnicodeName,
+                classDownload, servletDownload, inputStreamDownload,
+                inputStreamErrorDownload, inputStreamExceptionDownload,
+                inputStreamCallbackError);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
