@@ -27,6 +27,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -150,7 +151,8 @@ public class DownloadEvent {
             response.setHeader("Content-Disposition", "attachment");
         } else {
             response.setHeader("Content-Disposition",
-                    "attachment; filename=\"" + fileName + "\"");
+                    "attachment; filename*=UTF-8''"
+                            + EncodeUtil.rfc5987Encode(fileName));
         }
         this.fileName = fileName;
     }
