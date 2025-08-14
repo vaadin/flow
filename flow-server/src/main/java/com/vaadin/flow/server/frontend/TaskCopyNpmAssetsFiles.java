@@ -140,14 +140,20 @@ public class TaskCopyNpmAssetsFiles
                     File targetFolder = new File(staticOutput,
                             split[1].strip());
                     File destFile = new File(targetFolder, file.getName());
-                    log().debug("Copying npm file {} to {}",
-                            file.getAbsolutePath(), destFile.getAbsolutePath());
-                    try {
-                        FileUtils.copyFile(file, destFile);
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(String.format(
-                                "Failed to copy project frontend resources from '%s' to '%s'",
-                                file, destFile), e);
+                    // Copy file to a target path, if target file doesn't exist
+                    // or if file to copy is newer.
+                    if (!destFile.exists()
+                            || destFile.lastModified() < file.lastModified()) {
+                        log().debug("Copying npm file {} to {}",
+                                file.getAbsolutePath(),
+                                destFile.getAbsolutePath());
+                        try {
+                            FileUtils.copyFile(file, destFile);
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(String.format(
+                                    "Failed to copy project frontend resources from '%s' to '%s'",
+                                    file, destFile), e);
+                        }
                     }
                 });
             });
