@@ -19,10 +19,14 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +34,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -96,8 +101,8 @@ public class TaskCopyNpmAssetsFilesTest {
                 options);
         taskCopyNpmAssetsFiles.execute();
 
-        Set<String> filesInDirectory = TaskCopyNpmAssetsFiles
-                .getFilesInDirectory(webappResourcesDirectory);
+        Set<String> filesInDirectory = getFilesInDirectory(
+                webappResourcesDirectory);
         Assert.assertEquals(2, filesInDirectory.size());
         Assert.assertTrue(
                 filesInDirectory.contains("VAADIN/static/button/image.jpg"));
@@ -114,8 +119,8 @@ public class TaskCopyNpmAssetsFilesTest {
                 options);
         taskCopyNpmAssetsFiles.execute();
 
-        Set<String> filesInDirectory = TaskCopyNpmAssetsFiles
-                .getFilesInDirectory(webappResourcesDirectory);
+        Set<String> filesInDirectory = getFilesInDirectory(
+                webappResourcesDirectory);
         Assert.assertEquals(1, filesInDirectory.size());
         Assert.assertEquals("VAADIN/static/copy/image.jpg",
                 filesInDirectory.iterator().next());
@@ -130,8 +135,8 @@ public class TaskCopyNpmAssetsFilesTest {
                 options);
         taskCopyNpmAssetsFiles.execute();
 
-        Set<String> filesInDirectory = TaskCopyNpmAssetsFiles
-                .getFilesInDirectory(webappResourcesDirectory);
+        Set<String> filesInDirectory = getFilesInDirectory(
+                webappResourcesDirectory);
         Assert.assertEquals(3, filesInDirectory.size());
         Assert.assertTrue(
                 filesInDirectory.contains("VAADIN/static/button/image.jpg"));
@@ -157,8 +162,7 @@ public class TaskCopyNpmAssetsFilesTest {
                         options.getBuildDirectoryName()),
                 "webapp");
 
-        Set<String> filesInDirectory = TaskCopyNpmAssetsFiles
-                .getFilesInDirectory(devBundleTarget);
+        Set<String> filesInDirectory = getFilesInDirectory(devBundleTarget);
         Assert.assertEquals(1, filesInDirectory.size());
         Assert.assertEquals("button/button.template",
                 filesInDirectory.iterator().next());
@@ -174,9 +178,24 @@ public class TaskCopyNpmAssetsFilesTest {
                 options);
         taskCopyNpmAssetsFiles.execute();
 
-        Set<String> filesInDirectory = TaskCopyNpmAssetsFiles
-                .getFilesInDirectory(webappResourcesDirectory);
+        Set<String> filesInDirectory = getFilesInDirectory(
+                webappResourcesDirectory);
         Assert.assertEquals("Nothing should be copied for CopyAssets false", 0,
                 filesInDirectory.size());
+    }
+
+    static Set<String> getFilesInDirectory(File targetDirectory,
+            String... relativePathExclusions) throws IOException {
+        if (!targetDirectory.exists()) {
+            LoggerFactory.getLogger(TaskCopyNpmAssetsFiles.class)
+                    .info("No directory {}", targetDirectory);
+            return new HashSet<>();
+        }
+        try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
+            return stream.filter(path -> path.toFile().isFile())
+                    .map(path -> targetDirectory.toPath().relativize(path)
+                            .toString().replaceAll("\\\\", "/"))
+                    .collect(Collectors.toSet());
+        }
     }
 }

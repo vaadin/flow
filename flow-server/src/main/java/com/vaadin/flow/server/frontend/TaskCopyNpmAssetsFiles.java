@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -162,39 +163,43 @@ public class TaskCopyNpmAssetsFiles
 
     private List<Path> collectFiles(Path basePath, String matcherPattern) {
         final List<Path> filePaths = new ArrayList<>();
+        if (!basePath.toFile().exists()) {
+            return filePaths;
+        }
+        String pattern;
+        if (matcherPattern.startsWith("**")) {
+            pattern = matcherPattern;
+        } else if (matcherPattern.startsWith("/")) {
+            pattern = "**" + matcherPattern;
+        } else {
+            pattern = "**/" + matcherPattern;
+        }
+
+        log().debug("getting files using pattern {}", pattern);
 
         final PathMatcher matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:**" + matcherPattern);
-        try {
-            Files.walkFileTree(basePath, new SimpleFileVisitor<>() {
-                @Override
-                public FileVisitResult visitFile(Path file,
-                        BasicFileAttributes attrs) {
-                    if (matcher.matches(file)) {
-                        filePaths.add(file);
-                    }
-                    return FileVisitResult.CONTINUE;
-                }
-            });
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+                .getPathMatcher("glob:**" + pattern);
+
+        filePaths.addAll(getFileNames(basePath, matcher));
+
         return filePaths;
     }
 
-    static Set<String> getFilesInDirectory(File targetDirectory,
-            String... relativePathExclusions) throws IOException {
-        if (!targetDirectory.exists()) {
-            return new HashSet<>();
+    private List<Path> getFileNames(Path dir, PathMatcher matcher) {
+        List<Path> fileNames = new ArrayList<>();
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir)) {
+            for (Path path : stream) {
+                if (path.toFile().isDirectory()) {
+                    fileNames.addAll(getFileNames(path, matcher));
+                } else if (matcher.matches(path)) {
+                    fileNames.add(path);
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to walk through directory",
+                    e);
         }
-        try (Stream<Path> stream = Files.walk(targetDirectory.toPath())) {
-            return stream.filter(path -> path.toFile().isFile()
-                    && TaskCopyLocalFrontendFiles.keepFile(targetDirectory,
-                            relativePathExclusions, path.toFile()))
-                    .map(path -> targetDirectory.toPath().relativize(path)
-                            .toString().replaceAll("\\\\", "/"))
-                    .collect(Collectors.toSet());
-        }
+        return fileNames;
     }
 
     private Logger log() {
