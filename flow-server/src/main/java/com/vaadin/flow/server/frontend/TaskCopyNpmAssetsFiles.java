@@ -178,7 +178,7 @@ public class TaskCopyNpmAssetsFiles
         log().debug("getting files using pattern {}", pattern);
 
         final PathMatcher matcher = FileSystems.getDefault()
-                .getPathMatcher("glob:**" + pattern);
+                .getPathMatcher("glob:" + pattern);
 
         filePaths.addAll(getFileNames(basePath, matcher));
 
