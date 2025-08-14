@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -228,12 +229,14 @@ public abstract class VaadinWebSecurity {
             // Flow pages and/or login page implemented using Flow.
             urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
                     .permitAll();
-            // Public endpoints are OK to access
-            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
-                    .permitAll();
-            // Checks for known Hilla views
-            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
-                    .permitAll();
+            if (EndpointRequestUtil.isHillaAvailable()) {
+                // Public endpoints are OK to access
+                urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                        .permitAll();
+                // Checks for known Hilla views
+                urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
+                        .permitAll();
+            }
             // Public routes are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
                     .permitAll();
@@ -245,9 +248,11 @@ public abstract class VaadinWebSecurity {
             // matcher for custom PWA icons and favicon
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
-            // authenticated endpoints
-            urlRegistry.requestMatchers(requestUtil::isEndpointRequest)
-                    .authenticated();
+            if (EndpointRequestUtil.isHillaAvailable()) {
+                // Authenticated endpoints
+                urlRegistry.requestMatchers(requestUtil::isEndpointRequest)
+                        .authenticated();
+            }
             // private routes require authentication
             urlRegistry.requestMatchers(requestUtil::isSecuredFlowRoute)
                     .authenticated();
