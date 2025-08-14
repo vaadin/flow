@@ -114,8 +114,8 @@ public class TaskCopyNpmAssetsFiles
     }
 
     private boolean hasAssets() {
-        return options.getFrontendDependenciesScanner().getAssets().isEmpty()
-                || options.getFrontendDependenciesScanner().getDevAssets()
+        return !options.getFrontendDependenciesScanner().getAssets().isEmpty()
+                || !options.getFrontendDependenciesScanner().getDevAssets()
                         .isEmpty();
     }
 
