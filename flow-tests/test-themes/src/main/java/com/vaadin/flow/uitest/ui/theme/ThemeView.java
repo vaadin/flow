@@ -63,7 +63,7 @@ public class ThemeView extends Div {
 
         // Test npm asset
         Image snowFlake = new Image(
-                "VAADIN/static/fortawesome/icons/snowflake.svg", "snowflake");
+                "VAADIN/static/npm/icons/snowflake.svg", "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
