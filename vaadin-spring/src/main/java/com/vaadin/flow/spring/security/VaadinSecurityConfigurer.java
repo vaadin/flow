@@ -749,8 +749,7 @@ public final class VaadinSecurityConfigurer
                 .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
                 .authenticated();
         if (EndpointRequestUtil.isHillaAvailable()) {
-            registry
-                    .requestMatchers(getRequestUtil()::isEndpointRequest)
+            registry.requestMatchers(getRequestUtil()::isEndpointRequest)
                     .authenticated();
         }
     }
