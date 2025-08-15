@@ -175,7 +175,8 @@ public class BuildFrontendUtil {
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
                 .withFrontendIgnoreVersionChecks(
-                        adapter.isFrontendIgnoreVersionChecks());
+                        adapter.isFrontendIgnoreVersionChecks())
+                .setCopyAssets(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());

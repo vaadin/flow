@@ -333,7 +333,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            if (isRepeatableContainer) {
+            if (isRepeatableContainer && !"assets".equals(name)) {
                 // For repeatable container annotations, skip array values
                 // but use this instance for visiting items
                 return this;

@@ -101,6 +101,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         copyPackageLockToBundleFolder();
 
         addReadme();
+
+        // Copy npm assets after devBundle vite as it clears the target
+        // directory
+        new TaskCopyNpmAssetsFiles(options).execute();
     }
 
     private static Logger getLogger() {

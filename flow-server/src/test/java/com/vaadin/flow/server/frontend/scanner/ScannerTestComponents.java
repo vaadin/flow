@@ -167,7 +167,8 @@ public class ScannerTestComponents {
 
     @Route(value = "", layout = RouterLayout1.class)
     @JsModule("./view-1.js")
-    @NpmPackage(value = "@foo/first-view", version = "0.0.1")
+    @NpmPackage(value = "@foo/first-view", version = "0.0.1", assets = {
+            "first:assets" })
     public static class FirstView extends View0 {
         Component1 component1;
 

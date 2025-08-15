@@ -197,8 +197,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 "Node assets should have been copied to 'themes/app-theme'",
-                getRootURL()
-                        + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
+                getRootURL() + "/path/VAADIN/static/npm/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/"

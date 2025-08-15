@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.frontend.scanner;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -65,5 +69,13 @@ abstract class AbstractDependenciesScanner
         } catch (ClassNotFoundException ignore) { // NOSONAR
             return null;
         }
+    }
+
+    protected void addValues(Map<String, List<String>> map, String key,
+            List<String> values) {
+        List<String> valueList = map.getOrDefault(key,
+                new ArrayList<>(values.size()));
+        valueList.addAll(values);
+        map.put(key, valueList);
     }
 }

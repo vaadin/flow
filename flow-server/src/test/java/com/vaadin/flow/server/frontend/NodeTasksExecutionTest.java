@@ -63,7 +63,8 @@ public class NodeTasksExecutionTest {
         // Make a builder that doesn't add any commands.
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
                 Collections.singleton(this.getClass()));
-        options = new MockOptions(finder, null).withBuildDirectory(TARGET)
+        options = new MockOptions(finder, temporaryFolder.getRoot())
+                .withBuildDirectory(TARGET)
                 .withFrontendDirectory(temporaryFolder.getRoot());
         options.withProductionMode(false);
 

@@ -88,6 +88,8 @@ public class Options implements Serializable {
 
     private FrontendDependenciesScanner frontendDependenciesScanner;
 
+    private boolean copyAssets = true;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -1060,5 +1062,26 @@ public class Options implements Serializable {
                             getFeatureFlags(), reactEnabled);
         }
         return frontendDependenciesScanner;
+    }
+
+    /**
+     * Sets whether to copy npm assets or not. True by default.
+     *
+     * @param copyAssets
+     *            boolean value indicating if npm assets should be copied.
+     * @return this builder
+     */
+    public Options setCopyAssets(boolean copyAssets) {
+        this.copyAssets = copyAssets;
+        return this;
+    }
+
+    /**
+     * Get if npm assets should be copied for this Options execution.
+     *
+     * @return Ture to copy npm assets else false.
+     */
+    public boolean copyAssets() {
+        return copyAssets;
     }
 }
