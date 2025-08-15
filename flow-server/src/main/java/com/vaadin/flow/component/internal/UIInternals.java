@@ -14,6 +14,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -165,7 +166,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
 
@@ -572,7 +573,7 @@ public class UIInternals implements Serializable {
 
         pendingJsInvocations = getPendingJavaScriptInvocations()
                 .filter(invocation -> !invocation.getOwner().isVisible())
-                .collect(Collectors.toCollection(ArrayList::new));
+                .collect(Collectors.toCollection(LinkedHashSet::new));
         pendingJsInvocations
                 .forEach(this::registerDetachListenerForPendingInvocation);
         return readyToSend;
@@ -615,8 +616,7 @@ public class UIInternals implements Serializable {
 
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
-            UIInternals.this.pendingJsInvocations.removeIf(
-                    pendingInvocation -> pendingInvocation.equals(invocation));
+            UIInternals.this.pendingJsInvocations.remove(invocation);
             if (invocationList.isEmpty() && registration != null) {
                 registration.remove();
                 registration = null;
