@@ -24,7 +24,6 @@ import com.vaadin.flow.component.html.Div;
 @JsModule(ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL)
 @JsModule(ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL)
 @JsModule("./" + ComponentWithExternalJsModule.NON_EXTERNAL_JS_MODULE_NAME)
-@NpmPackage(value = "@polymer/polymer", version = "3.5.2")
 public class ComponentWithExternalJsModule extends Div {
     public static final String SOME_RANDOM_EXTERNAL_JS_URL = "https://some-external-website.fi/another-js-module.js";
     public static final String SOME_RANDOM_EXTERNAL_JS_URL_WITHOUT_PROTOCOL = "//some-external-website.fi/another-js-module.js";
