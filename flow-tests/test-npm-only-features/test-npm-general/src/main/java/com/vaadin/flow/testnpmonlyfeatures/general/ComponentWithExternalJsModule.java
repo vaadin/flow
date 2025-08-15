@@ -18,7 +18,6 @@ package com.vaadin.flow.testnpmonlyfeatures.general;
 
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 
 @JsModule(ComponentWithExternalJsModule.SOME_RANDOM_EXTERNAL_JS_URL)
