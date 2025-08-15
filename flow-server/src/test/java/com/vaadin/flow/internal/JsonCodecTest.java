@@ -40,7 +40,7 @@ import elemental.json.JsonValue;
 
 public class JsonCodecTest {
     private static List<Object> withTypeInfoUnsupportedValues = Arrays.asList(
-            new Object(), new StateNode(), new Date(), new String[0],
+            new Object(), new StateNode(), new Date(),
             new ArrayList<>(), new HashSet<>(), new HashMap<>());
 
     @Test
@@ -65,6 +65,24 @@ public class JsonCodecTest {
         assertJsonEquals(Json.create("string"), Json.create("string"));
         assertJsonEquals(json, json);
         assertJsonEquals(Json.createArray(), Json.createArray());
+        
+        // Test arrays
+        String[] stringArray = {"hello", "world"};
+        JsonArray expectedStringArray = Json.createArray();
+        expectedStringArray.set(0, "hello");
+        expectedStringArray.set(1, "world");
+        assertJsonEquals(expectedStringArray, JsonCodec.encodeWithoutTypeInfo(stringArray));
+        
+        Integer[] intArray = {1, 2, 3};
+        JsonArray expectedIntArray = Json.createArray();
+        expectedIntArray.set(0, 1);
+        expectedIntArray.set(1, 2);
+        expectedIntArray.set(2, 3);
+        assertJsonEquals(expectedIntArray, JsonCodec.encodeWithoutTypeInfo(intArray));
+        
+        // Test empty array
+        String[] emptyArray = {};
+        assertJsonEquals(Json.createArray(), JsonCodec.encodeWithoutTypeInfo(emptyArray));
     }
 
     @Test
@@ -101,6 +119,15 @@ public class JsonCodecTest {
                 JsonUtils.createArray(Json.create(JsonCodec.ARRAY_TYPE),
                         Json.createArray()),
                 JsonCodec.encodeWithTypeInfo(Json.createArray()));
+        
+        // Test Java arrays - they should be encoded as arrays but escaped as complex types
+        String[] stringArray = {"foo", "bar"};
+        JsonArray expectedArray = Json.createArray();
+        expectedArray.set(0, "foo");
+        expectedArray.set(1, "bar");
+        assertJsonEquals(
+                JsonUtils.createArray(Json.create(JsonCodec.ARRAY_TYPE), expectedArray),
+                JsonCodec.encodeWithTypeInfo(stringArray));
     }
 
     @Test
@@ -125,6 +152,59 @@ public class JsonCodecTest {
         JsonValue json = JsonCodec.encodeWithTypeInfo(element);
 
         assertJsonEquals(Json.createNull(), json);
+    }
+    
+    @Test
+    public void encodeWithoutTypeInfo_arrays() {
+        // Test various array types
+        String[] stringArray = {"foo", "bar", null};
+        JsonArray expectedStringArray = Json.createArray();
+        expectedStringArray.set(0, "foo");
+        expectedStringArray.set(1, "bar");
+        expectedStringArray.set(2, Json.createNull());
+        assertJsonEquals(expectedStringArray, JsonCodec.encodeWithoutTypeInfo(stringArray));
+        
+        // Test primitive wrapper arrays
+        Integer[] intArray = {1, null, 3};
+        JsonArray expectedIntArray = Json.createArray();
+        expectedIntArray.set(0, 1);
+        expectedIntArray.set(1, Json.createNull());
+        expectedIntArray.set(2, 3);
+        assertJsonEquals(expectedIntArray, JsonCodec.encodeWithoutTypeInfo(intArray));
+        
+        // Test Boolean array
+        Boolean[] boolArray = {true, false, null};
+        JsonArray expectedBoolArray = Json.createArray();
+        expectedBoolArray.set(0, true);
+        expectedBoolArray.set(1, false);
+        expectedBoolArray.set(2, Json.createNull());
+        assertJsonEquals(expectedBoolArray, JsonCodec.encodeWithoutTypeInfo(boolArray));
+        
+        // Test nested arrays
+        String[][] nestedArray = {{"a", "b"}, {"c"}};
+        JsonArray expectedNested = Json.createArray();
+        JsonArray innerArray1 = Json.createArray();
+        innerArray1.set(0, "a");
+        innerArray1.set(1, "b");
+        JsonArray innerArray2 = Json.createArray();
+        innerArray2.set(0, "c");
+        expectedNested.set(0, innerArray1);
+        expectedNested.set(1, innerArray2);
+        assertJsonEquals(expectedNested, JsonCodec.encodeWithoutTypeInfo(nestedArray));
+        
+        // Test that canEncodeWithoutTypeInfo returns true for supported array types
+        Assert.assertTrue(JsonCodec.canEncodeWithoutTypeInfo(String[].class));
+        Assert.assertTrue(JsonCodec.canEncodeWithoutTypeInfo(Integer[].class));
+        Assert.assertTrue(JsonCodec.canEncodeWithoutTypeInfo(Boolean[].class));
+        Assert.assertTrue(JsonCodec.canEncodeWithoutTypeInfo(String[][].class));
+        
+        // Test that canEncodeWithTypeInfo returns true for supported array types
+        Assert.assertTrue(JsonCodec.canEncodeWithTypeInfo(String[].class));
+        Assert.assertTrue(JsonCodec.canEncodeWithTypeInfo(Integer[].class));
+        
+        // Test unsupported array types (arrays of unsupported types)
+        Assert.assertFalse(JsonCodec.canEncodeWithoutTypeInfo(Object[].class));
+        Assert.assertFalse(JsonCodec.canEncodeWithoutTypeInfo(Date[].class));
     }
 
     @Test
