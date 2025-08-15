@@ -301,6 +301,9 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
+        if (!isPolymerTemplateModuleAvailable(options)) {
+            dependencies.remove("@polymer/polymer");
+        }
         if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
@@ -632,6 +635,16 @@ public abstract class NodeUpdater implements FallibleCommand {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/lit", packageJsonKey));
             }
+        }
+    }
+
+    private boolean isPolymerTemplateModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 }
