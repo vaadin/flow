@@ -54,18 +54,22 @@ public class DownloadHandlerView extends Div {
         File jsonFile = new File(getClass().getClassLoader()
                 .getResource("download.json").getFile());
 
-        File jsonFileUnicodeName = new File(getClass().getClassLoader()
-                .getResource("download.json").getFile());
-
         Anchor fileDownload = new Anchor("", "File DownloadHandler shorthand");
         fileDownload.setHref(DownloadHandler.forFile(jsonFile).inline());
         fileDownload.setId("download-handler-file");
 
         Anchor fileDownloadUnicodeName = new Anchor("",
                 "File (unicode name) DownloadHandler shorthand");
-        fileDownloadUnicodeName.setHref(DownloadHandler
-                .forFile(jsonFileUnicodeName, "download-Řřüñîçødë.json"));
+        fileDownloadUnicodeName.setHref(DownloadHandler.forFile(jsonFile,
+                "download-Řřüñîçødë 1中文.json"));
         fileDownloadUnicodeName.setId("download-handler-file-unicode");
+
+        Anchor fileDownloadUnicodeNameWithQuote = new Anchor("",
+                "File (unicode name with quote) DownloadHandler shorthand");
+        fileDownloadUnicodeNameWithQuote
+                .setHref(DownloadHandler.forFile(jsonFile, "download-\".json"));
+        fileDownloadUnicodeNameWithQuote
+                .setId("download-handler-file-unicode-quote");
 
         Anchor classDownload = new Anchor("",
                 "Class resource DownloadHandler shorthand");
@@ -127,9 +131,9 @@ public class DownloadHandlerView extends Div {
                 .setId("download-handler-input-stream-callback-error");
 
         add(handlerDownload, fileDownload, fileDownloadUnicodeName,
-                classDownload, servletDownload, inputStreamDownload,
-                inputStreamErrorDownload, inputStreamExceptionDownload,
-                inputStreamCallbackError);
+                fileDownloadUnicodeNameWithQuote, classDownload,
+                servletDownload, inputStreamDownload, inputStreamErrorDownload,
+                inputStreamExceptionDownload, inputStreamCallbackError);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
