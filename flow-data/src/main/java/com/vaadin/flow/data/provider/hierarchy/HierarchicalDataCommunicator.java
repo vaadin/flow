@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -32,6 +33,7 @@ import com.vaadin.flow.data.provider.DataCommunicator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.KeyMapper;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
@@ -175,25 +177,40 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Replaces the cached item with a new instance and schedules a client
-     * update to re-render this item. If {@code refreshChildren} is true, the
-     * item's children are cleared from the cache and forced to be re-fetched
-     * from the data provider when visible.
+     * update to re-render this item.
      * <p>
-     * WARNING: When {@code refreshChildren} is true, the method resets the
-     * item's hierarchy, which may in turn cause visible range shifts if the
-     * refreshed item contains expanded children. In such cases, their
-     * descendants might not be re-fetched immediately, which can affect the
-     * flattened hierarchy size and result in the viewport range pointing to a
-     * different set of items than before the refresh.
+     * When {@code refreshChildren} is true, the item's sub-hierarchy is cleared
+     * from the cache and scheduled to be re-fetched from the data provider when
+     * visible. Please note that this may cause visible range shifts if the
+     * refreshed item also contains <i>expanded</i> children. In such cases,
+     * their descendants might not be re-fetched immediately if they are not
+     * visible. This can affect the flattened hierarchy size and result in the
+     * viewport range pointing to a different set of items than before the
+     * refresh.
+     * <p>
+     * NOTE: {@code refreshChildren} is only supported for data providers that
+     * use {@link HierarchyFormat#NESTED}.
      *
      * @since 25.0
      * @param item
      *            the item to refresh
      * @param refreshChildren
      *            whether or not to refresh child items
+     * @throws UnsupportedOperationException
+     *             if {@code refreshChildren} is true and the data provider's
+     *             hierarchy format is not {@link HierarchyFormat#NESTED}
      */
     public void refresh(T item, boolean refreshChildren) {
         Objects.requireNonNull(item, "Item cannot be null");
+
+        if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                && refreshChildren) {
+            throw new UnsupportedOperationException(
+                    """
+                            Refreshing children of an item is only supported when the data provider \
+                            uses HierarchyFormat#NESTED. For other formats, use reset() instead.
+                            """);
+        }
 
         getKeyMapper().refresh(item);
         dataGenerator.refreshData(item);
@@ -384,6 +401,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public int getDepth(T item) {
         Objects.requireNonNull(item, "Item cannot be null");
 
+        if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
+            return getDataProvider().getDepth(item);
+        }
+
         if (rootCache == null) {
             return -1;
         }
@@ -556,7 +577,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
 
             var item = cache.getItem(index);
-            if (isExpanded(item)) {
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                    && isExpanded(item)) {
                 cache.ensureSubCache(index,
                         () -> getDataProviderChildCount(item));
             }
@@ -604,10 +626,21 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         update.commit(nextUpdateId++);
     }
 
+    private HierarchyFormat getHierarchyFormat() {
+        return getDataProvider().getHierarchyFormat();
+    }
+
+    private Set<Object> getExpandedItemIds() {
+        return getHierarchyFormat().equals(HierarchyFormat.FLATTENED)
+                ? Collections.unmodifiableSet(this.expandedItemIds)
+                : Collections.emptySet();
+    }
+
     @SuppressWarnings("unchecked")
     private Stream<T> fetchDataProviderChildren(T parent, Range range) {
         var query = new HierarchicalQuery<>(range.getStart(), range.length(),
-                getBackEndSorting(), getInMemorySorting(), getFilter(), parent);
+                getBackEndSorting(), getInMemorySorting(), getFilter(),
+                getExpandedItemIds(), parent);
 
         return ((HierarchicalDataProvider<T, Object>) getDataProvider())
                 .fetchChildren(query).peek((item) -> {
@@ -620,7 +653,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @SuppressWarnings("unchecked")
     private int getDataProviderChildCount(T parent) {
-        var query = new HierarchicalQuery<>(getFilter(), parent);
+        var query = new HierarchicalQuery<>(getFilter(), getExpandedItemIds(),
+                parent);
 
         var count = ((HierarchicalDataProvider<T, Object>) getDataProvider())
                 .getChildCount(query);
