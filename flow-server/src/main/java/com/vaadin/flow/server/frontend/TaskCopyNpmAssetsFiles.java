@@ -20,24 +20,17 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.DirectoryStream;
 import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.nio.file.SimpleFileVisitor;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import java.util.function.Predicate;
 
 import org.apache.commons.io.FileUtils;
-import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,43 +115,51 @@ public class TaskCopyNpmAssetsFiles
 
     private void copyNpmAssets(Map<String, List<String>> npmAssets) {
         npmAssets.forEach((npmModule, npmAssetList) -> {
-            npmAssetList.forEach(npmAsset -> {
-                if (npmAsset.isBlank()) {
-                    return;
-                }
-                String[] split = npmAsset.split(":");
-                if (split.length != 2) {
-                    throw new InvalidParameterException("Invalid npm asset: "
-                            + npmAsset + " for npm module: " + npmModule);
-                }
-                log().debug("Rule {} to {}", split[0], split[1]);
-                File npmModuleDir = new File(options.getNodeModulesFolder(),
-                        npmModule);
-                List<Path> paths = collectFiles(npmModuleDir.toPath(),
-                        split[0].strip());
-                log().debug("Paths amount {}", paths.size());
-                paths.stream().map(Path::toFile).forEach(file -> {
-                    File targetFolder = new File(staticOutput,
-                            split[1].strip());
-                    File destFile = new File(targetFolder, file.getName());
-                    // Copy file to a target path, if target file doesn't exist
-                    // or if file to copy is newer.
-                    if (!destFile.exists()
-                            || destFile.lastModified() < file.lastModified()) {
-                        log().debug("Copying npm file {} to {}",
-                                file.getAbsolutePath(),
-                                destFile.getAbsolutePath());
-                        try {
-                            FileUtils.copyFile(file, destFile);
-                        } catch (IOException e) {
-                            throw new UncheckedIOException(String.format(
-                                    "Failed to copy project frontend resources from '%s' to '%s'",
-                                    file, destFile), e);
-                        }
-                    }
-                });
-            });
+            npmAssetList.stream().filter(Predicate.not(String::isBlank))
+                    .forEach(npmAsset -> {
+                        handleAsset(npmModule, npmAsset);
+                    });
         });
+    }
+
+    private void handleAsset(String npmModule, String npmAsset) {
+        Rule rule = getRule(npmAsset, npmModule);
+        File npmModuleDir = new File(options.getNodeModulesFolder(), npmModule);
+
+        List<Path> paths = collectFiles(npmModuleDir.toPath(), rule.copyRule);
+
+        paths.stream().map(Path::toFile).forEach(file -> {
+            copyFileToTarget(file, new File(staticOutput, rule.targetFolder));
+        });
+    }
+
+    private Rule getRule(String npmAsset, String npmModule) {
+        String[] split = npmAsset.split(":");
+        if (split.length != 2) {
+            throw new InvalidParameterException("Invalid npm asset: " + npmAsset
+                    + " for npm module: " + npmModule);
+        }
+        Rule rule = new Rule(split[0].strip(), split[1].strip());
+        log().debug("Rule {} to {}", rule.copyRule, rule.targetFolder);
+        return rule;
+    }
+
+    private void copyFileToTarget(File file, File targetFolder) {
+        File destFile = new File(targetFolder, file.getName());
+        // Copy file to a target path, if target file doesn't exist
+        // or if file to copy is newer.
+        if (!destFile.exists()
+                || destFile.lastModified() < file.lastModified()) {
+            log().debug("Copying npm file {} to {}", file.getAbsolutePath(),
+                    destFile.getAbsolutePath());
+            try {
+                FileUtils.copyFile(file, destFile);
+            } catch (IOException e) {
+                throw new UncheckedIOException(String.format(
+                        "Failed to copy project frontend resources from '%s' to '%s'",
+                        file, destFile), e);
+            }
+        }
     }
 
     private List<Path> collectFiles(Path basePath, String matcherPattern) {
@@ -181,6 +182,8 @@ public class TaskCopyNpmAssetsFiles
                 .getPathMatcher("glob:" + pattern);
 
         filePaths.addAll(getFileNames(basePath, matcher));
+
+        log().debug("Paths amount {}", filePaths.size());
 
         return filePaths;
     }
@@ -206,4 +209,6 @@ public class TaskCopyNpmAssetsFiles
         return LoggerFactory.getLogger(this.getClass());
     }
 
+    private static record Rule(String copyRule, String targetFolder) {
+    }
 }
