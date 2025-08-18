@@ -212,6 +212,11 @@ public class HandlerHelper implements Serializable {
 
     private static boolean isFrameworkInternalRequest(String servletMappingPath,
             String requestedPath, String requestTypeParameter) {
+        // Hilla push requests do not respect Vaadin servlet mapping
+        if (isHillaPush(requestedPath)) {
+            return true;
+        }
+
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
@@ -235,8 +240,6 @@ public class HandlerHelper implements Serializable {
                         .equals(requestedPathWithoutServletMapping.get())) {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
-            return true;
-        } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {
             return true;
         }
 
