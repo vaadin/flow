@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import java.util.HexFormat;
+
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -26,6 +28,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * @since 1.0
  */
 public final class EncodeUtil {
+
+    private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
 
     private EncodeUtil() {
         // Static utils only
@@ -45,7 +49,7 @@ public final class EncodeUtil {
         int i = 0;
         while (i < value.length()) {
             int cp = value.codePointAt(i);
-            if (cp < 127 && (Character.isLetterOrDigit(cp) || cp == '.')) {
+            if (cp < 127 && isRFC5987AttrChar(cp)) {
                 builder.append((char) cp);
             } else {
                 // Create string from a single code point
@@ -63,11 +67,13 @@ public final class EncodeUtil {
 
     private static void appendHexBytes(StringBuilder builder, byte[] bytes) {
         for (byte byteValue : bytes) {
-            // mask with 0xFF to compensate for "negative" values
-            int intValue = byteValue & 0xFF;
-            String hexCode = Integer.toString(intValue, 16);
-            builder.append('%').append(hexCode);
+            builder.append('%');
+            HEX_FORMAT.toHexDigits(builder, byteValue);
         }
     }
 
+    private static boolean isRFC5987AttrChar(int codePoint) {
+        return Character.isLetterOrDigit(codePoint)
+                || "!#$&+-.^_`|~".indexOf(codePoint) >= 0;
+    }
 }
