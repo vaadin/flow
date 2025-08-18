@@ -1,6 +1,5 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -11,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.stereotype.Component;
 
@@ -150,6 +148,19 @@ public class RequestUtil {
     }
 
     /**
+     * Checks whether the request targets a Flow route secured with navigation
+     * access control.
+     *
+     * @param request
+     *            the servlet request
+     * @return {@code true} if the request is targeting a Flow route secured
+     *         with navigation access control, {@code false} otherwise
+     */
+    public boolean isSecuredFlowRoute(HttpServletRequest request) {
+        return isSecuredFlowRouteInternal(request);
+    }
+
+    /**
      * Checks whether the request targets a custom PWA icon or Favicon path.
      *
      * @param request
@@ -177,9 +188,9 @@ public class RequestUtil {
     /**
      * Utility to create {@link RequestMatcher}s from ant patterns.
      * <p>
-     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
-     * callers of this method should be updated to use
-     * {@link PathPatternRequestMatcher} instead.
+     * Since org.springframework.security.web.util.matcher.AntPathRequestMatcher
+     * is deprecated and will be removed, callers of this method should be
+     * updated to use {@link PathPatternRequestMatcher} instead.
      *
      * <pre>
      * {@code
@@ -198,7 +209,7 @@ public class RequestUtil {
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] antMatchers(String... patterns) {
-        return Stream.of(patterns).map(AntPathRequestMatcher::new)
+        return Stream.of(patterns).map(PathPatternRequestMatcher::pathPattern)
                 .toArray(RequestMatcher[]::new);
     }
 
@@ -206,9 +217,9 @@ public class RequestUtil {
      * Utility to create {@link RequestMatcher}s for a Vaadin routes, using ant
      * patterns and HTTP get method.
      * <p>
-     * Since {@link AntPathRequestMatcher} is deprecated and will be removed,
-     * callers of this method should be updated to use
-     * {@link PathPatternRequestMatcher} instead.
+     * Since org.springframework.security.web.util.matcher.AntPathRequestMatcher
+     * is deprecated and will be removed, callers of this method should be
+     * updated to use {@link PathPatternRequestMatcher} instead.
      *
      * <pre>
      * {@code
@@ -227,26 +238,53 @@ public class RequestUtil {
      */
     @Deprecated(since = "24.8", forRemoval = true)
     public static RequestMatcher[] routeMatchers(String... patterns) {
-        return Stream.of(patterns)
-                .map(p -> AntPathRequestMatcher.antMatcher(HttpMethod.GET, p))
+        return Stream.of(patterns).map(
+                p -> PathPatternRequestMatcher.pathPattern(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
     }
 
-    private boolean isAnonymousRouteInternal(HttpServletRequest request) {
-        String vaadinMapping = configurationProperties.getUrlMapping();
-        String requestedPath = HandlerHelper
-                .getRequestPathInsideContext(request);
-        Optional<String> maybePath = HandlerHelper
-                .getPathIfInsideServlet(vaadinMapping, requestedPath);
-        if (maybePath.isEmpty()) {
+    private boolean isSecuredFlowRouteInternal(HttpServletRequest request) {
+        NavigationAccessControl navigationAccessControl = accessControl
+                .getObject();
+        if (!navigationAccessControl.isEnabled()) {
             return false;
         }
-        String path = maybePath.get();
-        if (path.startsWith("/")) {
-            // Requested path includes a beginning "/" but route mapping is done
-            // without one
-            path = path.substring(1);
+        return isFlowRouteInternal(request);
+    }
+
+    private boolean isFlowRouteInternal(HttpServletRequest request) {
+        String path = getRequestRoutePath(request);
+        if (path == null)
+            return false;
+
+        SpringServlet servlet = springServletRegistration.getServlet();
+        VaadinService service = servlet.getService();
+        if (service == null) {
+            // The service has not yet been initialized. We cannot know if this
+            // is an authenticated route, so better say it is not.
+            return false;
         }
+        Router router = service.getRouter();
+        RouteRegistry routeRegistry = router.getRegistry();
+
+        NavigationRouteTarget target = routeRegistry
+                .getNavigationRouteTarget(path);
+        if (target == null) {
+            return false;
+        }
+        RouteTarget routeTarget = target.getRouteTarget();
+        if (routeTarget == null) {
+            return false;
+        }
+        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
+                .getTarget();
+        return targetView != null;
+    }
+
+    private boolean isAnonymousRouteInternal(HttpServletRequest request) {
+        String path = getRequestRoutePath(request);
+        if (path == null)
+            return false;
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -304,6 +342,18 @@ public class RequestUtil {
                     path, result.reason());
         }
         return isAllowed;
+    }
+
+    private String getRequestRoutePath(HttpServletRequest request) {
+        String vaadinMapping = configurationProperties.getUrlMapping();
+        String requestedPath = HandlerHelper
+                .getRequestPathInsideContext(request);
+        return HandlerHelper
+                .getPathIfInsideServlet(vaadinMapping, requestedPath)
+                // Requested path includes a beginning "/" but route mapping is
+                // done without one
+                .map(path -> path.startsWith("/") ? path.substring(1) : path)
+                .orElse(null);
     }
 
     String getUrlMapping() {

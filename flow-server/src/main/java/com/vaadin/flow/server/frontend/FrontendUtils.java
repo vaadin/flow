@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,14 +37,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.servlet.ServletContext;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -240,6 +240,8 @@ public class FrontendUtils {
      * File name of Vite helper used in development mode.
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
+
+    public static final String COMMERCIAL_BANNER_JS = "commercial-banner.js";
 
     public static final String ROUTES_TS = "routes.ts";
 

@@ -317,7 +317,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // An import without `.js` extension
         expectedLines.add(
-                "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else';");
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
@@ -381,7 +381,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
-                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'"));
+                        + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
         MatcherAssert.assertThat(output, CoreMatchers.containsString(
@@ -393,11 +393,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void cssFileNotFound_throws() {
+    public void cssFileNotFound_loggerReports() {
         assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
-        exception.expect(IllegalStateException.class);
         updater.run();
+        String output = logger.getLogs();
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+                "Failed to find the following css files in the `node_modules`"));
+        MatcherAssert.assertThat(output, CoreMatchers
+                .containsString("@vaadin/vaadin-mixed-component/bar.css"));
     }
 
     @Test

@@ -18,6 +18,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
@@ -38,6 +39,7 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.model.Build;
@@ -58,6 +60,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.function.ThrowingRunnable;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
@@ -72,7 +75,9 @@ import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.pro.licensechecker.LicenseException;
 
+import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
@@ -90,6 +95,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
 import static java.io.File.pathSeparator;
 
+@NotThreadSafe
 public class BuildFrontendMojoTest {
     public static final String TEST_PROJECT_RESOURCE_JS = "test_project_resource.js";
     @Rule
@@ -615,6 +621,57 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
+    public void commercialComponent_noLicenseKey_commercialBannerEnabled_buildsWithCommercialBannerFlag()
+            throws Throwable {
+
+        ObjectNode initialBuildInfo = JacksonUtils.createObjectNode();
+        tokenFile.getParentFile().mkdirs();
+        Files.writeString(tokenFile.toPath(),
+                initialBuildInfo.toPrettyString() + "\n",
+                StandardCharsets.UTF_8);
+
+        DefaultArtifact commercialComponent = createCommercialComponent();
+        mojo.project.getArtifacts().add(commercialComponent);
+        ReflectionUtils.setVariableValueInObject(mojo, "commercialWithBanner",
+                true);
+
+        runWithoutLicenseKeys(() -> {
+            mojo.execute();
+
+            String json = Files.readString(tokenFile.toPath(),
+                    StandardCharsets.UTF_8);
+            ObjectNode buildInfo = JacksonUtils.readTree(json);
+            Assert.assertTrue(
+                    "Commercial banner build token not written on token file",
+                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue());
+        });
+    }
+
+    @Test
+    public void commercialComponent_noLicenseKey_commercialBannerNotEnabled_buildFails()
+            throws Throwable {
+        DefaultArtifact commercialComponent = createCommercialComponent();
+        mojo.project.getArtifacts().add(commercialComponent);
+
+        runWithoutLicenseKeys(() -> {
+            Throwable exception = Assert
+                    .assertThrows(MojoFailureException.class, mojo::execute);
+            exception = exception.getCause();
+            // Checking exception type by name because classes are loaded from
+            // different classloaders
+            while (exception != null && !exception.getClass().getName()
+                    .equals(LicenseException.class.getName())) {
+                exception = exception.getCause();
+            }
+            Assert.assertNotNull(
+                    "Expected the build to fail because of LicenseException, but not found in stack trace",
+                    exception);
+            Assert.assertTrue(exception.getMessage()
+                    .contains(InitParameters.COMMERCIAL_WITH_BANNER));
+        });
+    }
+
+    @Test
     public void noTokenFile_noTokenFileShouldBeCreated()
             throws MojoExecutionException, MojoFailureException {
         mojo.execute();
@@ -753,7 +810,7 @@ public class BuildFrontendMojoTest {
                 "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
                 "./generated/jar-resources/ExampleConnector.js",
                 "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./vaadin-mixed-component/src/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js");
     }
 
@@ -835,4 +892,40 @@ public class BuildFrontendMojoTest {
             return Collections.emptyList();
         }
     }
+
+    private DefaultArtifact createCommercialComponent()
+            throws URISyntaxException {
+        DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
+        artifactHandler.setAddedToClasspath(true);
+        DefaultArtifact commercialComponent = new DefaultArtifact(
+                "com.vaadin.testing", "commercial-component", "1.0", "compile",
+                "jar", null, artifactHandler);
+        commercialComponent.setFile(new File(
+                getClass().getResource("/commercial-addon-1.0.0.jar").toURI()));
+        return commercialComponent;
+    }
+
+    private void runWithoutLicenseKeys(ThrowingRunnable test) throws Throwable {
+        String userHome = System.getProperty("user.home");
+        File userHomeFolder = new File(userHome);
+        Path vaadinHomeNodeFolder = userHomeFolder.toPath()
+                .resolve(Path.of(".vaadin", "node"));
+        File fakeUserHomeFolder = temporaryFolder.newFolder("fake-home");
+        // Try to speed up test by copying existing node into the fake home
+        if (Files.isDirectory(vaadinHomeNodeFolder)) {
+            File fakeVaadinHomeNode = fakeUserHomeFolder.toPath()
+                    .resolve(Path.of(".vaadin", "node")).toFile();
+            fakeVaadinHomeNode.mkdirs();
+            FileUtils.copyDirectoryStructure(vaadinHomeNodeFolder.toFile(),
+                    fakeVaadinHomeNode);
+        }
+        try {
+            System.setProperty("user.home",
+                    fakeUserHomeFolder.getAbsolutePath());
+            test.run();
+        } finally {
+            System.setProperty("user.home", userHome);
+        }
+    }
+
 }

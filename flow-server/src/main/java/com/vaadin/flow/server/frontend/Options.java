@@ -139,6 +139,8 @@ public class Options implements Serializable {
 
     private boolean frontendIgnoreVersionChecks = false;
 
+    private boolean commercialBannerEnabled = false;
+
     /**
      * Creates a new instance.
      *
@@ -1015,6 +1017,30 @@ public class Options implements Serializable {
     public Options withFrontendDependenciesScanner(
             FrontendDependenciesScanner frontendDependenciesScanner) {
         this.frontendDependenciesScanner = frontendDependenciesScanner;
+        return this;
+    }
+
+    /**
+     * Checks if the commercial banner is enabled for the build.
+     *
+     * @return {@code true} if the commercial banner is enabled, {@code false}
+     *         otherwise
+     */
+    public boolean isCommercialBannerEnabled() {
+        return commercialBannerEnabled;
+    }
+
+    /**
+     * Sets whether the build could generate an application with a commercial
+     * banner.
+     *
+     * @param enableCommercialBanner
+     *            a boolean value indicating whether the built application could
+     *            add a commercial banner.
+     * @return this builder
+     */
+    public Options withCommercialBanner(boolean enableCommercialBanner) {
+        this.commercialBannerEnabled = enableCommercialBanner;
         return this;
     }
 

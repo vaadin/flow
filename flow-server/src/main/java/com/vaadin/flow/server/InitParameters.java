@@ -269,6 +269,13 @@ public class InitParameters implements Serializable {
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
 
     /**
+     * Configuration name to enable adding a commercial banner to the
+     * application when commercial components are used without a valid license
+     * key.
+     */
+    public static final String COMMERCIAL_WITH_BANNER = "commercialWithBanner";
+
+    /**
      * Configuration name for cleaning or leaving frontend files in build.
      */
     public static final String CLEAN_BUILD_FRONTEND_FILES = "vaadin.clean.build.frontend.files";

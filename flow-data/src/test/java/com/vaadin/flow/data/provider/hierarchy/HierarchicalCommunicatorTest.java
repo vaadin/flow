@@ -213,7 +213,6 @@ public class HierarchicalCommunicatorTest {
         dataProvider.refreshAll();
         assertFalse("Stalled object in KeyMapper",
                 communicator.getKeyMapper().has(ROOT));
-        assertEquals(-1, communicator.getParentIndex(FOLDER).longValue());
     }
 
     /**
@@ -231,7 +230,7 @@ public class HierarchicalCommunicatorTest {
         final String secondRoot = "SECONDROOT";
 
         treeData.addItem(null, secondRoot);
-        communicator.setRequestedRange(0, 2);
+        communicator.setViewportRange(0, 2);
 
         invokeFlush();
 

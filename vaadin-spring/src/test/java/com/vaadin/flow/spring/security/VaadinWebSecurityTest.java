@@ -16,13 +16,12 @@
 
 package com.vaadin.flow.spring.security;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -54,7 +53,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 
 @RunWith(SpringRunner.class)
-@ContextConfiguration(classes = ObjectPostProcessorConfiguration.class)
+@ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
+        VaadinSecurityConfigurerTest.TestConfig.class })
 public class VaadinWebSecurityTest {
     @Autowired
     ObjectPostProcessor<Object> postProcessor;

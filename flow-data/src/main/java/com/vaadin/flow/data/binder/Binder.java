@@ -334,6 +334,39 @@ public class Binder<BEAN> implements Serializable {
          * @return the predicate to use for equality comparison
          */
         SerializableBiPredicate<TARGET, TARGET> getEqualityPredicate();
+
+        /**
+         * Checks whether this binding should be processed during validation and
+         * writing to bean.
+         *
+         * @return {@literal true} if this binding should be processed,
+         *         {@literal false} if this binding should be ignored
+         */
+        default boolean isApplied() {
+            return getIsAppliedPredicate().test(this);
+        }
+
+        /**
+         * Gets predicate for testing {@link #isApplied()}. By default,
+         * non-visible components are ignored during validation and bean
+         * writing.
+         *
+         * @return predicate for testing {@link #isApplied()}
+         */
+        default SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
+            return binding -> !(binding.getField() instanceof Component c)
+                    || c.isVisible();
+        }
+
+        /**
+         * Sets a custom predicate for testing {@link #isApplied()}. Set to
+         * {@literal null} to restore default functionality.
+         *
+         * @param isAppliedPredicate
+         *            custom predicate for testing {@link #isApplied()}
+         */
+        void setIsAppliedPredicate(
+                SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate);
     }
 
     /**
@@ -1371,6 +1404,8 @@ public class Binder<BEAN> implements Serializable {
 
         private TARGET initialValue;
 
+        private SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate;
+
         public BindingImpl(BindingBuilderImpl<BEAN, FIELDVALUE, TARGET> builder,
                 ValueProvider<BEAN, TARGET> getter,
                 Setter<BEAN, TARGET> setter) {
@@ -1793,6 +1828,18 @@ public class Binder<BEAN> implements Serializable {
                     }
                 });
             }
+        }
+
+        public SerializablePredicate<Binding<BEAN, TARGET>> getIsAppliedPredicate() {
+            return isAppliedPredicate == null
+                    ? Binding.super.getIsAppliedPredicate()
+                    : isAppliedPredicate;
+        }
+
+        @Override
+        public void setIsAppliedPredicate(
+                SerializablePredicate<Binding<BEAN, TARGET>> isAppliedPredicate) {
+            this.isAppliedPredicate = isAppliedPredicate;
         }
     }
 
@@ -2767,8 +2814,8 @@ public class Binder<BEAN> implements Serializable {
 
         // make a copy of the incoming bindings to avoid their modifications
         // during validation
-        Collection<Binding<BEAN, ?>> currentBindings = new ArrayList<>(
-                bindings);
+        Collection<Binding<BEAN, ?>> currentBindings = bindings.stream()
+                .filter(Binding::isApplied).collect(Collectors.toList());
 
         // First run fields level validation, if no validation errors then
         // update bean.
@@ -2841,13 +2888,15 @@ public class Binder<BEAN> implements Serializable {
                     "writeBean methods can't be used with records, call writeRecord instead");
         }
         if (!forced) {
-            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+            bindings.stream().filter(Binding::isApplied)
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
         } else {
             boolean isDisabled = isValidatorsDisabled();
             setValidatorsDisabled(true);
-            bindings.forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
-                    .writeFieldValue(bean));
+            bindings.stream().filter(Binding::isApplied)
+                    .forEach(binding -> ((BindingImpl<BEAN, ?, ?>) binding)
+                            .writeFieldValue(bean));
             setValidatorsDisabled(isDisabled);
         }
     }
@@ -3076,7 +3125,8 @@ public class Binder<BEAN> implements Serializable {
      * @return an immutable list of validation results for bindings
      */
     private List<BindingValidationStatus<?>> validateBindings() {
-        return getBindings().stream().map(BindingImpl::doValidation)
+        return getBindings().stream().filter(Binding::isApplied)
+                .map(BindingImpl::doValidation)
                 .collect(Collectors.collectingAndThen(Collectors.toList(),
                         Collections::unmodifiableList));
     }

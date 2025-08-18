@@ -124,7 +124,8 @@ class JwtStatelessAuthenticationTest {
     }
 
     @Test
-    void authenticated_jwtCookieUpdatedAtEveryRequest() throws Exception {
+    void authenticated_protected_jwtCookieUpdatedAtEveryRequest()
+            throws Exception {
         MvcResult result = doLogin();
 
         Cookie jwtCookie = result.getResponse()
@@ -141,12 +142,29 @@ class JwtStatelessAuthenticationTest {
                 .andExpect(cookie().exists("jwt.signature"))
                 .andExpect(cookie().exists("jwt.headerAndPayload")).andReturn();
 
-        Cookie jwtCookie2 = result.getResponse()
+        assertCookiesUpdated(result, jwtCookie, jwtSignature);
+    }
+
+    @Test
+    void authenticated_restricted_jwtCookieUpdatedAtEveryRequest()
+            throws Exception {
+        MvcResult result = doLogin();
+
+        Cookie jwtCookie = result.getResponse()
                 .getCookie("jwt.headerAndPayload");
-        Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
-        Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
-        Assertions.assertNotEquals(jwtSignature.getValue(),
-                jwtSignature2.getValue());
+        Cookie jwtSignature = result.getResponse().getCookie("jwt.signature");
+
+        // Wait for a while, to be sure expire time is different
+        Thread.sleep(1500);
+        result = this.mvc
+                .perform(get("/restricted").with(csrfCookie()).cookie(jwtCookie,
+                        jwtSignature))
+                .andExpect(status().isForbidden())
+                .andExpect(authenticated().withUsername("user"))
+                .andExpect(cookie().exists("jwt.signature"))
+                .andExpect(cookie().exists("jwt.headerAndPayload")).andReturn();
+
+        assertCookiesUpdated(result, jwtCookie, jwtSignature);
     }
 
     @Test
@@ -209,6 +227,16 @@ class JwtStatelessAuthenticationTest {
         };
     }
 
+    private static void assertCookiesUpdated(MvcResult result, Cookie jwtCookie,
+            Cookie jwtSignature) {
+        Cookie jwtCookie2 = result.getResponse()
+                .getCookie("jwt.headerAndPayload");
+        Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
+        Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
+        Assertions.assertNotEquals(jwtSignature.getValue(),
+                jwtSignature2.getValue());
+    }
+
     @TestConfiguration
     @Import(FakeController.class)
     public static class SecurityConfig extends VaadinWebSecurity {
@@ -216,7 +244,8 @@ class JwtStatelessAuthenticationTest {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http.authorizeHttpRequests(
-                    auth -> auth.requestMatchers(antMatchers("/")).permitAll());
+                    auth -> auth.requestMatchers(antMatchers("/")).permitAll()
+                            .requestMatchers("/protected").authenticated());
             super.configure(http);
             setLoginView(http, "login");
             setStatelessAuthentication(http,
@@ -265,6 +294,11 @@ class JwtStatelessAuthenticationTest {
         @GetMapping("/protected")
         public String protectedView() {
             return "PROTECTED";
+        }
+
+        @GetMapping("/restricted")
+        public String restrictedView() {
+            return "RESTRICTED";
         }
 
     }

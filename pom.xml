@@ -85,10 +85,10 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>3.5.3</spring.boot.version>
-        <jakarta.ee.version>10.0.0</jakarta.ee.version>
+        <spring.boot.version>4.0.0-M1</spring.boot.version>
+        <jakarta.ee.version>11.0.0</jakarta.ee.version>
         <gwt.version>2.9.0</gwt.version>
-        <hibernate.validator.version>8.0.2.Final</hibernate.validator.version>
+        <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
         <jackson.version>2.19.2</jackson.version>
@@ -105,8 +105,8 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>10.0.0-alpha2</testbench.version>
-        <jetty.version>12.0.23</jetty.version>
+        <testbench.version>10.0.0-alpha3</testbench.version>
+        <jetty.version>12.0.25</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven.version>3.9.11</maven.version>
@@ -246,7 +246,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>1.13.5</version>
+                <version>2.0.0-alpha2</version>
             </dependency>
 
             <!-- Test dependencies -->
