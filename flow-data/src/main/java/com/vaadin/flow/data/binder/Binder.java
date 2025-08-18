@@ -2991,8 +2991,11 @@ public class Binder<BEAN> implements Serializable {
      * <p>
      * If all field level validators pass, and {@link #setBean(Object)} has been
      * used to bind to a bean, bean level validators are run for that bean. Bean
-     * level validators are ignored if there is no bound bean or if any field
-     * level validator fails.
+     * level validators are ignored if any field level validator fails.
+     * <p>
+     * <strong>Note:</strong> Validation will fail with an
+     * {@link IllegalStateException} if bean-level validators have been
+     * configured and no bean is currently bound.
      * <p>
      * <strong>Note:</strong> This method will attempt to temporarily apply all
      * current changes to the bean and run full bean validation for it. The
