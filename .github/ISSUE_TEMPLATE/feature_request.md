@@ -2,7 +2,7 @@
 name: Feature request
 about: Request for a new feature to Flow
 title: ''
-labels: enhancement
+labels: ''
 assignees: ''
 
 ---
