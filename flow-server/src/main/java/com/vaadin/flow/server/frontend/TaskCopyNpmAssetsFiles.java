@@ -83,7 +83,7 @@ public class TaskCopyNpmAssetsFiles
 
     @Override
     public void execute() {
-        if (!options.copyAssets() && !options.isDevBundleBuild()) {
+        if (!options.copyAssets()) {
             return;
         }
 

@@ -1078,10 +1078,15 @@ public class Options implements Serializable {
 
     /**
      * Get if npm assets should be copied for this Options execution.
+     * <p>
+     * NOTE! For a devBundleBuild copy assets will always be true!
      *
-     * @return Ture to copy npm assets else false.
+     * @return {@code false} to skip copying except for devBundleBuild.
      */
     public boolean copyAssets() {
+        if (isDevBundleBuild()) {
+            return true;
+        }
         return copyAssets;
     }
 }
