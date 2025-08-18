@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -334,9 +335,9 @@ public class FullDependenciesScannerTest {
 
         DepsTests.assertCss(scanner.getCss(), expected);
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertEquals(1, visitedClasses.size());
-        Assert.assertEquals(FlatImport.class.getName(),
-                visitedClasses.iterator().next());
+        Assert.assertEquals(2, visitedClasses.size());
+        Assert.assertTrue(visitedClasses.contains(FlatImport.class.getName()));
+        Assert.assertTrue(visitedClasses.contains(LumoTest.class.getName()));
     }
 
     @Test
