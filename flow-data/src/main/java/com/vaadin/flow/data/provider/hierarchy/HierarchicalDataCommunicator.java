@@ -47,13 +47,25 @@ import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 /**
+ * WARNING: Direct use of this class in application code is not recommended and
+ * may result in unexpected behavior. Use the API provided by the component
+ * instead.
+ * <p>
  * {@link HierarchicalDataCommunicator} is a middleware layer between
  * {@link HierarchicalDataProvider} and the client-side. It handles the loading
- * and caching of hierarchical data from the data provider, tracks expanded and
- * collapsed items, and delivers data to the client based on the
- * {@link #setViewportRange(int, int) requested viewport range}.
+ * and caching of hierarchical data from the data provider based on its
+ * hierarchy format, tracks expanded and collapsed items, and delivers data to
+ * the client based on the {@link #setViewportRange(int, int) requested viewport
+ * range}.
  * <p>
- * Internally, it stores data in a hierarchical cache structure where each level
+ * The communicator supports data providers that implement in one of the
+ * following formats: {@link HierarchyFormat#NESTED} or
+ * {@link HierarchyFormat#FLATTENED}.
+ * <p>
+ * <strong>Nested Hierarchy Format</strong>
+ * <p>
+ * When using data providers with {@link HierarchyFormat#NESTED}, the
+ * communicator stores data in a hierarchical cache structure where each level
  * is represented by a {@link Cache} object, and the root by {@link RootCache}.
  * <p>
  * Before sending data to the client, the visible range is flattened into a
@@ -62,14 +74,21 @@ import elemental.json.JsonValue;
  * method should be used by the component to get an item's depth and apply
  * indentation or other visual styling based on hierarchy level.
  * <p>
+ * <strong>Flattened Hierarchy Format</strong>
+ * <p>
+ * When using data providers whose format is {@link HierarchyFormat#FLATTENED},
+ * the communicator maintains all items in a single flat list, managed through
+ * {@link RootCache}, which is directly suitable for client-side rendering
+ * without any additional processing. The {@link #getDepth(Object)} method uses
+ * the data provider's implementation to determine the depth of an item in the
+ * hierarchy.
+ * <p>
+ * <strong>KeyMapper</strong>
+ * <p>
  * For each item in the visible range, the communicator generates a client-side
  * key using {@link KeyMapper}. This key is used to identify the item on the
  * server when the client sends updates or interaction events for that item such
  * as selection, expansion, etc.
- * <p>
- * WARNING: It's not recommended to rely on this class directly in application
- * code. Instead, the API provided by the component should be used. Direct use
- * may lead to unexpected behavior and isn't guaranteed to be stable.
  *
  * @param <T>
  *            the bean type
@@ -139,15 +158,15 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Clears all cached data and recursively re-fetches items from hierarchy
-     * levels that happen to be within the current viewport range, starting from
+     * levels that are still within the current viewport range, starting from
      * the root level.
      * <p>
-     * WARNING: This method performs a full hierarchy reset which discards
-     * information about previously visited expanded items and their positions
-     * in the hierarchy. As a result, the viewport's start index may become
-     * pointing to a different item if there were visited expanded items before
-     * the start index, which can cause a shift in the currently displayed
-     * items.
+     * WARNING: For data providers that use {@link HierarchyFormat#NESTED}, this
+     * method will clear all cached hierarchy state, discarding any potential
+     * information about the positions of expanded items in the hierarchy. As a
+     * result, the viewport's start index may become pointing to a different
+     * item if there were cached expanded items before the start index, causing
+     * a shift in the currently displayed items.
      */
     @Override
     public void reset() {
@@ -177,19 +196,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Replaces the cached item with a new instance and schedules a client
-     * update to re-render this item.
+     * update to re-render this item. When {@code refreshChildren} is true, the
+     * item's sub-hierarchy is cleared from the cache and scheduled to be
+     * re-fetched from the data provider once visible.
      * <p>
-     * When {@code refreshChildren} is true, the item's sub-hierarchy is cleared
-     * from the cache and scheduled to be re-fetched from the data provider when
-     * visible. Please note that this may cause visible range shifts if the
-     * refreshed item also contains <i>expanded</i> children. In such cases,
-     * their descendants might not be re-fetched immediately if they are not
-     * visible. This can affect the flattened hierarchy size and result in the
-     * viewport range pointing to a different set of items than before the
-     * refresh.
-     * <p>
-     * NOTE: {@code refreshChildren} is only supported for data providers that
-     * use {@link HierarchyFormat#NESTED}.
+     * WARNING: This method is only supported with data providers that use
+     * {@link HierarchyFormat#NESTED} and may cause visible range shift if the
+     * refreshed item contains <i>expanded</i> descendants. In such cases, they
+     * might not be re-fetched immediately if they are not visible. This can
+     * affect the flattened hierarchy size and result in the viewport range
+     * pointing to a different set of items than before the refresh.
      *
      * @since 25.0
      * @param item
@@ -328,6 +344,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (rootCache != null) {
             rootCache.removeDescendantCacheIf(
                     (cache) -> !isExpanded(cache.getParentItem()));
+        }
+
+        if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
+            reset();
+        } else {
             requestFlush();
         }
 
@@ -362,7 +383,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return expandedItemIds.add(getDataProvider().getId(item));
         }).toList();
 
-        requestFlush();
+        if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
+            reset();
+        } else {
+            requestFlush();
+        }
 
         return expandedItems;
     }
@@ -468,8 +493,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             preloadRange(cache, index, 1);
         }
 
+        if (restPath.length == 0) {
+            // If there is no rest path, we are at the target item
+            return;
+        }
+
         var item = cache.getItem(index);
-        if (restPath.length > 0 && isExpanded(item)) {
+        if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                && isExpanded(item)) {
             var subCache = cache.ensureSubCache(index,
                     () -> getDataProviderChildCount(item));
             resolveIndexPath(subCache, restPath);
@@ -528,7 +559,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             // Checking result.size() > 0 ensures that the start item
             // won't be expanded and its descendants won't be included
             // in the result.
-            if (isExpanded(item) && !cache.hasSubCache(index)
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                    && isExpanded(item) && !cache.hasSubCache(index)
                     && result.size() > 0) {
                 var subCache = cache.ensureSubCache(index,
                         () -> getDataProviderChildCount(item));

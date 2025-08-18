@@ -53,19 +53,19 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          * └── Item 1               | Fetched in 1st request
          * </pre>
          *
-         * Each request to the data provider returns a paginated list containing
-         * only the direct children of the {@link HierarchicalQuery#getParent()
-         * requested parent}. The component decides when to request deeper
-         * levels and how much to load based on the current viewport and the
-         * expansion state of items, storing the loaded hierarchy state in
-         * memory.
+         * Every request to the data provider returns a paginated list that
+         * contains only the direct children of the
+         * {@link HierarchicalQuery#getParent() requested parent}. The component
+         * decides when to request deeper levels and how much to load based on
+         * the current viewport and the expansion state of items, storing the
+         * loaded hierarchy state in memory.
          * <p>
          * Example:
          *
          * <pre>
          * class MyDataProvider
-         *         implements HierarchicalDataProvider<String, Void> {
-         *     private HashMap<String, List<String>> data = new HashMap<>() {
+         *         implements HierarchicalDataProvider&lt;String, Void&gt; {
+         *     private HashMap&lt;String, List&lt;String&gt;&gt; data = new HashMap&lt;&gt;() {
          *         {
          *             put(null, List.of("Item 0", "Item 1"));
          *             put("Item 0", List.of("Item 0-0"));
@@ -79,14 +79,14 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          *     }
          *
          *     &#64;Override
-         *     public Stream<String> fetchChildren(
-         *             HierarchicalQuery<String, Void> query) {
+         *     public Stream&lt;String&gt; fetchChildren(
+         *             HierarchicalQuery&lt;String, Void&gt; query) {
          *         return data.get(query.getParent()).stream()
          *                 .skip(query.getOffset()).limit(query.getLimit());
          *     }
          *
          *     &#64;Override
-         *     public int getChildCount(HierarchicalQuery<String, Void> query) {
+         *     public int getChildCount(HierarchicalQuery&lt;String, Void&gt; query) {
          *         return data.get(query.getParent()).size();
          *     }
          * }
@@ -149,8 +149,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          *
          * <pre>
          * class MyDataProvider
-         *         implements HierarchicalDataProvider<String, Void> {
-         *     private HashMap<String, List<String>> data = new HashMap<>() {
+         *         implements HierarchicalDataProvider&lt;String, Void&gt; {
+         *     private HashMap&lt;String, List&lt;String&gt;&gt; data = new HashMap&lt;>() {
          *         {
          *             put(null, List.of("Item 0", "Item 1"));
          *             put("Item 0", List.of("Item 0-0"));
@@ -164,16 +164,16 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          *     }
          *
          *     &#64;Override
-         *     public Stream<String> fetchChildren(
-         *             HierarchicalQuery<String, Void> query) {
+         *     public Stream&lt;String&gt; fetchChildren(
+         *             HierarchicalQuery&lt;String, Void&gt; query) {
          *         return flatten(query.getParent(), query.getExpandedItemIds())
          *                 .skip(query.getOffset()).limit(query.getLimit());
          *     }
          *
          *     &#64;Override
-         *     public int getChildCount(HierarchicalQuery<String, Void> query) {
-         *         return flatten(query.getParent(), query.getExpandedItemIds())
-         *                 .count();
+         *     public int getChildCount(HierarchicalQuery&lt;String, Void&gt; query) {
+         *         return (int) flatten(query.getParent(),
+         *                 query.getExpandedItemIds()).count();
          *     }
          *
          *     &#64;Override
@@ -181,8 +181,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
          *         return item.split("-").length - 1;
          *     }
          *
-         *     private Stream<String> flatten(String parent,
-         *             Set<Object> expandedItemIds) {
+         *     private Stream&lt;String&gt; flatten(String parent,
+         *             Set&lt;Object&gt; expandedItemIds) {
          *         return data.getOrDefault(parent, List.of()).stream().flatMap(
          *                 child -> expandedItemIds.contains(getId(child))
          *                         ? Stream.concat(Stream.of(child),
