@@ -241,7 +241,8 @@ public class HandlerHelper implements Serializable {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
-        } else if (isDynamicResourceRequest(requestedPathWithoutServletMapping.get())) {
+        } else if (isDynamicResourceRequest(
+                requestedPathWithoutServletMapping.get())) {
             return true;
         }
 
@@ -262,7 +263,7 @@ public class HandlerHelper implements Serializable {
         // Check if the request is for any dynamic resource, including
         // ElementRequestHandler requests without a specific postfix
         // Reject paths with directory traversal attempts
-        if (requestedPathWithoutServletMapping.contains("../") 
+        if (requestedPathWithoutServletMapping.contains("../")
                 || requestedPathWithoutServletMapping.contains("..\\")) {
             return false;
         }
