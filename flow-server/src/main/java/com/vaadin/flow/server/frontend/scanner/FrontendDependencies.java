@@ -835,7 +835,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     .isAssignableFrom(getFinder().loadClass(className))) {
                 info.loadCss = false;
             }
-        } catch (ClassNotFoundException ignore) { // NOSONAR
+        } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
             // NO-OP
         }
 
