@@ -164,6 +164,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/style.js")
     @JsModule("@vaadin/vaadin-lumo-styles/icons.js")
+    @CssImport("lumo-css-import.css")
     public static class LumoTest implements AbstractTheme {
 
         public static final String LIGHT = "light";
