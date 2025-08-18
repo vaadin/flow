@@ -3039,13 +3039,14 @@ public class Binder<BEAN> implements Serializable {
      * status.
      * <p>
      * If all field level validators pass, and {@link #setBean(Object)} has been
-     * used to bind to a bean, bean level validators are run for that bean. Bean
-     * level validators are ignored if there is no bound bean or if any field
-     * level validator fails.
+     * used to bind to a bean, bean level validators are run for that bean.
+     * <p>
+     * <strong>Note:</strong>Bean level validators are ignored if there is no
+     * bound bean or if any field level validator fails.
      * <p>
      * <strong>Note:</strong> This method will attempt to temporarily apply all
-     * current changes to the bean and run full bean validation for it. The
-     * changes are reverted after bean validation.
+     * current changes to the set bean and run full bean validation for it. The
+     * changes are reverted after bean validation is run.
      *
      * @return validation status for the binder
      */
@@ -3099,9 +3100,12 @@ public class Binder<BEAN> implements Serializable {
      * unlike {@link #validate()} and will not modify the UI. To also update
      * error indicators on fields, use {@code validate().isOk()}.
      * <p>
+     * <strong>Note:</strong>Bean level validators are ignored if there is no
+     * bound bean or if any field level validator fails.
+     * <p>
      * <strong>Note:</strong> This method will attempt to temporarily apply all
-     * current changes to the bean and run full bean validation for it. The
-     * changes are reverted after bean validation.
+     * current changes to the set bean and run full bean validation for it. The
+     * changes are reverted after bean validation is run.
      *
      * @see #validate()
      *
