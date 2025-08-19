@@ -75,6 +75,15 @@ public @interface NpmPackage {
     boolean dev() default false;
 
     /**
+     * Assets to copy from this npm package for static use. Format is
+     * "copyFromPathInModule:copyTargetFolderUnderFrontend", e.g.
+     * "dist/line-awesome/css/**:line-awesome/dist/line-awesome/css"
+     *
+     * @return array of assets to copy from npm package
+     */
+    String[] assets() default {};
+
+    /**
      * Internal annotation to enable use of multiple {@link NpmPackage}
      * annotations.
      */
