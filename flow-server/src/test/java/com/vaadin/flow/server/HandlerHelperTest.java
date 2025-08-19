@@ -217,6 +217,15 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_vaadinServletMapping_hillaPushUrl() {
+        VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
+                null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/ui/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_flowPushUrl() {
         VaadinServletRequest request = createVaadinRequest("VAADIN/push", "",
                 RequestType.PUSH);
