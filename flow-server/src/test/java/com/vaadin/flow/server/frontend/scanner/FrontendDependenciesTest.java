@@ -179,7 +179,7 @@ public class FrontendDependenciesTest {
     }
 
     @Test
-    public void themNotDefined_ButReferenced_themeCssNotLoaded() {
+    public void themeNotDefined_ButReferenced_themeCssNotLoaded() {
         Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
                 .thenReturn(Collections.singleton(ThemeReferenceShell.class));
 
