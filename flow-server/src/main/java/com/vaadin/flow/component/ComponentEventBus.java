@@ -366,18 +366,10 @@ public class ComponentEventBus implements Serializable {
                     || type == Element.class) {
                 eventDataObjects.add(parseStateNodeIdToComponentReference(
                         domEvent, type, expression));
-            } else if (JsonNode.class.isAssignableFrom(type)) {
-                // TODO: Decode and remove if when domEvent uses jackson.
-                JsonValue eventValue = domEvent.getEventData().get(expression);
-                if (eventValue == null || eventValue instanceof JsonNull) {
-                    eventDataObjects.add(null);
-                } else {
-                    eventDataObjects.add(JacksonUtils.mapElemental(eventValue));
-                }
             } else {
-                JsonValue jsonValue = domEvent.getEventData().get(expression);
+                JsonNode jsonValue = domEvent.getEventData().get(expression);
                 if (jsonValue == null) {
-                    jsonValue = Json.createNull();
+                    jsonValue = JacksonUtils.nullNode();
                 }
                 Object value = JsonCodec.decodeAs(jsonValue, type);
                 eventDataObjects.add(value);

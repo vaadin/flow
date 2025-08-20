@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
@@ -353,7 +355,7 @@ public class UIInternalsTest {
         Mockito.verify(node, Mockito.times(1))
                 .addDetachListener(ArgumentMatchers.any());
 
-        invocation.complete(JsonCodec.encodeWithTypeInfo("OK"));
+        invocation.complete(JacksonCodec.encodeWithTypeInfo("OK"));
 
         Assert.assertEquals(0,
                 internals.getPendingJavaScriptInvocations().count());
@@ -374,7 +376,8 @@ public class UIInternalsTest {
         Mockito.verify(node, Mockito.times(1))
                 .addDetachListener(ArgumentMatchers.any());
 
-        invocation.completeExceptionally(JsonCodec.encodeWithTypeInfo("ERROR"));
+        invocation.completeExceptionally(
+                JacksonCodec.encodeWithTypeInfo("ERROR"));
 
         Assert.assertEquals(0,
                 internals.getPendingJavaScriptInvocations().count());

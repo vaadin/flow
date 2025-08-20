@@ -78,10 +78,8 @@ public class Router implements Serializable {
      *            the location object of the route
      */
     public void initializeUI(UI ui, Location location) {
-        ui.getPage().getHistory()
-                .setHistoryStateChangeHandler(e -> navigate(ui, e.getLocation(),
-                        e.getTrigger(),
-                        JacksonUtils.mapElemental(e.getState().orElse(null))));
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
+                e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
 
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 

@@ -17,10 +17,12 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 
 import elemental.json.Json;
@@ -50,7 +52,7 @@ public class ReturnChannelMapTest {
 
     @Test
     public void twoArgsHandler_invoked() {
-        AtomicReference<JsonArray> observedArguments = new AtomicReference<>();
+        AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
         AtomicReference<ReturnChannelRegistration> observedRegistration = new AtomicReference<>();
 
         ReturnChannelRegistration registration = returnChannelMap
@@ -66,7 +68,7 @@ public class ReturnChannelMapTest {
         Assert.assertNull("Handler should not yet be invoked",
                 observedArguments.get());
 
-        JsonArray arguments = Json.createArray();
+        ArrayNode arguments = JacksonUtils.createArrayNode();
         registration.invoke(arguments);
 
         Assert.assertSame(arguments, observedArguments.get());
@@ -75,7 +77,7 @@ public class ReturnChannelMapTest {
 
     @Test
     public void shorthandHandler_invoked() {
-        AtomicReference<JsonArray> observedArguments = new AtomicReference<>();
+        AtomicReference<ArrayNode> observedArguments = new AtomicReference<>();
 
         ReturnChannelRegistration registration = returnChannelMap
                 .registerChannel(arguments -> {
@@ -88,7 +90,7 @@ public class ReturnChannelMapTest {
         Assert.assertNull("Handler should not yet be invoked",
                 observedArguments.get());
 
-        JsonArray arguments = Json.createArray();
+        ArrayNode arguments = JacksonUtils.createArrayNode();
         registration.invoke(arguments);
 
         Assert.assertSame(arguments, observedArguments.get());

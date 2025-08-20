@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,21 +54,21 @@ public class AttachTemplateChildRpcHandler
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ID);
+            JsonNode invocationJson) {
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_ID);
 
-        int requestedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        int assignedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        int requestedId = invocationJson
+                .get(JsonConstants.RPC_ATTACH_REQUESTED_ID).intValue();
+        int assignedId = invocationJson
+                .get(JsonConstants.RPC_ATTACH_ASSIGNED_ID).intValue();
 
         StateTree tree = (StateTree) node.getOwner();
         StateNode requestedNode = tree.getNodeById(requestedId);
 
         StateNode parent = tree.getNodeById(requestedId).getParent();
-        JsonValue id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
+        JsonNode id = invocationJson.get(JsonConstants.RPC_ATTACH_ID);
         String tag = requestedNode.getFeature(ElementData.class).getTag();
 
         Logger logger = LoggerFactory
@@ -85,7 +86,7 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' was "
                                 + "not found in the parent with id='%d'",
-                        tag, id.asString(), parent.getId()));
+                        tag, id.toString(), parent.getId()));
             }
         } else if (requestedId != assignedId) {
             logger.error("Attach existing element has failed because "
@@ -99,7 +100,7 @@ public class AttachTemplateChildRpcHandler
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' and id '%s' is "
                                 + "already attached to the parent with id='%d'",
-                        tag, id.asString(), parent.getId()));
+                        tag, id.toString(), parent.getId()));
             }
         } else {
             logger.error("Attach existing element request succeeded. "

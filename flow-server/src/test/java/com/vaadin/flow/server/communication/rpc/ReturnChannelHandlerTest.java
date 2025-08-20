@@ -17,6 +17,9 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -24,6 +27,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
@@ -39,14 +43,14 @@ import elemental.json.JsonObject;
 public class ReturnChannelHandlerTest {
     private MockUI ui = new MockUI();
 
-    private AtomicReference<JsonArray> observedArguments = new AtomicReference<>();
-    private SerializableConsumer<JsonArray> observingConsumer = arguments -> {
+    private AtomicReference<JsonNode> observedArguments = new AtomicReference<>();
+    private SerializableConsumer<ArrayNode> observingConsumer = arguments -> {
         Assert.assertNotNull("Arguments should not be null", arguments);
         Assert.assertNull("There should be no previous arguments",
                 observedArguments.getAndSet(arguments));
     };
 
-    private JsonArray args = Json.createArray();
+    private ArrayNode args = JacksonUtils.createArrayNode();
 
     @Test
     public void happyPath_everythingWorks() {
@@ -157,17 +161,17 @@ public class ReturnChannelHandlerTest {
     }
 
     private void handleMessage(int nodeId, int channelId) {
-        JsonObject invocationJson = createInvocationJson(nodeId, channelId);
+        JsonNode invocationJson = createInvocationJson(nodeId, channelId);
 
         new ReturnChannelHandler().handle(ui, invocationJson);
     }
 
-    private JsonObject createInvocationJson(int stateNodeId, int channelId) {
-        JsonObject invocationJson = Json.createObject();
+    private JsonNode createInvocationJson(int stateNodeId, int channelId) {
+        ObjectNode invocationJson = JacksonUtils.createObjectNode();
 
         invocationJson.put(JsonConstants.RPC_NODE, stateNodeId);
         invocationJson.put(JsonConstants.RPC_CHANNEL, channelId);
-        invocationJson.put(JsonConstants.RPC_CHANNEL_ARGUMENTS, args);
+        invocationJson.set(JsonConstants.RPC_CHANNEL_ARGUMENTS, args);
 
         return invocationJson;
     }

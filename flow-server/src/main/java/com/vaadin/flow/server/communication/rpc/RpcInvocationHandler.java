@@ -18,6 +18,8 @@ package com.vaadin.flow.server.communication.rpc;
 import java.io.Serializable;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.UI;
 
 import elemental.json.JsonObject;
@@ -53,6 +55,6 @@ public interface RpcInvocationHandler extends Serializable {
      *            the RPC data to handle, not {@code null}
      * @return an optional runnable
      */
-    Optional<Runnable> handle(UI ui, JsonObject invocationJson);
+    Optional<Runnable> handle(UI ui, JsonNode invocationJson);
 
 }

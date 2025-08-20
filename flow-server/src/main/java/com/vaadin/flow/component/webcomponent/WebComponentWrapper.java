@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -103,7 +105,7 @@ public class WebComponentWrapper extends Component {
      *            the new value to set
      */
     @ClientCallable
-    public void sync(String property, JsonValue newValue) {
+    public void sync(String property, BaseJsonNode newValue) {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {

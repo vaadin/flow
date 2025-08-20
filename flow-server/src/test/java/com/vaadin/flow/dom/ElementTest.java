@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +42,7 @@ import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -377,8 +379,8 @@ public class ElementTest extends AbstractNodeTest {
 
         e.addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
-        e.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        e.getNode().getFeature(ElementListenerMap.class).fireEvent(
+                new DomEvent(e, "click", JacksonUtils.createObjectNode()));
         Assert.assertEquals(1, listenerCalls.get());
     }
 
@@ -396,15 +398,15 @@ public class ElementTest extends AbstractNodeTest {
         DomListenerRegistration domListenerRegistration = e
                 .addEventListener("click", myListener);
         Assert.assertEquals(0, listenerCalls.get());
-        e.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        e.getNode().getFeature(ElementListenerMap.class).fireEvent(
+                new DomEvent(e, "click", JacksonUtils.createObjectNode()));
         // Event should not go through
         Assert.assertEquals(0, listenerCalls.get());
 
         // Now should pass inert check and get notified
         domListenerRegistration.allowInert();
-        e.getNode().getFeature(ElementListenerMap.class)
-                .fireEvent(new DomEvent(e, "click", Json.createObject()));
+        e.getNode().getFeature(ElementListenerMap.class).fireEvent(
+                new DomEvent(e, "click", JacksonUtils.createObjectNode()));
         Assert.assertEquals(1, listenerCalls.get());
 
     }
@@ -449,7 +451,7 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyString("42", Double.valueOf(42));
 
         assertPropertyString(null, Json.createNull());
-        assertPropertyString("{}", Json.createObject());
+        assertPropertyString("{}", JacksonUtils.createObjectNode());
     }
 
     private static void assertPropertyString(String expected, Object value) {
@@ -475,7 +477,7 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyBoolean(false, Json.createNull());
         assertPropertyBoolean(false, Json.create(false));
         assertPropertyBoolean(true, Json.create(true));
-        assertPropertyBoolean(true, Json.createObject());
+        assertPropertyBoolean(true, JacksonUtils.createObjectNode());
     }
 
     private static void assertPropertyBoolean(boolean expected, Object value) {
@@ -510,7 +512,7 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyDouble(0, Json.create(false));
         assertPropertyDouble(.1, Json.create(".1"));
         assertPropertyDouble(Double.NaN, Json.create("foo"));
-        assertPropertyDouble(Double.NaN, Json.createObject());
+        assertPropertyDouble(Double.NaN, JacksonUtils.createObjectNode());
     }
 
     private static void assertPropertyDouble(double expected, Object value) {
@@ -549,7 +551,7 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyInt(0, Json.create(false));
         assertPropertyInt(1, Json.create("1"));
         assertPropertyInt(0, Json.create("foo"));
-        assertPropertyInt(0, Json.createObject());
+        assertPropertyInt(0, JacksonUtils.createObjectNode());
     }
 
     private static void assertPropertyInt(int expected, Object value) {
@@ -620,8 +622,8 @@ public class ElementTest extends AbstractNodeTest {
         element.setProperty("p", 3.14);
         Assert.assertEquals(Double.valueOf(3.14), element.getPropertyRaw("p"));
 
-        element.setPropertyJson("p", Json.createObject());
-        Assert.assertEquals(JreJsonObject.class,
+        element.setPropertyJson("p", JacksonUtils.createObjectNode());
+        Assert.assertEquals(ObjectNode.class,
                 element.getPropertyRaw("p").getClass());
 
         element.setPropertyBean("p", new SimpleBean());
@@ -1362,8 +1364,9 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     private void fireEvent(Element element, String eventType) {
-        element.getNode().getFeature(ElementListenerMap.class).fireEvent(
-                new DomEvent(element, eventType, Json.createObject()));
+        element.getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new DomEvent(element, eventType,
+                        JacksonUtils.createObjectNode()));
 
     }
 
