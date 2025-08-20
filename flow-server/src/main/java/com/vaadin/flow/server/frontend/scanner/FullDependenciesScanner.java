@@ -317,6 +317,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             LinkedHashSet<CssData> result = new LinkedHashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
+                if (AbstractTheme.class.isAssignableFrom(clazz)
+                        && (themeDefinition == null
+                                || !clazz.equals(themeDefinition.getTheme()))) {
+                    // Do not add css from all found theme classes,
+                    // only defined theme.
+                    continue;
+                }
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
                 imports.stream().forEach(imp -> result.add(createCssData(imp)));
