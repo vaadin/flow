@@ -43,6 +43,7 @@ import static com.vaadin.flow.uitest.ui.theme.ThemeView.LUMO_BORDER_TOP_DIV;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.MY_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.OCTOPUSS_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_ID;
+import static com.vaadin.flow.uitest.ui.theme.ThemeView.SNOWFLAKE_NPM_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUB_COMPONENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeView.SUN_ID;
 
@@ -183,11 +184,28 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 "Node assets should have been copied to 'themes/app-theme'",
-                getRootURL() + "/path/VAADIN/static/npm/icons/snowflake.svg",
+                getRootURL()
+                        + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/"
                 + $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
+        Assert.assertFalse("Node static icon should be available",
+                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
+    }
+
+    @Test
+    public void staticModuleAsset_servedFromNmAssets() {
+        open();
+        checkLogsForErrors();
+
+        Assert.assertEquals(
+                "Node assets should have been copied to 'themes/app-theme'",
+                getRootURL() + "/path/VAADIN/static/npm/icons/snowflake.svg",
+                $(ImageElement.class).id(SNOWFLAKE_NPM_ID).getAttribute("src"));
+
+        open(getRootURL() + "/path/" + $(ImageElement.class)
+                .id(SNOWFLAKE_NPM_ID).getAttribute("src"));
         Assert.assertFalse("Node static icon should be available",
                 driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
     }
