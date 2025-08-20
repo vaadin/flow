@@ -224,8 +224,9 @@ public class DebugWindowConnectionLicenseCheckTest {
         command.put("command", "downloadLicense");
         command.putPOJO("data", TEST_PRODUCT);
         return sendAndReceive(command,
-                licenseChecker -> licenseChecker.when(() -> LicenseChecker
-                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
+                licenseChecker -> licenseChecker
+                        .when(() -> LicenseChecker.checkLicenseAsync(
+                                eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
                                 any(LicenseChecker.Callback.class),

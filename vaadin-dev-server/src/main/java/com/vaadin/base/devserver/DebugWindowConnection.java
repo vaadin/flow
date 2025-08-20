@@ -360,7 +360,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         try {
             LicenseChecker.checkLicense(product.getName(), product.getVersion(),
-                    BuildType.DEVELOPMENT, null, Capabilities.of(Capability.PRE_TRIAL));
+                    BuildType.DEVELOPMENT, null,
+                    Capabilities.of(Capability.PRE_TRIAL));
         } catch (PreTrialLicenseValidationException e) {
             errorMessage = e.getMessage();
             preTrial = e.getPreTrial();
@@ -386,7 +387,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         LicenseChecker.checkLicenseAsync(product.getName(),
                 product.getVersion(), BuildType.DEVELOPMENT,
-                new LicenseDownloadCallback(resource, product), Capabilities.of(Capability.PRE_TRIAL));
+                new LicenseDownloadCallback(resource, product),
+                Capabilities.of(Capability.PRE_TRIAL));
         send(resource, "license-download-started", product);
     }
 
