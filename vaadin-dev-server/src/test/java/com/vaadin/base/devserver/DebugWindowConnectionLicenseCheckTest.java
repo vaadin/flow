@@ -224,13 +224,12 @@ public class DebugWindowConnectionLicenseCheckTest {
         command.put("command", "downloadLicense");
         command.putPOJO("data", TEST_PRODUCT);
         return sendAndReceive(command,
-                licenseChecker -> licenseChecker
-                        .when(() -> LicenseChecker.checkLicenseAsync(
-                                eq(TEST_PRODUCT.getName()),
+                licenseChecker -> licenseChecker.when(() -> LicenseChecker
+                        .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
                                 any(LicenseChecker.Callback.class),
-                                eq(Capabilities.of(Capability.PRE_TRIAL))))
+                                any(Capabilities.class)))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);
@@ -271,9 +270,10 @@ public class DebugWindowConnectionLicenseCheckTest {
     private Consumer<MockedStatic<LicenseChecker>> mockCheckLicense(
             LicenseCheckResult licenseCheckResult) {
         return licenseChecker -> {
-            licenseChecker.when(
-                    () -> LicenseChecker.checkLicense(anyString(), anyString(),
-                            Mockito.any(BuildType.class), Mockito.isNull()))
+            licenseChecker
+                    .when(() -> LicenseChecker.checkLicense(anyString(),
+                            anyString(), Mockito.any(BuildType.class),
+                            Mockito.isNull(), Mockito.any(Capabilities.class)))
                     .then(i -> {
                         switch (licenseCheckResult) {
                         case INVALID ->
