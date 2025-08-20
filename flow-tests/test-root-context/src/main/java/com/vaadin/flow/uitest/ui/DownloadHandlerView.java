@@ -92,6 +92,22 @@ public class DownloadHandlerView extends Div {
                         .inline());
         inputStreamErrorDownload.setId("download-handler-input-stream-error");
 
+        RuntimeException runtimeException = new RuntimeException(
+                "Callback exception");
+        Anchor inputStreamExceptionDownload = new Anchor("",
+                "InputStream DownloadHandler shorthand (EXCEPTION)");
+        inputStreamExceptionDownload.setHref(DownloadHandler
+                .fromInputStream(downloadEvent -> DownloadResponse.error(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR, runtimeException))
+                .inline().whenComplete((e, t) -> {
+                    if (e.exception() == runtimeException) {
+                        e.response()
+                                .setStatus(HttpStatusCode.FORBIDDEN.getCode());
+                    }
+                }));
+        inputStreamExceptionDownload
+                .setId("download-handler-input-stream-exception");
+
         Anchor inputStreamCallbackError = new Anchor("",
                 "InputStream DownloadHandler callback shorthand (CALLBACK EXCEPTION)");
         inputStreamCallbackError
@@ -103,7 +119,7 @@ public class DownloadHandlerView extends Div {
 
         add(handlerDownload, fileDownload, classDownload, servletDownload,
                 inputStreamDownload, inputStreamErrorDownload,
-                inputStreamCallbackError);
+                inputStreamExceptionDownload, inputStreamCallbackError);
 
         NativeButton reattach = new NativeButton("Remove and add back",
                 event -> {
