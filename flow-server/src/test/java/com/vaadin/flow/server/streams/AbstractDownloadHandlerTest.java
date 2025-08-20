@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -200,6 +201,7 @@ public class AbstractDownloadHandlerTest {
         Assert.assertTrue(successAtomic.get());
         Assert.assertEquals("Hello",
                 outputStream.toString(StandardCharsets.UTF_8));
+        Assert.assertNull(downloadEvent.getException());
 
         OutputStream outputStreamError = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
@@ -210,6 +212,7 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
         Assert.assertFalse(successAtomic.get());
+        Assert.assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -253,6 +256,7 @@ public class AbstractDownloadHandlerTest {
         Assert.assertEquals(response, context.response());
         Assert.assertEquals(1024, context.contentLength());
         Assert.assertEquals("test.txt", context.fileName());
+        Assert.assertNull(event.getException());
     }
 
     @Test

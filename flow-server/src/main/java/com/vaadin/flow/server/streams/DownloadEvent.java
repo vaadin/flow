@@ -49,6 +49,7 @@ public class DownloadEvent {
     private String fileName;
     private String contentType;
     private long contentLength = -1;
+    private Exception exception;
 
     public DownloadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owningElement) {
@@ -236,5 +237,13 @@ public class DownloadEvent {
 
     long getContentLength() {
         return contentLength;
+    }
+
+    Exception getException() {
+        return exception;
+    }
+
+    void setException(Exception exception) {
+        this.exception = exception;
     }
 }
