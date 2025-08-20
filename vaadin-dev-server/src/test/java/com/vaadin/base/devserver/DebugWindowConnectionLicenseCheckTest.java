@@ -36,6 +36,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.Capabilities;
+import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.PreTrial;
@@ -226,7 +228,8 @@ public class DebugWindowConnectionLicenseCheckTest {
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class)))
+                                any(LicenseChecker.Callback.class),
+                                eq(Capabilities.of(Capability.PRE_TRIAL))))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);

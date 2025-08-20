@@ -43,6 +43,8 @@ import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.Capabilities;
+import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.PreTrial;
 import com.vaadin.pro.licensechecker.PreTrialCreationException;
@@ -358,7 +360,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         try {
             LicenseChecker.checkLicense(product.getName(), product.getVersion(),
-                    BuildType.DEVELOPMENT, null);
+                    BuildType.DEVELOPMENT, null, Capabilities.of(Capability.PRE_TRIAL));
         } catch (PreTrialLicenseValidationException e) {
             errorMessage = e.getMessage();
             preTrial = e.getPreTrial();
@@ -384,7 +386,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         LicenseChecker.checkLicenseAsync(product.getName(),
                 product.getVersion(), BuildType.DEVELOPMENT,
-                new LicenseDownloadCallback(resource, product));
+                new LicenseDownloadCallback(resource, product), Capabilities.of(Capability.PRE_TRIAL));
         send(resource, "license-download-started", product);
     }
 
