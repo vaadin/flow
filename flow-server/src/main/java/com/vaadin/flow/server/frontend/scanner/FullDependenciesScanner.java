@@ -64,6 +64,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String VALUE = "value";
     private static final String DEVELOPMENT_ONLY = "developmentOnly";
     private static final String VERSION = "version";
+    private static final String ASSETS = "assets";
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -71,6 +72,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
     private Map<String, String> devPackages;
+    private HashMap<String, List<String>> assets = new HashMap<>();
+    private HashMap<String, List<String>> devAssets = new HashMap<>();
     private List<CssData> cssData;
     private List<String> scripts;
     private List<String> scriptsDevelopment;
@@ -177,6 +180,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
+    public Map<String, List<String>> getAssets() {
+        return Collections.unmodifiableMap(assets);
+    }
+
+    @Override
+    public Map<String, List<String>> getDevAssets() {
+        return Collections.unmodifiableMap(devAssets);
+    }
+
+    @Override
     public Map<ChunkInfo, List<String>> getModules() {
         return Collections.singletonMap(ChunkInfo.GLOBAL,
                 Collections.unmodifiableList(modules));
@@ -259,9 +272,22 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             VALUE);
                     String version = getAnnotationValueAsString(annotation,
                             VERSION);
+                    String[] npmAssets = (String[]) getAnnotationValue(
+                            annotation, ASSETS);
+
                     boolean dev = getAnnotationValueAsBoolean(annotation, DEV);
                     logs.add(value + " " + version + " " + clazz.getName());
                     Map<String, String> result = dev ? devPackages : packages;
+                    if (npmAssets.length > 0) {
+                        List<String> assetsList = Arrays.asList(npmAssets);
+                        if (!assetsList.isEmpty()) {
+                            if (dev) {
+                                addValues(devAssets, value, assetsList);
+                            } else {
+                                addValues(assets, value, assetsList);
+                            }
+                        }
+                    }
                     if (result.containsKey(value)
                             && !result.get(value).equals(version)) {
                         String foundVersions = "[" + result.get(value) + ", "

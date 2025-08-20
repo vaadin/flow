@@ -50,6 +50,7 @@ final class FrontendClassVisitor extends ClassVisitor {
     static final String VALUE = "value";
     static final String THEME_CLASS = "themeClass";
     static final String VERSION = "version";
+    static final String ASSETS = "assets";
     static final String DEV = "dev";
     static final String ID = "id";
     static final String INCLUDE = "include";

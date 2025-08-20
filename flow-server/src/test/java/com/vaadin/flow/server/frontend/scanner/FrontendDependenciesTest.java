@@ -32,6 +32,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -398,6 +399,48 @@ public class FrontendDependenciesTest {
                 entryPointClass));
     }
 
+    @Test
+    public void classScanningForNpmPackage_collectsNpmAssets()
+            throws ClassNotFoundException {
+        LinkedHashSet<Class<?>> hierarchy = Stream.of(Assets.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(
+                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        Assert.assertEquals(1, dependencies.getAssets().size());
+        Assert.assertEquals(1, dependencies.getAssets().get("images").size());
+        Assert.assertEquals("images/22x25/**:22x25",
+                dependencies.getAssets().get("images").get(0));
+    }
+
+    @Test
+    public void classScanningForNpmPackage_duplicatePackages_collectsAllNpmAssets()
+            throws ClassNotFoundException {
+        LinkedHashSet<Class<?>> hierarchy = Stream
+                .of(Assets.class, DuplicatedAssets.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(
+                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        Assert.assertEquals(1, dependencies.getAssets().size());
+        Assert.assertEquals(2, dependencies.getAssets().get("images").size());
+        Assert.assertTrue(dependencies.getAssets().get("images")
+                .contains("images/22x25/**:22x25"));
+        Assert.assertTrue(dependencies.getAssets().get("images")
+                .contains("images/28x28/**:28x28"));
+
+    }
+
     private static EntryPointData getEntryPointByClass(
             FrontendDependencies dependencies, Class<?> entryPointClass) {
         Optional<EntryPointData> childEntryPoint = dependencies.getEntryPoints()
@@ -530,5 +573,17 @@ public class FrontendDependenciesTest {
     @Layout
     @JsModule("reference.js")
     public static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/22x25/**:22x25" })
+    @Tag("div")
+    public static class Assets extends Component {
+    }
+
+    @Tag("div")
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/28x28/**:28x28" })
+    public static class DuplicatedAssets extends Component {
     }
 }

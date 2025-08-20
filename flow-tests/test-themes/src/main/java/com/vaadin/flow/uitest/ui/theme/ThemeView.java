@@ -28,6 +28,7 @@ public class ThemeView extends Div {
     public static final String MY_COMPONENT_ID = "field";
     public static final String TEST_TEXT_ID = "test-text";
     public static final String SNOWFLAKE_ID = "fortawesome";
+    public static final String SNOWFLAKE_NPM_ID = "fortawesome-npm";
     public static final String BUTTERFLY_ID = "butterfly";
     public static final String OCTOPUSS_ID = "octopuss";
     public static final String FONTAWESOME_ID = "font-awesome";
@@ -61,19 +62,26 @@ public class ThemeView extends Div {
         faText.setClassName("fas fa-coffee");
         faText.setId(FONTAWESOME_ID);
 
+        // Test theme asset
         Image snowFlake = new Image(
                 "themes/app-theme/fortawesome/icons/snowflake.svg",
                 "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);
 
+        // Test npm asset
+        Image snowFlakeNpm = new Image("VAADIN/static/npm/icons/snowflake.svg",
+                "snowflake");
+        snowFlakeNpm.setHeight("1em");
+        snowFlakeNpm.setId(SNOWFLAKE_NPM_ID);
+
         Span diceImageSpan = new Span();
         diceImageSpan.getStyle().set("background-image",
                 "url('themes/app-theme/img/dice.jpg')");
         diceImageSpan.setId(DICE_ID);
 
-        add(textSpan, snowFlake, subCss, butterfly, octopuss, cssSnowflake,
-                faText, diceImageSpan);
+        add(textSpan, snowFlake, snowFlakeNpm, subCss, butterfly, octopuss,
+                cssSnowflake, faText, diceImageSpan);
 
         Div keyboardIconFromParentTheme = new Div(
                 "Keyboard Icon in theme sub folder");
