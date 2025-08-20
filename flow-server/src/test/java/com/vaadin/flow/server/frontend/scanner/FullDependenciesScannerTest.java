@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -123,6 +124,8 @@ public class FullDependenciesScannerTest {
         Assert.assertNull(scanner.getTheme());
         Assert.assertNull(scanner.getThemeDefinition());
         Assert.assertEquals(0, scanner.getClasses().size());
+        Assert.assertFalse(DepsTests.merge(scanner.getModules())
+                .contains("./foo-bar-baz.js"));
     }
 
     @Test
@@ -143,6 +146,65 @@ public class FullDependenciesScannerTest {
                 scanner.getThemeDefinition().getTheme());
         Assert.assertEquals("dark", scanner.getThemeDefinition().getVariant());
         Assert.assertEquals(0, scanner.getClasses().size());
+    }
+
+    @Test
+    public void themeWithCssDefined_cssLoaded() throws ClassNotFoundException {
+        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+                .thenReturn((Class) LumoTest.class);
+        Mockito.when(finder.loadClass(CssImport.class.getName()))
+                .thenReturn((Class) CssImport.class);
+
+        Mockito.when(finder.getAnnotatedClasses(CssImport.class))
+                .thenReturn(getAnnotatedClasses(CssImport.class));
+
+        FrontendDependenciesScanner scanner = setUpThemeScanner(
+                getAnnotatedClasses(Theme.class), Collections.emptySet(),
+                (type, annotationType) -> {
+                    if (annotationType.equals(CssImport.class)) {
+                        return findAnnotations(type, CssImport.class);
+                    }
+                    return findAnnotations(type, Theme.class);
+                });
+
+        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+
+        Assert.assertNotNull(scanner.getTheme());
+        Assert.assertTrue(DepsTests.merge(scanner.getCss()).stream()
+                .map(CssData::getValue).toList()
+                .contains("lumo-css-import.css"));
+    }
+
+    @Test
+    public void themeWithCssOnClassPath_notDefinedAsTheme_cssNotLoaded()
+            throws ClassNotFoundException {
+        Mockito.when(finder.loadClass(LumoTest.class.getName()))
+                .thenReturn((Class) LumoTest.class);
+        Mockito.when(finder.loadClass(CssImport.class.getName()))
+                .thenReturn((Class) CssImport.class);
+
+        Set<Class<?>> result = new LinkedHashSet<>();
+        for (Class<?> clazz : Arrays.asList(NoThemeComponent.class,
+                NoThemeComponent1.class, FakeLumoTheme.class)) {
+            if (clazz.getAnnotationsByType(CssImport.class).length > 0) {
+                result.add(clazz);
+            }
+        }
+
+        Mockito.when(finder.getAnnotatedClasses(CssImport.class))
+                .thenReturn(result);
+
+        FrontendDependenciesScanner scanner = new FullDependenciesScanner(
+                finder,
+                (type, annotation) -> findAnnotations(type, CssImport.class),
+                null, true);
+
+        Mockito.verify(finder).loadClass(AbstractTheme.class.getName());
+
+        Assert.assertNull(scanner.getTheme());
+        Assert.assertFalse(DepsTests.merge(scanner.getCss()).stream()
+                .map(CssData::getValue).toList()
+                .contains("lumo-css-import.css"));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -276,9 +338,9 @@ public class FullDependenciesScannerTest {
 
         DepsTests.assertCss(scanner.getCss(), expected);
         Set<String> visitedClasses = scanner.getClasses();
-        Assert.assertEquals(1, visitedClasses.size());
-        Assert.assertEquals(FlatImport.class.getName(),
-                visitedClasses.iterator().next());
+        Assert.assertEquals(2, visitedClasses.size());
+        Assert.assertTrue(visitedClasses.contains(FlatImport.class.getName()));
+        Assert.assertTrue(visitedClasses.contains(LumoTest.class.getName()));
     }
 
     @Test
