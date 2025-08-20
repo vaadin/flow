@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -191,7 +192,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                entryPoint.getCss().addAll(classInfo.css);
+                if (classInfo.loadCss) {
+                    entryPoint.getCss().addAll(classInfo.css);
+                }
                 entryPoint.getScripts().addAll(classInfo.scripts);
                 entryPoint.getScriptsDevelopmentOnly()
                         .addAll(classInfo.scriptsDevelopmentOnly);
@@ -573,20 +576,22 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         // This really should check entry points and not all classes, but the
         // old behavior is retained.. for now..
-        List<ClassInfo> classesWithTheme = entryPoints.values().stream()
+        Map<ThemeData, ClassInfo> classesWithTheme = entryPoints.values()
+                .stream()
                 .flatMap(entryPoint -> entryPoint.reachableClasses.stream())
-                .map(className -> visitedClasses.get(className))
+                .map(visitedClasses::get)
                 // consider only entry points with theme information
-                .filter(this::hasThemeInfo).toList();
-        Set<ThemeData> themes = classesWithTheme.stream()
-                .map(classInfo -> classInfo.theme)
-                // Remove duplicates by returning a set
-                .collect(Collectors.toSet());
+                .filter(this::hasThemeInfo)
+                // Map on ThemeData to not get theme duplicates
+                .collect(Collectors.toMap(classInfo -> classInfo.theme,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
 
-        if (themes.size() > 1) {
-            String names = classesWithTheme.stream()
-                    .map(data -> "found '" + getThemeDescription(data.theme)
-                            + "' in '" + data.className + "'")
+        if (classesWithTheme.size() > 1) {
+            String names = classesWithTheme.keySet().stream()
+                    .map(theme -> "found '" + getThemeDescription(theme)
+                            + "' in '" + classesWithTheme.get(theme).className
+                            + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      "
@@ -596,9 +601,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         String themeName = "";
-        if (!themes.isEmpty()) {
+        if (!classesWithTheme.isEmpty()) {
+            ThemeData themeData = classesWithTheme.keySet().iterator().next();
             // we have a proper theme or no-theme for the app
-            ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 String themeClass = themeData.getThemeClass();
                 if (!themeData.getThemeName().isEmpty() && themeClass != null) {
@@ -618,13 +623,19 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 }
                 themeName = themeData.getThemeName();
             }
+
+            // theme could be null when lumo is not found or when a NoTheme
+            // found
+            if (theme != null) {
+                themeDefinition = new ThemeDefinition(theme, variant,
+                        themeName);
+                themeInstance = new ThemeWrapper(theme);
+                classesWithTheme.get(themeData).children.stream()
+                        .map(visitedClasses::get).filter(Objects::nonNull)
+                        .forEach(classInfo -> classInfo.loadCss = true);
+            }
         }
 
-        // theme could be null when lumo is not found or when a NoTheme found
-        if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant, themeName);
-            themeInstance = new ThemeWrapper(theme);
-        }
     }
 
     private String getThemeDescription(ThemeData theme) {
@@ -855,6 +866,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return;
         }
         ClassInfo info = new ClassInfo(className);
+        try {
+            if (AbstractTheme.class
+                    .isAssignableFrom(getFinder().loadClass(className))) {
+                info.loadCss = false;
+            }
+        } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
+            // NO-OP
+        }
+
         visitedClasses.put(className, info);
 
         URL url = getUrl(className);
