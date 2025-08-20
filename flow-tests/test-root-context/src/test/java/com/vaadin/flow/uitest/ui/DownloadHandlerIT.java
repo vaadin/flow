@@ -137,6 +137,20 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void getDynamicDownloadHandlerFailingInputStream_exceptionIsReceived() {
+        open();
+
+        WebElement link = findElement(
+                By.id("download-handler-input-stream-exception"));
+        link.click();
+
+        getDriver().manage().timeouts().scriptTimeout(Duration.of(15, SECONDS));
+        // download handler completion should set status to 403
+        Assert.assertEquals("HTTP ERROR 403",
+                findElement(By.className("error-code")).getText());
+    }
+
+    @Test
     public void getDynamicDownloadHandlerFailingInputStreamCallback_errorIsReceived() {
         open();
 
