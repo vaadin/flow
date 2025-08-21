@@ -22,13 +22,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 
-import elemental.json.JsonObject;
-
 /**
  * RPC invocation handler interface.
  * <p>
  * Each instance must return unique rpc type (see {@link #getRpcType()} and
- * handle a {@link JsonObject} RPC data using {@link #handle(UI, JsonObject)}
+ * handle a {@link JsonNode} RPC data using {@link #handle(UI, JsonNode)}
  * method.
  * <p>
  * For internal use only. May be renamed or removed in a future release.

@@ -55,7 +55,7 @@ public class HistoryView extends AbstractDivView {
 
             e.getState().ifPresent(state -> {
                 if (state instanceof JsonObject) {
-                    addStatus("New state: " + state.toJson());
+                    addStatus("New state: " + state.toString());
                 }
             });
         });

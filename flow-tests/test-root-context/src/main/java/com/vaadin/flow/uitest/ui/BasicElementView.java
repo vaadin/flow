@@ -17,6 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.dom.Style;
@@ -44,10 +46,10 @@ public class BasicElementView extends AbstractDivView {
         });
 
         button.addEventListener("click", e -> {
-            JsonObject eventData = e.getEventData();
-            String buttonText = eventData.getString("element.textContent");
-            int clientX = (int) eventData.getNumber("event.clientX");
-            int clientY = (int) eventData.getNumber("event.clientY");
+            JsonNode eventData = e.getEventData();
+            String buttonText = eventData.get("element.textContent").asText();
+            int clientX = eventData.get("event.clientX").intValue();
+            int clientY = eventData.get("event.clientY").intValue();
             Element greeting = ElementFactory.createDiv(
                     "Thank you for clicking \"" + buttonText + "\" at ("
                             + clientX + "," + clientY + ")! The field value is "

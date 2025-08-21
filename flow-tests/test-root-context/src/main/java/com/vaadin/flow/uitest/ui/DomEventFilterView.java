@@ -79,7 +79,7 @@ public class DomEventFilterView extends AbstractDivView {
         debounce.setAttribute("id", "debounce");
         debounce.addEventListener("input", e -> {
             addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+                    e.getEventData().get("element.value").asText(), e.getPhase()));
         }).addEventData("element.value").debounce(1000);
         debounce.addEventListener("click", e -> {
             addMessage("click");
@@ -89,14 +89,14 @@ public class DomEventFilterView extends AbstractDivView {
         leading.setAttribute("id", "leading");
         leading.addEventListener("input", e -> {
             addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+                    e.getEventData().get("element.value").asText(), e.getPhase()));
         }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING);
 
         Element leadingAndTrailing = new Element("input");
         leadingAndTrailing.setAttribute("id", "leading-trailing");
         leadingAndTrailing.addEventListener("input", e -> {
             addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+                    e.getEventData().get("element.value").asText(), e.getPhase()));
         }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
                 DebouncePhase.TRAILING);
 
@@ -104,7 +104,7 @@ public class DomEventFilterView extends AbstractDivView {
         throttle.setAttribute("id", "throttle");
         throttle.addEventListener("input", e -> {
             addMessage("input:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+                    e.getEventData().get("element.value").asText(), e.getPhase()));
         }).addEventData("element.value").throttle(2000); // this is leading +
                                                          // intermediate
         throttle.addEventListener("click", e -> {
@@ -115,7 +115,7 @@ public class DomEventFilterView extends AbstractDivView {
         godMode.setAttribute("id", "godMode");
         godMode.addEventListener("input", e -> {
             addMessage("godmode:%s, phase:%s".formatted(
-                    e.getEventData().getString("element.value"), e.getPhase()));
+                    e.getEventData().get("element.value").asText(), e.getPhase()));
         }).addEventData("element.value").debounce(1000, DebouncePhase.LEADING,
                 DebouncePhase.TRAILING, DebouncePhase.INTERMEDIATE); // this is
                                                                      // leading
@@ -143,7 +143,7 @@ public class DomEventFilterView extends AbstractDivView {
         DomListenerRegistration keyreg = twoEvents.addEventListener("k-event",
                 e -> {
                     addMessage(
-                            "k-event " + e.getEventData().getNumber("event.id")
+                            "k-event " + e.getEventData().get("event.id").doubleValue()
                                     + " phase: " + e.getPhase());
                 });
         keyreg.addEventData("event.id");
@@ -153,7 +153,7 @@ public class DomEventFilterView extends AbstractDivView {
         DomListenerRegistration greg = twoEvents.addEventListener("g-event",
                 e -> {
                     addMessage("g-event "
-                            + e.getEventData().getNumber("event.id"));
+                            + e.getEventData().get("event.id").doubleValue());
                 });
         // this are listened eagerly, k-events should still come before
         greg.addEventData("event.id");

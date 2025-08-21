@@ -18,17 +18,14 @@ package com.vaadin.flow.server.communication.rpc;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JsonCodec;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * Decodes the standard basic types from their JSON representation.
  * <p>
  * Delegates to the standard JSON deserializer method
- * {@link JacksonCodec#decodeAs(JsonNode, Class) <p> For internal use only. May
- * be renamed or removed in a future release.
+ * {@link JacksonCodec#decodeAs(JsonNode, Class)}.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @see JacksonCodec#decodeAs(JsonNode, Class)
