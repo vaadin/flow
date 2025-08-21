@@ -371,7 +371,7 @@ public class ComponentEventBus implements Serializable {
                 if (jsonValue == null) {
                     jsonValue = JacksonUtils.nullNode();
                 }
-                Object value = JsonCodec.decodeAs(jsonValue, type);
+                Object value = JacksonCodec.decodeAs(jsonValue, type);
                 eventDataObjects.add(value);
             }
         });

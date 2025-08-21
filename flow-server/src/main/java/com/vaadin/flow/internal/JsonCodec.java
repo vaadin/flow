@@ -18,10 +18,6 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -221,9 +217,9 @@ public class JsonCodec {
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(ObjectNode json) {
+    public static Serializable decodeWithoutTypeInfo(JsonValue json) {
         assert json != null;
-        switch (json.getNodeType()) {
+        switch (json.getType()) {
         case BOOLEAN:
             return decodeAs(json, Boolean.class);
         case STRING:
@@ -254,20 +250,21 @@ public class JsonCodec {
      * @throws IllegalArgumentException
      *             if the type was unsupported
      */
-    public static <T> T decodeAs(JsonNode json, Class<T> type) {
+    public static <T> T decodeAs(JsonValue json, Class<T> type) {
         assert json != null;
-        if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
+        if (json.getType() == JsonType.NULL && !type.isPrimitive()) {
             return null;
         }
         Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
         if (type == String.class) {
-            return type.cast(json.toString());
+            return type.cast(json.asString());
         } else if (convertedType == Boolean.class) {
             return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
         } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.doubleValue()));
+            return (T) convertedType.cast(Double.valueOf(json.asNumber()));
         } else if (convertedType == Integer.class) {
-            return (T) convertedType.cast(Integer.valueOf(json.intValue()));
+            return (T) convertedType
+                    .cast(Integer.valueOf((int) json.asNumber()));
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
