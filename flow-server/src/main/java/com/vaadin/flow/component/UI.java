@@ -1833,7 +1833,7 @@ public class UI extends Component
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
             BaseJsonNode state = event.historyState == null ? null
-                    : JacksonUtils.writeValue(event.historyState.toString());
+                    : (BaseJsonNode) event.historyState;
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
                             state, location, navigationTrigger));
