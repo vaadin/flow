@@ -79,7 +79,7 @@ public class DomEvent extends EventObject {
         if (jsonValue == null) {
             return DebouncePhase.LEADING;
         } else {
-            return DebouncePhase.forIdentifier(jsonValue.toString());
+            return DebouncePhase.forIdentifier(jsonValue.asText());
         }
     }
 
