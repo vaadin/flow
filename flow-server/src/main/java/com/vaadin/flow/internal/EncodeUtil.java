@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HexFormat;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -75,5 +76,51 @@ public final class EncodeUtil {
     private static boolean isRFC5987AttrChar(int codePoint) {
         return Character.isLetterOrDigit(codePoint)
                 || "!#$&+-.^_`|~".indexOf(codePoint) >= 0;
+    }
+
+    /**
+     * Encodes the given header field param as defined in RFC 2047 for use in
+     * e.g. the <code>Content-Disposition</code> HTTP header.
+     *
+     * @param value
+     *            the string to encode, not <code>null</code>
+     * @return the encoded string
+     */
+    public static String rfc2047Encode(String value) {
+        byte[] source = value.getBytes(UTF_8);
+        StringBuilder sb = new StringBuilder(source.length << 1);
+        sb.append("=?").append(UTF_8.name()).append("?Q?");
+        for (byte b : source) {
+            if (b == 32) {
+                sb.append('_'); // Replace space with underscore
+            } else if (isPrintable(b)) {
+                sb.append((char) b);
+            } else {
+                sb.append('=');
+                HEX_FORMAT.toHexDigits(sb, b);
+            }
+        }
+        sb.append("?=");
+        return sb.toString();
+    }
+
+    private static boolean isPrintable(byte c) {
+        int b = c & 0xFF; // Convert to unsigned
+        // RFC 2045, Section 6.7, and RFC 2047, Section 4.2
+        // printable characters are 33-126, excluding "=?_
+        return (b >= 33 && b <= 126) && b != 34 && b != 61 && b != 63
+                && b != 95;
+    }
+
+    /**
+     * Checks if the given string contains only US-ASCII characters.
+     *
+     * @param text
+     *            the string to check, not <code>null</code>
+     * @return <code>true</code> if the string contains only US-ASCII
+     *         characters,
+     */
+    public static boolean isPureUSASCII(String text) {
+        return StandardCharsets.US_ASCII.newEncoder().canEncode(text);
     }
 }

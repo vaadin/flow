@@ -150,9 +150,20 @@ public class DownloadEvent {
         if (fileName.isEmpty()) {
             response.setHeader("Content-Disposition", "attachment");
         } else {
-            response.setHeader("Content-Disposition",
-                    "attachment; filename*=UTF-8''"
-                            + EncodeUtil.rfc5987Encode(fileName));
+            StringBuilder value = new StringBuilder();
+            value.append("attachment; ");
+            if (EncodeUtil.isPureUSASCII(fileName)) {
+                value.append("filename=\"").append(fileName).append("\"");
+            } else {
+                value
+                        // fallback legacy support
+                        .append("filename=\"")
+                        .append(EncodeUtil.rfc2047Encode(fileName))
+                        // used primarily
+                        .append("\"; filename*=UTF-8''")
+                        .append(EncodeUtil.rfc5987Encode(fileName));
+            }
+            response.setHeader("Content-Disposition", value.toString());
         }
         this.fileName = fileName;
     }
