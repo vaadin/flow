@@ -1,5 +1,7 @@
 package com.vaadin.flow.uitest.ui;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
@@ -32,10 +34,10 @@ public class RouterLinkView extends AbstractDivView {
             queryParams.setText(
                     e.getLocation().getQueryParameters().getQueryString());
             if (e.getState().isPresent()) {
-                JsonObject state = ((JsonObject) e.getState().get());
-                if (state.hasKey("href")) {
+                JsonNode state = e.getState().get();
+                if (state.has("href")) {
                     UI.getCurrent().getPage().getHistory().pushState(null,
-                            state.getString("href"));
+                            state.get("href").textValue());
                 }
 
             }
