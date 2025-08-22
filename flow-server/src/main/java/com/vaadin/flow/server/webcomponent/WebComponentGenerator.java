@@ -26,6 +26,7 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 
@@ -311,7 +312,8 @@ public class WebComponentGenerator {
                 || ArrayNode.class.isAssignableFrom(propertyData.getType())) {
             return "Array";
         } else if (JsonValue.class.isAssignableFrom(propertyData.getType())
-                || ObjectNode.class.isAssignableFrom(propertyData.getType())) {
+                || BaseJsonNode.class
+                        .isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
             throw new IllegalStateException(

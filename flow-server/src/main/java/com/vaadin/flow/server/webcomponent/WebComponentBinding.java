@@ -244,13 +244,6 @@ public final class WebComponentBinding<C extends Component>
 
         if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
             Serializable value = null;
-            if (jsonValue != null) {
-                value = JacksonCodec.decodeAs(jsonValue, type);
-            }
-            return value;
-        } else if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
-            // TODO: Remove when ClientCallable works with jackson types only.
-            Serializable value = null;
             if (jsonValue != null && !(jsonValue instanceof NullNode)) {
                 value = JacksonCodec.decodeAs(jsonValue, type);
             }

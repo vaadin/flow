@@ -17,6 +17,8 @@ package com.vaadin.flow;
 
 import java.util.function.BiConsumer;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.html.NativeButton;
@@ -54,9 +56,7 @@ public class HistoryView extends AbstractDivView {
             addStatus("New location: " + e.getLocation().getPath());
 
             e.getState().ifPresent(state -> {
-                if (state instanceof JsonObject) {
-                    addStatus("New state: " + state.toString());
-                }
+                addStatus("New state: " + state.toString());
             });
         });
     }
