@@ -45,8 +45,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 /**
  * Map of DOM events with server-side listeners. The key set of this map
  * describes the event types for which listeners are present. The values

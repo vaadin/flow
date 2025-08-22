@@ -27,8 +27,6 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.JsonNull;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * RPC handler for a client-side response on attach existing element by id

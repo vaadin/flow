@@ -30,9 +30,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 import com.vaadin.flow.server.communication.rpc.AbstractRpcInvocationHandler;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-
 /**
  * RPC handler for return channel messages.
  * <p>

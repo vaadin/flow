@@ -28,9 +28,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * Server-side representation of a DOM event fired in the browser.
  *

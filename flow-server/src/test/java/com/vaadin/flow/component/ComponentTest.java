@@ -68,8 +68,6 @@ import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
 
-import elemental.json.Json;
-
 public class ComponentTest {
 
     private UI testUI;

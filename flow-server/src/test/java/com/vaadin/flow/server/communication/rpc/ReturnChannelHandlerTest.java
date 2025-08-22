@@ -36,10 +36,6 @@ import com.vaadin.flow.server.communication.ReturnChannelHandler;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.tests.util.MockUI;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-
 public class ReturnChannelHandlerTest {
     private MockUI ui = new MockUI();
 

@@ -25,9 +25,6 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-
 public class ReturnChannelMapTest {
     private StateNode node = new StateNode(ReturnChannelMap.class);
     private ReturnChannelMap returnChannelMap = node

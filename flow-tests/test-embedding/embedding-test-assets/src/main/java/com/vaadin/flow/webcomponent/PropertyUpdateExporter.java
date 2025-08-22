@@ -17,7 +17,6 @@
 package com.vaadin.flow.webcomponent;
 
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;

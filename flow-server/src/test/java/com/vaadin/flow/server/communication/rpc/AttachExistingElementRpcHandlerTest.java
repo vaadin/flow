@@ -29,9 +29,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 public class AttachExistingElementRpcHandlerTest {
 
     @Test

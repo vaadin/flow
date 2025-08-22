@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -37,8 +36,6 @@ import com.vaadin.flow.server.VaadinSession;
 
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
-
-import elemental.json.JsonValue;
 
 /**
  * The router takes care of serving content when the user navigates within a

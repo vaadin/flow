@@ -22,8 +22,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-import elemental.json.Json;
-
 public class StringToNumberDecoderTest {
 
     private StringToNumberDecoder decoder = new StringToNumberDecoder();

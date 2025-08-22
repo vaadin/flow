@@ -30,10 +30,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JsonCodec;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * Represents a single instance of a exported web component instance embedded

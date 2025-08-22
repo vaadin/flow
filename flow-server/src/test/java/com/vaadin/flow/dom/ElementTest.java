@@ -66,7 +66,6 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import elemental.json.impl.JreJsonObject;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {

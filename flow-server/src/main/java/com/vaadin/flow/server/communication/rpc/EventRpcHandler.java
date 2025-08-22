@@ -26,8 +26,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * RPC handler for events.

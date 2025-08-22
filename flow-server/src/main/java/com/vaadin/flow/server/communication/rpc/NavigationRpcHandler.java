@@ -28,9 +28,6 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * RPC handler for Navigation.
  * <p>

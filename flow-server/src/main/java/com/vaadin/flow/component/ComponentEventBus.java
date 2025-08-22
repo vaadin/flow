@@ -38,12 +38,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonNull;
-import elemental.json.JsonValue;
 
 /**
  * An event bus for {@link Component}s.

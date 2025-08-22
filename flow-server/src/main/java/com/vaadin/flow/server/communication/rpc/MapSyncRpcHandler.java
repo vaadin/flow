@@ -31,7 +31,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -44,7 +43,6 @@ import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
 
 /**
  * Model map synchronization RPC handler.

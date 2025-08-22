@@ -26,8 +26,6 @@ import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
 
-import elemental.json.JsonArray;
-
 /**
  * Server-side node feature that keeps track of the return channels registered
  * for a state node.

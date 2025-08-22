@@ -9,8 +9,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 
-import elemental.json.JsonObject;
-
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {
 

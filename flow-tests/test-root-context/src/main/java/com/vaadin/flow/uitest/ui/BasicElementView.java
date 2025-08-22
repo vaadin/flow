@@ -26,8 +26,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-import elemental.json.JsonObject;
-
 @Route(value = "com.vaadin.flow.uitest.ui.BasicElementView", layout = ViewTestLayout.class)
 public class BasicElementView extends AbstractDivView {
 

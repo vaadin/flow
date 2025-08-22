@@ -57,11 +57,6 @@ import com.vaadin.flow.server.dau.FlowDauIntegration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JsonUtil;
-
 /**
  * Handles a client-to-server message containing serialized RPC invocations.
  * <p>

@@ -42,11 +42,6 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonString;
-import elemental.json.JsonValue;
-
 public class PendingJavaScriptInvocationTest {
     private static final JsonNode fooJsonString = JacksonUtils
             .createNode("foo");

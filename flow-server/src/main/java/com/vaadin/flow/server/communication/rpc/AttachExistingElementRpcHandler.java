@@ -27,8 +27,6 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 /**
  * RPC handler for a client-side response on attach existing element request.
  * <p>

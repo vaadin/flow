@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +29,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.JsonValue;
 
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}

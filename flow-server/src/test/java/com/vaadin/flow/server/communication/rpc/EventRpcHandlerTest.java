@@ -30,8 +30,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.InertData;
 import com.vaadin.flow.shared.JsonConstants;
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class EventRpcHandlerTest {
 

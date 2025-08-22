@@ -43,8 +43,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**

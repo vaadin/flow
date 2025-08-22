@@ -27,7 +27,6 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;

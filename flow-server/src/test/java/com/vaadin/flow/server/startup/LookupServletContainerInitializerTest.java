@@ -43,9 +43,6 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 public class LookupServletContainerInitializerTest {
 
     private LookupServletContainerInitializer initializer = new LookupServletContainerInitializer();

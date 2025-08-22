@@ -22,9 +22,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * Service for injecting the polymer event handler when the module is available.
  * <p>
