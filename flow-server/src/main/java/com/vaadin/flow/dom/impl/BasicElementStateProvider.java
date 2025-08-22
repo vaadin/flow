@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -363,12 +365,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public void visit(StateNode node, NodeVisitor visitor) {
         Element element = Element.get(node);
         ElementData data = node.getFeature(ElementData.class);
-        JsonValue payload = data.getPayload();
+        JsonNode payload = data.getPayload();
 
         boolean visitDescendants;
-        if (payload instanceof JsonObject) {
-            JsonObject object = (JsonObject) payload;
-            String type = object.getString(NodeProperties.TYPE);
+        if (payload instanceof JsonNode) {
+            JsonNode object = (JsonNode) payload;
+            String type = object.get(NodeProperties.TYPE).asText();
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);
@@ -386,7 +388,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                     element);
         } else {
             throw new IllegalStateException(
-                    "Unexpected payload in element data : " + payload.toJson());
+                    "Unexpected payload in element data : "
+                            + payload.toString());
         }
 
         if (visitDescendants) {
