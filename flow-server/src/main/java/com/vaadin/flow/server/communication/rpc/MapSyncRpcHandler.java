@@ -43,7 +43,6 @@ import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.internal.nodefeature.PropertyChangeDeniedException;
 import com.vaadin.flow.shared.JsonConstants;
 
-
 /**
  * Model map synchronization RPC handler.
  * <p>

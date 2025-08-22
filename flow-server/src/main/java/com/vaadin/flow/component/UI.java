@@ -89,7 +89,6 @@ import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
 
-
 /**
  * The topmost component in any component hierarchy. There is one UI for every
  * Vaadin instance in a browser window. A UI may either represent an entire

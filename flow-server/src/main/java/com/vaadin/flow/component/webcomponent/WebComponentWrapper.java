@@ -29,7 +29,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
 
-
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}
  * methods that the client-side components expect to be available.
