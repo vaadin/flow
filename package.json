@@ -1,0 +1,31 @@
+{
+  "name": "flow-project",
+  "private": true,
+  "version": "1.0.0",
+  "workspaces": [
+    "flow-ts/*"
+  ],
+  "description": "Vaadin Flow framework client code",
+  "homepage": "https://github.com/vaadin/flow#readme",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vaadin/flow.git"
+  },
+  "license": "Apache-2.0",
+  "author": "Vaadin Ltd.",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@vitest/browser": "3.2.4",
+    "eslint": "9.31.0",
+    "eslint-config-vaadin": "1.0.0-beta.3",
+    "prettier": "3.6.2",
+    "typescript-eslint": "8.38.0",
+    "vitest": "3.2.4"
+  }
+}
