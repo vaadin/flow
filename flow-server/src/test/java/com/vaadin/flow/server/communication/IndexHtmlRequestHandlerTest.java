@@ -57,6 +57,7 @@ import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -1250,6 +1251,70 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
         Assert.assertTrue(verifier.test("1.2.3.4", null));
         Assert.assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
+    }
+
+    @Test
+    public void developmentMode_commercialBannerNeverApplied()
+            throws IOException {
+        assertHasCommercialBanner(false, false, true);
+        assertHasCommercialBanner(false, false, false);
+        assertHasCommercialBanner(false, false, null);
+    }
+
+    @Test
+    public void productionMode_commercialBannerEnabled_commercialBannerApplied()
+            throws IOException {
+        assertHasCommercialBanner(true, true, true);
+    }
+
+    @Test
+    public void productionMode_commercialBannerNotEnabled_commercialBannerNotApplied()
+            throws IOException {
+        assertHasCommercialBanner(false, true, false);
+        assertHasCommercialBanner(false, true, null);
+    }
+
+    private void assertHasCommercialBanner(boolean expectBanner,
+            boolean productionMode, Boolean commercialBannerFlag)
+            throws IOException {
+        if (!productionMode) {
+            File projectRootFolder = temporaryFolder.newFolder();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        deploymentConfiguration.setProductionMode(productionMode);
+        if (commercialBannerFlag != null) {
+            deploymentConfiguration.setApplicationOrSystemProperty(
+                    Constants.COMMERCIAL_BANNER_TOKEN,
+                    Boolean.toString(commercialBannerFlag));
+        }
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements commercialBannerScript = document.head().select(
+                "script[type=\"module\"]:containsData(<vaadin-commercial-banner></vaadin-commercial-banner>)");
+        if (expectBanner) {
+            assertEquals(
+                    "Commercial banner should be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    1, commercialBannerScript.size());
+        } else {
+            assertTrue(
+                    "Commercial banner should not be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    commercialBannerScript.isEmpty());
+        }
     }
 
 }

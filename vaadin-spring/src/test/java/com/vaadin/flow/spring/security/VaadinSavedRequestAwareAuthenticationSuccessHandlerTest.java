@@ -5,10 +5,12 @@ import jakarta.servlet.http.HttpSession;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.DefaultCsrfToken;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 
@@ -245,5 +247,39 @@ public class VaadinSavedRequestAwareAuthenticationSuccessHandlerTest {
                 loginResponse.getHeader("Spring-CSRF-header"));
         Assert.assertEquals("spring-csrf-token-value",
                 loginResponse.getHeader("Spring-CSRF-token"));
+    }
+
+    @Test
+    public void csrfs_sent_to_typescript_client_stateless() throws Exception {
+        DefaultCsrfToken springCsrfToken = new DefaultCsrfToken(
+                "spring-csrf-header-name", "spring-csrf-parameter-name",
+                "spring-csrf-token-value");
+
+        var mockCsrfTokenRepository = Mockito.mock(CsrfTokenRepository.class);
+        Mockito.when(mockCsrfTokenRepository.generateToken(Mockito.any()))
+                .thenReturn(springCsrfToken);
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .setCsrfTokenRepository(mockCsrfTokenRepository);
+        MockHttpServletRequest loginRequest = RequestUtilTest
+                .createRequest("/login");
+        loginRequest.addHeader("source", "typescript");
+
+        MockHttpServletResponse loginResponse = new MockHttpServletResponse();
+        vaadinSavedRequestAwareAuthenticationSuccessHandler
+                .onAuthenticationSuccess(loginRequest, loginResponse,
+                        new UsernamePasswordAuthenticationToken("foo", "bar"));
+
+        Assert.assertEquals("success", loginResponse.getHeader("Result"));
+        Assert.assertEquals(200, loginResponse.getStatus());
+
+        Assert.assertEquals("spring-csrf-header-name",
+                loginResponse.getHeader("Spring-CSRF-header"));
+        Assert.assertEquals("spring-csrf-token-value",
+                loginResponse.getHeader("Spring-CSRF-token"));
+
+        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
+                .generateToken(loginRequest);
+        Mockito.verify(mockCsrfTokenRepository, Mockito.times(1))
+                .saveToken(springCsrfToken, loginRequest, loginResponse);
     }
 }

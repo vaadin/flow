@@ -153,7 +153,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
   if (existsSync(themeFolder)) {
     logger.debug('Found theme ', themeName, ' in folder ', themeFolder);
 
-    const themeProperties = getThemeProperties(themeFolder);
+    const themeProperties = getThemeProperties(themeFolder, options);
 
     // If theme has parent handle parent theme immediately.
     if (themeProperties.parent) {
@@ -176,16 +176,27 @@ function handleThemes(themeName, themesFolder, options, logger) {
   return false;
 }
 
-function getThemeProperties(themeFolder) {
+function getThemeProperties(themeFolder, options) {
   const themePropertyFile = resolve(themeFolder, 'theme.json');
+  let lastIndexOf = options.projectStaticOutput.lastIndexOf("classes");
+  let outputFolder = options.projectStaticOutput.substring(0, lastIndexOf+"classes".length);
+  let featureFlags = resolve(outputFolder, "vaadin-featureflags.properties");
+
+  let componentFeature = existsSync(featureFlags) ? /themeComponentStyles(\s+)?=(\s+)?true/.test(readFileSync(featureFlags, { encoding: 'utf8' })) : false;
   if (!existsSync(themePropertyFile)) {
-    return {};
+    return {
+      "autoInjectComponents": componentFeature
+    };
   }
   const themePropertyFileAsString = readFileSync(themePropertyFile);
   if (themePropertyFileAsString.length === 0) {
-    return {};
+    return {
+      "autoInjectComponents": componentFeature
+    };
   }
-  return JSON.parse(themePropertyFileAsString);
+  let themeJson = JSON.parse(themePropertyFileAsString);
+  themeJson.autoInjectComponents = componentFeature;
+  return themeJson;
 }
 
 /**

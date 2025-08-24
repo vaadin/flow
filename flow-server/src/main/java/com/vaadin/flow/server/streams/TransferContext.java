@@ -45,10 +45,40 @@ import com.vaadin.flow.server.VaadinSession;
  *            the total number of bytes to be transferred or <code>-1</code> if
  *            total number is unknown in advance, e.g. when reading from an
  *            input stream
+ * @param exception
+ *            An exception that occurred during the transfer, or
+ *            <code>null</code>.
  */
 public record TransferContext(VaadinRequest request, VaadinResponse response,
         VaadinSession session, String fileName, Element owningElement,
-        long contentLength) {
+        long contentLength, Exception exception) {
+
+    /**
+     * Create a transfer context for data transfer progress listeners.
+     *
+     * @param request
+     *            The current Vaadin request instance
+     * @param response
+     *            The current Vaadin response instance
+     * @param session
+     *            The current Vaadin session instance
+     * @param fileName
+     *            The name of the file being transferred. Might be
+     *            <code>null</code> if the file name is not known.
+     * @param owningElement
+     *            The owner element that initiated the transfer. Can be used to
+     *            get element's attributes or properties.
+     * @param contentLength
+     *            the total number of bytes to be transferred or <code>-1</code>
+     *            if total number is unknown in advance, e.g. when reading from
+     *            an input stream
+     */
+    public TransferContext(VaadinRequest request, VaadinResponse response,
+            VaadinSession session, String fileName, Element owningElement,
+            long contentLength) {
+        this(request, response, session, fileName, owningElement, contentLength,
+                null);
+    }
 
     /**
      * Get owner {@link Component} for this data transfer.

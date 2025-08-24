@@ -1,11 +1,10 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import jakarta.servlet.ServletContext;
-
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.boot.security.autoconfigure.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -17,7 +16,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
@@ -83,13 +81,16 @@ public class SecurityConfig {
                     .authenticated()
                 .requestMatchers(antMatchers("/", "/public/**", "/another"))
                     .permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/error"))
+
+                .requestMatchers(antMatchers("/error"))
                     .permitAll()
                 // routes aliases
                 .requestMatchers(antMatchers("/alias-for-admin"))
                     .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/home", "/hey/**"))
                     .permitAll()
+                .requestMatchers(antMatchers("/all-logged-in/**"))
+                    .authenticated()
                 );
         // @formatter:on
         http.with(vaadin(),

@@ -70,6 +70,7 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowGeneratedWebComponentsFolder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -317,37 +318,40 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         // An import without `.js` extension
         expectedLines.add(
-                "import '@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else';");
+                "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
         // An import not found in node_modules
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
+                "import \\$cssFromFile_\\d from '@vaadin/vaadin-mixed-component/bar.css\\?inline';");
         expectedLines.add(
-                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
-        expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
+        expectedLines.add(
+                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';");
+        expectedLines.add(
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+        expectedLines.add(
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+        expectedLines.add(
+                "addCssBlock\\(`<style include=\"bar\">\\$\\{\\$css_\\d\\}</style>`\\);");
+        expectedLines.add(
+                "registerStyles\\('', \\$css_\\d, \\{moduleId: 'baz'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('', \\$css_\\d, \\{include: 'bar', moduleId: 'baz'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('foo-bar', \\$css_\\d, \\{moduleId: 'flow_css_mod_\\d'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('foo-bar', \\$css_\\d, \\{include: 'bar', moduleId: 'flow_css_mod_\\d'\\}\\);");
 
         expectedLines
                 .add("import 'Frontend/generated/flow/generated-modules-foo';");
@@ -356,17 +360,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater.run();
 
+        List<String> mergedOutput = updater.getMergedOutput();
+        String outputString = String.join("\n", mergedOutput);
         for (String line : expectedLines) {
             Assert.assertTrue(
-                    "\n" + line + " IS NOT FOUND IN: \n"
-                            + updater.getMergedOutput(),
-                    updater.getMergedOutput().contains(line));
+                    "\n" + line + " IS NOT FOUND IN: \n" + mergedOutput,
+                    Pattern.compile(line).matcher(outputString).find());
         }
 
         // All generated module ids are distinct
         Pattern moduleIdPattern = Pattern
                 .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
-        List<String> moduleIds = updater.getMergedOutput().stream()
+        List<String> moduleIds = mergedOutput.stream()
                 .map(moduleIdPattern::matcher).filter(Matcher::matches)
                 .map(m -> m.group(1)).collect(Collectors.toList());
         long uniqueModuleIds = moduleIds.stream().distinct().count();
@@ -381,7 +386,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         MatcherAssert.assertThat(output, CoreMatchers
                 .containsString("Use the './' prefix for files in the '"
                         + frontendDirectory.getPath()
-                        + "' folder: 'vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js'"));
+                        + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
         MatcherAssert.assertThat(output, CoreMatchers.containsString(
@@ -393,11 +398,15 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
-    public void cssFileNotFound_throws() {
+    public void cssFileNotFound_loggerReports() {
         assertTrue(resolveImportFile(frontendDirectory, nodeModulesPath,
                 "@vaadin/vaadin-mixed-component/bar.css").delete());
-        exception.expect(IllegalStateException.class);
         updater.run();
+        String output = logger.getLogs();
+        MatcherAssert.assertThat(output, CoreMatchers.containsString(
+                "Failed to find the following css files in the `node_modules`"));
+        MatcherAssert.assertThat(output, CoreMatchers
+                .containsString("@vaadin/vaadin-mixed-component/bar.css"));
     }
 
     @Test

@@ -35,6 +35,8 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
+
 /**
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
@@ -333,7 +335,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            if (isRepeatableContainer) {
+            if (isRepeatableContainer && !ASSETS.equals(name)) {
                 // For repeatable container annotations, skip array values
                 // but use this instance for visiting items
                 return this;

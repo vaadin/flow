@@ -64,6 +64,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private static final String VALUE = "value";
     private static final String DEVELOPMENT_ONLY = "developmentOnly";
     private static final String VERSION = "version";
+    private static final String ASSETS = "assets";
 
     private ThemeDefinition themeDefinition;
     private AbstractTheme themeInstance;
@@ -71,6 +72,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Set<String> classes = new HashSet<>();
     private Map<String, String> packages;
     private Map<String, String> devPackages;
+    private HashMap<String, List<String>> assets = new HashMap<>();
+    private HashMap<String, List<String>> devAssets = new HashMap<>();
     private List<CssData> cssData;
     private List<String> scripts;
     private List<String> scriptsDevelopment;
@@ -177,6 +180,16 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     }
 
     @Override
+    public Map<String, List<String>> getAssets() {
+        return Collections.unmodifiableMap(assets);
+    }
+
+    @Override
+    public Map<String, List<String>> getDevAssets() {
+        return Collections.unmodifiableMap(devAssets);
+    }
+
+    @Override
     public Map<ChunkInfo, List<String>> getModules() {
         return Collections.singletonMap(ChunkInfo.GLOBAL,
                 Collections.unmodifiableList(modules));
@@ -259,9 +272,22 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                             VALUE);
                     String version = getAnnotationValueAsString(annotation,
                             VERSION);
+                    String[] npmAssets = (String[]) getAnnotationValue(
+                            annotation, ASSETS);
+
                     boolean dev = getAnnotationValueAsBoolean(annotation, DEV);
                     logs.add(value + " " + version + " " + clazz.getName());
                     Map<String, String> result = dev ? devPackages : packages;
+                    if (npmAssets.length > 0) {
+                        List<String> assetsList = Arrays.asList(npmAssets);
+                        if (!assetsList.isEmpty()) {
+                            if (dev) {
+                                addValues(devAssets, value, assetsList);
+                            } else {
+                                addValues(assets, value, assetsList);
+                            }
+                        }
+                    }
                     if (result.containsKey(value)
                             && !result.get(value).equals(version)) {
                         String foundVersions = "[" + result.get(value) + ", "
@@ -291,6 +317,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             LinkedHashSet<CssData> result = new LinkedHashSet<>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
+                if (AbstractTheme.class.isAssignableFrom(clazz)
+                        && (themeDefinition == null
+                                || !clazz.equals(themeDefinition.getTheme()))) {
+                    // Do not add css from all found theme classes,
+                    // only defined theme.
+                    continue;
+                }
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
                 imports.stream().forEach(imp -> result.add(createCssData(imp)));
@@ -360,12 +393,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private void discoverTheme() {
         ThemeData data = verifyTheme();
 
-        if (data == null) {
-            setupTheme(getLumoTheme(), "", "");
-            return;
-        }
-
-        if (data.isNotheme()) {
+        if (data == null || data.isNotheme()) {
             return;
         }
 
@@ -375,7 +403,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             setupTheme(theme, data.getVariant(), data.getThemeName());
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
-                    "Could not load theme class " + data.getThemeClass(),
+                    "Could not load theme class '" + data.getThemeClass() + "'",
                     exception);
         }
     }
@@ -404,12 +432,19 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             Set<ThemeData> themes = annotatedClasses.stream()
                     .flatMap(clazz -> annotationFinder
                             .apply(clazz, loadedThemeAnnotation).stream())
-                    .map(theme -> new ThemeData(
-                            ((Class<?>) getAnnotationValue(theme, "themeClass"))
-                                    .getName(),
-                            getAnnotationValueAsString(theme, "variant"),
-                            getAnnotationValueAsString(theme, VALUE)))
-                    .collect(Collectors.toSet());
+                    .map(theme -> {
+                        String themeClassName = "";
+                        Class<?> themeClass = (Class<?>) getAnnotationValue(
+                                theme, "themeClass");
+                        if (themeClass.equals(AbstractTheme.class)) {
+                            themeClassName = FullDependenciesScanner.LUMO;
+                        } else {
+                            themeClassName = themeClass.getName();
+                        }
+                        return new ThemeData(themeClassName,
+                                getAnnotationValueAsString(theme, "variant"),
+                                getAnnotationValueAsString(theme, VALUE));
+                    }).collect(Collectors.toSet());
 
             Class<? extends Annotation> loadedNoThemeAnnotation = getFinder()
                     .loadClass(NoTheme.class.getName());

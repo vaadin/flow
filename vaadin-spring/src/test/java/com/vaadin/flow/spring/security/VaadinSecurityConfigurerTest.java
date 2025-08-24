@@ -3,7 +3,9 @@ package com.vaadin.flow.spring.security;
 import java.util.List;
 import java.util.Map;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,12 +14,18 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
+import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.ObjectPostProcessor;
@@ -58,12 +66,14 @@ import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
         SpringSecurityAutoConfiguration.class,
-        ObjectPostProcessorConfiguration.class })
+        ObjectPostProcessorConfiguration.class,
+        VaadinSecurityConfigurerTest.TestConfig.class })
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @ExtendWith(SpringExtension.class)
 @ExtendWith(MockitoExtension.class)
@@ -87,6 +97,9 @@ class VaadinSecurityConfigurerTest {
     private HttpSecurity http;
 
     private VaadinSecurityConfigurer configurer;
+
+    @MockitoBean
+    private EndpointRequestUtil endpointRequestUtil;
 
     @BeforeEach
     void setUp() {
@@ -249,7 +262,95 @@ class VaadinSecurityConfigurerTest {
                 "Request should not have been saved");
     }
 
+    @Test
+    void loginView_requestCacheApplied() throws Exception {
+        VaadinDefaultRequestCache requestCache = applicationContext
+                .getBean(VaadinDefaultRequestCache.class);
+
+        var mockSuccessHandler = Mockito.mock(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+        http.setSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class,
+                mockSuccessHandler);
+
+        http.with(configurer, c -> {
+            c.loginView("/login");
+        }).build();
+
+        Mockito.verify(mockSuccessHandler, times(1))
+                .setRequestCache(Mockito.eq(requestCache));
+    }
+
+    @Test
+    void hillaAnonymousEndpointRequest_arePermitted() throws Exception {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            endpointRequestUtilMockedStatic
+                    .when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+
+            var auth = new AnonymousAuthenticationToken("key", "user",
+                    List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            var path = "/connect/HillaEndpoint/anonymous";
+            var request = new MockHttpServletRequest("POST", path);
+            request.setPathInfo(path);
+
+            Mockito.when(endpointRequestUtil.isAnonymousEndpoint(request))
+                    .thenReturn(true);
+
+            var filters = http.with(configurer, Customizer.withDefaults())
+                    .build().getFilters();
+
+            assertThat(filters)
+                    .filteredOn(AuthorizationFilter.class::isInstance)
+                    .singleElement()
+                    .satisfies(filter -> assertThatCode(
+                            () -> filter.doFilter(request, response, chain))
+                            .doesNotThrowAnyException());
+        }
+    }
+
+    @Test
+    void hillaEndpointRequest_areAuthenticated() throws Exception {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            endpointRequestUtilMockedStatic
+                    .when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+
+            var auth = new TestingAuthenticationToken("user", "password",
+                    List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            var path = "/connect/HillaEndpoint/authenticated";
+            var request = new MockHttpServletRequest("POST", path);
+            request.setPathInfo(path);
+
+            Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+                    .thenReturn(true);
+
+            var filters = http.with(configurer, Customizer.withDefaults())
+                    .build().getFilters();
+
+            assertThat(filters)
+                    .filteredOn(AuthorizationFilter.class::isInstance)
+                    .singleElement()
+                    .satisfies(filter -> assertThatCode(
+                            () -> filter.doFilter(request, response, chain))
+                            .doesNotThrowAnyException());
+        }
+    }
+
     @Route
     static class TestLoginView extends Component {
+    }
+
+    @TestConfiguration(proxyBeanMethods = false)
+    static class TestConfig {
+
+        @Bean
+        PathPatternRequestMatcher.Builder pathMatcherBuilder() {
+            return PathPatternRequestMatcher.withDefaults();
+        }
     }
 }
