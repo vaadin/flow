@@ -19,33 +19,18 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * Base class for setting up the environment for testing high-level signal
  * features.
  */
 public class SignalTestBase {
-    private static final ThreadLocal<Executor> currentDispatcher = new ThreadLocal<Executor>();
-    private static final ThreadLocal<Executor> currentOverrideDispatcher = new ThreadLocal<Executor>();
-
-    static final Executor dispatcher = task -> {
-        Executor executor = currentDispatcher.get();
-        if (executor != null) {
-            executor.execute(task);
-        } else {
-            /*
-             * The specification requires that this dispatcher is asynchronous
-             * to prevent blocking a signal value setter until all effects have
-             * been invoked. We're still using direct synchronous dispatching in
-             * tests to avoid making most tests more complex than necessary.
-             */
-            task.run();
-        }
-    };
+    private static final ThreadLocal<Executor> currentResultNotifier = new ThreadLocal<Executor>();
+    private static final ThreadLocal<Executor> currentEffectDispatcher = new ThreadLocal<Executor>();
+    private static final ThreadLocal<Executor> currentFallbackEffectDispatcher = new ThreadLocal<Executor>();
 
     protected class TestExecutor implements Executor {
         private final ArrayList<Runnable> tasks = new ArrayList<>();
@@ -68,36 +53,72 @@ public class SignalTestBase {
         }
     }
 
+    private static Runnable environmentRegistration;
+
     @BeforeAll
     static void setupEnvironment() {
-        if (SignalEnvironment.tryInitialize(new ObjectMapper(), dispatcher)) {
-            SignalEnvironment
-                    .addDispatcherOverride(currentOverrideDispatcher::get);
-        } else {
-            assert SignalEnvironment.defaultDispatcher() == dispatcher;
-        }
+        environmentRegistration = SignalEnvironment
+                .register(new SignalEnvironment() {
+                    @Override
+                    public boolean isActive() {
+                        return true;
+                    }
+
+                    @Override
+                    public Executor getResultNotifier() {
+                        return currentResultNotifier.get();
+                    }
+
+                    @Override
+                    public Executor getEffectDispatcher() {
+                        return currentEffectDispatcher.get();
+                    }
+
+                    @Override
+                    public Executor getFallbackEffectDispatcher() {
+                        return currentFallbackEffectDispatcher.get();
+                    }
+                });
     }
 
-    protected TestExecutor useTestOverrideDispatcher() {
+    @AfterAll
+    static void closeEnvironment() {
+        environmentRegistration.run();
+    }
+
+    protected TestExecutor useTestResultNotifier() {
         TestExecutor dispatcher = new TestExecutor();
 
-        currentOverrideDispatcher.set(dispatcher);
+        currentResultNotifier.set(dispatcher);
 
         return dispatcher;
     }
 
-    protected TestExecutor useTestDispatcher() {
+    protected TestExecutor useTestEffectDispatcher() {
         TestExecutor dispatcher = new TestExecutor();
 
-        currentDispatcher.set(dispatcher);
+        currentEffectDispatcher.set(dispatcher);
+
+        return dispatcher;
+    }
+
+    protected void clearTestEffectDispatcher() {
+        currentEffectDispatcher.remove();
+    }
+
+    protected TestExecutor useTestFallbackEffectDispatcher() {
+        TestExecutor dispatcher = new TestExecutor();
+
+        currentFallbackEffectDispatcher.set(dispatcher);
 
         return dispatcher;
     }
 
     @AfterEach
     void clear() {
-        currentOverrideDispatcher.remove();
-        currentDispatcher.remove();
+        currentResultNotifier.remove();
+        currentEffectDispatcher.remove();
+        currentFallbackEffectDispatcher.remove();
         SignalFactory.IN_MEMORY_SHARED.clear();
     }
 }

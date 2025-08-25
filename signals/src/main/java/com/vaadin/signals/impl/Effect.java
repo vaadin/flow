@@ -31,7 +31,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  */
 public class Effect {
     private final Executor dispatcher = SignalEnvironment
-            .asynchronousDispatcher();
+            .getCurrentEffectDispatcher();
 
     private Usage dependencies;
     private Runnable registration;

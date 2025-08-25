@@ -16,51 +16,29 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.NumberSignal;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 public class ComponentEffectTest {
-    private static final Executor executor = Runnable::run;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
-
     @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
             ValueSignal<String> signal = new ValueSignal<>("initial");
             AtomicInteger count = new AtomicInteger();
@@ -106,7 +84,7 @@ public class ComponentEffectTest {
 
     @Test
     public void bind_signalValueChanges_componentUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
             ValueSignal<String> signal = new ValueSignal<>("initial");
 
@@ -144,7 +122,7 @@ public class ComponentEffectTest {
 
     @Test
     public void format_customLocale_signalValuesChange_formattedStringUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
 
             MockUI ui = new MockUI();
@@ -187,7 +165,7 @@ public class ComponentEffectTest {
 
     @Test
     public void format_defaultLocale_signalValuesChange_formattedStringUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
 
             MockUI ui = new MockUI();
@@ -204,31 +182,17 @@ public class ComponentEffectTest {
         });
     }
 
-    /**
-     * Other tests may already have initialized the environment with the feature
-     * flag off and executors that would throw an exception, so it's too late
-     * now to mock the feature flags. Thus we need to "reinitialize" the
-     * environment.
-     */
-    private static void runWithSignalEnvironmentMocks(Runnable test) {
-        try (var environment = mockStatic(SignalEnvironment.class);
-                var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+    private static void runWithFeatureFlagEnabled(Runnable test) {
+        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
             FeatureFlags flags = mock(FeatureFlags.class);
             when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
                     .thenReturn(true);
             featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
                     .thenReturn(flags);
-            environment.when(() -> SignalEnvironment.initialized())
-                    .thenReturn(true);
-            environment.when(() -> SignalEnvironment.defaultDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.synchronousDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.asynchronousDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.objectMapper())
-                    .thenReturn(objectMapper);
             test.run();
+        } finally {
+            VaadinService.getCurrent().destroy();
+            CurrentInstance.clearAll();
         }
     }
 
