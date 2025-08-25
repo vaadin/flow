@@ -94,8 +94,6 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     : '';
 
   const themeIdentifier = '_vaadintheme_' + themeName + '_';
-  const lumoCssFlag = '_vaadinthemelumoimports_';
-  const globalCssFlag = themeIdentifier + 'globalCss';
   const componentCssFlag = themeIdentifier + 'componentCss';
 
   if (!existsSync(styles)) {
@@ -113,23 +111,8 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let filename = basename(styles);
   let variable = camelCase(filename);
 
-  /* LUMO */
-  const lumoImports = themeProperties.lumoImports || ['typography', 'color', 'spacing', 'badge', 'utility'] ;
-  if (lumoImports) {
-    lumoImports.forEach((lumoImport) => {
-      imports.push(`import { ${lumoImport} } from '@vaadin/vaadin-lumo-styles/${lumoImport}.js';\n`);
-      if (lumoImport === 'utility' || lumoImport === 'badge' || lumoImport === 'typography' || lumoImport === 'color') {
-        // Inject into main document the same way as other Lumo styles are injected
-        // Lumo imports go to the theme global imports file to prevent style leaks
-        // when the theme is applied to an embedded component
-        globalFileContent.push(`import '@vaadin/vaadin-lumo-styles/${lumoImport}-global.js';\n`);
-      }
-    });
-
-    lumoImports.forEach((lumoImport) => {
-      // Lumo is injected to the document by Lumo itself
-      shadowOnlyCss.push(`removers.push(injectGlobalCss(${lumoImport}.cssText, '', target, true));\n`);
-    });
+  if(themeProperties.lumoImports) {
+    globalFileContent.push(`import '@vaadin/vaadin-lumo-styles/utility.css';\n`);
   }
 
   /* Theme */
