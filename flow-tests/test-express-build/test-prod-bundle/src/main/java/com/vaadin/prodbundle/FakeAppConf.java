@@ -15,6 +15,7 @@
  */
 package com.vaadin.prodbundle;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -23,6 +24,7 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme("vaadin-prod-bundle")
+@CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 @PWA(name = "vaadin-prod-bundle", shortName = "vaadin-prod-bundle")
 @JsModule("@vaadin/horizontal-layout")
 @NpmPackage(value = "@vaadin/horizontal-layout", version = TestVersion.VAADIN)

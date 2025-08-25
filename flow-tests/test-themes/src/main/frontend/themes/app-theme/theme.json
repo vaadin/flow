@@ -1,8 +1,8 @@
 {
   "parent": "parent-theme",
   "importCss": [
-    "@fortawesome/fontawesome-free/css/all.css",
-    "@vaadin/vaadin-lumo-styles/utility.css"
+    "@fortawesome/fontawesome-free/css/all.css"
+
   ],
   "assets": {
     "@fortawesome/fontawesome-free": {
