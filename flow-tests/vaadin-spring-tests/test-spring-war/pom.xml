@@ -38,8 +38,8 @@
                 <version>${jetty.version}</version>
             </dependency>
             <dependency>
-                <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-                <artifactId>jetty-ee10-websocket-jakarta-client</artifactId>
+                <groupId>org.eclipse.jetty.websocket</groupId>
+                <artifactId>jetty-websocket-jetty-client</artifactId>
                 <version>${jetty.version}</version>
             </dependency>
         </dependencies>
@@ -113,8 +113,8 @@
             <artifactId>jetty-io</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.eclipse.jetty.ee10.websocket</groupId>
-            <artifactId>jetty-ee10-websocket-jakarta-client</artifactId>
+            <groupId>org.eclipse.jetty.websocket</groupId>
+            <artifactId>jetty-websocket-jetty-client</artifactId>
         </dependency>
 
     </dependencies>
