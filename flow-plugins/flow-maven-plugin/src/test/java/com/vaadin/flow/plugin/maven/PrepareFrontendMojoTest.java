@@ -51,6 +51,7 @@ import elemental.json.JsonObject;
 import elemental.json.impl.JsonUtil;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
+import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertNotContainingPackages;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
@@ -271,7 +272,7 @@ public class PrepareFrontendMojoTest {
     private void assertPackageJsonContent() throws IOException {
         ObjectNode packageJsonObject = getPackageJson(packageJson);
 
-        assertContainsPackage(packageJsonObject.get("dependencies"),
+        assertNotContainingPackages(packageJsonObject.get("dependencies"),
                 "@polymer/polymer");
 
         assertContainsPackage(packageJsonObject.get("devDependencies"), "vite",
