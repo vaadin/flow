@@ -112,7 +112,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let variable = camelCase(filename);
 
   if(themeProperties.lumoImports) {
-    console.warn('lumoImports is no longer supported in Vaadin 25. To load utility classes, add "importCss": ["@vaadin/vaadin-lumo-styles/utilities.css"]');
+    console.warn('lumoImports is no longer supported in Vaadin 25. To load utility classes, add "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]');
   }
 
   /* Theme */
