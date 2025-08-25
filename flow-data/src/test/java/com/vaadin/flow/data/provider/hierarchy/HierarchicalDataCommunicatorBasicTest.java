@@ -38,8 +38,8 @@ public class HierarchicalDataCommunicatorBasicTest
         var element = new Element("div");
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
-                compositeDataGenerator, arrayUpdater, (items) -> {
-                }, element.getNode(), () -> null);
+                compositeDataGenerator, arrayUpdater, element.getNode(),
+                () -> null);
 
         compositeDataGenerator.addDataGenerator((item, json) -> {
             json.put("name", item.getName());

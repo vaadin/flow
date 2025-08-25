@@ -25,8 +25,8 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         super.init();
 
         dataCommunicator = new HierarchicalDataCommunicator<>(dataGenerator,
-                arrayUpdater, (items) -> {
-                }, ui.getElement().getNode(), () -> uniqueKeyProvider);
+                arrayUpdater, ui.getElement().getNode(),
+                () -> uniqueKeyProvider);
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         keyMapper = dataCommunicator.getKeyMapper();

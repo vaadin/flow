@@ -28,8 +28,8 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         super.init();
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
-                compositeDataGenerator, arrayUpdater, (items) -> {
-                }, ui.getElement().getNode(), () -> null);
+                compositeDataGenerator, arrayUpdater, ui.getElement().getNode(),
+                () -> null);
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         keyMapper = dataCommunicator.getKeyMapper();

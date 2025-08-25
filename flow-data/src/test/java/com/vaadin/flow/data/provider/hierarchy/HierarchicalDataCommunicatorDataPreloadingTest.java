@@ -22,8 +22,8 @@ public class HierarchicalDataCommunicatorDataPreloadingTest
         populateTreeData(treeData, 20, 2, 2);
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
-                new CompositeDataGenerator<Item>(), arrayUpdater, (items) -> {
-                }, ui.getElement().getNode(), () -> null);
+                new CompositeDataGenerator<Item>(), arrayUpdater,
+                ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
     }
