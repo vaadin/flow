@@ -829,8 +829,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertFalse(deps.has(DEP_NAME_FLOW_JARS));
         // No old package hash
         Assert.assertFalse(deps.has(VAADIN_APP_PACKAGE_HASH));
-        // Contains initially generated default polymer dep
-        Assert.assertTrue(deps.has("@polymer/polymer"));
+        // No initially generated default polymer dep
+        Assert.assertFalse(deps.has("@polymer/polymer"));
         // Contains new hash
         Assert.assertTrue(packJsonNode.get("vaadin").has("hash"));
     }
