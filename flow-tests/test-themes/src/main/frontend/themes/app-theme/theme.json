@@ -1,7 +1,9 @@
 {
-  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
   "parent": "parent-theme",
-  "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+  "importCss": [
+    "@fortawesome/fontawesome-free/css/all.css",
+    "@vaadin/vaadin-lumo-styles/utility.css"
+  ],
   "assets": {
     "@fortawesome/fontawesome-free": {
       "svgs/regular/**": "fortawesome/icons"
