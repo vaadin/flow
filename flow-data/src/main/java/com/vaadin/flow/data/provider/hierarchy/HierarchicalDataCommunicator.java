@@ -27,6 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.data.provider.ArrayUpdater;
+import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
 import com.vaadin.flow.data.provider.DataCommunicator;
@@ -83,7 +85,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      * @param uniqueKeyProviderSupplier
      *            Unique key provider for a row. If null, then using Grid's
      *            default key generator.
+     * @deprecated since 24.9. In Vaadin 25, the type of {@code arrayUpdater}
+     *             will change to {@link ArrayUpdater} and the
+     *             {@code dataUpdater} parameter will be removed. Instead, the
+     *             communicator will use {@link Update#set(int, List)} to
+     *             re-render refreshed items.
      */
+    @Deprecated(since = "24.9")
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
             HierarchicalArrayUpdater arrayUpdater,
             SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
