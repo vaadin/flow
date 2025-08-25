@@ -20,8 +20,8 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         populateTreeData(treeData, 3, 2, 1);
 
         dataCommunicator = new HierarchicalDataCommunicator<>(
-                new CompositeDataGenerator<Item>(), arrayUpdater, (items) -> {
-                }, ui.getElement().getNode(), () -> null);
+                new CompositeDataGenerator<Item>(), arrayUpdater,
+                ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
     }

@@ -117,8 +117,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            the data generator function
      * @param arrayUpdater
      *            array updater strategy
-     * @param dataUpdater
-     *            data updater strategy
      * @param stateNode
      *            the state node used to communicate for
      * @param uniqueKeyProviderSupplier
@@ -126,10 +124,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      *            default key generator.
      */
     public HierarchicalDataCommunicator(CompositeDataGenerator<T> dataGenerator,
-            ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            ArrayUpdater arrayUpdater, StateNode stateNode,
             SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier) {
-        super(dataGenerator, arrayUpdater, dataUpdater, stateNode, false);
+        // 1. Set `dataUpdater` to null, as HierarchicalDataCommunicator updates
+        // refreshed items through Update#set(int, List).
+        // 2. Set `fetchEnabled` to false to prevent DataCommunicator from
+        // running its own fetch logic which isn't compatible with hierarchical
+        // data.
+        super(dataGenerator, arrayUpdater, null, stateNode, false);
         this.stateNode = stateNode;
         this.arrayUpdater = arrayUpdater;
         this.dataGenerator = dataGenerator;
