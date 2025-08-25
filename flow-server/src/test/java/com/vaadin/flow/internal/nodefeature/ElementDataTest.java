@@ -30,9 +30,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     private final ElementData elementData = new StateNode(
             Collections.singletonList(ElementData.class))

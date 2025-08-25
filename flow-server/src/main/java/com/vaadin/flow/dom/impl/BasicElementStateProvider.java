@@ -57,9 +57,6 @@ import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
  * not bound to any template and have no special functionality.

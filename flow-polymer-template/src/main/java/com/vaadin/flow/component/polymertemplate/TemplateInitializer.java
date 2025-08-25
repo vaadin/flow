@@ -29,8 +29,6 @@ import com.vaadin.flow.internal.nodefeature.NodeProperties;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.VaadinService;
 
-import elemental.json.JsonArray;
-
 /**
  * Template initialization related logic (parse template, create sub-templates,
  * inject elements by id).
