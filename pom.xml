@@ -105,8 +105,8 @@
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
         <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-        <testbench.version>10.0.0-alpha3</testbench.version>
-        <jetty.version>12.0.24</jetty.version>
+        <testbench.version>10.0.0-alpha4</testbench.version>
+        <jetty.version>12.0.25</jetty.version>
         <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven.version>3.9.11</maven.version>
@@ -236,7 +236,7 @@
             <dependency>
                 <groupId>net.bytebuddy</groupId>
                 <artifactId>byte-buddy</artifactId>
-                <version>1.17.6</version>
+                <version>1.17.7</version>
             </dependency>
             <dependency>
                 <groupId>org.ow2.asm</groupId>
@@ -246,7 +246,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>2.0.0-alpha1</version>
+                <version>2.0.0-alpha3</version>
             </dependency>
 
             <!-- Test dependencies -->
@@ -263,7 +263,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.18.0</version>
+                <version>5.19.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -359,7 +359,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.2</version>
+                <version>3.11.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>

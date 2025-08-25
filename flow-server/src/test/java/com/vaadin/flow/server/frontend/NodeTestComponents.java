@@ -53,9 +53,23 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
 
     }
 
-    @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1")
-    @NpmPackage(value = "vite-plugin-pwa", version = "0.16.5", dev = true)
+    @NpmPackage(value = "@vaadin/vaadin-button", version = "1.1.1", assets = {
+            "img/arrow*:img" })
+    @NpmPackage(value = "vite-plugin-pwa", version = "0.16.5", dev = true, assets = {
+            "frown/**:pwa" })
     class ButtonComponent extends Component {
+    }
+
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/22x25/**:22x25" })
+    @Tag("div")
+    public static class Assets extends Component {
+    }
+
+    @Tag("div")
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/28x28/**:28x28" })
+    public static class DuplicatedAssets extends Component {
     }
 
     @JsModule("@polymer/iron-icon/iron-icon.js")
@@ -164,6 +178,7 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     @JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
     @JsModule("@vaadin/vaadin-lumo-styles/style.js")
     @JsModule("@vaadin/vaadin-lumo-styles/icons.js")
+    @CssImport("lumo-css-import.css")
     public static class LumoTest implements AbstractTheme {
 
         public static final String LIGHT = "light";

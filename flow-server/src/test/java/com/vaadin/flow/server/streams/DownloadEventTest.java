@@ -6,6 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
@@ -34,7 +35,18 @@ public class DownloadEventTest {
         String fileName = "test.txt";
         downloadEvent.setFileName(fileName);
         Mockito.verify(response).setHeader("Content-Disposition",
-                "attachment; filename=\"" + fileName + "\"");
+                "attachment;" + " filename=\"" + fileName + "\"");
+    }
+
+    @Test
+    public void setFileName_nonEmptyFileName_setsContentDispositionEncodedFilenameQuotedToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        String fileName = "test üñîçødë.txt";
+        downloadEvent.setFileName(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment;"
+                + " filename=\"" + EncodeUtil.rfc2047Encode(fileName) + "\";"
+                + " filename*=UTF-8''" + EncodeUtil.rfc5987Encode(fileName));
     }
 
     @Test
