@@ -1,9 +1,7 @@
 {
+  "lumoImports": ["typography", "color", "spacing", "badge"],
   "parent": "parent-theme",
-  "importCss": [
-    "@fortawesome/fontawesome-free/css/all.css"
-
-  ],
+  "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
   "assets": {
     "@fortawesome/fontawesome-free": {
       "svgs/regular/**": "fortawesome/icons"

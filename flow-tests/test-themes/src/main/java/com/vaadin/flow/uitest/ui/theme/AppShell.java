@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -28,7 +27,6 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME, assets = {
         "svgs/regular/**:npm/icons" })
-@CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 @LoadDependenciesOnStartup
 public class AppShell implements AppShellConfigurator {
 }

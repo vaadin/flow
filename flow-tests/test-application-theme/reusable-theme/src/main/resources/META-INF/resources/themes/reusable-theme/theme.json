@@ -1,9 +1,9 @@
 {
-  "importCss": ["@fortawesome/fontawesome-free/css/all.css",
-    "@vaadin/vaadin-lumo-styles/utility.css"],
+  "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
   "assets": {
     "@fortawesome/fontawesome-free": {
       "svgs/regular/**": "fortawesome/icons"
     }
-  }
+  },
+  "lumoImports": ["color","typography","badge"]
 }

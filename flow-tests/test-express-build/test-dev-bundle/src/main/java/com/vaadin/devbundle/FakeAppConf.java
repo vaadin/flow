@@ -15,13 +15,11 @@
  */
 package com.vaadin.devbundle;
 
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.theme.Theme;
 
 @Theme("vaadin-dev-bundle")
-@CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 @PWA(name = "vaadin-dev-bundle", shortName = "vaadin-dev-bundle")
 public class FakeAppConf implements AppShellConfigurator {
 
