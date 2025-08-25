@@ -307,10 +307,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                dependencies
-                        .putAll(readDependencies("react19", "dependencies"));
-            }
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
@@ -377,9 +373,6 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                defaults.putAll(readDependencies("react19", "devDependencies"));
-            }
         }
 
         return defaults;
