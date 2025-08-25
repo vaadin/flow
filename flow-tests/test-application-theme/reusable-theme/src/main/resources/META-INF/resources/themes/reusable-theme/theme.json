@@ -5,5 +5,5 @@
       "svgs/regular/**": "fortawesome/icons"
     }
   },
-  "lumoImports": ["color","typography","badge"]
+  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
 }

@@ -94,8 +94,6 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     : '';
 
   const themeIdentifier = '_vaadintheme_' + themeName + '_';
-  const lumoCssFlag = '_vaadinthemelumoimports_';
-  const globalCssFlag = themeIdentifier + 'globalCss';
   const componentCssFlag = themeIdentifier + 'componentCss';
 
   if (!existsSync(styles)) {
@@ -112,6 +110,10 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   // styles.css will always be available as we write one if it doesn't exist.
   let filename = basename(styles);
   let variable = camelCase(filename);
+
+  if(themeProperties.lumoImports) {
+    console.warn('lumoImports is no longer supported in Vaadin 25. To load utility classes, add "importCss": ["@vaadin/vaadin-lumo-styles/utilities.css"]');
+  }
 
   /* Theme */
   globalFileContent.push(parentThemeGlobalImport);

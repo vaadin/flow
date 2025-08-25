@@ -1,1 +1,3 @@
-{"lumoImports":["typography","color","badge","utility"]}
+{
+  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
+}

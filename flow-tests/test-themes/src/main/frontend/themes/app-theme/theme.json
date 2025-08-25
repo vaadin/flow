@@ -1,5 +1,5 @@
 {
-  "lumoImports": ["typography", "color", "spacing", "badge"],
+  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
   "parent": "parent-theme",
   "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
   "assets": {
