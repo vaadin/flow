@@ -1494,7 +1494,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1520,7 +1520,7 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
                         }
                         """,
                 "my-theme");
@@ -1537,7 +1537,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
