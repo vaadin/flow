@@ -21,7 +21,7 @@ public class SelectView extends Div {
         select.setAttribute("id", "input");
         select.addEventListener("change", e -> {
             log.setText("Value is '"
-                    + e.getEventData().getString("element.value") + "'");
+                    + e.getEventData().get("element.value").asText() + "'");
         }).synchronizeProperty("element.value");
         add(log);
         getElement().appendChild(select);

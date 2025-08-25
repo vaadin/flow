@@ -20,6 +20,9 @@ import java.io.Serializable;
 import java.util.Objects;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.IntNode;
+import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.ValueNode;
 
@@ -265,12 +268,21 @@ public final class WebComponent<C extends Component> implements Serializable {
         } else if (value instanceof Boolean) {
             componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Boolean) value);
+        } else if (value instanceof IntNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).intValue());
+        } else if (value instanceof NumericNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).doubleValue());
         } else if (value instanceof ValueNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).asText());
+        } else if (value instanceof BaseJsonNode) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow
             // that expected behavior.
-            componentHost.executeJs(String.format(UPDATE_PROPERTY_FORMAT,
-                    ((ValueNode) value).toString()), propertyName);
+            componentHost.executeJs(
+                    String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
         } else if (value instanceof JsonValue) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow

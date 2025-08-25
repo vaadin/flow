@@ -19,6 +19,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,12 @@ import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
-import elemental.json.JsonObject;
+//import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.
@@ -46,8 +48,8 @@ public abstract class AbstractRpcInvocationHandler
         implements RpcInvocationHandler {
 
     @Override
-    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_NODE);
+    public Optional<Runnable> handle(UI ui, JsonNode invocationJson) {
+        assert invocationJson.has(JsonConstants.RPC_NODE);
         StateNode node = ui.getInternals().getStateTree()
                 .getNodeById(getNodeId(invocationJson));
         if (node == null) {
@@ -117,7 +119,7 @@ public abstract class AbstractRpcInvocationHandler
      * @return a boolean indicating that the Poll RPC invocation is valid or
      *         not.
      */
-    private boolean isValidPollInvocation(UI ui, JsonObject invocationJson) {
+    private boolean isValidPollInvocation(UI ui, JsonNode invocationJson) {
 
         if (!isPollEventInvocation(invocationJson)) {
             return false;
@@ -140,10 +142,10 @@ public abstract class AbstractRpcInvocationHandler
         return true;
     }
 
-    private boolean isPollEventInvocation(JsonObject invocationJson) {
-        return invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE)
-                && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(
-                        invocationJson.getString(JsonConstants.RPC_EVENT_TYPE));
+    private boolean isPollEventInvocation(JsonNode invocationJson) {
+        return invocationJson.has(JsonConstants.RPC_EVENT_TYPE)
+                && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(invocationJson
+                        .get(JsonConstants.RPC_EVENT_TYPE).asText());
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
@@ -165,12 +167,12 @@ public abstract class AbstractRpcInvocationHandler
      * does not include any extra malicious payloads.
      * <p>
      * This method checks the existence of first two allowed keys as the
-     * {@link #isPollEventInvocation(JsonObject)} had already checked for the
+     * {@link #isPollEventInvocation(JsonNode)} had already checked for the
      * existence of the
      * {@link com.vaadin.flow.shared.JsonConstants#RPC_EVENT_TYPE} before this
      * method is called.
      *
-     * @see #isValidPollInvocation(UI, JsonObject)
+     * @see #isValidPollInvocation(UI, JsonNode)
      *
      * @param ui
      *            the UI instance which the Rpc event is coming from.
@@ -180,19 +182,19 @@ public abstract class AbstractRpcInvocationHandler
      *         accordance with the UI instance.
      */
     private boolean isLegitimatePollEventInvocation(UI ui,
-            JsonObject invocationJson) {
+            JsonNode invocationJson) {
         List<String> allowedKeys = Arrays.asList(JsonConstants.RPC_TYPE,
                 JsonConstants.RPC_NODE, JsonConstants.RPC_EVENT_TYPE);
-        List<String> invocationKeys = Arrays.asList(invocationJson.keys());
+        List<String> invocationKeys = JacksonUtils.getKeys(invocationJson);
         if (!allowedKeys.containsAll(invocationKeys)) {
             return false;
         }
 
-        if (!invocationJson.hasKey(JsonConstants.RPC_TYPE)) {
+        if (!invocationJson.has(JsonConstants.RPC_TYPE)) {
             return false;
         }
         if (!JsonConstants.RPC_TYPE_EVENT
-                .equals(invocationJson.getString(JsonConstants.RPC_TYPE))) {
+                .equals(invocationJson.get(JsonConstants.RPC_TYPE).asText())) {
             return false;
         }
 
@@ -214,7 +216,7 @@ public abstract class AbstractRpcInvocationHandler
      * @return a boolean indicating that the inert status should be ignored for
      *         the current invocation or not.
      */
-    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+    protected boolean allowInert(UI ui, JsonNode invocationJson) {
         return isValidPollInvocation(ui, invocationJson);
     }
 
@@ -229,14 +231,14 @@ public abstract class AbstractRpcInvocationHandler
      * @return an optional runnable
      */
     protected abstract Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson);
+            JsonNode invocationJson);
 
     private static Logger getLogger() {
         return LoggerFactory
                 .getLogger(AbstractRpcInvocationHandler.class.getName());
     }
 
-    protected static int getNodeId(JsonObject invocationJson) {
-        return (int) invocationJson.getNumber(JsonConstants.RPC_NODE);
+    protected static int getNodeId(JsonNode invocationJson) {
+        return invocationJson.get(JsonConstants.RPC_NODE).intValue();
     }
 }
