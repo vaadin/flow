@@ -111,10 +111,28 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_includesAllDependencies() {
+    public void getDefaultDependencies_withPolymerTemplate_includesAllDependencies() {
+        fakePolymerTemplateInClasspath();
+
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("construct-style-sheets-polyfill");
+        expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router");
+
+        Set<String> actualDependendencies = defaultDeps.keySet();
+
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
+    }
+
+    @Test
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@vaadin/common-frontend");
         expectedDependencies.add("construct-style-sheets-polyfill");
         expectedDependencies.add("lit");
@@ -192,6 +210,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
@@ -216,6 +235,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void updateMainDefaultDependencies_vaadinIsProvidedByUser_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
 
         ObjectNode vaadin = JacksonUtils.createObjectNode();
@@ -764,6 +784,16 @@ public class NodeUpdaterTest {
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
+    }
+
+    private void fakePolymerTemplateInClasspath() {
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        try {
+            Mockito.doReturn(clazz).when(finder).loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ObjectNode getMockVaadinCoreVersionsJson() {
