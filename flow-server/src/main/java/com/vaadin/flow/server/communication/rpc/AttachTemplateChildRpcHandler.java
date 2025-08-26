@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Optional;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +26,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonNull;
 
 /**
  * RPC handler for a client-side response on attach existing element by id
@@ -75,7 +74,7 @@ public class AttachTemplateChildRpcHandler
         if (assignedId == -1) {
             logger.error("Attach existing element has failed because "
                     + "the client-side element is not found");
-            if (id instanceof JsonNull) {
+            if (id instanceof NullNode) {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' was "
                                 + "not found in the parent with id='%d'",

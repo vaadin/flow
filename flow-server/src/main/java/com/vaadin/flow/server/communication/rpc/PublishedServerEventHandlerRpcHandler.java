@@ -50,12 +50,6 @@ import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.shared.JsonConstants;
 
-//import elemental.json.Json;
-//import elemental.json.JsonArray;
-//import elemental.json.JsonObject;
-//import elemental.json.JsonType;
-//import elemental.json.JsonValue;
-
 /**
  * RPC handler for events triggered through <code>element.$server</code> or
  * simply <code>$server</code> in template event handlers.

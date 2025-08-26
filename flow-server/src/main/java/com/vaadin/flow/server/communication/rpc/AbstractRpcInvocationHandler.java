@@ -33,7 +33,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.JsonConstants;
-//import elemental.json.JsonObject;
 
 /**
  * Abstract invocation handler implementation with common methods.
