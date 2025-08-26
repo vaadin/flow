@@ -120,9 +120,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("i18nOutput", i18nOutputFolderString);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
-        
-        settings.put("javaResourceFolder", 
-                javaResourceFolder != null ? FrontendUtils.getUnixPath(javaResourceFolder.toPath()) : "");
+
+        settings.put("javaResourceFolder",
+                javaResourceFolder != null
+                        ? FrontendUtils.getUnixPath(javaResourceFolder.toPath())
+                        : "");
 
         settings.put("themeName", themeName);
 
