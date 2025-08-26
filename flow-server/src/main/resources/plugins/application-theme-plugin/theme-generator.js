@@ -113,6 +113,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   if(themeProperties.lumoImports) {
     imports.push(`import lumoUtil from '@vaadin/vaadin-lumo-styles/utility.css?inline';\n`);
+    shadowOnlyCss.push(`removers.push(injectGlobalCss(lumoUtil.toString(), '', target));\n    `);
   }
 
   /* Theme */
