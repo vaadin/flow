@@ -88,7 +88,7 @@ public class AttachTemplateChildRpcHandler
         } else if (requestedId != assignedId) {
             logger.error("Attach existing element has failed because "
                     + "the element has been already attached from the server side");
-            if (id instanceof JsonNull) {
+            if (id instanceof NullNode) {
                 throw new IllegalStateException(String.format(
                         "The element with the tag name '%s' is already "
                                 + "attached to the parent with id='%d'",
