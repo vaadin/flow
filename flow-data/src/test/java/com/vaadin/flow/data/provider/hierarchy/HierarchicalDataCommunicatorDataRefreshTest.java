@@ -122,10 +122,8 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.refresh(item0_0_0);
 
         fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
-                "Item 1");
-        assertArrayUpdateItems("state", "initial", "refreshed", "refreshed",
-                "initial");
+        assertArrayUpdateItems("name", "Item 0-0", "Item 0-0-0");
+        assertArrayUpdateItems("state", "refreshed", "refreshed");
     }
 
     @Test

@@ -62,12 +62,6 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     @Mock
     protected Update arrayUpdate;
 
-    @Captor
-    protected ArgumentCaptor<List<JsonValue>> arrayUpdateItemsCaptor;
-
-    @Captor
-    protected ArgumentCaptor<Integer> arrayUpdateSizeCaptor;
-
     protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
 
     @Before
@@ -104,11 +98,12 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         Mockito.verify(arrayUpdate,
                 end < size ? Mockito.times(1) : Mockito.never())
                 .clear(end, size - end);
-        Mockito.verify(arrayUpdate, Mockito.times(1)).set(Mockito.eq(start),
+        Mockito.verify(arrayUpdate, Mockito.atMost(length)).set(
+                Mockito.intThat(index -> index >= start && index < end),
                 Mockito.anyList());
 
         var items = captureArrayUpdateItems();
-        Assert.assertEquals(Math.min(size, length), items.size());
+        Assert.assertTrue(items.size() <= Math.min(size, length));
     }
 
     protected void assertArrayUpdateSize(int size) {
@@ -116,15 +111,20 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     }
 
     protected List<JsonValue> captureArrayUpdateItems() {
-        Mockito.verify(arrayUpdate).set(Mockito.anyInt(),
-                arrayUpdateItemsCaptor.capture());
-        return arrayUpdateItemsCaptor.getValue();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<JsonValue>> argumentCaptor = ArgumentCaptor
+                .forClass(List.class);
+
+        Mockito.verify(arrayUpdate, Mockito.atLeastOnce()).set(Mockito.anyInt(),
+                argumentCaptor.capture());
+        return argumentCaptor.getAllValues().stream().flatMap(List::stream)
+                .toList();
     }
 
     protected int captureArrayUpdateSize() {
-        Mockito.verify(arrayUpdater)
-                .startUpdate(arrayUpdateSizeCaptor.capture());
-        return arrayUpdateSizeCaptor.getValue();
+        var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(arrayUpdater).startUpdate(argumentCaptor.capture());
+        return argumentCaptor.getValue();
     }
 
     protected void populateTreeData(TreeData<Item> treeData,

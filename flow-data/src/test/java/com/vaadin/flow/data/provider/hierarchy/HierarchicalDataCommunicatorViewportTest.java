@@ -36,6 +36,7 @@ public class HierarchicalDataCommunicatorViewportTest
     public void setViewportRange_flush_requestedRangeSent() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 5);
+
         fakeClientCommunication();
 
         assertArrayUpdateSize(100);
