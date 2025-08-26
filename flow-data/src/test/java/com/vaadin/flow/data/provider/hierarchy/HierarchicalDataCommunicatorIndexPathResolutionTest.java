@@ -21,11 +21,11 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         populateTreeData(treeData, 3, 2, 1);
 
         var dataGenerator = new CompositeDataGenerator<Item>();
-        dataGenerator.addDataGenerator((item, json) -> json.put("name", item.getName()));
+        dataGenerator.addDataGenerator(
+                (item, json) -> json.put("name", item.getName()));
 
-        dataCommunicator = new HierarchicalDataCommunicator<>(
-                dataGenerator, arrayUpdater,
-                ui.getElement().getNode(), () -> null);
+        dataCommunicator = new HierarchicalDataCommunicator<>(dataGenerator,
+                arrayUpdater, ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
     }

@@ -77,7 +77,8 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(0, 10);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 8", "Item 9");
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 8",
+                "Item 9");
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 

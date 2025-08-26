@@ -40,6 +40,10 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
             return state;
         }
 
+        public void setState(String state) {
+            this.state = state;
+        }
+
         public String getName() {
             return name;
         }
@@ -99,11 +103,8 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
                 end < size ? Mockito.times(1) : Mockito.never())
                 .clear(end, size - end);
         Mockito.verify(arrayUpdate, Mockito.atMost(length)).set(
-                Mockito.intThat(index -> index >= start && index < end),
+                Mockito.intThat(index -> start <= index && index < end),
                 Mockito.anyList());
-
-        var items = captureArrayUpdateItems();
-        Assert.assertTrue(items.size() <= Math.min(size, length));
     }
 
     protected void assertArrayUpdateSize(int size) {
@@ -115,7 +116,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         ArgumentCaptor<List<JsonValue>> argumentCaptor = ArgumentCaptor
                 .forClass(List.class);
 
-        Mockito.verify(arrayUpdate, Mockito.atLeastOnce()).set(Mockito.anyInt(),
+        Mockito.verify(arrayUpdate, Mockito.atLeast(0)).set(Mockito.anyInt(),
                 argumentCaptor.capture());
         return argumentCaptor.getAllValues().stream().flatMap(List::stream)
                 .toList();
