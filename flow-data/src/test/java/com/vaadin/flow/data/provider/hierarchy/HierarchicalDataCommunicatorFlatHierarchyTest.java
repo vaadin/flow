@@ -154,8 +154,7 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         dataCommunicator.refresh(new Item("Item 0", "refreshed"));
         fakeClientCommunication();
-        assertArrayUpdateItems("state", "refreshed", "initial", "initial",
-                "initial");
+        assertArrayUpdateItems("state", "refreshed");
     }
 
     @Test(expected = UnsupportedOperationException.class)
