@@ -675,20 +675,29 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (end < flatSize) {
             update.clear(end, flatSize - end);
         }
+
         List<JsonValue> jsonItems = new ArrayList<>();
         for (int i = 0; i < items.size(); i++) {
             var item = items.get(i);
-            var index = start + i;
+            var itemIndex = start + i;
 
             if (flushRequest.isViewportInvalidated()
                     || flushRequest.isItemInvalidated(item)
-                    || flushRequest.isIndexInvalidated(index)) {
+                    || flushRequest.isIndexInvalidated(itemIndex)) {
                 jsonItems.add(generateItemJson(item));
-            } else {
-                jsonItems.add(Json.createNull());
+
+                if (i < items.size() - 1) {
+                    continue;
+                }
             }
+
+            if (jsonItems.isEmpty()) {
+                continue;
+            }
+
+            update.set(itemIndex - jsonItems.size() + 1, jsonItems);
+            jsonItems.clear();
         }
-        update.set(start, jsonItems);
         update.commit(nextUpdateId++);
     }
 
