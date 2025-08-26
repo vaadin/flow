@@ -1,6 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -98,8 +99,13 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(106);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
-                "Item 0-0-1", "Item 0-1", "Item 1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-0-0", //
+                3, "Item 0-0-1", //
+                4, "Item 0-1", //
+                5, "Item 1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -108,8 +114,13 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(106);
         assertArrayUpdateRange(100, 6);
-        assertArrayUpdateItems("name", "Item 96", "Item 97", "Item 98",
-                "Item 99", "Item 99-0", "Item 99-1");
+        assertArrayUpdateItems("name", Map.of( //
+                100, "Item 96", //
+                101, "Item 97", //
+                102, "Item 98", //
+                103, "Item 99", //
+                104, "Item 99-0", //
+                105, "Item 99-1"));
     }
 
     @Test
@@ -119,8 +130,11 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
-                "Item 13");
+        assertArrayUpdateItems("name", Map.of( //
+                10, "Item 10", //
+                11, "Item 11", //
+                12, "Item 12", //
+                13, "Item 13"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -129,8 +143,11 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(102);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 10-0", "Item 10-1",
-                "Item 11");
+        assertArrayUpdateItems("name", Map.of(//
+                10, "Item 10", //
+                11, "Item 10-0", //
+                12, "Item 10-1", //
+                13, "Item 11"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -139,22 +156,28 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
-                "Item 13");
+        assertArrayUpdateItems("name", Map.of( //
+                10, "Item 10", //
+                11, "Item 11", //
+                12, "Item 12", //
+                13, "Item 13"));
     }
 
     @Test
     public void refreshItem_updatedRangeSent() {
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
-        assertArrayUpdateItems("state", "initial", "initial", "initial",
-                "initial");
+        assertArrayUpdateItems("state", Map.of( //
+                0, "initial", //
+                1, "initial", //
+                2, "initial", //
+                3, "initial"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.refresh(new Item("Item 0", "refreshed"));
         fakeClientCommunication();
-        assertArrayUpdateItems("state", "refreshed");
+        assertArrayUpdateItems("state", Map.of(0, "refreshed"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -168,8 +191,12 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
                 Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
-                "Item 1-0-0", "Item 1-0-1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 1-0", //
+                3, "Item 1-0-0", //
+                4, "Item 1-0-1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -177,8 +204,12 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         treeData.removeItem(new Item("Item 1-0"));
         dataCommunicator.reset();
         fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 1", "Item 1-1", "Item 2", "Item 3",
-                "Item 4");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 1", //
+                1, "Item 1-1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4"));
     }
 
     @Test

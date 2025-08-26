@@ -1,6 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -131,7 +132,7 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         fakeClientCommunication();
         assertArrayUpdateSize(3);
         assertArrayUpdateRange(2, 1);
-        assertArrayUpdateItems("name", "Item 2");
+        assertArrayUpdateItems("name", Map.of(2, "Item 2"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -143,6 +144,6 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         fakeClientCommunication();
         assertArrayUpdateSize(5);
         assertArrayUpdateRange(2, 1);
-        assertArrayUpdateItems("name", "Item 0-1");
+        assertArrayUpdateItems("name", Map.of(2, "Item 0-1"));
     }
 }
