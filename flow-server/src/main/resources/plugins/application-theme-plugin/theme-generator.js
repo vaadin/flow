@@ -112,7 +112,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let variable = camelCase(filename);
 
   if(themeProperties.lumoImports) {
-    globalFileContent.push(`import '@vaadin/vaadin-lumo-styles/utility.css';\n`);
+    imports.push(`import lumoUtil from '@vaadin/vaadin-lumo-styles/utility.css?inline';\n`);
   }
 
   /* Theme */
@@ -196,6 +196,13 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   }
 
   themeFileContent += imports.join('');
+
+  if(themeProperties.lumoImports) {
+    themeFileContent += `const styleTag = document.createElement('style');
+    styleTag.type = 'text/css';
+    styleTag.textContent = lumoUtil.toString();
+    document.head.insertBefore(styleTag, undefined);`;
+  }
 
   // Don't format as the generated file formatting will get wonky!
   // If targets check that we only register the style parts once, checks exist for global css and component css
