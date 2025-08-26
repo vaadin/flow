@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -656,7 +655,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
         ensureRootCache();
 
-        if (viewportRange.getStart() >= rootCache.getSize()) {
+        if (viewportRange.getStart() >= rootCache.getFlatSize()) {
             setViewportRange(0, viewportRange.length());
         }
 
@@ -664,7 +663,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var start = viewportRange.getStart();
         var end = viewportRange.getEnd();
 
-        var items = preloadFlatRangeForward(start, length);
+        var result = preloadFlatRangeForward(start, length);
 
         var flatSize = rootCache.getFlatSize();
 
@@ -675,8 +674,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (end < flatSize) {
             update.clear(end, flatSize - end);
         }
-        for (int i = 0; i < items.size(); i++) {
-            var item = items.get(i);
+        for (int i = 0; i < result.size(); i++) {
+            var item = result.get(i);
             var index = start + i;
 
             if (flushRequest.isViewportInvalidated()
@@ -734,6 +733,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 @Override
                 void removeItemContext(T item) {
                     super.removeItemContext(item);
+
                     getKeyMapper().remove(item);
                     dataGenerator.destroyData(item);
                 }
