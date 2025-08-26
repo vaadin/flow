@@ -198,10 +198,13 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   themeFileContent += imports.join('');
 
   if(themeProperties.lumoImports) {
-    themeFileContent += `const styleTag = document.createElement('style');
-    styleTag.type = 'text/css';
-    styleTag.textContent = lumoUtil.toString();
-    document.head.insertBefore(styleTag, undefined);`;
+    themeFileContent += `if(!document.getElementById("lumoUtil")) {
+      const styleTag = document.createElement('style');
+      styleTag.type = 'text/css';
+      styleTag.id = 'lumoUtil';
+      styleTag.textContent = lumoUtil.toString();
+      document.head.insertBefore(styleTag, document.getElementsByTagName('title')[0]);
+    }`;
   }
 
   // Don't format as the generated file formatting will get wonky!
