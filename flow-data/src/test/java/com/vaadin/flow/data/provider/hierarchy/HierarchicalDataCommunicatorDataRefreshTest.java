@@ -126,7 +126,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
-    public void refreshItemsOutOfViewport_updateRangeSentOnlyAfterItemEntersViewport() {
+    public void refreshItemsOutOfViewport_updatedRangeSentOnlyAfterItemEntersViewport() {
         populateTreeData(treeData, 50, 1);
         dataCommunicator.expand(new Item("Item 49"));
         dataCommunicator.setViewportRange(0, 3);
