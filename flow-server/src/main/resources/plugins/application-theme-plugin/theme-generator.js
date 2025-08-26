@@ -203,7 +203,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
       styleTag.type = 'text/css';
       styleTag.id = 'lumoUtil';
       styleTag.textContent = lumoUtil.toString();
-      document.head.insertBefore(styleTag, document.getElementsByTagName('title')[0]);
+      document.head.prepend(styleTag);
     }`;
   }
 
