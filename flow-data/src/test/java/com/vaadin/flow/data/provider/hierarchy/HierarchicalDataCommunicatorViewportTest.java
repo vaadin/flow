@@ -56,6 +56,45 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
+    public void setViewportRange_flush_setOverlappingRange_partialRangeSent() {
+        populateTreeData(treeData, 100, 2, 2);
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(3, 5);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(3, 5);
+        assertArrayUpdateItems("name", "Item 5", "Item 6", "Item 7");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(0, 10);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(0, 10);
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 8", "Item 9");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(3, 5);
+        fakeClientCommunication();
+
+        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(0, 5);
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2");
+    }
+
+    @Test
     public void setViewportRangeMultipleTimes_flush_onlyLastRangeSent() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 10);

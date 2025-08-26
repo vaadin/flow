@@ -126,6 +126,27 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
+    public void refreshItemsOutOfViewport_updateRangeSentOnlyAfterItemEntersViewport() {
+        populateTreeData(treeData, 50, 1);
+        dataCommunicator.expand(new Item("Item 49"));
+        dataCommunicator.setViewportRange(0, 3);
+        fakeClientCommunication();
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        var item = treeData.getRootItems().get(49);
+        item.setState("refreshed");
+        dataCommunicator.refresh(item);
+
+        fakeClientCommunication();
+        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(48, 3);
+        fakeClientCommunication();
+        assertArrayUpdateItems("name", "Item 48", "Item 49", "Item 49-0");
+        assertArrayUpdateItems("state", "initial", "refreshed", "initial");
+    }
+
+    @Test
     public void refreshItems_dataGeneratorRefreshItemCalled() {
         populateTreeData(treeData, 2, 1, 1);
 

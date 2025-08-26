@@ -5,6 +5,7 @@ import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 
@@ -19,8 +20,11 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         var treeData = new TreeData<Item>();
         populateTreeData(treeData, 3, 2, 1);
 
+        var dataGenerator = new CompositeDataGenerator<Item>();
+        dataGenerator.addDataGenerator((item, json) -> json.put("name", item.getName()));
+
         dataCommunicator = new HierarchicalDataCommunicator<>(
-                new CompositeDataGenerator<Item>(), arrayUpdater,
+                dataGenerator, arrayUpdater,
                 ui.getElement().getNode(), () -> null);
         dataCommunicator.setDataProvider(new TreeDataProvider<>(treeData),
                 null);
@@ -118,5 +122,27 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
         Assert.assertEquals(2,
                 dataCommunicator.resolveIndexPath(-100, -100, -100, -100));
         Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    public void setViewportRange_resolveIndexPage_entireRangeSentWhenSizeChanged() {
+        dataCommunicator.expand(new Item("Item 0"));
+        dataCommunicator.setViewportRange(2, 1);
+        fakeClientCommunication();
+        assertArrayUpdateSize(3);
+        assertArrayUpdateRange(2, 1);
+        assertArrayUpdateItems("name", "Item 2");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.resolveIndexPath(0);
+        fakeClientCommunication();
+        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.resolveIndexPath(0, 0);
+        fakeClientCommunication();
+        assertArrayUpdateSize(5);
+        assertArrayUpdateRange(2, 1);
+        assertArrayUpdateItems("name", "Item 0-1");
     }
 }
