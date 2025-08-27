@@ -8,6 +8,8 @@ import java.util.function.Supplier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult;
 import com.vaadin.signals.impl.ComputedSignal;
@@ -47,6 +49,12 @@ public abstract class Signal<T> {
     private final SignalTree tree;
     private final Id id;
     private final Predicate<SignalCommand> validator;
+
+    private static final ObjectMapper OBJECT_MAPPER;
+    static {
+        OBJECT_MAPPER = new ObjectMapper();
+        OBJECT_MAPPER.registerModule(new JavaTimeModule());
+    }
 
     /**
      * Signal validator that accepts anything. This is defined as a constant to
@@ -233,7 +241,7 @@ public abstract class Signal<T> {
      * Submits a command for this signal and updates the given operation using
      * the given result converter once the command result is confirmed. The
      * command is submitted through the current {@link Transaction} and it uses
-     * {@link SignalEnvironment#synchronousDispatcher()} for delivering the
+     * {@link SignalEnvironment#getCurrentResultNotifier()} for delivering the
      * result update.
      *
      * @param <R>
@@ -260,7 +268,7 @@ public abstract class Signal<T> {
             throw new UnsupportedOperationException();
         }
 
-        Executor dispatcher = SignalEnvironment.synchronousDispatcher();
+        Executor notifier = SignalEnvironment.getCurrentResultNotifier();
 
         Transaction.getCurrent().include(tree(), command, result -> {
             operation.result().completeAsync(() -> {
@@ -273,7 +281,7 @@ public abstract class Signal<T> {
                     throw new RuntimeException(
                             "Unsupported result type: " + result);
                 }
-            }, dispatcher);
+            }, notifier);
         });
 
         return operation;
@@ -509,7 +517,7 @@ public abstract class Signal<T> {
      * @return the converted JSON node, not <code>null</code>
      */
     protected static JsonNode toJson(Object value) {
-        return SignalEnvironment.objectMapper().valueToTree(value);
+        return OBJECT_MAPPER.valueToTree(value);
     }
 
     /**
@@ -528,8 +536,7 @@ public abstract class Signal<T> {
      */
     protected static <T> T fromJson(JsonNode value, Class<T> targetType) {
         try {
-            return SignalEnvironment.objectMapper().treeToValue(value,
-                    targetType);
+            return OBJECT_MAPPER.treeToValue(value, targetType);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }
