@@ -63,6 +63,7 @@ public class InputStreamDownloadHandler
             } else {
                 cause = new IOException(e.getMessage(), e);
             }
+            downloadEvent.setException(e);
             notifyError(downloadEvent, cause);
             throw e;
         }
@@ -72,7 +73,13 @@ public class InputStreamDownloadHandler
             if (message == null) {
                 message = "Download failed with code " + download.getError();
             }
-            notifyError(downloadEvent, new IOException(message));
+            IOException ioException = new IOException(message);
+            if (download.getException() != null) {
+                downloadEvent.setException(download.getException());
+            } else {
+                downloadEvent.setException(ioException);
+            }
+            notifyError(downloadEvent, ioException);
             return;
         }
 
@@ -96,6 +103,7 @@ public class InputStreamDownloadHandler
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            downloadEvent.setException(ioe);
             notifyError(downloadEvent, ioe);
             throw ioe;
         }

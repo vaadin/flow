@@ -97,6 +97,7 @@ public class ServletResourceDownloadHandler
                 // Set status before output is closed (see #8740)
                 response.setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                downloadEvent.setException(ioe);
                 notifyError(downloadEvent, ioe);
                 throw ioe;
             }

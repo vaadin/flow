@@ -66,6 +66,63 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
     }
 
     @Test
+    public void getDynamicDownloadHandlerFileResourceUnicodeName()
+            throws IOException {
+        open();
+
+        WebElement link = findElement(By.id("download-handler-file-unicode"));
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
+                link.getAttribute("router-ignore"));
+        String url = link.getAttribute("href");
+
+        getDriver().manage().timeouts()
+                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
+
+        try (InputStream stream = download(url)) {
+            List<String> lines = IOUtils.readLines(stream,
+                    StandardCharsets.UTF_8);
+            Assert.assertEquals("""
+                    {
+                      "download": true
+                    }""", String.join("\n", lines));
+        }
+        // Special characters in the file name in URL are encoded.
+        Assert.assertEquals(
+                "download-%C5%98%C5%99%C3%BC%C3%B1%C3%AE%C3%A7%C3%B8d%C3%AB%201%E4%B8%AD%E6%96%87.json",
+                FilenameUtils.getName(url));
+    }
+
+    // jetty 12 may throw MalformedURLException which Flow logs as a warning
+    // when checking for static resource before handling the download request.
+    @Test
+    public void getDynamicDownloadHandlerFileResourceUnicodeNameWithQuote()
+            throws IOException {
+        open();
+
+        WebElement link = findElement(
+                By.id("download-handler-file-unicode-quote"));
+        Assert.assertEquals(
+                "Anchor element should have router-ignore " + "attribute", "",
+                link.getAttribute("router-ignore"));
+        String url = link.getAttribute("href");
+
+        getDriver().manage().timeouts()
+                .scriptTimeout(Duration.of(15, ChronoUnit.SECONDS));
+
+        try (InputStream stream = download(url)) {
+            List<String> lines = IOUtils.readLines(stream,
+                    StandardCharsets.UTF_8);
+            Assert.assertEquals("""
+                    {
+                      "download": true
+                    }""", String.join("\n", lines));
+        }
+        // Special characters in the file name in URL are encoded.
+        Assert.assertEquals("download-%22.json", FilenameUtils.getName(url));
+    }
+
+    @Test
     public void getDynamicDownloadHandlerClassResource() throws IOException {
         open();
 
@@ -133,6 +190,20 @@ public class DownloadHandlerIT extends AbstractStreamResourceIT {
         getDriver().manage().timeouts().scriptTimeout(Duration.of(15, SECONDS));
 
         Assert.assertEquals("HTTP ERROR 500",
+                findElement(By.className("error-code")).getText());
+    }
+
+    @Test
+    public void getDynamicDownloadHandlerFailingInputStream_exceptionIsReceived() {
+        open();
+
+        WebElement link = findElement(
+                By.id("download-handler-input-stream-exception"));
+        link.click();
+
+        getDriver().manage().timeouts().scriptTimeout(Duration.of(15, SECONDS));
+        // download handler completion should set status to 403
+        Assert.assertEquals("HTTP ERROR 403",
                 findElement(By.className("error-code")).getText());
     }
 
