@@ -15,114 +15,167 @@
  */
 package com.vaadin.signals;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 public class SignalEnvironmentTest extends SignalTestBase {
-    /*
-     * Some parts of SignalEnvironment are designed as global variables that are
-     * initialized only once. This means that there's no reasonable way of
-     * testing behavior for the initial state before initialization has
-     * happened.
-     */
 
     @Test
-    void tryInitialize_nullValues_throwsNpe() {
-        assertThrows(NullPointerException.class, () -> {
-            SignalEnvironment.tryInitialize(null, Runnable::run);
-        });
+    void registerAndUnregister_environmentIsUsedUntilUnregistered() {
+        Thread testThread = Thread.currentThread();
+        AtomicInteger count = new AtomicInteger();
 
-        assertThrows(NullPointerException.class, () -> {
-            SignalEnvironment.tryInitialize(new ObjectMapper(), null);
-        });
-    }
+        SignalEnvironment environment = new SignalEnvironment() {
+            @Override
+            public boolean isActive() {
+                return Thread.currentThread() == testThread;
+            }
 
-    @Test
-    void tryInitialize_alreadyInitialzed_returnsFalse() {
-        boolean result = SignalEnvironment.tryInitialize(new ObjectMapper(),
-                Runnable::run);
-
-        assertFalse(result);
-    }
-
-    @Test
-    void initialized_initialized_returnsTrue() {
-        assertTrue(SignalEnvironment.initialized());
-    }
-
-    @Test
-    void defaultDispatcher_asInitialized() {
-        Executor dispatcher = SignalEnvironment.defaultDispatcher();
-
-        assertSame(SignalTestBase.dispatcher, dispatcher);
-    }
-
-    @Test
-    void asynchronousDispatcher_noOverride_usesDefaultDispatcher() {
-        Executor dispatcher = SignalEnvironment.asynchronousDispatcher();
-
-        assertSame(SignalEnvironment.defaultDispatcher(), dispatcher);
-    }
-
-    @Test
-    void asynchronousDispatcher_hasOverride_usesOverrideDispatcher() {
-        TestExecutor overrideDispatcher = useTestOverrideDispatcher();
-
-        Executor dispatcher = SignalEnvironment.asynchronousDispatcher();
-
-        assertSame(overrideDispatcher, dispatcher);
-    }
-
-    @Test
-    void synchronousDispatcher_noOverride_runsDirectly() {
-        Thread currentThread = Thread.currentThread();
-        AtomicReference<Thread> dispatcherThread = new AtomicReference<>();
-
-        Executor dispatcher = SignalEnvironment.synchronousDispatcher();
-        dispatcher.execute(() -> {
-            dispatcherThread.set(Thread.currentThread());
-        });
-
-        assertSame(currentThread, dispatcherThread.get());
-    }
-
-    @Test
-    void synchronousDispatcher_hasOverride_usesOverrideDispatcher() {
-        TestExecutor overrideDispatcher = useTestOverrideDispatcher();
-
-        Executor dispatcher = SignalEnvironment.synchronousDispatcher();
-
-        assertSame(overrideDispatcher, dispatcher);
-    }
-
-    @Test
-    void addDispatcherOverride_addAndRemove_notUsedAfterRemove() {
-        Thread currentThread = Thread.currentThread();
-        Executor override = Runnable::run;
-
-        Runnable remover = SignalEnvironment.addDispatcherOverride(() -> {
-            if (Thread.currentThread() == currentThread) {
-                return override;
-            } else {
+            @Override
+            public Executor getResultNotifier() {
+                count.incrementAndGet();
                 return null;
             }
-        });
 
-        Executor dispatcher = SignalEnvironment.asynchronousDispatcher();
-        assertSame(override, dispatcher);
+            @Override
+            public Executor getFallbackEffectDispatcher() {
+                return null;
+            }
 
-        remover.run();
+            @Override
+            public Executor getEffectDispatcher() {
+                return null;
+            }
+        };
 
-        dispatcher = SignalEnvironment.asynchronousDispatcher();
-        assertSame(SignalEnvironment.defaultDispatcher(), dispatcher);
+        SignalEnvironment.getCurrentResultNotifier();
+        assertEquals(0, count.get());
+
+        Runnable unregister = SignalEnvironment.register(environment);
+        try {
+            SignalEnvironment.getCurrentResultNotifier();
+            assertEquals(1, count.get());
+        } finally {
+            unregister.run();
+        }
+
+        SignalEnvironment.getCurrentResultNotifier();
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void isActive_environmentUsedOnlyWhenActive() {
+        ThreadLocal<Boolean> active = new ThreadLocal<Boolean>();
+        AtomicInteger count = new AtomicInteger();
+
+        SignalEnvironment environment = new SignalEnvironment() {
+            @Override
+            public boolean isActive() {
+                return active.get() == Boolean.TRUE;
+            }
+
+            @Override
+            public Executor getResultNotifier() {
+                count.incrementAndGet();
+                return null;
+            }
+
+            @Override
+            public Executor getFallbackEffectDispatcher() {
+                return null;
+            }
+
+            @Override
+            public Executor getEffectDispatcher() {
+                return null;
+            }
+        };
+
+        Runnable unregister = SignalEnvironment.register(environment);
+        try {
+            SignalEnvironment.getCurrentResultNotifier();
+            assertEquals(0, count.get());
+
+            active.set(Boolean.TRUE);
+            SignalEnvironment.getCurrentResultNotifier();
+            assertEquals(1, count.get());
+        } finally {
+            unregister.run();
+        }
+    }
+
+    @Test
+    void resultNotifier_noNotifier_runsImmediately() {
+        AtomicInteger count = new AtomicInteger();
+
+        SignalEnvironment.getCurrentResultNotifier()
+                .execute(() -> count.incrementAndGet());
+
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void resultNotifier_notifierDefined_runsThroughDefinedNotifier() {
+        AtomicInteger count = new AtomicInteger();
+
+        TestExecutor notifier = useTestResultNotifier();
+
+        SignalEnvironment.getCurrentResultNotifier()
+                .execute(() -> count.incrementAndGet());
+        assertEquals(0, count.get());
+
+        notifier.runPendingTasks();
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void effectDispatcher_noDispathcer_runsImmediately() {
+        AtomicInteger count = new AtomicInteger();
+
+        SignalEnvironment.getCurrentEffectDispatcher()
+                .execute(() -> count.incrementAndGet());
+
+        assertEquals(1, count.get());
+    }
+
+    @Test
+    void effectDispatcher_setWhenAccessed_usedAfterCleared() {
+        AtomicInteger count = new AtomicInteger();
+
+        TestExecutor effectDispatcher = useTestEffectDispatcher();
+        TestExecutor fallbackEffectDispatcher = useTestFallbackEffectDispatcher();
+
+        Executor dispatcher = SignalEnvironment.getCurrentEffectDispatcher();
+        clearTestEffectDispatcher();
+
+        dispatcher.execute(() -> count.incrementAndGet());
+        assertEquals(0, count.get());
+
+        effectDispatcher.runPendingTasks();
+        assertEquals(1, count.get());
+
+        assertEquals(0, fallbackEffectDispatcher.countPendingTasks());
+    }
+
+    @Test
+    void fallbackEffectDispatcher_setWhenDispatching_runThroughDispatcher() {
+        AtomicInteger count = new AtomicInteger();
+
+        Executor dispatcher = SignalEnvironment.getCurrentEffectDispatcher();
+
+        TestExecutor effectDispatcher = useTestEffectDispatcher();
+        TestExecutor fallbackEffectDispatcher = useTestFallbackEffectDispatcher();
+
+        dispatcher.execute(() -> count.incrementAndGet());
+        assertEquals(0, count.get());
+
+        fallbackEffectDispatcher.runPendingTasks();
+        assertEquals(1, count.get());
+
+        assertEquals(0, effectDispatcher.countPendingTasks());
     }
 }
