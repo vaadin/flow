@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -742,7 +743,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return rootCache;
     }
 
-    private static class FlushRequest<T> {
+    private static class FlushRequest<T> implements Serializable {
         private boolean viewportInvalidated = false;
         private Set<T> invalidatedItems = new HashSet<>();
         private Set<Range> invalidatedRanges = new HashSet<>();
