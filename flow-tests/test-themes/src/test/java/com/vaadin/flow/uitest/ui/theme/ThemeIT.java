@@ -174,7 +174,7 @@ public class ThemeIT extends ChromeBrowserTest {
         TestBenchElement input = myField.$("vaadin-input-container")
                 .attribute("part", "input-field").first();
         Assert.assertEquals(
-                "Polymer text field should have transparent gray background",
+                "Polymer text field should have white background from vaadin-base",
                 "rgba(255, 255, 255, 1)",
                 input.getCssValue("background-color"));
     }
