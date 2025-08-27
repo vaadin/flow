@@ -1,0 +1,217 @@
+package com.vaadin.flow.data.provider.hierarchy;
+
+import java.util.Arrays;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.data.provider.CompositeDataGenerator;
+
+public class HierarchicalDataCommunicatorFlatHierarchyTest
+        extends AbstractHierarchicalDataCommunicatorTest {
+    public static class FlattenedTreeDataProvider
+            extends AbstractBackEndHierarchicalDataProvider<Item, Void> {
+        private TreeData<Item> treeData;
+
+        public FlattenedTreeDataProvider(TreeData<Item> treeData) {
+            super();
+            this.treeData = treeData;
+        }
+
+        @Override
+        public HierarchyFormat getHierarchyFormat() {
+            return HierarchyFormat.FLATTENED;
+        }
+
+        @Override
+        public Stream<Item> fetchChildrenFromBackEnd(
+                HierarchicalQuery<Item, Void> query) {
+            return flatten(query.getParent(), query.getExpandedItemIds())
+                    .skip(query.getOffset()).limit(query.getLimit());
+        }
+
+        @Override
+        public int getChildCount(HierarchicalQuery<Item, Void> query) {
+            return (int) flatten(query.getParent(), query.getExpandedItemIds())
+                    .count();
+        }
+
+        @Override
+        public boolean hasChildren(Item item) {
+            return treeData.getChildren(item).size() > 0;
+        }
+
+        @Override
+        public int getDepth(Item item) {
+            int depth = 0;
+            while (item != null) {
+                item = treeData.getParent(item);
+                depth++;
+            }
+            return depth;
+        }
+
+        private Stream<Item> flatten(Item parent, Set<Object> expandedItemIds) {
+            return treeData.getChildren(parent).stream()
+                    .flatMap(child -> expandedItemIds.contains(getId(child))
+                            ? Stream.concat(Stream.of(child),
+                                    flatten(child, expandedItemIds))
+                            : Stream.of(child));
+        }
+    }
+
+    private TreeData<Item> treeData = new TreeData<>();
+
+    private FlattenedTreeDataProvider dataProvider = new FlattenedTreeDataProvider(
+            treeData);
+
+    private HierarchicalDataCommunicator<Item> dataCommunicator;
+
+    @Before
+    public void init() {
+        super.init();
+
+        var compositeDataGenerator = new CompositeDataGenerator<Item>();
+        compositeDataGenerator.addDataGenerator((item, json) -> {
+            json.put("name", item.getName());
+            json.put("state", item.getState());
+        });
+
+        dataCommunicator = new HierarchicalDataCommunicator<>(
+                compositeDataGenerator, arrayUpdater, ui.getElement().getNode(),
+                () -> null);
+        dataCommunicator.setDataProvider(dataProvider, null);
+
+        populateTreeData(treeData, 100, 2, 2);
+    }
+
+    @Test
+    public void setViewportRange_requestedRangeSent() {
+        dataCommunicator.expand(Arrays.asList(new Item("Item 0"),
+                new Item("Item 0-0"), new Item("Item 99")));
+        dataCommunicator.setViewportRange(0, 6);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(106);
+        assertArrayUpdateRange(0, 6);
+        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
+                "Item 0-0-1", "Item 0-1", "Item 1");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(100, 8);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(106);
+        assertArrayUpdateRange(100, 6);
+        assertArrayUpdateItems("name", "Item 96", "Item 97", "Item 98",
+                "Item 99", "Item 99-0", "Item 99-1");
+    }
+
+    @Test
+    public void toggleItems_updatedRangeSent() {
+        dataCommunicator.setViewportRange(10, 4);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(10, 4);
+        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
+                "Item 13");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.expand(new Item("Item 10"));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(102);
+        assertArrayUpdateRange(10, 4);
+        assertArrayUpdateItems("name", "Item 10", "Item 10-0", "Item 10-1",
+                "Item 11");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.collapse(new Item("Item 10"));
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(10, 4);
+        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
+                "Item 13");
+    }
+
+    @Test
+    public void refreshItem_updatedRangeSent() {
+        dataCommunicator.setViewportRange(0, 4);
+        fakeClientCommunication();
+        assertArrayUpdateItems("state", "initial", "initial", "initial",
+                "initial");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.refresh(new Item("Item 0", "refreshed"));
+        fakeClientCommunication();
+        assertArrayUpdateItems("state", "refreshed", "initial", "initial",
+                "initial");
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void refreshItemWithChildren_throws() {
+        dataCommunicator.refresh(new Item("Item 0", "refreshed"), true);
+    }
+
+    @Test
+    public void reset_updatedRangeSent() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
+                "Item 1-0-0", "Item 1-0-1");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        treeData.removeItem(new Item("Item 0"));
+        treeData.removeItem(new Item("Item 1-0"));
+        dataCommunicator.reset();
+        fakeClientCommunication();
+        assertArrayUpdateItems("name", "Item 1", "Item 1-1", "Item 2", "Item 3",
+                "Item 4");
+    }
+
+    @Test
+    public void resolveIndexPath_correctIndexReturned() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
+
+        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(0));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+
+        Assert.assertEquals(50, dataCommunicator.resolveIndexPath(50));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+
+        Assert.assertEquals(54, dataCommunicator.resolveIndexPath(-50));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+
+        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-104));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    public void invalidIndexPath_resolveIndexPath_correctIndexReturned() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
+
+        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(2, 2, 2));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+
+        Assert.assertEquals(103, dataCommunicator.resolveIndexPath(1000));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+
+        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-1000));
+        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+    }
+}
