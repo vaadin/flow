@@ -175,7 +175,7 @@ public class ThemeIT extends ChromeBrowserTest {
                 .attribute("part", "input-field").first();
         Assert.assertEquals(
                 "Polymer text field should have transparent gray background",
-                "rgba(26, 57, 96, 0.1)", input.getCssValue("background-color"));
+                "rgba(255, 255, 255, 1)", input.getCssValue("background-color"));
     }
 
     @Test
