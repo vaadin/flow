@@ -333,7 +333,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void dispatcher_multipleWrites_singleUpdateWhenDispatcherTriggers() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
-        TestExecutor dispatcher = useTestDispatcher();
+        TestExecutor dispatcher = useTestEffectDispatcher();
 
         ArrayList<String> invocations = new ArrayList<>();
 
@@ -353,7 +353,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void dispatcher_closeWithPendingUpdate_noUpdate() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
-        TestExecutor dispatcher = useTestDispatcher();
+        TestExecutor dispatcher = useTestEffectDispatcher();
 
         ArrayList<String> invocations = new ArrayList<>();
 
@@ -368,28 +368,5 @@ public class EffectTest extends SignalTestBase {
         closer.run();
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
-    }
-
-    @Test
-    void dispatcher_hasBaseDispatcherAndOverride_overrideIsUsed() {
-        TestExecutor dispatcher = useTestDispatcher();
-        TestExecutor overrideDispatcher = useTestOverrideDispatcher();
-
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        ArrayList<String> invocations = new ArrayList<>();
-
-        Signal.effect(() -> {
-            invocations.add(signal.value());
-        });
-
-        signal.value("update");
-
-        assertEquals(List.of("initial"), invocations);
-        assertEquals(0, dispatcher.countPendingTasks());
-
-        overrideDispatcher.runPendingTasks();
-
-        assertEquals(List.of("initial", "update"), invocations);
     }
 }
