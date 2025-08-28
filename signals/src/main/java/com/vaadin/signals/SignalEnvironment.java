@@ -34,7 +34,7 @@ public abstract class SignalEnvironment {
 
     private static final Executor IMMEDIATE_EXECUTOR = Runnable::run;
 
-    private static final Executor DEFAULT_EFFECT_DISPATCHER = task -> {
+    private static final Executor EFFECT_DISPATCHER_FALLBACK = task -> {
         resolve(SignalEnvironment::getFallbackEffectDispatcher,
                 IMMEDIATE_EXECUTOR).execute(task);
     };
@@ -46,7 +46,7 @@ public abstract class SignalEnvironment {
      * @return <code>true</code> if this environment is active,
      *         <code>false</code> if it's inactive
      */
-    public abstract boolean isActive();
+    protected abstract boolean isActive();
 
     /**
      * Gets an executor to use for asynchronously notifying about operation
@@ -62,7 +62,7 @@ public abstract class SignalEnvironment {
      * @return an executor to use for notifying about operation results, or
      *         <code>null</code> to notify about results immediately
      */
-    public abstract Executor getResultNotifier();
+    protected abstract Executor getResultNotifier();
 
     /**
      * Gets an executor to use for running the callback of an effect. This
@@ -82,7 +82,7 @@ public abstract class SignalEnvironment {
      * @return an executor to use for invoking effect callbacks, or
      *         <code>null</code> to use the fallback dispatcher
      */
-    public abstract Executor getEffectDispatcher();
+    protected abstract Executor getEffectDispatcher();
 
     /**
      * Gets an executor to use for running the callback of an effect that
@@ -98,7 +98,7 @@ public abstract class SignalEnvironment {
      *         their own dispatcher, or <code>null</code> to invoke the
      *         callbacks immediately
      */
-    public abstract Executor getFallbackEffectDispatcher();
+    protected abstract Executor getFallbackEffectDispatcher();
 
     /**
      * Registers a signal environment to consider when processing signal
@@ -151,6 +151,6 @@ public abstract class SignalEnvironment {
      */
     public static Executor getCurrentEffectDispatcher() {
         return resolve(SignalEnvironment::getEffectDispatcher,
-                DEFAULT_EFFECT_DISPATCHER);
+                EFFECT_DISPATCHER_FALLBACK);
     }
 }
