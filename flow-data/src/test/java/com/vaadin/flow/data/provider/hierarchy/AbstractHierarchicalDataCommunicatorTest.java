@@ -1,14 +1,17 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -40,6 +43,10 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
             return state;
         }
 
+        public void setState(String state) {
+            this.state = state;
+        }
+
         public String getName() {
             return name;
         }
@@ -62,12 +69,6 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     @Mock
     protected Update arrayUpdate;
 
-    @Captor
-    protected ArgumentCaptor<List<JsonValue>> arrayUpdateItemsCaptor;
-
-    @Captor
-    protected ArgumentCaptor<Integer> arrayUpdateSizeCaptor;
-
     protected DataCommunicatorTest.MockUI ui = new DataCommunicatorTest.MockUI();
 
     @Before
@@ -88,11 +89,31 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         });
     }
 
+    /**
+     * @param property
+     *            the property to check
+     * @param expected
+     *            the expected property values of items
+     */
     protected void assertArrayUpdateItems(String property, String... expected) {
         Assert.assertEquals(Arrays.asList(expected),
-                captureArrayUpdateItems().stream()
-                        .map((item) -> ((JsonObject) item).getString(property))
-                        .toList());
+                captureArrayUpdateItems().values().stream()
+                        .map((item) -> item.getString(property)).toList());
+    }
+
+    /**
+     * @param property
+     *            the property to check
+     * @param expected
+     *            a map where the key is the index of an item and the value is
+     *            the expected property value
+     */
+    protected void assertArrayUpdateItems(String property,
+            Map<Integer, String> expected) {
+        Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
+                .stream().collect(Collectors.toMap(//
+                        (entry) -> entry.getKey(),
+                        (entry) -> entry.getValue().getString(property))));
     }
 
     protected void assertArrayUpdateRange(int start, int length) {
@@ -104,27 +125,40 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         Mockito.verify(arrayUpdate,
                 end < size ? Mockito.times(1) : Mockito.never())
                 .clear(end, size - end);
-        Mockito.verify(arrayUpdate, Mockito.times(1)).set(Mockito.eq(start),
+        Mockito.verify(arrayUpdate, Mockito.atMost(length)).set(
+                Mockito.intThat(index -> start <= index && index < end),
                 Mockito.anyList());
-
-        var items = captureArrayUpdateItems();
-        Assert.assertEquals(Math.min(size, length), items.size());
     }
 
     protected void assertArrayUpdateSize(int size) {
         Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
     }
 
-    protected List<JsonValue> captureArrayUpdateItems() {
-        Mockito.verify(arrayUpdate).set(Mockito.anyInt(),
-                arrayUpdateItemsCaptor.capture());
-        return arrayUpdateItemsCaptor.getValue();
+    @SuppressWarnings("unchecked")
+    protected Map<Integer, JsonObject> captureArrayUpdateItems() {
+        ArgumentCaptor<List<JsonValue>> itemsCaptor = ArgumentCaptor
+                .forClass(List.class);
+        ArgumentCaptor<Integer> indexCaptor = ArgumentCaptor
+                .forClass(Integer.class);
+        Mockito.verify(arrayUpdate, Mockito.atLeast(0))
+                .set(indexCaptor.capture(), itemsCaptor.capture());
+
+        Map<Integer, JsonObject> result = new LinkedHashMap<>();
+        for (int i = 0; i < indexCaptor.getAllValues().size(); i++) {
+            var index = indexCaptor.getAllValues().get(i);
+            var items = itemsCaptor.getAllValues().get(i);
+
+            for (var j = 0; j < items.size(); j++) {
+                result.put(index + j, (JsonObject) items.get(j));
+            }
+        }
+        return result;
     }
 
     protected int captureArrayUpdateSize() {
-        Mockito.verify(arrayUpdater)
-                .startUpdate(arrayUpdateSizeCaptor.capture());
-        return arrayUpdateSizeCaptor.getValue();
+        var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(arrayUpdater).startUpdate(argumentCaptor.capture());
+        return argumentCaptor.getValue();
     }
 
     protected void populateTreeData(TreeData<Item> treeData,
