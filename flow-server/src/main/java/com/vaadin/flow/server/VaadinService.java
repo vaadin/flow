@@ -51,7 +51,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -357,17 +356,31 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void initSignalsEnvironment() {
-        Executor signalsExecutor;
-        Supplier<Executor> flowDispatcherOverride;
-        FeatureFlags featureFlags = FeatureFlags.get(getContext());
-        if (featureFlags
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-            // Use getter method to trigger a multiple TaskExecutor check
-            signalsExecutor = getExecutor();
-            flowDispatcherOverride = () -> {
+        boolean enabled = FeatureFlags.get(getContext())
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
+        if (enabled) {
+            // Trigger check for multiple TaskExecutor candidates
+            getExecutor();
+        }
+
+        class VaadinServiceEnvironment extends SignalEnvironment
+                implements Serializable {
+            @Override
+            public boolean isActive() {
+                if (VaadinService.getCurrent() != VaadinService.this) {
+                    return false;
+                } else if (!enabled) {
+                    throw new DisabledFeatureException(
+                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+                } else {
+                    return true;
+                }
+            }
+
+            private Executor createCurrentUiDispatcher() {
                 UI owner = UI.getCurrent();
                 if (owner == null) {
-                    return null;
+                    return getExecutor();
                 }
 
                 return task -> {
@@ -375,33 +388,34 @@ public abstract class VaadinService implements Serializable {
                         task.run();
                     } else {
                         try {
-                            SignalEnvironment.defaultDispatcher()
+                            getExecutor()
                                     .execute(() -> owner.access(task::run));
                         } catch (Exception e) {
-                            // a task is submitted when executor is shut down,
-                            // ignore
+                            // submitted when executor is shut down, ignore
                         }
                     }
                 };
-            };
-        } else {
-            signalsExecutor = task -> {
-                throw new DisabledFeatureException(
-                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-            };
-            flowDispatcherOverride = () -> {
-                throw new DisabledFeatureException(
-                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-            };
+            }
+
+            @Override
+            public Executor getResultNotifier() {
+                return createCurrentUiDispatcher();
+            }
+
+            @Override
+            public Executor getEffectDispatcher() {
+                return createCurrentUiDispatcher();
+            }
+
+            @Override
+            public Executor getFallbackEffectDispatcher() {
+                return getExecutor();
+            }
         }
-        if (!SignalEnvironment.tryInitialize(createDefaultObjectMapper(),
-                signalsExecutor)) {
-            getLogger().warn("Signals environment is already initialized. "
-                    + "It is recommended to let Vaadin setup Signals environment to prevent unexpected behavior. "
-                    + "Please, avoid calling SignalEnvironment.tryInitialize() in application code.");
-        }
+
         Runnable unregister = SignalEnvironment
-                .addDispatcherOverride(flowDispatcherOverride);
+                .register(new VaadinServiceEnvironment());
+
         addServiceDestroyListener(event -> unregister.run());
     }
 
