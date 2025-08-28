@@ -1,5 +1,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.Map;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -40,8 +42,12 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(0, 5);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 3",
-                "Item 4");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -50,8 +56,62 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(95, 5);
-        assertArrayUpdateItems("name", "Item 95", "Item 96", "Item 97",
-                "Item 98", "Item 99");
+        assertArrayUpdateItems("name", Map.of( //
+                95, "Item 95", //
+                96, "Item 96", //
+                97, "Item 97", //
+                98, "Item 98", //
+                99, "Item 99"));
+    }
+
+    @Test
+    public void setViewportRange_flush_setOverlappingRange_partialRangeSent() {
+        populateTreeData(treeData, 100, 2, 2);
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(3, 5);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(3, 5);
+        assertArrayUpdateItems("name", Map.of( //
+                5, "Item 5", //
+                6, "Item 6", //
+                7, "Item 7"));
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(0, 10);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(0, 10);
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2", //
+                8, "Item 8", //
+                9, "Item 9"));
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(3, 5);
+        fakeClientCommunication();
+
+        Mockito.verifyNoInteractions(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(0, 5);
+        fakeClientCommunication();
+
+        assertArrayUpdateSize(100);
+        assertArrayUpdateRange(0, 5);
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2"));
     }
 
     @Test
@@ -63,7 +123,9 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(50, 2);
-        assertArrayUpdateItems("name", "Item 50", "Item 51");
+        assertArrayUpdateItems("name", Map.of( //
+                50, "Item 50", //
+                51, "Item 51"));
     }
 
     @Test
@@ -76,8 +138,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(102);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-1",
-                "Item 1", "Item 2", "Item 3");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-1", //
+                3, "Item 1", //
+                4, "Item 2", //
+                5, "Item 3"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -86,8 +153,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(104);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
-                "Item 0-0-1", "Item 0-1", "Item 1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-0-0", //
+                3, "Item 0-0-1", //
+                4, "Item 0-1", //
+                5, "Item 1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -96,8 +168,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(102);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-1",
-                "Item 1", "Item 2", "Item 3");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-1", //
+                3, "Item 1", //
+                4, "Item 2", //
+                5, "Item 3"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -106,8 +183,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 3",
-                "Item 4", "Item 5");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4", //
+                5, "Item 5"));
     }
 
     @Test
@@ -119,8 +201,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 3",
-                "Item 4", "Item 5");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4", //
+                5, "Item 5"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -129,8 +216,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(104);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
-                "Item 0-0-1", "Item 0-1", "Item 1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-0-0", //
+                3, "Item 0-0-1", //
+                4, "Item 0-1", //
+                5, "Item 1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -139,8 +231,13 @@ public class HierarchicalDataCommunicatorViewportTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 2", "Item 3",
-                "Item 4", "Item 5");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4", //
+                5, "Item 5"));
     }
 
     @Test
