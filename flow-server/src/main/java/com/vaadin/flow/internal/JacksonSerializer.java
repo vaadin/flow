@@ -32,26 +32,27 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.JsonSerializable;
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonNull;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 /**
- * General-purpose serializer of Java objects to {@link JsonValue} and
+ * General-purpose serializer of Java objects to {@link ObjectNode} and
  * deserializer of JsonValue to Java objects.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 1.0
+ * @since 25.0
  */
-public final class JsonSerializer {
+public final class JacksonSerializer {
 
-    private JsonSerializer() {
+    private JacksonSerializer() {
     }
 
     /**
@@ -64,9 +65,9 @@ public final class JsonSerializer {
      *            Java object to be converted
      * @return the json representation of the Java object
      */
-    public static JsonValue toJson(Object bean) {
+    public static JsonNode toJson(Object bean) {
         if (bean == null) {
-            return Json.createNull();
+            return JacksonUtils.nullNode();
         }
         if (bean instanceof Collection) {
             return toJson((Collection<?>) bean);
@@ -75,16 +76,16 @@ public final class JsonSerializer {
             return toJsonArray(bean);
         }
         if (bean instanceof JsonSerializable) {
-            return Json.parse(((JsonSerializable) bean).toString());
+            return ((JsonSerializable) bean).toJson();
         }
 
-        Optional<JsonValue> simpleType = tryToConvertToSimpleType(bean);
+        Optional<JsonNode> simpleType = tryToConvertToSimpleType(bean);
         if (simpleType.isPresent()) {
             return simpleType.get();
         }
 
         try {
-            JsonObject json = Json.createObject();
+            ObjectNode json = JacksonUtils.createObjectNode();
             Class<?> type = bean.getClass();
 
             if (type.isRecord()) {
@@ -124,44 +125,47 @@ public final class JsonSerializer {
      *         empty array is returned if the input collections is
      *         <code>null</code>
      */
-    public static JsonArray toJson(Collection<?> beans) {
-        JsonArray array = Json.createArray();
+    public static ArrayNode toJson(Collection<?> beans) {
+        ArrayNode array = JacksonUtils.createArrayNode();
         if (beans == null) {
             return array;
         }
 
-        beans.stream().map(JsonSerializer::toJson)
-                .forEachOrdered(json -> array.set(array.length(), json));
+        beans.stream().map(JacksonSerializer::toJson)
+                .forEachOrdered(json -> array.add(json));
         return array;
     }
 
-    private static JsonArray toJsonArray(Object javaArray) {
+    private static ArrayNode toJsonArray(Object javaArray) {
         int length = Array.getLength(javaArray);
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
         for (int i = 0; i < length; i++) {
             array.set(i, toJson(Array.get(javaArray, i)));
         }
         return array;
     }
 
-    private static Optional<JsonValue> tryToConvertToSimpleType(Object bean) {
+    private static Optional<JsonNode> tryToConvertToSimpleType(Object bean) {
         if (bean instanceof String) {
-            return Optional.of(Json.create((String) bean));
+            return Optional.of(JacksonUtils.createNode((String) bean));
         }
         if (bean instanceof Number) {
-            return Optional.of(Json.create(((Number) bean).doubleValue()));
+            return Optional
+                    .of(JacksonUtils.createNode(((Number) bean).doubleValue()));
         }
         if (bean instanceof Boolean) {
-            return Optional.of(Json.create((Boolean) bean));
+            return Optional.of(JacksonUtils.createNode((Boolean) bean));
         }
         if (bean instanceof Character) {
-            return Optional.of(Json.create(Character.toString((char) bean)));
+            return Optional.of(
+                    JacksonUtils.createNode(Character.toString((char) bean)));
         }
         if (bean instanceof Enum) {
-            return Optional.of(Json.create(((Enum<?>) bean).name()));
+            return Optional
+                    .of(JacksonUtils.createNode(((Enum<?>) bean).name()));
         }
-        if (bean instanceof JsonValue) {
-            return Optional.of((JsonValue) bean);
+        if (bean instanceof JsonNode) {
+            return Optional.of((JsonNode) bean);
         }
         return Optional.empty();
     }
@@ -181,14 +185,14 @@ public final class JsonSerializer {
      * @return the deserialized object, or <code>null</code> if the input json
      *         is <code>null</code>
      */
-    public static <T> T toObject(Class<T> type, JsonValue json) {
+    public static <T> T toObject(Class<T> type, JsonNode json) {
         return toObject(type, null, json);
     }
 
     @SuppressWarnings("unchecked")
     private static <T> T toObject(Class<T> type, Type genericType,
-            JsonValue json) {
-        if (json == null || json instanceof JsonNull) {
+            JsonNode json) {
+        if (json == null || json instanceof NullNode) {
             return null;
         }
 
@@ -217,13 +221,13 @@ public final class JsonSerializer {
 
         try {
             if (instance instanceof JsonSerializable
-                    && json instanceof JsonObject) {
+                    && json instanceof JsonNode) {
                 return type.cast(JsonSerializable.class.cast(instance)
-                        .readJson(JacksonUtils.readTree(json.toJson())));
+                        .readJson((JsonNode) json));
             }
 
-            JsonObject jsonObject = (JsonObject) json;
-            String[] keys = jsonObject.keys();
+            JsonNode jsonObject = json;
+            List<String> keys = JacksonUtils.getKeys(jsonObject);
             if (keys == null) {
                 return instance;
             }
@@ -238,7 +242,7 @@ public final class JsonSerializer {
                 }
             }
             for (String key : keys) {
-                JsonValue jsonValue = jsonObject.get(key);
+                JsonNode jsonValue = jsonObject.get(key);
 
                 Method method = writers.get(key);
                 if (method != null) {
@@ -260,7 +264,7 @@ public final class JsonSerializer {
         }
     }
 
-    private static <T> T toRecord(Class<T> type, JsonValue json) {
+    private static <T> T toRecord(Class<T> type, JsonNode json) {
         try {
             RecordComponent[] components = type.getRecordComponents();
             Class<?>[] componentTypes = new Class<?>[components.length];
@@ -269,7 +273,7 @@ public final class JsonSerializer {
             for (int i = 0; i < components.length; i++) {
                 componentTypes[i] = components[i].getType();
                 values[i] = toObject(componentTypes[i],
-                        ((JsonObject) json).get(components[i].getName()));
+                        json.get(components[i].getName()));
             }
 
             return type.getDeclaredConstructor(componentTypes)
@@ -277,14 +281,14 @@ public final class JsonSerializer {
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not deserialize record of type " + type
-                            + " from JsonValue",
+                            + " from JsonNode",
                     e);
         }
     }
 
     private static <T> T toCollection(Class<T> type, Type genericType,
-            JsonValue json) {
-        if (json.getType() != JsonType.ARRAY) {
+            JsonNode json) {
+        if (json.getNodeType() != JsonNodeType.ARRAY) {
             return null;
         }
         if (!(genericType instanceof ParameterizedType)) {
@@ -294,14 +298,14 @@ public final class JsonSerializer {
                             + ". The type is no subclass of ParameterizedType: "
                             + genericType);
         }
-        JsonArray array = (JsonArray) json;
-        Collection<?> collection = tryToCreateCollection(type, array.length());
-        if (array.length() > 0) {
+        ArrayNode array = (ArrayNode) json;
+        Collection<?> collection = tryToCreateCollection(type, array.size());
+        if (array.size() > 0) {
             ParameterizedType parameterizedType = (ParameterizedType) genericType;
             Class<?> parameterizedClass = (Class<?>) parameterizedType
                     .getActualTypeArguments()[0];
             collection.addAll(
-                    (List) toObjects(parameterizedClass, (JsonArray) json));
+                    (List) toObjects(parameterizedClass, (ArrayNode) json));
         }
         return (T) collection;
     }
@@ -321,55 +325,55 @@ public final class JsonSerializer {
      * @return a modifiable list of converted objects. Returns an empty list if
      *         the input array is <code>null</code>
      */
-    public static <T> List<T> toObjects(Class<T> type, JsonArray json) {
+    public static <T> List<T> toObjects(Class<T> type, ArrayNode json) {
         if (json == null) {
             return new ArrayList<>(0);
         }
-        List<T> list = new ArrayList<>(json.length());
-        for (int i = 0; i < json.length(); i++) {
-            list.add(JsonSerializer.toObject(type, json.get(i)));
+        List<T> list = new ArrayList<>(json.size());
+        for (int i = 0; i < json.size(); i++) {
+            list.add(JacksonSerializer.toObject(type, json.get(i)));
         }
         return list;
     }
 
     private static Optional<?> tryToConvertFromSimpleType(Class<?> type,
-            JsonValue json) {
+            JsonNode json) {
         if (type.isAssignableFrom(String.class)) {
-            return Optional.of(json.asString());
+            return Optional.of(json.asText());
         }
         if (type.isAssignableFrom(int.class)
                 || type.isAssignableFrom(Integer.class)) {
-            return Optional.of((int) json.asNumber());
+            return Optional.of(json.intValue());
         }
         if (type.isAssignableFrom(double.class)
                 || type.isAssignableFrom(Double.class)) {
-            return Optional.of(json.asNumber());
+            return Optional.of(json.doubleValue());
         }
         if (type.isAssignableFrom(long.class)
                 || type.isAssignableFrom(Long.class)) {
-            return Optional.of((long) json.asNumber());
+            return Optional.of(json.longValue());
         }
         if (type.isAssignableFrom(short.class)
                 || type.isAssignableFrom(Short.class)) {
-            return Optional.of((short) json.asNumber());
+            return Optional.of(json.shortValue());
         }
         if (type.isAssignableFrom(byte.class)
                 || type.isAssignableFrom(Byte.class)) {
-            return Optional.of((byte) json.asNumber());
+            return Optional.of(json.numberValue().byteValue());
         }
         if (type.isAssignableFrom(char.class)
                 || type.isAssignableFrom(Character.class)) {
-            return Optional.of(json.asString().charAt(0));
+            return Optional.of(json.asText().charAt(0));
         }
         if (type.isAssignableFrom(Boolean.class)
                 || type.isAssignableFrom(boolean.class)) {
             return Optional.of(json.asBoolean());
         }
         if (type.isEnum()) {
-            return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
-                    json.asString()));
+            return Optional.of(
+                    Enum.valueOf((Class<? extends Enum>) type, json.asText()));
         }
-        if (JsonValue.class.isAssignableFrom(type)) {
+        if (JsonNode.class.isAssignableFrom(type)) {
             return Optional.of(json);
         }
         return Optional.empty();

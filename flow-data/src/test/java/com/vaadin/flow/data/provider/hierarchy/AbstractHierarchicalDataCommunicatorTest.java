@@ -1,13 +1,13 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -20,9 +20,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.ArrayUpdater.Update;
 import com.vaadin.flow.data.provider.DataCommunicatorTest;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 abstract public class AbstractHierarchicalDataCommunicatorTest {
     public static class Item {
@@ -98,7 +95,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     protected void assertArrayUpdateItems(String property, String... expected) {
         Assert.assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().values().stream()
-                        .map((item) -> item.getString(property)).toList());
+                        .map((item) -> item.get(property).asText()).toList());
     }
 
     /**
@@ -113,7 +110,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
                 .stream().collect(Collectors.toMap(//
                         (entry) -> entry.getKey(),
-                        (entry) -> entry.getValue().getString(property))));
+                        (entry) -> entry.getValue().get(property).asText())));
     }
 
     protected void assertArrayUpdateRange(int start, int length) {
@@ -135,21 +132,21 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     }
 
     @SuppressWarnings("unchecked")
-    protected Map<Integer, JsonObject> captureArrayUpdateItems() {
-        ArgumentCaptor<List<JsonValue>> itemsCaptor = ArgumentCaptor
+    protected Map<Integer, JsonNode> captureArrayUpdateItems() {
+        ArgumentCaptor<List<JsonNode>> itemsCaptor = ArgumentCaptor
                 .forClass(List.class);
         ArgumentCaptor<Integer> indexCaptor = ArgumentCaptor
                 .forClass(Integer.class);
         Mockito.verify(arrayUpdate, Mockito.atLeast(0))
                 .set(indexCaptor.capture(), itemsCaptor.capture());
 
-        Map<Integer, JsonObject> result = new LinkedHashMap<>();
+        Map<Integer, JsonNode> result = new LinkedHashMap<>();
         for (int i = 0; i < indexCaptor.getAllValues().size(); i++) {
             var index = indexCaptor.getAllValues().get(i);
             var items = itemsCaptor.getAllValues().get(i);
 
             for (var j = 0; j < items.size(); j++) {
-                result.put(index + j, (JsonObject) items.get(j));
+                result.put(index + j, items.get(j));
             }
         }
         return result;

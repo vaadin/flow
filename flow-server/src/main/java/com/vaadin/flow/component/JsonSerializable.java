@@ -17,7 +17,8 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Base interface for classes that are serializable to and from
@@ -32,7 +33,7 @@ public interface JsonSerializable extends Serializable {
      *
      * @return the JSON representation of the object
      */
-    JsonObject toJson();
+    ObjectNode toJson();
 
     /**
      * Sets the JSON object data into the Java object.
@@ -41,6 +42,6 @@ public interface JsonSerializable extends Serializable {
      *            the JSON representation of the object
      * @return this instance, for method chaining
      */
-    JsonSerializable readJson(JsonObject value);
+    JsonSerializable readJson(JsonNode value);
 
 }

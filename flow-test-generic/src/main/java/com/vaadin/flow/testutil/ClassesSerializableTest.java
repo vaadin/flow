@@ -128,6 +128,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.JacksonCodec",
+                "com\\.vaadin\\.flow\\.internal\\.JacksonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCacheHotswapper",
                 "com\\.vaadin\\.flow\\.internal\\.UsageStatistics(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeFeatureRegistry",
