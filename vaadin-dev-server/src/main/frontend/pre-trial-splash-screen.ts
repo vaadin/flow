@@ -50,91 +50,58 @@ class PreTrial extends HTMLElement {
         }
         
         .container {
+          background: white;
+          border-radius: 0.5rem;
+          box-sizing: border-box;
           margin: auto;
-          padding: 20px;
-          max-width: 600px;
-          border: 1px solid #ccc;
-          border-radius: 8px;
-          background-color: white;
-          opacity: 1 !important;
+          max-width: 30rem;
+          padding: 1.5rem;
         }
         
-        h3 {
-          margin: 0 0 10px 0;
-          font-weight: bold;
-          color: black;
+        h2 {
+          color: #0d1219;
+          font-size: 1.5rem;
+          line-height: 1.2;
+          margin: 0 0 1rem 0;
         }
         
         p {
-          margin: 0 0 10px 0;
+          
         }
         
-        a {
-          color: #007bff;
-          text-decoration: none;
-        }
-        
-        .button-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-        
-        button {                    
-          padding: 8px 16px;
+        span.badge {
+          font-size: 12px;
+          padding: 0 6px 0 4px;
+          background: #F1F5FB;
           border-radius: 4px;
-          cursor: pointer;
-          font-family: inherit;
-          font-size-adjust: none;
-          border: none;
+          line-height: 18px;
+          display: inline-block;
+          font-weight: 600;
         }
         
-        .action-button {
-          background-color: #007bff;
-          color: white;
+        span.badge svg {
+          margin-inline-end: 2px;
+          vertical-align: text-bottom;
         }
-        
-        .login-button {
-          background-color: #ededed;
-        }
-        
-        svg {
-          height: 1em; /* Match the current font size */
-          width: auto; /* Maintain aspect ratio */
-          vertical-align: text-top;
-        }
-        .arrow-icon {
-          margin-left: 5px;
-          font-size: 16px;
-        }
-        
-        strong {
-          font-weight: bold;
-        }
-
-        div.error {
-          color: #9f3a38;
-          background-color: #fff6f6;
-          box-shadow: 0 0 0 1px #e0b4b4 inset, 0 0 0 0 transparent;
-          padding: 1em 1.5em;
-          border-radius: .3rem;
-          margin: 0 0 10px 0;
-        }
-        div.error h4 { margin: 0}
       </style>
      `;
-
-    const vaadinLogo = `<svg class='vaadin-logo' width='24' height='24' viewBox='0 0 77.27 73.82' xmlns='http://www.w3.org/2000/svg'>
-        <title>vaadin-logo</title>
-        <path d='M38.65 73.82a4.55 4.55 0 0 0 4.14-2.67l.11-.19 15.88-29.39a5.09 5.09 0 0 0-4.42-7.63c-2.26 0-3.79 1.11-4.83 3.48l-10.89 20.3-10.88-20.27c-1-2.4-2.58-3.5-4.84-3.5a5.09 5.09 0 0 0-4.42 7.62L34.4 71l.07.13a4.55 4.55 0 0 0 4.18 2.73m.01-43.69a4.06 4.06 0 0 0 4.06-4.06v-1a3.86 3.86 0 0 1 3.86-3.84h20.8a9.88 9.88 0 0 0 9.89-9.88V3.78a3.8 3.8 0 0 0-7.1-1.86 3.78 3.78 0 0 0-.48 1.85v2.41a3.86 3.86 0 0 1-3.9 3.82H47a8.13 8.13 0 0 0-8 6.91 12 12 0 0 0-.2 2h-.17a12 12 0 0 0-.2-2 8.13 8.13 0 0 0-8-6.9H11.47A3.86 3.86 0 0 1 7.61 6.2V3.81A3.78 3.78 0 0 0 7.12 2 3.8 3.8 0 0 0 0 3.82v7.61a9.88 9.88 0 0 0 9.89 9.87h20.8a3.86 3.86 0 0 1 3.86 3.84v1a4.06 4.06 0 0 0 4.06 4.06h.05z' data-name='Layer 1' fill='#000000'/>
-     </svg>`;
 
     this.#shadowRoot.innerHTML = `
     ${commonStyles}
     <div class='container'>
-      <h3>${vaadinLogo} ${this.#trialExpired ? 'Trial expired' : 'Start a Trial or Log in'}</h3>
+      <h2>${this.#trialExpired ? 'Trial expired' : 'Get full access to all features'}</h2>
       <p>
-        To use features such as Vaadin Copilot and other commercial components, you need an active <strong>subscription</strong> or <strong>trial</strong>.
+        Vaadin Core is free and open-source. To use Pro components like <span class="badge">
+        <svg width="18" height="18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 15V9.75h3V15h-3Zm-4.5 0V3h3v12h-3ZM3 15V6.75h3V15H3Z" fill="url(#a)"/>
+          <defs>
+            <linearGradient id="a" x1="9" y1="3" x2="9" y2="15" gradientUnits="userSpaceOnUse">
+              <stop stop-color="#1A81FA"/>
+              <stop offset="1" stop-color="#8854FC"/>
+            </linearGradient>
+          </defs>
+        </svg>
+        Charts</span> in your app, activate a free trial.
       </p>
       <p>
          <slot name='products'></slot>
