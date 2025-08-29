@@ -23,3 +23,5 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 | 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.6                                                    |
 | 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)              | 24.7                                                    |
 | main   | 24.8 (Vaadin 24.8 preparations)                                         | 24.8                                                    |
+
+Test change for no code to see test status
