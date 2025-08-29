@@ -34,7 +34,6 @@ import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -43,7 +42,7 @@ import com.vaadin.flow.component.JsonSerializable;
 
 /**
  * General-purpose serializer of Java objects to {@link ObjectNode} and
- * deserializer of JsonValue to Java objects.
+ * deserializer of JsonNode to Java objects.
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.
@@ -57,9 +56,9 @@ public final class JacksonSerializer {
 
     /**
      * Converts a Java bean, {@link JsonSerializable} instance, String, wrapper
-     * of primitive type or enum to a {@link JsonValue}.
+     * of primitive type or enum to a {@link JsonNode}.
      * <p>
-     * When a bean is used, a {@link JsonObject} is returned.
+     * When a bean is used, a {@link ObjectNode} is returned.
      *
      * @param bean
      *            Java object to be converted
@@ -110,13 +109,13 @@ public final class JacksonSerializer {
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not serialize object of type " + bean.getClass()
-                            + " to JsonValue",
+                            + " to JsonNode",
                     e);
         }
     }
 
     /**
-     * Converts a collection of object into a {@link JsonArray}, converting each
+     * Converts a collection of object into a {@link ArrayNode}, converting each
      * item of the collection individually.
      *
      * @param beans
@@ -171,7 +170,7 @@ public final class JacksonSerializer {
     }
 
     /**
-     * Converts a JsonValue to the corresponding Java object. The Java object
+     * Converts a JsonNode to the corresponding Java object. The Java object
      * can be a Java bean, {@link JsonSerializable} instance, String, wrapper of
      * primitive types or an enum.
      *
@@ -259,7 +258,7 @@ public final class JacksonSerializer {
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not deserialize object of type " + type
-                            + " from JsonValue",
+                            + " from JsonNode",
                     e);
         }
     }
@@ -311,7 +310,7 @@ public final class JacksonSerializer {
     }
 
     /**
-     * Converts a JsonArray into a collection of Java objects. The Java objects
+     * Converts a ArrayNode into a collection of Java objects. The Java objects
      * can be Java beans, {@link JsonSerializable} instances, Strings, wrappers
      * of primitive types or enums.
      *
