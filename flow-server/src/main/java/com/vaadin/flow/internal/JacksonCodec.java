@@ -20,8 +20,8 @@ import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -195,12 +195,16 @@ public class JacksonCodec {
             return JacksonUtils.getMapper().nullNode();
         }
 
-        assert canEncodeWithoutTypeInfo(value.getClass());
+        assert canEncodeWithoutTypeInfo(value.getClass())
+                : "this:_" + value.getClass();
 
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {
             return JacksonUtils.getMapper().valueToTree(value);
-        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
+        } else if (Integer.class.equals(type)) {
+            return JacksonUtils.getMapper()
+                    .valueToTree(((Number) value).intValue());
+        } else if (Double.class.equals(type)) {
             return JacksonUtils.getMapper()
                     .valueToTree(((Number) value).doubleValue());
         } else if (Boolean.class.equals(type)) {
@@ -224,7 +228,7 @@ public class JacksonCodec {
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(ObjectNode json) {
+    public static Serializable decodeWithoutTypeInfo(BaseJsonNode json) {
         assert json != null;
         switch (json.getNodeType()) {
         case BOOLEAN:

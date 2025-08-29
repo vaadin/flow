@@ -95,7 +95,7 @@ public abstract class WebComponentExporter<C extends Component>
     private static final List<Class> SUPPORTED_TYPES = Collections
             .unmodifiableList(
                     Arrays.asList(Boolean.class, String.class, Integer.class,
-                            Double.class, JsonValue.class, JsonNode.class));
+                            Double.class, JsonValue.class, BaseJsonNode.class));
 
     private final String tag;
     private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();

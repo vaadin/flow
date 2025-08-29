@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.ClientCallable;
@@ -27,8 +28,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonValue;
 
 /**
  * Wrapper component for a web component that exposes {@link ClientCallable}
@@ -103,7 +102,7 @@ public class WebComponentWrapper extends Component {
      *            the new value to set
      */
     @ClientCallable
-    public void sync(String property, JsonValue newValue) {
+    public void sync(String property, BaseJsonNode newValue) {
         try {
             webComponentBinding.updateProperty(property, newValue);
         } catch (IllegalArgumentException e) {

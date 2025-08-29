@@ -45,8 +45,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 /**
  * Map of DOM events with server-side listeners. The key set of this map
  * describes the event types for which listeners are present. The values
@@ -200,7 +198,7 @@ public class ElementListenerMap extends NodeMap {
             return filter;
         }
 
-        boolean matchesFilter(JsonObject eventData) {
+        boolean matchesFilter(JsonNode eventData) {
             if (filter == null) {
                 // No filter: always matches
                 return true;
@@ -211,8 +209,8 @@ public class ElementListenerMap extends NodeMap {
                 return false;
             }
 
-            if (eventData.hasKey(filter)) {
-                return eventData.getBoolean(filter);
+            if (eventData.has(filter)) {
+                return eventData.get(filter).booleanValue();
             } else {
                 return false;
             }
