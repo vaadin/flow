@@ -258,6 +258,11 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
+    protected void refreshViewport() {
+        requestFlush().invalidateViewport();
+    }
+
+    @Override
     public Stream<T> fetchFromProvider(int offset, int limit) {
         return fetchDataProviderChildren(null, Range.withLength(offset, limit));
     }
