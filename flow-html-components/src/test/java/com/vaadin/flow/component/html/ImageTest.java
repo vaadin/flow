@@ -72,4 +72,44 @@ public class ImageTest extends ComponentTest {
         new TestImage(handler, "test.png");
         Assert.assertTrue(handler.isInline());
     }
+
+    @Test
+    public void byteArrayConstructor_setsAltAndSrc() {
+        byte[] imageData = "test image data".getBytes();
+        String imageName = "test.png";
+        
+        Image image = new Image(imageData, imageName);
+        
+        // Verify alt text is set to image name
+        Assert.assertEquals(imageName, image.getAlt().get());
+        
+        // Verify src attribute is set (should be a blob URL or similar)
+        String src = image.getSrc();
+        Assert.assertNotNull("Source should be set", src);
+        Assert.assertFalse("Source should not be empty", src.isEmpty());
+    }
+
+    @Test
+    public void byteArrayConstructor_handlesNullContentType() {
+        byte[] imageData = "test image data".getBytes();
+        String imageName = "test"; // No extension to test content type handling
+        
+        Image image = new Image(imageData, imageName);
+        
+        // Should still work even without file extension
+        Assert.assertEquals(imageName, image.getAlt().get());
+        Assert.assertNotNull(image.getSrc());
+    }
+
+    @Test
+    public void byteArrayConstructor_handlesEmptyArray() {
+        byte[] imageData = new byte[0];
+        String imageName = "empty.png";
+        
+        Image image = new Image(imageData, imageName);
+        
+        // Should handle empty byte array gracefully
+        Assert.assertEquals(imageName, image.getAlt().get());
+        Assert.assertNotNull(image.getSrc());
+    }
 }
