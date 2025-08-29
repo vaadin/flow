@@ -22,6 +22,12 @@
 
         <dependency>
             <groupId>com.vaadin</groupId>
+            <artifactId>flow-polymer-template</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
             <artifactId>flow-embedding-test-assets</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
