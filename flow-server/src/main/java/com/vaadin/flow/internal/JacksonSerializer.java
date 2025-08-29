@@ -170,8 +170,8 @@ public final class JacksonSerializer {
     }
 
     /**
-     * Converts a JsonNode to the corresponding Java object. The Java object
-     * can be a Java bean, {@link JsonSerializable} instance, String, wrapper of
+     * Converts a JsonNode to the corresponding Java object. The Java object can
+     * be a Java bean, {@link JsonSerializable} instance, String, wrapper of
      * primitive types or an enum.
      *
      * @param type
