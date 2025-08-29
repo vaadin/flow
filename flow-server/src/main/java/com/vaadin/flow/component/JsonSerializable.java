@@ -22,7 +22,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * Base interface for classes that are serializable to and from
- * {@link JsonObject}.
+ * {@link ObjectNode}.
  *
  * @since 1.0
  */
