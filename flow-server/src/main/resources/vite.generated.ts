@@ -79,7 +79,8 @@ const themeOptions = {
     ? path.resolve(devBundleFolder, '../assets')
     : path.resolve(__dirname, settings.staticOutput),
   frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder),
-  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput)
+  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput),
+  javaResourceFolder: settings.javaResourceFolder ? path.resolve(__dirname, settings.javaResourceFolder) : ''
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));

@@ -53,6 +53,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     String buildDirectory;
     String themeName;
     PwaConfiguration pwaConfiguration;
+    File javaResourceFolder;
 
     TaskUpdateSettingsFile(Options builder, String themeName,
             PwaConfiguration pwaConfiguration) {
@@ -64,6 +65,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         this.buildDirectory = builder.getBuildDirectoryName();
         this.themeName = themeName;
         this.pwaConfiguration = pwaConfiguration;
+        this.javaResourceFolder = builder.getJavaResourceFolder();
     }
 
     @Override
@@ -118,6 +120,11 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("i18nOutput", i18nOutputFolderString);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+
+        settings.put("javaResourceFolder",
+                javaResourceFolder != null
+                        ? FrontendUtils.getUnixPath(javaResourceFolder.toPath())
+                        : "");
 
         settings.put("themeName", themeName);
 
