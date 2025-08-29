@@ -2,6 +2,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -353,5 +354,31 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         Assert.assertFalse(keyMapper.has(new Item("Item 0")));
         Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
         Assert.assertFalse(keyMapper.has(new Item("Item 0-0-0")));
+    }
+
+    @Test
+    public void refreshViewport_updatedRangeSent() {
+        populateTreeData(treeData, 6, 1, 1);
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));
+        dataCommunicator.setViewportRange(0, 6);
+
+        var count = new AtomicInteger(0);
+        compositeDataGenerator.addDataGenerator(new DataGenerator<Item>() {
+            @Override
+            public void generateData(Item item, JsonObject json) {
+                json.put("count", String.valueOf(count.get()));
+            }
+        });
+
+        fakeClientCommunication();
+        assertArrayUpdateItems("count", "0", "0", "0", "0", "0", "0");
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        count.incrementAndGet();
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        assertArrayUpdateItems("count", "1", "1", "1", "1", "1", "1");
     }
 }

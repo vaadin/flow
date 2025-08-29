@@ -57,6 +57,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 
+import elemental.json.JsonObject;
 import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
@@ -245,6 +246,33 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNull("Expected no communication after reattach", lastSet);
+    }
+
+    @Test
+    public void refreshViewport_updatedRangeSent() {
+        var compositeDataGenerator = new CompositeDataGenerator<Item>();
+        dataCommunicator = new DataCommunicator<>(compositeDataGenerator, arrayUpdater,
+                data -> {
+                }, element.getNode()) {
+        };
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 6);
+
+        var count = new AtomicInteger(0);
+        compositeDataGenerator.addDataGenerator(new DataGenerator<Item>() {
+            @Override
+            public void generateData(Item item, JsonObject json) {
+                json.put("count", String.valueOf(count.get()));
+            }
+        });
+
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        lastSet = null;
+
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
     }
 
     @Test
