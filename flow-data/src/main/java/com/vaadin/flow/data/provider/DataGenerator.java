@@ -17,7 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 
-import elemental.json.JsonObject;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
  * A data generator for {@link DataCommunicator}. Used to inject custom data to
@@ -33,7 +33,7 @@ import elemental.json.JsonObject;
 public interface DataGenerator<T> extends Serializable {
 
     /**
-     * Adds custom data for the given item to its serialized {@code JsonObject}
+     * Adds custom data for the given item to its serialized {@code ObjectNode}
      * representation. This JSON object will be sent to client-side
      * DataProvider.
      *
@@ -42,7 +42,7 @@ public interface DataGenerator<T> extends Serializable {
      * @param jsonObject
      *            the JSON object being sent to the client
      */
-    void generateData(T item, JsonObject jsonObject);
+    void generateData(T item, ObjectNode jsonObject);
 
     /**
      * Informs the {@code DataGenerator} that the given data item has been

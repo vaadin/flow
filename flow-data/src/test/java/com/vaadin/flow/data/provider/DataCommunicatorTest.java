@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Before;
@@ -56,8 +57,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
 public class DataCommunicatorTest {
@@ -149,7 +148,7 @@ public class DataCommunicatorTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
                 lastSet = Range.withLength(start, items.size());
             }
 

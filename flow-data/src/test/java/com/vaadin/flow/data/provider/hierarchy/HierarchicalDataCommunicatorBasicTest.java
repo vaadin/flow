@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,11 +17,7 @@ import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
 import com.vaadin.flow.data.provider.SortDirection;
-import com.vaadin.flow.data.provider.SortOrder;
-import com.vaadin.flow.data.provider.SortOrderBuilder;
 import com.vaadin.flow.dom.Element;
-
-import elemental.json.JsonObject;
 
 public class HierarchicalDataCommunicatorBasicTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -286,7 +283,7 @@ public class HierarchicalDataCommunicatorBasicTest
 
         var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
             @Override
-            public void generateData(Item item, JsonObject json) {
+            public void generateData(Item item, ObjectNode json) {
                 // NO-OP
             }
         });

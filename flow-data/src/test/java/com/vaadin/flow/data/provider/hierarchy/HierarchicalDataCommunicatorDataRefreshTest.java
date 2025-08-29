@@ -3,6 +3,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,8 +12,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataKeyMapper;
-
-import elemental.json.JsonObject;
 
 public class HierarchicalDataCommunicatorDataRefreshTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -181,7 +180,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
             @Override
-            public void generateData(Item item, JsonObject json) {
+            public void generateData(Item item, ObjectNode json) {
                 // NO-OP
             }
         });
@@ -201,7 +200,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         fakeClientCommunication();
 
         var keys = captureArrayUpdateItems().values().stream()
-                .map((item) -> item.getString("key")).toList();
+                .map((item) -> item.get("key").asText()).toList();
         Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
         Assert.assertEquals("initial", keyMapper.get(keys.get(1)).getState());
         Assert.assertEquals("initial", keyMapper.get(keys.get(2)).getState());
@@ -261,7 +260,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
             @Override
-            public void generateData(Item item, JsonObject json) {
+            public void generateData(Item item, ObjectNode json) {
                 // NO-OP
             }
         });
@@ -329,7 +328,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
 
         var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
             @Override
-            public void generateData(Item item, JsonObject json) {
+            public void generateData(Item item, ObjectNode json) {
                 // NO-OP
             }
         });
