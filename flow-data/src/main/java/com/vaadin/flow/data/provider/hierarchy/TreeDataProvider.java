@@ -60,8 +60,8 @@ public class TreeDataProvider<T>
      *            {@code null}
      */
     public TreeDataProvider(TreeData<T> treeData) {
-        Objects.requireNonNull(treeData, "treeData cannot be null");
-        this.treeData = treeData;
+        this.treeData = Objects.requireNonNull(treeData,
+                "treeData cannot be null");
     }
 
     /**
@@ -76,12 +76,13 @@ public class TreeDataProvider<T>
      *            the backing {@link TreeData} for this provider, not
      *            {@code null}
      * @param hierarchyFormat
-     *            the hierarchy format to return data in
+     *            the hierarchy format to return data in, not {@code null}
      */
     public TreeDataProvider(TreeData<T> treeData,
             HierarchyFormat hierarchyFormat) {
         this(treeData);
-        this.hierarchyFormat = hierarchyFormat;
+        this.hierarchyFormat = Objects.requireNonNull(hierarchyFormat,
+                "hierarchyFormat cannot be null");
     }
 
     @Override
