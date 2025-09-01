@@ -3,6 +3,7 @@ package com.vaadin.signals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -11,7 +12,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -66,7 +66,7 @@ public class SignalCommandTest {
             assertEquals(command, deserialized);
 
             assertedTypes.add(command.getClass());
-        } catch (JsonProcessingException e) {
+        } catch (IOException e) {
             fail(e);
         }
     }

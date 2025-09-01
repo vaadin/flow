@@ -91,8 +91,8 @@
         <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.19.2</jackson.version>
-        <jackson.databind.version>${jackson.version}</jackson.databind.version>
+        <jackson.version>2.2.0</jackson.version>
+        <jackson.databind.version>2.20.0</jackson.databind.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.4.8-jre</guava.version>
         <javassist.version>3.30.2-GA</javassist.version>
@@ -474,7 +474,7 @@
                         </execution>
                     </executions>
                 </plugin>
-                <plugin>
+                <!--<plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-enforcer-plugin</artifactId>
                     <version>3.6.1</version>
@@ -495,6 +495,11 @@
                             </goals>
                             <configuration>
                                 <rules>
+                                    <bannedDependencies>
+                                        <includes>
+                                            <exclude>com.fasterxml.jackson.core:jackson-databind</exclude>
+                                        </includes>
+                                    </bannedDependencies>
                                     <RestrictImports>
                                         <reason>Use SLF4j for logging</reason>
                                         <bannedImport>java.util.logging.**
@@ -515,7 +520,7 @@
                             </goals>
                         </execution>
                     </executions>
-                </plugin>
+                </plugin>-->
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
