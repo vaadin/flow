@@ -70,6 +70,7 @@ public class BrowserDetailsTest extends TestCase {
     private static final String ANDROID_GOOGLE_NEXUS_2_2 = "Mozilla/5.0 (Linux; U; Android 2.2; en-us; Nexus One Build/FRF91) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1";
     private static final String ANDROID_MOTOROLA_3_0 = "Mozilla/5.0 (Linux; U; Android 3.0; en-us; Xoom Build/HRI39) AppleWebKit/534.13 (KHTML, like Gecko) Version/4.0 Safari/534.13";
     private static final String ANDROID_GALAXY_NEXUS_4_0_4_CHROME = "Mozilla/5.0 (Linux; Android 4.0.4; Galaxy Nexus Build/IMM76B) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.133 Mobile Safari/535.19";
+    private static final String ANDROID_CALLPOD_KEEPER = "callpod keeper for android 1.0 (10.1.1/240) dalvik/2.1.0 (linux; u; android 6.0; lg-v495 build/mra58k)";
 
     private static final String EDGE_12_WINDOWS_10 = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240";
 
@@ -95,6 +96,11 @@ public class BrowserDetailsTest extends TestCase {
     private static final String FIREFOX_100_WIN32 = "Mozilla/5.0 (Windows NT 10.0; rv:100.0) Gecko/20100101 Firefox/100.0";
     private static final String FIREFOX_100_MACOS = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:100.0) Gecko/20100101 Firefox/100.0";
     private static final String FIREFOX_100_LINUX = "Mozilla/5.0 (X11; Linux x86_64; rv:100.0) Gecko/20100101 Firefox/100.0";
+
+    // Web crawlers and bots
+    private static final String DUCK_DUCK_BOT = "ddg_android/5.169.0 (com.duckduckgo.mobile.android; android api 33)";
+    private static final String DUCK_DUCK_BOT_2 = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/130.0.6723.106 Mobile DuckDuckGo/5 Safari/537.36";
+    private static final String DUCK_DUCK_BOT_3 = "DuckDuckGo/0.26.3 CFNetwork/1331.0.7 Darwin/21.4.0";
 
     public void testSafari3() {
         BrowserDetails bd = new BrowserDetails(SAFARI3_WINDOWS);
@@ -221,6 +227,14 @@ public class BrowserDetailsTest extends TestCase {
         assertBrowserMinorVersion(bd, 0);
         assertEngineVersion(bd, 535.19f);
         assertAndroid(bd, 4, 0);
+
+    }
+
+    public void testAndroidCallpodKeeper() {
+        BrowserDetails bd = new BrowserDetails(ANDROID_CALLPOD_KEEPER);
+        assertOSMajorVersion(bd, 6);
+        assertOSMinorVersion(bd, 0);
+        assertEngineVersion(bd, -1);
 
     }
 
@@ -697,6 +711,43 @@ public class BrowserDetailsTest extends TestCase {
         assertEngineVersion(bd, 604.3f);
     }
 
+    public void testDuckDuckBot1() {
+        BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT);
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+        assertAndroid(bd, 5, 169);
+    }
+
+    public void testDuckDuckBot2() {
+        BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT_2);
+        assertBrowserMajorVersion(bd, 130);
+        assertBrowserMinorVersion(bd, 0);
+        assertEngineVersion(bd, 537.36f);
+        assertAndroid(bd, 14, -1);
+    }
+
+    public void testDuckDuckBot3() {
+        BrowserDetails bd = new BrowserDetails(DUCK_DUCK_BOT_3);
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+
+        bd = new BrowserDetails("DuckDuckGo");
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+
+        bd = new BrowserDetails("DuckDuckGo/5");
+        assertUnspecifiedBrowser(bd);
+        assertBrowserMajorVersion(bd, -1);
+        assertBrowserMinorVersion(bd, -1);
+        assertEngineVersion(bd, -1);
+    }
+
     /*
      * Helper methods below
      */
@@ -809,6 +860,15 @@ public class BrowserDetailsTest extends TestCase {
         assertFalse(browserDetails.isOpera());
         assertFalse(browserDetails.isSafari());
         assertTrue(browserDetails.isEdge());
+    }
+
+    private void assertUnspecifiedBrowser(BrowserDetails browserDetails) {
+        assertFalse(browserDetails.isFirefox());
+        assertFalse(browserDetails.isChrome());
+        assertFalse(browserDetails.isIE());
+        assertFalse(browserDetails.isOpera());
+        assertFalse(browserDetails.isSafari());
+        assertFalse(browserDetails.isEdge());
     }
 
     private void assertMacOSX(BrowserDetails browserDetails) {
