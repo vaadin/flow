@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -184,26 +185,27 @@ public class TreeDataProvider<T>
             Optional<SerializablePredicate<T>> combinedFilter,
             Optional<Comparator<T>> comparator) {
         List<T> result = new ArrayList<>();
-
-        List<T> children = new ArrayList<>(getTreeData().getChildren(parent));
+        List<T> children = getTreeData().getChildren(parent);
 
         if (comparator.isPresent()) {
-            children.sort(comparator.get());
+            children = children.stream().sorted(comparator.get()).toList();
         }
 
         for (T child : children) {
-            List<T> descendants;
-
-            if (expandedItemIds.contains(getId(child))) {
+            List<T> descendants = Collections.emptyList();
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                    || expandedItemIds.contains(getId(child))) {
                 descendants = flatten(child, expandedItemIds, combinedFilter,
                         comparator);
-            } else {
-                descendants = new ArrayList<>();
             }
 
-            if (combinedFilter.map(f -> f.test(child)).orElse(true)
-                    || descendants.size() > 0) {
+            boolean shouldInclude = combinedFilter.map(f -> f.test(child))
+                    .orElse(true) || descendants.size() > 0;
+            if (shouldInclude) {
                 result.add(child);
+            }
+            if (shouldInclude
+                    && getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
                 result.addAll(descendants);
             }
         }
