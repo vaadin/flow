@@ -740,6 +740,12 @@ public class BuildFrontendMojoTest {
                 .assertTrue("Missing " + dep, dependencies.has(dep)));
     }
 
+    static void assertNotContainingPackages(JsonNode dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertFalse("Not expecting " + dep, dependencies.has(dep)));
+    }
+
     private void assertContainsImports(boolean contains, String... imports)
             throws IOException {
         String content = FileUtils.fileRead(importsFile);

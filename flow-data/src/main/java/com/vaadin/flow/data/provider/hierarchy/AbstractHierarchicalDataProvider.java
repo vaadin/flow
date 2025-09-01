@@ -34,6 +34,23 @@ import com.vaadin.flow.function.SerializableFunction;
 public abstract class AbstractHierarchicalDataProvider<T, F> extends
         AbstractDataProvider<T, F> implements HierarchicalDataProvider<T, F> {
 
+    /**
+     * @throws UnsupportedOperationException
+     *             if the hierarchy format is not {@link HierarchyFormat#NESTED}
+     */
+    @Override
+    public void refreshItem(T item, boolean refreshChildren) {
+        if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+            throw new UnsupportedOperationException(
+                    """
+                            Refreshing children of an item is only supported when the data provider \
+                            uses HierarchyFormat#NESTED. For other formats, use refreshAll() instead.
+                            """);
+        }
+
+        super.refreshItem(item, refreshChildren);
+    }
+
     @Override
     public <Q, C> HierarchicalConfigurableFilterDataProvider<T, Q, C> withConfigurableFilter(
             SerializableBiFunction<Q, C, F> filterCombiner) {

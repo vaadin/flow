@@ -1,16 +1,12 @@
-import { PolymerElement } from '@polymer/polymer/polymer-element.js';
-import { html } from '@polymer/polymer/lib/utils/html-tag.js';
+import { LitElement, html } from 'lit';
 
-class MyComponentElement extends PolymerElement {
-  static get template() {
+class MyComponentElement extends LitElement {
+  render() {
     return html`
-        <button id="button">Click</button>
-        <div id="content"></div>
-    `;
-  }
-
-  static get is() {
-    return 'my-component'
+            <button id="button">Click</button>
+            <div id="content"></div>
+        `;
   }
 }
-customElements.define(MyComponentElement.is, MyComponentElement);
+
+customElements.define('my-component', MyComponentElement);

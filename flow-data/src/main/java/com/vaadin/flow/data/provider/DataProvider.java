@@ -27,6 +27,7 @@ import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.binder.HasFilterableDataProvider;
 import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
 import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
@@ -109,14 +110,17 @@ public interface DataProvider<T, F> extends Serializable {
     void refreshItem(T item);
 
     /**
-     * Refreshes the given item and its children if refreshChildren is true and
-     * a hierarchical data provider is used. Otherwise, it behaves like regular
-     * {@link #refreshItem(Object)}.
+     * Refreshes the given item and its children when {@code refreshChildren} is
+     * true.
      * <p>
-     * It's important to note that this method resets the item's hierarchy which
-     * can cause a content shift if the item contains expanded children: their
-     * descendants aren't guaranteed to be re-fetched eagerly, which may affect
-     * the overall size of the rendered hierarchy, leading to content shifts.
+     * This method will reset the item's cached hierarchy which can cause a
+     * content shift if the item also contains <i>expanded</i> children: their
+     * descendants aren't guaranteed to be re-fetched eagerly if they aren't
+     * visible, which may affect the overall size of the rendered hierarchy,
+     * leading to content shifts.
+     * <p>
+     * This method is only supported for hierarchical data providers that use
+     * {@link HierarchyFormat#NESTED}.
      *
      * @param item
      *            the item to refresh
