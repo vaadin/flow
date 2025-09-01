@@ -29,7 +29,7 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
-
+import reactComponentPropertiesPlugin from '#buildFolder#/plugins/react-component-properties-plugin';
 import { createRequire } from 'module';
 
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -798,7 +798,8 @@ export const vaadinConfig: UserConfigFn = (env) => {
       checker({
         typescript: true
       }),
-      productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
+      productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile }),
+      devMode && reactComponentPropertiesPlugin()
     ]
   };
 };
