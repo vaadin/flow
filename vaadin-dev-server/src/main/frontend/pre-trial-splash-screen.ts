@@ -68,7 +68,7 @@ class PreTrial extends HTMLElement {
           color: #0d1219;
           font-size: 1.5rem;
           line-height: 1.2;
-          margin: 0 0 1.5rem 0;
+          margin: 0 0 1rem 0;
         }
         
         p {
@@ -92,7 +92,7 @@ class PreTrial extends HTMLElement {
         p:has(+ ul) {
           color: #0d1219;
           font-weight: 600;
-          margin-top: 1.5rem;
+          margin-top: 1rem;
         }
         
         ul {
@@ -143,9 +143,10 @@ class PreTrial extends HTMLElement {
           color: white;
           flex-direction: column;
           height: 4rem;
+          margin-bottom: 0.5rem;
         }
         
-        button span {
+        button.primary span + span {
           font-size: 0.8125rem;
           font-weight: normal;
         }
