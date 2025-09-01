@@ -11,6 +11,8 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -25,13 +27,11 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.component.polymertemplate.TemplateParser;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.TemplateModel;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class PolymerPublishedEventRpcHandlerTest {
 
@@ -79,7 +79,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateWithModel_payloadAsExpected_returnsTrue() {
         TestModule instance = new TestModule();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", 0);
         json.put("message", "bar");
 
@@ -93,7 +93,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateWithModel_payloadMissingNodeId_returnsFalse() {
         TestModule instance = new TestModule();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("message", "bar");
 
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
@@ -106,7 +106,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateWithModel_unsupportedType_returnsFalse() {
         TestModule instance = new TestModule();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("message", "bar");
 
         boolean isModelValue = handler.isTemplateModelValue(instance, json,
@@ -120,7 +120,7 @@ public class PolymerPublishedEventRpcHandlerTest {
         TestModule instance = new TestModule();
 
         boolean isModelValue = handler.isTemplateModelValue(instance,
-                Json.createArray(), String.class);
+                JacksonUtils.createArrayNode(), String.class);
 
         Assert.assertFalse(isModelValue);
     }
@@ -129,7 +129,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void normalComponent_returnsFalse() {
         TestComponent instance = new TestComponent();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", 0);
         json.put("message", "bar");
 
@@ -139,12 +139,12 @@ public class PolymerPublishedEventRpcHandlerTest {
         Assert.assertFalse(isModelValue);
     }
 
-    public static Object getTemplateItem(Component template,
-            JsonObject argValue, Type convertedType) {
+    public static Object getTemplateItem(Component template, JsonNode argValue,
+            Type convertedType) {
         final Optional<UI> ui = template.getUI();
         if (ui.isPresent()) {
             StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById((int) argValue.getNumber("nodeId"));
+                    .getNodeById(argValue.get("nodeId").intValue());
 
             ModelType propertyType = ((PolymerTemplate<?>) template)
                     .getModelType(convertedType);
@@ -159,7 +159,7 @@ public class PolymerPublishedEventRpcHandlerTest {
     public void templateNotConnectedToUI_throws() throws NoSuchMethodException {
         TestModule instance = new TestModule();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", 0);
         json.put("message", "bar");
         final Type messageType = ModelClass.class

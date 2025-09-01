@@ -19,6 +19,9 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
@@ -48,7 +51,7 @@ public class History implements Serializable {
      */
     public static class HistoryStateChangeEvent extends EventObject {
         private final Location location;
-        private final transient JsonValue state;
+        private final transient BaseJsonNode state;
         private final NavigationTrigger trigger;
 
         /**
@@ -66,7 +69,7 @@ public class History implements Serializable {
          *            the type of user action that triggered this history
          *            change, not <code>null</code>
          */
-        public HistoryStateChangeEvent(History history, JsonValue state,
+        public HistoryStateChangeEvent(History history, BaseJsonNode state,
                 Location location, NavigationTrigger trigger) {
             super(history);
 
@@ -98,7 +101,7 @@ public class History implements Serializable {
          * @return an optional JSON state value or an empty optional if no state
          *         has been provided
          */
-        public Optional<JsonValue> getState() {
+        public Optional<BaseJsonNode> getState() {
             return Optional.ofNullable(state);
         }
 
