@@ -54,7 +54,7 @@ class PreTrial extends HTMLElement {
           border-radius: 0.5rem;
           box-sizing: border-box;
           color: #3f4d62;
-          font-family: nb_international_pro, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica Neue, Arial, Noto Sans, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+          font-family: "nb_international_pro","ui-sans-serif","system-ui","-apple-system","BlinkMacSystemFont","Segoe UI","Roboto","Helvetica Neue","Arial","Noto Sans","sans-serif","Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji";
           font-size: 0.875rem;
           font-weight: normal;
           letter-spacing: 0.01em;
@@ -68,7 +68,7 @@ class PreTrial extends HTMLElement {
           color: #0d1219;
           font-size: 1.5rem;
           line-height: 1.2;
-          margin: 0 0 1rem 0;
+          margin: 0 0 1.25rem 0;
         }
         
         p {
@@ -92,7 +92,7 @@ class PreTrial extends HTMLElement {
         p:has(+ ul) {
           color: #0d1219;
           font-weight: 600;
-          margin-top: 1rem;
+          margin-top: 1.25rem;
         }
         
         ul {
@@ -128,9 +128,9 @@ class PreTrial extends HTMLElement {
           border-radius: 8px;
           display: flex;
           color: #0368DE;
-          font-family: inherit;
+          font-family: "nb_international_promono","ui-monospace","SFMono-Regular","Menlo","Monaco","Consolas","Liberation Mono","Courier New","monospace";
           font-size: inherit;
-          font-weight: 600;
+          font-weight: 500;
           height: 2.375rem;
           justify-content: center;
           line-height: 1.7;
@@ -142,7 +142,7 @@ class PreTrial extends HTMLElement {
           background: #0368DE;
           color: white;
           flex-direction: column;
-          height: 4rem;
+          height: 4.5rem;
           margin-bottom: 0.5rem;
         }
         
@@ -256,7 +256,7 @@ class PreTrial extends HTMLElement {
         : 'The attempt to start the Trial failed. Please try again later or contact support.'}
         </div>`
       : ''
-    }
+      }
       ${!this.#startFailed && this.#trialExpired ? '<p>You can get an extended 30-day trial by logging in.</p>' : ''}
       ${this.#licenseDownloadStatus === 'started' ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>' : ''}
       ${this.#licenseDownloadStatus === 'failed' ? '<div class="error">Failed to download the license key. Please try again later.</div>' : ''}
@@ -265,9 +265,9 @@ class PreTrial extends HTMLElement {
           '<span>Extend trial 30 days</span>' :
           '<span>Start 7-day trial</span><span>No registration or credit card required</span>'}
       </button>
-      <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''}>
+      <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='secondary'>
         Activate your license
-      </button>          
+      </button>
       <hr>
       <p>
         During your trial, production builds will have a small watermark.
@@ -276,7 +276,7 @@ class PreTrial extends HTMLElement {
     </div>
       `;
 
-    const actionButton = this.#shadowRoot.querySelector('button.action-button')!;
+    const actionButton = this.#shadowRoot.querySelector('button.primary')!;
     actionButton.addEventListener('click', () => {
       if (this.#trialExpired) {
         this.openNewWindow('https://vaadin.com/pricing');
@@ -284,7 +284,7 @@ class PreTrial extends HTMLElement {
         startPreTrial();
       }
     });
-    const loginButton = this.#shadowRoot.querySelector('button.login-button')!;
+    const loginButton = this.#shadowRoot.querySelector('button.secondary')!;
     loginButton.addEventListener('click', () => {
       tryAcquireLicense();
     });
