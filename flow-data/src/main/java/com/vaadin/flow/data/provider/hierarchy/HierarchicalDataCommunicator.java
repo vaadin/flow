@@ -27,6 +27,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataChangeEvent;
@@ -39,13 +42,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * WARNING: Direct use of this class in application code is not recommended and
@@ -459,8 +458,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return !expandedItemIds.isEmpty();
     }
 
-    private JsonValue generateItemJson(T item) {
-        JsonObject json = Json.createObject();
+    private JsonNode generateItemJson(T item) {
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;

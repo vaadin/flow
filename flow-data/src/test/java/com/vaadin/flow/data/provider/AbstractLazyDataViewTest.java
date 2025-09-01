@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +34,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import elemental.json.JsonValue;
 
 public class AbstractLazyDataViewTest {
 
@@ -70,7 +70,7 @@ public class AbstractLazyDataViewTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
 
             }
 
