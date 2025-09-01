@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import elemental.json.JsonString;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -35,15 +38,15 @@ import elemental.json.JsonValue;
 public class StringToEnumDecoder implements RpcDecoder {
 
     @Override
-    public boolean isApplicable(JsonValue value, Class<?> type) {
-        return value.getType().equals(JsonType.STRING) && type.isEnum();
+    public boolean isApplicable(JsonNode value, Class<?> type) {
+        return value.getNodeType().equals(JsonNodeType.STRING) && type.isEnum();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public <T> T decode(JsonValue value, Class<T> type)
+    public <T> T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
-        String stringValue = value.asString();
+        String stringValue = value.asText();
         Enum<?> result = Enum.valueOf((Class<? extends Enum>) type,
                 stringValue);
         return type.cast(result);

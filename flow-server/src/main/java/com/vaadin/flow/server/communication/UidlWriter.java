@@ -34,6 +34,7 @@ import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
@@ -321,7 +322,7 @@ public class UidlWriter implements Serializable {
 
     private static ReturnChannelRegistration createReturnValueChannel(
             StateNode owner, List<ReturnChannelRegistration> registrations,
-            SerializableConsumer<JsonValue> action) {
+            SerializableConsumer<JsonNode> action) {
         ReturnChannelRegistration channel = owner
                 .getFeature(ReturnChannelMap.class)
                 .registerChannel(arguments -> {
