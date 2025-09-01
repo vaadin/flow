@@ -698,11 +698,49 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 : Collections.emptySet();
     }
 
+    /**
+     * Creates a hierarchical query based on the given offset and limit,
+     * including sorting and filtering. Depending on the data provider's
+     * {@link HierarchicalDataProvider#getHierarchyFormat() hierarchy format},
+     * the query fetches either just the root-level items or also their expanded
+     * descendants.
+     *
+     * @param offset
+     *            the offset of the items to fetch
+     * @param limit
+     *            the maximum number of items to fetch
+     * @return a hierarchical query for the specified range
+     */
+    @Override
+    public HierarchicalQuery<T, Object> buildQuery(int offset, int limit) {
+        return buildQuery(null, offset, limit);
+    }
+
+    /**
+     * Creates a hierarchical query based on the given parent, offset and limit,
+     * including sorting and filtering. Depending on the data provider's
+     * {@link HierarchicalDataProvider#getHierarchyFormat() hierarchy format},
+     * the query fetches either just the direct children of the parent or also
+     * their expanded descendants.
+     *
+     * @param parent
+     *            the parent item for the query
+     * @param offset
+     *            the offset of the items to fetch
+     * @param limit
+     *            the maximum number of items to fetch
+     * @return a hierarchical query for the specified range and parent
+     */
+    public HierarchicalQuery<T, Object> buildQuery(T parent, int offset,
+            int limit) {
+        return new HierarchicalQuery<>(offset, limit, getBackEndSorting(),
+                getInMemorySorting(), getFilter(), getExpandedItemIds(),
+                parent);
+    }
+
     @SuppressWarnings("unchecked")
     private Stream<T> fetchDataProviderChildren(T parent, Range range) {
-        var query = new HierarchicalQuery<>(range.getStart(), range.length(),
-                getBackEndSorting(), getInMemorySorting(), getFilter(),
-                getExpandedItemIds(), parent);
+        var query = buildQuery(parent, range.getStart(), range.length());
 
         return ((HierarchicalDataProvider<T, Object>) getDataProvider())
                 .fetchChildren(query).peek((item) -> {
