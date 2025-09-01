@@ -20,6 +20,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -32,7 +34,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
@@ -40,9 +43,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 import org.mockito.MockedStatic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +108,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", item.getId());
 
         // send sync request
@@ -150,7 +150,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", model.getId());
 
         // send sync request
@@ -183,7 +183,7 @@ public class MapSyncRpcHandlerTest {
 
         // Use the model node id for JSON object which represents a value to
         // update
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("nodeId", anotherNode.getId());
 
         // send sync request
@@ -193,7 +193,7 @@ public class MapSyncRpcHandlerTest {
                 .getFeature(ElementPropertyMap.class).getProperty("foo");
 
         Assert.assertNotSame(anotherNode, testPropertyValue);
-        Assert.assertTrue(testPropertyValue instanceof JsonValue);
+        Assert.assertTrue(testPropertyValue instanceof JsonNode);
     }
 
     @Test
@@ -433,21 +433,21 @@ public class MapSyncRpcHandlerTest {
                 createSyncPropertyInvocation(element, eventType, value));
     }
 
-    private static JsonObject createSyncPropertyInvocation(Element element,
+    private static JsonNode createSyncPropertyInvocation(Element element,
             String property, Serializable value) {
         return createSyncPropertyInvocation(element.getNode(), property, value);
     }
 
-    private static JsonObject createSyncPropertyInvocation(StateNode node,
+    private static JsonNode createSyncPropertyInvocation(StateNode node,
             String property, Serializable value) {
         // Copied from ServerConnector
-        JsonObject message = Json.createObject();
+        ObjectNode message = JacksonUtils.createObjectNode();
         message.put(JsonConstants.RPC_NODE, node.getId());
         message.put(JsonConstants.RPC_FEATURE,
                 NodeFeatureRegistry.getId(ElementPropertyMap.class));
         message.put(JsonConstants.RPC_PROPERTY, property);
-        message.put(JsonConstants.RPC_PROPERTY_VALUE,
-                JsonCodec.encodeWithoutTypeInfo(value));
+        message.set(JsonConstants.RPC_PROPERTY_VALUE,
+                JacksonCodec.encodeWithoutTypeInfo(value));
 
         return message;
     }

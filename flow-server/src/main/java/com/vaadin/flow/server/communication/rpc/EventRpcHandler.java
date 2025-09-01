@@ -17,14 +17,15 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.shared.JsonConstants;
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * RPC handler for events.
@@ -45,16 +46,15 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
 
     @Override
     public Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_EVENT_TYPE);
+            JsonNode invocationJson) {
+        assert invocationJson.has(JsonConstants.RPC_EVENT_TYPE);
 
-        String eventType = invocationJson
-                .getString(JsonConstants.RPC_EVENT_TYPE);
+        String eventType = invocationJson.get(JsonConstants.RPC_EVENT_TYPE)
+                .asText();
 
-        JsonObject eventData = invocationJson
-                .getObject(JsonConstants.RPC_EVENT_DATA);
+        JsonNode eventData = invocationJson.get(JsonConstants.RPC_EVENT_DATA);
         if (eventData == null) {
-            eventData = Json.createObject();
+            eventData = JacksonUtils.createObjectNode();
         }
 
         DomEvent event = new DomEvent(Element.get(node), eventType, eventData);
@@ -65,7 +65,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
     }
 
     @Override
-    protected boolean allowInert(UI ui, JsonObject invocationJson) {
+    protected boolean allowInert(UI ui, JsonNode invocationJson) {
         // handled separately in ElementListenerMap
         return true;
     }
