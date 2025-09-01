@@ -178,8 +178,15 @@ function handleThemes(themeName, themesFolder, options, logger) {
 
 function getThemeProperties(themeFolder, options) {
   const themePropertyFile = resolve(themeFolder, 'theme.json');
-  let lastIndexOf = options.projectStaticOutput.lastIndexOf("classes");
-  let outputFolder = options.projectStaticOutput.substring(0, lastIndexOf+"classes".length);
+  let outputFolder;
+  if (options.javaResourceFolder) {
+    // Use the explicit javaResourceFolder if provided
+    outputFolder = options.javaResourceFolder;
+  } else {
+    // Fallback to the old logic for backwards compatibility
+    let lastIndexOf = options.projectStaticOutput.lastIndexOf("classes");
+    outputFolder = options.projectStaticOutput.substring(0, lastIndexOf+"classes".length);
+  }
   let featureFlags = resolve(outputFolder, "vaadin-featureflags.properties");
 
   let componentFeature = existsSync(featureFlags) ? /themeComponentStyles(\s+)?=(\s+)?true/.test(readFileSync(featureFlags, { encoding: 'utf8' })) : false;

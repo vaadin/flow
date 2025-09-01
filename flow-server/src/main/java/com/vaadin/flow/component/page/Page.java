@@ -24,6 +24,10 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
@@ -39,8 +43,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
 /**
@@ -328,8 +330,8 @@ public class Page implements Serializable {
             resizeReceiver = ui.getElement()
                     .addEventListener("window-resize", e -> {
                         var evt = new BrowserWindowResizeEvent(this,
-                                (int) e.getEventData().getNumber("event.w"),
-                                (int) e.getEventData().getNumber("event.h"));
+                                e.getEventData().get("event.w").intValue(),
+                                e.getEventData().get("event.h").intValue());
                         // Clone list to avoid issues if listener unregisters
                         // itself
                         new ArrayList<>(resizeListeners)
@@ -457,7 +459,7 @@ public class Page implements Serializable {
             return;
         }
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
             handleExtendedClientDetailsResponse(json);
             receiver.receiveDetails(
                     ui.getInternals().getExtendedClientDetails());
@@ -469,24 +471,25 @@ public class Page implements Serializable {
         executeJs(js).then(resultHandler, errorHandler);
     }
 
-    private void handleExtendedClientDetailsResponse(JsonValue json) {
+    private void handleExtendedClientDetailsResponse(JsonNode json) {
         ExtendedClientDetails cachedDetails = ui.getInternals()
                 .getExtendedClientDetails();
         if (cachedDetails != null) {
             return;
         }
-        if (!(json instanceof JsonObject)) {
+        if (!(json instanceof ObjectNode)) {
             throw new RuntimeException("Expected a JSON object");
         }
-        final JsonObject jsonObj = (JsonObject) json;
+        final ObjectNode jsonObj = (ObjectNode) json;
 
         // Note that JSON returned is a plain string -> string map, the actual
         // parsing of the fields happens in ExtendedClient's constructor. If a
         // field is missing or the wrong type, pass on null for default.
         final Function<String, String> getStringElseNull = key -> {
-            final JsonValue jsValue = jsonObj.get(key);
-            if (jsValue != null && JsonType.STRING.equals(jsValue.getType())) {
-                return jsValue.asString();
+            final JsonNode jsValue = jsonObj.get(key);
+            if (jsValue != null
+                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                return jsValue.asText();
             } else {
                 return null;
             }

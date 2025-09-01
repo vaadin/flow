@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -34,12 +35,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 public class PageTest {
 
@@ -110,7 +109,7 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -127,8 +126,9 @@ public class PageTest {
                         } else {
                             params.put("v-wn", "foo");
                         }
-                        invocations.add(() -> resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create)));
+                        invocations.add(() -> resultHandler
+                                .accept(JacksonUtils.createObject(params,
+                                        JacksonUtils::createNode)));
                     }
                 };
             }
@@ -175,7 +175,7 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -188,8 +188,8 @@ public class PageTest {
                         params.put("v-curdate", "1555000000000");
                         params.put("v-td", "false");
                         params.put("v-wn", "ROOT-1234567-0.1234567");
-                        resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create));
+                        resultHandler.accept(JacksonUtils.createObject(params,
+                                JacksonUtils::createNode));
                     }
                 };
             }
@@ -237,10 +237,10 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(
-                                Json.create("http://localhost:8080/home"));
+                        resultHandler.accept(JacksonUtils
+                                .createNode("http://localhost:8080/home"));
                     }
                 };
             }
