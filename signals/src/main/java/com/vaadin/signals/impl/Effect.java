@@ -64,7 +64,12 @@ public class Effect {
             return;
         }
 
-        dependencies = UsageTracker.track(action);
+        try {
+            dependencies = UsageTracker.track(action);
+        } catch (IncompatibleClassChangeError e) {
+            dispose();
+            return;
+        }
         registration = dependencies.onNextChange(() -> {
             scheduleInvalidate();
             return false;
