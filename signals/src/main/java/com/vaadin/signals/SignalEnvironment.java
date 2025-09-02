@@ -19,164 +19,138 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Supplier;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.function.Function;
 
 /**
- * Global configuration required by all kinds of signals. There is an object
- * mapper that is used for converting signal values to and from their underlying
- * JSON representation. There's an asynchronous dispatcher used for running
- * {@link Signal#effect(Runnable) effect} callbacks. The dispatcher does not
- * have to ensure tasks are executed in the order they were submitted. There can
- * optionally be dispatcher overrides that customize how tasks are dispatched in
- * specific cases.
+ * The context in which signal operations are processed. Gives frameworks
+ * control over how application code is executed to allow acquiring relevant
+ * locks while running callbacks or to run potentially slow operations
+ * asynchronously without holding irrelevant locks. It is assumed that the
+ * environment is based on a {@link ThreadLocal} with regards to how results can
+ * be cached between invocations.
  */
-public class SignalEnvironment {
-    private record InitializationState(ObjectMapper objectMapper,
-            Executor dispatcher) {
+public abstract class SignalEnvironment {
+    private static final List<SignalEnvironment> environments = new CopyOnWriteArrayList<>();
+
+    private static final Executor IMMEDIATE_EXECUTOR = Runnable::run;
+
+    private static final Executor EFFECT_DISPATCHER_FALLBACK = task -> {
+        resolve(SignalEnvironment::getFallbackEffectDispatcher,
+                IMMEDIATE_EXECUTOR).execute(task);
     };
 
-    private static final AtomicReference<InitializationState> state = new AtomicReference<>();
+    /**
+     * Checks whether this environment is active on the current thread. No other
+     * instance methods will be run while the environment is not active.
+     *
+     * @return <code>true</code> if this environment is active,
+     *         <code>false</code> if it's inactive
+     */
+    protected abstract boolean isActive();
 
-    private static final List<Supplier<Executor>> dispatcherOverrides = new CopyOnWriteArrayList<>();
+    /**
+     * Gets an executor to use for asynchronously notifying about operation
+     * results. This method is run when an operation is submitted and the
+     * returned executor is used to notify of the results when the operation has
+     * been fully processed. The executor can thus be used to make sure the
+     * notification is delivered in the same context as where the operation was
+     * initiated. The notification is delivered immediately if no notifier is
+     * provided. It is recommended that the executor preserves ordering of
+     * submitted tasks within the same context so that notifications are
+     * delivered in the order that operations have been applied.
+     *
+     * @return an executor to use for notifying about operation results, or
+     *         <code>null</code> to notify about results immediately
+     */
+    protected abstract Executor getResultNotifier();
 
-    private SignalEnvironment() {
-        // Only static stuff
+    /**
+     * Gets an executor to use for running the callback of an effect. This
+     * method is run when an effect is created and the returned executor is used
+     * for running the effect callback after any change has been detected. The
+     * executor can thus be used to make sure the effect callback is invoked in
+     * the same context as where the effect was created. It is recommended that
+     * the executor is asynchronous so that the thread that submitted the change
+     * can proceed without waiting for all affected effects to be dispatched. If
+     * no dispatcher is provided when an effect is created, then the effect
+     * callback will be run according to the
+     * {@link #getFallbackEffectDispatcher()} of the environment that is active
+     * when a change is applied. This executor does not need to preserve
+     * ordering since the effect callback always uses the latest signal values
+     * without concern for in which order values have been changed.
+     *
+     * @return an executor to use for invoking effect callbacks, or
+     *         <code>null</code> to use the fallback dispatcher
+     */
+    protected abstract Executor getEffectDispatcher();
+
+    /**
+     * Gets an executor to use for running the callback of an effect that
+     * doesn't have its own dispatcher. This method is run when applying any
+     * change to an effect that has no own dispatcher. The executor can thus be
+     * used to make effect callback invocations asynchronous rather than
+     * blocking the thread that applied the change until all affected effects
+     * have been processed. This executor does not need to preserve ordering
+     * since the effect callback always uses the latest signal values without
+     * concern for in which order values have been changed.
+     *
+     * @return the executor to use for invoking affected effects that don't have
+     *         their own dispatcher, or <code>null</code> to invoke the
+     *         callbacks immediately
+     */
+    protected abstract Executor getFallbackEffectDispatcher();
+
+    /**
+     * Registers a signal environment to consider when processing signal
+     * operations. The environment should be unregistered using the returned
+     * callback when it's no longer needed.
+     *
+     * @param environment
+     *            the environment to register, not <code>null</code>
+     * @return callback for unregistering the environment, not <code>null</code>
+     */
+    public static Runnable register(SignalEnvironment environment) {
+        environments.add(Objects.requireNonNull(environment));
+
+        return () -> environments.remove(environment);
+    }
+
+    private static <T> T resolve(Function<SignalEnvironment, T> getter,
+            T defaultValue) {
+        return environments.stream().filter(SignalEnvironment::isActive)
+                .map(getter).filter(Objects::nonNull).findFirst()
+                .orElse(defaultValue);
     }
 
     /**
-     * Initializes the global signal environment if not already initialized. The
-     * provided values are ignored if the environment is already initialized.
-     * The environment must be initialized before signals are used.
+     * Queries currently active environments for an executor to use for
+     * notifying the results of an operation that is currently submitted. An
+     * immediate executor is returned if no executor is provided by registered
+     * environments.
      *
-     * @param objectMapper
-     *            the object mapper to use, not <code>null</code>
-     * @param dispatcher
-     *            the asynchronous dispatcher to use, not <code>null</code>
-     * @return <code>true</code> if the provided values were used to initialize
-     *         the environment, <code>false</code> if the environment was
-     *         already initialized
+     * @see #getResultNotifier()
+     *
+     * @return the executor to use, not <code>null</code>
      */
-    public static boolean tryInitialize(ObjectMapper objectMapper,
-            Executor dispatcher) {
-        Objects.requireNonNull(objectMapper);
-        Objects.requireNonNull(dispatcher);
-
-        return state.compareAndSet(null,
-                new InitializationState(objectMapper, dispatcher));
+    public static Executor getCurrentResultNotifier() {
+        return resolve(SignalEnvironment::getResultNotifier,
+                IMMEDIATE_EXECUTOR);
     }
 
     /**
-     * Checks whether the environment is already initialized.
+     * Queries currently active environments for an executor to use for running
+     * the callbacks of an effect that is currently being created. If no
+     * registered environment provides an executor, then this method returns an
+     * executor that will delegate to the environment that is active when a
+     * change is applied and otherwise run the callback immediately.
      *
-     * @return <code>true</code> if initialized, <code>false</code> if not
-     *         initialized
-     */
-    public static boolean initialized() {
-        return state.get() != null;
-    }
-
-    /**
-     * Adds a new supplier for override dispatchers. A supplier can inspect the
-     * circumstances under in which it's run and optionally provide a dispatcher
-     * to use for tasks initiated under those circumstances. The supplier is
-     * expected to use its own thread local variables to understand the context.
-     * <p>
-     * The dispatcher is used both for asynchronously dispatched effect
-     * callbacks and for resolving signal operation results. The dispatcher
-     * needs to preserve ordering within the context that it belongs to (which
-     * is up to the implementation to define) so that operation results are
-     * published in order of confirmation.
+     * @see #getEffectDispatcher()
+     * @see #getFallbackEffectDispatcher()
      *
-     * @param dispatcherOverride
-     *            a supplier that can return a dispatcher to use or
-     *            <code>null</code> to not provide any dispatcher under those
-     *            circumstances. Not <code>null</code>.
-     * @return a callback that can be used to unregister the supplier, not
-     *         <code>null</code>
+     * @return the executor to use, not <code>null</code>
      */
-    public static Runnable addDispatcherOverride(
-            Supplier<Executor> dispatcherOverride) {
-        dispatcherOverrides.add(0, Objects.requireNonNull(dispatcherOverride));
-        return () -> {
-            dispatcherOverrides.remove(dispatcherOverride);
-        };
-    }
-
-    private static InitializationState getState() {
-        InitializationState result = state.get();
-        if (result == null) {
-            throw new IllegalStateException(
-                    "The environment must be initialized before used");
-        }
-
-        return result;
-    }
-
-    /**
-     * Gets the object mapper to use for converting signal values to and from
-     * their underlying JSON representation
-     *
-     * @return the object mapper, not <code>null</code>
-     * @throws IllegalStateException
-     *             if the environment has not yet been initialized
-     */
-    public static ObjectMapper objectMapper() {
-        return getState().objectMapper;
-    }
-
-    /**
-     * Gets the dispatcher that was set when the environment was initialized
-     * without looking up overrides.
-     *
-     * @return the configured dispatcher, not <code>null</code>
-     * @throws IllegalStateException
-     *             if the environment has not yet been initialized
-     */
-    public static Executor defaultDispatcher() {
-        return getState().dispatcher;
-    }
-
-    /**
-     * Gets a dispatcher to use for asynchronous tasks. This is used e.g. for
-     * running {@link Signal#effect(Runnable) effect} callbacks. The dispatcher
-     * does not guarantee that tasks are run in the order they have been
-     * submitted. This method uses a dispatcher override if any supplier matches
-     * and otherwise uses the dispatcher provided when the environment was
-     * initialized.
-     *
-     * @return the dispatcher to use, not <code>null</code>
-     * @throws IllegalStateException
-     *             if the environment has not yet been initialized
-     */
-    public static Executor asynchronousDispatcher() {
-        return resolveDispatcher(defaultDispatcher());
-    }
-
-    /**
-     * Gets a dispatcher to use for synchronous tasks. This is used e.g. for
-     * resolving operation results. The dispatcher guarantees that tasks for the
-     * same context are run in the order they have been submitted. This method
-     * uses a dispatcher override if any supplier matches and otherwise uses a
-     * dispatcher that runs tasks on the invoking thread.
-     *
-     * @return the dispatcher to use, not <code>null</code>
-     * @throws IllegalStateException
-     *             if the environment has not yet been initialized
-     */
-    public static Executor synchronousDispatcher() {
-        return resolveDispatcher(Runnable::run);
-    }
-
-    private static Executor resolveDispatcher(Executor baseline) {
-        for (Supplier<Executor> supplier : dispatcherOverrides) {
-            Executor override = supplier.get();
-            if (override != null) {
-                return override;
-            }
-        }
-        return baseline;
+    public static Executor getCurrentEffectDispatcher() {
+        return resolve(SignalEnvironment::getEffectDispatcher,
+                EFFECT_DISPATCHER_FALLBACK);
     }
 }
