@@ -588,7 +588,9 @@ public abstract class Signal<T> {
      * signal is automatically updated if any of the used signals are updated.
      * The computation is lazy so that it only runs when its value is accessed
      * and only if the previously computed value might have been invalidated by
-     * dependent signal changes. An {@link Signal#effect(Runnable) effect} or
+     * dependent signal changes. If the computation callback throws a
+     * {@link RuntimeException}, then that exception will be re-thrown when
+     * accessing the signal value. An {@link Signal#effect(Runnable) effect} or
      * computed signal that uses the value from a computed signal will not be
      * invalidated if the computation is run again but produces the same value
      * as before.
