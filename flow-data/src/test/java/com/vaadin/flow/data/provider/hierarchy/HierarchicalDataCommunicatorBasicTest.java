@@ -3,6 +3,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -15,9 +16,13 @@ import com.vaadin.flow.data.provider.CompositeDataGenerator;
 import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
+import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.function.SerializablePredicate;
 
 public class HierarchicalDataCommunicatorBasicTest
         extends AbstractHierarchicalDataCommunicatorTest {
@@ -431,5 +436,36 @@ public class HierarchicalDataCommunicatorBasicTest
         assertArrayUpdateSize(5);
         assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
                 "Item 1-1", "Item 2");
+    }
+
+    @Test
+    public void buildQuery_correctQueryReturned() {
+        List<QuerySortOrder> sortOrders = new QuerySortOrderBuilder()
+                .thenDesc("name").build();
+        SerializablePredicate<Item> filter = (f) -> true;
+        SerializableComparator<Item> comparator = Comparator
+                .comparing(Item::getName).reversed()::compare;
+
+        dataCommunicator.setDataProvider(treeDataProvider, filter);
+        dataCommunicator.setInMemorySorting(comparator);
+        dataCommunicator.setBackEndSorting(sortOrders);
+
+        var query = dataCommunicator.buildQuery(10, 20);
+        Assert.assertNull(query.getParent());
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(20, query.getLimit());
+        Assert.assertEquals(filter, query.getFilter().get());
+        Assert.assertEquals(sortOrders, query.getSortOrders());
+        Assert.assertEquals(comparator, query.getInMemorySorting());
+        Assert.assertEquals(Collections.emptySet(), query.getExpandedItemIds());
+
+        query = dataCommunicator.buildQuery(new Item("Parent"), 10, 20);
+        Assert.assertEquals(new Item("Parent"), query.getParent());
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(20, query.getLimit());
+        Assert.assertEquals(filter, query.getFilter().get());
+        Assert.assertEquals(sortOrders, query.getSortOrders());
+        Assert.assertEquals(comparator, query.getInMemorySorting());
+        Assert.assertEquals(Collections.emptySet(), query.getExpandedItemIds());
     }
 }
