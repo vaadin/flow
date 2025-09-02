@@ -20,6 +20,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
+import com.fasterxml.jackson.databind.node.NullNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fasterxml.jackson.databind.node.TextNode;
@@ -27,6 +28,7 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -100,6 +102,9 @@ public class MapPutChange extends NodeFeatureChange {
         } else if (value instanceof ObjectNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.parse(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).toString()));
+        } else if (value instanceof NullNode) {
+            json.put(JsonConstants.CHANGE_PUT_VALUE,
+                    JsonCodec.encodeWithConstantPool(null, constantPool));
         } else if (value instanceof NumericNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).doubleValue()));
@@ -111,9 +116,13 @@ public class MapPutChange extends NodeFeatureChange {
         } else if (value instanceof TextNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).textValue()));
-        } else if (value instanceof BaseJsonNode node) {
+        } else if (value instanceof ValueNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).toString()));
+        } else if (value instanceof ArrayNode node) {
+            json.put(JsonConstants.CHANGE_PUT_VALUE,
+                    JacksonUtils.createElementalArray((ArrayNode) JacksonCodec
+                            .encodeWithConstantPool(node, constantPool)));
         } else {
             json.put(JsonConstants.CHANGE_PUT_VALUE,
                     JsonCodec.encodeWithConstantPool(value, constantPool));
