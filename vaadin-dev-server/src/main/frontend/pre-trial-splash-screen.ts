@@ -365,15 +365,7 @@ class PreTrial extends HTMLElement {
       ${this.#startFailed ? `
         <div class='error'>
           <h3>Trial failed to start</h3>
-          ${this.#trialExpired ?
-            `
-            <p>The trial period has expired. You can get an extended 30-day trial by logging in.</p>
-            `
-            :
-            `
-            <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
-            `
-          }
+          <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
         </div>`
       : ''
       }
