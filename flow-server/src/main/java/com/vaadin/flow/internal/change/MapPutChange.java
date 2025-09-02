@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -111,9 +112,13 @@ public class MapPutChange extends NodeFeatureChange {
         } else if (value instanceof TextNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).textValue()));
-        } else if (value instanceof BaseJsonNode node) {
+        } else if (value instanceof ValueNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).toString()));
+        } else if (value instanceof ArrayNode node) {
+            json.put(JsonConstants.CHANGE_PUT_VALUE,
+                    JacksonUtils.createElementalArray((ArrayNode) JacksonCodec
+                            .encodeWithConstantPool(node, constantPool)));
         } else {
             json.put(JsonConstants.CHANGE_PUT_VALUE,
                     JsonCodec.encodeWithConstantPool(value, constantPool));
