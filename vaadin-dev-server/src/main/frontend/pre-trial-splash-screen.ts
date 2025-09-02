@@ -175,6 +175,7 @@ class PreTrial extends HTMLElement {
         }
         
         .error h3 {
+          color: #0d1219;
           font-size: inherit;
           line-height: inherit;
           margin: 0;
