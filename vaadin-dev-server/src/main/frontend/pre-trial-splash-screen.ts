@@ -68,7 +68,7 @@ class PreTrial extends HTMLElement {
           color: #0d1219;
           font-size: 1.5rem;
           line-height: 1.2;
-          margin: 0 0 1.25rem 0;
+          margin: 0 0 1rem 0;
         }
         
         p {
@@ -162,6 +162,26 @@ class PreTrial extends HTMLElement {
         
         a {
           color: #0368DE;
+        }
+        
+        .error {
+          background: #ffedee;
+          border-radius: 0.75rem;
+          display: flex;
+          flex-direction: column;
+          gap: 0.25rem;
+          margin-top: 1.5rem;
+          padding: 1rem 1.5rem;
+        }
+        
+        .error h3 {
+          font-size: inherit;
+          line-height: inherit;
+          margin: 0;
+        }
+        
+        .error a {
+          font-weight: 600;
         }
       </style>
      `;
@@ -343,10 +363,16 @@ class PreTrial extends HTMLElement {
       }
       ${this.#startFailed ? `
         <div class='error'>
-          <h4>Trial cannot be started</h4>
+          <h3>Trial failed to start</h3>
           ${this.#trialExpired ?
-        'The trial period has expired. You can get an extended 30-day trial by logging in.'
-        : 'The attempt to start the Trial failed. Please try again later or contact support.'}
+            `
+            <p>The trial period has expired. You can get an extended 30-day trial by logging in.</p>
+            `
+            :
+            `
+            <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
+            `
+          }
         </div>`
       : ''
       }
