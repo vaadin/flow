@@ -174,7 +174,7 @@ class PreTrial extends HTMLElement {
     const actionButton = this.#shadowRoot.querySelector('button.action-button')!;
     actionButton.addEventListener('click', () => {
       if (this.#trialExpired) {
-        this.openNewWindow('https://vaadin.com/pricing');
+        this.openNewWindow('https://vaadin.com/commercial-license-info');
       } else {
         startPreTrial();
       }
