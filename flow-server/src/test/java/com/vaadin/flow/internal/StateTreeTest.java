@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -97,7 +98,7 @@ public class StateTreeTest {
         public void collectChanges(Consumer<NodeChange> collector) {
             collector.accept(new NodeChange(this) {
                 @Override
-                protected void populateJson(JsonObject json,
+                protected void populateJson(ObjectNode json,
                         ConstantPool constantPool) {
                 }
             });
