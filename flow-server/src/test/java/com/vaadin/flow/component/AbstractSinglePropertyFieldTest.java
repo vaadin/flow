@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
@@ -40,11 +41,6 @@ import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.tests.PublicApiAnalyzer;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 public class AbstractSinglePropertyFieldTest {
     @Rule
@@ -440,9 +436,9 @@ public class AbstractSinglePropertyFieldTest {
 
     @Tag("tag")
     private static class JsonField
-            extends AbstractSinglePropertyField<JsonField, JsonValue> {
+            extends AbstractSinglePropertyField<JsonField, JsonNode> {
         public JsonField() {
-            super("property", Json.createNull(), false);
+            super("property", JacksonUtils.nullNode(), false);
         }
     }
 
@@ -457,26 +453,25 @@ public class AbstractSinglePropertyFieldTest {
     @Test
     public void jsonField() {
         JsonField field = new JsonField();
-        ValueChangeMonitor<JsonValue> monitor = new ValueChangeMonitor<>(field);
+        ValueChangeMonitor<JsonNode> monitor = new ValueChangeMonitor<>(field);
 
-        Assert.assertEquals(JsonType.NULL, field.getValue().getType());
+        Assert.assertEquals(JsonNodeType.NULL, field.getValue().getNodeType());
         monitor.assertNoEvent();
 
-        field.setValue(
-                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        field.setValue(JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                JacksonUtils.createNode(42)));
         monitor.discard();
         Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+                field.getElement().getPropertyRaw("property").toString());
 
         field.getElement().setPropertyJson("property",
                 JacksonUtils.createObjectNode());
         monitor.discard();
-        Assert.assertEquals("{}", field.getValue().toJson());
+        Assert.assertEquals("{}", field.getValue().toString());
 
         field.getElement().setProperty("property", "text");
         monitor.discard();
-        Assert.assertEquals("\"text\"", field.getValue().toJson());
+        Assert.assertEquals("\"text\"", field.getValue().toString());
     }
 
     @Test
@@ -492,8 +487,7 @@ public class AbstractSinglePropertyFieldTest {
                 JacksonUtils.createNode(42)));
         monitor.discard();
         Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+                field.getElement().getPropertyRaw("property").toString());
 
         field.getElement().setPropertyJson("property", JacksonUtils.createArray(
                 JacksonUtils.createNode(37), JacksonUtils.createNode("bar")));

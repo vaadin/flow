@@ -134,6 +134,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
                 Integer.valueOf(0));
         typeHandlers.put(BaseJsonNode.class,
                 getJsonHandler(BaseJsonNode.class));
+        typeHandlers.put(JsonNode.class, getJsonHandler(BaseJsonNode.class));
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
