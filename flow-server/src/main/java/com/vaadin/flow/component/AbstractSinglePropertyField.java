@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -133,7 +134,6 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
                 Integer.valueOf(0));
         typeHandlers.put(BaseJsonNode.class,
                 getJsonHandler(BaseJsonNode.class));
-        typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
@@ -375,7 +375,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     }
 
     @Deprecated
-    private static <P extends JsonValue> TypeHandler<P> getHandler(
+    private static <P extends BaseJsonNode> TypeHandler<P> getHandler(
             Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {
             Serializable value = element.getPropertyRaw(property);
