@@ -387,8 +387,7 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         LicenseChecker.checkLicenseAsync(product.getName(),
                 product.getVersion(), BuildType.DEVELOPMENT,
-                new LicenseDownloadCallback(resource, product),
-                Capabilities.of(Capability.PRE_TRIAL));
+                new LicenseDownloadCallback(resource, product));
         send(resource, "license-download-started", product);
     }
 
