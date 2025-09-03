@@ -228,8 +228,7 @@ public class DebugWindowConnectionLicenseCheckTest {
                         .checkLicenseAsync(eq(TEST_PRODUCT.getName()),
                                 eq(TEST_PRODUCT.getVersion()),
                                 eq(BuildType.DEVELOPMENT),
-                                any(LicenseChecker.Callback.class),
-                                any(Capabilities.class)))
+                                any(LicenseChecker.Callback.class)))
                         .then(i -> {
                             LicenseChecker.Callback callback = i.getArgument(3,
                                     LicenseChecker.Callback.class);
