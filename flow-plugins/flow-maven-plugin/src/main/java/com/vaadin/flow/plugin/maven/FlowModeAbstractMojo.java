@@ -309,9 +309,14 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Allows building a version of the application with a commercial banner
      * when commercial components are used without a license key.
      */
-    @Parameter(property = "vaadin."
-            + InitParameters.COMMERCIAL_WITH_BANNER, defaultValue = "false")
+    @Parameter(property = "vaadin.commercialWithBanner", defaultValue = "false")
     private boolean commercialWithBanner;
+
+    /**
+     * Skip the execution of this plugin.
+     */
+    @Parameter(property = "vaadin.skip", defaultValue = "false")
+    private boolean skip;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
@@ -325,6 +330,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping Vaadin build");
+            return;
+        }
+
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
