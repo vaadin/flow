@@ -323,7 +323,19 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
-        initSignalsEnvironment();
+        try {
+            initSignalsEnvironment();
+        } catch (Exception e) {
+            if (FeatureFlags.get(getContext())
+                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
+                throw e;
+            } else {
+                getLogger().info(
+                        "Error initializing signals. This is non-fatal since signals are "
+                                + "a preview feature and the feature flag is not enabled.",
+                        e);
+            }
+        }
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {

@@ -22,6 +22,9 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+
 import elemental.json.JsonString;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
@@ -43,16 +46,16 @@ import elemental.json.JsonValue;
 public class StringToNumberDecoder implements RpcDecoder {
 
     @Override
-    public boolean isApplicable(JsonValue value, Class<?> type) {
-        return value.getType().equals(JsonType.STRING)
+    public boolean isApplicable(JsonNode value, Class<?> type) {
+        return value.getNodeType().equals(JsonNodeType.STRING)
                 && Number.class.isAssignableFrom(type)
                 && type.getPackage().equals(Integer.class.getPackage());
     }
 
     @Override
-    public <T> T decode(JsonValue value, Class<T> type)
+    public <T> T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
-        String stringValue = value.asString();
+        String stringValue = value.asText();
         try {
             Number number = parseNumber(stringValue);
             if (Number.class.equals(type)) {

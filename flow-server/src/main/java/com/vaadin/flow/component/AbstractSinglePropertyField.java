@@ -34,6 +34,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
 
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
@@ -378,6 +379,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
             Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {
             Serializable value = element.getPropertyRaw(property);
+            if (value instanceof BaseJsonNode) {
+                return type.cast(Json.create(
+                        JacksonCodec.encodeWithoutTypeInfo(value).toString()));
+            }
             // JsonValue is passed straight through, other primitive
             // values are jsonified
             return type.cast(JsonCodec.encodeWithoutTypeInfo(value));

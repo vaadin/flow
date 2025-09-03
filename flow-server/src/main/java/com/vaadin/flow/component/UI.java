@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,9 +88,6 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -1830,8 +1828,8 @@ public class UI extends Component
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
-            JsonObject state = event.historyState == null ? null
-                    : Json.parse(event.historyState.toString());
+            BaseJsonNode state = event.historyState == null ? null
+                    : (BaseJsonNode) event.historyState;
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
                             state, location, navigationTrigger));

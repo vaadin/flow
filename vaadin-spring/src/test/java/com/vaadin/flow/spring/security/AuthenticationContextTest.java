@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
@@ -60,8 +61,6 @@ import com.vaadin.flow.server.VaadinServletResponse;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
-
-import elemental.json.JsonValue;
 
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
@@ -486,7 +485,7 @@ public class AuthenticationContextTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         resultHandler.accept(null);
                     }
