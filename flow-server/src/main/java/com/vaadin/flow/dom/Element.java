@@ -1019,8 +1019,8 @@ public class Element extends Node<Element> {
     /**
      * Gets the raw property value without any value conversion. The type of the
      * value is {@link String}, {@link Double}, {@link Boolean} or
-     * {@link JsonValue}. <code>null</code> is returned if there is no property
-     * with the given name or if the value is set to <code>null</code>.
+     * {@link BaseJsonNode}. <code>null</code> is returned if there is no
+     * property with the given name or if the value is set to <code>null</code>.
      *
      * @param name
      *            the property name, not null
@@ -1436,7 +1436,7 @@ public class Element extends Node<Element> {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
-     * <li>{@link JsonValue}
+     * <li>{@link BaseJsonNode}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
