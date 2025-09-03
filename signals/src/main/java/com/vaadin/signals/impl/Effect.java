@@ -58,7 +58,9 @@ public class Effect {
             try {
                 action.run();
             } catch (Exception e) {
-                getLogger().error("Uncaught exception from effect.", e);
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        e);
             } catch (Error e) {
                 getLogger().error(
                         "Uncaught error from effect. The effect will no longer be active.",
