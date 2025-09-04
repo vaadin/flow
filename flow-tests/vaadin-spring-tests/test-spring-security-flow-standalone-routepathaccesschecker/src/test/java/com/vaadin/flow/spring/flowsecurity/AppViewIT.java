@@ -27,7 +27,6 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
@@ -117,7 +116,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("Requires VaadinSavedRequestAwareAuthenticationSuccessHandler usually installed by VaadinWebSecurity#setLoginView ")
     public void redirect_to_private_view_after_navigation_and_login() {
         open("");
         navigateTo("private", false);
@@ -282,7 +280,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("Requires VaadinAwareSecurityContextHolderStrategyConfiguration usually installed by VaadinWebSecurity")
     public void navigate_in_thread_with_access() {
         open(LOGIN_PATH);
         loginAdmin();
