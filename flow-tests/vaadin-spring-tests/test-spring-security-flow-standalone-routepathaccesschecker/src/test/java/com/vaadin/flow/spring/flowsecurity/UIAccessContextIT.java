@@ -16,7 +16,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
-import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.testbench.HasElementQuery;
 import com.vaadin.testbench.TestBenchElement;
@@ -67,8 +66,8 @@ public class UIAccessContextIT extends AbstractIT {
 
     private void loginAdmin(HasElementQuery adminContext) {
         waitForClientRouter();
-        LoginFormElement form = adminContext.$(LoginOverlayElement.class)
-                .first().getLoginForm();
+        LoginOverlayElement form = adminContext.$(LoginOverlayElement.class)
+                .first();
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
         form.submit();
