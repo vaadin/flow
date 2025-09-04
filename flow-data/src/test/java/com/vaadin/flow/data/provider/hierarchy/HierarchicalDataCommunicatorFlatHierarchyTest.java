@@ -1,8 +1,10 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -10,64 +12,18 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
+import com.vaadin.flow.data.provider.QuerySortOrder;
+import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
+import com.vaadin.flow.function.SerializableComparator;
+import com.vaadin.flow.function.SerializablePredicate;
 
 public class HierarchicalDataCommunicatorFlatHierarchyTest
         extends AbstractHierarchicalDataCommunicatorTest {
-    public static class FlattenedTreeDataProvider
-            extends AbstractBackEndHierarchicalDataProvider<Item, Void> {
-        private TreeData<Item> treeData;
-
-        public FlattenedTreeDataProvider(TreeData<Item> treeData) {
-            super();
-            this.treeData = treeData;
-        }
-
-        @Override
-        public HierarchyFormat getHierarchyFormat() {
-            return HierarchyFormat.FLATTENED;
-        }
-
-        @Override
-        public Stream<Item> fetchChildrenFromBackEnd(
-                HierarchicalQuery<Item, Void> query) {
-            return flatten(query.getParent(), query.getExpandedItemIds())
-                    .skip(query.getOffset()).limit(query.getLimit());
-        }
-
-        @Override
-        public int getChildCount(HierarchicalQuery<Item, Void> query) {
-            return (int) flatten(query.getParent(), query.getExpandedItemIds())
-                    .count();
-        }
-
-        @Override
-        public boolean hasChildren(Item item) {
-            return treeData.getChildren(item).size() > 0;
-        }
-
-        @Override
-        public int getDepth(Item item) {
-            int depth = 0;
-            while (item != null) {
-                item = treeData.getParent(item);
-                depth++;
-            }
-            return depth;
-        }
-
-        private Stream<Item> flatten(Item parent, Set<Object> expandedItemIds) {
-            return treeData.getChildren(parent).stream()
-                    .flatMap(child -> expandedItemIds.contains(getId(child))
-                            ? Stream.concat(Stream.of(child),
-                                    flatten(child, expandedItemIds))
-                            : Stream.of(child));
-        }
-    }
-
     private TreeData<Item> treeData = new TreeData<>();
 
-    private FlattenedTreeDataProvider dataProvider = new FlattenedTreeDataProvider(
-            treeData);
+    private TreeDataProvider<Item> dataProvider = new TreeDataProvider<>(
+            treeData, HierarchyFormat.FLATTENED);
 
     private HierarchicalDataCommunicator<Item> dataCommunicator;
 
@@ -98,8 +54,13 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(106);
         assertArrayUpdateRange(0, 6);
-        assertArrayUpdateItems("name", "Item 0", "Item 0-0", "Item 0-0-0",
-                "Item 0-0-1", "Item 0-1", "Item 1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 0-0", //
+                2, "Item 0-0-0", //
+                3, "Item 0-0-1", //
+                4, "Item 0-1", //
+                5, "Item 1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -108,8 +69,13 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(106);
         assertArrayUpdateRange(100, 6);
-        assertArrayUpdateItems("name", "Item 96", "Item 97", "Item 98",
-                "Item 99", "Item 99-0", "Item 99-1");
+        assertArrayUpdateItems("name", Map.of( //
+                100, "Item 96", //
+                101, "Item 97", //
+                102, "Item 98", //
+                103, "Item 99", //
+                104, "Item 99-0", //
+                105, "Item 99-1"));
     }
 
     @Test
@@ -119,8 +85,11 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
-                "Item 13");
+        assertArrayUpdateItems("name", Map.of( //
+                10, "Item 10", //
+                11, "Item 11", //
+                12, "Item 12", //
+                13, "Item 13"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -129,8 +98,11 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(102);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 10-0", "Item 10-1",
-                "Item 11");
+        assertArrayUpdateItems("name", Map.of(//
+                10, "Item 10", //
+                11, "Item 10-0", //
+                12, "Item 10-1", //
+                13, "Item 11"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -139,23 +111,28 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         assertArrayUpdateSize(100);
         assertArrayUpdateRange(10, 4);
-        assertArrayUpdateItems("name", "Item 10", "Item 11", "Item 12",
-                "Item 13");
+        assertArrayUpdateItems("name", Map.of( //
+                10, "Item 10", //
+                11, "Item 11", //
+                12, "Item 12", //
+                13, "Item 13"));
     }
 
     @Test
     public void refreshItem_updatedRangeSent() {
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
-        assertArrayUpdateItems("state", "initial", "initial", "initial",
-                "initial");
+        assertArrayUpdateItems("state", Map.of( //
+                0, "initial", //
+                1, "initial", //
+                2, "initial", //
+                3, "initial"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
         dataCommunicator.refresh(new Item("Item 0", "refreshed"));
         fakeClientCommunication();
-        assertArrayUpdateItems("state", "refreshed", "initial", "initial",
-                "initial");
+        assertArrayUpdateItems("state", Map.of(0, "refreshed"));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -169,8 +146,12 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
                 Arrays.asList(new Item("Item 1"), new Item("Item 1-0")));
         dataCommunicator.setViewportRange(0, 5);
         fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 0", "Item 1", "Item 1-0",
-                "Item 1-0-0", "Item 1-0-1");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 0", //
+                1, "Item 1", //
+                2, "Item 1-0", //
+                3, "Item 1-0-0", //
+                4, "Item 1-0-1"));
 
         Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
@@ -178,8 +159,12 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
         treeData.removeItem(new Item("Item 1-0"));
         dataCommunicator.reset();
         fakeClientCommunication();
-        assertArrayUpdateItems("name", "Item 1", "Item 1-1", "Item 2", "Item 3",
-                "Item 4");
+        assertArrayUpdateItems("name", Map.of( //
+                0, "Item 1", //
+                1, "Item 1-1", //
+                2, "Item 2", //
+                3, "Item 3", //
+                4, "Item 4"));
     }
 
     @Test
@@ -213,5 +198,39 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-1000));
         Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+    }
+
+    @Test
+    public void buildQuery_correctQueryReturned() {
+        List<QuerySortOrder> sortOrders = new QuerySortOrderBuilder()
+                .thenDesc("name").build();
+        SerializablePredicate<Item> filter = (f) -> true;
+        SerializableComparator<Item> comparator = Comparator
+                .comparing(Item::getName).reversed()::compare;
+
+        dataCommunicator.setDataProvider(dataProvider, filter);
+        dataCommunicator.setInMemorySorting(comparator);
+        dataCommunicator.setBackEndSorting(sortOrders);
+        dataCommunicator.expand(new Item("Item 0"));
+
+        var query = dataCommunicator.buildQuery(10, 20);
+        Assert.assertNull(query.getParent());
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(20, query.getLimit());
+        Assert.assertEquals(filter, query.getFilter().get());
+        Assert.assertEquals(sortOrders, query.getSortOrders());
+        Assert.assertEquals(comparator, query.getInMemorySorting());
+        Assert.assertEquals(Set.of(new Item("Item 0")),
+                query.getExpandedItemIds());
+
+        query = dataCommunicator.buildQuery(new Item("Item 0"), 10, 20);
+        Assert.assertEquals(new Item("Item 0"), query.getParent());
+        Assert.assertEquals(10, query.getOffset());
+        Assert.assertEquals(20, query.getLimit());
+        Assert.assertEquals(filter, query.getFilter().get());
+        Assert.assertEquals(sortOrders, query.getSortOrders());
+        Assert.assertEquals(comparator, query.getInMemorySorting());
+        Assert.assertEquals(Set.of(new Item("Item 0")),
+                query.getExpandedItemIds());
     }
 }

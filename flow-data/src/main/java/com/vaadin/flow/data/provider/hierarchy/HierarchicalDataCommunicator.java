@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,6 +26,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -38,13 +42,9 @@ import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.internal.ExecutionContext;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Range;
 import com.vaadin.flow.internal.StateNode;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * WARNING: Direct use of this class in application code is not recommended and
@@ -102,7 +102,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
 
-    private boolean pendingFlush = false;
+    private FlushRequest<T> flushRequest = null;
     private Range viewportRange = Range.withLength(0, 0);
     private int nextUpdateId = 0;
 
@@ -145,17 +145,17 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         stateNode.addAttachListener(this::requestFlush);
     }
 
-    private void requestFlush() {
-        if (pendingFlush) {
-            return;
+    private FlushRequest<T> requestFlush() {
+        if (flushRequest != null) {
+            return flushRequest;
         }
-
-        pendingFlush = true;
+        flushRequest = new FlushRequest<>();
         stateNode.runWhenAttached(ui -> ui.getInternals().getStateTree()
                 .beforeClientResponse(stateNode, (context) -> {
                     flush(context);
-                    pendingFlush = false;
+                    flushRequest = null;
                 }));
+        return flushRequest;
     }
 
     /**
@@ -178,7 +178,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             dataGenerator.destroyAllData();
         }
 
-        requestFlush();
+        requestFlush().invalidateViewport();
     }
 
     @Override
@@ -250,9 +250,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (refreshChildren && subCache != null) {
             subCache.clear();
             subCache.setSize(getDataProviderChildCount(item));
+            requestFlush().invalidateViewport();
         }
 
-        requestFlush();
+        requestFlush().invalidateItem(item);
     }
 
     @Override
@@ -351,7 +352,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
             reset();
         } else {
-            requestFlush();
+            requestFlush().invalidateViewport();
         }
 
         return collapsedItems;
@@ -388,7 +389,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
             reset();
         } else {
-            requestFlush();
+            requestFlush().invalidateViewport();
         }
 
         return expandedItems;
@@ -457,8 +458,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         return !expandedItemIds.isEmpty();
     }
 
-    private JsonValue generateItemJson(T item) {
-        JsonObject json = Json.createObject();
+    private JsonNode generateItemJson(T item) {
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;
@@ -503,8 +504,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var item = cache.getItem(index);
         if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                 && isExpanded(item)) {
-            var subCache = cache.ensureSubCache(index,
-                    () -> getDataProviderChildCount(item));
+            var subCache = cache.ensureSubCache(index, () -> {
+                requestFlush().invalidateViewport();
+                return getDataProviderChildCount(item);
+            });
             resolveIndexPath(subCache, restPath);
         }
     }
@@ -564,8 +567,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                     && isExpanded(item) && !cache.hasSubCache(index)
                     && result.size() > 0) {
-                var subCache = cache.ensureSubCache(index,
-                        () -> getDataProviderChildCount(item));
+                var subCache = cache.ensureSubCache(index, () -> {
+                    requestFlush().invalidateViewport();
+                    return getDataProviderChildCount(item);
+                });
 
                 // Shift the start index to the end of the created sub-cache to
                 // continue from its last item and maintain the sequential order
@@ -613,8 +618,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             var item = cache.getItem(index);
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                     && isExpanded(item)) {
-                cache.ensureSubCache(index,
-                        () -> getDataProviderChildCount(item));
+                cache.ensureSubCache(index, () -> {
+                    requestFlush().invalidateViewport();
+                    return getDataProviderChildCount(item);
+                });
             }
 
             start++;
@@ -625,8 +632,19 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     public void setViewportRange(int start, int length) {
+        var previousViewportRange = viewportRange;
         viewportRange = computeViewportRange(start, length);
-        requestFlush();
+
+        var partition = viewportRange.partitionWith(previousViewportRange);
+        if (!partition[0].isEmpty()) {
+            requestFlush().invalidateRange(partition[0]);
+        }
+        if (partition[1].isEmpty()) {
+            requestFlush().invalidateViewport();
+        }
+        if (!partition[2].isEmpty()) {
+            requestFlush().invalidateRange(partition[2]);
+        }
     }
 
     private void flush(ExecutionContext context) {
@@ -638,7 +656,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         ensureRootCache();
 
         if (viewportRange.getStart() >= rootCache.getFlatSize()) {
-            viewportRange = Range.withLength(0, viewportRange.length());
+            setViewportRange(0, viewportRange.length());
         }
 
         var length = viewportRange.length();
@@ -656,7 +674,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (end < flatSize) {
             update.clear(end, flatSize - end);
         }
-        update.set(start, result.stream().map(this::generateItemJson).toList());
+        for (int i = 0; i < result.size(); i++) {
+            var item = result.get(i);
+            var index = start + i;
+
+            if (flushRequest.isViewportInvalidated()
+                    || flushRequest.isItemInvalidated(item)
+                    || flushRequest.isIndexInvalidated(index)) {
+                update.set(index, List.of(generateItemJson(item)));
+            }
+        }
         update.commit(nextUpdateId++);
     }
 
@@ -670,11 +697,49 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 : Collections.emptySet();
     }
 
+    /**
+     * Creates a hierarchical query based on the given offset and limit,
+     * including sorting and filtering. Depending on the data provider's
+     * {@link HierarchicalDataProvider#getHierarchyFormat() hierarchy format},
+     * the query fetches either just the root-level items or also their expanded
+     * descendants.
+     *
+     * @param offset
+     *            the offset of the items to fetch
+     * @param limit
+     *            the maximum number of items to fetch
+     * @return a hierarchical query for the specified range
+     */
+    @Override
+    public HierarchicalQuery<T, Object> buildQuery(int offset, int limit) {
+        return buildQuery(null, offset, limit);
+    }
+
+    /**
+     * Creates a hierarchical query based on the given parent, offset and limit,
+     * including sorting and filtering. Depending on the data provider's
+     * {@link HierarchicalDataProvider#getHierarchyFormat() hierarchy format},
+     * the query fetches either just the direct children of the parent or also
+     * their expanded descendants.
+     *
+     * @param parent
+     *            the parent item for the query
+     * @param offset
+     *            the offset of the items to fetch
+     * @param limit
+     *            the maximum number of items to fetch
+     * @return a hierarchical query for the specified range and parent
+     */
+    public HierarchicalQuery<T, Object> buildQuery(T parent, int offset,
+            int limit) {
+        return new HierarchicalQuery<>(offset, limit, getBackEndSorting(),
+                getInMemorySorting(), getFilter(), getExpandedItemIds(),
+                parent);
+    }
+
     @SuppressWarnings("unchecked")
     private Stream<T> fetchDataProviderChildren(T parent, Range range) {
-        var query = new HierarchicalQuery<>(range.getStart(), range.length(),
-                getBackEndSorting(), getInMemorySorting(), getFilter(),
-                getExpandedItemIds(), parent);
+        var query = buildQuery(parent, range.getStart(), range.length());
 
         return ((HierarchicalDataProvider<T, Object>) getDataProvider())
                 .fetchChildren(query).peek((item) -> {
@@ -713,6 +778,37 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             };
         }
         return rootCache;
+    }
+
+    private static class FlushRequest<T> implements Serializable {
+        private boolean viewportInvalidated = false;
+        private Set<T> invalidatedItems = new HashSet<>();
+        private Set<Range> invalidatedRanges = new HashSet<>();
+
+        public void invalidateItem(T item) {
+            invalidatedItems.add(item);
+        }
+
+        public boolean isItemInvalidated(T item) {
+            return invalidatedItems.contains(item);
+        }
+
+        public void invalidateRange(Range range) {
+            invalidatedRanges.add(range);
+        }
+
+        public boolean isIndexInvalidated(int index) {
+            return invalidatedRanges.stream()
+                    .anyMatch(range -> range.contains(index));
+        }
+
+        public void invalidateViewport() {
+            viewportInvalidated = true;
+        }
+
+        public boolean isViewportInvalidated() {
+            return viewportInvalidated;
+        }
     }
 
     /**

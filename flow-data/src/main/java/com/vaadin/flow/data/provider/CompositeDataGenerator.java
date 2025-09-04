@@ -18,9 +18,9 @@ package com.vaadin.flow.data.provider;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.vaadin.flow.shared.Registration;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import elemental.json.JsonObject;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * A {@link DataGenerator} that aggregates multiple DataGenerators and delegates
@@ -42,7 +42,7 @@ public class CompositeDataGenerator<T>
     final Set<DataGenerator<T>> dataGenerators = new LinkedHashSet<>();
 
     @Override
-    public void generateData(T item, JsonObject jsonObject) {
+    public void generateData(T item, ObjectNode jsonObject) {
         dataGenerators
                 .forEach(generator -> generator.generateData(item, jsonObject));
     }

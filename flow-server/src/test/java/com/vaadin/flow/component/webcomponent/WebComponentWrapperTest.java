@@ -31,6 +31,7 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
@@ -60,20 +61,21 @@ public class WebComponentWrapperTest {
 
         // make component available and bind properties to it
         binding = (WebComponentBinding<MyComponent>) new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporter).createWebComponentBinding(
-                        new MockInstantiator(), element, Json.createObject());
+                .create(exporter)
+                .createWebComponentBinding(new MockInstantiator(), element,
+                        JacksonUtils.createObjectNode());
         wrapper = new WebComponentWrapper(element, binding);
         component = binding.getComponent();
     }
 
     @Test
     public void wrappedMyComponent_syncSetsCorrectValuesToFields() {
-        wrapper.sync(MSG_PROPERTY, Json.create("MyMessage"));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("MyMessage"));
 
         Assert.assertEquals("Message field should have updated with new value",
                 "MyMessage", component.message);
 
-        wrapper.sync(INT_PROPERTY, Json.create(10));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(10));
 
         Assert.assertEquals(
                 "IntegerValue field should contain a matching integer value",
@@ -82,10 +84,10 @@ public class WebComponentWrapperTest {
 
     @Test
     public void wrappedComponentPropertyListener_listenerFiredWithCorrectValuesOnSync() {
-        wrapper.sync(MSG_PROPERTY, Json.create("one"));
-        wrapper.sync(INT_PROPERTY, Json.create(2));
-        wrapper.sync(MSG_PROPERTY, Json.create("three"));
-        wrapper.sync(INT_PROPERTY, Json.create(4));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("one"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(2));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("three"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
         Assert.assertEquals("Three string messages should have come through", 3,
@@ -110,10 +112,10 @@ public class WebComponentWrapperTest {
 
         MyExtension component = binding.getComponent();
 
-        wrapper.sync(MSG_PROPERTY, Json.create("one"));
-        wrapper.sync(INT_PROPERTY, Json.create(2));
-        wrapper.sync(MSG_PROPERTY, Json.create("three"));
-        wrapper.sync(INT_PROPERTY, Json.create(4));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("one"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(2));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("three"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
 
         // 3, since creation sets the initial value
         Assert.assertEquals("Three string messages should have come through", 3,
@@ -138,11 +140,11 @@ public class WebComponentWrapperTest {
 
         MyComponent component = binding.getComponent();
 
-        wrapper.sync(MSG_PROPERTY, Json.create("one"));
-        wrapper.sync(INT_PROPERTY, Json.create(2));
-        wrapper.sync(MSG_PROPERTY, Json.create("three"));
-        wrapper.sync(INT_PROPERTY, Json.create(4));
-        wrapper.sync(BOOLEAN_PROPERTY, Json.create(true));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("one"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(2));
+        wrapper.sync(MSG_PROPERTY, JacksonUtils.writeValue("three"));
+        wrapper.sync(INT_PROPERTY, JacksonUtils.writeValue(4));
+        wrapper.sync(BOOLEAN_PROPERTY, JacksonUtils.writeValue(true));
 
         // 3, since creation sets the initial value
         Assert.assertEquals("Three string messages should have come through", 3,

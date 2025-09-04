@@ -31,6 +31,8 @@ import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.Capabilities;
+import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
@@ -94,7 +96,7 @@ public abstract class BaseLicenseCheckerServiceInitListener
                                 // license keys are detected
                                 throw new MissingLicenseKeyException(
                                         "No license key present");
-                            }, 0);
+                            }, 0, Capabilities.of(Capability.PRE_TRIAL));
                 } catch (MissingLicenseKeyException ex) {
                     LOGGER.debug(
                             "Missing license key for {} {} will be handled by Vaadin Dev Server",
@@ -107,7 +109,7 @@ public abstract class BaseLicenseCheckerServiceInitListener
                 // Fallback to online validation waiting for license key
                 // download
                 LicenseChecker.checkLicense(productName, productVersion,
-                        buildType);
+                        Capabilities.of(Capability.PRE_TRIAL), buildType);
             }
         }
     }
