@@ -160,8 +160,11 @@ public class ComponentEffectTest {
             });
 
             assertEquals(1, events.size());
+
+            Throwable throwable = events.get(0).getThrowable();
+            assertEquals(ExecutionException.class, throwable.getClass());
             assertEquals(RuntimeException.class,
-                    events.get(0).getThrowable().getClass());
+                    throwable.getCause().getClass());
         });
     }
 
