@@ -416,11 +416,6 @@ public abstract class VaadinService implements Serializable {
 
             @Override
             public Executor getEffectDispatcher() {
-                return createCurrentUiDispatcher();
-            }
-
-            @Override
-            public Executor getFallbackEffectDispatcher() {
                 return getExecutor();
             }
         }
@@ -1001,8 +996,8 @@ public abstract class VaadinService implements Serializable {
         }
         Object currentSessionLock = wrappedSession
                 .getAttribute(getLockAttributeName());
-        assert (currentSessionLock == null || currentSessionLock == lock)
-                : "Changing the lock for a session is not allowed";
+        assert (currentSessionLock == null
+                || currentSessionLock == lock) : "Changing the lock for a session is not allowed";
 
         wrappedSession.setAttribute(getLockAttributeName(), lock);
     }
@@ -1114,8 +1109,8 @@ public abstract class VaadinService implements Serializable {
      *            Lock instance to unlock
      */
     protected void unlockSession(WrappedSession wrappedSession, Lock lock) {
-        assert ((ReentrantLock) lock).isHeldByCurrentThread()
-                : "Trying to unlock the session but it has not been locked by this thread";
+        assert ((ReentrantLock) lock)
+                .isHeldByCurrentThread() : "Trying to unlock the session but it has not been locked by this thread";
         lock.unlock();
     }
 
@@ -1155,8 +1150,7 @@ public abstract class VaadinService implements Serializable {
     private VaadinSession doFindOrCreateVaadinSession(VaadinRequest request,
             boolean requestCanCreateSession) throws SessionExpiredException {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
-                .isHeldByCurrentThread()
-                : "Session has not been locked by this thread";
+                .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
         /* Find an existing session for this request. */
         VaadinSession session = getExistingSession(request,
@@ -1217,8 +1211,7 @@ public abstract class VaadinService implements Serializable {
      */
     private VaadinSession createAndRegisterSession(VaadinRequest request) {
         assert ((ReentrantLock) getSessionLock(request.getWrappedSession()))
-                .isHeldByCurrentThread()
-                : "Session has not been locked by this thread";
+                .isHeldByCurrentThread() : "Session has not been locked by this thread";
 
         VaadinSession session = createVaadinSession(request);
 

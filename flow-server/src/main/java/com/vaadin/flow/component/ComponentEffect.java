@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.component;
 
-import java.io.Serializable;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.NumberSignal;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.signals.impl.Effect;
 
 /**
  * The utility class that provides helper methods for using Signal effects in a
@@ -35,14 +35,14 @@ import com.vaadin.signals.ValueSignal;
  * {@link Signal#effect(Runnable)}, that is automatically enabled when a
  * component is attached and disabled when the component is detached.
  * Additionally it provides methods to bind signals to component according to a
- * given value settng function and format strings based on signal values.
+ * given value setting function and format strings based on signal values.
  *
  * @since 24.8
  */
 public final class ComponentEffect {
     private final Runnable effectFunction;
     private boolean closed = false;
-    private Runnable effectShutdown = null;
+    private Effect effect = null;
 
     private <C extends Component> ComponentEffect(C owner,
             Runnable effectFunction) {
@@ -51,7 +51,7 @@ public final class ComponentEffect {
                 "Effect function cannot be null");
         this.effectFunction = effectFunction;
         owner.addAttachListener(attach -> {
-            enableEffect();
+            enableEffect(attach.getSource());
 
             owner.addDetachListener(detach -> {
                 disableEffect();
@@ -60,7 +60,7 @@ public final class ComponentEffect {
         });
 
         if (owner.isAttached()) {
-            enableEffect();
+            enableEffect(owner);
         }
     }
 
@@ -69,7 +69,7 @@ public final class ComponentEffect {
      * enabled when the component is attached and automatically disabled when it
      * is detached.
      * <p>
-     * Examle of usage:
+     * Example of usage:
      *
      * <pre>
      * Registration effect = ComponentEffect.effect(myComponent, () -> {
@@ -228,19 +228,42 @@ public final class ComponentEffect {
         return format(owner, setter, locale, format, signals);
     }
 
-    private void enableEffect() {
+    private void enableEffect(Component owner) {
         if (closed) {
             return;
         }
 
-        assert effectShutdown == null;
-        effectShutdown = Signal.effect(effectFunction);
+        UI ui = owner.getUI().get();
+
+        assert effect == null;
+        effect = new Effect(effectFunction, command -> {
+            if (UI.getCurrent() == ui) {
+                // Run immediately if on the same UI
+                try {
+                    command.run();
+                } catch (Exception e) {
+                    ui.getSession().getErrorHandler().error(
+                            new ErrorEvent(e, owner.getElement().getNode()));
+                }
+            } else {
+                SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
+                    try {
+                        // Guard against detach while waiting for lock
+                        if (effect != null) {
+                            ui.access(command::run);
+                        }
+                    } catch (UIDetachedException e) {
+                        // Effect was concurrently disabled -> nothing do to
+                    }
+                });
+            }
+        });
     }
 
     private void disableEffect() {
-        if (effectShutdown != null) {
-            effectShutdown.run();
-            effectShutdown = null;
+        if (effect != null) {
+            effect.dispose();
+            effect = null;
         }
     }
 

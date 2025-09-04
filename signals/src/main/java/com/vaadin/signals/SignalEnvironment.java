@@ -34,10 +34,9 @@ public abstract class SignalEnvironment {
 
     private static final Executor IMMEDIATE_EXECUTOR = Runnable::run;
 
-    private static final Executor EFFECT_DISPATCHER_FALLBACK = task -> {
-        resolve(SignalEnvironment::getFallbackEffectDispatcher,
-                IMMEDIATE_EXECUTOR).execute(task);
-    };
+    private static final Executor EFFECT_DISPATHCER = command -> resolve(
+            SignalEnvironment::getEffectDispatcher, IMMEDIATE_EXECUTOR)
+            .execute(command);
 
     /**
      * Checks whether this environment is active on the current thread. No other
@@ -65,40 +64,17 @@ public abstract class SignalEnvironment {
     protected abstract Executor getResultNotifier();
 
     /**
-     * Gets an executor to use for running the callback of an effect. This
-     * method is run when an effect is created and the returned executor is used
-     * for running the effect callback after any change has been detected. The
-     * executor can thus be used to make sure the effect callback is invoked in
-     * the same context as where the effect was created. It is recommended that
-     * the executor is asynchronous so that the thread that submitted the change
-     * can proceed without waiting for all affected effects to be dispatched. If
-     * no dispatcher is provided when an effect is created, then the effect
-     * callback will be run according to the
-     * {@link #getFallbackEffectDispatcher()} of the environment that is active
-     * when a change is applied. This executor does not need to preserve
-     * ordering since the effect callback always uses the latest signal values
-     * without concern for in which order values have been changed.
+     * Gets an executor to use for running the callback of an effect. The
+     * executor can be used to make effect callback invocations asynchronous
+     * rather than blocking the thread that applied the change until all
+     * affected effects have been processed. This executor does not need to
+     * preserve ordering since the effect callback always uses the latest signal
+     * values without concern for in which order values have been changed.
      *
-     * @return an executor to use for invoking effect callbacks, or
-     *         <code>null</code> to use the fallback dispatcher
+     * @return the executor to use for invoking affected effects, or
+     *         <code>null</code> to invoke the callbacks immediately
      */
     protected abstract Executor getEffectDispatcher();
-
-    /**
-     * Gets an executor to use for running the callback of an effect that
-     * doesn't have its own dispatcher. This method is run when applying any
-     * change to an effect that has no own dispatcher. The executor can thus be
-     * used to make effect callback invocations asynchronous rather than
-     * blocking the thread that applied the change until all affected effects
-     * have been processed. This executor does not need to preserve ordering
-     * since the effect callback always uses the latest signal values without
-     * concern for in which order values have been changed.
-     *
-     * @return the executor to use for invoking affected effects that don't have
-     *         their own dispatcher, or <code>null</code> to invoke the
-     *         callbacks immediately
-     */
-    protected abstract Executor getFallbackEffectDispatcher();
 
     /**
      * Registers a signal environment to consider when processing signal
@@ -138,19 +114,15 @@ public abstract class SignalEnvironment {
     }
 
     /**
-     * Queries currently active environments for an executor to use for running
-     * the callbacks of an effect that is currently being created. If no
-     * registered environment provides an executor, then this method returns an
-     * executor that will delegate to the environment that is active when a
-     * change is applied and otherwise run the callback immediately.
+     * Gets an executor that queries currently active environments for an
+     * executor to use for evaluating changes for an effect. An immediate
+     * executor is used if no executor is provided by registered environments.
      *
      * @see #getEffectDispatcher()
-     * @see #getFallbackEffectDispatcher()
      *
      * @return the executor to use, not <code>null</code>
      */
-    public static Executor getCurrentEffectDispatcher() {
-        return resolve(SignalEnvironment::getEffectDispatcher,
-                EFFECT_DISPATCHER_FALLBACK);
+    public static Executor getDefaultEffectDispatcher() {
+        return EFFECT_DISPATHCER;
     }
 }

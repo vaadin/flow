@@ -340,6 +340,7 @@ public class EffectTest extends SignalTestBase {
         Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update1");
@@ -360,6 +361,7 @@ public class EffectTest extends SignalTestBase {
         Runnable closer = Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update");
