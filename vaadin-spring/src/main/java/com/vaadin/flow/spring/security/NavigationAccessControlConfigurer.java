@@ -44,11 +44,6 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * {@link NavigationAccessControl}, for backward compatibility.
  * <p>
  * </p>
- * However, if Spring Security is configured extending
- * {@link VaadinWebSecurity}, the {@link NavigationAccessControl} is enabled
- * automatically.
- * <p>
- * </p>
  *
  * Default settings can be overridden by defining a custom
  * {@link NavigationAccessControlConfigurer} bean.
@@ -59,24 +54,6 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
  *     return new NavigationAccessControlConfigurer()
  *             .withRoutePathAccessChecker().withLoginView(LoginView.class);
- * }
- * }
- * </pre>
- *
- * <p>
- * </p>
- * NOTE: if the bean in exposed in a configuration class that extends
- * {@link VaadinWebSecurity}, the method must be defined {@code static} to
- * prevent cyclic dependencies errors.
- *
- * <pre>
- * {@code
- * @Bean
- * class SecurityConfig extends VaadinWebSecurity {
- *     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
- *         return new NavigationAccessControlConfigurer()
- *                 .withRoutePathAccessChecker().withLoginView(LoginView.class);
- *     }
  * }
  * }
  * </pre>
@@ -97,7 +74,6 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * navigation access checkers are provided.
  *
  * @see NavigationAccessControl
- * @see VaadinWebSecurity
  */
 public final class NavigationAccessControlConfigurer {
 

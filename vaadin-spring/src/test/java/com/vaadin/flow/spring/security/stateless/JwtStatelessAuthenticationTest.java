@@ -15,12 +15,22 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
-import javax.crypto.spec.SecretKeySpec;
+import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
+import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import java.util.Arrays;
 import java.util.Base64;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
+import javax.crypto.spec.SecretKeySpec;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -61,17 +71,10 @@ import org.springframework.web.context.WebApplicationContext;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
-import static org.hamcrest.Matchers.greaterThan;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
-import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 
 @ExtendWith(SpringExtension.class)
 @WebAppConfiguration
@@ -237,21 +240,26 @@ class JwtStatelessAuthenticationTest {
     }
 
     @TestConfiguration
-    @Import(FakeController.class)
-    public static class SecurityConfig extends VaadinWebSecurity {
+    @Import({ FakeController.class,
+            VaadinAwareSecurityContextHolderStrategyConfiguration.class })
+    public static class SecurityConfig {
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests(
-                    auth -> auth.requestMatchers(antMatchers("/")).permitAll()
-                            .requestMatchers("/protected").authenticated());
-            super.configure(http);
-            setLoginView(http, "login");
-            setStatelessAuthentication(http,
-                    new SecretKeySpec(Base64.getDecoder().decode(
+        @Bean("VaadinSecurityFilterChainBean")
+        SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
+                throws Exception {
+            http.authorizeHttpRequests(auth -> auth.requestMatchers("/")
+                    .permitAll().requestMatchers("/protected").authenticated());
+            http.with(vaadin(), cfg -> {
+                // Test the default url with empty context path
+                cfg.loginView("login");
+            });
+            http.with(new VaadinStatelessSecurityConfigurer<>(), cfg -> cfg
+                    .withSecretKey()
+                    .secretKey(new SecretKeySpec(Base64.getDecoder().decode(
                             "YOc+XUfRA/cPGNTEsHfU897W0VYF1nrLNWrsGEI1rBw="),
-                            JwsAlgorithms.HS256),
-                    "someone", 2000);
+                            JwsAlgorithms.HS256))
+                    .and().issuer("someone").expiresIn(2000));
+            return http.build();
         }
 
         @Bean

@@ -48,7 +48,6 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -199,7 +198,7 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomAccessPathChecker extends VaadinWebSecurity {
+    static class CustomAccessPathChecker {
 
         @Bean
         static AccessPathChecker customAccessPathChecker() {
@@ -208,7 +207,7 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomAccessAnnotationChecker extends VaadinWebSecurity {
+    static class CustomAccessAnnotationChecker {
 
         @Bean
         static AccessAnnotationChecker accessAnnotationChecker() {
@@ -217,8 +216,7 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomNavigationAccessCheckersConfigurer
-            extends VaadinWebSecurity {
+    static class CustomNavigationAccessCheckersConfigurer {
 
         private static final NavigationAccessChecker CUSTOM = context -> context
                 .deny("Custom Implementation");

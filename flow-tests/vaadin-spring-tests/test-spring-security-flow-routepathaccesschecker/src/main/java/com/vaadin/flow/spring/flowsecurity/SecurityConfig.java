@@ -43,6 +43,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import java.util.stream.Collectors;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
+import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @Configuration
@@ -99,16 +100,23 @@ public class SecurityConfig {
             throws Exception {
         http.authorizeHttpRequests(cfg -> cfg
                 .requestMatchers("/admin-only/**", "/admin")
-                .hasAnyRole(ROLE_ADMIN).requestMatchers("/private")
+                .hasAnyRole(ROLE_ADMIN)
+                .requestMatchers("/private")
                 .authenticated()
                 .requestMatchers("/", "/public/**", "/another", "/menu-list")
-                .permitAll().requestMatchers("/error").permitAll()
+                .permitAll()
+                .requestMatchers("/error")
+                .permitAll()
                 // routes aliases
-                .requestMatchers("/alias-for-admin").hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/home", "/hey/**").permitAll()
-                .requestMatchers("/all-logged-in/**").authenticated());
+                .requestMatchers("/alias-for-admin")
+                .hasAnyRole(ROLE_ADMIN)
+                .requestMatchers("/home", "/hey/**")
+                .permitAll()
+                .requestMatchers("/all-logged-in/**")
+                .authenticated()
+        );
         // @formatter:on
-        http.with(VaadinSecurityConfigurer.vaadin(), vaadin -> {
+        http.with(vaadin(), vaadin -> {
             if (getLogoutSuccessUrl().equals("/")) {
                 // Test the default url with empty context path
                 vaadin.loginView(LoginView.class);

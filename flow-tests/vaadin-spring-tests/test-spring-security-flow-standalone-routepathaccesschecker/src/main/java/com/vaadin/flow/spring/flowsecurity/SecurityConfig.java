@@ -15,20 +15,11 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.spring.RootMappedCondition;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
-import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.AuthenticationContext;
-import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
-import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.SpringAccessPathChecker;
-import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import jakarta.servlet.ServletContext;
+
+import java.security.Principal;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -47,11 +38,21 @@ import org.springframework.security.web.access.AuthorizationManagerWebInvocation
 import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
-import java.security.Principal;
-import java.util.stream.Collectors;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.spring.RootMappedCondition;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
+import com.vaadin.flow.spring.flowsecurity.views.LoginView;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
+import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.SpringAccessPathChecker;
+import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
-import static com.vaadin.flow.spring.security.RequestUtil.antMatchers;
 
 @EnableWebSecurity
 @Configuration
@@ -96,7 +97,7 @@ public class SecurityConfig {
         // purpose
 
         // Homemade security for Vaadin application, not fully functional as the
-        // configuration provided by VaadinWebSecurity
+        // configuration provided by VaadinSecurityConfigurer
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
                 // Ensures that SpringPathAccessChecker does not fail when matchers get Principal from HTTP request
@@ -120,21 +121,21 @@ public class SecurityConfig {
                 .requestMatchers("/VAADIN/**").permitAll()
                 // custom request matchers. using 'routeAwareAntMatcher' to
                 // allow checking route and alias paths against patterns
-                .requestMatchers(antMatchers("/admin-only/**", "/admin"))
+                .requestMatchers("/admin-only/**", "/admin")
                 .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(antMatchers("/private"))
+                .requestMatchers("/private")
                 .authenticated()
-                .requestMatchers(antMatchers("/", "/public/**", "/another"))
+                .requestMatchers("/", "/public/**", "/another")
                 .permitAll()
 
-                .requestMatchers(antMatchers("/error"))
+                .requestMatchers("/error")
                 .permitAll()
                 // routes aliases
-                .requestMatchers(antMatchers("/alias-for-admin"))
+                .requestMatchers("/alias-for-admin")
                 .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(antMatchers("/home", "/hey/**"))
+                .requestMatchers("/home", "/hey/**")
                 .permitAll()
-                .requestMatchers(antMatchers("/all-logged-in/**", "/passthrough/**"))
+                .requestMatchers("/all-logged-in/**", "/passthrough/**")
                 .authenticated()
         );
         // @formatter:on
