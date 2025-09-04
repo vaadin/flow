@@ -21,14 +21,12 @@ import com.vaadin.testbench.HasElementQuery;
 import com.vaadin.testbench.TestBenchElement;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
 public class UIAccessContextIT extends AbstractIT {
 
     @Test
-    @Ignore("Requires VaadinAwareSecurityContextHolderStrategyConfiguration usually installed by VaadinWebSecurity")
     public void securityContextSetForUIAccess() throws Exception {
         String expectedUserBalance = "Hello John the User, your bank account balance is $10000.00.";
         String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.00.";
