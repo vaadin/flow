@@ -37,7 +37,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends Signal<T> {
+public class ValueSignal<T> extends AbstractSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -209,10 +209,11 @@ public class ValueSignal<T> extends Signal<T> {
 
     /**
      * Checks that this signal has the expected value. This operation is only
-     * meaningful to use as a condition in a {@link #runInTransaction(Runnable)
-     * transaction}. The result of the returned operation will be resolved as
-     * successful if the expected value was present and resolved as unsuccessful
-     * if any other value was present when the operation is processed.
+     * meaningful to use as a condition in a
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
+     * returned operation will be resolved as successful if the expected value
+     * was present and resolved as unsuccessful if any other value was present
+     * when the operation is processed.
      *
      * @param expectedValue
      *            the expected value

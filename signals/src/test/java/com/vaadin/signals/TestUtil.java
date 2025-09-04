@@ -84,7 +84,7 @@ public class TestUtil {
     /*
      * Helper to run package-private tree getter from tests in sub packages.
      */
-    public static SignalTree tree(Signal<?> signal) {
+    public static SignalTree tree(AbstractSignal<?> signal) {
         return signal.tree();
     }
 }
