@@ -173,23 +173,16 @@ class PreTrial extends HTMLElement {
 
     const actionButton = this.#shadowRoot.querySelector('button.action-button')!;
     actionButton.addEventListener('click', () => {
-      if (this.#trialExpired) {
-        this.openNewWindow('https://vaadin.com/pricing');
-      } else {
-        startPreTrial();
-      }
+        this.dispatchEvent(new CustomEvent('action-button-click', {
+          detail: {
+            expired: this.#trialExpired
+          }
+        }));
     });
     const loginButton = this.#shadowRoot.querySelector('button.login-button')!;
     loginButton.addEventListener('click', () => {
-      tryAcquireLicense();
+        this.dispatchEvent(new CustomEvent('login-button-click'));
     });
-  }
-
-  private openNewWindow(url: string): void {
-    const newWindow = window.open(url, '_blank');
-    if (newWindow) {
-      newWindow.opener = null;
-    }
   }
 
   connectedCallback(): void {
@@ -318,10 +311,30 @@ class PreTrial extends HTMLElement {
 // Register the custom element
 customElements.define('vaadin-pretrial', PreTrial);
 
+function openNewWindow(url: string): void {
+  const newWindow = window.open(url, '_blank');
+  if (newWindow) {
+    newWindow.opener = null;
+  }
+}
+
+function actionButtonClickListener(event: CustomEvent) {
+  if (event.detail.expired) {
+    openNewWindow('https://vaadin.com/pricing');
+  } else {
+    startPreTrial();
+  }
+}
+
+function loginButtonClickListener() {
+  tryAcquireLicense();
+}
+
 export const showPreTrialSplashScreen = (shadowRoot: ShadowRoot | null, message: ProductAndMessage) => {
   if (shadowRoot && !shadowRoot.innerHTML.includes('vaadin-pretrial')) {
     const expiredPreTrial = message.preTrial?.trialState === 'EXPIRED';
-    shadowRoot.innerHTML = `<slot></slot><vaadin-pretrial ${expiredPreTrial ? 'expired' : ''}>
+    shadowRoot.innerHTML = `<slot></slot><vaadin-pretrial ${expiredPreTrial ? 'expired' : ''}
+      @login-button-click=${loginButtonClickListener} @action-button-click=${actionButtonClickListener}>
       This application is using:
       <div slot='products'>
         This application is using:
