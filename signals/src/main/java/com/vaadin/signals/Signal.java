@@ -164,9 +164,9 @@ public interface Signal<T> {
 
     /**
      * Runs the given supplier without tracking dependencies for signals that
-     * are read within the supplier. This has the same effect as {@link #peek()}
-     * but is effective for an entire code block rather than just a single
-     * invocation.
+     * are read within the supplier. This has the same effect as
+     * {@link AbstractSignal#peek()} but is effective for an entire code block
+     * rather than just a single invocation.
      *
      * @param <T>
      *            the supplier type
