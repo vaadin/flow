@@ -378,17 +378,17 @@ class PreTrial extends HTMLElement {
     </div>
     `;
 
-    const actionButton = this.#shadowRoot.querySelector('button.primary')!;
-    actionButton.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('action-button-click', {
+    const primaryButton = this.#shadowRoot.querySelector('button.primary')!;
+    primaryButton!.addEventListener('click', () => {
+        this.dispatchEvent(new CustomEvent('primary-button-click', {
           detail: {
             expired: this.#trialExpired
           }
         }));
     });
-    const loginButton = this.#shadowRoot.querySelector('button.secondary')!;
-    loginButton.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('login-button-click'));
+    const secondaryButton = this.#shadowRoot.querySelector('button.secondary')!;
+    secondaryButton!.addEventListener('click', () => {
+        this.dispatchEvent(new CustomEvent('secondary-button-click'));
     });
   }
 
@@ -525,7 +525,7 @@ function openNewWindow(url: string): void {
   }
 }
 
-function actionButtonClickListener(event: CustomEvent) {
+function primaryButtonClickListener(event: CustomEvent) {
   if (event.detail.expired) {
     openNewWindow('https://vaadin.com/pricing');
   } else {
@@ -533,23 +533,32 @@ function actionButtonClickListener(event: CustomEvent) {
   }
 }
 
-function loginButtonClickListener() {
+function secondaryButtonClickListener() {
   tryAcquireLicense();
 }
 
 export const showPreTrialSplashScreen = (shadowRoot: ShadowRoot | null, message: ProductAndMessage) => {
-  if (shadowRoot && !shadowRoot.innerHTML.includes('vaadin-pretrial')) {
+  if (shadowRoot && !shadowRoot.querySelector('vaadin-pretrial')) {
     const expiredPreTrial = message.preTrial?.trialState === 'EXPIRED';
-    shadowRoot.innerHTML = `<slot></slot><vaadin-pretrial ${expiredPreTrial ? 'expired' : ''}
-      @login-button-click=${loginButtonClickListener} @action-button-click=${actionButtonClickListener}>
+    const preTrialElement = document.createElement('vaadin-pretrial');
+    if (expiredPreTrial) {
+      preTrialElement.setAttribute('expired', '');
+    }
+    const productsDiv = document.createElement('div');
+    productsDiv.setAttribute('slot', 'products');
+    productsDiv.innerHTML = `
       This application is using:
-      <div slot='products'>
-        This application is using:
-        <ul>
-          <li>${message.product.name}</li>
-        </ul>
-      </div>
-    </vaadin-pretrial>`;
+      <ul>
+        <li>${message.product.name}</li>
+      </ul>
+    `;
+    preTrialElement.appendChild(productsDiv);
+
+    preTrialElement.addEventListener('secondary-button-click', secondaryButtonClickListener as EventListener);
+    preTrialElement.addEventListener('primary-button-click', primaryButtonClickListener as EventListener);
+
+    shadowRoot.innerHTML = `<slot></slot>`;
+    shadowRoot.appendChild(preTrialElement);
   }
 };
 export const preTrialStartFailed = (expired: boolean, shadowRoot: ShadowRoot | null) => {
