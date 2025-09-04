@@ -128,6 +128,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 if (!visitedClasses.containsKey(themeClass.getName())) {
                     addInternalEntryPoint(themeClass);
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
+                    visitedClasses.get(themeClass.getName()).loadCss = true;
                 }
             }
             if (reactEnabled) {
