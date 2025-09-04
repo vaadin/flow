@@ -691,8 +691,8 @@ public class Element extends Node<Element> {
      * Sets the given property to the given JSON value.
      * <p>
      * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link Json#createNull()} should be used instead for JSON
-     * values.
+     * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
+     * should be used instead for JSON values.
      * <p>
      * Note that properties changed on the server are updated on the client but
      * changes made on the client side are not reflected back to the server
