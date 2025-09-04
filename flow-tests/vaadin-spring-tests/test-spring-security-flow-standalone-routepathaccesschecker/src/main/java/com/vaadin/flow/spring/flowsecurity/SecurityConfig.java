@@ -29,7 +29,6 @@ import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
-import static com.vaadin.flow.spring.security.RequestUtil.antMatchers;
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
@@ -69,27 +68,27 @@ public class SecurityConfig {
                                                     // purpose
 
         // Homemade security for Vaadin application, not fully functional as the
-        // configuration provided by VaadinWebSecurity
+        // configuration provided by VaadinSecurityConfigurer
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
                 // Permit access to static resources
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                     .permitAll()
-                .requestMatchers(antMatchers("/admin-only/**", "/admin"))
+                .requestMatchers("/admin-only/**", "/admin")
                     .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(antMatchers("/private"))
+                .requestMatchers("/private")
                     .authenticated()
-                .requestMatchers(antMatchers("/", "/public/**", "/another"))
+                .requestMatchers("/", "/public/**", "/another")
                     .permitAll()
 
-                .requestMatchers(antMatchers("/error"))
+                .requestMatchers("/error")
                     .permitAll()
                 // routes aliases
-                .requestMatchers(antMatchers("/alias-for-admin"))
+                .requestMatchers("/alias-for-admin")
                     .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(antMatchers("/home", "/hey/**"))
+                .requestMatchers("/home", "/hey/**")
                     .permitAll()
-                .requestMatchers(antMatchers("/all-logged-in/**"))
+                .requestMatchers("/all-logged-in/**")
                     .authenticated()
                 );
         // @formatter:on
