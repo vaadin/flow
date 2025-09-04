@@ -250,7 +250,6 @@ class JwtStatelessAuthenticationTest {
             http.authorizeHttpRequests(auth -> auth.requestMatchers("/")
                     .permitAll().requestMatchers("/protected").authenticated());
             http.with(vaadin(), cfg -> {
-                // Test the default url with empty context path
                 cfg.loginView("login");
             });
             http.with(new VaadinStatelessSecurityConfigurer<>(), cfg -> cfg
