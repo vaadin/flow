@@ -379,7 +379,7 @@ class PreTrial extends HTMLElement {
     `;
 
     const primaryButton = this.#shadowRoot.querySelector('button.primary')!;
-    primaryButton!.addEventListener('click', () => {
+    primaryButton?.addEventListener('click', () => {
         this.dispatchEvent(new CustomEvent('primary-button-click', {
           detail: {
             expired: this.#trialExpired
@@ -387,7 +387,7 @@ class PreTrial extends HTMLElement {
         }));
     });
     const secondaryButton = this.#shadowRoot.querySelector('button.secondary')!;
-    secondaryButton!.addEventListener('click', () => {
+    secondaryButton?.addEventListener('click', () => {
         this.dispatchEvent(new CustomEvent('secondary-button-click'));
     });
   }
