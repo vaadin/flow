@@ -88,10 +88,11 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                     LOGGER.warn(
                             "Denied access to view due to layout '{}' access rules",
                             layout.getSimpleName());
-                    return context.deny(
-                            "Consider adding one of the following annotations "
-                                    + "to make the layout accessible: @AnonymousAllowed, "
-                                    + "@PermitAll, @RolesAllowed.");
+                    return context.deny("Denied access to view due to layout '"
+                            + targetView.getSimpleName() + "' access rules."
+                            + "Consider adding one of the following annotations "
+                            + "to make the layout accessible: @AnonymousAllowed, "
+                            + "@PermitAll, @RolesAllowed.");
                 }
             }
         } else {
@@ -111,7 +112,10 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                                 "Denied access to view due to parent layout '{}' access rules",
                                 parent.getSimpleName());
                         return context.deny(
-                                "Consider adding one of the following annotations "
+                                "Denied access to view due to parent layout '"
+                                        + targetView.getSimpleName()
+                                        + "' access rules."
+                                        + "Consider adding one of the following annotations "
                                         + "to make the parent layouts accessible: @AnonymousAllowed, "
                                         + "@PermitAll, @RolesAllowed.");
                     }
@@ -138,10 +142,12 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                             .getTargetUrl(
                                     (Class<? extends Component>) targetView)
                             .isEmpty()) {
-                LOGGER.debug(
+                LOGGER.warn(
                         "Denied access to view due to layout '{}' access rules",
                         targetView.getSimpleName());
-                denyReason = "Consider adding one of the following annotations "
+                denyReason = "Denied access to view due to layout '"
+                        + targetView.getSimpleName() + "' access rules."
+                        + "Consider adding one of the following annotations "
                         + "to make the layout accessible: @AnonymousAllowed, "
                         + "@PermitAll, @RolesAllowed.";
             }
