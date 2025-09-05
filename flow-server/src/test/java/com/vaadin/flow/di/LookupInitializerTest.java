@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.di;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
@@ -46,6 +47,7 @@ import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.StaticFileHandler;
@@ -59,9 +61,6 @@ import com.vaadin.flow.server.startup.testdata.AnotherTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.OneMoreTestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestInstantiatorFactory;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class LookupInitializerTest {
 
@@ -393,7 +392,7 @@ public class LookupInitializerTest {
 
         String content = IOUtils.readLines(stream, StandardCharsets.UTF_8)
                 .stream().collect(Collectors.joining("\n"));
-        JsonObject object = Json.parse(content);
-        Assert.assertTrue(object.getBoolean("client-resource"));
+        ObjectNode object = JacksonUtils.readTree(content);
+        Assert.assertTrue(object.get("client-resource").booleanValue());
     }
 }

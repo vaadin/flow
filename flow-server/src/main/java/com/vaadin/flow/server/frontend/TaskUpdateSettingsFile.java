@@ -22,13 +22,12 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -73,7 +72,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         if (npmFolder == null)
             return;
 
-        JsonObject settings = Json.createObject();
+        ObjectNode settings = JacksonUtils.createObjectNode();
         settings.put("frontendFolder",
                 FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
@@ -140,7 +139,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
 
         try {
-            FileIOUtils.writeIfChanged(settingsFile, stringify(settings, 2));
+            FileIOUtils.writeIfChanged(settingsFile, settings.toString());
         } catch (IOException e) {
             log().error("Failed to write file: {}", settingsFile, e);
         }

@@ -38,7 +38,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 
-import elemental.json.Json;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -226,8 +225,9 @@ public class WebComponentWrapperTest {
             element = new Element("tag");
         }
         WebComponentBinding<C> binding = (WebComponentBinding<C>) new WebComponentExporter.WebComponentConfigurationFactory()
-                .create(exporter).createWebComponentBinding(
-                        new MockInstantiator(), element, Json.createObject());
+                .create(exporter)
+                .createWebComponentBinding(new MockInstantiator(), element,
+                        JacksonUtils.createObjectNode());
         wrapper = new WebComponentWrapper(element, binding) {
             @Override
             public Optional<UI> getUI() {

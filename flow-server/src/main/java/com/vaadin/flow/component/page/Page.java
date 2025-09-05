@@ -43,7 +43,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-import elemental.json.JsonValue;
 
 /**
  * Represents the web page open in the browser, containing the UI it is

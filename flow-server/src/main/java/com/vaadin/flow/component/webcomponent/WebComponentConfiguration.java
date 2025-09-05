@@ -28,8 +28,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
-import elemental.json.JsonObject;
-
 /**
  * Result of defining an embeddable web component using
  * {@link WebComponentExporter}. Provides all the necessary information to
@@ -101,26 +99,6 @@ public interface WebComponentConfiguration<C extends Component>
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
             Element element, JsonNode newAttributeDefaults);
-
-    /**
-     * Creates a new {@link WebComponentBinding} instance.
-     *
-     * @param instantiator
-     *            {@link com.vaadin.flow.di.Instantiator} used to construct
-     *            instances
-     * @param element
-     *            element which acts as the root element for the exported
-     *            {@code component} instance
-     * @param newAttributeDefaults
-     *            {@link JsonObject} containing default overrides set by the
-     *            user defining the component on a web page. These defaults are
-     *            set using the web component's attributes.
-     * @return web component binding which can be used by the web component host
-     *         to communicate with the component it is hosting
-     */
-    @Deprecated
-    WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-            Element element, JsonObject newAttributeDefaults);
 
     /**
      * Retrieves the tag name configured by the web component exporter.
