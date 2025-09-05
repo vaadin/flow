@@ -19,6 +19,7 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.internal.JacksonUtils;
 
 import elemental.json.Json;
 
@@ -33,14 +34,14 @@ public class FireEventExporter
     public void configureInstance(WebComponent<FireEventComponent> webComponent,
             FireEventComponent component) {
         component.setSumConsumer(number -> webComponent
-                .fireEvent("sum-calculated", Json.create(number)));
+                .fireEvent("sum-calculated", JacksonUtils.createNode(number)));
         component.setErrorConsumer(err -> webComponent
-                .fireEvent("sum" + "-error", Json.create(err)));
+                .fireEvent("sum" + "-error", JacksonUtils.createNode(err)));
 
         component.setButtonConsumer(optionsType -> {
             EventOptions options = createEventOptions(optionsType);
             webComponent.fireEvent("button-event",
-                    Json.create(optionsType.name()), options);
+                    JacksonUtils.createNode(optionsType.name()), options);
         });
     }
 

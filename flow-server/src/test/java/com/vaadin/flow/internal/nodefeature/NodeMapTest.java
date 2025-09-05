@@ -24,8 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -288,8 +287,8 @@ public class NodeMapTest
         values.keySet().forEach(key -> {
             if (key.startsWith("json")) {
                 // Json values are not equals
-                ObjectNode originalValue = (ObjectNode) nodeMap.get(key);
-                ObjectNode copyValue = (ObjectNode) copy.get(key);
+                BaseJsonNode originalValue = (BaseJsonNode) nodeMap.get(key);
+                BaseJsonNode copyValue = (BaseJsonNode) copy.get(key);
 
                 Assert.assertEquals(originalValue.toString(),
                         copyValue.toString());

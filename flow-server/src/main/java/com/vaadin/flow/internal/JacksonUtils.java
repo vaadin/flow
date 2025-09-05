@@ -253,7 +253,7 @@ public final class JacksonUtils {
         public BinaryOperator<ArrayNode> combiner() {
             return (left, right) -> {
                 for (int i = 0; i < right.size(); i++) {
-                    left.set(left.size(), right.get(i));
+                    left.add(right.get(i));
                 }
                 return left;
             };
