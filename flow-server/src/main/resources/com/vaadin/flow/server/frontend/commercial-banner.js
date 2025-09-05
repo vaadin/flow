@@ -74,7 +74,7 @@ class VaadinCommercialBanner extends HTMLElement {
             <div class='container'>
                 <span class='logo'>${vaadinLogo}</span>
                 <span class='message'>
-                    Commercial features require a subscription, <a href='https://vaadin.com/pricing' target='_blank' class='link'>read more</a>.
+                    Commercial features require a subscription, <a href='https://vaadin.com/commercial-license-info' target='_blank' class='link'>read more</a>.
                 </span>
                 <span class='close'>${closeIcon}</span>
             </div>
