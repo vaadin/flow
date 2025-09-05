@@ -107,7 +107,7 @@ public class AnnotatedViewAccessChecker implements NavigationAccessChecker {
                     boolean hasAccess = accessAnnotationChecker.hasAccess(
                             parent, context.getPrincipal(), context::hasRole);
                     if (!hasAccess) {
-                        LOGGER.debug(
+                        LOGGER.warn(
                                 "Denied access to view due to parent layout '{}' access rules",
                                 parent.getSimpleName());
                         return context.deny(
