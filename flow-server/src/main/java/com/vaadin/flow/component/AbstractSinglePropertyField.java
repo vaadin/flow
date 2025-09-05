@@ -35,9 +35,6 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
 
-import elemental.json.Json;
-import elemental.json.JsonValue;
-
 /**
  * Abstract field that is based on a single element property.
  *
@@ -262,9 +259,6 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers.get(clazz);
         if (typeHandler == null && BaseJsonNode.class.isAssignableFrom(clazz)) {
             typeHandler = getJsonHandler((Class) clazz);
-        } else if (typeHandler == null
-                && JsonValue.class.isAssignableFrom(clazz)) {
-            typeHandler = getHandler((Class) clazz);
         }
         if (typeHandler == null) {
             throw new IllegalArgumentException(
@@ -373,24 +367,6 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @Override
     protected void setPresentationValue(T newPresentationValue) {
         propertyWriter.accept((C) this, newPresentationValue);
-    }
-
-    @Deprecated
-    private static <P extends BaseJsonNode> TypeHandler<P> getHandler(
-            Class<P> type) {
-        ElementGetter<P> getter = (element, property, defaultValue) -> {
-            Serializable value = element.getPropertyRaw(property);
-            if (value instanceof BaseJsonNode) {
-                return type.cast(Json.create(
-                        JacksonCodec.encodeWithoutTypeInfo(value).toString()));
-            }
-            // JsonValue is passed straight through, other primitive
-            // values are jsonified
-            return type.cast(JsonCodec.encodeWithoutTypeInfo(value));
-        };
-        ElementSetter<P> setter = (element, property, value) -> element
-                .setPropertyJson(property, value);
-        return new TypeHandler<P>(setter, getter, null);
     }
 
     private static <P extends BaseJsonNode> TypeHandler<P> getJsonHandler(

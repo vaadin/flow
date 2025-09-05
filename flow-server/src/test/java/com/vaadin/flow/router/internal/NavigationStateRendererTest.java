@@ -89,9 +89,6 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-import elemental.json.Json;
-import elemental.json.JsonValue;
-
 @NotThreadSafe
 public class NavigationStateRendererTest {
 
@@ -914,7 +911,8 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 final History history = new History(getUI().get()) {
                     @Override
-                    public void pushState(JsonValue state, Location location) {
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
                         pushStateCalled.set(true);
                         pushStateLocations.add(location);
                     }

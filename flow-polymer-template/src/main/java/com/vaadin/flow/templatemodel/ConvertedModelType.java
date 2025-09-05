@@ -11,10 +11,10 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
+import com.fasterxml.jackson.databind.JsonNode;
+
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-
-import elemental.json.JsonValue;
 
 /**
  * A {@link ModelType} implementation that wraps a model type for performing
@@ -87,7 +87,7 @@ public class ConvertedModelType<A, M extends Serializable>
     }
 
     @Override
-    public JsonValue toJson() {
+    public JsonNode toJson() {
         return wrappedModelType.toJson();
     }
 

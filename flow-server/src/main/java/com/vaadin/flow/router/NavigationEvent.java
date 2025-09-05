@@ -21,9 +21,6 @@ import java.util.Optional;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.JsonValue;
 
 /**
  * Event object with data related to navigation.

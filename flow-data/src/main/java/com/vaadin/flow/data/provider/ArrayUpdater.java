@@ -20,8 +20,6 @@ import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
-import elemental.json.JsonValue;
-
 /**
  * Array update strategy aware class.
  * <p>
