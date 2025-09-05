@@ -677,7 +677,7 @@ public class BuildFrontendUtil {
                                     The application contains the unlicensed components listed below and is displaying a commercial banner.
                                     %1$s
 
-                                    Read more about Vaadin commercial features at https://vaadin.com/commercial-license-info.
+                                    Go to https://vaadin.com/pricing to obtain a license
                                     """
                                     .formatted(productsList));
                 }
@@ -689,7 +689,7 @@ public class BuildFrontendUtil {
                                 %1$s
 
                                 If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
-                                Otherwise go to https://vaadin.com/commercial-license-info to get more information about Vaadin commercial features.
+                                Otherwise go to https://vaadin.com/pricing to obtain a license.
 
                                 You can also build a watermarked version of the application configuring
                                 the '%2$s' property of the Maven or Gradle plugin
