@@ -253,7 +253,7 @@ public class UidlWriter implements Serializable {
 
     private static ObjectNode dependencyToJson(Dependency dependency,
             ResolveContext context) {
-        ObjectNode dependencyJson = (ObjectNode) dependency.toJson();
+        ObjectNode dependencyJson = JacksonUtils.mapElemental(dependency.toJson());
         if (dependency.getLoadMode() == LoadMode.INLINE) {
             dependencyJson.put(Dependency.KEY_CONTENTS,
                     getDependencyContents(dependency.getUrl(), context));
