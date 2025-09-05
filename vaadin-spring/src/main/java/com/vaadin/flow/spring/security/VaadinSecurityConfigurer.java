@@ -573,6 +573,17 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Matcher for framework internal requests.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @return default {@link HttpSecurity} bypass matcher
+     */
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
+        return getDefaultHttpSecurityPermitMatcher("/*");
+    }
+
+    /**
      * Matcher for framework internal requests, with Vaadin servlet mapped on
      * the given path.
      *
