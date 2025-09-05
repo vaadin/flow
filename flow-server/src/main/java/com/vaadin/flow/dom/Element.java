@@ -705,7 +705,7 @@ public class Element extends Node<Element> {
      * @param value
      *            the property value, not <code>null</code>
      * @return this element
-     * @deprecated Flow-Component Loginis using JsonValue else would be removed
+     * @deprecated Will be removed when all Flow-Components use Jackson variant
      */
     // Distinct name so setProperty("foo", null) is not ambiguous
     @Deprecated
