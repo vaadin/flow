@@ -606,6 +606,17 @@ public final class VaadinSecurityConfigurer
     }
 
     /**
+     * Matcher for Vaadin static (public) resources.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @return default {@link WebSecurity} ignore matcher
+     */
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
+        return getDefaultWebSecurityIgnoreMatcher("/*");
+    }
+
+    /**
      * Matcher for Vaadin static (public) resources, with Vaadin servlet mapped
      * on the given path.
      *
