@@ -42,11 +42,6 @@ public class SignalEnvironmentTest extends SignalTestBase {
             }
 
             @Override
-            public Executor getFallbackEffectDispatcher() {
-                return null;
-            }
-
-            @Override
             public Executor getEffectDispatcher() {
                 return null;
             }
@@ -81,11 +76,6 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
-            }
-
-            @Override
-            public Executor getFallbackEffectDispatcher() {
                 return null;
             }
 
@@ -136,46 +126,23 @@ public class SignalEnvironmentTest extends SignalTestBase {
     void effectDispatcher_noDispathcer_runsImmediately() {
         AtomicInteger count = new AtomicInteger();
 
-        SignalEnvironment.getCurrentEffectDispatcher()
+        SignalEnvironment.getDefaultEffectDispatcher()
                 .execute(() -> count.incrementAndGet());
 
         assertEquals(1, count.get());
     }
 
     @Test
-    void effectDispatcher_setWhenAccessed_usedAfterCleared() {
+    void effectDispatcher_setWhenDispatching_runThroughDispatcher() {
         AtomicInteger count = new AtomicInteger();
 
-        TestExecutor effectDispatcher = useTestEffectDispatcher();
-        TestExecutor fallbackEffectDispatcher = useTestFallbackEffectDispatcher();
+        TestExecutor testDispatcher = useTestEffectDispatcher();
 
-        Executor dispatcher = SignalEnvironment.getCurrentEffectDispatcher();
-        clearTestEffectDispatcher();
-
-        dispatcher.execute(() -> count.incrementAndGet());
+        SignalEnvironment.getDefaultEffectDispatcher()
+                .execute(() -> count.incrementAndGet());
         assertEquals(0, count.get());
 
-        effectDispatcher.runPendingTasks();
+        testDispatcher.runPendingTasks();
         assertEquals(1, count.get());
-
-        assertEquals(0, fallbackEffectDispatcher.countPendingTasks());
-    }
-
-    @Test
-    void fallbackEffectDispatcher_setWhenDispatching_runThroughDispatcher() {
-        AtomicInteger count = new AtomicInteger();
-
-        Executor dispatcher = SignalEnvironment.getCurrentEffectDispatcher();
-
-        TestExecutor effectDispatcher = useTestEffectDispatcher();
-        TestExecutor fallbackEffectDispatcher = useTestFallbackEffectDispatcher();
-
-        dispatcher.execute(() -> count.incrementAndGet());
-        assertEquals(0, count.get());
-
-        fallbackEffectDispatcher.runPendingTasks();
-        assertEquals(1, count.get());
-
-        assertEquals(0, effectDispatcher.countPendingTasks());
     }
 }

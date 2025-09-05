@@ -416,11 +416,6 @@ public abstract class VaadinService implements Serializable {
 
             @Override
             public Executor getEffectDispatcher() {
-                return createCurrentUiDispatcher();
-            }
-
-            @Override
-            public Executor getFallbackEffectDispatcher() {
                 return getExecutor();
             }
         }

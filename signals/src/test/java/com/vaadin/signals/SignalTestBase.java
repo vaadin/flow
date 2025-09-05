@@ -30,7 +30,6 @@ import org.junit.jupiter.api.BeforeAll;
 public class SignalTestBase {
     private static final ThreadLocal<Executor> currentResultNotifier = new ThreadLocal<Executor>();
     private static final ThreadLocal<Executor> currentEffectDispatcher = new ThreadLocal<Executor>();
-    private static final ThreadLocal<Executor> currentFallbackEffectDispatcher = new ThreadLocal<Executor>();
 
     protected class TestExecutor implements Executor {
         private final ArrayList<Runnable> tasks = new ArrayList<>();
@@ -73,11 +72,6 @@ public class SignalTestBase {
                     public Executor getEffectDispatcher() {
                         return currentEffectDispatcher.get();
                     }
-
-                    @Override
-                    public Executor getFallbackEffectDispatcher() {
-                        return currentFallbackEffectDispatcher.get();
-                    }
                 });
     }
 
@@ -102,23 +96,10 @@ public class SignalTestBase {
         return dispatcher;
     }
 
-    protected void clearTestEffectDispatcher() {
-        currentEffectDispatcher.remove();
-    }
-
-    protected TestExecutor useTestFallbackEffectDispatcher() {
-        TestExecutor dispatcher = new TestExecutor();
-
-        currentFallbackEffectDispatcher.set(dispatcher);
-
-        return dispatcher;
-    }
-
     @AfterEach
     void clear() {
         currentResultNotifier.remove();
         currentEffectDispatcher.remove();
-        currentFallbackEffectDispatcher.remove();
         SignalFactory.IN_MEMORY_SHARED.clear();
     }
 }
