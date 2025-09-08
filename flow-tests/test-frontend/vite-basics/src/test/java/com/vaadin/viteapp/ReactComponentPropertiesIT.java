@@ -87,6 +87,19 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
         Map<String, Object> divProperties = getDebugPropertiesFromWindow(
                 anyDiv);
         assertError(divProperties, false);
+    }
+    @Test
+    public void componentWithAliasShouldWork(){
+        var element = $("*")
+                .withAttribute(DATA_TEST_ID, "basic-react-component")
+                .waitForFirst();
+        Map<String, Object> debugPropertiesFromFiberNode = getDebugPropertiesFromFiberNode(element);
+        assertError(debugPropertiesFromFiberNode, false);
+        List<?> properties = (List<?>) debugPropertiesFromFiberNode
+                .get("properties");
+        Assert.assertEquals(1, properties.size());
+        Map<String, ?> propertyValues = (Map<String, ?>) properties.get(0);
+        Assert.assertEquals("Name", propertyValues.get("label"));
 
     }
 

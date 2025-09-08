@@ -1,4 +1,4 @@
-
+import { BasicReactComponent as BasicReactComponentAlias} from "./BasicReactComponent";
 
 export default function ReactComponentProperties(){
     return (
@@ -8,6 +8,7 @@ export default function ReactComponentProperties(){
             <h1 data-test-id="simple-header">Header 1</h1>
             <ComponentWithInterfaceProps label={"fooLabel"}></ComponentWithInterfaceProps>
             <ComponentWithAnyProps />
+            <BasicReactComponentAlias />
         </div>
     )
 }
