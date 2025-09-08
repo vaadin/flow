@@ -27,7 +27,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest;
 
-public class ExecuteJsPerformance extends ComponentTest.TestDiv {
+public class ExecuteJsPerformanceTest extends ComponentTest.TestDiv {
 
     private static final int SAMPLE_SIZE = 10;
 
