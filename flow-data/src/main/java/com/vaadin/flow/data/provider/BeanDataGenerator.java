@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.internal.JsonSerializer;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.JacksonSerializer;
+import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * A {@link DataGenerator} that sends all the fields of the objects in the model
@@ -44,12 +45,12 @@ import elemental.json.JsonValue;
 public class BeanDataGenerator<T> implements DataGenerator<T> {
 
     @Override
-    public void generateData(T item, JsonObject data) {
-        JsonValue value = JsonSerializer.toJson(item);
-        if (value instanceof JsonObject) {
-            JsonObject object = (JsonObject) value;
-            for (String key : object.keys()) {
-                data.put(key, (JsonValue) object.get(key));
+    public void generateData(T item, ObjectNode data) {
+        JsonNode value = JacksonSerializer.toJson(item);
+        if (value instanceof ObjectNode) {
+            ObjectNode object = (ObjectNode) value;
+            for (String key : JacksonUtils.getKeys(object)) {
+                data.put(key, object.get(key));
             }
         } else {
             data.put("value", value);

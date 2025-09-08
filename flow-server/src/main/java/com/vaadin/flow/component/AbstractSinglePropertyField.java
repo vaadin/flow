@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -34,6 +35,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
 
+import elemental.json.Json;
 import elemental.json.JsonValue;
 
 /**
@@ -132,7 +134,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
                 Integer.valueOf(0));
         typeHandlers.put(BaseJsonNode.class,
                 getJsonHandler(BaseJsonNode.class));
-        typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
+        typeHandlers.put(JsonNode.class, getJsonHandler(BaseJsonNode.class));
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
@@ -374,10 +376,14 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     }
 
     @Deprecated
-    private static <P extends JsonValue> TypeHandler<P> getHandler(
+    private static <P extends BaseJsonNode> TypeHandler<P> getHandler(
             Class<P> type) {
         ElementGetter<P> getter = (element, property, defaultValue) -> {
             Serializable value = element.getPropertyRaw(property);
+            if (value instanceof BaseJsonNode) {
+                return type.cast(Json.create(
+                        JacksonCodec.encodeWithoutTypeInfo(value).toString()));
+            }
             // JsonValue is passed straight through, other primitive
             // values are jsonified
             return type.cast(JsonCodec.encodeWithoutTypeInfo(value));
