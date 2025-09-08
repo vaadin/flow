@@ -253,7 +253,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
-     * <li>{@link JsonValue}
+     * <li>{@link com.fasterxml.jackson.databind.node.BaseJsonNode}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
