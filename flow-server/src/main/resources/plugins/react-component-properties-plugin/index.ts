@@ -1,5 +1,4 @@
 import type { Plugin, SourceMapInput } from 'vite';
-import type { Program } from 'typescript';
 import ts from 'typescript';
 import * as path from 'path';
 import MagicString from 'magic-string';
@@ -88,52 +87,7 @@ export class ResolverException extends Error {
         Object.setPrototypeOf(this, new.target.prototype);
     }
 }
-/**
-* A Vite plugin that statically analyzes TSX files to discover JSX elements and
-* their `props` types, then injects runtime code to expose those properties for
-    * debugging / tooling.
-*
-* How it works (build-time):
-* 1) For each `.tsx` module (excluding anything under `/generated/`), the plugin:
-*    - Loads the TypeScript Program using the project's tsconfig.
-*    - Parses the source file and collects distinct JSX opening elements.
-*    - For each element, resolves the props type via a TypeScript TypeChecker (Resolver).
-*    - Serializes the resolved properties into a `ResponseData` payload.
-*
-* How it works (runtime, via injected code):
-* 2) Adds a global registry under `window.Vaadin.copilot.ReactProperties`:
-*    - `properties: Record<string, ResponseData>` – in-memory map of tagName → ResponseData.
-*    - `registerer(tagName: string, value: ResponseData)` – helper to populate `properties`.
-* 3) For non-intrinsic elements (custom React components), the plugin tries to attach
-*    the payload directly to the component function/object on `__debugProperties`
-*    (mimicking a "Fiber-adjacent" location) for quick introspection:
-    *
-*       MyComponent.__debugProperties = { error: false, properties: [...] }
-    *
-    *    If that attachment isn’t possible (e.g., `MyComponent` isn't resolvable as a value),
-*    it falls back to `registerer("MyComponent", payload)`.
-*
-* 4) For intrinsic elements (e.g., 'div', 'button'), the plugin always registers to the
-*    global registry via `registerer("div", payload)`.
-*
-* Returned Data Shape:
-    * --------------------
-* interface ResponseData {
-*   error: boolean;
-*   errorMessage?: string;
-*   properties?: PropertyDescriptor[];
-* }
-*
-* `PropertyDescriptor` is the shape returned by your Resolver. Typically, this includes
-* the prop name, type information, optional/required flags, default value info, etc.
-*
-* Runtime Globals (created if absent):
-* ------------------------------------
-* window.Vaadin.copilot.ReactProperties = {
-    *   properties: Record<string, ResponseData>,
-    *   registerer(tagName: string, value: ResponseData): void
-    * }
- */
+
 interface PluginOptions {
     // Enable/disable the plugin
     enabled?: boolean;
@@ -155,15 +109,174 @@ const DEFAULT_OPTIONS: PluginOptions = {
     sourcemap: true
 };
 
-// Cache the TypeScript program to avoid recreation
-let cachedProgram: Program | undefined;
-let cachedProgramFiles: Set<string> = new Set();
+/**
+ * Custom Language Service Host that tracks files incrementally
+ */
+class IncrementalLanguageServiceHost implements ts.LanguageServiceHost {
+    private files: Map<string, { version: number; content: string }> = new Map();
+    private projectVersion = 0;
+    private parsedConfig: ts.ParsedCommandLine;
+    
+    constructor() {
+        this.parsedConfig = this.loadTsConfig();
+    }
+    
+    private loadTsConfig(): ts.ParsedCommandLine {
+        const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
+        if (!configPath) {
+            throw new Error('tsconfig.json not found in project root');
+        }
+        const config = ts.readConfigFile(configPath, ts.sys.readFile);
+        if (config.error) {
+            throw new Error(`Failed to read tsconfig.json: ${config.error.messageText}`);
+        }
+        return ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
+    }
+    
+    updateFile(fileName: string, content: string): void {
+        const normalizedPath = path.resolve(fileName);
+        const existing = this.files.get(normalizedPath);
+        
+        if (!existing || existing.content !== content) {
+            this.files.set(normalizedPath, {
+                version: existing ? existing.version + 1 : 0,
+                content
+            });
+            this.projectVersion++;
+        }
+    }
+    
+    getCompilationSettings(): ts.CompilerOptions {
+        return this.parsedConfig.options;
+    }
+    
+    getScriptFileNames(): string[] {
+        return [...this.files.keys()];
+    }
+    
+    getScriptVersion(fileName: string): string {
+        const normalizedPath = path.resolve(fileName);
+        const file = this.files.get(normalizedPath);
+        return file ? file.version.toString() : '0';
+    }
+    
+    getScriptSnapshot(fileName: string): ts.IScriptSnapshot | undefined {
+        const normalizedPath = path.resolve(fileName);
+        const file = this.files.get(normalizedPath);
+        
+        if (file) {
+            return ts.ScriptSnapshot.fromString(file.content);
+        }
+        
+        // Try to read from file system
+        if (ts.sys.fileExists(fileName)) {
+            const content = ts.sys.readFile(fileName);
+            if (content) {
+                this.updateFile(fileName, content);
+                return ts.ScriptSnapshot.fromString(content);
+            }
+        }
+        
+        return undefined;
+    }
+    
+    getCurrentDirectory(): string {
+        return process.cwd();
+    }
+    
+    getDefaultLibFileName(options: ts.CompilerOptions): string {
+        return ts.getDefaultLibFilePath(options);
+    }
+    
+    fileExists(fileName: string): boolean {
+        const normalizedPath = path.resolve(fileName);
+        return this.files.has(normalizedPath) || ts.sys.fileExists(fileName);
+    }
+    
+    readFile(fileName: string): string | undefined {
+        const normalizedPath = path.resolve(fileName);
+        const file = this.files.get(normalizedPath);
+        return file ? file.content : ts.sys.readFile(fileName);
+    }
+    
+    getProjectVersion(): string {
+        return this.projectVersion.toString();
+    }
+}
 
+/**
+ * A Vite plugin that statically analyzes TSX files to discover JSX elements and
+ * their `props` types, then injects runtime code to expose those properties for
+ * debugging / tooling.
+ *
+ * How it works (build-time):
+ * 1) For each `.tsx` module (excluding configurable paths), the plugin:
+ *    - Uses a shared TypeScript Language Service for efficient parsing
+ *    - Parses the source file and collects distinct JSX opening elements
+ *    - For each element, resolves the props type via TypeScript's type checker
+ *    - Serializes the resolved properties into a `ResponseData` payload
+ *
+ * How it works (runtime, via injected code):
+ * 2) Adds a global registry under `window.Vaadin.copilot.ReactProperties`:
+ *    - `properties: Record<string, ResponseData>` – in-memory map of tagName → ResponseData
+ *    - `registerer(tagName: string, value: ResponseData)` – helper to populate `properties`
+ *    - Implements LRU-like cleanup to prevent memory leaks
+ *
+ * 3) All components (both intrinsic and custom) are registered via the global
+ *    registry to avoid runtime variable existence issues.
+ *
+ * @param userOptions - Configuration options for the plugin
+ * @returns Vite plugin instance
+ */
 export default function reactComponentPropertiesPlugin(userOptions: PluginOptions = {}): Plugin {
     const options = { ...DEFAULT_OPTIONS, ...userOptions };
+    
+    // Create Language Service once and reuse
+    let serviceHost: IncrementalLanguageServiceHost | undefined;
+    let languageService: ts.LanguageService | undefined;
+    
+    const getOrCreateLanguageService = (): { service: ts.LanguageService; host: IncrementalLanguageServiceHost } => {
+        if (!languageService || !serviceHost) {
+            serviceHost = new IncrementalLanguageServiceHost();
+            languageService = ts.createLanguageService(serviceHost, ts.createDocumentRegistry());
+            
+            if (options.debug) {
+                console.log('[ReactProperties] Created TypeScript Language Service');
+            }
+        }
+        return { service: languageService, host: serviceHost };
+    };
+    
     return {
         name: 'vaadin-react-component-properties-plugin',
         enforce: 'pre',
+        
+        buildStart() {
+            // Reset Language Service at the start of each build
+            if (languageService) {
+                languageService.dispose();
+            }
+            languageService = undefined;
+            serviceHost = undefined;
+            
+            if (options.debug) {
+                console.log('[ReactProperties] Plugin started with options:', options);
+            }
+        },
+        
+        buildEnd() {
+            // Clean up Language Service
+            if (languageService) {
+                languageService.dispose();
+                languageService = undefined;
+                serviceHost = undefined;
+                
+                if (options.debug) {
+                    console.log('[ReactProperties] Language Service disposed');
+                }
+            }
+        },
+        
         transform(code, id) {
             if (!options.enabled) {
                 return;
@@ -179,56 +292,123 @@ export default function reactComponentPropertiesPlugin(userOptions: PluginOption
             if (shouldExclude) {
                 return;
             }
-            let program: Program | undefined = undefined;
+            
             try {
-                // Reuse cached program if possible
-                const parsed = resolveTsConfigAndGetParsed();
-                const filesSet = new Set(parsed.fileNames);
+                const { service, host } = getOrCreateLanguageService();
                 
-                // Check if we need to recreate the program
-                const needsRecreation = !cachedProgram || 
-                    filesSet.size !== cachedProgramFiles.size ||
-                    ![...filesSet].every(f => cachedProgramFiles.has(f));
+                // Update the file in the Language Service
+                host.updateFile(bareId, code);
                 
-                if (needsRecreation) {
+                // Get the source file from Language Service
+                const program = service.getProgram();
+                if (!program) {
                     if (options.debug) {
-                        console.log('[ReactProperties] Creating new TypeScript program');
+                        console.warn('[ReactProperties] Could not get program from Language Service');
                     }
-                    program = ts.createProgram({
-                        rootNames: parsed.fileNames,
-                        options: parsed.options,
-                        oldProgram: cachedProgram
-                    });
-                    cachedProgram = program;
-                    cachedProgramFiles = filesSet;
-                } else {
-                    program = cachedProgram;
+                    return;
                 }
-            } catch (e) {
+                
+                const sourceFile = program.getSourceFile(bareId);
+                if (!sourceFile) {
+                    if (options.debug) {
+                        console.warn('[ReactProperties] Could not get source file:', bareId);
+                    }
+                    return;
+                }
+                
+                const typeChecker = program.getTypeChecker();
+                const distinctJsxOpeningLikeElements = getDistinctJsxOpeningLikeElements(sourceFile);
+                
+                // If no JSX elements found, skip transformation
+                if (distinctJsxOpeningLikeElements.length === 0) {
+                    return;
+                }
+                
+                // Use MagicString for better source map support
+                const s = new MagicString(code);
+                
+                // Process JSX elements
+                const componentPropsMap = new Map<string, string>();
+                
+                distinctJsxOpeningLikeElements.forEach((node) => {
+                    const nodeName = node.tagName.getText();
+                    try {
+                        const resolver = new Resolver(typeChecker);
+                        resolver.findPropsParamType(node, sourceFile);
+                        const propertyDescriptors = resolver.resolveProps();
+                        const responseDataStr = JSON.stringify({
+                            error: false,
+                            properties: propertyDescriptors
+                        } as ResponseData);
+                        
+                        // Store for later injection, avoiding duplicates
+                        if (!componentPropsMap.has(nodeName)) {
+                            componentPropsMap.set(nodeName, responseDataStr);
+                        }
+                    } catch (e: unknown) {
+                        const errorMessage = e instanceof ResolverException 
+                            ? e.message 
+                            : (e instanceof Error ? e.message : 'Unknown error occurred');
+                        
+                        const responseDataStr = JSON.stringify({
+                            error: true,
+                            errorMessage
+                        } as ResponseData);
+                        
+                        if (!componentPropsMap.has(nodeName)) {
+                            componentPropsMap.set(nodeName, responseDataStr);
+                        }
+                        
+                        if (options.debug) {
+                            console.warn(`[ReactProperties] Failed to resolve props for ${nodeName}:`, errorMessage);
+                        }
+                    }
+                });
+                
+                // Generate injection code
+                const injectCode = generateInjectionCode(componentPropsMap, options);
+                
+                // Append the injection code
+                s.append(injectCode);
+                
+                return {
+                    code: s.toString(),
+                    map: options.sourcemap ? s.generateMap({ hires: true }) as SourceMapInput : null,
+                };
+                
+            } catch (error) {
                 if (options.debug) {
-                    console.error('[ReactProperties] Failed to create TypeScript program:', e);
+                    console.error('[ReactProperties] Transform error:', error);
                 }
                 return;
             }
-            if (!program) {
-                return;
-            }
-            const sourceFile = program.getSourceFile(id);
-            if (!sourceFile) {
-                return;
-            }
-            const typeChecker = program.getTypeChecker();
-            const distinctJsxOpeningLikeElements = getDistinctJsxOpeningLikeElements(sourceFile);
-            
-            // If no JSX elements found, skip transformation
-            if (distinctJsxOpeningLikeElements.length === 0) {
-                return;
-            }
+        },
+    };
+}
 
-            // Use MagicString for better source map support
-            const s = new MagicString(code);
-            
-            let injectCode = `
+/**
+ * Generate the runtime injection code
+ */
+function generateInjectionCode(
+    componentPropsMap: Map<string, string>, 
+    options: PluginOptions
+): string {
+    if (componentPropsMap.size === 0) {
+        return '';
+    }
+    
+    // Helper function to escape strings for safe JavaScript injection
+    const escapeForJS = (str: string): string => {
+        return str
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, "\\'")
+            .replace(/"/g, '\\"')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+    };
+    
+    let code = `
 ;(function() {
   'use strict';
   if (typeof window === 'undefined') return;
@@ -257,84 +437,18 @@ export default function reactComponentPropertiesPlugin(userOptions: PluginOption
       properties[tagName] = value;
     };
   }
+  
 `;
-            // Helper function to escape strings for safe JavaScript injection
-            const escapeForJS = (str: string): string => {
-                return str
-                    .replace(/\\/g, '\\\\')
-                    .replace(/'/g, "\\'") 
-                    .replace(/"/g, '\\"')
-                    .replace(/\n/g, '\\n')
-                    .replace(/\r/g, '\\r')
-                    .replace(/\t/g, '\\t')
-                    .replace(/\//g, '\\/');
-            };
-            
-            // Helper function to create a valid JavaScript variable name
-            const toSafeVarName = (name: string): string => {
-                return name.replace(/[^a-zA-Z0-9_$]/g, '_');
-            };
-            
-            const responseDataStringBuilder = (
-                error: boolean,
-                errorMessage?: string,
-                properties?: PropertyDescriptor[],
-            ): string => {
-                const responseData: ResponseData = { error, errorMessage, properties };
-                return JSON.stringify(responseData);
-            };
-            
-            const registererStringBuilder = (nodeName: string, value: string) => {
-                const escapedName = escapeForJS(nodeName);
-                return `  window.Vaadin.copilot.ReactProperties.registerer("${escapedName}", ${value});\n`;
-            };
-            // Process JSX elements
-            const componentPropsMap = new Map<string, string>();
-            
-            distinctJsxOpeningLikeElements.forEach((node) => {
-                const nodeName = node.tagName.getText();
-                try {
-                    const resolver = new Resolver(typeChecker);
-                    resolver.findPropsParamType(node, sourceFile);
-                    const propertyDescriptors = resolver.resolveProps();
-                    const responseDataStr = responseDataStringBuilder(false, undefined, propertyDescriptors);
-                    
-                    // Store for later injection, avoiding duplicates
-                    if (!componentPropsMap.has(nodeName)) {
-                        componentPropsMap.set(nodeName, responseDataStr);
-                    }
-                } catch (e: any) {
-                    const errorMessage = e instanceof ResolverException ? e.message : 'Unknown error occurred';
-                    const responseDataStr = responseDataStringBuilder(true, errorMessage);
-                    
-                    if (!componentPropsMap.has(nodeName)) {
-                        componentPropsMap.set(nodeName, responseDataStr);
-                    }
-                    
-                    if (options.debug) {
-                        console.warn(`[ReactProperties] Failed to resolve props for ${nodeName}:`, e.message);
-                    }
-                }
-            });
-            
-            // Generate injection code for all components
-            componentPropsMap.forEach((propsData, nodeName) => {
-                // For all components (both intrinsic and custom), use the registerer
-                // This avoids the runtime variable existence problem
-                injectCode += registererStringBuilder(nodeName, propsData);
-            });
-            
-            injectCode += `\n})();\n`;
-
-            // Append the injection code
-            s.append(injectCode);
-            
-            return {
-                code: s.toString(),
-                map: options.sourcemap ? s.generateMap({ hires: true }) as SourceMapInput : null,
-            };
-        },
-    };
+    
+    // Register each component
+    componentPropsMap.forEach((propsData, nodeName) => {
+        const escapedName = escapeForJS(nodeName);
+        code += `  window.Vaadin.copilot.ReactProperties.registerer("${escapedName}", ${propsData});\n`;
+    });
+    
+    code += `})();\n`;
+    
+    return code;
 }
 
 /**
@@ -361,16 +475,6 @@ function getDistinctJsxOpeningLikeElements(root: ts.Node): ts.JsxOpeningLikeElem
 
     visit(root);
     return out;
-}
-
-/**
- * Parses the tsconfig.json and get parsed command line object. Throws an exception if tsconfig.json is unable to parsed.
- */
-function resolveTsConfigAndGetParsed() {
-    const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
-    if (!configPath) throw new Error('tsconfig.json not found.');
-    const config = ts.readConfigFile(configPath, ts.sys.readFile);
-    return ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
 }
 
 /**
@@ -427,7 +531,6 @@ class Resolver {
      * Finds the props parameter of the given node in the SourceFile
      *
      * @param node JSX opening element... example <MyButton>, <div>, <AnyComponent>
-     * @param source that describes where node is present in the SourceFile
      * @param sourceFile physical, parsed file by Typescript Compiler API
      */
     findPropsParamType(node: ts.JsxOpeningLikeElement, sourceFile: ts.SourceFile) {
@@ -523,29 +626,37 @@ class Resolver {
      * Resolves the given properties and returns the transformed/parsed PropertyDescriptors.
      * @param properties properties of an object
      */
-    private resolveProperties(properties: ts.Symbol[]) {
-        return properties.map((property) => {
-            const propertyDescriptor: PropertyDescriptor = {
-                name: property.getName(),
-                label: camelCaseToHumanReadable(property.getName()) ?? property.getName(),
-            };
-            const resolvedProperty = this.resolveSymbol(property);
-            if (!resolvedProperty) {
-                propertyDescriptor.error = true;
+    private resolveProperties(properties: ts.Symbol[]): PropertyDescriptor[] {
+        return properties
+            .filter(property => {
+                // Filter out private/internal properties
+                const name = property.getName();
+                return !name.startsWith('_') && !name.startsWith('$$');
+            })
+            .map((property) => {
+                const propertyDescriptor: PropertyDescriptor = {
+                    name: property.getName(),
+                    label: camelCaseToHumanReadable(property.getName()) ?? property.getName(),
+                };
+                const resolvedProperty = this.resolveSymbol(property);
+                if (!resolvedProperty) {
+                    propertyDescriptor.error = true;
+                    propertyDescriptor.errorReason = 'Could not resolve property type';
+                    return propertyDescriptor;
+                }
+                const questionToken = this.getQuestionTokenFromSymbol(property);
+                if (questionToken) {
+                    propertyDescriptor.optional = true;
+                }
+                try {
+                    this.resolvePropertyType(resolvedProperty, propertyDescriptor);
+                } catch (error: unknown) {
+                    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                    propertyDescriptor.errorReason = errorMessage;
+                    propertyDescriptor.error = true;
+                }
                 return propertyDescriptor;
-            }
-            const questionToken = this.getQuestionTokenFromSymbol(property);
-            if (questionToken) {
-                propertyDescriptor.optional = true;
-            }
-            try {
-                this.resolvePropertyType(resolvedProperty, propertyDescriptor);
-            } catch (error: any) {
-                propertyDescriptor.errorReason = error.message;
-                propertyDescriptor.error = true;
-            }
-            return propertyDescriptor;
-        });
+            });
     }
 
     private resolvePropertyType(resolvedProperty: ts.Type, propertyDescriptor: PropertyDescriptor) {
@@ -656,12 +767,13 @@ class Resolver {
         return types
             .map((type) => {
                 const anyType = this.getAnyType(type);
-                if (anyType.value) {
-                    return { label: anyType.value, value: anyType.value };
+                if (anyType.value !== undefined && anyType.value !== null) {
+                    const value = String(anyType.value);
+                    return { label: value, value };
                 }
                 return undefined;
             })
-            .filter((item) => !!item);
+            .filter((item): item is { label: string; value: any } => item !== undefined);
     }
 
     /**
@@ -865,14 +977,15 @@ function findCopilotTypeFromBasicType(type?: string): ComponentPropertyType | un
 }
 
 function camelCaseToHumanReadable(input?: string): string | undefined {
-    if (!input) return undefined;
+    if (!input || input.length === 0) return undefined;
 
     // Add space before capital letters, except at the start
     // capitalize first letter
     return input
         .replace(/([a-z\d])([A-Z])/g, '$1 $2') // E.g. isVisible → is Visible
         .replace(/([A-Z]+)([A-Z][a-z\d]+)/g, '$1 $2') // E.g. HTMLParser → HTML Parser
-        .replace(/^./, (str) => str.toUpperCase());
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
 }
 
 /**
