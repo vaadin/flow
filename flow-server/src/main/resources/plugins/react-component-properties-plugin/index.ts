@@ -1,7 +1,8 @@
-import type { Plugin } from 'vite';
+import type { Plugin, SourceMapInput } from 'vite';
 import type { Program } from 'typescript';
 import ts from 'typescript';
 import * as path from 'path';
+import MagicString from 'magic-string';
 
 type SupportedBasicTypes = 'any' | 'bigInt' | 'boolean' | 'null' | 'number' | 'string' | 'undefined' | 'unknown';
 
@@ -133,27 +134,80 @@ export class ResolverException extends Error {
     *   registerer(tagName: string, value: ResponseData): void
     * }
  */
-export default function reactComponentPropertiesPlugin(): Plugin {
+interface PluginOptions {
+    // Enable/disable the plugin
+    enabled?: boolean;
+    // Paths to exclude from processing
+    exclude?: string[];
+    // Enable debug logging
+    debug?: boolean;
+    // Maximum properties to track in memory (to prevent memory leaks)
+    maxPropertiesInMemory?: number;
+    // Whether to generate source maps
+    sourcemap?: boolean;
+}
+
+const DEFAULT_OPTIONS: PluginOptions = {
+    enabled: true,
+    exclude: ['/generated/', '/node_modules/'],
+    debug: false,
+    maxPropertiesInMemory: 1000,
+    sourcemap: true
+};
+
+// Cache the TypeScript program to avoid recreation
+let cachedProgram: Program | undefined;
+let cachedProgramFiles: Set<string> = new Set();
+
+export default function reactComponentPropertiesPlugin(userOptions: PluginOptions = {}): Plugin {
+    const options = { ...DEFAULT_OPTIONS, ...userOptions };
     return {
         name: 'vaadin-react-component-properties-plugin',
         enforce: 'pre',
         transform(code, id) {
+            if (!options.enabled) {
+                return;
+            }
+            
             const [bareId] = id.split('?');
             if (!bareId.endsWith('.tsx')) {
                 return;
             }
-            if (id.indexOf('/generated/') !== -1) {
+            
+            // Check if file should be excluded
+            const shouldExclude = options.exclude?.some(pattern => id.includes(pattern));
+            if (shouldExclude) {
                 return;
             }
             let program: Program | undefined = undefined;
             try {
+                // Reuse cached program if possible
                 const parsed = resolveTsConfigAndGetParsed();
-                program = ts.createProgram({
-                    rootNames: parsed.fileNames,
-                    options: parsed.options,
-                });
+                const filesSet = new Set(parsed.fileNames);
+                
+                // Check if we need to recreate the program
+                const needsRecreation = !cachedProgram || 
+                    filesSet.size !== cachedProgramFiles.size ||
+                    ![...filesSet].every(f => cachedProgramFiles.has(f));
+                
+                if (needsRecreation) {
+                    if (options.debug) {
+                        console.log('[ReactProperties] Creating new TypeScript program');
+                    }
+                    program = ts.createProgram({
+                        rootNames: parsed.fileNames,
+                        options: parsed.options,
+                        oldProgram: cachedProgram
+                    });
+                    cachedProgram = program;
+                    cachedProgramFiles = filesSet;
+                } else {
+                    program = cachedProgram;
+                }
             } catch (e) {
-                console.debug('Failed to parse program file:', e);
+                if (options.debug) {
+                    console.error('[ReactProperties] Failed to create TypeScript program:', e);
+                }
                 return;
             }
             if (!program) {
@@ -165,19 +219,62 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             }
             const typeChecker = program.getTypeChecker();
             const distinctJsxOpeningLikeElements = getDistinctJsxOpeningLikeElements(sourceFile);
+            
+            // If no JSX elements found, skip transformation
+            if (distinctJsxOpeningLikeElements.length === 0) {
+                return;
+            }
 
+            // Use MagicString for better source map support
+            const s = new MagicString(code);
+            
             let injectCode = `
-        window.Vaadin = window.Vaadin || {};
-        window.Vaadin.copilot = window.Vaadin.copilot || {};
-        window.Vaadin.copilot.ReactProperties = window.Vaadin.copilot.ReactProperties || {};
-        window.Vaadin.copilot.ReactProperties.properties = window.Vaadin.copilot.ReactProperties.properties || {};
-        if(!window.Vaadin.copilot.ReactProperties.registerer){
-          window.Vaadin.copilot.ReactProperties.registerer = function (tagName, value) {
-            const properties = window.Vaadin.copilot.ReactProperties.properties;
-            properties[tagName] = value;
-          }
+;(function() {
+  'use strict';
+  if (typeof window === 'undefined') return;
+  
+  window.Vaadin = window.Vaadin || {};
+  window.Vaadin.copilot = window.Vaadin.copilot || {};
+  window.Vaadin.copilot.ReactProperties = window.Vaadin.copilot.ReactProperties || {};
+  window.Vaadin.copilot.ReactProperties.properties = window.Vaadin.copilot.ReactProperties.properties || {};
+  
+  if (!window.Vaadin.copilot.ReactProperties.registerer) {
+    const maxProperties = ${options.maxPropertiesInMemory};
+    const propertyKeys = [];
+    
+    window.Vaadin.copilot.ReactProperties.registerer = function(tagName, value) {
+      const properties = window.Vaadin.copilot.ReactProperties.properties;
+      
+      // Implement LRU-like cleanup to prevent memory leaks
+      if (!properties[tagName]) {
+        propertyKeys.push(tagName);
+        if (propertyKeys.length > maxProperties) {
+          const keyToRemove = propertyKeys.shift();
+          delete properties[keyToRemove];
         }
-        `;
+      }
+      
+      properties[tagName] = value;
+    };
+  }
+`;
+            // Helper function to escape strings for safe JavaScript injection
+            const escapeForJS = (str: string): string => {
+                return str
+                    .replace(/\\/g, '\\\\')
+                    .replace(/'/g, "\\'") 
+                    .replace(/"/g, '\\"')
+                    .replace(/\n/g, '\\n')
+                    .replace(/\r/g, '\\r')
+                    .replace(/\t/g, '\\t')
+                    .replace(/\//g, '\\/');
+            };
+            
+            // Helper function to create a valid JavaScript variable name
+            const toSafeVarName = (name: string): string => {
+                return name.replace(/[^a-zA-Z0-9_$]/g, '_');
+            };
+            
             const responseDataStringBuilder = (
                 error: boolean,
                 errorMessage?: string,
@@ -186,18 +283,14 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                 const responseData: ResponseData = { error, errorMessage, properties };
                 return JSON.stringify(responseData);
             };
+            
             const registererStringBuilder = (nodeName: string, value: string) => {
-                return `window.Vaadin.copilot.ReactProperties.registerer("${nodeName}", ${value});\n`;
+                const escapedName = escapeForJS(nodeName);
+                return `  window.Vaadin.copilot.ReactProperties.registerer("${escapedName}", ${value});\n`;
             };
-            const fiberInjectionStringBuilder = (nodeName: string, responseDataStr: string) => {
-                return `
-            var ${nodeName}Props = ${responseDataStr};\n
-            if(typeof ${nodeName} === 'object' || typeof ${nodeName} === 'function') {
-              ${nodeName}.__debugProperties=${nodeName}Props;\n
-            }else{
-              ${registererStringBuilder(nodeName, `${nodeName}Props`)}
-            } \n `;
-            };
+            // Process JSX elements
+            const componentPropsMap = new Map<string, string>();
+            
             distinctJsxOpeningLikeElements.forEach((node) => {
                 const nodeName = node.tagName.getText();
                 try {
@@ -205,21 +298,40 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                     resolver.findPropsParamType(node, sourceFile);
                     const propertyDescriptors = resolver.resolveProps();
                     const responseDataStr = responseDataStringBuilder(false, undefined, propertyDescriptors);
-                    if (!resolver.intrinsicElement) {
-                        injectCode += fiberInjectionStringBuilder(nodeName, responseDataStr);
-                    } else {
-                        injectCode += registererStringBuilder(nodeName, responseDataStr);
+                    
+                    // Store for later injection, avoiding duplicates
+                    if (!componentPropsMap.has(nodeName)) {
+                        componentPropsMap.set(nodeName, responseDataStr);
                     }
                 } catch (e: any) {
-                    const responseDataStr = responseDataStringBuilder(true, e.message);
-                    injectCode += registererStringBuilder(nodeName, responseDataStr);
-                    console.debug(e);
+                    const errorMessage = e instanceof ResolverException ? e.message : 'Unknown error occurred';
+                    const responseDataStr = responseDataStringBuilder(true, errorMessage);
+                    
+                    if (!componentPropsMap.has(nodeName)) {
+                        componentPropsMap.set(nodeName, responseDataStr);
+                    }
+                    
+                    if (options.debug) {
+                        console.warn(`[ReactProperties] Failed to resolve props for ${nodeName}:`, e.message);
+                    }
                 }
             });
+            
+            // Generate injection code for all components
+            componentPropsMap.forEach((propsData, nodeName) => {
+                // For all components (both intrinsic and custom), use the registerer
+                // This avoids the runtime variable existence problem
+                injectCode += registererStringBuilder(nodeName, propsData);
+            });
+            
+            injectCode += `\n})();\n`;
 
+            // Append the injection code
+            s.append(injectCode);
+            
             return {
-                code: code + injectCode,
-                map: null,
+                code: s.toString(),
+                map: options.sourcemap ? s.generateMap({ hires: true }) as SourceMapInput : null,
             };
         },
     };
@@ -596,10 +708,19 @@ class Resolver {
         };
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    private getAnyType(type: ts.Type): any {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return type as any;
+    private getAnyType(type: ts.Type): {
+        value?: string;
+        types?: ts.Type[];
+        intrinsicName?: string;
+        [key: string]: unknown;
+    } {
+        // Using a more specific return type while still accessing internal properties
+        return type as {
+            value?: string;
+            types?: ts.Type[];
+            intrinsicName?: string;
+            [key: string]: unknown;
+        };
     }
 
     /**
@@ -680,9 +801,9 @@ class Resolver {
         return false;
     }
 
-    private getResolvedArgsForArrayType(type: ts.Type) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (type as any).resolvedTypeArguments as ts.Type[] | undefined;
+    private getResolvedArgsForArrayType(type: ts.Type): ts.Type[] | undefined {
+        const typeWithArgs = type as { resolvedTypeArguments?: ts.Type[] };
+        return typeWithArgs.resolvedTypeArguments;
     }
 
     private resolveSymbol(symbol: ts.Symbol): ts.Type | undefined {
