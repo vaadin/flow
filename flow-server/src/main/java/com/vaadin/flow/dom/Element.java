@@ -56,8 +56,6 @@ import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 
-import elemental.json.JsonValue;
-
 /**
  * Represents an element in the DOM.
  * <p>
@@ -685,37 +683,6 @@ public class Element extends Node<Element> {
      */
     public Element setProperty(String name, double value) {
         return setRawProperty(name, Double.valueOf(value));
-    }
-
-    /**
-     * Sets the given property to the given JSON value.
-     * <p>
-     * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
-     * should be used instead for JSON values.
-     * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @param value
-     *            the property value, not <code>null</code>
-     * @return this element
-     * @deprecated Will be removed when all Flow-Components use Jackson variant
-     */
-    // Distinct name so setProperty("foo", null) is not ambiguous
-    @Deprecated
-    public Element setPropertyJson(String name, JsonValue value) {
-        if (value == null) {
-            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
-        }
-
-        setRawProperty(name, JacksonUtils.mapElemental(value));
-        return this;
     }
 
     /**
