@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -504,7 +505,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var item = cache.getItem(index);
         if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                 && isExpanded(item)) {
-            var subCache = cache.ensureSubCache(index, () -> {
+            var subCache = cache.ensureSubCache(index, item, () -> {
                 requestFlush().invalidateViewport();
                 return getDataProviderChildCount(item);
             });
@@ -567,7 +568,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                     && isExpanded(item) && !cache.hasSubCache(index)
                     && result.size() > 0) {
-                var subCache = cache.ensureSubCache(index, () -> {
+                var subCache = cache.ensureSubCache(index, item, () -> {
                     requestFlush().invalidateViewport();
                     return getDataProviderChildCount(item);
                 });
@@ -618,7 +619,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             var item = cache.getItem(index);
             if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
                     && isExpanded(item)) {
-                cache.ensureSubCache(index, () -> {
+                cache.ensureSubCache(index, item, () -> {
                     requestFlush().invalidateViewport();
                     return getDataProviderChildCount(item);
                 });
@@ -663,7 +664,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var start = viewportRange.getStart();
         var end = viewportRange.getEnd();
 
-        var result = preloadFlatRangeForward(start, length);
+        var viewportItems = preloadFlatRangeForward(start, length);
+        var viewportItemIds = viewportItems.stream()
+                .map(getDataProvider()::getId).collect(Collectors.toSet());
 
         var flatSize = rootCache.getFlatSize();
 
@@ -674,10 +677,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         if (end < flatSize) {
             update.clear(end, flatSize - end);
         }
-        for (int i = 0; i < result.size(); i++) {
-            var item = result.get(i);
+        for (int i = 0; i < viewportItems.size(); i++) {
+            var item = viewportItems.get(i);
             var index = start + i;
 
+            // Send updates only for items that are new in the viewport,
+            // whose data has changed, or when the entire viewport needs
+            // to be updated.
             if (flushRequest.isViewportInvalidated()
                     || flushRequest.isItemInvalidated(item)
                     || flushRequest.isIndexInvalidated(index)) {
@@ -685,6 +691,13 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             }
         }
         update.commit(nextUpdateId++);
+
+        // Clear items that are no longer visible from the cache to free memory.
+        // This also clears them from keyMapper and disposes of their generated
+        // data in dataGenerator to avoid memory leaks on both server and
+        // client side.
+        rootCache.removeDescendantItemIf((item) -> getKeyMapper().has(item)
+                && !viewportItemIds.contains(getDataProvider().getId(item)));
     }
 
     private HierarchyFormat getHierarchyFormat() {
@@ -772,8 +785,10 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 void removeItemContext(T item) {
                     super.removeItemContext(item);
 
-                    getKeyMapper().remove(item);
-                    dataGenerator.destroyData(item);
+                    if (getKeyMapper().has(item)) {
+                        dataGenerator.destroyData(item);
+                        getKeyMapper().remove(item);
+                    }
                 }
             };
         }
