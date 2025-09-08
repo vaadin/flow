@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 
 /**
@@ -50,7 +51,7 @@ class RootCache<T> extends Cache<T> {
      *            the item ID provider
      */
     public RootCache(int size, ValueProvider<T, Object> itemIdProvider) {
-        super(null, -1, size);
+        super(null, null, size);
         this.itemIdProvider = itemIdProvider;
     }
 
@@ -188,6 +189,25 @@ class RootCache<T> extends Cache<T> {
     public ItemContext<T> getContextByItem(T item) {
         Object itemId = getItemId(item);
         return itemIdToContext.get(itemId);
+    }
+
+    /**
+     * Removes all descendant items that match the given predicate.
+     *
+     * @param predicate
+     *            the predicate to match items against
+     */
+    public void removeDescendantItemIf(SerializablePredicate<T> predicate) {
+        itemIdToContext.values().stream().filter((itemContext) -> {
+            var cache = itemContext.cache();
+            var index = itemContext.index();
+            var item = cache.getItem(index);
+            return predicate.test(item);
+        }).toList().forEach((itemContext) -> {
+            var cache = itemContext.cache();
+            var index = itemContext.index();
+            cache.removeItem(index);
+        });
     }
 
     void addItemContext(T item, Cache<T> cache, int index) {
