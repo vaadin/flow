@@ -88,12 +88,14 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
                 anyDiv);
         assertError(divProperties, false);
     }
+
     @Test
-    public void componentWithAliasShouldWork(){
+    public void componentWithAliasShouldWork() {
         var element = $("*")
                 .withAttribute(DATA_TEST_ID, "basic-react-component")
                 .waitForFirst();
-        Map<String, Object> debugPropertiesFromFiberNode = getDebugPropertiesFromFiberNode(element);
+        Map<String, Object> debugPropertiesFromFiberNode = getDebugPropertiesFromFiberNode(
+                element);
         assertError(debugPropertiesFromFiberNode, false);
         List<?> properties = (List<?>) debugPropertiesFromFiberNode
                 .get("properties");
