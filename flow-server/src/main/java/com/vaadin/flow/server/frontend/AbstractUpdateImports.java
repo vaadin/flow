@@ -488,17 +488,11 @@ abstract class AbstractUpdateImports implements Runnable {
                     "Failed to find the following css files in the `node_modules` or `%s` directory tree:",
                     options.getFrontendDirectory().getPath());
 
-            String suffix;
+            String suffix = "";
             if (options.getTokenFile() == null
                     && !options.getFrontendDirectory().exists()) {
                 suffix = "Unable to locate frontend resources and missing token file. "
                         + "Please run the `prepare-frontend` Vaadin plugin goal before deploying the application";
-            } else {
-                suffix = String.format(
-                        "Check that they exist or are installed. If you use a custom directory "
-                                + "for your resource files instead of the default `frontend` folder "
-                                + "then make sure it's correctly configured (e.g. set '%s' property)",
-                        FrontendUtils.PARAM_FRONTEND_DIR);
             }
 
             boolean needsNodeModules = options.isFrontendHotdeploy()
@@ -627,14 +621,10 @@ abstract class AbstractUpdateImports implements Runnable {
                         + "%n      - `%s` in this project"
                         + "%n      - `%s` in included JARs"
                         + "%n      - `%s` in included JARs"
-                        + "%n%n  Please, double check that those files exist. If you use a custom directory "
-                        + "for your resource files instead of default "
-                        + "`frontend` folder then make sure you it's correctly configured "
-                        + "(e.g. set '%s' property)",
+                        + "%n%n  Please, double check that those files exist.",
                         options.getFrontendDirectory().getPath(),
                         Constants.RESOURCES_FRONTEND_DEFAULT,
-                        COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
-                        FrontendUtils.PARAM_FRONTEND_DIR);
+                        COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT);
             }
             if (inMemoryCollection()) {
                 es6ImportPaths.addAll(resourceNotFound);

@@ -120,8 +120,6 @@ public class AbstractConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.has(FRONTEND_TOKEN)) {
-            params.put(FrontendUtils.PARAM_FRONTEND_DIR,
-                    buildInfo.get(FRONTEND_TOKEN).textValue());
             // Only verify frontend folder if it's not a subfolder of the
             // npm folder.
             if (!buildInfo.has(NPM_TOKEN)

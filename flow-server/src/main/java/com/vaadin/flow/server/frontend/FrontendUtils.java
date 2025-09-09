@@ -258,12 +258,6 @@ public class FrontendUtils {
             + GENERATED;
 
     /**
-     * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
-     * folder.
-     */
-    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
-
-    /**
      * Set to {@code true} to ignore node/npm tool version checks.
      */
     public static final String PARAM_IGNORE_VERSION_CHECKS = "vaadin.ignoreVersionChecks";
@@ -303,16 +297,6 @@ public class FrontendUtils {
      * The entry-point key used for the exported bundle.
      */
     public static final String EXPORT_CHUNK = "export";
-
-    /**
-     * A key in a Json object for css imports data.
-     */
-    public static final String CSS_IMPORTS = "cssImports";
-
-    /**
-     * A key in a Json object for js modules data.
-     */
-    public static final String JS_MODULES = "jsModules";
 
     /**
      * A parameter informing about the location of the
@@ -731,8 +715,7 @@ public class FrontendUtils {
      * @param configuration
      *            the current deployment configuration
      *
-     * @return {@link #DEFAULT_FRONTEND_DIR} or value of
-     *         {@link #PARAM_FRONTEND_DIR} if it is set.
+     * @return {@link #DEFAULT_FRONTEND_DIR}
      */
     public static File getProjectFrontendDir(
             AbstractConfiguration configuration) {

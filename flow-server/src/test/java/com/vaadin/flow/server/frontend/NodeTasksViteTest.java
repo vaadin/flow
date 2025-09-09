@@ -46,7 +46,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -71,19 +70,16 @@ public class NodeTasksViteTest {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
         npmFolder = new File(userDir);
         System.setProperty(USER_DIR, userDir);
-        System.clearProperty(PARAM_FRONTEND_DIR);
     }
 
     @BeforeClass
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
-        globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
     }
 
     @AfterClass
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
-        setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
     }
 
     @Test
@@ -199,31 +195,6 @@ public class NodeTasksViteTest {
         new NodeTasks(options).execute();
         Assert.assertTrue(FrontendUtils
                 .getFlowGeneratedImports(getFrontendFolder()).exists());
-    }
-
-    @Test
-    public void should_BeAbleToCustomizeFolders() throws Exception {
-        System.setProperty(PARAM_FRONTEND_DIR, "my_custom_sources_folder");
-
-        Lookup mockedLookup = mock(Lookup.class);
-        Mockito.doReturn(
-                new DefaultClassFinder(this.getClass().getClassLoader()))
-                .when(mockedLookup).lookup(ClassFinder.class);
-        Options options = new Options(mockedLookup, npmFolder)
-                .withBuildDirectory(TARGET).enablePackagesUpdate(false)
-                .enableImportsUpdate(true).withRunNpmInstall(false)
-                .withEmbeddableWebComponents(false)
-                .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
-                .withBuildResultFolders(npmFolder, npmFolder);
-
-        Assert.assertEquals(
-                new File(userDir, "my_custom_sources_folder").getAbsolutePath(),
-                options.getFrontendDirectory().getAbsolutePath());
-
-        new NodeTasks(options).execute();
-        Assert.assertTrue(new File(userDir,
-                "my_custom_sources_folder/generated/flow/" + IMPORTS_NAME)
-                .exists());
     }
 
     private File getFrontendFolder() {

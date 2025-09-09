@@ -36,7 +36,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -71,7 +70,6 @@ public class NodeTasksHillaTest {
     public void setup() throws Exception {
         userDir = temporaryFolder.getRoot().getAbsolutePath();
         System.setProperty(USER_DIR, userDir);
-        System.clearProperty(PARAM_FRONTEND_DIR);
 
         propertiesDir = temporaryFolder.newFolder();
     }
@@ -79,13 +77,11 @@ public class NodeTasksHillaTest {
     @BeforeClass
     public static void setupBeforeClass() {
         globalUserDirValue = System.getProperty(USER_DIR);
-        globalFrontendDirValue = System.getProperty(PARAM_FRONTEND_DIR);
     }
 
     @AfterClass
     public static void tearDownAfterClass() {
         setPropertyIfPresent(USER_DIR, globalUserDirValue);
-        setPropertyIfPresent(PARAM_FRONTEND_DIR, globalFrontendDirValue);
     }
 
     private Options createOptions() {

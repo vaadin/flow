@@ -668,9 +668,7 @@ public class Options implements Serializable {
     public File getFrontendDirectory() {
         if (frontendDirectory == null && npmFolder != null) {
             // Use default if not specified
-            return new File(npmFolder,
-                    System.getProperty(FrontendUtils.PARAM_FRONTEND_DIR,
-                            FrontendUtils.DEFAULT_FRONTEND_DIR));
+            return new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR);
         }
         return frontendDirectory;
     }

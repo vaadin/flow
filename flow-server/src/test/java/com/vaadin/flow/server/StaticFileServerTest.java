@@ -79,7 +79,6 @@ import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 @NotThreadSafe
 public class StaticFileServerTest implements Serializable {
@@ -1227,8 +1226,6 @@ public class StaticFileServerTest implements Serializable {
         Mockito.when(configuration.getProjectFolder())
                 .thenReturn(projectRootFolder);
         Mockito.when(configuration.getBuildFolder()).thenReturn("target");
-        Mockito.when(configuration.getStringProperty(PARAM_FRONTEND_DIR,
-                DEFAULT_FRONTEND_DIR)).thenReturn(DEFAULT_FRONTEND_DIR);
 
         setupRequestURI("", "", "/VAADIN/themes/my-theme/styles.css");
         Assert.assertTrue(fileServer.serveStaticResource(request, response));

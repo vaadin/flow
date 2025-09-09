@@ -43,9 +43,7 @@ public interface AbstractConfiguration extends Serializable {
     boolean isProductionMode();
 
     default File getFrontendFolder() {
-        String frontendFolderPath = getStringProperty(
-                FrontendUtils.PARAM_FRONTEND_DIR,
-                FrontendUtils.DEFAULT_FRONTEND_DIR);
+        String frontendFolderPath = FrontendUtils.DEFAULT_FRONTEND_DIR;
 
         File frontend = new File(frontendFolderPath);
         if (!frontend.isAbsolute()) {
