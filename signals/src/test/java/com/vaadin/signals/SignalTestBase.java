@@ -15,6 +15,10 @@
  */
 package com.vaadin.signals;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
@@ -22,6 +26,7 @@ import java.util.concurrent.Executor;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 /**
  * Base class for setting up the environment for testing high-level signal
@@ -31,6 +36,8 @@ public class SignalTestBase {
     private static final ThreadLocal<Executor> currentResultNotifier = new ThreadLocal<Executor>();
     private static final ThreadLocal<Executor> currentEffectDispatcher = new ThreadLocal<Executor>();
     private static final ThreadLocal<Executor> currentFallbackEffectDispatcher = new ThreadLocal<Executor>();
+
+    private final List<Throwable> uncaughtExceptions = new ArrayList<>();
 
     protected class TestExecutor implements Executor {
         private final ArrayList<Runnable> tasks = new ArrayList<>();
@@ -114,8 +121,30 @@ public class SignalTestBase {
         return dispatcher;
     }
 
+    protected void assertUncaughtException(RuntimeException exception) {
+        assertFalse(uncaughtExceptions.isEmpty());
+
+        int lastIndex = uncaughtExceptions.size() - 1;
+        assertSame(exception, uncaughtExceptions.get(lastIndex));
+
+        uncaughtExceptions.remove(lastIndex);
+    }
+
+    @BeforeEach
+    void setupExceptionHandler() {
+        Thread.currentThread()
+                .setUncaughtExceptionHandler((thread, throwable) -> {
+                    uncaughtExceptions.add(throwable);
+                });
+    }
+
     @AfterEach
     void clear() {
+        Thread.currentThread().setUncaughtExceptionHandler(null);
+
+        assertEquals(List.of(), uncaughtExceptions,
+                "Exceptions passed to the uncaught exception handler have not been asserted");
+
         currentResultNotifier.remove();
         currentEffectDispatcher.remove();
         currentFallbackEffectDispatcher.remove();
