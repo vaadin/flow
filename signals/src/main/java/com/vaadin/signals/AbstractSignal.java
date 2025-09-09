@@ -399,7 +399,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
                      * Run the listener right away if there's already a change.
                      */
                     if (hasChanges()) {
-                        boolean listenToNext = listener.invoke();
+                        boolean listenToNext = listener.invoke(true);
                         /*
                          * If the listener is no longer interested in changes
                          * after an initial invocation, then return without
@@ -412,7 +412,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
                         }
                     }
 
-                    return tree.observeNextChange(id(), () -> {
+                    return tree.observeNextChange(id(), immediate -> {
                         /*
                          * Only invoke the listener if the tree change is
                          * relevant in the context of this usage instance
@@ -422,7 +422,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
                              * Run listener and let it decide if we should keep
                              * listening to the tree
                              */
-                            return listener.invoke();
+                            return listener.invoke(immediate);
                         } else {
                             /*
                              * Keep listening to the tree since the listener
