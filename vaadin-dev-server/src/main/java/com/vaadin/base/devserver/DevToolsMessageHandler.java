@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Handles dev tools messages from the client.

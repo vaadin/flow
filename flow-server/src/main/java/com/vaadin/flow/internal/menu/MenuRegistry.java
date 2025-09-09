@@ -35,11 +35,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.BeforeEnterListener;
@@ -396,9 +398,13 @@ public class MenuRegistry {
         if (viewsJsonAsResource != null) {
             try (InputStream source = viewsJsonAsResource.openStream()) {
                 if (source != null) {
-                    ObjectMapper mapper = new ObjectMapper().configure(
+                    ObjectMapper mapper = JsonMapper.builder().configure(
                             DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                            false);
+                            false)
+                            .configure(
+                                    DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
+                                    false)
+                            .build();
                     return mapper.readValue(source, new TypeReference<>() {
                     });
                 }
@@ -406,6 +412,10 @@ public class MenuRegistry {
                 LoggerFactory.getLogger(MenuRegistry.class).warn(
                         "Failed load {} from {}", FILE_ROUTES_JSON_NAME,
                         viewsJsonAsResource.getPath(), e);
+            } catch (JacksonException je) {
+                LoggerFactory.getLogger(MenuRegistry.class).warn(
+                        "Failed read {} from {}", FILE_ROUTES_JSON_NAME,
+                        viewsJsonAsResource.getPath(), je);
             }
         } else {
             LoggerFactory.getLogger(MenuRegistry.class).debug(

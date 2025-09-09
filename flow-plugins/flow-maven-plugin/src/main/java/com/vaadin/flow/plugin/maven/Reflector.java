@@ -38,8 +38,9 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
@@ -599,13 +600,13 @@ public final class Reflector {
         String json;
         try {
             json = mapper.writeValueAsString(source);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Cannot encode "
                     + targetClass.getName() + " object to JSON", e);
         }
         try {
             return mapper.readValue(json, targetClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Cannot decode JSON to "
                     + targetClass.getName() + " object", e);
         }
