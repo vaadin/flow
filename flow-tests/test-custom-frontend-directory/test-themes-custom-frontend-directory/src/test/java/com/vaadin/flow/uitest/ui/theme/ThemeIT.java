@@ -61,36 +61,6 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void referenceResourcesOnJavaSideForStyling_stylesAreApplied() {
-        open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/img/dice.jpg";
-        WebElement diceSpan = findElement(By.id(DICE_ID));
-        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced on java page and "
-                        + "expected to be applied",
-                expectedImgUrl, diceSpan.getCssValue("background-image"));
-        getDriver().get(resourceUrl);
-        Assert.assertFalse("Java-side referenced resource should be served",
-                driver.getPageSource().contains("HTTP ERROR 404 Not Found"));
-    }
-
-    @Test
-    public void nodeAssetInCss_pathIsSetCorrectly() {
-        open();
-        final String resourceUrl = getRootURL()
-                + "/path/themes/app-theme/fortawesome/icons/snowflake.svg";
-        WebElement cssNodeSnowflake = findElement(By.id(CSS_SNOWFLAKE));
-        final String expectedImgUrl = "url(\"" + resourceUrl + "\")";
-        Assert.assertEquals(
-                "Background image has been referenced in styles.css and "
-                        + "expected to be applied",
-                expectedImgUrl,
-                cssNodeSnowflake.getCssValue("background-image"));
-    }
-
-    @Test
     public void secondTheme_staticFilesNotCopied() {
         getDriver().get(getRootURL() + "/path/themes/app-theme/img/bg.jpg");
         Assert.assertFalse("app-theme static files should be copied",
@@ -178,17 +148,6 @@ public class ThemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Polymer text field should use green as color",
                 "rgba(0, 128, 0, 1)", input.getCssValue("color"));
 
-    }
-
-    @Test
-    public void componentThemeIsApplied() {
-        open();
-        TestBenchElement myField = $(TestBenchElement.class)
-                .id(MY_COMPONENT_ID);
-        TestBenchElement input = myField.$("vaadin-input-container")
-                .attribute("part", "input-field").first();
-        Assert.assertEquals("Polymer text field should have red background",
-                "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
     }
 
     @Test

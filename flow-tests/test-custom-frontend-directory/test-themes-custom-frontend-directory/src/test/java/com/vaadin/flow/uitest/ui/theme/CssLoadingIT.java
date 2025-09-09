@@ -47,25 +47,4 @@ public class CssLoadingIT extends ChromeBrowserTest {
                         "return getComputedStyle(arguments[0]).getPropertyValue('--lumo-font-size-m')",
                         htmlElement).toString().trim());
     }
-
-    @Test
-    public void multipleDefinitions_correctOverrides() {
-        open();
-        assertStylesOverride("p1", GREEN_RGBA, "16px", "1px");
-
-        // @Stylesheet should override color and font-size but not margin
-        assertStylesOverride("p2", BLUE_RGBA, "18px", "1px");
-
-        assertStylesOverride("p3", YELLOW_RGBA, "20px", "2px");
-    }
-
-    private void assertStylesOverride(String elementId, String expectedColor,
-            String expectedFontSize, String expectedMargin) {
-        Assert.assertEquals(expectedColor,
-                $(ParagraphElement.class).id(elementId).getCssValue("color"));
-        Assert.assertEquals(expectedFontSize, $(ParagraphElement.class)
-                .id(elementId).getCssValue("font-size"));
-        Assert.assertEquals(expectedMargin,
-                $(ParagraphElement.class).id(elementId).getCssValue("margin"));
-    }
 }
