@@ -70,9 +70,9 @@ public class ExecuteJsPerformanceTest extends ComponentTest.TestDiv {
         // 1];
         // jsParameters[0] = this;
         // System.arraycopy(parameters, 0, jsParameters, 1, parameters.length);
-        Serializable[] wrappedParameters = Arrays.copyOf(parameters,
-                parameters.length + 1);
-        wrappedParameters[parameters.length] = this;
+        // Serializable[] wrappedParameters = Arrays.copyOf(parameters,
+        // parameters.length + 1);
+        // wrappedParameters[parameters.length] = this;
         // Stream<Serializable> wrappedParameters;
         // if (parameters.length == 0) {
         // wrappedParameters = Stream.of(this);
@@ -80,6 +80,14 @@ public class ExecuteJsPerformanceTest extends ComponentTest.TestDiv {
         // wrappedParameters = Stream.concat(Stream.of(parameters),
         // Stream.of(this));
         // }
+        Serializable[] wrappedParameters;
+        if (parameters.length == 0) {
+            wrappedParameters = new Serializable[] { this };
+        } else {
+            wrappedParameters = Arrays.copyOf(parameters,
+                    parameters.length + 1);
+            wrappedParameters[parameters.length] = this;
+        }
         stopwatch.stop();
         return stopwatch.getNanoTime();
     }
