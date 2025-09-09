@@ -3,7 +3,7 @@ package com.vaadin.flow.component;
 import java.io.Serializable;
 import java.util.Locale;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 

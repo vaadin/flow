@@ -4,7 +4,7 @@ import java.io.File;
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import com.sun.net.httpserver.HttpServer;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;

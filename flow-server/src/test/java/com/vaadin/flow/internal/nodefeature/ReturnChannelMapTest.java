@@ -17,7 +17,7 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 

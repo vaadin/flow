@@ -18,7 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.shared.Registration;
 

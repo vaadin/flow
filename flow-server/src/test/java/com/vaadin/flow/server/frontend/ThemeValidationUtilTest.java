@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
 

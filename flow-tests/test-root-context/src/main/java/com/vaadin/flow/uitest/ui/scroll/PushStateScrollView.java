@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.function.BiConsumer;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;

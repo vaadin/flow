@@ -31,10 +31,9 @@ import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -58,10 +57,6 @@ public final class JsonUtils {
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    static {
-        objectMapper.registerModule(new JavaTimeModule());
-    }
 
     /**
      * Collects a stream of JSON values to a JSON array.
@@ -325,7 +320,7 @@ public final class JsonUtils {
 
         try {
             return Json.parse(objectMapper.writeValueAsString(bean));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Error converting bean to JSON", e);
         }
     }
@@ -341,7 +336,7 @@ public final class JsonUtils {
         Objects.requireNonNull(list, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
         try {
             return Json.instance().parse(objectMapper.writeValueAsString(list));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Error converting list to JSON", e);
         }
     }
@@ -357,7 +352,7 @@ public final class JsonUtils {
         Objects.requireNonNull(map, CANNOT_CONVERT_NULL_TO_A_JSON_OBJECT);
         try {
             return Json.instance().parse(objectMapper.writeValueAsString(map));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Error converting map to JSON", e);
         }
     }
@@ -377,7 +372,7 @@ public final class JsonUtils {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.readValue(jsonObject.toJson(), tClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException(
                     "Error converting JsonObject to " + tClass.getName(), e);
         }
@@ -398,7 +393,7 @@ public final class JsonUtils {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.readValue(jsonValue.toJson(), tClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException(
                     "Error converting JsonValue to " + tClass.getName(), e);
         }
@@ -420,7 +415,7 @@ public final class JsonUtils {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.readValue(jsonValue.toJson(), typeReference);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Error converting JsonValue to "
                     + typeReference.getType().getTypeName(), e);
         }
@@ -437,7 +432,7 @@ public final class JsonUtils {
         try {
             return Json.instance()
                     .parse(objectMapper.writeValueAsString(object));
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Error converting to JSON", e);
         }
     }

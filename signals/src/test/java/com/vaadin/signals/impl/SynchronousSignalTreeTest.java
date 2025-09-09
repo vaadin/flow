@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
@@ -214,7 +214,7 @@ public class SynchronousSignalTreeTest {
 
         PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
                 List.of(new SignalCommand.SetCommand(a, Id.ZERO,
-                        new TextNode("text")),
+                        new StringNode("text")),
                         new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
                 Map.of(a, aResult::set, b, bResult::set)));
 
@@ -323,7 +323,7 @@ public class SynchronousSignalTreeTest {
         tree.observeNextChange(Id.ZERO, immediate -> Assertions.fail());
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
-                child, new TextNode("value")));
+                child, new StringNode("value")));
     }
 
     @Test

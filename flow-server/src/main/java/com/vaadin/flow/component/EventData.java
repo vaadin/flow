@@ -38,9 +38,9 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * {@link ComponentEvent} constructor parameter.
  * <p>
  * Supported parameter types are {@link String},
- * {@link elemental.json.JsonValue},
- * {@link com.fasterxml.jackson.databind.JsonNode}, {@link Integer},
- * {@link Double}, {@link Boolean} and their respective primitive types.
+ * {@link elemental.json.JsonValue}, {@link tools.jackson.databind.JsonNode},
+ * {@link Integer}, {@link Double}, {@link Boolean} and their respective
+ * primitive types.
  *
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)

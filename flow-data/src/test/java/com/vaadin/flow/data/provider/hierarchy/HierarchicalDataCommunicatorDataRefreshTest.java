@@ -3,7 +3,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.util.Arrays;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

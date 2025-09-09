@@ -19,9 +19,9 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 import java.io.IOException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -55,7 +55,7 @@ class ProKey {
         json.put(FIELD_KEY, key);
         try {
             return JsonHelpers.getJsonMapper().writeValueAsString(json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             getLogger().debug("Unable to read proKey", e);
         }
         return null;
@@ -126,7 +126,7 @@ class ProKey {
             proKey = new ProKey(json.get(FIELD_NAME).asText(),
                     json.get(FIELD_KEY).asText());
             return proKey;
-        } catch (JsonProcessingException | NullPointerException e) {
+        } catch (JacksonException | NullPointerException e) {
             getLogger().debug("Failed to parse proKey from json file", e);
         }
         return proKey;

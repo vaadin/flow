@@ -17,8 +17,8 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.Iterator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
@@ -84,7 +84,7 @@ public class VirtualChildrenList extends StateNodeNodeList {
         ObjectNode payloadObject = JacksonUtils.createObjectNode();
         payloadObject.put(NodeProperties.TYPE, type);
         if (payload != null) {
-            payloadObject.put(NodeProperties.PAYLOAD, payload);
+            payloadObject.set(NodeProperties.PAYLOAD, payload);
         }
 
         node.getFeature(ElementData.class).setPayload(payloadObject);
