@@ -15,13 +15,14 @@
  */
 package com.vaadin.signals;
 
+import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertSame;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Executor;
+import java.util.function.Predicate;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -121,13 +122,20 @@ public class SignalTestBase {
         return dispatcher;
     }
 
-    protected void assertUncaughtException(RuntimeException exception) {
+    protected void assertUncaughtException(Throwable exception) {
+        assertUncaughtException(lastCaught -> lastCaught == exception);
+    }
+
+    protected void assertUncaughtException(Predicate<Throwable> predicate) {
         assertFalse(uncaughtExceptions.isEmpty());
 
         int lastIndex = uncaughtExceptions.size() - 1;
-        assertSame(exception, uncaughtExceptions.get(lastIndex));
-
-        uncaughtExceptions.remove(lastIndex);
+        Throwable lastUncaught = uncaughtExceptions.get(lastIndex);
+        if (predicate.test(lastUncaught)) {
+            uncaughtExceptions.remove(lastIndex);
+        } else {
+            fail("Last uncaught exception did not pass test: " + lastUncaught);
+        }
     }
 
     @BeforeEach

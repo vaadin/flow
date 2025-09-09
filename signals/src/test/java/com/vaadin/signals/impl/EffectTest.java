@@ -414,12 +414,14 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         ArrayList<String> invocations = new ArrayList<>();
+        Error error = new Error("Expected error");
         Signal.effect(() -> {
             invocations.add(signal.value());
 
-            throw new Error("Expected error");
+            throw error;
         });
         assertEquals(List.of("initial"), invocations);
+        assertUncaughtException(caught -> caught.getCause() == error);
 
         signal.value("update");
         assertEquals(List.of("initial"), invocations);
