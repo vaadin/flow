@@ -44,7 +44,7 @@ import com.vaadin.flow.function.SerializableSupplier;
 class Cache<T> implements Serializable {
     private final RootCache<T> rootCache;
     private final Cache<T> parentCache;
-    private final int parentIndex;
+    private final T parentItem;
     private int size;
 
     private final Map<Object, T> itemIdToItem = new HashMap<>();
@@ -57,26 +57,26 @@ class Cache<T> implements Serializable {
      *
      * @param parentCache
      *            the parent cache, or {@code null} if this is the root cache
-     * @param parentIndex
-     *            the index of this cache in the parent cache
+     * @param parentItem
+     *            the parent item, or {@code null} if this is the root cache
      * @param size
      *            the size of this cache
      */
-    protected Cache(Cache<T> parentCache, int parentIndex, int size) {
+    protected Cache(Cache<T> parentCache, T parentItem, int size) {
         this.rootCache = parentCache != null ? parentCache.rootCache
                 : (RootCache<T>) this;
         this.parentCache = parentCache;
-        this.parentIndex = parentIndex;
+        this.parentItem = parentItem;
         this.size = size;
     }
 
     /**
-     * Gets the item in the parent cache that this cache is associated with.
+     * Gets the parent item this cache is associated with from the parent cache.
      *
-     * @return the parent item or {@code null} if there is no parent cache
+     * @return the parent item or {@code null} if this is the root cache
      */
     public T getParentItem() {
-        return parentCache != null ? parentCache.getItem(parentIndex) : null;
+        return parentItem;
     }
 
     /**
@@ -126,6 +126,18 @@ class Cache<T> implements Serializable {
     public T getItem(int index) {
         var itemId = indexToItemId.get(index);
         return itemIdToItem.get(itemId);
+    }
+
+    /**
+     * Removes the item at the specified index from this cache.
+     *
+     * @param index
+     *            the index of the item to remove
+     */
+    public void removeItem(int index) {
+        var itemId = indexToItemId.remove(index);
+        var item = itemIdToItem.remove(itemId);
+        rootCache.removeItemContext(item);
     }
 
     /**
@@ -220,10 +232,10 @@ class Cache<T> implements Serializable {
      *            a supplier that provides the size of the new sub-cache
      * @return the sub-cache instance
      */
-    public Cache<T> ensureSubCache(int index,
+    public Cache<T> ensureSubCache(int index, T item,
             SerializableSupplier<Integer> sizeSupplier) {
         return indexToCache.computeIfAbsent(index,
-                (_key) -> new Cache<>(this, index, sizeSupplier.get()));
+                (_key) -> new Cache<>(this, item, sizeSupplier.get()));
     }
 
     /**
