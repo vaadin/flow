@@ -242,9 +242,6 @@ public class PwaTestIT extends ChromeDeviceTest {
         // If the mimetype can be guessed from the file name, check consistency
         // with the actual served file
         String expectedMimeType = URLConnection.guessContentTypeFromName(url);
-        if ("text/javascript".equals(expectedMimeType)) {
-            expectedMimeType = "application/javascript";
-        }
         String script = "const mimeType = arguments[0];"
                 + "const resolve = arguments[2];" //
                 + "fetch(arguments[1], {method: 'GET'})" //
@@ -258,7 +255,10 @@ public class PwaTestIT extends ChromeDeviceTest {
         if (expectedMimeType != null) {
             String mimeType = ((String) data.get("mimeType"))
                     .replaceAll(";[ ]?charset=utf-8", "");
-
+            // Jetty is using text/javascript starting from 11.0.14, Vite uses
+            // application/javascript when in dev mode
+            mimeType = mimeType.replace("application/javascript",
+                    "text/javascript");
             Assert.assertEquals(url + " has an unexpected mime type",
                     expectedMimeType, mimeType);
         }
