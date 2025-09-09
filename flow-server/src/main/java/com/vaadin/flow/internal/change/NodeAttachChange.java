@@ -16,7 +16,7 @@
 
 package com.vaadin.flow.internal.change;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.StateNode;

@@ -21,6 +21,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -41,8 +42,9 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
         NativeButton logButton = createJsButton("Log", "logButton",
-                "console.log($0)", JsonUtils.createArray(
-                        Json.create("Hello world"), Json.create(true)));
+                "console.log($0)",
+                JacksonUtils.createArray(JacksonUtils.createNode("Hello world"),
+                        JacksonUtils.createNode(true)));
 
         NativeButton elementAwaitButton = createButton("Element await button",
                 "elementAwaitButton",

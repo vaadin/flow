@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;

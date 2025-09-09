@@ -18,7 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Array update strategy aware class.

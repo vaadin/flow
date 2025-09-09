@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.ByteArrayOutputStream;

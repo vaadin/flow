@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Decoder of RPC method arguments (server-side methods invoked from the

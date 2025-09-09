@@ -20,10 +20,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
 import org.junit.Assert;
@@ -317,7 +317,7 @@ public class DebugWindowConnectionLicenseCheckTest {
         }
 
         private DebugWindowMessage deserializeMessage(String message)
-                throws JsonProcessingException {
+                throws JacksonException {
             JsonNode json = OBJECT_MAPPER.readTree(message);
             String command = json.get("command").textValue();
             JsonNode data = json.get("data");
