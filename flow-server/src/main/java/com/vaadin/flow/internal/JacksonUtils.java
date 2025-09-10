@@ -70,8 +70,8 @@ public final class JacksonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
-    private static final ObjectMapper objectMapper = JsonMapper.builder().enable(
-            JsonReadFeature.ALLOW_SINGLE_QUOTES).build();
+    private static final ObjectMapper objectMapper = JsonMapper.builder()
+            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).build();
 
     public static ObjectMapper getMapper() {
         return objectMapper;
