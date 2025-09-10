@@ -478,7 +478,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             if (result.output.contains("Unsupported class file major version")) {
                 assertContains(
                     result.output,
-                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/com/fasterxml/jackson/"),
+                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/tools/jackson/"),
                     "Expecting plugin execution to fail for version ${unsupportedVersion} " +
                             "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
                             "and it is incompatible with Jackson library used by Flow"
