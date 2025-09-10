@@ -167,7 +167,6 @@ public class WebComponentTest {
                 ArgumentMatchers.any());
         webComponent.setProperty(jsonNodeConfiguration,
                 (ValueNode) JacksonUtils.createNode(true));
-        // JsonValue has a different number of arguments
         verify(element, Mockito.times(5)).executeJs(
                 ArgumentMatchers.anyString(),
                 ArgumentMatchers.any(Serializable[].class));
