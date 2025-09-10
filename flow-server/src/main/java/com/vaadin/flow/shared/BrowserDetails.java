@@ -324,11 +324,36 @@ public class BrowserDetails implements Serializable {
             return;
         }
 
+        if (userAgent.contains("callpod keeper for android")) {
+            String token = "; android ";
+            int startIndex = userAgent.indexOf(token) + token.length();
+            int endIndex = userAgent.indexOf(";", startIndex);
+            String osVersionString = safeSubstring(userAgent, startIndex,
+                    endIndex);
+            String[] parts = osVersionString.split("\\.");
+            parseOsVersion(parts);
+            return;
+        }
+
+        if (userAgent.contains("ddg_android/")) {
+            int startIndex = userAgent.indexOf("ddg_android/");
+            String osVersionString = safeSubstring(userAgent,
+                    startIndex + "ddg_android/".length(),
+                    userAgent.indexOf(' ', startIndex));
+            String[] parts = osVersionString.split("\\.");
+            parseOsVersion(parts);
+            return;
+        }
+
         String osVersionString = safeSubstring(userAgent,
                 userAgent.indexOf("android ") + "android ".length(),
                 userAgent.length());
-        osVersionString = safeSubstring(osVersionString, 0,
-                osVersionString.indexOf(";"));
+        int semicolonIndex = osVersionString.indexOf(";");
+        int bracketIndex = osVersionString.indexOf(")");
+        int endIndex = semicolonIndex != -1 && semicolonIndex < bracketIndex
+                ? semicolonIndex
+                : bracketIndex;
+        osVersionString = safeSubstring(osVersionString, 0, endIndex);
         String[] parts = osVersionString.split("\\.");
         parseOsVersion(parts);
     }
