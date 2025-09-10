@@ -703,9 +703,8 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Creates and configures a default instance of {@link ObjectMapper}. The
-     * configured {@link ObjectMapper} includes the registration of the
-     * {@link JavaTimeModule} to handle serialization and deserialization of
-     * Java time API objects.
+     * configured {@link ObjectMapper} handle serialization and deserialization
+     * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
      */
