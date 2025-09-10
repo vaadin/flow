@@ -32,6 +32,7 @@ import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -72,7 +73,8 @@ public final class JacksonUtils {
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     static {
-        objectMapper.registerModule(new JavaTimeModule());
+        objectMapper.registerModule(new JavaTimeModule())
+                .enable(JsonParser.Feature.ALLOW_SINGLE_QUOTES);
     }
 
     public static ObjectMapper getMapper() {

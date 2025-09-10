@@ -91,7 +91,7 @@ public class HistoryTest {
 
     @Test
     public void pushState_locationWithQueryParameters_queryParametersRetained() {
-        history.pushState(JacksonUtils.readTree("{\"foo\":\"bar\"}"),
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
@@ -101,7 +101,7 @@ public class HistoryTest {
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
-        history.pushState(JacksonUtils.readTree("{\"foo\":\"bar\"}"),
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
@@ -181,7 +181,7 @@ public class HistoryTest {
     @Test
     public void pushState_locationWithQueryParameters_queryParametersRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
-        history.pushState(JacksonUtils.readTree("{\"foo\":\"bar\"}"),
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
@@ -191,7 +191,7 @@ public class HistoryTest {
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
-        history.pushState(JacksonUtils.readTree("{\"foo\":\"bar\"}"),
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
                 "context/view/?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
