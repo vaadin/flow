@@ -16,7 +16,10 @@
 
 package com.vaadin.flow.internal.change;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
@@ -58,8 +61,8 @@ public abstract class NodeFeatureChange extends NodeChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_FEATURE,
-                Json.create(NodeFeatureRegistry.getId(feature)));
+                JacksonUtils.createNode(NodeFeatureRegistry.getId(feature)));
     }
 }

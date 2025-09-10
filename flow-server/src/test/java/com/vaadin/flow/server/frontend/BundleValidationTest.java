@@ -1472,7 +1472,8 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.css",
+                            "@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1494,7 +1495,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1517,13 +1518,11 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub(
-                """
-                        {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
-                        }
-                        """,
-                "my-theme");
+        createProjectThemeJsonStub("""
+                {
+                  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
+                }
+                """, "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1537,7 +1536,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
