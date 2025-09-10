@@ -3,9 +3,7 @@ package com.vaadin.flow.spring.security;
 import java.util.List;
 import java.util.Map;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,7 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.TestingAuthenticationProvider;
@@ -58,6 +55,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
@@ -85,6 +83,9 @@ class VaadinSecurityConfigurerTest {
     @Autowired
     private ObjectPostProcessor<Object> postProcessor;
 
+    @Autowired
+    private PathPatternRequestMatcher.Builder requestMatcherBuilder;
+
     @MockitoBean
     private ClientRegistrationRepository clientRegistrationRepository;
 
@@ -106,7 +107,9 @@ class VaadinSecurityConfigurerTest {
         var authManagerBuilder = new AuthenticationManagerBuilder(postProcessor)
                 .authenticationProvider(new TestingAuthenticationProvider());
         http = new HttpSecurity(postProcessor, authManagerBuilder,
-                Map.of(ApplicationContext.class, applicationContext));
+                Map.of(ApplicationContext.class, applicationContext,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         configurer = VaadinSecurityConfigurer.vaadin();
     }
 
