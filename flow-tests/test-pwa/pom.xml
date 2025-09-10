@@ -35,6 +35,24 @@
 
     <build>
         <plugins>
+            <!--
+                Since module has many pom files for Vite and Webpack
+                we need to clean the target before each run to prevent
+                unexpected feature-flags file in classpath
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-clean-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>clean-before-run</id>
+                        <goals>
+                            <goal>clean</goal>
+                        </goals>
+                        <phase>initialize</phase>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
