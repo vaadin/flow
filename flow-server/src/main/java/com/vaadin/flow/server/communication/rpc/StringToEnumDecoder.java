@@ -24,7 +24,7 @@ import com.fasterxml.jackson.databind.node.JsonNodeType;
  * <p>
  * This decoder is applicable to any {@link JsonNode} which is
  * {@link com.fasterxml.jackson.databind.node.TextNode} and any {@link Enum}
- * sublcass
+ * subclass
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
