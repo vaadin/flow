@@ -16,26 +16,183 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Locale;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.ErrorEvent;
+import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.NumberSignal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 public class ComponentEffectTest {
+    @Test
+    public void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            MockUI ui = new MockUI();
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+            });
+
+            assertSame(Thread.currentThread(), currentThread.get());
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            var service = new MockVaadinServletService();
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            session.unlock();
+
+            UI.setCurrent(null);
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+                latch.countDown();
+            });
+
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
+            }
+
+            Assert.assertTrue(
+                    "Expected effect to be executed in Vaadin Executor thread",
+                    currentThread.get().getName()
+                            .startsWith("VaadinTaskExecutor-thread-"));
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            var service = new MockVaadinServletService();
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            session.unlock();
+
+            VaadinSession.setCurrent(null);
+            UI.setCurrent(null);
+
+            MockUI otherUi = new MockUI();
+            UI.setCurrent(otherUi);
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+                latch.countDown();
+            });
+
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
+            }
+
+            Assert.assertTrue(
+                    "Expected effect to be executed in Vaadin Executor thread",
+                    currentThread.get().getName()
+                            .startsWith("VaadinTaskExecutor-thread-"));
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
+        runWithFeatureFlagEnabled(() -> {
+            var service = new MockVaadinServletService();
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+
+            var events = new ArrayList<ErrorEvent>();
+            session.setErrorHandler(events::add);
+
+            ComponentEffect.effect(ui, () -> {
+                throw new RuntimeException("Expected exception");
+            });
+
+            assertEquals(1, events.size());
+
+            Throwable throwable = events.get(0).getThrowable();
+            assertEquals(RuntimeException.class, throwable.getClass());
+        });
+    }
+
+    @Test
+    public void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
+        runWithFeatureFlagEnabled(() -> {
+            var service = new MockVaadinServletService();
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+
+            var events = new LinkedBlockingQueue<ErrorEvent>();
+            session.setErrorHandler(events::add);
+
+            UI.setCurrent(null);
+            session.unlock();
+
+            ComponentEffect.effect(ui, () -> {
+                throw new RuntimeException("Expected exception");
+            });
+
+            ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
+            assertNotNull(event);
+
+            Throwable throwable = event.getThrowable();
+            assertEquals(RuntimeException.class, throwable.getClass());
+        });
+    }
+
     @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         runWithFeatureFlagEnabled(() -> {
@@ -182,7 +339,12 @@ public class ComponentEffectTest {
         });
     }
 
-    private static void runWithFeatureFlagEnabled(Runnable test) {
+    @FunctionalInterface
+    private interface InterruptableRunnable {
+        void run() throws InterruptedException;
+    }
+
+    private static void runWithFeatureFlagEnabled(InterruptableRunnable test) {
         try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
             FeatureFlags flags = mock(FeatureFlags.class);
             when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
@@ -190,6 +352,8 @@ public class ComponentEffectTest {
             featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
                     .thenReturn(flags);
             test.run();
+        } catch (InterruptedException e) {
+            throw new AssertionError(e);
         } finally {
             VaadinService.getCurrent().destroy();
             CurrentInstance.clearAll();
