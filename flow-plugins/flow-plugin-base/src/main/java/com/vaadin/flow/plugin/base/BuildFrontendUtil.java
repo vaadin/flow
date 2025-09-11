@@ -467,8 +467,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        return FrontendUtils.getFrontendFolder(
-                adapter.npmFolder(), adapter.frontendDirectory());
+        return FrontendUtils.getFrontendFolder(adapter.npmFolder(),
+                adapter.frontendDirectory());
     }
 
     /**
