@@ -90,7 +90,11 @@ public class Effect {
         assert dispatcher != null;
         this.dispatcher = dispatcher;
 
-        dispatcher.execute(this::revalidate);
+        dispatcher.execute(() -> {
+            synchronized (this) {
+                revalidate();
+            }
+        });
     }
 
     private void revalidate() {
