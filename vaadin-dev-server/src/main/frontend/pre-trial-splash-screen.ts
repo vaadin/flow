@@ -518,16 +518,9 @@ class PreTrial extends HTMLElement {
 // Register the custom element
 customElements.define('vaadin-pretrial', PreTrial);
 
-function openNewWindow(url: string): void {
-  const newWindow = window.open(url, '_blank');
-  if (newWindow) {
-    newWindow.opener = null;
-  }
-}
-
 function primaryButtonClickListener(event: CustomEvent) {
   if (event.detail.expired) {
-    openNewWindow('https://vaadin.com/pricing');
+    tryAcquireLicense();
   } else {
     startPreTrial();
   }
