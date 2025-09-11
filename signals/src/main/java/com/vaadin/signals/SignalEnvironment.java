@@ -34,7 +34,7 @@ public abstract class SignalEnvironment {
 
     private static final Executor IMMEDIATE_EXECUTOR = Runnable::run;
 
-    private static final Executor EFFECT_DISPATHCER = command -> resolve(
+    private static final Executor EFFECT_DISPATCHER = command -> resolve(
             SignalEnvironment::getEffectDispatcher, IMMEDIATE_EXECUTOR)
             .execute(command);
 
@@ -123,6 +123,6 @@ public abstract class SignalEnvironment {
      * @return the executor to use, not <code>null</code>
      */
     public static Executor getDefaultEffectDispatcher() {
-        return EFFECT_DISPATHCER;
+        return EFFECT_DISPATCHER;
     }
 }
