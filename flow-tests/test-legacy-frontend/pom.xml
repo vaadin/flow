@@ -45,6 +45,9 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <frontendDirectory>./frontend</frontendDirectory>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.eclipse.jetty.ee10</groupId>
