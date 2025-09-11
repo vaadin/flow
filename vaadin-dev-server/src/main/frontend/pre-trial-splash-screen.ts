@@ -230,39 +230,73 @@ class PreTrial extends HTMLElement {
             Enterprise features
           </span> for 30 more days.
         </p>
-        <p>Access more tools with an extended trial:</p>
+        <p>Continue getting full access to:</p>
         <ul>
           <li>
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <mask id="mask0_119_327" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="3" y="5" width="26" height="22"> 
-                <path d="M29 5.03125H3V26.7368H29V5.03125Z" fill="white"></path> 
-              </mask>
-              <g mask="url(#mask0_119_327)"> 
-                <path d="M28.0155 14.3116L16.5946 5.24073C16.0406 4.9616 15.3778 4.99185 14.8498 5.31223C14.319 5.63123 13.9987 6.20048 13.9987 6.81099V24.9583C13.9987 25.5674 14.319 26.1353 14.8498 26.4557C15.1358 26.629 15.4603 26.717 15.7889 26.717C16.0653 26.717 16.3403 26.6537 16.5946 26.5272L28.0155 17.4535C28.5655 16.9365 29 16.5488 29 15.8819C29 15.215 28.6315 14.8561 28.0155 14.3116Z" fill="#FF707A"></path> 
-                <path d="M17.0155 14.3124L5.59464 5.24146C5.04051 4.96234 4.37913 4.99258 3.85113 5.31296C3.32038 5.63196 3 6.20122 3 6.81172V24.9591C3 25.5682 3.32038 26.1361 3.85113 26.4564C4.13713 26.6297 4.46163 26.7177 4.79026 26.7177C5.06663 26.7177 5.34164 26.6544 5.59601 26.528L17.0168 17.4543C17.5668 16.9373 18.0013 16.5495 18.0013 15.8827C18.0013 15.2158 17.6315 14.8569 17.0155 14.3124Z" fill="#00B4F0"></path> 
-                <path d="M17.0154 14.3121L13.9987 11.9348C13.9987 12.4479 13.9987 15.4576 13.9987 16.0681V18.1301C13.9987 18.7392 13.9987 19.5302 13.9987 19.9047L17.0168 17.454C17.5668 16.9369 18.0013 16.5492 18.0013 15.8823C18.0013 15.2154 17.6314 14.8566 17.0154 14.3121Z" fill="#5748FF"></path> 
-              </g> 
-            </svg>
-            <span>Acceleration Kits</span><span>⋅</span><span>Enterprise integrations for your apps</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+            <path
+              d="M4 21v-5c0-.55.196-1.02.588-1.412A1.926 1.926 0 0 1 6 14h12c.55 0 1.02.196 1.413.588.391.391.587.862.587 1.412v5H4Zm5-8c-1.383 0-2.563-.488-3.537-1.463C4.487 10.563 4 9.383 4 8s.487-2.563 1.463-3.537C6.437 3.487 7.617 3 9 3h6c1.383 0 2.563.487 3.538 1.463C19.512 5.437 20 6.617 20 8s-.488 2.563-1.462 3.537C17.562 12.512 16.383 13 15 13H9Zm-3 6h12v-3H6v3Zm3-8h6c.833 0 1.542-.292 2.125-.875A2.893 2.893 0 0 0 18 8c0-.833-.292-1.542-.875-2.125A2.893 2.893 0 0 0 15 5H9c-.833 0-1.542.292-2.125.875A2.893 2.893 0 0 0 6 8c0 .833.292 1.542.875 2.125A2.893 2.893 0 0 0 9 11Zm0-2c.283 0 .52-.096.713-.287A.968.968 0 0 0 10 8a.968.968 0 0 0-.287-.713A.968.968 0 0 0 9 7a.968.968 0 0 0-.713.287A.968.968 0 0 0 8 8c0 .283.096.52.287.713.192.191.43.287.713.287Zm6 0c.283 0 .52-.096.713-.287A.967.967 0 0 0 16 8a.967.967 0 0 0-.287-.713A.968.968 0 0 0 15 7a.968.968 0 0 0-.713.287A.967.967 0 0 0 14 8c0 .283.096.52.287.713.192.191.43.287.713.287Z"
+              fill="url(#a)"
+            />
+            <defs>
+              <linearGradient
+                id="a"
+                x1="12"
+                y1="3"
+                x2="12"
+                y2="21"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="#1A81FA" />
+                <stop offset="1" stop-color="#8854FC" />
+              </linearGradient>
+            </defs>
+          </svg>
+            <span>Vaadin Copilot</span><span>⋅</span><span>AI-powered assistant for building UIs</span>
           </li>
           <li>
-            <svg width="24" height="24" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g clip-path="url(#clip0_812_113865)"> 
-                <path d="M16.4491 29.6151C23.11 29.6151 28.5096 24.2154 28.5096 17.5546C28.5096 10.8938 23.11 5.49414 16.4491 5.49414C9.78833 5.49414 4.38867 10.8938 4.38867 17.5546C4.38867 24.2154 9.78833 29.6151 16.4491 29.6151Z" stroke="#00B4F0" stroke-width="6"></path> 
-              </g>
-              <g clip-path="url(#clip1_812_113865)"> 
-                <path d="M15.5509 28.1639C8.89004 28.1639 3.49038 22.7643 3.49038 16.1034C3.49038 9.44263 8.89004 4.04297 15.5509 4.04297C22.2117 4.04297 27.6113 9.44263 27.6113 16.1034C27.6113 22.7643 22.2117 28.1639 15.5509 28.1639Z" stroke="#FF707A" stroke-width="6"></path> 
-              </g>
-              <defs> 
-                <clipPath id="clip0_812_113865"> 
-                  <rect width="15.5508" height="31.6544" fill="white" transform="translate(16.4492 1.45117)"></rect> 
-                </clipPath> 
-                <clipPath id="clip1_812_113865"> 
-                  <rect width="15.5508" height="31.6544" fill="white" transform="matrix(-1 0 0 1 15.5508 0)"></rect> 
-                </clipPath> 
-              </defs> 
-            </svg>
-            <span>Control Center</span><span>⋅</span><span>Deploy and manage apps on Kubernetes</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+            <path
+              d="M16 20v-7h4v7h-4Zm-6 0V4h4v16h-4Zm-6 0V9h4v11H4Z"
+              fill="url(#a)"
+            />
+            <defs>
+              <linearGradient
+                id="a"
+                x1="12"
+                y1="4"
+                x2="12"
+                y2="20"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="#1A81FA" />
+                <stop offset="1" stop-color="#8854FC" />
+              </linearGradient>
+            </defs>
+          </svg>
+            <span>Pro components</span><span>⋅</span><span>Charts, Grid Pro, CRUD and more</span>
+          </li>
+          <li>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
+            <path
+              d="M10.95 15.55 16.6 9.9l-1.425-1.425L10.95 12.7l-2.1-2.1-1.425 1.425 3.525 3.525ZM12 22c-2.317-.583-4.23-1.913-5.737-3.988C4.754 15.938 4 13.633 4 11.1V5l8-3 8 3v6.1c0 2.533-.754 4.838-2.262 6.912C16.229 20.087 14.317 21.418 12 22Zm0-2.1c1.733-.55 3.167-1.65 4.3-3.3s1.7-3.483 1.7-5.5V6.375l-6-2.25-6 2.25V11.1c0 2.017.567 3.85 1.7 5.5s2.567 2.75 4.3 3.3Z"
+              fill="url(#a)"
+            />
+            <defs>
+              <linearGradient
+                id="a"
+                x1="12"
+                y1="2"
+                x2="12"
+                y2="22"
+                gradientUnits="userSpaceOnUse"
+              >
+                <stop stop-color="#1A81FA" />
+                <stop offset="1" stop-color="#8854FC" />
+              </linearGradient>
+            </defs></svg
+          >
+            <span>Team features</span><span>⋅</span><span>Acceleration Kits</span>
           </li>
         </ul>
         <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
@@ -350,7 +384,7 @@ class PreTrial extends HTMLElement {
               </linearGradient>
             </defs></svg
           >
-            <span>Enterprise features</span><span>⋅</span><span>Designer, Control Center</span>
+            <span>Team features</span><span>⋅</span><span>Acceleration Kits</span>
           </li>
         </ul>
         <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
