@@ -148,7 +148,12 @@ public class SignalTestBase {
                 currentThread.getThreadGroup());
 
         currentThread.setUncaughtExceptionHandler((thread, throwable) -> {
-            uncaughtExceptions.add(throwable);
+            if (throwable.getCause() instanceof AssertionError ae) {
+                // Fail the test immediately for things asserted by the test
+                throw ae;
+            } else {
+                uncaughtExceptions.add(throwable);
+            }
         });
     }
 
