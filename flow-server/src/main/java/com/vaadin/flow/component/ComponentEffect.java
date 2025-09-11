@@ -17,7 +17,6 @@ package com.vaadin.flow.component;
 
 import java.util.Locale;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
@@ -236,19 +235,20 @@ public final class ComponentEffect {
 
         UI ui = owner.getUI().get();
 
+        Runnable errorHandlingEffectFunction = () -> {
+            try {
+                effectFunction.run();
+            } catch (Exception e) {
+                ui.getSession().getErrorHandler()
+                        .error(new ErrorEvent(e, owner.getElement().getNode()));
+            }
+        };
+
         assert effect == null;
-        effect = new Effect(effectFunction, command -> {
+        effect = new Effect(errorHandlingEffectFunction, command -> {
             if (UI.getCurrent() == ui) {
                 // Run immediately if on the same UI
-                try {
-                    command.run();
-                } catch (Exception e) {
-                    // Wrap to be consistent with the ui.access path
-                    var executionException = new ExecutionException(e);
-
-                    ui.getSession().getErrorHandler().error(new ErrorEvent(
-                            executionException, owner.getElement().getNode()));
-                }
+                command.run();
             } else {
                 SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
                     try {

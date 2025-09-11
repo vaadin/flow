@@ -27,7 +27,6 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -162,9 +161,7 @@ public class ComponentEffectTest {
             assertEquals(1, events.size());
 
             Throwable throwable = events.get(0).getThrowable();
-            assertEquals(ExecutionException.class, throwable.getClass());
-            assertEquals(RuntimeException.class,
-                    throwable.getCause().getClass());
+            assertEquals(RuntimeException.class, throwable.getClass());
         });
     }
 
@@ -192,9 +189,7 @@ public class ComponentEffectTest {
             assertNotNull(event);
 
             Throwable throwable = event.getThrowable();
-            assertEquals(ExecutionException.class, throwable.getClass());
-            assertEquals(RuntimeException.class,
-                    throwable.getCause().getClass());
+            assertEquals(RuntimeException.class, throwable.getClass());
         });
     }
 
