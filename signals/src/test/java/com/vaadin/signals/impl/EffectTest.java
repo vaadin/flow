@@ -386,4 +386,61 @@ public class EffectTest extends SignalTestBase {
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
     }
+
+    @Test
+    void exceptionHandling_effectThrowsException_effectRemainsFunctional() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        RuntimeException exception = new RuntimeException("Expected exception");
+
+        ArrayList<String> invocations = new ArrayList<>();
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+            throw exception;
+        });
+        assertUncaughtException(exception);
+
+        signal.value("update");
+
+        assertUncaughtException(exception);
+        assertEquals(List.of("initial", "update"), invocations);
+    }
+
+    @Test
+    void exceptionHandling_effectThrowsException_otherEffectsWork() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        RuntimeException exception = new RuntimeException("Expected exception");
+        Signal.effect(() -> {
+            throw exception;
+        });
+
+        assertUncaughtException(exception);
+
+        ArrayList<String> invocations = new ArrayList<>();
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+        });
+
+        signal.value("update");
+        assertEquals(List.of("initial", "update"), invocations);
+    }
+
+    @Test
+    void exceptionHandling_effectThrowsError_effectClosed() {
+        ValueSignal<String> signal = new ValueSignal<>("initial");
+
+        ArrayList<String> invocations = new ArrayList<>();
+        Error error = new Error("Expected error");
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+
+            throw error;
+        });
+        assertEquals(List.of("initial"), invocations);
+        assertUncaughtException(caught -> caught.getCause() == error);
+
+        signal.value("update");
+        assertEquals(List.of("initial"), invocations);
+    }
 }

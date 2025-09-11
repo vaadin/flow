@@ -16,6 +16,7 @@
 package com.vaadin.signals.impl;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -303,6 +304,34 @@ public class ComputedSignalTest extends SignalTestBase {
 
         assertEquals(6, doubled.value());
         assertEquals(3, count.intValue());
+    }
+
+    @Test
+    void exceptionHandling_callbackThrows_rethrowWhenReading() {
+        ValueSignal<Boolean> shouldThrow = new ValueSignal<>(false);
+
+        AtomicInteger count = new AtomicInteger();
+        Signal<Boolean> computed = Signal.computed(() -> {
+            count.incrementAndGet();
+            if (shouldThrow.value()) {
+                throw new RuntimeException("Expected exception");
+            } else {
+                return shouldThrow.value();
+            }
+        });
+        assertFalse(computed.value());
+        assertEquals(1, count.get());
+
+        shouldThrow.value(true);
+        assertThrows(RuntimeException.class, () -> computed.value());
+        assertEquals(2, count.get());
+
+        assertThrows(RuntimeException.class, () -> computed.value());
+        assertEquals(2, count.get(), "Exception should be cached");
+
+        shouldThrow.value(false);
+        assertFalse(computed.value());
+        assertEquals(3, count.get());
     }
 
     private static boolean waitForGarbageCollection(WeakReference<?> ref) {

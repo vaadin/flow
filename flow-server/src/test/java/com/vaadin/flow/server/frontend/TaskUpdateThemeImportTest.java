@@ -468,8 +468,9 @@ public class TaskUpdateThemeImportTest {
         taskUpdateThemeImport.execute();
 
         Mockito.verify(logger, Mockito.atLeastOnce()).warn(
-                "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be used.",
+                "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}",
                 CUSTOM_THEME_NAME,
-                FeatureFlags.COMPONENT_STYLE_INJECTION.getId());
+                FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
+                "vaadin-button.css");
     }
 }

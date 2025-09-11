@@ -20,17 +20,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Change describing an add operation in a {@link NodeList list} node feature.
@@ -106,26 +105,27 @@ public class ListAddChange<T extends Serializable>
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_SPLICE);
 
         super.populateJson(json, constantPool);
 
         json.put(JsonConstants.CHANGE_SPLICE_INDEX, getIndex());
 
-        Function<Object, JsonValue> mapper;
+        Function<Object, JsonNode> mapper;
         String addKey;
         if (nodeValues) {
             addKey = JsonConstants.CHANGE_SPLICE_ADD_NODES;
-            mapper = item -> Json.create(((StateNode) item).getId());
+            mapper = item -> JacksonUtils
+                    .createNode(((StateNode) item).getId());
         } else {
             addKey = JsonConstants.CHANGE_SPLICE_ADD;
-            mapper = item -> JsonCodec.encodeWithConstantPool(item,
+            mapper = item -> JacksonCodec.encodeWithConstantPool(item,
                     constantPool);
         }
 
-        JsonArray newItemsJson = newItems.stream().map(mapper)
-                .collect(JsonUtils.asArray());
+        ArrayNode newItemsJson = newItems.stream().map(mapper)
+                .collect(JacksonUtils.asArray());
         json.put(addKey, newItemsJson);
     }
 

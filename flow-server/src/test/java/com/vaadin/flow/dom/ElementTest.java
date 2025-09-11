@@ -29,6 +29,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -43,7 +46,6 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -62,10 +64,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 @NotThreadSafe
 public class ElementTest extends AbstractNodeTest {
@@ -449,7 +447,7 @@ public class ElementTest extends AbstractNodeTest {
                 Double.valueOf(143534123423.243e23));
         assertPropertyString("42", Double.valueOf(42));
 
-        assertPropertyString(null, Json.createNull());
+        assertPropertyString(null, JacksonUtils.nullNode());
         assertPropertyString("{}", JacksonUtils.createObjectNode());
     }
 
@@ -473,9 +471,9 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyBoolean(false, Double.valueOf(0));
         assertPropertyBoolean(false, Double.valueOf(Double.NaN));
 
-        assertPropertyBoolean(false, Json.createNull());
-        assertPropertyBoolean(false, Json.create(false));
-        assertPropertyBoolean(true, Json.create(true));
+        assertPropertyBoolean(false, JacksonUtils.nullNode());
+        assertPropertyBoolean(false, JacksonUtils.createNode(false));
+        assertPropertyBoolean(true, JacksonUtils.createNode(true));
         assertPropertyBoolean(true, JacksonUtils.createObjectNode());
     }
 
@@ -506,11 +504,11 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyDouble(1, Boolean.TRUE);
         assertPropertyDouble(0, Boolean.FALSE);
 
-        assertPropertyDouble(.1, Json.create(.1));
-        assertPropertyDouble(1, Json.create(true));
-        assertPropertyDouble(0, Json.create(false));
-        assertPropertyDouble(.1, Json.create(".1"));
-        assertPropertyDouble(Double.NaN, Json.create("foo"));
+        assertPropertyDouble(.1, JacksonUtils.createNode(.1));
+        assertPropertyDouble(1, JacksonUtils.createNode(true));
+        assertPropertyDouble(0, JacksonUtils.createNode(false));
+        assertPropertyDouble(.1, JacksonUtils.createNode(".1"));
+        assertPropertyDouble(Double.NaN, JacksonUtils.createNode("foo"));
         assertPropertyDouble(Double.NaN, JacksonUtils.createObjectNode());
     }
 
@@ -544,12 +542,12 @@ public class ElementTest extends AbstractNodeTest {
         assertPropertyInt(1, Boolean.TRUE);
         assertPropertyInt(0, Boolean.FALSE);
 
-        assertPropertyInt(1, Json.create(1));
-        assertPropertyInt(1, Json.create(1.9));
-        assertPropertyInt(1, Json.create(true));
-        assertPropertyInt(0, Json.create(false));
-        assertPropertyInt(1, Json.create("1"));
-        assertPropertyInt(0, Json.create("foo"));
+        assertPropertyInt(1, JacksonUtils.createNode(1));
+        assertPropertyInt(1, JacksonUtils.createNode(1.9));
+        assertPropertyInt(1, JacksonUtils.createNode(true));
+        assertPropertyInt(0, JacksonUtils.createNode(false));
+        assertPropertyInt(1, JacksonUtils.createNode("1"));
+        assertPropertyInt(0, JacksonUtils.createNode("foo"));
         assertPropertyInt(0, JacksonUtils.createObjectNode());
     }
 
@@ -626,11 +624,11 @@ public class ElementTest extends AbstractNodeTest {
                 element.getPropertyRaw("p").getClass());
 
         element.setPropertyBean("p", new SimpleBean());
-        JsonObject json = (JsonObject) element.getPropertyRaw("p");
-        Assert.assertEquals("value", json.getString("string"));
-        Assert.assertEquals(1.0, json.getNumber("number"), 0.0);
-        Assert.assertEquals(2.3, json.getNumber("flt"), 0.0);
-        Assert.assertEquals(4.56, json.getNumber("dbl"), 0.0);
+        ObjectNode json = (ObjectNode) element.getPropertyRaw("p");
+        Assert.assertEquals("value", json.get("string").asText());
+        Assert.assertEquals(1.0, json.get("number").doubleValue(), 0.0);
+        Assert.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
+        Assert.assertEquals(4.56, json.get("dbl").doubleValue(), 0.0);
 
         List<SimpleBean> list = new ArrayList<>();
         SimpleBean bean1 = new SimpleBean();
@@ -640,21 +638,19 @@ public class ElementTest extends AbstractNodeTest {
         list.add(bean1);
         list.add(bean2);
         element.setPropertyList("p", list);
-        JsonArray jsonArray = (JsonArray) element.getPropertyRaw("p");
-        Assert.assertEquals("bean1",
-                jsonArray.getObject(0).getString("string"));
-        Assert.assertEquals("bean2",
-                jsonArray.getObject(1).getString("string"));
+        ArrayNode jsonArray = (ArrayNode) element.getPropertyRaw("p");
+        Assert.assertEquals("bean1", jsonArray.get(0).get("string").asText());
+        Assert.assertEquals("bean2", jsonArray.get(1).get("string").asText());
 
         Map<String, SimpleBean> map = new HashMap<>();
         map.put("one", bean1);
         map.put("two", bean2);
         element.setPropertyMap("p", map);
-        JsonObject jsonObject = (JsonObject) element.getPropertyRaw("p");
+        JsonNode jsonObject = (JsonNode) element.getPropertyRaw("p");
         Assert.assertEquals("bean1",
-                jsonObject.getObject("one").getString("string"));
+                jsonObject.get("one").get("string").asText());
         Assert.assertEquals("bean2",
-                jsonObject.getObject("two").getString("string"));
+                jsonObject.get("two").get("string").asText());
     }
 
     @Test
@@ -694,25 +690,26 @@ public class ElementTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
 
         element.setPropertyBean("bean", bean);
-        JsonObject json = (JsonObject) element.getPropertyRaw("bean");
+        JsonNode json = (JsonNode) element.getPropertyRaw("bean");
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
-                        json.getArray("localTime")));
+                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                        json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26),
-                        json.getArray("localDate")));
+                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                        json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55),
-                        json.getArray("localDateTime")));
+                JacksonUtils.jsonEquals(
+                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.getNumber("zonedDateTime"), 0);
+                json.get("zonedDateTime").intValue(), 0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.getNumber("sqlDate"), 0);
+                bean.sqlDate.getTime(), json.get("sqlDate").longValue(), 0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.getNumber("date"), 0);
-        Assert.assertEquals(10.0, json.getNumber("duration"), 0);
+                bean.date.getTime(), json.get("date").longValue(), 0);
+        Assert.assertEquals(10.0, json.get("duration").doubleValue(), 0);
     }
 
     private static Element createPropertyAssertElement(Object value) {
@@ -723,8 +720,8 @@ public class ElementTest extends AbstractNodeTest {
                     "Double is the only accepted numeric type");
         }
 
-        if (value instanceof JsonValue) {
-            element.setPropertyJson("property", (JsonValue) value);
+        if (value instanceof BaseJsonNode) {
+            element.setPropertyJson("property", (BaseJsonNode) value);
         } else if (value instanceof Serializable) {
             BasicElementStateProvider.get().setProperty(element.getNode(),
                     "property", (Serializable) value, true);
@@ -2630,9 +2627,9 @@ public class ElementTest extends AbstractNodeTest {
 
     }
 
-    private static JsonArray createNumberArray(double... items) {
-        return DoubleStream.of(items).mapToObj(Json::create)
-                .collect(JsonUtils.asArray());
+    private static ArrayNode createNumberArray(double... items) {
+        return DoubleStream.of(items).mapToObj(JacksonUtils::createNode)
+                .collect(JacksonUtils.asArray());
     }
 
 }

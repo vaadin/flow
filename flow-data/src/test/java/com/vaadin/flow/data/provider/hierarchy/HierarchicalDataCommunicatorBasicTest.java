@@ -6,14 +6,12 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
-import com.vaadin.flow.data.provider.DataGenerator;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.ListDataProvider;
 import com.vaadin.flow.data.provider.QuerySortOrder;
@@ -21,7 +19,6 @@ import com.vaadin.flow.data.provider.QuerySortOrderBuilder;
 import com.vaadin.flow.data.provider.SortDirection;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableComparator;
-import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializablePredicate;
 
 public class HierarchicalDataCommunicatorBasicTest
@@ -175,13 +172,14 @@ public class HierarchicalDataCommunicatorBasicTest
     }
 
     @Test
-    public void getDepth_returnsDepthForCachedItemsAfterTheyAreLoaded() {
+    public void getDepth_returnsDepthForViewportItems() {
         populateTreeData(treeData, 100, 1, 1);
         dataCommunicator.setDataProvider(treeDataProvider, null);
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
         dataCommunicator.setViewportRange(0, 4);
 
+        // Not loaded yet
         Assert.assertEquals(-1, dataCommunicator.getDepth(new Item("Item 0")));
         Assert.assertEquals(-1,
                 dataCommunicator.getDepth(new Item("Item 0-0")));
@@ -191,6 +189,7 @@ public class HierarchicalDataCommunicatorBasicTest
 
         fakeClientCommunication();
 
+        // Loaded
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 0")));
         Assert.assertEquals(1, dataCommunicator.getDepth(new Item("Item 0-0")));
         Assert.assertEquals(2,
@@ -200,7 +199,11 @@ public class HierarchicalDataCommunicatorBasicTest
         dataCommunicator.setViewportRange(4, 4);
         fakeClientCommunication();
 
-        Assert.assertEquals(1, dataCommunicator.getDepth(new Item("Item 0-0")));
+        // Out of new viewport
+        Assert.assertEquals(-1,
+                dataCommunicator.getDepth(new Item("Item 0-0")));
+
+        // Within new viewport
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 5")));
     }
 
@@ -253,55 +256,6 @@ public class HierarchicalDataCommunicatorBasicTest
         Assert.assertEquals(Arrays.asList(new Item("Item 0")),
                 dataCommunicator.collapse(
                         Arrays.asList(new Item("Item 0"), new Item("Item 1"))));
-    }
-
-    @Test
-    public void collapseItems_collapsedChildrenRemovedFromKeyMapper() {
-        populateTreeData(treeData, 100, 2, 2);
-        dataCommunicator.setDataProvider(treeDataProvider, null);
-        dataCommunicator.expand(new Item("Item 0"));
-        dataCommunicator.setViewportRange(0, 6);
-        fakeClientCommunication();
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
-
-        dataCommunicator.collapse(new Item("Item 0"));
-        fakeClientCommunication();
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
-    }
-
-    @Test
-    public void collapseItems_dataGeneratorDestroyDataCalledForCollapsedChildren() {
-        populateTreeData(treeData, 4, 2, 2);
-        dataCommunicator.setDataProvider(treeDataProvider, null);
-        dataCommunicator.expand(
-                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
-
-        var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
-            @Override
-            public void generateData(Item item, ObjectNode json) {
-                // NO-OP
-            }
-        });
-        compositeDataGenerator.addDataGenerator(dataGenerator);
-
-        dataCommunicator.collapse(new Item("Item 0"));
-
-        Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(new Item("Item 0"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-1"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-0"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-1"));
     }
 
     @Test

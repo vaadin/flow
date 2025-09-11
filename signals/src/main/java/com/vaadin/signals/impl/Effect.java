@@ -51,7 +51,22 @@ public class Effect {
      */
     public Effect(Runnable action) {
         assert action != null;
-        this.action = action;
+        this.action = () -> {
+            try {
+                action.run();
+            } catch (Exception e) {
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        e);
+            } catch (Error e) {
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        new Error(
+                                "Uncaught error from effect. The effect will no longer be active.",
+                                e));
+                dispose();
+            }
+        };
 
         revalidate();
     }
@@ -101,4 +116,5 @@ public class Effect {
         action = null;
         dependencies = null;
     }
+
 }
