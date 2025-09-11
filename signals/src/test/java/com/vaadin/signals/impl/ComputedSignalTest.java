@@ -30,6 +30,7 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
@@ -269,7 +270,8 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void unsuppotedOperations_runOperations_throws() {
-        Signal<Object> signal = Signal.computed(() -> null);
+        AbstractSignal<Object> signal = (AbstractSignal<Object>) Signal
+                .computed(() -> null);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peek();
@@ -278,6 +280,30 @@ public class ComputedSignalTest extends SignalTestBase {
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peekConfirmed();
         });
+    }
+
+    @Test
+    void lambda_computesValue_computedNotCached() {
+        ValueSignal<Integer> signal = new ValueSignal<>(1);
+
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<Integer> doubled = () -> {
+            count.incrementAndGet();
+            return signal.value() * 2;
+        };
+
+        assertEquals(2, doubled.value());
+        assertEquals(1, count.intValue());
+
+        assertEquals(2, doubled.value());
+        assertEquals(2, count.intValue());
+
+        signal.value(3);
+        assertEquals(2, count.intValue());
+
+        assertEquals(6, doubled.value());
+        assertEquals(3, count.intValue());
     }
 
     @Test
@@ -302,9 +328,6 @@ public class ComputedSignalTest extends SignalTestBase {
 
         assertThrows(RuntimeException.class, () -> computed.value());
         assertEquals(2, count.get(), "Exception should be cached");
-
-        assertThrows(RuntimeException.class, () -> computed.peek());
-        assertThrows(RuntimeException.class, () -> computed.peekConfirmed());
 
         shouldThrow.value(false);
         assertFalse(computed.value());

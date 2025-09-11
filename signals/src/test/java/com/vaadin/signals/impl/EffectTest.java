@@ -305,6 +305,23 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeTracking_lambdaSignal_changeTracked() {
+        ValueSignal<Integer> signal = new ValueSignal<>(1);
+        Signal<Integer> doubled = () -> signal.value() * 2;
+
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(doubled.value());
+        });
+
+        assertEquals(List.of(2), invocations);
+
+        signal.value(2);
+        assertEquals(List.of(2, 4), invocations);
+    }
+
+    @Test
     void callback_updateSignal_throws() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 
