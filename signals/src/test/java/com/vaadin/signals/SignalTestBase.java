@@ -15,6 +15,7 @@
  */
 package com.vaadin.signals;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -140,10 +141,15 @@ public class SignalTestBase {
 
     @BeforeEach
     void setupExceptionHandler() {
-        Thread.currentThread()
-                .setUncaughtExceptionHandler((thread, throwable) -> {
-                    uncaughtExceptions.add(throwable);
-                });
+        Thread currentThread = Thread.currentThread();
+        assertSame(
+                "Adjustments are needed if a non-standard exception handler is present",
+                currentThread.getUncaughtExceptionHandler(),
+                currentThread.getThreadGroup());
+
+        currentThread.setUncaughtExceptionHandler((thread, throwable) -> {
+            uncaughtExceptions.add(throwable);
+        });
     }
 
     @AfterEach
