@@ -137,7 +137,7 @@ class Cache<T> implements Serializable {
     public void removeItem(int index) {
         var itemId = indexToItemId.remove(index);
         var item = itemIdToItem.remove(itemId);
-        rootCache.removeItemContext(item);
+        rootCache.onItemRemoved(item);
     }
 
     /**
@@ -167,7 +167,7 @@ class Cache<T> implements Serializable {
 
             indexToItemId.put(index, itemId);
             itemIdToItem.put(itemId, item);
-            rootCache.addItemContext(item, this, index);
+            rootCache.onItemAdded(item, this, index);
 
             index++;
         }
@@ -181,7 +181,7 @@ class Cache<T> implements Serializable {
         indexToCache.clear();
 
         indexToItemId.values().forEach(itemId -> {
-            rootCache.removeItemContext(itemIdToItem.get(itemId));
+            rootCache.onItemRemoved(itemIdToItem.get(itemId));
         });
         indexToItemId.clear();
 

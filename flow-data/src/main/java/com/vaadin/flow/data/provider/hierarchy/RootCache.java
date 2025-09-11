@@ -210,12 +210,12 @@ class RootCache<T> extends Cache<T> {
         });
     }
 
-    void addItemContext(T item, Cache<T> cache, int index) {
+    void onItemAdded(T item, Cache<T> cache, int index) {
         Object itemId = getItemId(item);
         itemIdToContext.put(itemId, new ItemContext<>(cache, index));
     }
 
-    void removeItemContext(T item) {
+    void onItemRemoved(T item) {
         Object itemId = getItemId(item);
         itemIdToContext.remove(itemId);
     }
