@@ -363,6 +363,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
                     BuildType.DEVELOPMENT, null,
                     Capabilities.of(Capability.PRE_TRIAL));
         } catch (PreTrialLicenseValidationException e) {
+            DevModeUsageStatistics
+                    .collectEvent("pre-trial/" + product.getName());
             errorMessage = e.getMessage();
             preTrial = e.getPreTrial();
             command = "license-check-nokey";
@@ -395,10 +397,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
             JsonNode data) {
         try {
             PreTrial preTrial = LicenseChecker.startPreTrial();
+            DevModeUsageStatistics.collectEvent("pre-trial/activated");
             send(resource, "license-pretrial-started", preTrial);
         } catch (PreTrialCreationException.Expired ex) {
             send(resource, "license-pretrial-expired", null);
         } catch (Exception ex) {
+            DevModeUsageStatistics.collectEvent("pre-trial/activation-failed");
             send(resource, "license-pretrial-failed", null);
         }
     }
