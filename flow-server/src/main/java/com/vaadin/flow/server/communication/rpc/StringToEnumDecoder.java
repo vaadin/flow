@@ -18,16 +18,13 @@ package com.vaadin.flow.server.communication.rpc;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 
-import elemental.json.JsonString;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
-
 /**
- * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to {@link Enum}
- * subclass type.
+ * Decodes a {@link JsonNode} with {@link JsonNodeType#STRING} type to
+ * {@link Enum} subclass type.
  * <p>
- * This decoder is applicable to any {@link JsonValue} which is
- * {@link JsonString} and any {@link Enum} sublcass
+ * This decoder is applicable to any {@link JsonNode} which is
+ * {@link com.fasterxml.jackson.databind.node.TextNode} and any {@link Enum}
+ * subclass
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

@@ -33,8 +33,6 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
-import elemental.json.JsonObject;
-
 public class DomEventTest {
     @DomEvent("event")
     public static class BareAnnotation extends ComponentEvent<Component> {
@@ -148,10 +146,6 @@ public class DomEventTest {
             Assert.assertEquals(expectedIdentifier,
                     filterSetting.get(i + 1).textValue());
         }
-    }
-
-    private void assertFilter(String expectedFilter,
-            JsonObject filterSettings) {
     }
 
     private <T extends ComponentEvent<Component>> JsonNode getEventSettings(

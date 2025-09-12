@@ -11,9 +11,9 @@ package com.vaadin.flow.templatemodel;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.vaadin.flow.internal.StateNode;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.StateNode;
 
 /**
  * A model type that can convert values between a representation suitable for
@@ -109,7 +109,7 @@ public interface ModelType extends Serializable {
      *
      * @return a JSON representation of this model type, not <code>null</code>
      */
-    JsonValue toJson();
+    JsonNode toJson();
 
     /**
      * Create initial value for the given {@code property} and set it for the

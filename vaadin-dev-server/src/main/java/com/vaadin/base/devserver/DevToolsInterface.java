@@ -17,25 +17,10 @@ package com.vaadin.base.devserver;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
-import elemental.json.JsonObject;
-
 /**
  * For interfacing with the development tools by plugins.
  */
 public interface DevToolsInterface {
-
-    /**
-     * Sends the given message to the client side.
-     *
-     * @param command
-     *            the command to send
-     * @param data
-     *            data, specific to the command
-     */
-    @Deprecated
-    default void send(String command, JsonObject data) {
-        send(command, JacksonUtils.mapElemental(data));
-    }
 
     /**
      * Sends the given message to the client side.

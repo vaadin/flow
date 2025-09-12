@@ -1,5 +1,8 @@
 package com.vaadin.flow.server.dau;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeType;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -13,6 +16,7 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SystemMessagesInfo;
@@ -27,10 +31,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -136,8 +136,8 @@ public class DAUUtilsTest {
 
             // remove JSON wrap
             response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-            JsonObject json = Json.parse(response).getObject("meta")
-                    .getObject("appError");
+            JsonNode json = JacksonUtils.readTree(response).get("meta")
+                    .get("appError");
 
             EnforcementNotificationMessages expectedMessages = EnforcementNotificationMessages.DEFAULT;
             assertJsonErrorProperty("caption", expectedMessages.caption(),
@@ -172,8 +172,8 @@ public class DAUUtilsTest {
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
             response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-            JsonObject json = Json.parse(response).getObject("meta")
-                    .getObject("appError");
+            JsonNode json = JacksonUtils.readTree(response).get("meta")
+                    .get("appError");
 
             assertJsonErrorProperty("caption", expectedMessages.caption(),
                     json);
@@ -239,13 +239,13 @@ public class DAUUtilsTest {
     }
 
     private void assertJsonErrorProperty(String expectedKey,
-            String expectedValue, JsonObject json) {
+            String expectedValue, JsonNode json) {
         if (expectedValue != null) {
             Assert.assertEquals(expectedKey, expectedValue,
-                    json.getString(expectedKey));
+                    json.get(expectedKey).asText());
         } else {
             Assert.assertEquals("expected key " + expectedKey + " to be null",
-                    JsonType.NULL, json.get(expectedKey).getType());
+                    JsonNodeType.NULL, json.get(expectedKey).getNodeType());
         }
 
     }
