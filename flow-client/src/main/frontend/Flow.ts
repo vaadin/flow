@@ -66,6 +66,10 @@ const $wnd = window as any as {
   };
 } & EventTarget;
 
+// In the future could be replaced with RegExp.escape()
+function escapeRegExp(pattern: string) {
+  return pattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 /**
  * Client API for flow UI operations.
  */
@@ -101,7 +105,9 @@ export class Flow {
     this.baseRegex = new RegExp(
       `^${
         // IE11 does not support document.baseURI
-        (document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, '')
+        escapeRegExp(
+          decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
+        )
       }`
     );
     this.appShellTitle = document.title;

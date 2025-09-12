@@ -289,6 +289,8 @@
                 <module>test-pwa-disabled-offline</module>
                 <module>test-pwa-disabled-offline/pom-production.xml</module>
                 <module>test-router-custom-context</module>
+                <module>test-router-custom-context-encoded</module>
+                <module>test-router-custom-context-encoded-prod</module>
                 <module>test-live-reload</module>
                 <module>test-redeployment</module>
 

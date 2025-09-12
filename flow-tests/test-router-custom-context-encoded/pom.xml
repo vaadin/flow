@@ -1,18 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
         <version>23.6-SNAPSHOT</version>
     </parent>
-    <artifactId>test-router-custom-context</artifactId>
-    <name>Flow Router on custom context test</name>
+    <artifactId>test-router-custom-context-encoded</artifactId>
+    <name>Flow Router on custom context with encoded chars test</name>
     <packaging>war</packaging>
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
         <jetty.skip>${maven.test.skip}</jetty.skip>
+        <!--
+            Uses both URL encodable chars (e.g. space => %20) and chars that should be escaped
+            in a regex ($ { *) to verify that the Flow client correctly computes location
+        -->
+        <jettyContextPath>/custom con$t{ext*rou}ter</jettyContextPath>
     </properties>
 
     <dependencies>
@@ -26,6 +32,24 @@
             <artifactId>vaadin-dev-server</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <!--
+            Jetty Maven plugin automatically merges war dependencies with the current archive
+            https://jetty.org/docs/jetty/12.1/programming-guide/maven-jetty/jetty-maven-plugin.html#using-overlaid-wars
+        -->
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-router-custom-context</artifactId>
+            <version>${project.version}</version>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-router-custom-context</artifactId>
+            <version>${project.version}</version>
+            <classifier>tests</classifier>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -35,7 +59,6 @@
             <plugin>
                 <groupId>org.eclipse.jetty</groupId>
                 <artifactId>jetty-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
                 <executions>
                     <!-- start and stop jetty (running our app) when running
                         integration tests -->
@@ -56,7 +79,7 @@
                 </executions>
                 <configuration>
                     <webApp>
-                        <contextPath>/custom-context-router</contextPath>
+                        <contextPath>${jettyContextPath}</contextPath>
                     </webApp>
                 </configuration>
             </plugin>
@@ -64,28 +87,17 @@
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-maven-plugin</artifactId>
             </plugin>
-            <!-- Export classes as jar so it can be used by other modules -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-war-plugin</artifactId>
+                <artifactId>maven-failsafe-plugin</artifactId>
                 <configuration>
-                    <attachClasses>true</attachClasses>
+                    <systemPropertyVariables>
+                        <vaadin.test.jettyContextPath>${jettyContextPath}</vaadin.test.jettyContextPath>
+                    </systemPropertyVariables>
+                    <dependenciesToScan>
+                        <dependency>com.vaadin:test-router-custom-context</dependency>
+                    </dependenciesToScan>
                 </configuration>
-            </plugin>
-            <!-- Export the test-jar so it can be used by other modules -->
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <configuration>
-                    <finalName>${project.artifactId}</finalName>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>test-jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
     </build>
