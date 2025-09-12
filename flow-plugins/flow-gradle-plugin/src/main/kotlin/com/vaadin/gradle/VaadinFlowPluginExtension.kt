@@ -411,7 +411,7 @@ public class PluginEffectiveConfiguration(
     // and GradlePluginAdapter
     public val effectiveFrontendDirectory: Provider<File> =
         npmFolder.zip(frontendDirectory) { npmFolder, frontendDirectory ->
-            FrontendUtils.getLegacyFrontendFolderIfExists(
+            FrontendUtils.getFrontendFolder(
                 npmFolder,
                 frontendDirectory
             )
