@@ -27,6 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -37,14 +38,12 @@ import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
@@ -429,14 +428,14 @@ public class FrontendUtilsTest {
         File linkFolderFile = new File(symbolic, "symbol.txt");
         linkFolderFile.createNewFile();
 
-        final JsonObject packageJson = Json.createObject();
-        packageJson.put(DEPENDENCIES, Json.createObject());
+        final ObjectNode packageJson = JacksonUtils.createObjectNode();
+        packageJson.set(DEPENDENCIES, JacksonUtils.createObjectNode());
 
-        packageJson.getObject(DEPENDENCIES).put("@symbolic/link",
+        ((ObjectNode) packageJson.get(DEPENDENCIES)).put("@symbolic/link",
                 "./" + symbolic.getName());
 
         FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
-                packageJson.toJson(), StandardCharsets.UTF_8);
+                packageJson.toString(), StandardCharsets.UTF_8);
 
         Logger logger = Mockito.spy(LoggerFactory.getLogger(NodeUpdater.class));
         Options options = new MockOptions(npmFolder).withBuildDirectory(TARGET);

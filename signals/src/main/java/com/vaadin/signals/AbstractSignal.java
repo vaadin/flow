@@ -5,10 +5,10 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult;
 import com.vaadin.signals.impl.SignalTree;
@@ -41,7 +41,6 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     private static final ObjectMapper OBJECT_MAPPER;
     static {
         OBJECT_MAPPER = new ObjectMapper();
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
     /**
@@ -510,7 +509,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     protected static <T> T fromJson(JsonNode value, Class<T> targetType) {
         try {
             return OBJECT_MAPPER.treeToValue(value, targetType);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

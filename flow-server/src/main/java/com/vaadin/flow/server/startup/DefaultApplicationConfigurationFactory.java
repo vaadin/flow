@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;

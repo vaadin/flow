@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.shared.Registration;

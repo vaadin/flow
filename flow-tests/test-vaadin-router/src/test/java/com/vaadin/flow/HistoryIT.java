@@ -46,7 +46,7 @@ public class HistoryIT extends ChromeBrowserTest {
         WebElement forwardButton = findElement(By.id("forward"));
         WebElement clearButton = findElement(By.id("clear"));
 
-        stateField.setValue("{'foo':true}");
+        stateField.setValue("{\"foo\":true}");
         locationField.setValue("asdf");
         pushButton.click();
 

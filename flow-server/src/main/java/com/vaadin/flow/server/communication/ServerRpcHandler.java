@@ -30,8 +30,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

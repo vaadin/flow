@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.react;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -27,13 +27,10 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import elemental.json.JsonValue;
 
 /**
  * An abstract implementation of an adapter for integrating with React
@@ -223,9 +220,6 @@ public abstract class ReactAdapterComponent extends Component {
             return JacksonUtils.createNode(doubleValue);
         } else if (rawValue instanceof Boolean booleanValue) {
             return JacksonUtils.createNode(booleanValue);
-        } else if (rawValue instanceof JsonValue jsonValue) {
-            // TODO: remove when elemental dropped
-            return JacksonUtils.mapElemental(jsonValue);
         } else {
             return JacksonUtils.createNode(rawValue.toString());
         }

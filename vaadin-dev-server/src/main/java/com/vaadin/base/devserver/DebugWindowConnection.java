@@ -28,9 +28,9 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,8 +50,6 @@ import com.vaadin.pro.licensechecker.PreTrial;
 import com.vaadin.pro.licensechecker.PreTrialCreationException;
 import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
-
-import elemental.json.JsonObject;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -256,18 +254,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public boolean isLiveReload(AtmosphereResource resource) {
         return getRef(resource) != null;
-    }
-
-    /**
-     * Broadcasts the given message to all connected clients.
-     *
-     * @param msg
-     *            the message to broadcast
-     * @deprecated Use {@link #broadcast(ObjectNode)} instead.
-     */
-    @Deprecated
-    public void broadcast(JsonObject msg) {
-        this.broadcast(JacksonUtils.readTree(msg.toJson()));
     }
 
     /**

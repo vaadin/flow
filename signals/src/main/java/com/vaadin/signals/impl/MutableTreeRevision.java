@@ -32,10 +32,10 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.NumericNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;

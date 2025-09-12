@@ -34,7 +34,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 /**

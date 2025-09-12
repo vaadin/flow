@@ -22,20 +22,17 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.Locale;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-
-import elemental.json.JsonString;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
 
 /**
- * Decodes a {@link JsonValue} with {@link JsonType#STRING} type to
+ * Decodes a {@link JsonNode} with {@link JsonNodeType#STRING} type to
  * {@link Number} subclass type.
  * <p>
- * This decoder is applicable to any {@link JsonValue} which is
- * {@link JsonString} and any primitive type wrapper {@link Number} subclass
- * (like {@link Integer}, {@link Double}, {@link Long}, etc.).
+ * This decoder is applicable to any {@link JsonNode} which is
+ * {@link tools.jackson.databind.node.StringNode} and any primitive type wrapper
+ * {@link Number} subclass (like {@link Integer}, {@link Double}, {@link Long},
+ * etc.).
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

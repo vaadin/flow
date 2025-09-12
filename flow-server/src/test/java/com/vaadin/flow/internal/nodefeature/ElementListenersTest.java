@@ -22,8 +22,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Before;

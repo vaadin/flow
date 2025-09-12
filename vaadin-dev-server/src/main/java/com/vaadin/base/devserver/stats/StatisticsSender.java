@@ -19,9 +19,9 @@ import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -207,7 +207,7 @@ public class StatisticsSender {
         String stringData;
         try {
             stringData = JsonHelpers.getJsonMapper().writeValueAsString(json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             getLogger().debug("Error converting statistics to a string", e);
             return null;
         }

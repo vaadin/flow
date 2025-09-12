@@ -24,16 +24,16 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.MenuData;
 
@@ -111,10 +111,9 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + routeParameters + ", detail=" + detail + '}';
     }
 
-    public static class DetailDeserializer extends JsonDeserializer<String> {
+    public static class DetailDeserializer extends ValueDeserializer<String> {
         @Override
-        public String deserialize(JsonParser p, DeserializationContext ctxt)
-                throws IOException {
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
             if (p.currentToken() == JsonToken.VALUE_NULL) {
                 return null;
             }
@@ -123,16 +122,16 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
         }
     }
 
-    public static class DetailSerializer extends JsonSerializer<String> {
+    public static class DetailSerializer extends ValueSerializer<String> {
         @Override
         public void serialize(String value, JsonGenerator gen,
-                SerializerProvider serializers) throws IOException {
+                SerializationContext serializers) {
             if (value == null) {
                 gen.writeNull();
                 return;
             }
             JsonNode node = JacksonUtils.readTree(value);
-            gen.writeObject(node);
+            gen.writePOJO(node);
         }
     }
 

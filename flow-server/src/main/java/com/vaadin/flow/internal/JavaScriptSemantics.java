@@ -15,11 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import elemental.json.JsonValue;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Helpers for replicating JavaScript semantics in Java.
@@ -54,8 +52,6 @@ public class JavaScriptSemantics {
             return false;
         } else if (value instanceof Boolean) {
             return ((Boolean) value).booleanValue();
-        } else if (value instanceof JsonValue) {
-            return ((JsonValue) value).asBoolean();
         } else if (value instanceof ObjectNode) {
             return ((JsonNode) value).asBoolean(true);
         } else if (value instanceof JsonNode) {
