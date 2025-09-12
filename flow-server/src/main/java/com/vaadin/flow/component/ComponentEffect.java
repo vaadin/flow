@@ -15,13 +15,23 @@
  */
 package com.vaadin.flow.component;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.impl.Effect;
 
 /**
@@ -132,6 +142,153 @@ public final class ComponentEffect {
         return effect(owner, () -> {
             setter.accept(owner, signal.value());
         });
+    }
+
+    /**
+     * Binds {@link ListSignal} to parent component with a component factory.
+     * Parent component mush implement {@link HasComponents} and it must be
+     * subtype of {@link Component}
+     *
+     * @param parent
+     *            Target parent component, must not be <code>null</code>
+     * @param list
+     *            list signal to bind to the parent, must not be
+     *            <code>null</code>
+     * @param childFactory
+     *            factory to create new component, must not be <code>null</code>
+     * @param <T>
+     *            the value type
+     * @param <PARENT>
+     *            the type of the parent
+     */
+    public static <T, PARENT extends Component & HasComponents> void bindChildren(
+            PARENT parent, ListSignal<T> list,
+            SerializableFunction<ValueSignal<T>, Component> childFactory) {
+        Objects.requireNonNull(parent, "Parent component cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child component factory cannot be null");
+        bindChildren(parent, parent.getElement(), list,
+                signalValue -> Optional
+                        .ofNullable(childFactory.apply(signalValue))
+                        .map(Component::getElement).orElse(null));
+    }
+
+    /**
+     * Binds {@link ListSignal} to parent element with an element factory.
+     * Parent component is needed as a Signal effect owner.
+     *
+     * @param parentComponent
+     *            Target parent component as a Signal effect owner, must not be
+     *            <code>null</code>
+     * @param parent
+     *            Target parent element, must not be <code>null</code>
+     * @param list
+     *            list signal to bind to the parent, must not be
+     *            <code>null</code>
+     * @param childFactory
+     *            factory to create new element, must not be <code>null</code>
+     * @param <T>
+     *            the value type
+     */
+    public static <T> void bindChildren(Component parentComponent,
+                                        Element parent, ListSignal<T> list,
+                                        SerializableFunction<ValueSignal<T>, Element> childFactory) {
+        Objects.requireNonNull(parent, "Parent component cannot be null");
+        Objects.requireNonNull(parent, "Parent element cannot be null");
+        Objects.requireNonNull(list, "ListSignal cannot be null");
+        Objects.requireNonNull(childFactory,
+                "Child element factory cannot be null");
+
+        HashMap<ValueSignal<T>, Element> signalToChild = new HashMap<>();
+
+        ComponentEffect.effect(parentComponent, () -> {
+            List<ValueSignal<T>> items = list.value();
+
+            removeNotPresentChildren(signalToChild, items);
+
+            updateChildrenByListSignal(parent, new UpdateByList<>(parent, items,
+                    childFactory, signalToChild));
+        });
+    }
+
+    private static <T> void updateChildrenByListSignal(Element parent,
+                                                       UpdateByList<T> options) {
+        // Cache the children to avoid multiple traversals
+        LinkedList<Element> remainingChildren = options.remainingChildren;
+
+        for (int i = 0; i < options.list.size(); i++) {
+            ValueSignal<T> item = options.list.get(i);
+
+            Element expectedChild = options.getComponent(item);
+            if (remainingChildren.isEmpty()
+                    || expectedChild.getParent() != parent) {
+                parent.insertChild(i, expectedChild);
+                continue;
+            }
+
+            Element actualChild = remainingChildren.removeFirst();
+            if (!actualChild.equals(expectedChild)) {
+                /*
+                 * A mismatch has been encountered and we need to adjust the
+                 * component children to match the expected order. This
+                 * algorithm optimized for cases where only a single item has
+                 * been moved to a new location and accepts that we might do
+                 * redundant operations in other cases.
+                 */
+                if (expectedChild == remainingChildren.peek()) {
+                    // Move actual child to a later position
+
+                    // Remove from current pos. Will be added back later
+                    actualChild.removeFromParent();
+
+                    // Skip next child since that's the expected child
+                    remainingChildren.removeFirst();
+                } else {
+                    // Move expected child from a later position
+                    parent.insertChild(i, expectedChild);
+
+                    // TODO: This is an O(n) operation inside an O(n) loop
+                    remainingChildren.remove(expectedChild);
+
+                    // Restore previous actual child for next round
+                    remainingChildren.addFirst(actualChild);
+                }
+            }
+        }
+    }
+
+    /** Remove all items that are no longer present. */
+    private static <T> void removeNotPresentChildren(
+            HashMap<ValueSignal<T>, Element> signalToChild,
+            List<ValueSignal<T>> items) {
+        var toRemove = new HashSet<>(signalToChild.keySet());
+        items.forEach(toRemove::remove);
+        for (ValueSignal<T> removedItem : toRemove) {
+            Element component = signalToChild.remove(removedItem);
+            component.removeFromParent();
+        }
+    }
+
+    private record UpdateByList<T>(Element parentComponent,
+                                   List<ValueSignal<T>> list,
+                                   SerializableFunction<ValueSignal<T>, Element> childFactory,
+                                   HashMap<ValueSignal<T>, Element> signalToChild,
+                                   LinkedList<Element> remainingChildren) {
+
+        private UpdateByList(Element parentComponent, List<ValueSignal<T>> list,
+                             SerializableFunction<ValueSignal<T>, Element> childFactory,
+                             HashMap<ValueSignal<T>, Element> signalToChild) {
+            this(parentComponent, list, childFactory, signalToChild,
+                    parentComponent.getChildren()
+                            .collect(Collectors.toCollection(LinkedList::new)));
+        }
+
+        /**
+         * Return existing component or generate new by child factory.
+         */
+        private Element getComponent(ValueSignal<T> item) {
+            return signalToChild.computeIfAbsent(item, childFactory);
+        }
     }
 
     private void enableEffect(Component owner) {
