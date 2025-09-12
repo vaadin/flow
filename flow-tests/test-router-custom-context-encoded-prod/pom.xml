@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-tests</artifactId>
-        <version>25.0-SNAPSHOT</version>
+        <version>24.8-SNAPSHOT</version>
     </parent>
     <artifactId>test-router-custom-context-encoded-production</artifactId>
     <name>Flow Router on custom context with encoded chars test (Production Mode)</name>
