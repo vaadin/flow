@@ -15,12 +15,9 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.Locale;
 import java.util.Objects;
-import java.util.stream.Stream;
 
 import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
@@ -35,7 +32,7 @@ import com.vaadin.signals.impl.Effect;
  * {@link Signal#effect(Runnable)}, that is automatically enabled when a
  * component is attached and disabled when the component is detached.
  * Additionally it provides methods to bind signals to component according to a
- * given value setting function and format strings based on signal values.
+ * given value setting function.
  *
  * @since 24.8
  */
@@ -135,97 +132,6 @@ public final class ComponentEffect {
         return effect(owner, () -> {
             setter.accept(owner, signal.value());
         });
-    }
-
-    /**
-     * Formats a string using the values of the provided signals and the given
-     * locale, sets the formatted string on the owner component using the
-     * provided setter function.
-     * <p>
-     * Binds a formatted string using the values of the provided signals to a
-     * given owner component in a way defined in <code>setter</code> function
-     * and creates a Signal effect function executing the setter whenever the
-     * signal value changes.
-     * <p>
-     * Example of usage:
-     *
-     * <pre>
-     * ComponentEffect.format(mySpan, Span::setText, Locale.US,
-     *         "The price of %s is %.2f", nameSignal, priceSignal);
-     * </pre>
-     *
-     * @see Signal#effect(Runnable)
-     * @param owner
-     *            the owner component for which the effect is applied, must not
-     *            be <code>null</code>
-     * @param setter
-     *            the setter function that defines how the formatted string is
-     *            applied to the component, must not be <code>null</code>
-     * @param locale
-     *            the locale to be used for formatting the string, if
-     *            <code>null</code>, then no localization is applied
-     * @param format
-     *            the format string to be used for formatting the signal values,
-     *            must not be <code>null</code>
-     * @param signals
-     *            the signals whose values are to be used for formatting the
-     *            string, must not be <code>null</code>
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
-     * @param <C>
-     *            the type of the component
-     */
-    public static <C extends Component> Registration format(C owner,
-            SerializableBiConsumer<C, String> setter, Locale locale,
-            String format, Signal<?>... signals) {
-        return effect(owner, () -> {
-            Object[] values = Stream.of(signals).map(Signal::value).toArray();
-            setter.accept(owner, String.format(locale, format, values));
-        });
-    }
-
-    /**
-     * Formats a string using the values of the provided signals and sets it on
-     * the owner component using the provided setter function.
-     * <p>
-     * Binds a formatted string using the values of the provided signals to a
-     * given owner component in a way defined in <code>setter</code> function
-     * and creates a Signal effect function executing the setter whenever the
-     * signal value changes.
-     * <p>
-     * Formats using locale from the current UI, I18NProvider or default locale
-     * depending on what is available.
-     * <p>
-     * Example of usage:
-     *
-     * <pre>
-     * ComponentEffect.format(mySpan, Span::setText, "The price of %s is %.2f",
-     *         nameSignal, priceSignal);
-     * </pre>
-     *
-     * @see Signal#effect(Runnable)
-     * @param owner
-     *            the owner component for which the effect is applied, must not
-     *            be <code>null</code>
-     * @param setter
-     *            the setter function that defines how the formatted string is
-     *            applied to the component, must not be <code>null</code>
-     * @param format
-     *            the format string to be used for formatting the signal values,
-     *            must not be <code>null</code>
-     * @param signals
-     *            the signals whose values are to be used for formatting the
-     *            string, must not be <code>null</code>
-     * @return a {@link Registration} that can be used to remove the effect
-     *         function
-     * @param <C>
-     *            the type of the component
-     */
-    public static <C extends Component> Registration format(C owner,
-            SerializableBiConsumer<C, String> setter, String format,
-            Signal<?>... signals) {
-        Locale locale = LocaleUtil.getLocale();
-        return format(owner, setter, locale, format, signals);
     }
 
     private void enableEffect(Component owner) {
