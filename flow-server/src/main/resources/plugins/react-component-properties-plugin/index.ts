@@ -148,8 +148,10 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             let program: Program | undefined = undefined;
             try {
                 const parsed = resolveTsConfigAndGetParsed();
+                // Ensure the current file is included in the program
+                const rootNames = [bareId]; // Just include the current file
                 program = ts.createProgram({
-                    rootNames: parsed.fileNames,
+                    rootNames,
                     options: parsed.options,
                 });
             } catch (e) {
@@ -267,25 +269,82 @@ function resolveTsConfigAndGetParsed() {
  * @param sourceFile
  */
 function findJsxNamespaceSymbolOrThrow(checker: ts.TypeChecker, sourceFile: ts.SourceFile) {
-    let jsxNamespaceSymbol = checker
-        .getSymbolsInScope(sourceFile, ts.SymbolFlags.Namespace)
-        .find((sym) => sym.name === 'JSX');
-    if (jsxNamespaceSymbol) {
-        return jsxNamespaceSymbol;
-    }
-    jsxNamespaceSymbol = checker
-        .getAmbientModules()
-        .flatMap((mod) => Array.from(mod.exports?.values() ?? []))
-        .find((sym) => sym.name === 'IntrinsicElements');
-    if (jsxNamespaceSymbol) {
-        return jsxNamespaceSymbol;
-    }
-    jsxNamespaceSymbol = checker.resolveName('JSX', undefined, ts.SymbolFlags.Namespace, false);
-    if (jsxNamespaceSymbol) {
-        return jsxNamespaceSymbol;
-    }
+  // Method 1: Check if JSX is explicitly imported (e.g., import type { JSX } from 'react')
+  const allSymbols = checker.getSymbolsInScope(sourceFile, ts.SymbolFlags.All);
+  let jsxNamespaceSymbol = allSymbols.find((sym) => sym.name === 'JSX');
+  if (jsxNamespaceSymbol) {
+    // For imported JSX, we need to get the aliased symbol
+    const aliasedSymbol = checker.getAliasedSymbol(jsxNamespaceSymbol);
+    return aliasedSymbol || jsxNamespaceSymbol;
+  }
 
-    throw new Error('JSX namespace not found (make sure DOM/React types are loaded)');
+  // Method 2: When JSX is not explicitly imported, it's available through React
+  // This is the common case when using React without explicit JSX import
+  // TypeScript's jsx: "react-jsx" mode uses React.JSX
+  const jsxFactory = (checker as any).getJsxNamespace?.(sourceFile);
+  if (jsxFactory === 'React') {
+    // JSX is accessed as React.JSX
+    const reactSymbol = allSymbols.find((sym) => sym.name === 'React');
+    if (reactSymbol) {
+      const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+      const finalReact = aliasedReact || reactSymbol;
+      if (finalReact && finalReact.exports) {
+        const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
+        if (jsxFromReact) {
+          return jsxFromReact;
+        }
+      }
+    }
+  }
+  
+  // Method 3: Try direct resolution (might work in some configurations)
+  jsxNamespaceSymbol = checker.resolveName('JSX', undefined, ts.SymbolFlags.Namespace, false);
+  if (jsxNamespaceSymbol) {
+    return jsxNamespaceSymbol;
+  }
+
+  // Method 4: Fallback - Walk through imports to find React and get JSX from it
+  const importStatements = sourceFile.statements.filter(ts.isImportDeclaration);
+  for (const importStmt of importStatements) {
+    if (importStmt.moduleSpecifier && ts.isStringLiteral(importStmt.moduleSpecifier)) {
+      const moduleName = importStmt.moduleSpecifier.text;
+      if (moduleName === 'react' || moduleName === 'React') {
+        // Get the React symbol from the import
+        if (importStmt.importClause) {
+          // Check default import (import React from 'react')
+          if (importStmt.importClause.name) {
+            const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.name);
+            if (reactSymbol) {
+              const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+              const finalReact = aliasedReact || reactSymbol;
+              if (finalReact && finalReact.exports) {
+                const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
+                if (jsxFromReact) {
+                  return jsxFromReact;
+                }
+              }
+            }
+          }
+          // Check namespace import (import * as React from 'react')
+          if (importStmt.importClause.namedBindings && ts.isNamespaceImport(importStmt.importClause.namedBindings)) {
+            const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.namedBindings.name);
+            if (reactSymbol) {
+              const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+              const finalReact = aliasedReact || reactSymbol;
+              if (finalReact && finalReact.exports) {
+                const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
+                if (jsxFromReact) {
+                  return jsxFromReact;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  throw new Error('JSX namespace not found (make sure DOM/React types are loaded)');
 }
 
 /*
