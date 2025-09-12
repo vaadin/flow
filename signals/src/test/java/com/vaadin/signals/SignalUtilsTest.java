@@ -1,6 +1,5 @@
 package com.vaadin.signals;
 
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -14,7 +13,7 @@ public class SignalUtilsTest {
     @Test
     void treeOf_returnsSignalsUnderlyingTree() {
         SignalTree tree = Mockito.mock(SignalTree.class);
-        Signal<?> signal = Mockito.mock(Signal.class);
+        AbstractSignal<?> signal = Mockito.mock(AbstractSignal.class);
         Mockito.when(signal.tree()).thenReturn(tree);
         assertSame(tree, SignalUtils.treeOf(signal));
         Mockito.verify(signal, Mockito.times(1)).tree();
@@ -23,7 +22,7 @@ public class SignalUtilsTest {
 
     @Test
     void isValid_callsSignalsIsValid() {
-        Signal<?> signal = Mockito.mock(Signal.class);
+        AbstractSignal<?> signal = Mockito.mock(AbstractSignal.class);
         SignalCommand command = TestUtil.writeRootValueCommand();
         Mockito.when(signal.isValid(any())).thenReturn(true);
         assertTrue(SignalUtils.isValid(signal, command));

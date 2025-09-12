@@ -18,7 +18,6 @@ package com.vaadin.signals.impl;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -94,20 +93,6 @@ public class UsageTrackerTest extends SignalTestBase {
         });
 
         signal.value("update");
-        assertFalse(usage.hasChanges());
-    }
-
-    @Test
-    void track_writeInCallback_notAllowedNoUsageTracked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-
-        Usage usage = UsageTracker.track(() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                signal.value("update");
-            });
-        });
-
-        signal.value("another");
         assertFalse(usage.hasChanges());
     }
 
@@ -202,7 +187,7 @@ public class UsageTrackerTest extends SignalTestBase {
         TestUsage b = new TestUsage();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        Runnable cleanup = usage.onNextChange(() -> false);
+        Runnable cleanup = usage.onNextChange(immediate -> false);
 
         assertEquals(1, a.listeners.size());
         assertEquals(1, b.listeners.size());
@@ -219,12 +204,12 @@ public class UsageTrackerTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
 
-        boolean keep = a.listeners.get(0).invoke();
+        boolean keep = a.listeners.get(0).invoke(false);
         assertFalse(keep);
         assertEquals(1, count.intValue());
 
@@ -239,12 +224,12 @@ public class UsageTrackerTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return true;
         });
 
-        boolean keep = a.listeners.get(0).invoke();
+        boolean keep = a.listeners.get(0).invoke(false);
         assertTrue(keep);
         assertEquals(1, count.intValue());
 
@@ -258,7 +243,7 @@ public class UsageTrackerTest extends SignalTestBase {
             @Override
             public Runnable onNextChange(TransientListener listener) {
                 Runnable runnable = super.onNextChange(listener);
-                listener.invoke();
+                listener.invoke(true);
                 return runnable;
             }
         };
@@ -266,7 +251,7 @@ public class UsageTrackerTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -283,7 +268,7 @@ public class UsageTrackerTest extends SignalTestBase {
             @Override
             public Runnable onNextChange(TransientListener listener) {
                 Runnable runnable = super.onNextChange(listener);
-                listener.invoke();
+                listener.invoke(true);
                 return runnable;
             }
         };
@@ -291,7 +276,7 @@ public class UsageTrackerTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return true;
         });

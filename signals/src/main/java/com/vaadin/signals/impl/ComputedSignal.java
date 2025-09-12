@@ -21,6 +21,7 @@ import java.util.function.Supplier;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.POJONode;
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal;
@@ -41,7 +42,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * @param <T>
  *            the value type
  */
-public class ComputedSignal<T> extends Signal<T> {
+public class ComputedSignal<T> extends AbstractSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to
@@ -94,7 +95,7 @@ public class ComputedSignal<T> extends Signal<T> {
         ComputedState state = getValidState(data(Transaction.getCurrent()));
 
         // Listen to the new dependencies
-        dependencyRegistration = state.dependencies.onNextChange(() -> {
+        dependencyRegistration = state.dependencies.onNextChange(immediate -> {
             revalidateAndListen();
             return false;
         });
@@ -154,8 +155,8 @@ public class ComputedSignal<T> extends Signal<T> {
             public Runnable onNextChange(TransientListener listener) {
                 Runnable uncount = countActiveExternalListener();
 
-                Runnable superCleanup = superUsage.onNextChange(() -> {
-                    boolean listenToNext = listener.invoke();
+                Runnable superCleanup = superUsage.onNextChange(immediate -> {
+                    boolean listenToNext = listener.invoke(immediate);
                     if (!listenToNext) {
                         uncount.run();
                     }

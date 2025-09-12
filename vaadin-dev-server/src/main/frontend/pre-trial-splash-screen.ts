@@ -230,41 +230,8 @@ class PreTrial extends HTMLElement {
             Enterprise features
           </span> for 30 more days.
         </p>
-        <p>Access more tools with an extended trial:</p>
-        <ul>
-          <li>
-            <svg width="24" height="24" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <mask id="mask0_119_327" style="mask-type:luminance" maskUnits="userSpaceOnUse" x="3" y="5" width="26" height="22"> 
-                <path d="M29 5.03125H3V26.7368H29V5.03125Z" fill="white"></path> 
-              </mask>
-              <g mask="url(#mask0_119_327)"> 
-                <path d="M28.0155 14.3116L16.5946 5.24073C16.0406 4.9616 15.3778 4.99185 14.8498 5.31223C14.319 5.63123 13.9987 6.20048 13.9987 6.81099V24.9583C13.9987 25.5674 14.319 26.1353 14.8498 26.4557C15.1358 26.629 15.4603 26.717 15.7889 26.717C16.0653 26.717 16.3403 26.6537 16.5946 26.5272L28.0155 17.4535C28.5655 16.9365 29 16.5488 29 15.8819C29 15.215 28.6315 14.8561 28.0155 14.3116Z" fill="#FF707A"></path> 
-                <path d="M17.0155 14.3124L5.59464 5.24146C5.04051 4.96234 4.37913 4.99258 3.85113 5.31296C3.32038 5.63196 3 6.20122 3 6.81172V24.9591C3 25.5682 3.32038 26.1361 3.85113 26.4564C4.13713 26.6297 4.46163 26.7177 4.79026 26.7177C5.06663 26.7177 5.34164 26.6544 5.59601 26.528L17.0168 17.4543C17.5668 16.9373 18.0013 16.5495 18.0013 15.8827C18.0013 15.2158 17.6315 14.8569 17.0155 14.3124Z" fill="#00B4F0"></path> 
-                <path d="M17.0154 14.3121L13.9987 11.9348C13.9987 12.4479 13.9987 15.4576 13.9987 16.0681V18.1301C13.9987 18.7392 13.9987 19.5302 13.9987 19.9047L17.0168 17.454C17.5668 16.9369 18.0013 16.5492 18.0013 15.8823C18.0013 15.2154 17.6314 14.8566 17.0154 14.3121Z" fill="#5748FF"></path> 
-              </g> 
-            </svg>
-            <span>Acceleration Kits</span><span>⋅</span><span>Enterprise integrations for your apps</span>
-          </li>
-          <li>
-            <svg width="24" height="24" viewBox="0 0 32 34" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <g clip-path="url(#clip0_812_113865)"> 
-                <path d="M16.4491 29.6151C23.11 29.6151 28.5096 24.2154 28.5096 17.5546C28.5096 10.8938 23.11 5.49414 16.4491 5.49414C9.78833 5.49414 4.38867 10.8938 4.38867 17.5546C4.38867 24.2154 9.78833 29.6151 16.4491 29.6151Z" stroke="#00B4F0" stroke-width="6"></path> 
-              </g>
-              <g clip-path="url(#clip1_812_113865)"> 
-                <path d="M15.5509 28.1639C8.89004 28.1639 3.49038 22.7643 3.49038 16.1034C3.49038 9.44263 8.89004 4.04297 15.5509 4.04297C22.2117 4.04297 27.6113 9.44263 27.6113 16.1034C27.6113 22.7643 22.2117 28.1639 15.5509 28.1639Z" stroke="#FF707A" stroke-width="6"></path> 
-              </g>
-              <defs> 
-                <clipPath id="clip0_812_113865"> 
-                  <rect width="15.5508" height="31.6544" fill="white" transform="translate(16.4492 1.45117)"></rect> 
-                </clipPath> 
-                <clipPath id="clip1_812_113865"> 
-                  <rect width="15.5508" height="31.6544" fill="white" transform="matrix(-1 0 0 1 15.5508 0)"></rect> 
-                </clipPath> 
-              </defs> 
-            </svg>
-            <span>Control Center</span><span>⋅</span><span>Deploy and manage apps on Kubernetes</span>
-          </li>
-        </ul>
+        <p>Continue getting full access to:</p>
+        ${this.getProductsList()}
         <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
           <span>Extend trial 30 days</span>
           <span>Sign up ⋅ No credit card required</span>
@@ -285,6 +252,48 @@ class PreTrial extends HTMLElement {
           Charts</span> in your app, activate a free trial.
         </p>
         <p>Get full access:</p>
+        ${this.getProductsList()}
+        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
+          <span>Start 7-day trial</span>
+          <span>No registration or credit card required</span>
+        </button>
+        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='secondary'>
+          Activate your license
+        </button>
+        `
+      }
+      ${this.#startFailed ? `
+        <div class='error'>
+          <h3>Trial failed to start</h3>
+          <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
+        </div>`
+      : ''
+      }
+      ${this.#licenseDownloadStatus === 'started' ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>' : ''}
+      ${this.#licenseDownloadStatus === 'failed' ? '<div class="error">Failed to download the license key. Please try again later.</div>' : ''}
+      <hr>
+      <p>
+        By starting your trial, you agree to our <a href='https://vaadin.com/commercial-license-and-service-terms' target='_blank'>terms and conditions</a>.
+      </p>
+    </div>
+    `;
+
+    const primaryButton = this.#shadowRoot.querySelector('button.primary')!;
+    primaryButton?.addEventListener('click', () => {
+        this.dispatchEvent(new CustomEvent('primary-button-click', {
+          detail: {
+            expired: this.#trialExpired
+          }
+        }));
+    });
+    const secondaryButton = this.#shadowRoot.querySelector('button.secondary')!;
+    secondaryButton?.addEventListener('click', () => {
+        this.dispatchEvent(new CustomEvent('secondary-button-click'));
+    });
+  }
+
+  private getProductsList(): string {
+    return `
         <ul>
           <li>
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none">
@@ -350,46 +359,10 @@ class PreTrial extends HTMLElement {
               </linearGradient>
             </defs></svg
           >
-            <span>Enterprise features</span><span>⋅</span><span>Designer, Control Center</span>
+            <span>Team features</span><span>⋅</span><span>Acceleration Kits</span>
           </li>
         </ul>
-        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='primary'>
-          <span>Start 7-day trial</span>
-          <span>No registration or credit card required</span>
-        </button>
-        <button ${this.#licenseDownloadStatus === 'started' ? 'disabled' : ''} class='secondary'>
-          Activate your license
-        </button>
-        `
-      }
-      ${this.#startFailed ? `
-        <div class='error'>
-          <h3>Trial failed to start</h3>
-          <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
-        </div>`
-      : ''
-      }
-      ${this.#licenseDownloadStatus === 'started' ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>' : ''}
-      ${this.#licenseDownloadStatus === 'failed' ? '<div class="error">Failed to download the license key. Please try again later.</div>' : ''}
-      <hr>
-      <p>
-        By starting your trial, you agree to our <a href='https://vaadin.com/commercial-license-and-service-terms' target='_blank'>terms and conditions</a>.
-      </p>
-    </div>
     `;
-
-    const primaryButton = this.#shadowRoot.querySelector('button.primary')!;
-    primaryButton?.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('primary-button-click', {
-          detail: {
-            expired: this.#trialExpired
-          }
-        }));
-    });
-    const secondaryButton = this.#shadowRoot.querySelector('button.secondary')!;
-    secondaryButton?.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('secondary-button-click'));
-    });
   }
 
   connectedCallback(): void {
@@ -518,16 +491,9 @@ class PreTrial extends HTMLElement {
 // Register the custom element
 customElements.define('vaadin-pretrial', PreTrial);
 
-function openNewWindow(url: string): void {
-  const newWindow = window.open(url, '_blank');
-  if (newWindow) {
-    newWindow.opener = null;
-  }
-}
-
 function primaryButtonClickListener(event: CustomEvent) {
   if (event.detail.expired) {
-    openNewWindow('https://vaadin.com/pricing');
+    tryAcquireLicense();
   } else {
     startPreTrial();
   }

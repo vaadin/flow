@@ -33,6 +33,7 @@ import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.ValueSignalTest.AsyncValueSignal;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 
 public class EffectTest extends SignalTestBase {
 
@@ -305,14 +306,20 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
-    void callback_updateSignal_throws() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+    void changeTracking_lambdaSignal_changeTracked() {
+        ValueSignal<Integer> signal = new ValueSignal<>(1);
+        Signal<Integer> doubled = () -> signal.value() * 2;
 
-        Signal.effect((() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                signal.value("update");
-            });
-        }));
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(doubled.value());
+        });
+
+        assertEquals(List.of(2), invocations);
+
+        signal.value(2);
+        assertEquals(List.of(2, 4), invocations);
     }
 
     @Test
@@ -340,6 +347,7 @@ public class EffectTest extends SignalTestBase {
         Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update1");
@@ -360,6 +368,7 @@ public class EffectTest extends SignalTestBase {
         Runnable closer = Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update");
@@ -374,14 +383,18 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_effectRemainsFunctional() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
+        RuntimeException exception = new RuntimeException("Expected exception");
+
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
             invocations.add(signal.value());
-
-            throw new RuntimeException("Expected exception");
+            throw exception;
         });
+        assertUncaughtException(exception);
 
         signal.value("update");
+
+        assertUncaughtException(exception);
         assertEquals(List.of("initial", "update"), invocations);
     }
 
@@ -389,9 +402,12 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
+        RuntimeException exception = new RuntimeException("Expected exception");
         Signal.effect(() -> {
-            throw new RuntimeException("Expected exception");
+            throw exception;
         });
+
+        assertUncaughtException(exception);
 
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
@@ -407,14 +423,167 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         ArrayList<String> invocations = new ArrayList<>();
+        Error error = new Error("Expected error");
         Signal.effect(() -> {
             invocations.add(signal.value());
 
-            throw new Error("Expected error");
+            throw error;
         });
         assertEquals(List.of("initial"), invocations);
+        assertUncaughtException(caught -> caught.getCause() == error);
 
         signal.value("update");
         assertEquals(List.of("initial"), invocations);
+    }
+
+    @Test
+    void infiniteLoopDetection_writeUnrelatedSignal_noError() {
+        ValueSignal<String> other = new ValueSignal<>("other");
+        ValueSignal<String> signal = new ValueSignal<>("signal");
+
+        Signal.effect(() -> {
+            other.value(signal.value());
+        });
+        assertEquals("signal", other.value());
+
+        signal.value("update");
+        assertEquals("update", other.value());
+    }
+
+    @Test
+    void infiniteLoopDetection_writeOwnSignal_loopDetected() {
+        ValueSignal<String> signal = new ValueSignal<>("signal");
+        ValueSignal<String> trigger = new ValueSignal<>("trigger");
+
+        AtomicInteger count = new AtomicInteger();
+
+        Signal.effect(() -> {
+            count.incrementAndGet();
+            trigger.value();
+            signal.value();
+
+            assertThrows(IllegalStateException.class, () -> {
+                signal.value("update");
+            });
+        });
+
+        assertEquals(1, count.get());
+
+        trigger.value("update");
+
+        assertEquals(1, count.get(), "Signal should have been disabled");
+    }
+
+    @Test
+    void infiniteLoopDetection_loopBetweenEffects_loopDetectedFromSetter() {
+        ValueSignal<String> signal1 = new ValueSignal<>("signal");
+        ValueSignal<String> signal2 = new ValueSignal<>("signal");
+
+        AtomicInteger throwCount = new AtomicInteger();
+
+        Signal.effect(() -> {
+            String value = signal2.value() + " update";
+
+            try {
+                signal1.value(value);
+            } catch (IllegalStateException e) {
+                throwCount.incrementAndGet();
+            }
+        });
+        assertEquals(0, throwCount.get(),
+                "Should not fail with only one effect active");
+
+        Signal.effect(() -> {
+            signal2.value(signal1.value() + " update");
+        });
+        assertEquals(1, throwCount.get(),
+                "Should fail when the other effect is created");
+    }
+
+    @Test
+    void infiniteLoopDetection_loopBetweenConditionalEffects_loopDetected() {
+        ValueSignal<String> signal1 = new ValueSignal<>("signal");
+        ValueSignal<String> signal2 = new ValueSignal<>("signal");
+        ValueSignal<Boolean> trigger = new ValueSignal<>(false);
+
+        Signal.effect(() -> {
+            signal1.value(signal2.value() + " update");
+        });
+
+        Signal.effect(() -> {
+            if (trigger.value()) {
+                signal2.value(signal1.value() + " update");
+            }
+        });
+        assertNoUncaughtException();
+
+        trigger.value(true);
+        assertUncaughtException(IllegalStateException.class);
+    }
+
+    @Test
+    void infiniteLoopDetection_loopBetweenAsyncEffects_loopDetected() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+
+        ValueSignal<String> signal1 = new ValueSignal<>("signal");
+        ValueSignal<String> signal2 = new ValueSignal<>("signal");
+
+        Signal.effect(() -> {
+            signal1.value(signal2.value() + " update");
+        });
+        dispatcher.runPendingTasks();
+
+        Signal.effect(() -> {
+            signal2.value(signal1.value() + " update");
+        });
+        // Runs the 2nd effect which schedules running the 1st effect
+        dispatcher.runPendingTasks();
+        assertNoUncaughtException();
+
+        // Runs the 1st effect which is where the loop can be detected
+        dispatcher.runPendingTasks();
+        assertUncaughtException(IllegalStateException.class);
+    }
+
+    @Test
+    void infiniteLoopDetection_concurrentSignalWrite_notDetectedAsLoop() {
+        TestExecutor dispatcher = useTestEffectDispatcher();
+        List<String> invocations = new ArrayList<>();
+
+        ValueSignal<String> signal = new ValueSignal<>("signal") {
+            @Override
+            protected Usage createUsage(Transaction transaction) {
+                Usage usage = super.createUsage(transaction);
+
+                return new Usage() {
+                    @Override
+                    public boolean hasChanges() {
+                        return usage.hasChanges();
+                    }
+
+                    @Override
+                    public Runnable onNextChange(TransientListener listener) {
+                        /*
+                         * Emulate race condition by injecting an unrelated
+                         * write at the moment when the effect starts listening
+                         * for changes
+                         */
+                        value("update");
+
+                        return usage.onNextChange(listener);
+                    }
+                };
+            }
+        };
+
+        Signal.effect(() -> {
+            invocations.add(signal.value());
+        });
+
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("signal"), invocations);
+
+        dispatcher.runPendingTasks();
+        assertEquals(List.of("signal", "update"), invocations);
     }
 }

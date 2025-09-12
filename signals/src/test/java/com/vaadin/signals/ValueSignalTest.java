@@ -344,7 +344,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertFalse(usage.hasChanges());
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -366,7 +366,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return true;
         });
@@ -387,7 +387,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -410,7 +410,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -436,13 +436,13 @@ public class ValueSignalTest extends SignalTestBase {
 
         signal.value("update");
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             falseCount.incrementAndGet();
             return false;
         });
         assertEquals(1, falseCount.intValue());
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             trueCount.incrementAndGet();
             return true;
         });
@@ -651,17 +651,6 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertSuccess(operation);
         assertEquals("value update", signal.value());
-    }
-
-    @Test
-    void transaction_updateInReadOnlyTransaction_rejected() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
-
-        Transaction.runInTransaction(() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                signal.update(ignore -> "update");
-            });
-        }, Transaction.Type.READ_ONLY);
     }
 
     @Test
