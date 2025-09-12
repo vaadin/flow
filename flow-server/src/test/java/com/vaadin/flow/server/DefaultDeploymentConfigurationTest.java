@@ -296,36 +296,6 @@ public class DefaultDeploymentConfigurationTest {
                 config.isProductionMode());
     }
 
-    @Test
-    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
-            throws IOException {
-        File projectRoot = tempFolder.getRoot();
-        File legacyFrontend = tempFolder
-                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
-
-        File legacyFrontendViews = new File(legacyFrontend,
-                FrontendUtils.HILLA_VIEWS_PATH);
-        if (!legacyFrontendViews.mkdir()) {
-            Assert.fail("Failed to generate legacy frontend views folder");
-        }
-
-        File viewFile = new File(legacyFrontendViews, "MyView.tsx");
-        org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
-                "export default function MyView(){}", "UTF-8");
-
-        try (MockedStatic<EndpointRequestUtil> util = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
-            Properties init = new Properties();
-            init.put(FrontendUtils.PROJECT_BASEDIR,
-                    projectRoot.getAbsolutePath());
-            DefaultDeploymentConfiguration config = createDeploymentConfig(
-                    init);
-            Assert.assertEquals("Should use the legacy frontend folder",
-                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
-        }
-    }
-
     private DefaultDeploymentConfiguration createDeploymentConfig(
             Properties initParameters) {
         ApplicationConfiguration appConfig = setupAppConfig();

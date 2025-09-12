@@ -263,7 +263,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -284,7 +284,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return true;
         });
@@ -304,7 +304,8 @@ public class SynchronousSignalTreeTest {
     void observe_cancelled_notInvoked() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Runnable canceler = tree.observeNextChange(Id.ZERO, Assertions::fail);
+        Runnable canceler = tree.observeNextChange(Id.ZERO,
+                immediate -> Assertions.fail());
         canceler.run();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
@@ -319,7 +320,7 @@ public class SynchronousSignalTreeTest {
         tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
                 null, null, ListPosition.first()));
 
-        tree.observeNextChange(Id.ZERO, Assertions::fail);
+        tree.observeNextChange(Id.ZERO, immediate -> Assertions.fail());
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
                 child, new TextNode("value")));
@@ -331,8 +332,8 @@ public class SynchronousSignalTreeTest {
 
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(Id.ZERO, immediage -> {
                 count.incrementAndGet();
                 return false;
             });
@@ -356,8 +357,8 @@ public class SynchronousSignalTreeTest {
 
         Id childId = Id.random();
         AtomicInteger count = new AtomicInteger();
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(childId, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(childId, immediate2 -> {
                 count.incrementAndGet();
                 return false;
             });

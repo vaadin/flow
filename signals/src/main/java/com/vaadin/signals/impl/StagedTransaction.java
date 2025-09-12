@@ -299,9 +299,4 @@ public class StagedTransaction extends Transaction {
             state.staged.notifyResultHandlers(results);
         }
     }
-
-    @Override
-    protected boolean readonly() {
-        return false;
-    }
 }

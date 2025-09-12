@@ -96,18 +96,18 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void callback_updateSignal_throws() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+    void callback_updateOtherSignal_signalUpdated() {
+        ValueSignal<String> other = new ValueSignal<>("value");
 
         Signal<String> signal = Signal.computed((() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                source.value("update");
-            });
+            other.value("update");
             return null;
         }));
 
         // Trigger running the callback
         signal.value();
+
+        assertEquals("update", other.value());
     }
 
     @Test
