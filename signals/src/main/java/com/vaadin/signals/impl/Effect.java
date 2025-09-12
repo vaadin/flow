@@ -32,7 +32,7 @@ import com.vaadin.signals.SignalEnvironment;
  * based the signals read during the most recent invocation.
  */
 public class Effect {
-    private static ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
+    private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
             .withInitial(() -> new LinkedList<>());
 
     private final Executor dispatcher;
@@ -134,11 +134,11 @@ public class Effect {
 
     private void scheduleInvalidate() {
         if (invalidateScheduled.compareAndSet(false, true)) {
-            var inhertedActive = new LinkedList<>(activeEffects.get());
+            var inheritedActive = new LinkedList<>(activeEffects.get());
 
             dispatcher.execute(() -> {
                 var oldActive = activeEffects.get();
-                activeEffects.set(inhertedActive);
+                activeEffects.set(inheritedActive);
 
                 try {
                     invalidate();
@@ -158,10 +158,8 @@ public class Effect {
     }
 
     private void clearRegistrations() {
-        if (registrations != null) {
-            registrations.forEach(Runnable::run);
-            registrations.clear();
-        }
+        registrations.forEach(Runnable::run);
+        registrations.clear();
     }
 
     /**
