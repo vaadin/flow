@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -46,6 +47,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
@@ -296,6 +298,184 @@ public class ComponentEffectTest {
         });
     }
 
+    @Test
+    public void bindChildren_nullArguments_throws() {
+        ListSignal<String> taskList = new ListSignal<>(String.class);
+        TestLayout parentComponent = new TestLayout();
+
+        assertThrows(NullPointerException.class, () -> ComponentEffect
+                .bindChildren(null, taskList, valueSignal -> null));
+        assertThrows(NullPointerException.class, () -> ComponentEffect
+                .bindChildren(parentComponent, null, valueSignal -> null));
+        assertThrows(NullPointerException.class, () -> ComponentEffect
+                .bindChildren(parentComponent, taskList, null));
+    }
+
+    @Test
+    public void bindChildren_emptyListSignal_emptyParent() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+            assertEquals(0, parentComponent.getComponentCount());
+        });
+    }
+
+    @Test
+    public void bindChildren_emptyListSignalWithNotInitiallyEmptyParent_noChanges() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            TestLayout parentComponent = new TestLayout();
+            parentComponent.add(new TestComponent("initial"));
+            new MockUI().add(parentComponent);
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+            assertEquals(1, parentComponent.getComponentCount());
+        });
+    }
+
+    @Test
+    public void bindChildren_listSignalWithItem_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+            var expectedComponent = new TestComponent();
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        expectedComponent.setValue(valueSignal.value());
+                        return expectedComponent;
+                    });
+            assertEquals(1, parentComponent.getComponentCount());
+            assertEquals(expectedComponent,
+                    parentComponent.getChildren().findFirst().orElse(null));
+            assertEquals("first", expectedComponent.getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_listSignalWithItemsWithNotEmptyParent_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("last");
+
+            TestLayout parentComponent = new TestLayout();
+            var expectedInitialComponent = new TestComponent("initial");
+            parentComponent.add(expectedInitialComponent);
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            var children = parentComponent.getChildren().toList();
+            assertEquals("Parent component children count is wrong", 3,
+                    parentComponent.getComponentCount());
+            assertEquals("Initial component should be preserved as last child",
+                    expectedInitialComponent, children.get(2));
+            assertEquals("first", ((TestComponent) children.get(0)).getValue());
+            assertEquals("last", ((TestComponent) children.get(1)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_addItem_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            assertEquals("Parent component children count is wrong", 1,
+                    parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+
+            taskList.insertLast("last");
+
+            assertEquals("Parent component children count is wrong", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(1)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_removeItem_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("last");
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            assertEquals("Parent component children count is wrong", 2,
+                    parentComponent.getComponentCount());
+
+            taskList.remove(taskList.value().get(0));
+
+            assertEquals("Parent component children count is wrong", 1,
+                    parentComponent.getComponentCount());
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_moveItem_parentUpdated() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("middle");
+            taskList.insertLast("last");
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            assertEquals("Parent component children count is wrong", 3,
+                    parentComponent.getComponentCount());
+
+            // move last to first
+            taskList.moveTo(taskList.value().get(2),
+                    ListSignal.ListPosition.first());
+
+            assertEquals("Parent component children count is wrong", 3,
+                    parentComponent.getComponentCount());
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+
+            // move it back to last
+            taskList.moveTo(taskList.value().get(0),
+                    ListSignal.ListPosition.last());
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(2)).getValue());
+
+            // move last between first and last
+            taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
+                    .between(taskList.value().get(0), taskList.value().get(1)));
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(1)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_addToParentComponentAndAddItem_parentUpdated() {
+        // add component directly to parent as a first component. It should be
+        // moved to last after signal list.
+        // TODO
+    }
+
     @FunctionalInterface
     private interface InterruptableRunnable {
         void run() throws InterruptedException;
@@ -327,12 +507,26 @@ public class ComponentEffectTest {
             super(new Element("div"));
         }
 
+        public TestComponent(String initialValue) {
+            this();
+            setValue(initialValue);
+        }
+
         public String getValue() {
             return value;
         }
 
         public void setValue(String value) {
             this.value = value;
+        }
+    }
+
+    @Tag("div")
+    private static class TestLayout extends Component
+            implements HasOrderedComponents {
+
+        public TestLayout() {
+            super(new Element("div"));
         }
     }
 }
