@@ -70,7 +70,6 @@ import com.vaadin.tests.util.MockOptions;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.getFlowGeneratedWebComponentsFolder;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -202,6 +201,25 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         deleteExpectedImports(frontendDirectory, nodeModulesPath);
         exception.expect(IllegalStateException.class);
         updater.run();
+    }
+
+    @Test
+    public void generatedResources_relativeImport_dotSlash_notStripped()
+            throws IOException {
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/foo.js");
+        var resource = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/ExampleConnector.js");
+        Files.writeString(resource.toPath(), "import \"./foo.js\";");
+        updater.run();
+
+        String output = logger.getLogs();
+        MatcherAssert.assertThat(output, CoreMatchers.not(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Use the './' prefix for files in the '"),
+                CoreMatchers.containsString(
+                        "folder: 'generated/jar-resources/foo.js', please update your annotations."))));
+
     }
 
     @Test
