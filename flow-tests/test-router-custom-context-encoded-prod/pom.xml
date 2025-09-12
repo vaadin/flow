@@ -42,14 +42,6 @@
             <version>${project.version}</version>
             <type>war</type>
         </dependency>
-        <!-- build-frontend needs WAR classes as JAR to scan for frontend resources -->
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>test-router-custom-context</artifactId>
-            <version>${project.version}</version>
-            <classifier>classes</classifier>
-            <scope>provided</scope>
-        </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>test-router-custom-context</artifactId>
@@ -104,6 +96,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <dependencies>
+                    <!-- hack to allow build-frontend to scan WAR classes for frontend resources -->
+                    <dependency>
+                        <groupId>com.vaadin</groupId>
+                        <artifactId>test-router-custom-context</artifactId>
+                        <version>${project.version}</version>
+                        <classifier>classes</classifier>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
