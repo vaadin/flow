@@ -650,12 +650,12 @@ public class FrontendUtils {
                     .replace("./", "").equals(frontendDir.toPath().toString());
             if (configParamPointsToLegacyDir) {
                 if (new File(projectRoot, DEFAULT_FRONTEND_DIR).exists()) {
-                    getLogger().warn("This project has both default ("
-                            + DEFAULT_FRONTEND_DIR + ") frontend directory"
-                            + " and legacy (" + LEGACY_FRONTEND_DIR
-                            + ") frontend directory present, and "
-                            + "'frontendDirectory' parameter points to the legacy directory. "
-                            + "Default frontend directory will be ignored.");
+                    getLogger().warn(
+                            "This project has both default ({}) frontend directory"
+                                    + " and legacy ({})- frontend directory present, and "
+                                    + "'frontendDirectory' parameter points to the legacy directory."
+                                    + "\n\nDefault frontend directory will be ignored.",
+                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
                 }
                 return frontendDir;
             } else {
