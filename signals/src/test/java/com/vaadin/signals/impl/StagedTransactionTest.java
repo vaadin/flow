@@ -502,7 +502,7 @@ public class StagedTransactionTest {
 
         AtomicReference<String> valueInObserver = new AtomicReference<>();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("observer"), null);
 

@@ -95,7 +95,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         ComputedState state = getValidState(data(Transaction.getCurrent()));
 
         // Listen to the new dependencies
-        dependencyRegistration = state.dependencies.onNextChange(() -> {
+        dependencyRegistration = state.dependencies.onNextChange(immediate -> {
             revalidateAndListen();
             return false;
         });
@@ -155,8 +155,8 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             public Runnable onNextChange(TransientListener listener) {
                 Runnable uncount = countActiveExternalListener();
 
-                Runnable superCleanup = superUsage.onNextChange(() -> {
-                    boolean listenToNext = listener.invoke();
+                Runnable superCleanup = superUsage.onNextChange(immediate -> {
+                    boolean listenToNext = listener.invoke(immediate);
                     if (!listenToNext) {
                         uncount.run();
                     }
