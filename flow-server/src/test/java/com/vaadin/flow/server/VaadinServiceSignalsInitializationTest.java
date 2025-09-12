@@ -17,8 +17,9 @@
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
@@ -35,6 +36,7 @@ import com.vaadin.signals.Signal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 
 @NotThreadSafe
@@ -79,7 +81,7 @@ public class VaadinServiceSignalsInitializationTest {
 
     @Test
     public void init_signalsFeatureFlagOn_flowSignalEnvironmentInitialized()
-            throws InterruptedException {
+            throws InterruptedException, TimeoutException {
 
         String signalsFeatureFlagKey = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId();
@@ -89,10 +91,11 @@ public class VaadinServiceSignalsInitializationTest {
             var service = new MockVaadinServletService();
             VaadinService.setCurrent(service);
 
-            var latch = new CountDownLatch(2);
+            var phaser = new Phaser(1);
             AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                     service);
             var ui = new MockUI(session);
+            assertSame(ui, UI.getCurrent());
             var signal = new ListSignal<>(String.class);
 
             record EffectExecution(UI ui, String threadName) {
@@ -101,22 +104,23 @@ public class VaadinServiceSignalsInitializationTest {
 
             try {
                 Signal.effect(() -> {
-                    // Should run in Flow defined dispatcher, so UI should be
-                    // available
                     invocations.add(new EffectExecution(UI.getCurrent(),
                             Thread.currentThread().getName()));
                     signal.value();
-                    latch.countDown();
+                    phaser.arrive();
                 });
+
+                phaser.awaitAdvanceInterruptibly(0, 500, TimeUnit.MILLISECONDS);
+
                 Assert.assertEquals("Expected effect to be executed", 1,
                         invocations.size());
-                // First execution in main thread
+
                 var execution = invocations.get(0);
                 Assert.assertEquals(
-                        "Expected UI to be available during sync effect execution",
-                        ui, execution.ui);
-                Assert.assertFalse(
-                        "Expected effect to be executed in main thread",
+                        "Expected UI to not be available during effect execution",
+                        null, execution.ui);
+                Assert.assertTrue(
+                        "Expected effect to be executed in Vaadin Executor thread",
                         execution.threadName
                                 .startsWith("VaadinTaskExecutor-thread-"));
             } finally {
@@ -126,18 +130,15 @@ public class VaadinServiceSignalsInitializationTest {
 
             signal.insertLast("update");
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
-                Assert.fail(
-                        "Expected signal effect to be computed asynchronously");
-            }
+            phaser.awaitAdvanceInterruptibly(1, 500, TimeUnit.MILLISECONDS);
 
             Assert.assertEquals("Expected effect to be executed twice", 2,
                     invocations.size());
-            // Second execution in Vaadin executor thread
+
             var execution = invocations.get(1);
             Assert.assertEquals(
-                    "Expected UI to be available during async effect execution",
-                    ui, execution.ui);
+                    "Expected UI to not be available during effect execution",
+                    null, execution.ui);
             Assert.assertTrue(
                     "Expected effect to be executed in Vaadin Executor thread",
                     execution.threadName
