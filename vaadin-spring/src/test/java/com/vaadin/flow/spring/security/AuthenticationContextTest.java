@@ -43,6 +43,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -69,6 +70,9 @@ public class AuthenticationContextTest {
 
     @Autowired
     ObjectPostProcessor<Object> postProcessor;
+
+    @Autowired
+    private PathPatternRequestMatcher.Builder requestMatcherBuilder;
 
     @Autowired
     ApplicationContext appCtx;
@@ -549,7 +553,9 @@ public class AuthenticationContextTest {
 
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         httpSecurity
                 .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
                         .addLogoutHandler(handler1).addLogoutHandler(handler2));
