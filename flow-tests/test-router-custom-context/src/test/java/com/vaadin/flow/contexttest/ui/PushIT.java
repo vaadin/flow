@@ -73,7 +73,9 @@ public class PushIT extends ChromeBrowserTest {
 
     private void doTest(final String subContext, Transport transport,
             boolean pushMustWork) throws InterruptedException {
-        String url = getRootURL() + "/custom-context-router/" + subContext;
+        String contextPath = System.getProperty("vaadin.test.jettyContextPath",
+                "/custom-context-router");
+        String url = getRootURL() + contextPath + "/" + subContext;
         if (transport != null) {
             url += "?transport=" + transport.getIdentifier();
         }
