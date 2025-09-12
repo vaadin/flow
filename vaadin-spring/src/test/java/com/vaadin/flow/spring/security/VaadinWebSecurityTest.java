@@ -41,6 +41,7 @@ import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInit
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -60,6 +61,9 @@ public class VaadinWebSecurityTest {
     ObjectPostProcessor<Object> postProcessor;
 
     @Autowired
+    private PathPatternRequestMatcher.Builder requestMatcherBuilder;
+
+    @Autowired
     ApplicationContext appCtx;
 
     @Test
@@ -67,7 +71,9 @@ public class VaadinWebSecurityTest {
             throws Exception {
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         TestConfig testConfig = new VaadinWebSecurityTest.TestConfig();
         testConfig.filterChain(httpSecurity);
 
@@ -88,7 +94,9 @@ public class VaadinWebSecurityTest {
     public void navigationAccessControl_enabledByDefault() throws Exception {
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         VaadinWebSecurity testConfig = new VaadinWebSecurity() {
         };
         mockVaadinWebSecurityInjection(testConfig);
@@ -104,7 +112,9 @@ public class VaadinWebSecurityTest {
             throws Exception {
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         VaadinWebSecurity testConfig = new VaadinWebSecurity() {
             @Override
             protected boolean enableNavigationAccessControl() {
@@ -132,7 +142,9 @@ public class VaadinWebSecurityTest {
                 : "{baseUrl}";
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         AtomicReference<String> postLogoutUriHolder = new AtomicReference<>(
                 "NOT SET");
         VaadinWebSecurity testConfig = new VaadinWebSecurity() {

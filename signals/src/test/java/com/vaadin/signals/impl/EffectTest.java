@@ -305,6 +305,23 @@ public class EffectTest extends SignalTestBase {
     }
 
     @Test
+    void changeTracking_lambdaSignal_changeTracked() {
+        ValueSignal<Integer> signal = new ValueSignal<>(1);
+        Signal<Integer> doubled = () -> signal.value() * 2;
+
+        ArrayList<Integer> invocations = new ArrayList<>();
+
+        Signal.effect(() -> {
+            invocations.add(doubled.value());
+        });
+
+        assertEquals(List.of(2), invocations);
+
+        signal.value(2);
+        assertEquals(List.of(2, 4), invocations);
+    }
+
+    @Test
     void callback_updateSignal_throws() {
         ValueSignal<String> signal = new ValueSignal<>("value");
 
@@ -340,6 +357,7 @@ public class EffectTest extends SignalTestBase {
         Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update1");
@@ -360,6 +378,7 @@ public class EffectTest extends SignalTestBase {
         Runnable closer = Signal.effect(() -> {
             invocations.add(signal.value());
         });
+        dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
 
         signal.value("update");
@@ -374,14 +393,18 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_effectRemainsFunctional() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
+        RuntimeException exception = new RuntimeException("Expected exception");
+
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
             invocations.add(signal.value());
-
-            throw new RuntimeException("Expected exception");
+            throw exception;
         });
+        assertUncaughtException(exception);
 
         signal.value("update");
+
+        assertUncaughtException(exception);
         assertEquals(List.of("initial", "update"), invocations);
     }
 
@@ -389,9 +412,12 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsException_otherEffectsWork() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
+        RuntimeException exception = new RuntimeException("Expected exception");
         Signal.effect(() -> {
-            throw new RuntimeException("Expected exception");
+            throw exception;
         });
+
+        assertUncaughtException(exception);
 
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
@@ -407,12 +433,14 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
         ArrayList<String> invocations = new ArrayList<>();
+        Error error = new Error("Expected error");
         Signal.effect(() -> {
             invocations.add(signal.value());
 
-            throw new Error("Expected error");
+            throw error;
         });
         assertEquals(List.of("initial"), invocations);
+        assertUncaughtException(caught -> caught.getCause() == error);
 
         signal.value("update");
         assertEquals(List.of("initial"), invocations);

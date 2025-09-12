@@ -18,9 +18,6 @@ package com.vaadin.signals.impl;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
@@ -33,9 +30,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * based the signals read during the most recent invocation.
  */
 public class Effect {
-    private final Executor dispatcher = SignalEnvironment
-            .getCurrentEffectDispatcher();
-
+    private final Executor dispatcher;
     private Usage dependencies;
     private Runnable registration;
 
@@ -45,14 +40,35 @@ public class Effect {
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
     /**
-     * Creates a signal effect with the given action. The action is run when the
-     * effect is created and is subsequently run again whenever there's a change
-     * to any signal value that was read during the last invocation.
+     * Creates a signal effect with the given action and the default dispatcher.
+     * The action is run when the effect is created and is subsequently run
+     * again whenever there's a change to any signal value that was read during
+     * the last invocation.
+     *
+     * @see SignalEnvironment#getDefaultEffectDispatcher()
      *
      * @param action
      *            the action to use, not <code>null</code>
      */
     public Effect(Runnable action) {
+        this(action, SignalEnvironment.getDefaultEffectDispatcher());
+    }
+
+    /**
+     * Creates a signal effect with the given action and a custom dispatcher.
+     * The action is run when the effect is created and is subsequently run
+     * again whenever there's a change to any signal value that was read during
+     * the last invocation. The dispatcher can be used to make sure changes are
+     * evaluated asynchronously or with some specific context available. The
+     * action itself needs to be synchronous to be able to track changes.
+     *
+     * @param action
+     *            the action to use, not <code>null</code>
+     * @param dispatcher
+     *            the dispatcher to use when handling changes, not
+     *            <code>null</code>
+     */
+    public Effect(Runnable action, Executor dispatcher) {
         assert action != null;
         this.action = () -> {
             try {
@@ -62,14 +78,19 @@ public class Effect {
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
                         e);
             } catch (Error e) {
-                getLogger().error(
-                        "Uncaught error from effect. The effect will no longer be active.",
-                        e);
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        new Error(
+                                "Uncaught error from effect. The effect will no longer be active.",
+                                e));
                 dispose();
             }
         };
 
-        revalidate();
+        assert dispatcher != null;
+        this.dispatcher = dispatcher;
+
+        dispatcher.execute(this::revalidate);
     }
 
     private void revalidate() {
@@ -116,10 +137,6 @@ public class Effect {
         clearRegistrations();
         action = null;
         dependencies = null;
-    }
-
-    private static final Logger getLogger() {
-        return LoggerFactory.getLogger(Effect.class.getName());
     }
 
 }
