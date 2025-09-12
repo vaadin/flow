@@ -105,8 +105,17 @@ public class SignalTestBase {
         return dispatcher;
     }
 
+    protected void assertNoUncaughtException() {
+        assertEquals(List.of(), uncaughtExceptions);
+    }
+
     protected void assertUncaughtException(Throwable exception) {
         assertUncaughtException(lastCaught -> lastCaught == exception);
+    }
+
+    protected void assertUncaughtException(
+            Class<? extends Throwable> expetedType) {
+        assertUncaughtException(e -> e.getClass() == expetedType);
     }
 
     protected void assertUncaughtException(Predicate<Throwable> predicate) {
