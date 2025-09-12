@@ -2,7 +2,6 @@ import type { Plugin } from 'vite';
 import type { Program } from 'typescript';
 import ts from 'typescript';
 import * as path from 'path';
-import * as fs from "node:fs";
 
 type SupportedBasicTypes = 'any' | 'bigInt' | 'boolean' | 'null' | 'number' | 'string' | 'undefined' | 'unknown';
 
@@ -148,15 +147,13 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             }
             let program: Program | undefined = undefined;
             try {
-                const {parsed, host, rootNames, reactTypeMode} = resolveTsConfigAndGetParsed();
+                const parsed = resolveTsConfigAndGetParsed();
                 program = ts.createProgram({
-                    rootNames,
+                    rootNames: parsed.fileNames,
                     options: parsed.options,
-                    host
                 });
-                console.error("React type mode:", reactTypeMode, "jsx:", parsed.options.jsx, "lib:", parsed.options.lib);
             } catch (e) {
-                console.error('Failed to parse program file:', e);
+                console.debug('Failed to parse program file:', e);
                 return;
             }
             if (!program) {
@@ -204,7 +201,7 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             distinctJsxOpeningLikeElements.forEach((node) => {
                 const nodeName = node.tagName.getText();
                 try {
-                    const resolver = new Resolver(typeChecker, program);
+                    const resolver = new Resolver(typeChecker);
                     resolver.findPropsParamType(node, sourceFile);
                     const propertyDescriptors = resolver.resolveProps();
                     const responseDataStr = responseDataStringBuilder(false, undefined, propertyDescriptors);
@@ -226,21 +223,6 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             };
         },
     };
-}
-
-
-
-function resolveReactTypeMode(projectRoot: string): "DT" | "BUNDLED" | "MISSING" {
-    try {
-        path.require.resolve("@types/react/package.json", { paths: [projectRoot] });
-        return "DT"; // DefinitelyTyped: React 18 style
-    } catch {}
-    try {
-        const reactPkgPath = path.require.resolve("react/package.json", { paths: [projectRoot] });
-        const pkgJson = JSON.parse(fs.readFileSync(reactPkgPath, "utf8"));
-        if (pkgJson.types || pkgJson.typings) return "BUNDLED"; // React 19 style
-    } catch {}
-    return "MISSING";
 }
 
 /**
@@ -269,140 +251,42 @@ function getDistinctJsxOpeningLikeElements(root: ts.Node): ts.JsxOpeningLikeElem
     return out;
 }
 
-type ParsedWithHost = {
-    parsed: ts.ParsedCommandLine;
-    host: ts.CompilerHost;
-    rootNames: string[];
-    shimPath: string;
-    reactTypeMode: "DT" | "BUNDLED" | "MISSING";
-};
-
 /**
- * Parses tsconfig.json and returns a ParsedCommandLine with React/DOM typings ensured.
- * - Injects a virtual "__virtual__/react-types.d.ts" that references React types + DOM lib.
- * - Forces compilerOptions.types to include "react" and "react-dom" (works for React 18 & 19).
- * - Appends the virtual shim to `fileNames` so the Program always loads JSX namespace.
+ * Parses the tsconfig.json and get parsed command line object. Throws an exception if tsconfig.json is unable to parsed.
  */
-export function resolveTsConfigAndGetParsed(): ParsedWithHost {
-    const cwd = ts.sys.getCurrentDirectory();
-    const configPath = ts.findConfigFile(cwd, ts.sys.fileExists, "tsconfig.json");
-    if (!configPath) throw new Error("tsconfig.json not found.");
-
-    const { config, error } = ts.readConfigFile(configPath, ts.sys.readFile);
-    if (error) {
-        throw new Error(ts.flattenDiagnosticMessageText(error.messageText, "\n"));
-    }
-    const projectRoot = path.dirname(configPath);
-    const parsed = ts.parseJsonConfigFileContent(config, ts.sys, projectRoot, {}, configPath);
-    parsed.options.jsx ??= ts.JsxEmit.ReactJSX;
-    if (!parsed.options.lib?.some(l => String(l).toUpperCase().includes("DOM"))) {
-        parsed.options.lib = [...(parsed.options.lib ?? []), "DOM" as any];
-    }
-    if (Array.isArray(parsed.options.types)) {
-        const set = new Set(parsed.options.types);
-        set.add("react");
-        parsed.options.types = Array.from(set);
-    }
-
-    const reactTypeMode = resolveReactTypeMode(projectRoot);
-
-    const shimPath = path.resolve(projectRoot, "__virtual__/react-types.d.ts");
-    const shimContent = (() => {
-        switch (reactTypeMode) {
-            case "DT":
-                // React 18: pulls @types/react (includes global JSX)
-                return `/// <reference types="react" />\n/// <reference lib="dom" />\nexport {};\n`;
-            case "BUNDLED":
-                // React 19: import the package types so global JSX is applied
-                return `/// <reference lib="dom" />\nimport type "react";\nexport {};\n`;
-            default:
-                // fallback to empty string
-                console.error('React type mode is not DT or BUNDLED fallback to nothing');
-                return '';
-        }
-    })();
-
-    const rootNames = parsed.fileNames.includes(shimPath)
-        ? parsed.fileNames
-        : [...parsed.fileNames, shimPath];
-
-    // Host that serves the virtual shim
-    const host = ts.createCompilerHost(parsed.options);
-    const norm = (p: string) =>
-        (ts.sys.useCaseSensitiveFileNames ? path.resolve(p) : path.resolve(p).toLowerCase());
-    const SHIM = norm(shimPath);
-
-    const origReadFile = host.readFile?.bind(host);
-    host.readFile = (fileName: string) => {
-        if (norm(fileName) === SHIM) return shimContent;
-        return origReadFile ? origReadFile(fileName) : ts.sys.readFile(fileName);
-    };
-
-    const origFileExists = host.fileExists?.bind(host);
-    host.fileExists = (fileName: string) => {
-        if (norm(fileName) === SHIM) return true;
-        return origFileExists ? origFileExists(fileName) : ts.sys.fileExists(fileName);
-    };
-
-    const origGetSourceFile = host.getSourceFile?.bind(host);
-    host.getSourceFile = (fileName, languageVersion, onError, shouldCreateNewSourceFile) => {
-        if (norm(fileName) === SHIM) {
-            return ts.createSourceFile(fileName, shimContent, languageVersion, /*setParent*/ true);
-        }
-        return origGetSourceFile
-            ? origGetSourceFile(fileName, languageVersion, onError, shouldCreateNewSourceFile)
-            : undefined;
-    };
-
-    return { parsed, host, rootNames, shimPath, reactTypeMode };
+function resolveTsConfigAndGetParsed() {
+    const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
+    if (!configPath) throw new Error('tsconfig.json not found.');
+    const config = ts.readConfigFile(configPath, ts.sys.readFile);
+    return ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
 }
+
 /**
  * Finds the JSX namespace or throws exception
  * @param checker TS checker to get Symbols
  * @param sourceFile
  */
-export function findJsxNamespaceSymbolOrThrow(
-    checker: ts.TypeChecker,
-    program: ts.Program,
-    sourceFile?: ts.SourceFile
-): ts.Symbol {
-    // 1) Prefer to resolve without a "location" to avoid scope restrictions
-    const wideFlags =
-        ts.SymbolFlags.All | // cast wide; covers namespace/module/interface/type/etc.
-        ts.SymbolFlags.Namespace |
-        ts.SymbolFlags.Module |
-        ts.SymbolFlags.Interface |
-        ts.SymbolFlags.Type;
-
-    let jsxSym =
-        checker.resolveName("JSX", /*location*/ undefined, wideFlags, /*excludeGlobals*/ false) ||
-        (sourceFile
-            ? checker.resolveName("JSX", sourceFile, wideFlags, /*excludeGlobals*/ false)
-            : undefined);
-
-    // 2) Fallback: scan in-scope symbols (helps some host setups)
-    if (!jsxSym && sourceFile) {
-        const inScope = checker.getSymbolsInScope(
-            sourceFile,
-            ts.SymbolFlags.Namespace | ts.SymbolFlags.Module
-        );
-        jsxSym = inScope.find((s) => s.escapedName === "JSX" as ts.__String);
+function findJsxNamespaceSymbolOrThrow(checker: ts.TypeChecker, sourceFile: ts.SourceFile) {
+    let jsxNamespaceSymbol = checker
+        .getSymbolsInScope(sourceFile, ts.SymbolFlags.Namespace)
+        .find((sym) => sym.name === 'JSX');
+    if (jsxNamespaceSymbol) {
+        return jsxNamespaceSymbol;
+    }
+    jsxNamespaceSymbol = checker
+        .getAmbientModules()
+        .flatMap((mod) => Array.from(mod.exports?.values() ?? []))
+        .find((sym) => sym.name === 'IntrinsicElements');
+    if (jsxNamespaceSymbol) {
+        return jsxNamespaceSymbol;
+    }
+    jsxNamespaceSymbol = checker.resolveName('JSX', undefined, ts.SymbolFlags.Namespace, false);
+    if (jsxNamespaceSymbol) {
+        return jsxNamespaceSymbol;
     }
 
-    if (!jsxSym) {
-        // Give an actionable error—most failures are due to missing DOM/React types.
-        const opts = program.getCompilerOptions();
-        const msg =
-            `JSX namespace not found.\n` +
-            `Ensure your Program loads React + DOM types. Quick checks:\n` +
-            `  - compilerOptions.jsx: ${opts.jsx ?? "undefined"} (should be ReactJSX/ReactJSXDev)\n` +
-            `  - compilerOptions.lib: ${JSON.stringify(opts.lib ?? [])} (should include "DOM")\n` +
-            `  - compilerOptions.types: ${JSON.stringify(opts.types ?? [])} (should include "react" on React 18; remove @types/react on React 19)`;
-        throw new Error(msg);
-    }
-    return jsxSym;
+    throw new Error('JSX namespace not found (make sure DOM/React types are loaded)');
 }
-
 
 /*
  * Resolves the property of a component using Typescript Compiler API. The flow as follows:
@@ -414,14 +298,12 @@ export function findJsxNamespaceSymbolOrThrow(
  */
 class Resolver {
     private readonly checker: ts.TypeChecker;
-    private readonly program: ts.Program;
     private readonly objectTypeResolvers: ObjectTypeResolver[] = [];
     private propsType?: ts.Type;
     private _intrinsicElement = false;
 
-    constructor(checker: ts.TypeChecker, program: ts.Program) {
+    constructor(checker: ts.TypeChecker) {
         this.checker = checker;
-        this.program = program;
         this.objectTypeResolvers.push(this.handleClassOrInterface);
         this.objectTypeResolvers.push(this.handleAnonymousOrMappedObject);
         this.objectTypeResolvers.push(this.handlePropsIntersection);
@@ -448,8 +330,7 @@ class Resolver {
 
         let propsParamType: ts.Type;
         if (callSignatures.length === 0) {
-            const jsxNameSpace = findJsxNamespaceSymbolOrThrow(checker, this.program, sourceFile);
-            console.log(jsxNameSpace);
+            const jsxNameSpace = findJsxNamespaceSymbolOrThrow(checker, sourceFile);
             const jsxExports = checker.getExportsOfModule(jsxNameSpace);
             const intrinsicElements = jsxExports.find((e) => e.name === 'IntrinsicElements');
             if (!intrinsicElements) {
