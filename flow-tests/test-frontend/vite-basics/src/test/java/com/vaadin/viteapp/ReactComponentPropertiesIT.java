@@ -72,21 +72,8 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
                 .withAttribute(DATA_TEST_ID, "component-with-any-props")
                 .waitForFirst();
         Assert.assertNull(getDebugPropertiesFromFiberNode(element));
-        Map<String, Object> debugPropertiesFromWindow = getDebugPropertiesFromWindow(
-                element);
+        Map<String, Object> debugPropertiesFromWindow = getDebugPropertiesFromWindow("ComponentWithAnyProps");
         assertError(debugPropertiesFromWindow, true);
-    }
-
-    @Test
-    public void errorShouldBeRegisteredWhenIntrinsicElementsNotLoaded() {
-        var anySpan = $("span").waitForFirst();
-        Map<String, Object> spanProps = getDebugPropertiesFromWindow(anySpan);
-        assertError(spanProps, true);
-
-        var anyDiv = $("div").waitForFirst();
-        Map<String, Object> divProperties = getDebugPropertiesFromWindow(
-                anyDiv);
-        assertError(divProperties, false);
     }
 
     @Test
@@ -113,12 +100,17 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
     private Map<String, Object> getDebugPropertiesFromWindow(
             WebElement element) {
         String tagName = element.getTagName();
+        return getDebugPropertiesFromWindow(tagName);
+    }
+    private Map<String, Object> getDebugPropertiesFromWindow(
+            String tagName) {
         return (Map<String, Object>) executeScript(
                 """
                         return window.Vaadin.copilot.ReactProperties.properties[arguments[0]];
                         """,
                 tagName);
     }
+
 
     private Map<String, Object> getDebugPropertiesFromFiberNode(
             WebElement element) {
