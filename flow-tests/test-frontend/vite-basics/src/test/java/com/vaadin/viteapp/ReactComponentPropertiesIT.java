@@ -72,7 +72,8 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
                 .withAttribute(DATA_TEST_ID, "component-with-any-props")
                 .waitForFirst();
         Assert.assertNull(getDebugPropertiesFromFiberNode(element));
-        Map<String, Object> debugPropertiesFromWindow = getDebugPropertiesFromWindow("ComponentWithAnyProps");
+        Map<String, Object> debugPropertiesFromWindow = getDebugPropertiesFromWindow(
+                "ComponentWithAnyProps");
         assertError(debugPropertiesFromWindow, true);
     }
 
@@ -102,15 +103,14 @@ public class ReactComponentPropertiesIT extends ChromeBrowserTest {
         String tagName = element.getTagName();
         return getDebugPropertiesFromWindow(tagName);
     }
-    private Map<String, Object> getDebugPropertiesFromWindow(
-            String tagName) {
+
+    private Map<String, Object> getDebugPropertiesFromWindow(String tagName) {
         return (Map<String, Object>) executeScript(
                 """
                         return window.Vaadin.copilot.ReactProperties.properties[arguments[0]];
                         """,
                 tagName);
     }
-
 
     private Map<String, Object> getDebugPropertiesFromFiberNode(
             WebElement element) {
