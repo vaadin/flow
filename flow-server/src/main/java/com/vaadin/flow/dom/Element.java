@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -1370,8 +1371,14 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
-                Stream.of(arguments));
+        Serializable[] jsParameters;
+        if (arguments.length == 0) {
+            jsParameters = new Serializable[] { this };
+        } else {
+            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters[0] = this;
+            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
+        }
 
         return scheduleJavaScriptInvocation("return $0." + functionName + "("
                 + paramPlaceholderString + ")", jsParameters);
@@ -1424,8 +1431,14 @@ public class Element extends Node<Element> {
             Serializable... parameters) {
 
         // Add "this" as the last parameter
-        Stream<Serializable> wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this));
+        Serializable[] wrappedParameters;
+        if (parameters.length == 0) {
+            wrappedParameters = new Serializable[] { this };
+        } else {
+            wrappedParameters = Arrays.copyOf(parameters,
+                    parameters.length + 1);
+            wrappedParameters[parameters.length] = this;
+        }
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
@@ -1436,11 +1449,11 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Stream<Serializable> parameters) {
+            String expression, Serializable[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters.toArray(Serializable[]::new));
+                parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);
