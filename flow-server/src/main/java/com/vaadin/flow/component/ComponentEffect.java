@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -191,104 +192,21 @@ public final class ComponentEffect {
      *            the value type
      */
     public static <T> void bindChildren(Component parentComponent,
-                                        Element parent, ListSignal<T> list,
-                                        SerializableFunction<ValueSignal<T>, Element> childFactory) {
-        Objects.requireNonNull(parent, "Parent component cannot be null");
+            Element parent, ListSignal<T> list,
+            SerializableFunction<ValueSignal<T>, Element> childFactory) {
+        Objects.requireNonNull(parentComponent,
+                "Parent component cannot be null");
         Objects.requireNonNull(parent, "Parent element cannot be null");
         Objects.requireNonNull(list, "ListSignal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
-        HashMap<ValueSignal<T>, Element> signalToChild = new HashMap<>();
+        HashMap<ValueSignal<T>, Element> signalValueToChild = new HashMap<>();
 
         ComponentEffect.effect(parentComponent, () -> {
-            List<ValueSignal<T>> items = list.value();
-
-            removeNotPresentChildren(signalToChild, items);
-
-            updateChildrenByListSignal(parent, new UpdateByList<>(parent, items,
-                    childFactory, signalToChild));
+            new UpdateByListSignal<>(parent, list, childFactory,
+                    signalValueToChild).update();
         });
-    }
-
-    private static <T> void updateChildrenByListSignal(Element parent,
-                                                       UpdateByList<T> options) {
-        // Cache the children to avoid multiple traversals
-        LinkedList<Element> remainingChildren = options.remainingChildren;
-
-        for (int i = 0; i < options.list.size(); i++) {
-            ValueSignal<T> item = options.list.get(i);
-
-            Element expectedChild = options.getComponent(item);
-            if (remainingChildren.isEmpty()
-                    || expectedChild.getParent() != parent) {
-                parent.insertChild(i, expectedChild);
-                continue;
-            }
-
-            Element actualChild = remainingChildren.removeFirst();
-            if (!actualChild.equals(expectedChild)) {
-                /*
-                 * A mismatch has been encountered and we need to adjust the
-                 * component children to match the expected order. This
-                 * algorithm optimized for cases where only a single item has
-                 * been moved to a new location and accepts that we might do
-                 * redundant operations in other cases.
-                 */
-                if (expectedChild == remainingChildren.peek()) {
-                    // Move actual child to a later position
-
-                    // Remove from current pos. Will be added back later
-                    actualChild.removeFromParent();
-
-                    // Skip next child since that's the expected child
-                    remainingChildren.removeFirst();
-                } else {
-                    // Move expected child from a later position
-                    parent.insertChild(i, expectedChild);
-
-                    // TODO: This is an O(n) operation inside an O(n) loop
-                    remainingChildren.remove(expectedChild);
-
-                    // Restore previous actual child for next round
-                    remainingChildren.addFirst(actualChild);
-                }
-            }
-        }
-    }
-
-    /** Remove all items that are no longer present. */
-    private static <T> void removeNotPresentChildren(
-            HashMap<ValueSignal<T>, Element> signalToChild,
-            List<ValueSignal<T>> items) {
-        var toRemove = new HashSet<>(signalToChild.keySet());
-        items.forEach(toRemove::remove);
-        for (ValueSignal<T> removedItem : toRemove) {
-            Element component = signalToChild.remove(removedItem);
-            component.removeFromParent();
-        }
-    }
-
-    private record UpdateByList<T>(Element parentComponent,
-                                   List<ValueSignal<T>> list,
-                                   SerializableFunction<ValueSignal<T>, Element> childFactory,
-                                   HashMap<ValueSignal<T>, Element> signalToChild,
-                                   LinkedList<Element> remainingChildren) {
-
-        private UpdateByList(Element parentComponent, List<ValueSignal<T>> list,
-                             SerializableFunction<ValueSignal<T>, Element> childFactory,
-                             HashMap<ValueSignal<T>, Element> signalToChild) {
-            this(parentComponent, list, childFactory, signalToChild,
-                    parentComponent.getChildren()
-                            .collect(Collectors.toCollection(LinkedList::new)));
-        }
-
-        /**
-         * Return existing component or generate new by child factory.
-         */
-        private Element getComponent(ValueSignal<T> item) {
-            return signalToChild.computeIfAbsent(item, childFactory);
-        }
     }
 
     private void enableEffect(Component owner) {
@@ -337,5 +255,124 @@ public final class ComponentEffect {
     private void close() {
         disableEffect();
         closed = true;
+    }
+
+    /**
+     * Abstract base class for updating children of a parent element according
+     * to a signal.
+     *
+     * @param <SIGNAL>
+     *            the type of the signal
+     * @param <T>
+     *            the value type
+     */
+    private static class AbstractUpdateBySignal<SIGNAL, T>
+            implements Serializable {
+        protected final SIGNAL signal;
+        protected final Element parentElement;
+        protected final HashMap<ValueSignal<T>, Element> valueSignalToChild;
+
+        protected AbstractUpdateBySignal(Element parentElement, SIGNAL signal,
+                HashMap<ValueSignal<T>, Element> signalToChild) {
+            this.parentElement = parentElement;
+            this.signal = signal;
+            this.valueSignalToChild = signalToChild;
+        }
+    }
+
+    /**
+     * Helper class to update children of a parent element according to a list.
+     *
+     * @param <T>
+     *            the value type
+     */
+    private static class UpdateByListSignal<T>
+            extends AbstractUpdateBySignal<ListSignal<T>, T> {
+
+        private final List<ValueSignal<T>> list;
+        private final SerializableFunction<ValueSignal<T>, Element> childElementFactory;
+        private final LinkedList<Element> remainingChildren;
+
+        private UpdateByListSignal(Element parentElement,
+                ListSignal<T> listSignal,
+                SerializableFunction<ValueSignal<T>, Element> childFactory,
+                HashMap<ValueSignal<T>, Element> valueSignalToChild) {
+            super(parentElement, listSignal, valueSignalToChild);
+            this.list = listSignal.value();
+            this.childElementFactory = childFactory;
+            // Cache the children to avoid multiple traversals
+            this.remainingChildren = parentElement.getChildren()
+                    .collect(Collectors.toCollection(LinkedList::new));
+        }
+
+        /**
+         * Return existing component or generate new by child factory.
+         */
+        private Element getComponent(ValueSignal<T> item) {
+            return valueSignalToChild.computeIfAbsent(item,
+                    childElementFactory);
+        }
+
+        /**
+         * Update children of the parent element according to the list.
+         */
+        private void update() {
+            removeNotPresentChildren(valueSignalToChild, list);
+            updateChildrenByListSignal(parentElement);
+        }
+
+        /** Remove all items that are no longer present. */
+        private void removeNotPresentChildren(
+                HashMap<ValueSignal<T>, Element> signalToChild,
+                List<ValueSignal<T>> items) {
+            var toRemove = new HashSet<>(signalToChild.keySet());
+            items.forEach(toRemove::remove);
+            for (ValueSignal<T> removedItem : toRemove) {
+                Element component = signalToChild.remove(removedItem);
+                component.removeFromParent();
+            }
+        }
+
+        private void updateChildrenByListSignal(Element parent) {
+            for (int i = 0; i < list.size(); i++) {
+                ValueSignal<T> item = list.get(i);
+
+                Element expectedChild = getComponent(item);
+                if (remainingChildren.isEmpty()
+                        || expectedChild.getParent() != parent) {
+                    parent.insertChild(i, expectedChild);
+                    continue;
+                }
+
+                Element actualChild = remainingChildren.removeFirst();
+                if (!actualChild.equals(expectedChild)) {
+                    /*
+                     * A mismatch has been encountered and we need to adjust the
+                     * component children to match the expected order. This
+                     * algorithm optimized for cases where only a single item
+                     * has been moved to a new location and accepts that we
+                     * might do redundant operations in other cases.
+                     */
+                    if (expectedChild == remainingChildren.peek()) {
+                        // Move actual child to a later position
+
+                        // Remove from current pos. Will be added back later
+                        actualChild.removeFromParent();
+
+                        // Skip next child since that's the expected child
+                        remainingChildren.removeFirst();
+                    } else {
+                        // Move expected child from a later position
+                        parent.insertChild(i, expectedChild);
+
+                        // TODO: This is an O(n) operation inside an O(n) loop
+                        remainingChildren.remove(expectedChild);
+
+                        // Restore previous actual child for next round
+                        remainingChildren.addFirst(actualChild);
+                    }
+                }
+            }
+        }
     }
 }
