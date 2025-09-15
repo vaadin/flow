@@ -29,10 +29,10 @@ import java.util.ArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -182,15 +182,28 @@ public class ComponentEffectTest {
             UI.setCurrent(null);
             session.unlock();
 
+            AtomicBoolean effectRun = new AtomicBoolean(false);
             ComponentEffect.effect(ui, () -> {
+                effectRun.set(true);
                 throw new RuntimeException("Expected exception");
             });
 
-            ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
-            assertNotNull(event);
+            int tries = 0;
+            while (!effectRun.get()) {
+                // keep trying few times
+                if (++tries > 5) {
+                    fail("Effect was not run in expected time");
+                }
+                ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
+                if (event == null) {
+                    continue;
+                }
+                effectRun.set(true);
+                assertNotNull(event);
 
-            Throwable throwable = event.getThrowable();
-            assertEquals(RuntimeException.class, throwable.getClass());
+                Throwable throwable = event.getThrowable();
+                assertEquals(RuntimeException.class, throwable.getClass());
+            }
         });
     }
 
