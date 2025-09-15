@@ -2,14 +2,12 @@ package com.vaadin.flow.internal;
 
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 
@@ -24,7 +22,7 @@ public class UsageStatisticsExporterTest {
         UsageStatisticsExporter.exportUsageStatisticsToDocument(document);
 
         String entries = UsageStatistics.getEntries().map(entry -> {
-            JsonObject json = Json.createObject();
+            ObjectNode json = JacksonUtils.createObjectNode();
 
             json.put("is", entry.getName());
             json.put("version", entry.getVersion());

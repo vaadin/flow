@@ -22,8 +22,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.JsonObject;
-
 /**
  * Empty change for the feature to report its presence for the client (send the
  * feature information even though its data is empty).
