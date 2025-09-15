@@ -119,6 +119,24 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void map_countCallbackInvocations_invocationsAreNotCached() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<Integer> computed = source.map(value -> {
+            count.incrementAndGet();
+            return value.length();
+        });
+        assertEquals(0, count.get());
+
+        computed.value();
+        assertEquals(1, count.get());
+
+        computed.value();
+        assertEquals(2, count.get());
+    }
+
+    @Test
     void callback_updateOtherSignal_signalUpdated() {
         ValueSignal<String> other = new ValueSignal<>("value");
 
