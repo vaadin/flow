@@ -101,7 +101,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.3.2</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>make-index</id>
