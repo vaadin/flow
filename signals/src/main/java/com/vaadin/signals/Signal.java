@@ -1,6 +1,7 @@
 package com.vaadin.signals;
 
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 import com.vaadin.signals.impl.ComputedSignal;
@@ -48,6 +49,27 @@ public interface Signal<T> {
      * @return the signal value
      */
     T value();
+
+    /**
+     * Creates a computed signal based on a mapper function that is passed the
+     * value of this signal. If the mapper function accesses other signal
+     * values, then the computed signal will also depend on those signals.
+     *
+     * @param <C>
+     *            the computed signal type
+     * @param mapper
+     *            the mapper function to use, not <code>null</code>
+     * @return the computed signal, not <code>null</code>
+     */
+    default <C> Signal<C> map(Function<T, C> mapper) {
+        return Signal.computed(() -> mapper.apply(value()));
+    }
+
+    /*
+     * These are a bunch of public access points to API that is originally
+     * implemented in classes in the .impl package. These methods are unit
+     * tested from the same class that tests the implementation class.
+     */
 
     /**
      * Creates a signal effect with the given action. The action is run when the
