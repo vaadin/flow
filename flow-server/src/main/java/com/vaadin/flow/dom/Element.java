@@ -1435,8 +1435,8 @@ public class Element extends Node<Element> {
         if (parameters.length == 0) {
             wrappedParameters = new Serializable[] { this };
         } else {
-            wrappedParameters = Arrays.copyOf(parameters,
-                    parameters.length + 1);
+            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1,
+                    Serializable[].class);
             wrappedParameters[parameters.length] = this;
         }
 
