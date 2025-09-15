@@ -27,10 +27,6 @@ class VaadinCommercialBanner extends HTMLElement {
         z-index: 9999;
       }
       
-      svg {
-      
-      }
-      
       p {
         margin: 0;
       }
