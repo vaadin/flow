@@ -201,11 +201,11 @@ public final class ComponentEffect {
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
-        HashMap<ValueSignal<T>, Element> signalValueToChild = new HashMap<>();
+        HashMap<ValueSignal<T>, Element> valueSignalToChild = new HashMap<>();
 
         ComponentEffect.effect(parentComponent, () -> {
             new UpdateByListSignal<>(parent, list, childFactory,
-                    signalValueToChild).update();
+                    valueSignalToChild).update();
         });
     }
 
@@ -273,10 +273,10 @@ public final class ComponentEffect {
         protected final HashMap<ValueSignal<T>, Element> valueSignalToChild;
 
         protected AbstractUpdateBySignal(Element parentElement, SIGNAL signal,
-                HashMap<ValueSignal<T>, Element> signalToChild) {
+                HashMap<ValueSignal<T>, Element> valueSignalToChild) {
             this.parentElement = parentElement;
             this.signal = signal;
-            this.valueSignalToChild = signalToChild;
+            this.valueSignalToChild = valueSignalToChild;
         }
     }
 
@@ -306,9 +306,9 @@ public final class ComponentEffect {
         }
 
         /**
-         * Return existing component or generate new by child factory.
+         * Return existing element or generate new by child factory.
          */
-        private Element getComponent(ValueSignal<T> item) {
+        private Element getElement(ValueSignal<T> item) {
             return valueSignalToChild.computeIfAbsent(item,
                     childElementFactory);
         }
@@ -317,35 +317,38 @@ public final class ComponentEffect {
          * Update children of the parent element according to the list.
          */
         private void update() {
-            removeNotPresentChildren(valueSignalToChild, list);
-            updateChildrenByListSignal(parentElement);
+            removeNotPresentChildren();
+            updateChildrenByListSignal();
         }
 
-        /** Remove all items that are no longer present. */
-        private void removeNotPresentChildren(
-                HashMap<ValueSignal<T>, Element> signalToChild,
-                List<ValueSignal<T>> items) {
-            var toRemove = new HashSet<>(signalToChild.keySet());
-            items.forEach(toRemove::remove);
+        /** Remove all items that are no longer present in the signal. */
+        private void removeNotPresentChildren() {
+            var toRemove = new HashSet<>(valueSignalToChild.keySet());
+            list.forEach(toRemove::remove);
             for (ValueSignal<T> removedItem : toRemove) {
-                Element component = signalToChild.remove(removedItem);
-                component.removeFromParent();
+                Element element = valueSignalToChild.remove(removedItem);
+                element.removeFromParent();
             }
         }
 
-        private void updateChildrenByListSignal(Element parent) {
+        private void updateChildrenByListSignal() {
+            // Cache the children in a HashSet for O(1) lookups and removals
+            HashSet<Element> remainingChildrenSet = new HashSet<>(
+                    remainingChildren);
+
             for (int i = 0; i < list.size(); i++) {
                 ValueSignal<T> item = list.get(i);
 
-                Element expectedChild = getComponent(item);
-                if (remainingChildren.isEmpty()
-                        || expectedChild.getParent() != parent) {
-                    parent.insertChild(i, expectedChild);
+                Element expectedChild = getElement(item);
+                if (remainingChildrenSet.isEmpty() || !Objects
+                        .equals(expectedChild.getParent(), parentElement)) {
+                    parentElement.insertChild(i, expectedChild);
                     continue;
                 }
 
-                Element actualChild = remainingChildren.removeFirst();
-                if (!actualChild.equals(expectedChild)) {
+                // Use LinkedList for order
+                Element actualChild = remainingChildren.pollFirst();
+                if (!Objects.equals(actualChild, expectedChild)) {
                     /*
                      * A mismatch has been encountered and we need to adjust the
                      * component children to match the expected order. This
@@ -360,13 +363,12 @@ public final class ComponentEffect {
                         actualChild.removeFromParent();
 
                         // Skip next child since that's the expected child
-                        remainingChildren.removeFirst();
+                        remainingChildren.pollFirst();
                     } else {
                         // Move expected child from a later position
-                        parent.insertChild(i, expectedChild);
+                        parentElement.insertChild(i, expectedChild);
 
-                        // TODO: This is an O(n) operation inside an O(n) loop
-                        remainingChildren.remove(expectedChild);
+                        remainingChildrenSet.remove(expectedChild);
 
                         // Restore previous actual child for next round
                         remainingChildren.addFirst(actualChild);

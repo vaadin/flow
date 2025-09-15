@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang3.time.StopWatch;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -279,15 +280,18 @@ public class ComponentEffectTest {
 
     @Test
     public void bindChildren_nullArguments_throws() {
-        ListSignal<String> taskList = new ListSignal<>(String.class);
-        TestLayout parentComponent = new TestLayout();
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            TestLayout parentComponent = new TestLayout();
+            new MockUI();
 
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(null, taskList, valueSignal -> null));
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(parentComponent, null, valueSignal -> null));
-        assertThrows(NullPointerException.class, () -> ComponentEffect
-                .bindChildren(parentComponent, taskList, null));
+            assertThrows(NullPointerException.class, () -> ComponentEffect
+                    .bindChildren(null, taskList, valueSignal -> null));
+            assertThrows(NullPointerException.class, () -> ComponentEffect
+                    .bindChildren(parentComponent, null, valueSignal -> null));
+            assertThrows(NullPointerException.class, () -> ComponentEffect
+                    .bindChildren(parentComponent, taskList, null));
+        });
     }
 
     @Test
@@ -337,6 +341,8 @@ public class ComponentEffectTest {
 
     @Test
     public void bindChildren_listSignalWithItemsWithNotEmptyParent_parentUpdated() {
+        // if parent has children initially, they are preserved after list
+        // signal items.
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
@@ -450,9 +456,27 @@ public class ComponentEffectTest {
 
     @Test
     public void bindChildren_addToParentComponentAndAddItem_parentUpdated() {
-        // add component directly to parent as a first component. It should be
-        // moved to last after signal list.
-        // TODO
+        // When adding children directly to parent, they are added after list
+        // signal items.
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            TestLayout parentComponent = new TestLayout();
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            var expectedComponent = new TestComponent("added directly");
+            parentComponent.add(expectedComponent);
+
+            assertEquals("Parent component children count is wrong", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("first", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(0)).getValue());
+            assertEquals("added directly", ((TestComponent) parentComponent
+                    .getChildren().toList().get(1)).getValue());
+        });
     }
 
     @FunctionalInterface
