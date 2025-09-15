@@ -148,10 +148,10 @@ public final class ComponentEffect {
     /**
      * Binds {@link ListSignal} to parent component with a component factory.
      * Parent component mush implement {@link HasComponents} and it must be
-     * subtype of {@link Component}
+     * subtype of {@link Component}.
      *
      * @param parent
-     *            Target parent component, must not be <code>null</code>
+     *            target parent component, must not be <code>null</code>
      * @param list
      *            list signal to bind to the parent, must not be
      *            <code>null</code>
@@ -169,20 +169,22 @@ public final class ComponentEffect {
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
         bindChildren(parent, parent.getElement(), list,
+                // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
                         .map(Component::getElement).orElse(null));
     }
 
+    // TODO update JavaDoc
     /**
      * Binds {@link ListSignal} to parent element with an element factory.
      * Parent component is needed as a Signal effect owner.
      *
      * @param parentComponent
-     *            Target parent component as a Signal effect owner, must not be
+     *            target parent component as a Signal effect owner, must not be
      *            <code>null</code>
      * @param parent
-     *            Target parent element, must not be <code>null</code>
+     *            target parent element, must not be <code>null</code>
      * @param list
      *            list signal to bind to the parent, must not be
      *            <code>null</code>
@@ -191,7 +193,7 @@ public final class ComponentEffect {
      * @param <T>
      *            the value type
      */
-    public static <T> void bindChildren(Component parentComponent,
+    private static <T> void bindChildren(Component parentComponent,
             Element parent, ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Element> childFactory) {
         Objects.requireNonNull(parentComponent,
@@ -289,7 +291,7 @@ public final class ComponentEffect {
     private static class UpdateByListSignal<T>
             extends AbstractUpdateBySignal<ListSignal<T>, T> {
 
-        private final List<ValueSignal<T>> list;
+        private final List<ValueSignal<T>> childSignals;
         private final SerializableFunction<ValueSignal<T>, Element> childElementFactory;
         private final LinkedList<Element> remainingChildren;
 
@@ -298,7 +300,7 @@ public final class ComponentEffect {
                 SerializableFunction<ValueSignal<T>, Element> childFactory,
                 HashMap<ValueSignal<T>, Element> valueSignalToChild) {
             super(parentElement, listSignal, valueSignalToChild);
-            this.list = listSignal.value();
+            this.childSignals = listSignal.value();
             this.childElementFactory = childFactory;
             // Cache the children to avoid multiple traversals
             this.remainingChildren = parentElement.getChildren()
@@ -324,7 +326,7 @@ public final class ComponentEffect {
         /** Remove all items that are no longer present in the signal. */
         private void removeNotPresentChildren() {
             var toRemove = new HashSet<>(valueSignalToChild.keySet());
-            list.forEach(toRemove::remove);
+            childSignals.forEach(toRemove::remove);
             for (ValueSignal<T> removedItem : toRemove) {
                 Element element = valueSignalToChild.remove(removedItem);
                 element.removeFromParent();
@@ -336,8 +338,8 @@ public final class ComponentEffect {
             HashSet<Element> remainingChildrenSet = new HashSet<>(
                     remainingChildren);
 
-            for (int i = 0; i < list.size(); i++) {
-                ValueSignal<T> item = list.get(i);
+            for (int i = 0; i < childSignals.size(); i++) {
+                ValueSignal<T> item = childSignals.get(i);
 
                 Element expectedChild = getElement(item);
                 if (remainingChildrenSet.isEmpty() || !Objects
