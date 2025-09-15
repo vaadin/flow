@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
@@ -28,14 +29,11 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -110,7 +108,7 @@ public class DependencyListTest {
 
     private void validateDependency(String url, Type dependencyType,
             LoadMode loadMode) {
-        JsonObject expectedJson = Json.createObject();
+        ObjectNode expectedJson = JacksonUtils.createObjectNode();
         expectedJson.put(Dependency.KEY_URL, url);
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
@@ -119,10 +117,11 @@ public class DependencyListTest {
                 deps.getPendingSendToClient().size());
         assertTrue(String.format(
                 "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toJson(),
+                expectedJson.toString(),
                 deps.getPendingSendToClient().iterator().next().toJson()),
-                JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
-                        .iterator().next().toJson()));
+                JacksonUtils.jsonEquals(expectedJson,
+                        JacksonUtils.mapElemental(deps.getPendingSendToClient()
+                                .iterator().next().toJson())));
     }
 
     @Test
