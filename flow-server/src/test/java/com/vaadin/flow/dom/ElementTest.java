@@ -34,6 +34,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -2574,6 +2575,27 @@ public class ElementTest extends AbstractNodeTest {
     }
 
     @Test
+    public void givenTypeDefinedArray_ArrayStoreExceptionNotThrown() {
+        Element element = new Element("div") {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Serializable... parameters) {
+                Serializable[] wrappedParameters;
+                if (parameters.length == 0) {
+                    wrappedParameters = new Serializable[] { this };
+                } else {
+                    wrappedParameters = Arrays.copyOf(parameters,
+                            parameters.length + 1, Serializable[].class);
+                    wrappedParameters[parameters.length] = this;
+                }
+                return null;
+            }
+        };
+
+        element.executeJs("foo", new Component[] { new Div() });
+    }
+
+    @Test
     public void callFunction_delegatesToCallJsFunction() {
         AtomicReference<String> invokedFuction = new AtomicReference<>();
         AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
@@ -2631,6 +2653,10 @@ public class ElementTest extends AbstractNodeTest {
     private static JsonArray createNumberArray(double... items) {
         return DoubleStream.of(items).mapToObj(Json::create)
                 .collect(JsonUtils.asArray());
+    }
+
+    @Tag("div")
+    private static class Div extends Component {
     }
 
 }
