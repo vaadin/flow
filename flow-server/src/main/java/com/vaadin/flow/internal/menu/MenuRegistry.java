@@ -93,6 +93,11 @@ public class MenuRegistry {
         }
     }
 
+    private static ObjectMapper mapper = JsonMapper.builder()
+            .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
+
     /**
      * Collect views with menu annotation for automatic menu population. All
      * client views are collected and any accessible server views.
@@ -398,13 +403,6 @@ public class MenuRegistry {
         if (viewsJsonAsResource != null) {
             try (InputStream source = viewsJsonAsResource.openStream()) {
                 if (source != null) {
-                    ObjectMapper mapper = JsonMapper.builder().configure(
-                            DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
-                            false)
-                            .configure(
-                                    DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES,
-                                    false)
-                            .build();
                     return mapper.readValue(source, new TypeReference<>() {
                     });
                 }

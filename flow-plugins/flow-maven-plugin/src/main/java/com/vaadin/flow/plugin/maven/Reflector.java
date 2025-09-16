@@ -39,7 +39,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import tools.jackson.core.JacksonException;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
