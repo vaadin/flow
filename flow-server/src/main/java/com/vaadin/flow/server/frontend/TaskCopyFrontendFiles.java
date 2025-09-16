@@ -25,19 +25,20 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_GENERATED_DIR;
 
 /**
- * Copies JavaScript and CSS files from JAR files into a given folder.
+ * Copies all frontend resources from JAR files into a given folder.
+ * <p>
+ * The task considers "frontend resources" all files placed in
+ * {@literal META-INF/frontend}, {@literal META-INF/resources/frontend} and
+ * {@literal META-INF/resources/[**]/themes} folders.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 2.0
  */
 public class TaskCopyFrontendFiles implements FallibleCommand {
-    private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
-            "**/*.ts.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
-    private File targetDirectory;
-    private File themeJarTargetDirectory;
+    private final File targetDirectory;
+    private final File themeJarTargetDirectory;
     private Set<File> resourceLocations = null;
 
     /**
@@ -81,10 +82,10 @@ public class TaskCopyFrontendFiles implements FallibleCommand {
             } else {
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                        WILDCARD_INCLUSIONS);
+                        "**/*");
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
-                        targetDirectory, WILDCARD_INCLUSIONS);
+                        targetDirectory, "**/*");
                 jarContentsManager.copyIncludedFilesFromJarTrimmingBasePath(
                         location, RESOURCES_JAR_DEFAULT,
                         themeJarTargetDirectory,

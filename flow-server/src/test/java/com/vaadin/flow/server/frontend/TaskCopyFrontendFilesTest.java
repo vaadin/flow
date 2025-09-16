@@ -1,18 +1,10 @@
-/*
- * Copyright 2000-2020 Vaadin Ltd.
+/**
+ * Copyright (C) 2024 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
- *
+ * See {@literal <https://vaadin.com/commercial-license-and-service-terms>}  for the full
+ * license.
  */
 
 package com.vaadin.flow.server.frontend;
@@ -77,8 +69,9 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(targetFolder);
-        Assert.assertEquals(8, files.size());
+        Assert.assertEquals(19, files.size());
 
+        // Check some resources
         Assert.assertTrue("TS resource should have been copied from jar file",
                 files.contains("example.ts"));
 
@@ -107,6 +100,28 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "JS resource source map should have been copied from resource folder",
                 files.contains("resourceInFolder.js.map"));
+
+        Assert.assertTrue("TSX resource should have been copied from jar file",
+                files.contains("react.tsx"));
+
+        Assert.assertTrue(
+                "TSX resource source map should have been copied from jar file",
+                files.contains("react.tsx.map"));
+
+        Assert.assertTrue("JSX resource should have been copied from jar file",
+                files.contains("test.jsx"));
+
+        Assert.assertTrue(
+                "JSX resource source map should have been copied from jar file",
+                files.contains("test.jsx.map"));
+
+        Assert.assertTrue("HTML resource should have been copied from jar file",
+                files.contains("ExampleTemplate.html"));
+
+        Assert.assertFalse(
+                "Resource from unsupported frontend folder location should not have been copied from jar file",
+                files.contains("ignored.js"));
+
     }
 
     private static Set<File> jars(File... files) {
