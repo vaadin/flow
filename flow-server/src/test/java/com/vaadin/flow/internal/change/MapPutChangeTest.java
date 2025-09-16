@@ -17,6 +17,7 @@
 package com.vaadin.flow.internal.change;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.JsonNodeType;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
@@ -85,6 +86,26 @@ public class MapPutChangeTest {
         JsonNode nodeValue = json.get(JsonConstants.CHANGE_PUT_NODE_VALUE);
         Assert.assertSame(JsonNodeType.NUMBER, nodeValue.getNodeType());
         Assert.assertEquals(value.getId(), nodeValue.intValue());
+    }
+
+    @Test
+    public void testArrayNodeValue() {
+        // Test for issue #22251 - ArrayNode should be handled properly
+        ArrayNode arrayNode = JacksonUtils.createArrayNode();
+        arrayNode.add("USA");
+        arrayNode.add("Canada");
+        arrayNode.add("Mexico");
+
+        MapPutChange change = new MapPutChange(feature, "countries", arrayNode);
+        ObjectNode json = change.toJson(null);
+
+        JsonNode arrayValue = json.get(JsonConstants.CHANGE_PUT_VALUE);
+        Assert.assertNotNull("ArrayNode should be encoded", arrayValue);
+        Assert.assertSame(JsonNodeType.ARRAY, arrayValue.getNodeType());
+        Assert.assertEquals(3, arrayValue.size());
+        Assert.assertEquals("USA", arrayValue.get(0).textValue());
+        Assert.assertEquals("Canada", arrayValue.get(1).textValue());
+        Assert.assertEquals("Mexico", arrayValue.get(2).textValue());
     }
 
     private JsonNode getValue(Object input) {
