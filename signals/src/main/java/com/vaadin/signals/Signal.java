@@ -51,9 +51,15 @@ public interface Signal<T> {
     T value();
 
     /**
-     * Creates a computed signal based on a mapper function that is passed the
-     * value of this signal. If the mapper function accesses other signal
-     * values, then the computed signal will also depend on those signals.
+     * Creates a simple computed signal based on a mapper function that is
+     * passed the value of this signal. If the mapper function accesses other
+     * signal values, then the computed signal will also depend on those
+     * signals.
+     * <p>
+     * The computed signal does not perform any caching but will instead run the
+     * callback every time the signal value is read. Use
+     * {@link #computed(Supplier)} to create a computed signal that caches the
+     * result of running the callback until the value of any dependency changes.
      *
      * @param <C>
      *            the computed signal type
@@ -62,7 +68,7 @@ public interface Signal<T> {
      * @return the computed signal, not <code>null</code>
      */
     default <C> Signal<C> map(Function<T, C> mapper) {
-        return Signal.computed(() -> mapper.apply(value()));
+        return () -> mapper.apply(value());
     }
 
     /*
