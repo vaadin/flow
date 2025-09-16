@@ -327,14 +327,16 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_emptyListSignalWithNotInitiallyEmptyParent_noChanges() {
+    public void bindChildren_emptyListSignalWithNotInitiallyEmptyParent_throw() {
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
             TestLayout parentComponent = new TestLayout();
             parentComponent.add(new TestComponent("initial"));
             new MockUI().add(parentComponent);
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> new TestComponent(valueSignal.value()));
+            assertThrows(IllegalStateException.class, () -> {
+                ComponentEffect.bindChildren(parentComponent, taskList,
+                        valueSignal -> new TestComponent(valueSignal.value()));
+            });
             assertEquals(1, parentComponent.getComponentCount());
         });
     }
@@ -360,9 +362,9 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_listSignalWithItemsWithNotEmptyParent_parentUpdated() {
-        // if parent has children initially, they are preserved after list
-        // signal items.
+    public void bindChildren_listSignalWithItemsWithNotEmptyParent_throw() {
+        // When having children initially in parent, exception will be thrown
+        // when binding the effect.
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
@@ -373,16 +375,16 @@ public class ComponentEffectTest {
             parentComponent.add(expectedInitialComponent);
             new MockUI().add(parentComponent);
 
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> new TestComponent(valueSignal.value()));
+            assertThrows(IllegalStateException.class, () -> {
+                ComponentEffect.bindChildren(parentComponent, taskList,
+                        valueSignal -> new TestComponent(valueSignal.value()));
+            });
 
             var children = parentComponent.getChildren().toList();
-            assertEquals("Parent component children count is wrong", 3,
+            assertEquals("Parent component children count is wrong", 1,
                     parentComponent.getComponentCount());
-            assertEquals("Initial component should be preserved as last child",
-                    expectedInitialComponent, children.get(2));
-            assertEquals("first", ((TestComponent) children.get(0)).getValue());
-            assertEquals("last", ((TestComponent) children.get(1)).getValue());
+            assertEquals("initial",
+                    ((TestComponent) children.get(0)).getValue());
         });
     }
 
@@ -475,21 +477,35 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_addToParentComponentAndAddItem_parentUpdated() {
-        // When adding children directly to parent, they are added after list
-        // signal items.
+    public void bindChildren_addToParentComponentAndAddItem_throw() {
+        // When adding children directly to parent, exception will be thrown
+        // from the effect on next related Signal change.
         runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
             TestLayout parentComponent = new TestLayout();
-            new MockUI().add(parentComponent);
+
+            ui.add(parentComponent);
 
             ComponentEffect.bindChildren(parentComponent, taskList,
                     valueSignal -> new TestComponent(valueSignal.value()));
 
             var expectedComponent = new TestComponent("added directly");
+            // doing wrong
             parentComponent.add(expectedComponent);
 
+            // causes the effect to run and exception being thrown
+            taskList.insertLast("last");
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalStateException.class,
+                    event.getThrowable().getClass());
+            // no changes in the element
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
             assertEquals("first", ((TestComponent) parentComponent.getChildren()
@@ -520,6 +536,20 @@ public class ComponentEffectTest {
         } finally {
             CurrentInstance.clearAll();
         }
+    }
+
+    private LinkedBlockingQueue<ErrorEvent> mockSessionWithErrorHandler() {
+        var service = new MockVaadinServletService();
+        VaadinService.setCurrent(service);
+
+        var session = new MockVaadinSession(service);
+        session.lock();
+
+        var ui = new MockUI(session);
+        var events = new LinkedBlockingQueue<ErrorEvent>();
+        session.setErrorHandler(events::add);
+
+        return events;
     }
 
     @Tag("div")

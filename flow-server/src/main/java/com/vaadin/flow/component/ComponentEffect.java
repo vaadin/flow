@@ -161,6 +161,9 @@ public final class ComponentEffect {
      *            the value type
      * @param <PARENT>
      *            the type of the parent
+     * @throws IllegalStateException
+     *             thrown if parent component has children not belonging to the
+     *             signal
      */
     public static <T, PARENT extends Component & HasComponents> void bindChildren(
             PARENT parent, ListSignal<T> list,
@@ -192,6 +195,9 @@ public final class ComponentEffect {
      *            factory to create new element, must not be <code>null</code>
      * @param <T>
      *            the value type
+     * @throws IllegalStateException
+     *             thrown if parent component has children not belonging to the
+     *             signal
      */
     private static <T> void bindChildren(Component parentComponent,
             Element parent, ListSignal<T> list,
@@ -203,6 +209,10 @@ public final class ComponentEffect {
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
+        if (parent.getChildCount() > 0) {
+            throw new IllegalStateException(
+                    "Parent element must not have children when binding ListSignal to it");
+        }
         HashMap<ValueSignal<T>, Element> valueSignalToChild = new HashMap<>();
 
         ComponentEffect.effect(parentComponent,
@@ -297,8 +307,25 @@ public final class ComponentEffect {
          * signals.
          */
         private void doUpdate() {
+            // Cache the children to avoid multiple traversals
+            LinkedList<Element> remainingChildren = parentElement.getChildren()
+                    .collect(Collectors.toCollection(LinkedList::new));
+
+            validate(remainingChildren);
             removeNotPresentChildren();
-            updateByChildSignals();
+            updateByChildSignals(remainingChildren);
+        }
+
+        /**
+         * Validate that parent element has no children not belonging to the
+         * list of child signals.
+         */
+        private void validate(LinkedList<Element> children) {
+            if (children.stream().anyMatch(
+                    element -> !valueSignalToChild.containsValue(element))) {
+                throw new IllegalStateException(
+                        "Parent element must not have children not belonging to the signal");
+            }
         }
 
         /**
@@ -319,10 +346,8 @@ public final class ComponentEffect {
          * removing any existing elements. Creates new elements with the element
          * factory if not found from the cache.
          */
-        private void updateByChildSignals() {
-            // Cache the children to avoid multiple traversals
-            LinkedList<Element> remainingChildren = parentElement.getChildren()
-                    .collect(Collectors.toCollection(LinkedList::new));
+        private void updateByChildSignals(
+                LinkedList<Element> remainingChildren) {
             // Cache the children in a HashSet for O(1) lookups and removals
             HashSet<Element> remainingChildrenSet = new HashSet<>(
                     remainingChildren);
