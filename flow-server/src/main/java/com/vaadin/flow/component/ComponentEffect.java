@@ -205,10 +205,13 @@ public final class ComponentEffect {
 
         HashMap<ValueSignal<T>, Element> valueSignalToChild = new HashMap<>();
 
-        ComponentEffect.effect(parentComponent, () -> {
-            new UpdateByListSignal<>(parent, list, childFactory,
-                    valueSignalToChild).update();
-        });
+        ComponentEffect.effect(parentComponent,
+                () -> runEffect(new UpdateElementByChildSignals<>(parent,
+                        list.value(), childFactory, valueSignalToChild)));
+    }
+
+    private static <T> void runEffect(UpdateElementByChildSignals<T> update) {
+        update.doUpdate();
     }
 
     private void enableEffect(Component owner) {
@@ -260,55 +263,29 @@ public final class ComponentEffect {
     }
 
     /**
-     * Abstract base class for updating children of a parent element according
-     * to a signal.
+     * Helper record to update children of a parent element according to a list
+     * of child signals.
      *
-     * @param <SIGNAL>
-     *            the type of the signal
+     * @param parentElement
+     *            parent element to update children for
+     * @param childSignals
+     *            list of child signals to update by
+     * @param childElementFactory
+     *            factory to create new child element
+     * @param valueSignalToChild
+     *            map to store existing child elements by value signal
      * @param <T>
-     *            the value type
+     *            the value type of the list signal to update by
      */
-    private static class AbstractUpdateBySignal<SIGNAL, T>
-            implements Serializable {
-        protected final SIGNAL signal;
-        protected final Element parentElement;
-        protected final HashMap<ValueSignal<T>, Element> valueSignalToChild;
-
-        protected AbstractUpdateBySignal(Element parentElement, SIGNAL signal,
-                HashMap<ValueSignal<T>, Element> valueSignalToChild) {
-            this.parentElement = parentElement;
-            this.signal = signal;
-            this.valueSignalToChild = valueSignalToChild;
-        }
-    }
-
-    /**
-     * Helper class to update children of a parent element according to a list.
-     *
-     * @param <T>
-     *            the value type
-     */
-    private static class UpdateByListSignal<T>
-            extends AbstractUpdateBySignal<ListSignal<T>, T> {
-
-        private final List<ValueSignal<T>> childSignals;
-        private final SerializableFunction<ValueSignal<T>, Element> childElementFactory;
-        private final LinkedList<Element> remainingChildren;
-
-        private UpdateByListSignal(Element parentElement,
-                ListSignal<T> listSignal,
-                SerializableFunction<ValueSignal<T>, Element> childFactory,
-                HashMap<ValueSignal<T>, Element> valueSignalToChild) {
-            super(parentElement, listSignal, valueSignalToChild);
-            this.childSignals = listSignal.value();
-            this.childElementFactory = childFactory;
-            // Cache the children to avoid multiple traversals
-            this.remainingChildren = parentElement.getChildren()
-                    .collect(Collectors.toCollection(LinkedList::new));
-        }
+    private record UpdateElementByChildSignals<T>(Element parentElement,
+            List<ValueSignal<T>> childSignals,
+            SerializableFunction<ValueSignal<T>, Element> childElementFactory,
+            HashMap<ValueSignal<T>, Element> valueSignalToChild)
+            implements
+                Serializable {
 
         /**
-         * Return existing element or generate new by child factory.
+         * Return existing element or generate new by child element factory.
          */
         private Element getElement(ValueSignal<T> item) {
             return valueSignalToChild.computeIfAbsent(item,
@@ -316,14 +293,18 @@ public final class ComponentEffect {
         }
 
         /**
-         * Update children of the parent element according to the list.
+         * Update children of the parent element according to the list of child
+         * signals.
          */
-        private void update() {
+        private void doUpdate() {
             removeNotPresentChildren();
-            updateChildrenByListSignal();
+            updateByChildSignals();
         }
 
-        /** Remove all items that are no longer present in the signal. */
+        /**
+         * Remove all existing children in valueSignalToChild map that are no
+         * longer present in the list of child signals.
+         */
         private void removeNotPresentChildren() {
             var toRemove = new HashSet<>(valueSignalToChild.keySet());
             childSignals.forEach(toRemove::remove);
@@ -333,7 +314,15 @@ public final class ComponentEffect {
             }
         }
 
-        private void updateChildrenByListSignal() {
+        /**
+         * Align parent element children with the list of child signals without
+         * removing any existing elements. Creates new elements with the element
+         * factory if not found from the cache.
+         */
+        private void updateByChildSignals() {
+            // Cache the children to avoid multiple traversals
+            LinkedList<Element> remainingChildren = parentElement.getChildren()
+                    .collect(Collectors.toCollection(LinkedList::new));
             // Cache the children in a HashSet for O(1) lookups and removals
             HashSet<Element> remainingChildrenSet = new HashSet<>(
                     remainingChildren);
