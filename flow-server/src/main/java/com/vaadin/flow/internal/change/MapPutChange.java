@@ -17,6 +17,7 @@
 package com.vaadin.flow.internal.change;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -32,6 +33,7 @@ import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+import elemental.json.JsonValue;
 
 /**
  * Change describing a changed value in a map feature.
@@ -109,6 +111,13 @@ public class MapPutChange extends NodeFeatureChange {
         } else if (value instanceof TextNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).textValue()));
+        } else if (value instanceof ArrayNode node) {
+            // Convert ArrayNode to Elemental JSON array
+            json.put(JsonConstants.CHANGE_PUT_VALUE,
+                    (JsonValue) Json.instance()
+                            .parse(JacksonCodec
+                                    .encodeWithConstantPool(node, constantPool)
+                                    .toString()));
         } else if (value instanceof ValueNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).toString()));
