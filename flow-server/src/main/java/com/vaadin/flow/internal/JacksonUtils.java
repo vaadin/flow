@@ -55,7 +55,6 @@ import elemental.json.JsonNull;
 import elemental.json.JsonNumber;
 import elemental.json.JsonObject;
 import elemental.json.JsonValue;
-import static tools.jackson.databind.cfg.DateTimeFeature.WRITE_DATES_AS_TIMESTAMPS;
 
 /**
  * Helpers for using <code>jackson</code>.
@@ -72,8 +71,7 @@ public final class JacksonUtils {
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
     private static final ObjectMapper objectMapper = JsonMapper.builder()
-            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
-            .enable(WRITE_DATES_AS_TIMESTAMPS).build();
+            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).build();
 
     public static ObjectMapper getMapper() {
         return objectMapper;

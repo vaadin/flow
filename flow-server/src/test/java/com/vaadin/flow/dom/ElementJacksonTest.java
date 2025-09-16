@@ -700,22 +700,30 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ObjectNode json = (ObjectNode) element.getPropertyRaw("bean");
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
                 JacksonUtils.jsonEquals(
-                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.get("zonedDateTime").longValue(), 0);
+                ZonedDateTime.parse(json.get("zonedDateTime").asString())
+                        .toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.get("sqlDate").longValue(), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.get("date").longValue(), 0);
+                bean.date.getTime(),
+                ZonedDateTime.parse(json.get("date").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals(10.0,
                 Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
