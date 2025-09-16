@@ -16,7 +16,6 @@
 
 package com.vaadin.flow.internal.change;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.BooleanNode;
 import com.fasterxml.jackson.databind.node.NumericNode;
@@ -26,6 +25,7 @@ import com.fasterxml.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
@@ -33,7 +33,6 @@ import com.vaadin.flow.shared.JsonConstants;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Change describing a changed value in a map feature.
