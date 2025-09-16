@@ -114,10 +114,8 @@ public class MapPutChange extends NodeFeatureChange {
         } else if (value instanceof ArrayNode node) {
             // Convert ArrayNode to Elemental JSON array
             json.put(JsonConstants.CHANGE_PUT_VALUE,
-                    (JsonValue) Json.instance()
-                            .parse(JacksonCodec
-                                    .encodeWithConstantPool(node, constantPool)
-                                    .toString()));
+                    JacksonUtils.createElementalArray((ArrayNode) JacksonCodec
+                            .encodeWithConstantPool(node, constantPool)));
         } else if (value instanceof ValueNode node) {
             json.put(JsonConstants.CHANGE_PUT_VALUE, Json.create(JacksonCodec
                     .encodeWithConstantPool(node, constantPool).toString()));
