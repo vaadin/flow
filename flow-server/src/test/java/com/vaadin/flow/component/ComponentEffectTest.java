@@ -63,6 +63,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
@@ -615,47 +616,65 @@ public class ComponentEffectTest {
 
             var children = expectedMockedElements.toArray(Element[]::new);
 
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(children[0]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(children[1]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(2),
+                    eq(children[2]));
+
+            Mockito.clearInvocations(parentComponent.getElement());
             Mockito.clearInvocations(children);
             // move last to first
             taskList.moveTo(taskList.value().get(2),
                     ListSignal.ListPosition.first());
 
             verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(children[2]));
+            verify(parentComponent.getElement(), never()).insertChild(eq(0),
                     eq(children[0]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(children[1]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    eq(expectedMockedElements.get(2)));
+            verify(parentComponent.getElement(), never()).insertChild(eq(1),
+                    any(Element.class));
+            verify(parentComponent.getElement(), never()).insertChild(eq(2),
+                    any(Element.class));
             verify(children[0], never()).removeFromParent();
             verify(children[1], never()).removeFromParent();
             verify(children[2], once()).removeFromParent();
 
+            Mockito.clearInvocations(parentComponent.getElement());
             Mockito.clearInvocations(children);
+            // update expected children for the next move
+            expectedMockedElements.add(0, expectedMockedElements.remove(2));
+            children = expectedMockedElements.toArray(Element[]::new);
             // move it back to last
             taskList.moveTo(taskList.value().get(0),
                     ListSignal.ListPosition.last());
 
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(children[0]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(children[1]));
+            verify(parentComponent.getElement(), never()).insertChild(eq(0),
+                    any(Element.class));
+            verify(parentComponent.getElement(), never()).insertChild(eq(1),
+                    any(Element.class));
             verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    eq(children[2]));
-            verify(children[0], never()).removeFromParent();
+                    any(Element.class));
+            verify(children[0], times(2)).removeFromParent();
             verify(children[1], never()).removeFromParent();
             verify(children[2], never()).removeFromParent();
 
+            Mockito.clearInvocations(parentComponent.getElement());
             Mockito.clearInvocations(children);
-            // move last between first and last
+            // update expected children for the next move
+            expectedMockedElements.add(2, expectedMockedElements.remove(0));
+            children = expectedMockedElements.toArray(Element[]::new);
+            // move last between first and second
             taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
                     .between(taskList.value().get(0), taskList.value().get(1)));
 
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(children[0]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(children[1]));
+            verify(parentComponent.getElement(), never()).insertChild(eq(0),
+                    any(Element.class));
+            verify(parentComponent.getElement(), never()).insertChild(eq(1),
+                    any(Element.class));
             verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    eq(children[2]));
+                    any(Element.class));
             verify(children[0], never()).removeFromParent();
             verify(children[1], times(2)).removeFromParent();
             verify(children[2], never()).removeFromParent();
@@ -698,6 +717,50 @@ public class ComponentEffectTest {
                     .toList().get(0)).getValue());
             assertEquals("added directly", ((TestComponent) parentComponent
                     .getChildren().toList().get(1)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_runInTransaction_effectRunOnce() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            TestLayout parentComponent = new TestLayout(expectedMockedElements);
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        var component = new TestComponent(valueSignal.value(),
+                                parentComponent.getElement(), null);
+                        expectedMockedElements.add(component.getElement());
+                        return component;
+                    });
+
+            Mockito.clearInvocations(expectedMockedElements.toArray());
+            Mockito.clearInvocations(parentComponent.getElement());
+            Signal.runInTransaction(() -> {
+                taskList.insertFirst("first");
+                taskList.insertLast("last");
+
+                taskList.insertLast("middle");
+                taskList.moveTo(taskList.value().get(2),
+                        ListSignal.ListPosition.between(taskList.value().get(0),
+                                taskList.value().get(1)));
+
+                taskList.remove(taskList.value().get(0));
+            });
+
+            // getChildren() should be called only once per bindChildren effect
+            // call
+            verify(parentComponent.getElement(), once()).getChildren();
+
+            assertEquals("Parent component children count is wrong", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("middle", ((TestComponent) parentComponent
+                    .getChildren().toList().get(0)).getValue());
+            assertEquals("last", ((TestComponent) parentComponent.getChildren()
+                    .toList().get(1)).getValue());
         });
     }
 
