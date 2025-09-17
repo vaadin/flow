@@ -176,11 +176,12 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                 program = ts.createProgram(rootNames, { ...tsConfigParsed!.options, noEmit: true }, host, oldProgram);
                 fileIdOldProgramMap.set(bareId, program);
             } catch (e) {
-                console.debug('Failed to parse program file:', e);
+                console.error('Failed to parse program file:', e);
                 return;
             }
 
             if (!program) {
+                console.error('Unable to create TS program');
                 return;
             }
             const sourceFile = program.getSourceFile(id);
