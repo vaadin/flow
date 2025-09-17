@@ -17,7 +17,8 @@
     "index.ts"
   ],
   "dependencies": {
-    "magic-string": "0.30.17"
+    "magic-string": "0.30.17",
+    "camelcase": "^8.0.0"
   },
   "peerDependencies": {
     "vite": "6.x"

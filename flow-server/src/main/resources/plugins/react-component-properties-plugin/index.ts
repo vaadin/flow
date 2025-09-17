@@ -1,9 +1,6 @@
-import type { Plugin } from 'vite';
-import type { Program } from 'typescript';
-import ts from 'typescript';
-import * as path from 'path';
-
-type SupportedBasicTypes = 'any' | 'bigInt' | 'boolean' | 'null' | 'number' | 'string' | 'undefined' | 'unknown';
+import type { Plugin, ResolvedConfig } from 'vite';
+import ts, { CompilerHost, Program } from 'typescript';
+import MagicString from 'magic-string';
 
 type ComponentPropertyType =
     | 'BIG_DECIMAL'
@@ -18,7 +15,7 @@ type ComponentPropertyType =
     | 'LONG'
     | 'SHORT'
     | 'STRING';
-
+type SupportedBasicTypes = 'any' | 'bigInt' | 'boolean' | 'null' | 'number' | 'string' | 'undefined' | 'unknown';
 type ItemOptions = Array<{ label: string; value: any }>;
 
 interface GenericArrayItemDescriptor {
@@ -88,56 +85,82 @@ export class ResolverException extends Error {
     }
 }
 /**
-* A Vite plugin that statically analyzes TSX files to discover JSX elements and
-* their `props` types, then injects runtime code to expose those properties for
-    * debugging / tooling.
-*
-* How it works (build-time):
-* 1) For each `.tsx` module (excluding anything under `/generated/`), the plugin:
-*    - Loads the TypeScript Program using the project's tsconfig.
-*    - Parses the source file and collects distinct JSX opening elements.
-*    - For each element, resolves the props type via a TypeScript TypeChecker (Resolver).
-*    - Serializes the resolved properties into a `ResponseData` payload.
-*
-* How it works (runtime, via injected code):
-* 2) Adds a global registry under `window.Vaadin.copilot.ReactProperties`:
-*    - `properties: Record<string, ResponseData>` – in-memory map of tagName → ResponseData.
-*    - `registerer(tagName: string, value: ResponseData)` – helper to populate `properties`.
-* 3) For non-intrinsic elements (custom React components), the plugin tries to attach
-*    the payload directly to the component function/object on `__debugProperties`
-*    (mimicking a "Fiber-adjacent" location) for quick introspection:
-    *
-*       MyComponent.__debugProperties = { error: false, properties: [...] }
-    *
-    *    If that attachment isn’t possible (e.g., `MyComponent` isn't resolvable as a value),
-*    it falls back to `registerer("MyComponent", payload)`.
-*
-* 4) For intrinsic elements (e.g., 'div', 'button'), the plugin always registers to the
-*    global registry via `registerer("div", payload)`.
-*
-* Returned Data Shape:
-    * --------------------
-* interface ResponseData {
-*   error: boolean;
-*   errorMessage?: string;
-*   properties?: PropertyDescriptor[];
-* }
-*
-* `PropertyDescriptor` is the shape returned by your Resolver. Typically, this includes
-* the prop name, type information, optional/required flags, default value info, etc.
-*
-* Runtime Globals (created if absent):
-* ------------------------------------
-* window.Vaadin.copilot.ReactProperties = {
-    *   properties: Record<string, ResponseData>,
-    *   registerer(tagName: string, value: ResponseData): void
-    * }
+ * A Vite plugin that statically analyzes TSX files to discover JSX elements and
+ * their `props` types, then injects runtime code to expose those properties for
+ * debugging / tooling.
+ *
+ * How it works (build-time):
+ * 1) For each `.tsx` module (excluding anything under `/generated/`), the plugin:
+ *    - Loads the TypeScript Program using the project's tsconfig.
+ *    - Parses the source file and collects distinct JSX opening elements.
+ *    - For each element, resolves the props type via a TypeScript TypeChecker (Resolver).
+ *    - Serializes the resolved properties into a `ResponseData` payload.
+ *
+ * How it works (runtime, via injected code):
+ * 2) Adds a global registry under `window.Vaadin.copilot.ReactProperties`:
+ *    - `properties: Record<string, ResponseData>` – in-memory map of tagName → ResponseData.
+ *    - `registerer(tagName: string, value: ResponseData)` – helper to populate `properties`.
+ * 3) For non-intrinsic elements (custom React components), the plugin tries to attach
+ *    the payload directly to the component function/object on `__debugProperties`
+ *    (mimicking a "Fiber-adjacent" location) for quick introspection:
+ *
+ *       MyComponent.__debugProperties = { error: false, properties: [...] }
+ *
+ *    If that attachment isn’t possible (e.g., `MyComponent` isn't resolvable as a value),
+ *    it falls back to `registerer("MyComponent", payload)`.
+ *
+ * 4) For intrinsic elements (e.g., 'div', 'button'), the plugin always registers to the
+ *    global registry via `registerer("div", payload)`.
+ *
+ * Returned Data Shape:
+ * --------------------
+ * interface ResponseData {
+ *   error: boolean;
+ *   errorMessage?: string;
+ *   properties?: PropertyDescriptor[];
+ * }
+ *
+ * `PropertyDescriptor` is the shape returned by your Resolver. Typically, this includes
+ * the prop name, type information, optional/required flags, default value info, etc.
+ *
+ * Runtime Globals (created if absent):
+ * ------------------------------------
+ * window.Vaadin.copilot.ReactProperties = {
+ *   properties: Record<string, ResponseData>,
+ *   registerer(tagName: string, value: ResponseData): void
+ * }
  */
 export default function reactComponentPropertiesPlugin(): Plugin {
+    let enabled = false;
+    let tsConfigParsed: ts.ParsedCommandLine | null = null;
+    let host: CompilerHost | undefined = undefined;
+    const fileIdOldProgramMap = new Map<string, Program>();
     return {
         name: 'vaadin-react-component-properties-plugin',
         enforce: 'pre',
+        configResolved(cfg: ResolvedConfig) {
+            try {
+                const root = cfg.root; // project root
+                const configPath = ts.findConfigFile(root, ts.sys.fileExists, 'tsconfig.json');
+                if (!configPath) {
+                    this.warn('[copilot] No tsconfig.json found; react component property plugin disabled.');
+                    return;
+                }
+                const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+                tsConfigParsed = ts.parseJsonConfigFileContent(configFile.config, ts.sys, root);
+                enabled = !!tsConfigParsed;
+                if (tsConfigParsed) {
+                    host = ts.createCompilerHost(tsConfigParsed.options);
+                }
+            } catch (e: any) {
+                enabled = false;
+                this.warn(`[copilot] Failed to parse tsconfig; react component property plugin disabled. ${e?.message ?? e}`);
+            }
+        },
         transform(code, id) {
+            if (!enabled) {
+                return;
+            }
             const [bareId] = id.split('?');
             if (!bareId.endsWith('.tsx')) {
                 return;
@@ -147,17 +170,16 @@ export default function reactComponentPropertiesPlugin(): Plugin {
             }
             let program: Program | undefined = undefined;
             try {
-                const parsed = resolveTsConfigAndGetParsed();
+                const oldProgram = fileIdOldProgramMap.has(bareId) ? fileIdOldProgramMap.get(bareId) : undefined;
                 // Ensure the current file is included in the program
                 const rootNames = [bareId]; // Just include the current file
-                program = ts.createProgram({
-                    rootNames,
-                    options: parsed.options,
-                });
+                program = ts.createProgram(rootNames, { ...tsConfigParsed!.options, noEmit: true }, host, oldProgram);
+                fileIdOldProgramMap.set(bareId, program);
             } catch (e) {
                 console.debug('Failed to parse program file:', e);
                 return;
             }
+
             if (!program) {
                 return;
             }
@@ -218,10 +240,11 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                     console.debug(e);
                 }
             });
-
+            const magicString = new MagicString(code);
+            magicString.append(`\n${injectCode}`);
             return {
                 code: code + injectCode,
-                map: null,
+                map: magicString.generateMap({ hires: true }),
             };
         },
     };
@@ -254,97 +277,87 @@ function getDistinctJsxOpeningLikeElements(root: ts.Node): ts.JsxOpeningLikeElem
 }
 
 /**
- * Parses the tsconfig.json and get parsed command line object. Throws an exception if tsconfig.json is unable to parsed.
- */
-function resolveTsConfigAndGetParsed() {
-    const configPath = ts.findConfigFile('./', ts.sys.fileExists, 'tsconfig.json');
-    if (!configPath) throw new Error('tsconfig.json not found.');
-    const config = ts.readConfigFile(configPath, ts.sys.readFile);
-    return ts.parseJsonConfigFileContent(config.config, ts.sys, path.dirname(configPath));
-}
-
-/**
  * Finds the JSX namespace or throws exception
  * @param checker TS checker to get Symbols
  * @param sourceFile
  */
 function findJsxNamespaceSymbolOrThrow(checker: ts.TypeChecker, sourceFile: ts.SourceFile) {
-  // Method 1: Check if JSX is explicitly imported (e.g., import type { JSX } from 'react')
-  const allSymbols = checker.getSymbolsInScope(sourceFile, ts.SymbolFlags.All);
-  let jsxNamespaceSymbol = allSymbols.find((sym) => sym.name === 'JSX');
-  if (jsxNamespaceSymbol) {
-    // For imported JSX, we need to get the aliased symbol
-    const aliasedSymbol = checker.getAliasedSymbol(jsxNamespaceSymbol);
-    return aliasedSymbol || jsxNamespaceSymbol;
-  }
-
-  // Method 2: When JSX is not explicitly imported, it's available through React
-  // This is the common case when using React without explicit JSX import
-  // TypeScript's jsx: "react-jsx" mode uses React.JSX
-  const jsxFactory = (checker as any).getJsxNamespace?.(sourceFile);
-  if (jsxFactory === 'React') {
-    // JSX is accessed as React.JSX
-    const reactSymbol = allSymbols.find((sym) => sym.name === 'React');
-    if (reactSymbol) {
-      const aliasedReact = checker.getAliasedSymbol(reactSymbol);
-      const finalReact = aliasedReact || reactSymbol;
-      if (finalReact && finalReact.exports) {
-        const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
-        if (jsxFromReact) {
-          return jsxFromReact;
-        }
-      }
+    // Method 1: Check if JSX is explicitly imported (e.g., import type { JSX } from 'react')
+    const allSymbols = checker.getSymbolsInScope(sourceFile, ts.SymbolFlags.All);
+    let jsxNamespaceSymbol = allSymbols.find((sym) => sym.name === 'JSX');
+    if (jsxNamespaceSymbol) {
+        // For imported JSX, we need to get the aliased symbol
+        const aliasedSymbol = checker.getAliasedSymbol(jsxNamespaceSymbol);
+        return aliasedSymbol || jsxNamespaceSymbol;
     }
-  }
-  
-  // Method 3: Try direct resolution (might work in some configurations)
-  jsxNamespaceSymbol = checker.resolveName('JSX', undefined, ts.SymbolFlags.Namespace, false);
-  if (jsxNamespaceSymbol) {
-    return jsxNamespaceSymbol;
-  }
 
-  // Method 4: Fallback - Walk through imports to find React and get JSX from it
-  const importStatements = sourceFile.statements.filter(ts.isImportDeclaration);
-  for (const importStmt of importStatements) {
-    if (importStmt.moduleSpecifier && ts.isStringLiteral(importStmt.moduleSpecifier)) {
-      const moduleName = importStmt.moduleSpecifier.text;
-      if (moduleName === 'react' || moduleName === 'React') {
-        // Get the React symbol from the import
-        if (importStmt.importClause) {
-          // Check default import (import React from 'react')
-          if (importStmt.importClause.name) {
-            const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.name);
-            if (reactSymbol) {
-              const aliasedReact = checker.getAliasedSymbol(reactSymbol);
-              const finalReact = aliasedReact || reactSymbol;
-              if (finalReact && finalReact.exports) {
+    // Method 2: When JSX is not explicitly imported, it's available through React
+    // This is the common case when using React without explicit JSX import
+    // TypeScript's jsx: "react-jsx" mode uses React.JSX
+    const jsxFactory = (checker as any).getJsxNamespace?.(sourceFile);
+    if (jsxFactory === 'React') {
+        // JSX is accessed as React.JSX
+        const reactSymbol = allSymbols.find((sym) => sym.name === 'React');
+        if (reactSymbol) {
+            const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+            const finalReact = aliasedReact || reactSymbol;
+            if (finalReact && finalReact.exports) {
                 const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
                 if (jsxFromReact) {
-                  return jsxFromReact;
+                    return jsxFromReact;
                 }
-              }
             }
-          }
-          // Check namespace import (import * as React from 'react')
-          if (importStmt.importClause.namedBindings && ts.isNamespaceImport(importStmt.importClause.namedBindings)) {
-            const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.namedBindings.name);
-            if (reactSymbol) {
-              const aliasedReact = checker.getAliasedSymbol(reactSymbol);
-              const finalReact = aliasedReact || reactSymbol;
-              if (finalReact && finalReact.exports) {
-                const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
-                if (jsxFromReact) {
-                  return jsxFromReact;
-                }
-              }
-            }
-          }
         }
-      }
     }
-  }
 
-  throw new Error('JSX namespace not found (make sure DOM/React types are loaded)');
+    // Method 3: Try direct resolution (might work in some configurations)
+    jsxNamespaceSymbol = checker.resolveName('JSX', undefined, ts.SymbolFlags.Namespace, false);
+    if (jsxNamespaceSymbol) {
+        return jsxNamespaceSymbol;
+    }
+
+    // Method 4: Fallback - Walk through imports to find React and get JSX from it
+    const importStatements = sourceFile.statements.filter(ts.isImportDeclaration);
+    for (const importStmt of importStatements) {
+        if (importStmt.moduleSpecifier && ts.isStringLiteral(importStmt.moduleSpecifier)) {
+            const moduleName = importStmt.moduleSpecifier.text;
+            if (moduleName === 'react' || moduleName === 'React') {
+                // Get the React symbol from the import
+                if (importStmt.importClause) {
+                    // Check default import (import React from 'react')
+                    if (importStmt.importClause.name) {
+                        const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.name);
+                        if (reactSymbol) {
+                            const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+                            const finalReact = aliasedReact || reactSymbol;
+                            if (finalReact && finalReact.exports) {
+                                const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
+                                if (jsxFromReact) {
+                                    return jsxFromReact;
+                                }
+                            }
+                        }
+                    }
+                    // Check namespace import (import * as React from 'react')
+                    if (importStmt.importClause.namedBindings && ts.isNamespaceImport(importStmt.importClause.namedBindings)) {
+                        const reactSymbol = checker.getSymbolAtLocation(importStmt.importClause.namedBindings.name);
+                        if (reactSymbol) {
+                            const aliasedReact = checker.getAliasedSymbol(reactSymbol);
+                            const finalReact = aliasedReact || reactSymbol;
+                            if (finalReact && finalReact.exports) {
+                                const jsxFromReact = finalReact.exports.get('JSX' as ts.__String);
+                                if (jsxFromReact) {
+                                    return jsxFromReact;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    throw new Error('JSX namespace not found (make sure DOM/React types are loaded)');
 }
 
 /*
