@@ -1,0 +1,29 @@
+{
+  "description": "React component properties finds the JSX element properties",
+  "keywords": [
+    "plugin",
+    "copilot"
+  ],
+  "name": "@vaadin/react-component-properties-plugin",
+  "version": "0.0.4",
+  "main": "index.ts",
+  "private": true,
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/copilot/issues"
+  },
+  "files": [
+    "index.ts"
+  ],
+  "dependencies": {
+    "magic-string": "0.30.17",
+    "camelcase": "^8.0.0"
+  },
+  "peerDependencies": {
+    "vite": "6.x"
+  },
+  "devDependencies": {
+    "@types/node": "22.x"
+  }
+}
