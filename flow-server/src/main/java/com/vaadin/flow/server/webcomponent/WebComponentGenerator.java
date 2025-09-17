@@ -36,9 +36,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.theme.Theme;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
-
 /**
  * Generates a client-side web component from a Java class.
  * <p>
@@ -255,17 +252,14 @@ public class WebComponentGenerator {
         } else if (property.getType() == String.class) {
             value = "'" + ((String) property.getDefaultValue()).replaceAll("'",
                     "\\'") + "'";
-        } else if (JsonValue.class.isAssignableFrom(property.getType())) {
-            value = ((JsonValue) property.getDefaultValue()).toJson();
         } else if (JsonNode.class.isAssignableFrom(property.getType())) {
             value = property.getDefaultValue().toString();
         } else {
             throw new UnsupportedPropertyTypeException(String.format(
                     "%s is not a currently supported type for a Property."
-                            + " Please use %s or %s instead.",
+                            + " Please use %s instead.",
                     property.getType().getSimpleName(),
-                    JsonNode.class.getSimpleName(),
-                    JsonValue.class.getSimpleName()));
+                    JsonNode.class.getSimpleName()));
         }
         if (value == null) {
             value = "null";
@@ -307,12 +301,10 @@ public class WebComponentGenerator {
             return "Number";
         } else if (propertyData.getType() == String.class) {
             return "String";
-        } else if (JsonArray.class.isAssignableFrom(propertyData.getType())
-                || ArrayNode.class.isAssignableFrom(propertyData.getType())) {
+        } else if (ArrayNode.class.isAssignableFrom(propertyData.getType())) {
             return "Array";
-        } else if (JsonValue.class.isAssignableFrom(propertyData.getType())
-                || BaseJsonNode.class
-                        .isAssignableFrom(propertyData.getType())) {
+        } else if (BaseJsonNode.class
+                .isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
             throw new IllegalStateException(

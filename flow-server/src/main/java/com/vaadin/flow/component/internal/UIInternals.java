@@ -88,8 +88,6 @@ import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import elemental.json.JsonValue;
-
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
@@ -136,11 +134,7 @@ public class UIInternals implements Serializable {
              */
             for (Object argument : parameters) {
                 // Throws IAE for unsupported types
-                if (argument instanceof JsonValue) {
-                    JsonCodec.encodeWithTypeInfo(argument);
-                } else {
-                    JacksonCodec.encodeWithTypeInfo(argument);
-                }
+                JacksonCodec.encodeWithTypeInfo(argument);
             }
 
             this.expression = expression;

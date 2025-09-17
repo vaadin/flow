@@ -96,6 +96,47 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void map_mapComputedSignal_valueIsMapped() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+
+        Signal<Integer> computed = Signal
+                .computed(() -> source.value().length());
+
+        Signal<Integer> doubled = computed.map(l -> l * 2);
+
+        assertEquals(10, doubled.value());
+    }
+
+    @Test
+    void map_mapMappedSignal_valueIsMapped() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+
+        Signal<Integer> computed = source.map(String::length);
+
+        Signal<Integer> doubled = computed.map(l -> l * 2);
+
+        assertEquals(10, doubled.value());
+    }
+
+    @Test
+    void map_countCallbackInvocations_invocationsAreNotCached() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<Integer> computed = source.map(value -> {
+            count.incrementAndGet();
+            return value.length();
+        });
+        assertEquals(0, count.get());
+
+        computed.value();
+        assertEquals(1, count.get());
+
+        computed.value();
+        assertEquals(2, count.get());
+    }
+
+    @Test
     void callback_updateOtherSignal_signalUpdated() {
         ValueSignal<String> other = new ValueSignal<>("value");
 
