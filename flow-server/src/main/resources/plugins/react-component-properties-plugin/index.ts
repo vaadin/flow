@@ -238,7 +238,7 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                 } catch (e: any) {
                     const responseDataStr = responseDataStringBuilder(true, e.message);
                     injectCode += registererStringBuilder(nodeName, responseDataStr);
-                    this.debug(e);
+                    console.debug(e);
                 }
             });
             const magicString = new MagicString(code);
