@@ -1000,8 +1000,15 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private String normalizePath(String path) {
+        boolean startsWithDotSlash = path.startsWith("./");
         File file = new File(path);
-        return file.toPath().normalize().toString().replace("\\", "/");
+        String normalized = file.toPath().normalize().toString().replace("\\",
+                "/");
+        // Preserve the './' prefix if it was originally present
+        if (startsWithDotSlash && !normalized.startsWith("./")) {
+            normalized = "./" + normalized;
+        }
+        return normalized;
     }
 
     private String normalizeImportPath(String path) {

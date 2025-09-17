@@ -19,15 +19,12 @@ import java.io.Serializable;
 import java.util.EventObject;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.ApplicationConstants;
-
-import elemental.json.JsonValue;
 
 /**
  * Represents <code>window.history</code> in the browser. See e.g.
@@ -168,7 +165,7 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(JsonValue state, String location) {
+    public void pushState(BaseJsonNode state, String location) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -189,7 +186,8 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void pushState(JsonValue state, String location, boolean callback) {
+    public void pushState(BaseJsonNode state, String location,
+            boolean callback) {
         pushState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
                 callback);
@@ -206,7 +204,7 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void pushState(JsonValue state, Location location) {
+    public void pushState(BaseJsonNode state, Location location) {
         pushState(state, location, false);
     }
 
@@ -224,7 +222,7 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void pushState(JsonValue state, Location location,
+    public void pushState(BaseJsonNode state, Location location,
             boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);
@@ -255,7 +253,7 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(JsonValue state, String location) {
+    public void replaceState(BaseJsonNode state, String location) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null));
     }
@@ -276,7 +274,7 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void replaceState(JsonValue state, String location,
+    public void replaceState(BaseJsonNode state, String location,
             boolean callback) {
         replaceState(state,
                 Optional.ofNullable(location).map(Location::new).orElse(null),
@@ -294,7 +292,7 @@ public class History implements Serializable {
      *            the new location to set in the browser, or <code>null</code>
      *            to only change the JSON state
      */
-    public void replaceState(JsonValue state, Location location) {
+    public void replaceState(BaseJsonNode state, Location location) {
         replaceState(state, location, false);
     }
 
@@ -312,7 +310,7 @@ public class History implements Serializable {
      *            {@code true} if the change should make a return call to the
      *            server
      */
-    public void replaceState(JsonValue state, Location location,
+    public void replaceState(BaseJsonNode state, Location location,
             boolean callback) {
         final String pathWithQueryParameters = getPathWithQueryParameters(
                 location);

@@ -43,8 +43,8 @@ import com.vaadin.flow.internal.JacksonCodec;
  * @since 2.0
  *
  * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
- *      com.vaadin.flow.dom.Element, elemental.json.JsonObject) to create
- *      {@code WebComponentBindings}
+ *      com.vaadin.flow.dom.Element, com.fasterxml.jackson.databind.JsonNode) to
+ *      create {@code WebComponentBindings}
  */
 public final class WebComponentBinding<C extends Component>
         implements Serializable {

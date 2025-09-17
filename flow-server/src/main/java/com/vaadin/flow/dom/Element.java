@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -55,8 +56,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonValue;
 
 /**
  * Represents an element in the DOM.
@@ -685,37 +684,6 @@ public class Element extends Node<Element> {
      */
     public Element setProperty(String name, double value) {
         return setRawProperty(name, Double.valueOf(value));
-    }
-
-    /**
-     * Sets the given property to the given JSON value.
-     * <p>
-     * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
-     * should be used instead for JSON values.
-     * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @param value
-     *            the property value, not <code>null</code>
-     * @return this element
-     * @deprecated Will be removed when all Flow-Components use Jackson variant
-     */
-    // Distinct name so setProperty("foo", null) is not ambiguous
-    @Deprecated
-    public Element setPropertyJson(String name, JsonValue value) {
-        if (value == null) {
-            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
-        }
-
-        setRawProperty(name, JacksonUtils.mapElemental(value));
-        return this;
     }
 
     /**
@@ -1440,8 +1408,14 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
-                Stream.of(arguments));
+        Serializable[] jsParameters;
+        if (arguments.length == 0) {
+            jsParameters = new Serializable[] { this };
+        } else {
+            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters[0] = this;
+            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
+        }
 
         return scheduleJavaScriptInvocation("return $0." + functionName + "("
                 + paramPlaceholderString + ")", jsParameters);
@@ -1494,8 +1468,14 @@ public class Element extends Node<Element> {
             Serializable... parameters) {
 
         // Add "this" as the last parameter
-        Stream<Serializable> wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this));
+        Serializable[] wrappedParameters;
+        if (parameters.length == 0) {
+            wrappedParameters = new Serializable[] { this };
+        } else {
+            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1,
+                    Serializable[].class);
+            wrappedParameters[parameters.length] = this;
+        }
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
@@ -1506,11 +1486,11 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Stream<Serializable> parameters) {
+            String expression, Serializable[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters.toArray(Serializable[]::new));
+                parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

@@ -62,9 +62,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
@@ -280,10 +277,10 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
         // Remove platform lock for vaadin-element-mixin
-        final JsonObject versions = Json.parse(FileUtils
+        final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
-        versions.getObject("core").remove("vaadin-element-mixin");
-        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(),
+        ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
+        FileUtils.writeStringToFile(versionJsonFile, versions.toString(),
                 StandardCharsets.UTF_8);
 
         // Remove VAADIN_ELEMENT_MIXIN from the application dependencies
@@ -314,10 +311,10 @@ public class TaskUpdatePackagesNpmTest {
         verifyVersionLockingWithNpmOverrides(true, true, true);
 
         // Remove platform lock for vaadin-element-mixin
-        final JsonObject versions = Json.parse(FileUtils
+        final ObjectNode versions = JacksonUtils.readTree(FileUtils
                 .readFileToString(versionJsonFile, StandardCharsets.UTF_8));
-        versions.getObject("core").remove("vaadin-element-mixin");
-        FileUtils.writeStringToFile(versionJsonFile, versions.toJson(),
+        ((ObjectNode) versions.get("core")).remove("vaadin-element-mixin");
+        FileUtils.writeStringToFile(versionJsonFile, versions.toString(),
                 StandardCharsets.UTF_8);
 
         // Move element-mixin to devDependencies

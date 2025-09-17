@@ -24,9 +24,6 @@ import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 /**
  * Base class for all node changes related to a feature.
  * <p>

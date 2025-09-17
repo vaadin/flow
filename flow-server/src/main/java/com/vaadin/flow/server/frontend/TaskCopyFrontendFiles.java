@@ -32,7 +32,11 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
 
 /**
- * Copies JavaScript and CSS files from JAR files into a given folder.
+ * Copies all frontend resources from JAR files into a given folder.
+ * <p>
+ * The task considers "frontend resources" all files placed in
+ * {@literal META-INF/frontend}, {@literal META-INF/resources/frontend} and
+ * {@literal META-INF/resources/[**]/themes} folders.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -40,13 +44,9 @@ import static com.vaadin.flow.server.Constants.RESOURCES_JAR_DEFAULT;
  */
 public class TaskCopyFrontendFiles
         extends AbstractFileGeneratorFallibleCommand {
-    private static final String[] WILDCARD_INCLUSIONS = new String[] {
-            "**/*.js", "**/*.js.map", "**/*.css", "**/*.css.map", "**/*.ts",
-            "**/*.ts.map", "**/*.tsx", "**/*.tsx.map", "**/*.jsx",
-            "**/*.jsx.map" };
     private static final String WILDCARD_INCLUSION_APP_THEME_JAR = "**/themes/**/*";
     private final Options options;
-    private Set<File> resourceLocations = null;
+    private final Set<File> resourceLocations;
 
     /**
      * Scans the jar files given defined by {@code resourcesToScan}.
@@ -97,11 +97,11 @@ public class TaskCopyFrontendFiles
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
                                 RESOURCES_FRONTEND_DEFAULT, targetDirectory,
-                                WILDCARD_INCLUSIONS));
+                                "**/*"));
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
                                 COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
-                                targetDirectory, WILDCARD_INCLUSIONS));
+                                targetDirectory, "**/*"));
                 handledFiles.addAll(jarContentsManager
                         .copyIncludedFilesFromJarTrimmingBasePath(location,
                                 RESOURCES_JAR_DEFAULT, targetDirectory,

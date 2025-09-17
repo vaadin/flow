@@ -99,8 +99,8 @@
 
         <!-- Plugins -->
         <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
-        <maven.surefire.plugin.version>3.5.3</maven.surefire.plugin.version>
-        <maven.failsafe.plugin.version>3.5.3</maven.failsafe.plugin.version>
+        <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
+        <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
         <maven.war.plugin.version>3.4.0</maven.war.plugin.version>
         <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
         <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
@@ -246,7 +246,7 @@
             <dependency>
                 <groupId>com.vaadin</groupId>
                 <artifactId>license-checker</artifactId>
-                <version>2.0.0-rc1</version>
+                <version>2.0.0</version>
             </dependency>
 
             <!-- Test dependencies -->

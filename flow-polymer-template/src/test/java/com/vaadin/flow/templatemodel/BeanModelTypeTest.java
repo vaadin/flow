@@ -18,11 +18,10 @@ import java.util.stream.Collectors;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-
-import elemental.json.Json;
 
 public class BeanModelTypeTest {
     // Partial overlap with Bean
@@ -373,19 +372,19 @@ public class BeanModelTypeTest {
 
         ElementPropertyMap model = createEmptyModel();
         model.setProperty("doubleValue",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+                JacksonCodec.decodeWithoutTypeInfo(JacksonUtils.writeValue(3)));
         model.setProperty("doubleObject",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+                JacksonCodec.decodeWithoutTypeInfo(JacksonUtils.writeValue(3)));
         model.setProperty("intValue",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
+                JacksonCodec.decodeWithoutTypeInfo(JacksonUtils.writeValue(3)));
         model.setProperty("intObject",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(3)));
-        model.setProperty("booleanValue",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(true)));
-        model.setProperty("booleanObject",
-                JsonCodec.decodeWithoutTypeInfo(Json.create(true)));
-        model.setProperty("string",
-                JsonCodec.decodeWithoutTypeInfo(Json.create("3")));
+                JacksonCodec.decodeWithoutTypeInfo(JacksonUtils.writeValue(3)));
+        model.setProperty("booleanValue", JacksonCodec
+                .decodeWithoutTypeInfo(JacksonUtils.writeValue(true)));
+        model.setProperty("booleanObject", JacksonCodec
+                .decodeWithoutTypeInfo(JacksonUtils.writeValue(true)));
+        model.setProperty("string", JacksonCodec
+                .decodeWithoutTypeInfo(JacksonUtils.writeValue("3")));
 
         Bean bean = beanType.modelToApplication(model.getNode());
 
