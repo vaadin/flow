@@ -21,11 +21,19 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -37,10 +45,17 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
+import org.mockito.verification.VerificationMode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
+import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -329,15 +344,27 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_emptyListSignalWithNotInitiallyEmptyParent_throw() {
         runWithFeatureFlagEnabled(() -> {
+            var expectedMockedChildren = new ArrayList<Element>();
+
             ListSignal<String> taskList = new ListSignal<>(String.class);
-            TestLayout parentComponent = new TestLayout();
-            parentComponent.add(new TestComponent("initial"));
+            TestLayout parentComponent = new TestLayout(expectedMockedChildren);
+            var initialComponent = new TestComponent("initial",
+                    parentComponent.getElement(), null);
+            expectedMockedChildren.add(initialComponent.getElement());
+
+            parentComponent.add(initialComponent);
+
             new MockUI().add(parentComponent);
             assertThrows(IllegalStateException.class, () -> {
                 ComponentEffect.bindChildren(parentComponent, taskList,
-                        valueSignal -> new TestComponent(valueSignal.value()));
+                        valueSignal -> {
+                            fail("Should not call element factory");
+                            return null;
+                        });
             });
             assertEquals(1, parentComponent.getComponentCount());
+            verify(parentComponent.getElement(), never()).insertChild(anyInt(),
+                    any(Element.class));
         });
     }
 
@@ -346,9 +373,11 @@ public class ComponentEffectTest {
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
+
             TestLayout parentComponent = new TestLayout();
-            new MockUI().add(parentComponent);
             var expectedComponent = new TestComponent();
+            new MockUI().add(parentComponent);
+
             ComponentEffect.bindChildren(parentComponent, taskList,
                     valueSignal -> {
                         expectedComponent.setValue(valueSignal.value());
@@ -358,6 +387,31 @@ public class ComponentEffectTest {
             assertEquals(expectedComponent,
                     parentComponent.getChildren().findFirst().orElse(null));
             assertEquals("first", expectedComponent.getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_listSignalWithItem_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+
+            var expectedMockedChildren = new ArrayList<Element>();
+            TestLayout parentComponent = new TestLayout(expectedMockedChildren);
+            var expectedComponent = new TestComponent(
+                    parentComponent.getElement(), null);
+            expectedMockedChildren.add(expectedComponent.getElement());
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        expectedComponent.setValue(valueSignal.value());
+                        return expectedComponent;
+                    });
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(expectedComponent.getElement()));
+            verify(expectedComponent.getElement(), once()).removeFromParent();
         });
     }
 
@@ -414,6 +468,36 @@ public class ComponentEffectTest {
     }
 
     @Test
+    public void bindChildren_addItem_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+
+            TestLayout parentComponent = new TestLayout(expectedMockedElements);
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        var component = new TestComponent(valueSignal.value(),
+                                parentComponent.getElement(), null);
+                        expectedMockedElements.add(component.getElement());
+                        return component;
+                    });
+
+            taskList.insertLast("last");
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(expectedMockedElements.get(0)));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(expectedMockedElements.get(1)));
+            verify(expectedMockedElements.get(0), once()).removeFromParent();
+            verify(expectedMockedElements.get(1), once()).removeFromParent();
+        });
+    }
+
+    @Test
     public void bindChildren_removeItem_parentUpdated() {
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -434,6 +518,38 @@ public class ComponentEffectTest {
                     parentComponent.getComponentCount());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
                     .toList().get(0)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_removeItem_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("last");
+            TestLayout parentComponent = new TestLayout(expectedMockedElements);
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        var component = new TestComponent(valueSignal.value(),
+                                parentComponent.getElement(), null);
+                        expectedMockedElements.add(component.getElement());
+                        return component;
+                    });
+
+            taskList.remove(taskList.value().get(0));
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(expectedMockedElements.get(0)));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(expectedMockedElements.get(1)));
+            // RemoveFromParent for first child is called once on insert and
+            // twice by bindChildren effect.
+            verify(expectedMockedElements.get(0), times(3)).removeFromParent();
+            verify(expectedMockedElements.get(1), once()).removeFromParent();
         });
     }
 
@@ -477,6 +593,75 @@ public class ComponentEffectTest {
     }
 
     @Test
+    public void bindChildren_moveItem_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("middle");
+            taskList.insertLast("last");
+
+            TestLayout parentComponent = new TestLayout(expectedMockedElements);
+            new MockUI().add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        var component = new TestComponent(valueSignal.value(),
+                                parentComponent.getElement(), null);
+                        expectedMockedElements.add(component.getElement());
+                        return component;
+                    });
+
+            var children = expectedMockedElements.toArray(Element[]::new);
+
+            Mockito.clearInvocations(children);
+            // move last to first
+            taskList.moveTo(taskList.value().get(2),
+                    ListSignal.ListPosition.first());
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(children[0]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(children[1]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(2),
+                    eq(expectedMockedElements.get(2)));
+            verify(children[0], never()).removeFromParent();
+            verify(children[1], never()).removeFromParent();
+            verify(children[2], once()).removeFromParent();
+
+            Mockito.clearInvocations(expectedMockedElements.toArray());
+            // move it back to last
+            taskList.moveTo(taskList.value().get(0),
+                    ListSignal.ListPosition.last());
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(children[0]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(children[1]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(2),
+                    eq(children[2]));
+            verify(children[0], never()).removeFromParent();
+            verify(children[1], never()).removeFromParent();
+            verify(children[2], never()).removeFromParent();
+
+            // move last between first and last
+            taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
+                    .between(taskList.value().get(0), taskList.value().get(1)));
+
+            verify(parentComponent.getElement(), once()).insertChild(eq(0),
+                    eq(children[0]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(1),
+                    eq(children[1]));
+            verify(parentComponent.getElement(), once()).insertChild(eq(2),
+                    eq(expectedMockedElements.get(2)));
+            verify(children[0], never()).removeFromParent();
+            verify(children[1], times(2)).removeFromParent();
+            verify(children[2], never()).removeFromParent();
+        });
+    }
+
+    @Test
     public void bindChildren_addToParentComponentAndAddItem_throw() {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
@@ -513,6 +698,10 @@ public class ComponentEffectTest {
             assertEquals("added directly", ((TestComponent) parentComponent
                     .getChildren().toList().get(1)).getValue());
         });
+    }
+
+    private static VerificationMode once() {
+        return times(1);
     }
 
     @FunctionalInterface
@@ -556,12 +745,80 @@ public class ComponentEffectTest {
     private static class TestComponent extends Component {
         String value;
 
+        /**
+         * Constructor of TestComponent without any mock elements.
+         */
         public TestComponent() {
             super(new Element("div"));
         }
 
+        /**
+         * Constructor of TestComponent with mocked element and optional parent
+         * element mock and children. Works together with Mockito.spy().
+         *
+         * @param expectedParentElementMock
+         *            Mocked parent element for return value of getParentNode()
+         *            when parent is set. <code>null</code> fall back to default
+         *            behaviour.
+         * @param expectedMockedChildren
+         *            List of expected mocked children that replaces elements
+         *            created internally by Element API getChild(int).
+         *            <code>null</code> fall back to default behaviour.
+         */
+        public TestComponent(Element expectedParentElementMock,
+                List<Element> expectedMockedChildren) {
+            super(spy(new Element("div") {
+                @Override
+                public Node getParentNode() {
+                    Node actualParent = super.getParentNode();
+                    if (actualParent != null
+                            && expectedParentElementMock != null) {
+                        return expectedParentElementMock;
+                    }
+                    return super.getParentNode();
+                }
+
+                @Override
+                public Element getChild(int index) {
+                    if (expectedMockedChildren != null) {
+                        return expectedMockedChildren.get(index);
+                    }
+                    return super.getChild(index);
+                }
+
+            }));
+        }
+
+        /**
+         * Constructor of TestComponent without any mock elements.
+         *
+         * @param initialValue
+         *            initial value
+         */
         public TestComponent(String initialValue) {
             this();
+            setValue(initialValue);
+        }
+
+        /**
+         * Constructor of TestComponent with mocked element and optional parent
+         * element mock and children. Works together with Mockito.spy().
+         *
+         * @param initialValue
+         *            initial value
+         * @param expectedParentElementMock
+         *            Mocked parent element for return value of getParentNode()
+         *            when parent is set. <code>null</code> fall back to default
+         *            behaviour.
+         * @param expectedMockedChildren
+         *            List of expected mocked children that replaces elements
+         *            created internally by Element API getChild(int).
+         *            <code>null</code> fall back to default behaviour.
+         */
+        public TestComponent(String initialValue,
+                Element expectedParentElementMock,
+                List<Element> expectedMockedChildren) {
+            this(expectedParentElementMock, expectedMockedChildren);
             setValue(initialValue);
         }
 
@@ -574,12 +831,31 @@ public class ComponentEffectTest {
         }
     }
 
+    /**
+     * Test layout component with optional support for Mockito.spy(element).
+     */
     @Tag("div")
-    private static class TestLayout extends Component
+    private static class TestLayout extends TestComponent
             implements HasOrderedComponents {
 
+        /**
+         * Construct test layout component without any mocked elements.
+         */
         public TestLayout() {
-            super(new Element("div"));
+            super();
+        }
+
+        /**
+         * Construct test layout component with mocked element with
+         * Mockito.spy().
+         *
+         * @param expectedMockedChildren
+         *            List of expected mocked children that replaces elements
+         *            created internally by Element API. <code>null</code> fall
+         *            back to default behaviour.
+         */
+        public TestLayout(List<Element> expectedMockedChildren) {
+            super(null, expectedMockedChildren);
         }
     }
 }
