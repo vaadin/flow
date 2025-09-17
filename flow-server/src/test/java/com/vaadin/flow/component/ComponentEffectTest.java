@@ -630,7 +630,7 @@ public class ComponentEffectTest {
             verify(children[1], never()).removeFromParent();
             verify(children[2], once()).removeFromParent();
 
-            Mockito.clearInvocations(expectedMockedElements.toArray());
+            Mockito.clearInvocations(children);
             // move it back to last
             taskList.moveTo(taskList.value().get(0),
                     ListSignal.ListPosition.last());
@@ -645,6 +645,7 @@ public class ComponentEffectTest {
             verify(children[1], never()).removeFromParent();
             verify(children[2], never()).removeFromParent();
 
+            Mockito.clearInvocations(children);
             // move last between first and last
             taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
                     .between(taskList.value().get(0), taskList.value().get(1)));
@@ -654,7 +655,7 @@ public class ComponentEffectTest {
             verify(parentComponent.getElement(), once()).insertChild(eq(1),
                     eq(children[1]));
             verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    eq(expectedMockedElements.get(2)));
+                    eq(children[2]));
             verify(children[0], never()).removeFromParent();
             verify(children[1], times(2)).removeFromParent();
             verify(children[2], never()).removeFromParent();
