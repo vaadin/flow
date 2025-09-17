@@ -174,14 +174,14 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                 // Ensure the current file is included in the program
                 const rootNames = [bareId]; // Just include the current file
                 program = ts.createProgram(rootNames, { ...tsConfigParsed!.options, noEmit: true }, host, oldProgram);
-                fileIdOldProgramMap.set(bareId, program);
+                fileIdOldProgramMap.set(bareId, program!);
             } catch (e) {
-                console.error('Failed to parse program file:', e);
+                this.warn('Failed to parse program file:', e);
                 return;
             }
 
             if (!program) {
-                console.error('Unable to create TS program');
+                this.warn('Unable to create TS program');
                 return;
             }
             const sourceFile = program.getSourceFile(id);
@@ -238,7 +238,7 @@ export default function reactComponentPropertiesPlugin(): Plugin {
                 } catch (e: any) {
                     const responseDataStr = responseDataStringBuilder(true, e.message);
                     injectCode += registererStringBuilder(nodeName, responseDataStr);
-                    console.debug(e);
+                    this.debug(e);
                 }
             });
             const magicString = new MagicString(code);
