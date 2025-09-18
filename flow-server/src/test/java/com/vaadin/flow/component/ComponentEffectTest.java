@@ -21,11 +21,8 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -33,7 +30,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -45,17 +41,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
-import org.mockito.verification.VerificationMode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -345,13 +336,9 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_emptyListSignalWithNotInitiallyEmptyParent_throw() {
         runWithFeatureFlagEnabled(() -> {
-            var expectedMockedChildren = new ArrayList<Element>();
-
             ListSignal<String> taskList = new ListSignal<>(String.class);
-            TestLayout parentComponent = new TestLayout(expectedMockedChildren);
-            var initialComponent = new TestComponent("initial",
-                    parentComponent.getElement(), null);
-            expectedMockedChildren.add(initialComponent.getElement());
+            TestLayout parentComponent = new TestLayout();
+            var initialComponent = new TestComponent("initial");
 
             parentComponent.add(initialComponent);
 
@@ -364,8 +351,6 @@ public class ComponentEffectTest {
                         });
             });
             assertEquals(1, parentComponent.getComponentCount());
-            verify(parentComponent.getElement(), never()).insertChild(anyInt(),
-                    any(Element.class));
         });
     }
 
@@ -388,31 +373,9 @@ public class ComponentEffectTest {
             assertEquals(expectedComponent,
                     parentComponent.getChildren().findFirst().orElse(null));
             assertEquals("first", expectedComponent.getValue());
-        });
-    }
 
-    @Test
-    public void bindChildren_listSignalWithItem_verifyElementInsertAndRemoveCall() {
-        runWithFeatureFlagEnabled(() -> {
-            ListSignal<String> taskList = new ListSignal<>(String.class);
-            taskList.insertFirst("first");
-
-            var expectedMockedChildren = new ArrayList<Element>();
-            TestLayout parentComponent = new TestLayout(expectedMockedChildren);
-            var expectedComponent = new TestComponent(
-                    parentComponent.getElement(), null);
-            expectedMockedChildren.add(expectedComponent.getElement());
-            new MockUI().add(parentComponent);
-
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> {
-                        expectedComponent.setValue(valueSignal.value());
-                        return expectedComponent;
-                    });
-
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(expectedComponent.getElement()));
-            verify(expectedComponent.getElement(), once()).removeFromParent();
+            assertEquals(1, expectedComponent.attachCounter);
+            assertEquals(0, expectedComponent.detachCounter);
         });
     }
 
@@ -461,40 +424,17 @@ public class ComponentEffectTest {
 
             taskList.insertLast("last");
 
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
-            assertEquals("last", ((TestComponent) parentComponent.getChildren()
-                    .toList().get(1)).getValue());
-        });
-    }
+            assertEquals("last", children.get(1).getValue());
 
-    @Test
-    public void bindChildren_addItem_verifyElementInsertAndRemoveCall() {
-        runWithFeatureFlagEnabled(() -> {
-            var expectedMockedElements = new ArrayList<Element>();
-
-            ListSignal<String> taskList = new ListSignal<>(String.class);
-            taskList.insertFirst("first");
-
-            TestLayout parentComponent = new TestLayout(expectedMockedElements);
-            new MockUI().add(parentComponent);
-
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> {
-                        var component = new TestComponent(valueSignal.value(),
-                                parentComponent.getElement(), null);
-                        expectedMockedElements.add(component.getElement());
-                        return component;
-                    });
-
-            taskList.insertLast("last");
-
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(expectedMockedElements.get(0)));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(expectedMockedElements.get(1)));
-            verify(expectedMockedElements.get(0), once()).removeFromParent();
-            verify(expectedMockedElements.get(1), once()).removeFromParent();
+            assertEquals(1, children.get(0).attachCounter);
+            assertEquals(0, children.get(0).detachCounter);
+            assertEquals(1, children.get(1).attachCounter);
+            assertEquals(0, children.get(1).detachCounter);
         });
     }
 
@@ -513,44 +453,20 @@ public class ComponentEffectTest {
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
 
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
             taskList.remove(taskList.value().get(0));
 
             assertEquals("Parent component children count is wrong", 1,
                     parentComponent.getComponentCount());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
                     .toList().get(0)).getValue());
-        });
-    }
 
-    @Test
-    public void bindChildren_removeItem_verifyElementInsertAndRemoveCall() {
-        runWithFeatureFlagEnabled(() -> {
-            var expectedMockedElements = new ArrayList<Element>();
-
-            ListSignal<String> taskList = new ListSignal<>(String.class);
-            taskList.insertFirst("first");
-            taskList.insertLast("last");
-            TestLayout parentComponent = new TestLayout(expectedMockedElements);
-            new MockUI().add(parentComponent);
-
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> {
-                        var component = new TestComponent(valueSignal.value(),
-                                parentComponent.getElement(), null);
-                        expectedMockedElements.add(component.getElement());
-                        return component;
-                    });
-
-            taskList.remove(taskList.value().get(0));
-
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(expectedMockedElements.get(0)));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(expectedMockedElements.get(1)));
-            // RemoveFromParent for first child is called once on insert and
-            // twice by bindChildren effect.
-            verify(expectedMockedElements.get(0), times(3)).removeFromParent();
-            verify(expectedMockedElements.get(1), once()).removeFromParent();
+            assertEquals(1, children.get(0).attachCounter);
+            assertEquals(1, children.get(0).detachCounter);
+            assertEquals(1, children.get(1).attachCounter);
+            assertEquals(0, children.get(1).detachCounter);
         });
     }
 
@@ -594,7 +510,7 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_moveLastToFirst_verifyElementInsertAndRemoveCall() {
+    public void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
 
@@ -606,27 +522,24 @@ public class ComponentEffectTest {
             TestLayout parentComponent = prepareTestLayout(
                     expectedMockedElements, taskList);
 
-            var children = expectedMockedElements.toArray(Element[]::new);
             // move last to first
             taskList.moveTo(taskList.value().get(2),
                     ListSignal.ListPosition.first());
 
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(children[2]));
-            verify(parentComponent.getElement(), never()).insertChild(eq(0),
-                    eq(children[0]));
-            verify(parentComponent.getElement(), never()).insertChild(eq(1),
-                    any(Element.class));
-            verify(parentComponent.getElement(), never()).insertChild(eq(2),
-                    any(Element.class));
-            verify(children[0], never()).removeFromParent();
-            verify(children[1], never()).removeFromParent();
-            verify(children[2], once()).removeFromParent();
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
+            assertEquals(1, children.get(0).attachCounter);
+            assertEquals(1, children.get(0).detachCounter);
+            assertEquals(0, children.get(1).attachCounter);
+            assertEquals(0, children.get(1).detachCounter);
+            assertEquals(0, children.get(2).attachCounter);
+            assertEquals(0, children.get(2).detachCounter);
         });
     }
 
     @Test
-    public void bindChildren_moveFirstToLast_verifyElementInsertAndRemoveCall() {
+    public void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
 
@@ -637,27 +550,25 @@ public class ComponentEffectTest {
 
             TestLayout parentComponent = prepareTestLayout(
                     expectedMockedElements, taskList);
-
-            var children = expectedMockedElements.toArray(Element[]::new);
 
             // move first to last
             taskList.moveTo(taskList.value().get(0),
                     ListSignal.ListPosition.last());
 
-            verify(parentComponent.getElement(), never()).insertChild(eq(0),
-                    any(Element.class));
-            verify(parentComponent.getElement(), never()).insertChild(eq(1),
-                    any(Element.class));
-            verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    any(Element.class));
-            verify(children[0], times(2)).removeFromParent();
-            verify(children[1], never()).removeFromParent();
-            verify(children[2], never()).removeFromParent();
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
+            assertEquals(1, children.get(0).attachCounter);
+            assertEquals(1, children.get(0).detachCounter);
+            assertEquals(1, children.get(1).attachCounter);
+            assertEquals(1, children.get(1).detachCounter);
+            assertEquals(0, children.get(2).attachCounter);
+            assertEquals(0, children.get(2).detachCounter);
         });
     }
 
     @Test
-    public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementInsertAndRemoveCall() {
+    public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
 
@@ -669,21 +580,19 @@ public class ComponentEffectTest {
             TestLayout parentComponent = prepareTestLayout(
                     expectedMockedElements, taskList);
 
-            var children = expectedMockedElements.toArray(Element[]::new);
-
             // move last between first and second
             taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
                     .between(taskList.value().get(0), taskList.value().get(1)));
 
-            verify(parentComponent.getElement(), never()).insertChild(eq(0),
-                    any(Element.class));
-            verify(parentComponent.getElement(), never()).insertChild(eq(1),
-                    any(Element.class));
-            verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    any(Element.class));
-            verify(children[0], never()).removeFromParent();
-            verify(children[1], times(2)).removeFromParent();
-            verify(children[2], never()).removeFromParent();
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
+            assertEquals(0, children.get(0).attachCounter);
+            assertEquals(0, children.get(0).detachCounter);
+            assertEquals(1, children.get(1).attachCounter);
+            assertEquals(1, children.get(1).detachCounter);
+            assertEquals(0, children.get(2).attachCounter);
+            assertEquals(0, children.get(2).detachCounter);
         });
     }
 
@@ -759,7 +668,7 @@ public class ComponentEffectTest {
 
             // getChildren() should be called only once per bindChildren effect
             // call
-            verify(parentComponent.getElement(), once()).getChildren();
+            verify(parentComponent.getElement(), times(1)).getChildren();
 
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
@@ -770,26 +679,18 @@ public class ComponentEffectTest {
         });
     }
 
-    private static VerificationMode once() {
-        return times(1);
-    }
-
     private TestLayout prepareTestLayout(
             ArrayList<Element> expectedMockedElements,
             ListSignal<String> listSignal) {
-        TestLayout parentComponent = new TestLayout(expectedMockedElements);
+        TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
         ComponentEffect.bindChildren(parentComponent, listSignal,
-                valueSignal -> {
-                    var component = new TestComponent(valueSignal.value(),
-                            parentComponent.getElement(), null);
-                    expectedMockedElements.add(component.getElement());
-                    return component;
-                });
+                valueSignal -> new TestComponent(valueSignal.value()));
 
-        Mockito.clearInvocations(parentComponent.getElement());
-        Mockito.clearInvocations(expectedMockedElements.toArray());
+        parentComponent.getChildren().map(TestComponent.class::cast)
+                .forEach(TestComponent::resetCounters);
+
         return parentComponent;
     }
 
@@ -833,12 +734,16 @@ public class ComponentEffectTest {
     @Tag("div")
     private static class TestComponent extends Component {
         String value;
+        int attachCounter;
+        int detachCounter;
 
         /**
          * Constructor of TestComponent without any mock elements.
          */
         public TestComponent() {
             super(new Element("div"));
+            getElement().addAttachListener(event -> attachCounter++);
+            getElement().addDetachListener(event -> detachCounter++);
         }
 
         /**
@@ -917,6 +822,11 @@ public class ComponentEffectTest {
 
         public void setValue(String value) {
             this.value = value;
+        }
+
+        void resetCounters() {
+            attachCounter = 0;
+            detachCounter = 0;
         }
     }
 
