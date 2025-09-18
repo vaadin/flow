@@ -512,15 +512,12 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_moveLastToFirst_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
-            var expectedMockedElements = new ArrayList<Element>();
-
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
             taskList.insertLast("middle");
             taskList.insertLast("last");
 
-            TestLayout parentComponent = prepareTestLayout(
-                    expectedMockedElements, taskList);
+            TestLayout parentComponent = prepareTestLayout(taskList);
 
             // move last to first
             taskList.moveTo(taskList.value().get(2),
@@ -541,15 +538,12 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_moveFirstToLast_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
-            var expectedMockedElements = new ArrayList<Element>();
-
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
             taskList.insertLast("middle");
             taskList.insertLast("last");
 
-            TestLayout parentComponent = prepareTestLayout(
-                    expectedMockedElements, taskList);
+            TestLayout parentComponent = prepareTestLayout(taskList);
 
             // move first to last
             taskList.moveTo(taskList.value().get(0),
@@ -570,15 +564,12 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementAttachDetachCount() {
         runWithFeatureFlagEnabled(() -> {
-            var expectedMockedElements = new ArrayList<Element>();
-
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
             taskList.insertLast("middle");
             taskList.insertLast("last");
 
-            TestLayout parentComponent = prepareTestLayout(
-                    expectedMockedElements, taskList);
+            TestLayout parentComponent = prepareTestLayout(taskList);
 
             // move last between first and second
             taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
@@ -679,9 +670,7 @@ public class ComponentEffectTest {
         });
     }
 
-    private TestLayout prepareTestLayout(
-            ArrayList<Element> expectedMockedElements,
-            ListSignal<String> listSignal) {
+    private TestLayout prepareTestLayout(ListSignal<String> listSignal) {
         TestLayout parentComponent = new TestLayout();
         new MockUI().add(parentComponent);
 
