@@ -24,6 +24,7 @@ import java.io.Serializable;
  * @author Vaadin Ltd
  * @since 1.0.
  */
+@Deprecated
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";
     private static final String HEADLESSCHROME = " headlesschrome/";
@@ -39,90 +40,128 @@ public class BrowserDetails implements Serializable {
         UNKNOWN, WINDOWS, MACOSX, LINUX, IOS, ANDROID, CHROMEOS
     }
 
-    private boolean isGecko;
-    private boolean isWebKit;
-    private boolean isPresto;
-    private boolean isTrident;
+    public enum BrowserName {
+        UNKNOWN, SAFARI, CHROME, FIREFOX, OPERA, IE, EDGE
+    }
 
-    private boolean isSafari;
-    private boolean isChrome;
-    private boolean isFirefox;
-    private boolean isOpera;
-    private boolean isIE;
-    private boolean isEdge;
+    public enum BrowserEngine {
+        UNKNOWN, GECKO, WEBKIT, PRESTO, TRIDENT
+    }
+
+    private BrowserName browserName;
+    private BrowserEngine browserEngine;
 
     private boolean isWindowsPhone;
     private boolean isIPad;
     private boolean isIPhone;
     private boolean isChromeOS;
 
-    private OperatingSystem os = OperatingSystem.UNKNOWN;
+    private OperatingSystem os;
 
-    private float browserEngineVersion = -1.0f;
-    private int browserMajorVersion = -1;
-    private int browserMinorVersion = -1;
+    private float browserEngineVersion = -10.0f;
+    private int browserMajorVersion = -10;
+    private int browserMinorVersion = -10;
 
-    private int osMajorVersion = -1;
-    private int osMinorVersion = -1;
+    private int osMajorVersion = -10;
+    private int osMinorVersion = -10;
+
+    private String userAgent;
 
     /**
      * Create an instance based on the given user agent.
      *
-     * @param userAgent
+     * @param userAgentString
      *            User agent as provided by the browser.
      */
-    public BrowserDetails(String userAgent) {
-        userAgent = userAgent.toLowerCase();
+    public BrowserDetails(String userAgentString) {
+        userAgent = userAgentString.toLowerCase();
+    }
 
+    private void parseBrowserEngine() {
         // browser engine name
-        isGecko = userAgent.contains("gecko") && !userAgent.contains("webkit")
-                && !userAgent.contains("trident/");
-        isPresto = userAgent.contains(" presto/");
-        isTrident = userAgent.contains("trident/");
-        isWebKit = !isTrident && userAgent.contains("applewebkit");
+        if (userAgent.contains("gecko") && !userAgent.contains("webkit")
+                && !userAgent.contains("trident/")) {
+            browserEngine = BrowserEngine.GECKO;
+        } else if (userAgent.contains(" presto/")) {
+            browserEngine = BrowserEngine.PRESTO;
+        } else if (userAgent.contains("trident/")) {
+            browserEngine = BrowserEngine.TRIDENT;
+        } else if (!userAgent.contains("trident/")
+                && userAgent.contains("applewebkit")) {
+            browserEngine = BrowserEngine.WEBKIT;
+        } else {
+            browserEngine = BrowserEngine.UNKNOWN;
+        }
+    }
 
+    private void parseBrowserName() {
         // browser name
-        isChrome = (userAgent.contains(CHROME) || userAgent.contains(" crios/")
-                || userAgent.contains(HEADLESSCHROME))
-                && !userAgent.contains(" opr/");
-        isOpera = userAgent.contains("opera") || userAgent.contains(" opr/");
-        isIE = userAgent.contains("msie") && !isOpera
-                && !userAgent.contains("webtv");
-        // IE 11 no longer contains MSIE in the user agent
-        isIE = isIE || isTrident;
-
-        isSafari = !isChrome && !isIE && !isOpera
-                && userAgent.contains("safari");
-        isFirefox = userAgent.contains(" firefox/")
-                || userAgent.contains("fxios/");
+        // isChrome =
         if (userAgent.contains(" edge/") || userAgent.contains(" edg/")
                 || userAgent.contains(" edga/")
                 || userAgent.contains(" edgios/")) {
-            isEdge = true;
-            isChrome = false;
-            isOpera = false;
-            isIE = false;
-            isSafari = false;
-            isFirefox = false;
-            isWebKit = false;
-            isGecko = false;
-        }
+            browserName = BrowserName.EDGE;
 
+        } else if ((userAgent.contains(CHROME) || userAgent.contains(" crios/")
+                || userAgent.contains(HEADLESSCHROME))
+                && !userAgent.contains(" opr/")) {
+            browserName = BrowserName.CHROME;
+        } else if (userAgent.contains("opera") || userAgent.contains(" opr/")) {
+            browserName = BrowserName.OPERA;
+        } else if ((userAgent.contains("msie") && !userAgent.contains("webtv"))
+                || userAgent.contains("trident/")) {
+            // check trident engine as IE 11 no longer contains MSIE in the user
+            // agent
+            browserName = BrowserName.IE;
+        } else if (userAgent.contains(" firefox/")
+                || userAgent.contains("fxios/")) {
+            browserName = BrowserName.FIREFOX;
+        } else if (userAgent.contains("safari")) {
+            browserName = BrowserName.SAFARI;
+        } else {
+            browserName = BrowserName.UNKNOWN;
+        }
+        // isOpera =
+        // isIE =
+        // // IE 11 no longer contains MSIE in the user agent
+        // isIE = isIE || isTrident;
+        //
+        // isSafari = !isChrome && !isIE && !isOpera &&
+        // userAgent.contains("safari");
+        // isFirefox = userAgent.contains(" firefox/") ||
+        // userAgent.contains("fxios/");
+        // if (userAgent.contains(" edge/") || userAgent.contains(" edg/") ||
+        // userAgent.contains(" edga/") || userAgent.contains(" edgios/")) {
+        // isEdge = true;
+        // isChrome = false;
+        // isOpera = false;
+        // isIE = false;
+        // isSafari = false;
+        // isFirefox = false;
+        // isWebKit = false;
+        // isGecko = false;
+        // }
+    }
+
+    private void parseEngineVersion() {
         // Rendering engine version
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
         try {
-            if (isGecko) {
+            if (browserEngine.equals(BrowserEngine.GECKO)) {
                 int rvPos = userAgent.indexOf("rv:");
                 if (rvPos >= 0) {
                     String tmp = userAgent.substring(rvPos + 3);
                     tmp = tmp.replaceFirst("(\\.[0-9]+).+", "$1");
                     browserEngineVersion = Float.parseFloat(tmp);
                 }
-            } else if (isWebKit) {
+            } else if (browserEngine.equals(BrowserEngine.WEBKIT)) {
                 String tmp = userAgent
                         .substring(userAgent.indexOf("webkit/") + 7);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
                 browserEngineVersion = Float.parseFloat(tmp);
-            } else if (isTrident) {
+            } else if (browserEngine.equals(BrowserEngine.TRIDENT)) {
                 String tmp = userAgent
                         .substring(userAgent.indexOf("trident/") + 8);
                 tmp = tmp.replaceFirst("([0-9]+\\.[0-9]+).*", "$1");
@@ -134,17 +173,31 @@ public class BrowserDetails implements Serializable {
                     // IE12
                     browserEngineVersion = 7;
                 }
-            } else if (isEdge) {
+            } else if (browserName != null
+                    && browserName.equals(BrowserName.EDGE)) {
                 browserEngineVersion = 0;
+            } else {
+                browserEngineVersion = -1.0f;
             }
         } catch (Exception e) {
             // Browser engine version parsing failed
             log("Browser engine version parsing failed for: " + userAgent, e);
         }
+    }
 
+    private void parseBrowserVersion() {
+        browserMajorVersion = -1;
+        browserMinorVersion = -1;
+
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
         // Browser version
         try {
-            if (isIE) {
+            if (browserName.equals(BrowserName.IE)) {
                 if (!userAgent.contains("msie")) {
                     // IE 11+
                     int rvPos = userAgent.indexOf("rv:");
@@ -153,7 +206,7 @@ public class BrowserDetails implements Serializable {
                         tmp = tmp.replaceFirst("(\\.[0-9]+).+", "$1");
                         parseVersionString(tmp, userAgent);
                     }
-                } else if (isTrident) {
+                } else if (browserEngine.equals(BrowserEngine.TRIDENT)) {
                     // potentially IE 11 in compatibility mode
                     // See
                     // https://docs.microsoft.com/en-us/previous-versions/windows/internet-explorer/ie-developer/compatibility/ms537503(v=vs.85)#trident-token
@@ -166,7 +219,7 @@ public class BrowserDetails implements Serializable {
                             ieVersionString.indexOf(';'));
                     parseVersionString(ieVersionString, userAgent);
                 }
-            } else if (isFirefox) {
+            } else if (browserName.equals(BrowserName.FIREFOX)) {
                 int i = userAgent.indexOf(" fxios/");
                 if (i != -1) {
                     // Version present in Opera 10 and newer
@@ -178,9 +231,9 @@ public class BrowserDetails implements Serializable {
                         safeSubstring(userAgent, i,
                                 i + getVersionStringLength(userAgent, i)),
                         userAgent);
-            } else if (isChrome) {
+            } else if (browserName.equals(BrowserName.CHROME)) {
                 parseChromeVersion(userAgent);
-            } else if (isSafari) {
+            } else if (browserName.equals(BrowserName.SAFARI)) {
                 int i = userAgent.indexOf(" version/");
                 if (i >= 0) {
                     i += 9;
@@ -189,6 +242,9 @@ public class BrowserDetails implements Serializable {
                                     i + getVersionStringLength(userAgent, i)),
                             userAgent);
                 } else {
+                    if (browserEngineVersion == -10) {
+                        parseEngineVersion();
+                    }
                     int engineVersion = (int) (browserEngineVersion * 10);
                     if (engineVersion >= 6010 && engineVersion < 6015) {
                         browserMajorVersion = 9;
@@ -216,7 +272,7 @@ public class BrowserDetails implements Serializable {
                         browserMinorVersion = 1;
                     }
                 }
-            } else if (isOpera) {
+            } else if (browserName.equals(BrowserName.OPERA)) {
                 int i = userAgent.indexOf(" version/");
                 if (i != -1) {
                     // Version present in Opera 10 and newer
@@ -230,7 +286,7 @@ public class BrowserDetails implements Serializable {
                         safeSubstring(userAgent, i,
                                 i + getVersionStringLength(userAgent, i)),
                         userAgent);
-            } else if (isEdge) {
+            } else if (browserName.equals(BrowserName.EDGE)) {
                 int i = userAgent.indexOf(" edge/") + 6;
                 if (userAgent.contains(" edg/")) {
                     i = userAgent.indexOf(" edg/") + 5;
@@ -250,6 +306,9 @@ public class BrowserDetails implements Serializable {
             log("Browser version parsing failed for: " + userAgent, e);
 
         }
+    }
+
+    private void parseOperatingSystem() {
 
         // Operating system
         if (userAgent.contains("windows ")) {
@@ -275,6 +334,8 @@ public class BrowserDetails implements Serializable {
             os = OperatingSystem.CHROMEOS;
             isChromeOS = true;
             parseChromeOSVersion(userAgent);
+        } else {
+            os = OperatingSystem.UNKNOWN;
         }
     }
 
@@ -353,6 +414,8 @@ public class BrowserDetails implements Serializable {
     private void parseAndroidVersion(String userAgent) {
         // Android 5.1;
         if (!userAgent.contains("android ")) {
+            osMajorVersion = -1;
+            osMinorVersion = -1;
             return;
         }
 
@@ -393,6 +456,8 @@ public class BrowserDetails implements Serializable {
     private void parseIOSVersion(String userAgent) {
         // OS 5_1 like Mac OS X
         if (!userAgent.contains("os ") || !userAgent.contains(" like mac")) {
+            osMajorVersion = -1;
+            osMinorVersion = -1;
             return;
         }
 
@@ -486,7 +551,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Firefox, false otherwise
      */
     public boolean isFirefox() {
-        return isFirefox;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.FIREFOX);
     }
 
     /**
@@ -495,7 +563,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Gecko, false otherwise
      */
     public boolean isGecko() {
-        return isGecko;
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
+        return browserEngine.equals(BrowserEngine.GECKO);
     }
 
     /**
@@ -504,7 +575,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is WebKit, false otherwise
      */
     public boolean isWebKit() {
-        return isWebKit;
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
+        return browserEngine.equals(BrowserEngine.WEBKIT);
     }
 
     /**
@@ -513,7 +587,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Presto, false otherwise
      */
     public boolean isPresto() {
-        return isPresto;
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
+        return browserEngine.equals(BrowserEngine.PRESTO);
     }
 
     /**
@@ -522,7 +599,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Trident, false otherwise
      */
     public boolean isTrident() {
-        return isTrident;
+        if (browserEngine == null) {
+            parseBrowserEngine();
+        }
+        return browserEngine.equals(BrowserEngine.TRIDENT);
     }
 
     /**
@@ -531,7 +611,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Safari, false otherwise
      */
     public boolean isSafari() {
-        return isSafari;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.SAFARI);
     }
 
     /**
@@ -540,7 +623,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Chrome, false otherwise
      */
     public boolean isChrome() {
-        return isChrome;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.CHROME);
     }
 
     /**
@@ -549,7 +635,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Opera, false otherwise
      */
     public boolean isOpera() {
-        return isOpera;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.OPERA);
     }
 
     /**
@@ -558,7 +647,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Internet Explorer, false otherwise
      */
     public boolean isIE() {
-        return isIE;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.IE);
     }
 
     /**
@@ -567,7 +659,10 @@ public class BrowserDetails implements Serializable {
      * @return true if it is Edge, false otherwise
      */
     public boolean isEdge() {
-        return isEdge;
+        if (browserName == null) {
+            parseBrowserName();
+        }
+        return browserName.equals(BrowserName.EDGE);
     }
 
     /**
@@ -577,6 +672,9 @@ public class BrowserDetails implements Serializable {
      * @return The version of the browser engine
      */
     public float getBrowserEngineVersion() {
+        if (browserEngineVersion == -10.0f) {
+            parseEngineVersion();
+        }
         return browserEngineVersion;
     }
 
@@ -591,6 +689,9 @@ public class BrowserDetails implements Serializable {
      * @return The major version of the browser.
      */
     public final int getBrowserMajorVersion() {
+        if (browserMajorVersion == -10) {
+            parseBrowserVersion();
+        }
         return browserMajorVersion;
     }
 
@@ -602,7 +703,17 @@ public class BrowserDetails implements Serializable {
      * @return The minor version of the browser, or -1 if not known/parsed.
      */
     public final int getBrowserMinorVersion() {
+        if (browserMinorVersion == -10) {
+            parseBrowserVersion();
+        }
         return browserMinorVersion;
+    }
+
+    private OperatingSystem getOs() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
+        return os;
     }
 
     /**
@@ -611,7 +722,7 @@ public class BrowserDetails implements Serializable {
      * @return true if run on Windows, false otherwise
      */
     public boolean isWindows() {
-        return os == OperatingSystem.WINDOWS;
+        return getOs().equals(OperatingSystem.WINDOWS);
     }
 
     /**
@@ -629,7 +740,7 @@ public class BrowserDetails implements Serializable {
      * @return true if run on Mac OSX, false otherwise
      */
     public boolean isMacOSX() {
-        return os == OperatingSystem.MACOSX;
+        return getOs().equals(OperatingSystem.MACOSX);
     }
 
     /**
@@ -638,7 +749,7 @@ public class BrowserDetails implements Serializable {
      * @return true if run on Linux, false otherwise
      */
     public boolean isLinux() {
-        return os == OperatingSystem.LINUX;
+        return getOs().equals(OperatingSystem.LINUX);
     }
 
     /**
@@ -647,7 +758,7 @@ public class BrowserDetails implements Serializable {
      * @return true if run on Android, false otherwise
      */
     public boolean isAndroid() {
-        return os == OperatingSystem.ANDROID;
+        return getOs().equals(OperatingSystem.ANDROID);
     }
 
     /**
@@ -656,6 +767,9 @@ public class BrowserDetails implements Serializable {
      * @return true if run on iPhone, false otherwise
      */
     public boolean isIPhone() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
         return isIPhone;
     }
 
@@ -665,6 +779,9 @@ public class BrowserDetails implements Serializable {
      * @return true if run on iPad, false otherwise
      */
     public boolean isIPad() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
         return isIPad;
     }
 
@@ -674,6 +791,9 @@ public class BrowserDetails implements Serializable {
      * @return true if run on Chrome OS, false otherwise
      */
     public boolean isChromeOS() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
         return isChromeOS;
     }
 
@@ -684,6 +804,9 @@ public class BrowserDetails implements Serializable {
      * @return The major version or -1 if unknown
      */
     public int getOperatingSystemMajorVersion() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
         return osMajorVersion;
     }
 
@@ -694,6 +817,9 @@ public class BrowserDetails implements Serializable {
      * @return The minor version or -1 if unknown
      */
     public int getOperatingSystemMinorVersion() {
+        if (os == null) {
+            parseOperatingSystem();
+        }
         return osMinorVersion;
     }
 
