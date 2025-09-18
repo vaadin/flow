@@ -34,10 +34,9 @@ import com.vaadin.flow.shared.BrowserDetails;
  * @author Vaadin Ltd
  * @since 1.0.
  */
-@Deprecated
 public class WebBrowser implements Serializable {
 
-    private String browserApplication = null;
+    private String userAgent = null;
     private Locale locale = null;
     private String address = null;
     private boolean secureConnection = false;
@@ -64,7 +63,7 @@ public class WebBrowser implements Serializable {
         secureConnection = request.isSecure();
         // Headers are case insensitive according to the specification but are
         // case sensitive in Weblogic portal...
-        browserApplication = request.getHeader("User-Agent");
+        userAgent = request.getHeader("User-Agent");
     }
 
     /**
@@ -74,12 +73,12 @@ public class WebBrowser implements Serializable {
      * @return request User-Agent header
      */
     public String getUserAgent() {
-        return browserApplication;
+        return userAgent;
     }
 
     private BrowserDetails getBrowserDetails() {
-        if (browserApplication != null && browserDetails == null) {
-            browserDetails = new BrowserDetails(browserApplication) {
+        if (userAgent != null && browserDetails == null) {
+            browserDetails = new BrowserDetails(userAgent) {
                 @Override
                 protected void log(String error, Exception e) {
                     LoggerFactory.getLogger(BrowserDetails.class).debug(error);
@@ -93,9 +92,11 @@ public class WebBrowser implements Serializable {
      * Get the browser user-agent string.
      *
      * @return The raw browser userAgent string
+     * @deprectaed use {@link #getUserAgent()} method to get user-agent string
      */
+    @Deprecated
     public String getBrowserApplication() {
-        return browserApplication;
+        return userAgent;
     }
 
     /**
@@ -131,7 +132,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Firefox, false if the user is not using
      *         Firefox or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isFirefox() {
         if (getBrowserDetails() == null) {
             return false;
@@ -146,7 +150,10 @@ public class WebBrowser implements Serializable {
      * @return true if the user is using Internet Explorer, false if the user is
      *         not using Internet Explorer or if no information on the browser
      *         is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isIE() {
         if (getBrowserDetails() == null) {
             return false;
@@ -160,7 +167,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Edge, false if the user is not using
      *         Edge or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isEdge() {
         if (getBrowserDetails() == null) {
             return false;
@@ -176,7 +186,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Safari, false if the user is not using
      *         Safari or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isSafari() {
         if (getBrowserDetails() == null) {
             return false;
@@ -190,7 +203,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Opera, false if the user is not using
      *         Opera or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isOpera() {
         if (getBrowserDetails() == null) {
             return false;
@@ -204,7 +220,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Chrome, false if the user is not using
      *         Chrome or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isChrome() {
         if (getBrowserDetails() == null) {
             return false;
@@ -222,7 +241,10 @@ public class WebBrowser implements Serializable {
      * </p>
      *
      * @return The major version of the browser or -1 if not known.
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public int getBrowserMajorVersion() {
         if (getBrowserDetails() == null) {
             return -1;
@@ -237,7 +259,10 @@ public class WebBrowser implements Serializable {
      * @see #getBrowserMajorVersion()
      *
      * @return The minor version of the browser or -1 if not known.
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public int getBrowserMinorVersion() {
         if (getBrowserDetails() == null) {
             return -1;
@@ -251,7 +276,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Linux, false if the user is not using
      *         Linux or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isLinux() {
         if (getBrowserDetails() == null) {
             return false;
@@ -264,7 +292,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Mac OS X, false if the user is not
      *         using Mac OS X or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isMacOSX() {
         if (getBrowserDetails() == null) {
             return false;
@@ -277,7 +308,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if the user is using Windows, false if the user is not using
      *         Windows or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isWindows() {
         if (getBrowserDetails() == null) {
             return false;
@@ -291,7 +325,10 @@ public class WebBrowser implements Serializable {
      * @return true if the user is using Windows Phone, false if the user is not
      *         using Windows Phone or if no information on the browser is
      *         present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isWindowsPhone() {
         if (getBrowserDetails() == null) {
             return false;
@@ -304,7 +341,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on Android false if the user is not using Android or
      *         if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isAndroid() {
         if (getBrowserDetails() == null) {
             return false;
@@ -317,7 +357,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPhone false if the user is not using IPhone or if
      *         no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isIPhone() {
         if (getBrowserDetails() == null) {
             return false;
@@ -330,7 +373,10 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on ChromeOS false if the user is not using ChromeOS
      *         or if no information on the browser is present
+     * @deprecated use a parsing library like ua-parser/uap-java to parse the
+     *             user agent from {@link #getUserAgent()}
      */
+    @Deprecated
     public boolean isChromeOS() {
         if (getBrowserDetails() == null) {
             return false;
