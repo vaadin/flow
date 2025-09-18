@@ -63,7 +63,7 @@ public class TaskCopyNpmAssetsFiles
             staticOutput = new File(
                     DevBundleUtils.getDevBundleFolder(options.getNpmFolder(),
                             options.getBuildDirectoryName()),
-                    "webapp");
+                    "webapp/" + VAADIN_STATIC_FILES_PATH);
         } else {
             String webappResources;
             if (options.getWebappResourcesDirectory() == null) {
