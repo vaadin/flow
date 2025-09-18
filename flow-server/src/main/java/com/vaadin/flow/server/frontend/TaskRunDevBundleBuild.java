@@ -89,13 +89,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         README_NOT_CREATED = "Failed to create a README file in "
                 + options.getBuildDirectoryName() + "/"
                 + Constants.DEV_BUNDLE_LOCATION;
+        getLogger().info(
+                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        getLogger().info(
-                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
-
         runFrontendBuildTool("Vite", "vite", "vite", "build");
 
         copyPackageLockToBundleFolder();
