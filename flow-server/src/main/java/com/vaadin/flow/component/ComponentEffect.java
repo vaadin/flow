@@ -146,9 +146,42 @@ public final class ComponentEffect {
     }
 
     /**
-     * Binds {@link ListSignal} to parent component with a component factory.
-     * Parent component mush implement {@link HasComponents} and it must be
-     * subtype of {@link Component}.
+     * Binds a {@link ListSignal} to a parent component using a child component
+     * factory. Each {@link ValueSignal} in the list corresponds to a child
+     * component within the parent.
+     * <p>
+     * The parent component is automatically updated to reflect the structure of
+     * the {@link ListSignal}. Changes to the list, such as additions, removals,
+     * or reordering, will update the parent's children accordingly.
+     * <p>
+     * The parent component must not contain any children that are not part of
+     * the {@link ListSignal}. If the parent has existing children when this
+     * method is called, or if it contains unrelated children after the list
+     * changes, an {@link IllegalStateException} will be thrown.
+     * <p>
+     * New child components are created using the provided
+     * <code>childFactory</code> function. This function takes a
+     * {@link ValueSignal} from the {@link ListSignal} and returns a
+     * corresponding {@link Component}. The {@link ValueSignal} can be further
+     * bound to the returned component as needed.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ListSignal<Task> taskList = new ListSignal<>(Task.class);
+     *
+     * Div div = new Div();
+     *
+     * ComponentEffect.bindChildren(div, taskList, taskValueSignal -> {
+     *     var listItem = new ListItem(
+     *             taskValueSignal.value().getDescription());
+     *     ComponentEffect.bind(listItem, taskValueSignal,
+     *             (listItemComponent, task) -> {
+     *                 listItemComponent.setText(task.getDescription());
+     *             });
+     *     return listItem;
+     * });
+     * </pre>
      *
      * @param parent
      *            target parent component, must not be <code>null</code>
@@ -158,9 +191,10 @@ public final class ComponentEffect {
      * @param childFactory
      *            factory to create new component, must not be <code>null</code>
      * @param <T>
-     *            the value type
+     *            the value type of the {@link ValueSignal}s in the
+     *            {@link ListSignal}
      * @param <PARENT>
-     *            the type of the parent
+     *            the type of the parent component
      * @throws IllegalStateException
      *             thrown if parent component has children not belonging to the
      *             signal
@@ -178,27 +212,6 @@ public final class ComponentEffect {
                         .map(Component::getElement).orElse(null));
     }
 
-    // TODO update JavaDoc
-    /**
-     * Binds {@link ListSignal} to parent element with an element factory.
-     * Parent component is needed as a Signal effect owner.
-     *
-     * @param parentComponent
-     *            target parent component as a Signal effect owner, must not be
-     *            <code>null</code>
-     * @param parent
-     *            target parent element, must not be <code>null</code>
-     * @param list
-     *            list signal to bind to the parent, must not be
-     *            <code>null</code>
-     * @param childFactory
-     *            factory to create new element, must not be <code>null</code>
-     * @param <T>
-     *            the value type
-     * @throws IllegalStateException
-     *             thrown if parent component has children not belonging to the
-     *             signal
-     */
     private static <T> void bindChildren(Component parentComponent,
             Element parent, ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Element> childFactory) {
