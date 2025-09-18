@@ -168,7 +168,7 @@ public final class ComponentEffect {
      * Example of usage:
      *
      * <pre>
-     * ListSignal<String> taskList = new ListSignal<>(String.class);
+     * ListSignal&lt;String&gt; taskList = new ListSignal&lt;&gt;(String.class);
      *
      * Div div = new Div();
      *
