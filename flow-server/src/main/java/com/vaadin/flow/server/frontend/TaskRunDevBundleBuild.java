@@ -105,6 +105,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         // Copy npm assets after devBundle vite as it clears the target
         // directory
         new TaskCopyNpmAssetsFiles(options).execute();
+
+        if (options.isCompressBundle()) {
+            DevBundleUtils.compressBundle(options.getNpmFolder(),
+                    new File(
+                            new File(options.getNpmFolder(),
+                                    options.getBuildDirectoryName()),
+                            Constants.DEV_BUNDLE_LOCATION));
+        }
     }
 
     private static Logger getLogger() {
@@ -215,13 +223,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (process != null) {
                 process.destroyForcibly();
             }
-        }
-        if (options.isCompressBundle()) {
-            DevBundleUtils.compressBundle(options.getNpmFolder(),
-                    new File(
-                            new File(options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
         }
     }
 
