@@ -168,17 +168,13 @@ public final class ComponentEffect {
      * Example of usage:
      *
      * <pre>
-     * ListSignal<Task> taskList = new ListSignal<>(Task.class);
+     * ListSignal<String> taskList = new ListSignal<>(String.class);
      *
      * Div div = new Div();
      *
      * ComponentEffect.bindChildren(div, taskList, taskValueSignal -> {
-     *     var listItem = new ListItem(
-     *             taskValueSignal.value().getDescription());
-     *     ComponentEffect.bind(listItem, taskValueSignal,
-     *             (listItemComponent, task) -> {
-     *                 listItemComponent.setText(task.getDescription());
-     *             });
+     *     var listItem = new ListItem(taskValueSignal.value());
+     *     ComponentEffect.bind(listItem, taskValueSignal, HasText::setText);
      *     return listItem;
      * });
      * </pre>
