@@ -40,6 +40,8 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
+
 public class TaskCopyNpmAssetsFilesTest {
 
     @Rule
@@ -160,7 +162,7 @@ public class TaskCopyNpmAssetsFilesTest {
         File devBundleTarget = new File(
                 DevBundleUtils.getDevBundleFolder(options.getNpmFolder(),
                         options.getBuildDirectoryName()),
-                "webapp");
+                "webapp/" + VAADIN_STATIC_FILES_PATH);
 
         Set<String> filesInDirectory = getFilesInDirectory(devBundleTarget);
         Assert.assertEquals(1, filesInDirectory.size());
