@@ -94,7 +94,7 @@
         <jackson.version>2.20.0</jackson.version>
         <jackson.databind.version>${jackson.version}</jackson.databind.version>
         <jaxb.version>4.0.5</jaxb.version>
-        <guava.version>33.4.8-jre</guava.version>
+        <guava.version>33.5.0-jre</guava.version>
         <javassist.version>3.30.2-GA</javassist.version>
 
         <!-- Plugins -->
