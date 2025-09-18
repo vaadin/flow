@@ -587,7 +587,7 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_moveItem_verifyElementInsertAndRemoveCall() {
+    public void bindChildren_moveLastToFirst_verifyElementInsertAndRemoveCall() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
 
@@ -596,28 +596,10 @@ public class ComponentEffectTest {
             taskList.insertLast("middle");
             taskList.insertLast("last");
 
-            TestLayout parentComponent = new TestLayout(expectedMockedElements);
-            new MockUI().add(parentComponent);
-
-            ComponentEffect.bindChildren(parentComponent, taskList,
-                    valueSignal -> {
-                        var component = new TestComponent(valueSignal.value(),
-                                parentComponent.getElement(), null);
-                        expectedMockedElements.add(component.getElement());
-                        return component;
-                    });
+            TestLayout parentComponent = prepareTestLayout(
+                    expectedMockedElements, taskList);
 
             var children = expectedMockedElements.toArray(Element[]::new);
-
-            verify(parentComponent.getElement(), once()).insertChild(eq(0),
-                    eq(children[0]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(1),
-                    eq(children[1]));
-            verify(parentComponent.getElement(), once()).insertChild(eq(2),
-                    eq(children[2]));
-
-            Mockito.clearInvocations(parentComponent.getElement());
-            Mockito.clearInvocations(children);
             // move last to first
             taskList.moveTo(taskList.value().get(2),
                     ListSignal.ListPosition.first());
@@ -633,13 +615,25 @@ public class ComponentEffectTest {
             verify(children[0], never()).removeFromParent();
             verify(children[1], never()).removeFromParent();
             verify(children[2], once()).removeFromParent();
+        });
+    }
 
-            Mockito.clearInvocations(parentComponent.getElement());
-            Mockito.clearInvocations(children);
-            // update expected children for the next move
-            expectedMockedElements.add(0, expectedMockedElements.remove(2));
-            children = expectedMockedElements.toArray(Element[]::new);
-            // move it back to last
+    @Test
+    public void bindChildren_moveFirstToLast_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("middle");
+            taskList.insertLast("last");
+
+            TestLayout parentComponent = prepareTestLayout(
+                    expectedMockedElements, taskList);
+
+            var children = expectedMockedElements.toArray(Element[]::new);
+
+            // move first to last
             taskList.moveTo(taskList.value().get(0),
                     ListSignal.ListPosition.last());
 
@@ -652,12 +646,24 @@ public class ComponentEffectTest {
             verify(children[0], times(2)).removeFromParent();
             verify(children[1], never()).removeFromParent();
             verify(children[2], never()).removeFromParent();
+        });
+    }
 
-            Mockito.clearInvocations(parentComponent.getElement());
-            Mockito.clearInvocations(children);
-            // update expected children for the next move
-            expectedMockedElements.add(2, expectedMockedElements.remove(0));
-            children = expectedMockedElements.toArray(Element[]::new);
+    @Test
+    public void bindChildren_moveLastBetweenFirstAndSecond_verifyElementInsertAndRemoveCall() {
+        runWithFeatureFlagEnabled(() -> {
+            var expectedMockedElements = new ArrayList<Element>();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            taskList.insertLast("middle");
+            taskList.insertLast("last");
+
+            TestLayout parentComponent = prepareTestLayout(
+                    expectedMockedElements, taskList);
+
+            var children = expectedMockedElements.toArray(Element[]::new);
+
             // move last between first and second
             taskList.moveTo(taskList.value().get(2), ListSignal.ListPosition
                     .between(taskList.value().get(0), taskList.value().get(1)));
@@ -759,6 +765,25 @@ public class ComponentEffectTest {
 
     private static VerificationMode once() {
         return times(1);
+    }
+
+    private TestLayout prepareTestLayout(
+            ArrayList<Element> expectedMockedElements,
+            ListSignal<String> listSignal) {
+        TestLayout parentComponent = new TestLayout(expectedMockedElements);
+        new MockUI().add(parentComponent);
+
+        ComponentEffect.bindChildren(parentComponent, listSignal,
+                valueSignal -> {
+                    var component = new TestComponent(valueSignal.value(),
+                            parentComponent.getElement(), null);
+                    expectedMockedElements.add(component.getElement());
+                    return component;
+                });
+
+        Mockito.clearInvocations(parentComponent.getElement());
+        Mockito.clearInvocations(expectedMockedElements.toArray());
+        return parentComponent;
     }
 
     @FunctionalInterface
