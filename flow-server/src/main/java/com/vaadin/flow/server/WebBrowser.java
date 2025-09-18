@@ -92,7 +92,7 @@ public class WebBrowser implements Serializable {
      * Get the browser user-agent string.
      *
      * @return The raw browser userAgent string
-     * @deprectaed use {@link #getUserAgent()} method to get user-agent string
+     * @deprecated use {@link #getUserAgent()} method to get user-agent string
      */
     @Deprecated
     public String getBrowserApplication() {
