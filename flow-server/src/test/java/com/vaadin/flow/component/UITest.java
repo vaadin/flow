@@ -1223,6 +1223,20 @@ public class UITest {
     }
 
     @Test
+    public void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertTrue("Fixture should have set a modal component",
+                fixture.ui.hasModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        Assert.assertFalse(
+                "Setting modal to VISUAL should have removed all server side modality",
+                fixture.ui.hasModalComponent());
+    }
+
+    @Test
     public void modalComponentPresent_getActiveModalComponent_returnsExpectedComponent() {
         final TestFixture fixture = new TestFixture();
         Assert.assertEquals("modalComponent should be modal",
