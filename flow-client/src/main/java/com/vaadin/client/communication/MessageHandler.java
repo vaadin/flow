@@ -437,6 +437,10 @@ public class MessageHandler {
             if (json.hasKey("changes")) {
                 processChanges(json);
             }
+            
+            if (json.hasKey("stylesheetRemovals")) {
+                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
+            }
 
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 // Invoke JS only after all tree changes have been
@@ -526,6 +530,33 @@ public class MessageHandler {
 
     }
 
+    private void processStylesheetRemovals(JsonArray removals) {
+        if (removals == null || removals.length() == 0) {
+            return;
+        }
+        
+        Console.debug("Processing " + removals.length() + " stylesheet removals");
+        
+        for (int i = 0; i < removals.length(); i++) {
+            String dependencyId = removals.getString(i);
+            removeStylesheetById(dependencyId);
+        }
+    }
+    
+    private native void removeStylesheetById(String dependencyId) /*-{
+        // Remove link elements with matching dependency ID
+        var links = $doc.querySelectorAll('link[data-id="' + dependencyId + '"]');
+        for (var i = 0; i < links.length; i++) {
+            links[i].remove();
+        }
+        
+        // Remove style elements with matching dependency ID
+        var styles = $doc.querySelectorAll('style[data-id="' + dependencyId + '"]');
+        for (var i = 0; i < styles.length; i++) {
+            styles[i].remove();
+        }
+    }-*/;
+    
     private void processChanges(JsonObject json) {
         StateTree tree = registry.getStateTree();
         JsSet<StateNode> updatedNodes = TreeChangeProcessor.processChanges(tree,

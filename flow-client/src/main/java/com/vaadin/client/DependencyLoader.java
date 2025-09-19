@@ -187,8 +187,15 @@ public class DependencyLoader {
             JsonObject dependencyJson = dependencies.getObject(i);
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
+            // Check if dependency has an ID for tracking
+            String dependencyId = null;
+            try {
+                dependencyId = dependencyJson.getString(Dependency.KEY_ID);
+            } catch (Exception e) {
+                // No dependency ID provided, which is fine
+            }
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
-                    type, loadMode);
+                    type, loadMode, dependencyId);
 
             if (type == Dependency.Type.DYNAMIC_IMPORT) {
                 loadDependencyEagerly(
@@ -225,13 +232,26 @@ public class DependencyLoader {
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
             Dependency.Type resourceType, LoadMode loadMode) {
+        return getResourceLoader(resourceType, loadMode, null);
+    }
+
+    private BiConsumer<String, ResourceLoadListener> getResourceLoader(
+            Dependency.Type resourceType, LoadMode loadMode, String dependencyId) {
         ResourceLoader resourceLoader = registry.getResourceLoader();
         boolean inline = loadMode == LoadMode.INLINE;
 
         switch (resourceType) {
         case STYLESHEET:
             if (inline) {
+                if (dependencyId != null) {
+                    return (data, listener) -> resourceLoader
+                            .inlineStyleSheet(data, listener, dependencyId);
+                }
                 return resourceLoader::inlineStyleSheet;
+            }
+            if (dependencyId != null) {
+                return (url, listener) -> resourceLoader
+                        .loadStylesheet(url, listener, dependencyId);
             }
             return resourceLoader::loadStylesheet;
         case JAVASCRIPT:

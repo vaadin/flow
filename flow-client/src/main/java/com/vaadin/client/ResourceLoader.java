@@ -547,6 +547,25 @@ public class ResourceLoader {
      */
     public void loadStylesheet(final String stylesheetUrl,
             final ResourceLoadListener resourceLoadListener) {
+        loadStylesheet(stylesheetUrl, resourceLoadListener, null);
+    }
+    
+    /**
+     * Load a stylesheet with a specific dependency ID for tracking.
+     * Calling this method when the stylesheet is currently loading or already
+     * loaded doesn't cause the stylesheet to be loaded again, but the listener
+     * will still be notified when appropriate.
+     *
+     * @param stylesheetUrl
+     *            the url of the stylesheet to load
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is loaded
+     * @param dependencyId
+     *            the ID to track this dependency with (for later removal)
+     */
+    public void loadStylesheet(final String stylesheetUrl,
+            final ResourceLoadListener resourceLoadListener,
+            final String dependencyId) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
@@ -561,6 +580,9 @@ public class ResourceLoader {
             linkElement.setRel("stylesheet");
             linkElement.setType("text/css");
             linkElement.setHref(url);
+            if (dependencyId != null) {
+                linkElement.setAttribute("data-id", dependencyId);
+            }
 
             if (BrowserInfo.get().isSafariOrIOS()) {
                 // Safari doesn't fire any events for link elements
@@ -621,6 +643,22 @@ public class ResourceLoader {
      */
     public void inlineStyleSheet(String styleSheetContents,
             final ResourceLoadListener resourceLoadListener) {
+        inlineStyleSheet(styleSheetContents, resourceLoadListener, null);
+    }
+    
+    /**
+     * Inline a stylesheet with a specific dependency ID for tracking.
+     *
+     * @param styleSheetContents
+     *            the contents to inline
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is loaded
+     * @param dependencyId
+     *            the ID to track this dependency with (for later removal)
+     */
+    public void inlineStyleSheet(String styleSheetContents,
+            final ResourceLoadListener resourceLoadListener,
+            final String dependencyId) {
         final ResourceLoadEvent event = new ResourceLoadEvent(this,
                 styleSheetContents);
         if (loadedResources.has(styleSheetContents)) {
@@ -635,6 +673,9 @@ public class ResourceLoader {
             StyleElement styleSheetElement = getDocument().createStyleElement();
             styleSheetElement.setTextContent(styleSheetContents);
             styleSheetElement.setType("text/css");
+            if (dependencyId != null) {
+                styleSheetElement.setAttribute("data-id", dependencyId);
+            }
 
             addCssLoadHandler(styleSheetContents, event, styleSheetElement);
 

@@ -34,6 +34,7 @@ public class Dependency implements Serializable {
     public static final String KEY_TYPE = "type";
     public static final String KEY_LOAD_MODE = "mode";
     public static final String KEY_CONTENTS = "contents";
+    public static final String KEY_ID = "id";
 
     /**
      * The type of a dependency.

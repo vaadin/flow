@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -108,9 +109,10 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url) {
-        addStyleSheet(url, LoadMode.EAGER);
+    public Registration addStyleSheet(String url) {
+        return addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -135,9 +137,17 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
+    public Registration addStyleSheet(String url, LoadMode loadMode) {
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode);
+        String dependencyId = UUID.randomUUID().toString();
+        
+        // Add dependency with tracking ID
+        ui.getInternals().getDependencyList().add(dependency, dependencyId);
+        
+        // Return Registration for removal
+        return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
     /**

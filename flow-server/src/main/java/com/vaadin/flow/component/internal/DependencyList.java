@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,6 +50,8 @@ public class DependencyList implements Serializable {
      */
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
+    private final Map<String, String> dependencyIdToUrl = new HashMap<>();
+    private final Map<String, String> urlToDependencyId = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -74,6 +77,27 @@ public class DependencyList implements Serializable {
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
+        add(dependency, null);
+    }
+
+    /**
+     * Adds the given dependency to be loaded by the client side with an optional ID.
+     * <p>
+     * Does not send any previously sent dependencies again.
+     * <p>
+     * Relative URLs are interpreted as relative to the configured
+     * {@code frontend} directory location. You can prefix the URL with
+     * {@code context://} to make it relative to the context path or use an
+     * absolute URL to refer to files outside the frontend directory.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependency
+     *            the dependency to include on the page
+     * @param dependencyId
+     *            optional ID for tracking the dependency
+     */
+    public void add(Dependency dependency, String dependencyId) {
         final String dependencyUrl = dependency.getUrl();
 
         if (urlCache.contains(dependencyUrl)) {
@@ -83,6 +107,12 @@ public class DependencyList implements Serializable {
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
+            
+            // Track dependency ID if provided
+            if (dependencyId != null) {
+                dependencyIdToUrl.put(dependencyId, dependencyUrl);
+                urlToDependencyId.put(dependencyUrl, dependencyId);
+            }
         }
     }
 
@@ -116,5 +146,38 @@ public class DependencyList implements Serializable {
      */
     public void clearPendingSendToClient() {
         urlToLoadedDependency.clear();
+    }
+    
+    /**
+     * Gets the dependency ID associated with the given URL, if any.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param url
+     *            the URL to look up
+     * @return the dependency ID or null if not tracked
+     */
+    public String getDependencyId(String url) {
+        return urlToDependencyId.get(url);
+    }
+    
+    /**
+     * Removes a dependency by its ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the dependency to remove
+     * @return true if the dependency was removed, false if it wasn't found
+     */
+    public boolean remove(String dependencyId) {
+        String url = dependencyIdToUrl.remove(dependencyId);
+        if (url != null) {
+            urlToDependencyId.remove(url);
+            urlToLoadedDependency.remove(url);
+            urlCache.remove(url);
+            return true;
+        }
+        return false;
     }
 }
