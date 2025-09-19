@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Helpers for replicating JavaScript semantics in Java.

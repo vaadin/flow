@@ -18,7 +18,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;

@@ -30,12 +30,12 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -127,11 +127,6 @@ public class JacksonUtilsTest {
                 .of((JsonNode) mapper.valueToTree("bar"),
                         mapper.createArrayNode())
                 .collect(JacksonUtils.asArray());
-    }
-
-    private ArrayNode createNumberArray(double... items) {
-        return DoubleStream.of(items).mapToObj(mapper::valueToTree)
-                .map(obj -> (DoubleNode) obj).collect(JacksonUtils.asArray());
     }
 
     @Test
@@ -366,23 +361,32 @@ public class JacksonUtilsTest {
         ObjectNode json = JacksonUtils.beanToJson(bean);
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
                 JacksonUtils.jsonEquals(
-                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.get("zonedDateTime").asInt(), 0);
+                ZonedDateTime.parse(json.get("zonedDateTime").asString())
+                        .toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.get("sqlDate").asLong(), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.get("date").asLong(), 0);
-        Assert.assertEquals(10.0, json.get("duration").asLong(), 0);
+                bean.date.getTime(),
+                ZonedDateTime.parse(json.get("date").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
+        Assert.assertEquals(10.0,
+                Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
     @Test
@@ -474,14 +478,14 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void toFileJson() throws JsonProcessingException {
+    public void toFileJson() throws JacksonException {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
         Assert.assertEquals("""
                 {
-                  "parentValue": "parent",
                   "child": {
                     "childValue": "child"
-                  }
+                  },
+                  "parentValue": "parent"
                 }""", JacksonUtils.toFileJson(json).replace("\r\n", "\n"));
 
     }

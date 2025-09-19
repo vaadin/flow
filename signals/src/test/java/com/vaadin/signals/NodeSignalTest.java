@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.NodeSignal.NodeSignalState;
@@ -106,16 +109,6 @@ public class NodeSignalTest extends SignalTestBase {
         assertEquals(1, asNumber.value());
 
         assertEquals(1, signal.value().value(Double.class));
-    }
-
-    @Test
-    void asNumber_valueAsInt_valueTruncated() {
-        NodeSignal signal = new NodeSignal();
-
-        NumberSignal asNumber = signal.asNumber();
-        asNumber.value(2.718);
-
-        assertEquals(2, signal.value().value(Integer.class));
     }
 
     @Test

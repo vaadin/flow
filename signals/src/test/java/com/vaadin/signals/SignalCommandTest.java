@@ -12,9 +12,10 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.ListSignal.ListPosition;
 
 public class SignalCommandTest {
@@ -26,7 +27,7 @@ public class SignalCommandTest {
 
         Id id = Id.random();
         ListPosition pos = new ListPosition(id, id);
-        JsonNode value = new TextNode("value");
+        JsonNode value = new StringNode("value");
         String key = "key";
 
         assertSerializable(new SignalCommand.AdoptAsCommand(id, id, id, key));
@@ -66,7 +67,7 @@ public class SignalCommandTest {
             assertEquals(command, deserialized);
 
             assertedTypes.add(command.getClass());
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             fail(e);
         }
     }

@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -133,8 +133,8 @@ public class VersionsJsonFilterTest {
 
     private ObjectNode getMockedJsonNode() {
         ObjectNode jsonObject = Mockito.mock(ObjectNode.class);
-        Mockito.when(jsonObject.fieldNames())
-                .thenReturn(Arrays.stream(new String[] { "test" }).iterator());
+        Mockito.when(jsonObject.propertyNames())
+                .thenReturn(Arrays.stream(new String[] { "test" }).toList());
         Mockito.when(jsonObject.has("test")).thenReturn(true);
         return jsonObject;
     }

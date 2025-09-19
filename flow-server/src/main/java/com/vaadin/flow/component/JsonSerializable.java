@@ -17,8 +17,8 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Base interface for classes that are serializable to and from

@@ -21,7 +21,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;

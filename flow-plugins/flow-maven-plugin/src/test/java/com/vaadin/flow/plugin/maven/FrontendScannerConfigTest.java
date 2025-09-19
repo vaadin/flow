@@ -41,23 +41,23 @@ public class FrontendScannerConfigTest {
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")));
 
         config.addInclude(new FrontendScannerConfig.ArtifactMatcher(
-                "com.fasterxml.jackson*", null));
+                "tools.jackson*", null));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")));
+                        || a.getGroupId().startsWith("tools.jackson")));
 
         config.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher(null, "flow-server"));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")
+                        || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")));
 
         config.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("vaadin-*", null));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .allMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")
+                        || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")
                         || a.getArtifactId().startsWith("vaadin-")));
     }
@@ -71,23 +71,23 @@ public class FrontendScannerConfigTest {
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")));
 
         config.addExclude(new FrontendScannerConfig.ArtifactMatcher(
-                "com.fasterxml.jackson*", null));
+                "tools.jackson*", null));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")));
+                        || a.getGroupId().startsWith("tools.jackson")));
 
         config.addExclude(
                 new FrontendScannerConfig.ArtifactMatcher(null, "flow-server"));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")
+                        || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")));
 
         config.addExclude(
                 new FrontendScannerConfig.ArtifactMatcher("vaadin-*", null));
         Assert.assertTrue(artifacts().filter(config::shouldScan)
                 .noneMatch(a -> a.getGroupId().equals("com.vaadin")
-                        || a.getGroupId().startsWith("com.fasterxml.jackson")
+                        || a.getGroupId().startsWith("tools.jackson")
                         || a.getArtifactId().equals("flow-server")
                         || a.getArtifactId().startsWith("vaadin-")));
     }
@@ -154,10 +154,10 @@ public class FrontendScannerConfigTest {
             org.apache.commons:commons-fileupload2-jakarta:jar:2.0.0-M1:compile
             org.apache.commons:commons-fileupload2-core:jar:2.0.0-M1:compile
             commons-io:commons-io:jar:2.18.0:compile
-            com.fasterxml.jackson.core:jackson-core:jar:2.18.3:compile
-            com.fasterxml.jackson.core:jackson-databind:jar:2.18.3:compile
-            com.fasterxml.jackson.core:jackson-annotations:jar:2.18.3:compile
-            com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:2.18.3:compile
+            tools.jackson.core:jackson-core:jar:2.18.3:compile
+            tools.jackson.core:jackson-databind:jar:2.18.3:compile
+            tools.jackson.core:jackson-annotations:jar:2.18.3:compile
+            tools.jackson.datatype:jackson-datatype-jsr310:jar:2.18.3:compile
             org.jsoup:jsoup:jar:1.19.1:compile
             com.helger:ph-css:jar:7.0.4:compile
             com.helger.commons:ph-commons:jar:11.2.0:compile

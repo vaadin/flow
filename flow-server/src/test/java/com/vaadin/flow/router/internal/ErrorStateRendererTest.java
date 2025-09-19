@@ -18,8 +18,8 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 

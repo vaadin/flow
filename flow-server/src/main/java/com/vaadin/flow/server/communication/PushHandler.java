@@ -26,8 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import tools.jackson.core.JacksonException;
 import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -169,7 +168,7 @@ public class PushHandler {
                     SynchronizedRequestHandler.getRequestBody(reader),
                     vaadinRequest);
             connection.push(false);
-        } catch (JsonParseException | JsonMappingException e) {
+        } catch (JacksonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
