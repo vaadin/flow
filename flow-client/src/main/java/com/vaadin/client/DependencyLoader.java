@@ -188,12 +188,7 @@ public class DependencyLoader {
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
             // Check if dependency has an ID for tracking
-            String dependencyId = null;
-            try {
-                dependencyId = dependencyJson.getString(Dependency.KEY_ID);
-            } catch (Exception e) {
-                // No dependency ID provided, which is fine
-            }
+            String dependencyId = dependencyJson.getString(Dependency.KEY_ID);
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
                     type, loadMode, dependencyId);
 
