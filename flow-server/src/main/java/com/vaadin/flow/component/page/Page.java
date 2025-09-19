@@ -142,10 +142,10 @@ public class Page implements Serializable {
     public Registration addStyleSheet(String url, LoadMode loadMode) {
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode);
         String dependencyId = UUID.randomUUID().toString();
-        
+
         // Add dependency with tracking ID
         ui.getInternals().getDependencyList().add(dependency, dependencyId);
-        
+
         // Return Registration for removal
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }

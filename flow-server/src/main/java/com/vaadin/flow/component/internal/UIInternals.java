@@ -213,7 +213,7 @@ public class UIInternals implements Serializable {
     private volatile VaadinSession session;
 
     private final DependencyList dependencyList = new DependencyList();
-    
+
     private final Set<String> pendingStyleSheetRemovals = new LinkedHashSet<>();
 
     private final ConstantPool constantPool = new ConstantPool();
@@ -988,7 +988,7 @@ public class UIInternals implements Serializable {
     public DependencyList getDependencyList() {
         return dependencyList;
     }
-    
+
     /**
      * Removes a stylesheet by its dependency ID.
      * <p>
@@ -1004,7 +1004,7 @@ public class UIInternals implements Serializable {
             pendingStyleSheetRemovals.add(dependencyId);
         }
     }
-    
+
     /**
      * Gets the pending stylesheet removals to be sent to the client.
      *
@@ -1013,7 +1013,7 @@ public class UIInternals implements Serializable {
     public Set<String> getPendingStyleSheetRemovals() {
         return new HashSet<>(pendingStyleSheetRemovals);
     }
-    
+
     /**
      * Clears the pending stylesheet removals.
      */

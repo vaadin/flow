@@ -172,7 +172,8 @@ public class UidlWriter implements Serializable {
                 new ResolveContext(service, session.getBrowser()));
 
         // Add stylesheet removals to response
-        Set<String> stylesheetRemovals = uiInternals.getPendingStyleSheetRemovals();
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
         if (!stylesheetRemovals.isEmpty()) {
             ArrayNode removals = JacksonUtils.createArrayNode();
             stylesheetRemovals.forEach(removals::add);
@@ -235,8 +236,8 @@ public class UidlWriter implements Serializable {
         }
 
         if (!pendingSendToClient.isEmpty()) {
-            groupDependenciesByLoadMode(pendingSendToClient, context, dependencyList)
-                    .forEach((loadMode, dependencies) -> {
+            groupDependenciesByLoadMode(pendingSendToClient, context,
+                    dependencyList).forEach((loadMode, dependencies) -> {
                         try {
                             response.set(loadMode.name(),
                                     JacksonUtils.getMapper()
@@ -259,15 +260,15 @@ public class UidlWriter implements Serializable {
                         JacksonUtils.asArray().combiner()));
         return result;
     }
-    
+
     private static Map<LoadMode, ArrayNode> groupDependenciesByLoadMode(
             Collection<Dependency> dependencies, ResolveContext context,
             DependencyList dependencyList) {
         Map<LoadMode, ArrayNode> result = new EnumMap<>(LoadMode.class);
         dependencies
                 .forEach(dependency -> result.merge(dependency.getLoadMode(),
-                        JacksonUtils.createArray(
-                                dependencyToJson(dependency, context, dependencyList)),
+                        JacksonUtils.createArray(dependencyToJson(dependency,
+                                context, dependencyList)),
                         JacksonUtils.asArray().combiner()));
         return result;
     }
@@ -283,7 +284,8 @@ public class UidlWriter implements Serializable {
         }
         // Add dependency ID if available
         if (dependencyList != null) {
-            String dependencyId = dependencyList.getDependencyId(dependency.getUrl());
+            String dependencyId = dependencyList
+                    .getDependencyId(dependency.getUrl());
             if (dependencyId != null) {
                 dependencyJson.put(Dependency.KEY_ID, dependencyId);
             }

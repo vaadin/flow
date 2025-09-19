@@ -81,7 +81,8 @@ public class DependencyList implements Serializable {
     }
 
     /**
-     * Adds the given dependency to be loaded by the client side with an optional ID.
+     * Adds the given dependency to be loaded by the client side with an
+     * optional ID.
      * <p>
      * Does not send any previously sent dependencies again.
      * <p>
@@ -107,7 +108,7 @@ public class DependencyList implements Serializable {
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
-            
+
             // Track dependency ID if provided
             if (dependencyId != null) {
                 dependencyIdToUrl.put(dependencyId, dependencyUrl);
@@ -147,7 +148,7 @@ public class DependencyList implements Serializable {
     public void clearPendingSendToClient() {
         urlToLoadedDependency.clear();
     }
-    
+
     /**
      * Gets the dependency ID associated with the given URL, if any.
      * <p>
@@ -160,7 +161,7 @@ public class DependencyList implements Serializable {
     public String getDependencyId(String url) {
         return urlToDependencyId.get(url);
     }
-    
+
     /**
      * Removes a dependency by its ID.
      * <p>

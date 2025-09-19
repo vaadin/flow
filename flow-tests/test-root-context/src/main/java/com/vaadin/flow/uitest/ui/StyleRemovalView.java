@@ -23,16 +23,16 @@ import com.vaadin.flow.shared.Registration;
 
 @Route("com.vaadin.flow.uitest.ui.StyleRemovalView")
 public class StyleRemovalView extends Div {
-    
+
     private Registration styleRegistration;
     private Registration styleRegistration1;
     private Registration styleRegistration2;
-    
+
     public StyleRemovalView() {
         // Test div to apply styles to
         Div testDiv = new Div("Test Content");
         testDiv.setId("test-div");
-        
+
         // Single style add/remove test
         NativeButton addStyle = new NativeButton("Add Style", e -> {
             if (styleRegistration == null) {
@@ -43,7 +43,7 @@ public class StyleRemovalView extends Div {
             }
         });
         addStyle.setId("add-style");
-        
+
         NativeButton removeStyle = new NativeButton("Remove Style", e -> {
             if (styleRegistration != null) {
                 styleRegistration.remove();
@@ -51,7 +51,7 @@ public class StyleRemovalView extends Div {
             }
         });
         removeStyle.setId("remove-style");
-        
+
         // Multiple styles test
         NativeButton addStyle1 = new NativeButton("Add Style 1", e -> {
             if (styleRegistration1 == null) {
@@ -61,7 +61,7 @@ public class StyleRemovalView extends Div {
             }
         });
         addStyle1.setId("add-style-1");
-        
+
         NativeButton removeStyle1 = new NativeButton("Remove Style 1", e -> {
             if (styleRegistration1 != null) {
                 styleRegistration1.remove();
@@ -69,7 +69,7 @@ public class StyleRemovalView extends Div {
             }
         });
         removeStyle1.setId("remove-style-1");
-        
+
         NativeButton addStyle2 = new NativeButton("Add Style 2", e -> {
             if (styleRegistration2 == null) {
                 String css = "#test-div { background-color: green !important; }";
@@ -78,7 +78,7 @@ public class StyleRemovalView extends Div {
             }
         });
         addStyle2.setId("add-style-2");
-        
+
         NativeButton removeStyle2 = new NativeButton("Remove Style 2", e -> {
             if (styleRegistration2 != null) {
                 styleRegistration2.remove();
@@ -86,7 +86,7 @@ public class StyleRemovalView extends Div {
             }
         });
         removeStyle2.setId("remove-style-2");
-        
+
         add(testDiv);
         add(new Div(addStyle, removeStyle));
         add(new Div(addStyle1, removeStyle1, addStyle2, removeStyle2));

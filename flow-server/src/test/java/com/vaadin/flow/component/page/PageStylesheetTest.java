@@ -26,11 +26,11 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 public class PageStylesheetTest {
-    
+
     private UI ui;
     private Page page;
     private UIInternals uiInternals;
-    
+
     @Before
     public void setUp() {
         ui = Mockito.mock(UI.class);
@@ -38,67 +38,66 @@ public class PageStylesheetTest {
         Mockito.when(ui.getInternals()).thenReturn(uiInternals);
         page = new Page(ui);
     }
-    
+
     @Test
     public void addStyleSheet_returnsRegistration() {
         Registration registration = page.addStyleSheet("styles.css");
-        
-        Assert.assertNotNull("addStyleSheet should return a Registration", 
+
+        Assert.assertNotNull("addStyleSheet should return a Registration",
                 registration);
     }
-    
+
     @Test
     public void addStyleSheetWithLoadMode_returnsRegistration() {
-        Registration registration = page.addStyleSheet("styles.css", 
+        Registration registration = page.addStyleSheet("styles.css",
                 LoadMode.LAZY);
-        
+
         Assert.assertNotNull(
-                "addStyleSheet with LoadMode should return a Registration", 
+                "addStyleSheet with LoadMode should return a Registration",
                 registration);
     }
-    
+
     @Test
     public void removeRegistration_removesStylesheet() {
         // Add a stylesheet
         Registration registration = page.addStyleSheet("styles.css");
-        
+
         // Initially there should be a pending dependency
-        Assert.assertFalse("Should have pending dependencies",
-                uiInternals.getDependencyList()
-                        .getPendingSendToClient().isEmpty());
-        
+        Assert.assertFalse("Should have pending dependencies", uiInternals
+                .getDependencyList().getPendingSendToClient().isEmpty());
+
         // Clear pending to simulate that it was sent
         uiInternals.getDependencyList().clearPendingSendToClient();
-        
+
         // Remove the stylesheet
         registration.remove();
-        
+
         // Should have a pending removal
         Assert.assertFalse("Should have pending removals",
                 uiInternals.getPendingStyleSheetRemovals().isEmpty());
     }
-    
+
     @Test
     public void multipleStylesheets_canBeRemovedIndependently() {
         Registration reg1 = page.addStyleSheet("style1.css");
         Registration reg2 = page.addStyleSheet("style2.css");
-        
+
         // Clear pending dependencies
         uiInternals.getDependencyList().clearPendingSendToClient();
-        
+
         // Remove first stylesheet
         reg1.remove();
-        
-        Assert.assertEquals("Should have 1 pending removal",
-                1, uiInternals.getPendingStyleSheetRemovals().size());
-        
+
+        Assert.assertEquals("Should have 1 pending removal", 1,
+                uiInternals.getPendingStyleSheetRemovals().size());
+
         // Clear removals
         uiInternals.clearPendingStyleSheetRemovals();
-        
+
         // Remove second stylesheet
         reg2.remove();
-        
-        Assert.assertEquals("Should have 1 pending removal",
-                1, uiInternals.getPendingStyleSheetRemovals().size());
+
+        Assert.assertEquals("Should have 1 pending removal", 1,
+                uiInternals.getPendingStyleSheetRemovals().size());
     }
 }
