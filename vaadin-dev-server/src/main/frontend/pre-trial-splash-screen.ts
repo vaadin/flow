@@ -227,7 +227,7 @@ class PreTrial extends HTMLElement {
                 </linearGradient>
               </defs>
             </svg>
-            Enterprise features
+            Team features
           </span> for 30 more days.
         </p>
         <p>Continue getting full access to:</p>
