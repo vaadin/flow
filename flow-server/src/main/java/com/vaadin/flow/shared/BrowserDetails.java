@@ -26,7 +26,7 @@ import java.io.Serializable;
  * @deprecated For browser information users should parse the user-agent using a
  *             parsing library like ua-parser/uap-java
  */
-@Deprecated(since = "25.0")
+@Deprecated
 public class BrowserDetails implements Serializable {
     private static final String CHROME = " chrome/";
     private static final String HEADLESSCHROME = " headlesschrome/";
