@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 
@@ -88,6 +89,42 @@ public class PageTest {
         Assert.assertEquals(1, dependencies.size());
         Dependency dependency = dependencies.iterator().next();
         Assert.assertEquals("foo", dependency.getUrl());
+    }
+
+    @Test
+    public void addStyleSheet_canBeReAddedAfterRemoval() {
+        String stylesheetUrl = "styles/test.css";
+        DependencyList list = ui.getInternals().getDependencyList();
+        
+        // Add stylesheet first time
+        var registration = page.addStyleSheet(stylesheetUrl);
+        Collection<Dependency> dependencies = list.getPendingSendToClient();
+        Assert.assertEquals(1, dependencies.size());
+        Dependency firstDependency = dependencies.iterator().next();
+        Assert.assertEquals(stylesheetUrl, firstDependency.getUrl());
+        Assert.assertNotNull(firstDependency.getId());
+        
+        // Clear pending to simulate that it was sent
+        list.clearPendingSendToClient();
+        
+        // Remove the stylesheet
+        registration.remove();
+        
+        // Add stylesheet again
+        var registration2 = page.addStyleSheet(stylesheetUrl);
+        dependencies = list.getPendingSendToClient();
+        Assert.assertEquals("Stylesheet should be added again after removal", 
+                1, dependencies.size());
+        Dependency secondDependency = dependencies.iterator().next();
+        Assert.assertEquals(stylesheetUrl, secondDependency.getUrl());
+        Assert.assertNotNull(secondDependency.getId());
+        
+        // The IDs should be different
+        Assert.assertNotEquals("New dependency should have a different ID",
+                firstDependency.getId(), secondDependency.getId());
+        
+        // Clean up
+        registration2.remove();
     }
 
     private long countPendingInvocations() {
