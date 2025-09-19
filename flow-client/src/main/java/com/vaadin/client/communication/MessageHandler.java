@@ -545,23 +545,17 @@ public class MessageHandler {
     }
 
     private void removeStylesheetById(String dependencyId) {
-        // Remove the stylesheet from DOM and clear from loaded resources
-        String url = removeStylesheetByIdAndGetUrl(dependencyId);
-        if (url != null) {
-            // Clear the URL from the loaded resources set so it can be re-added later
-            registry.getResourceLoader().clearLoadedResource(url);
-        }
+        // Remove the stylesheet from DOM
+        removeStylesheetByIdFromDom(dependencyId);
+        
+        // Clear from loaded resources using the dependency ID
+        registry.getResourceLoader().clearLoadedResourceById(dependencyId);
     }
     
-    private native String removeStylesheetByIdAndGetUrl(String dependencyId) /*-{
-        var url = null;
-        
+    private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
         // Remove link elements with matching dependency ID
         var links = $doc.querySelectorAll('link[data-id="' + dependencyId + '"]');
         for (var i = 0; i < links.length; i++) {
-            if (url == null && links[i].href) {
-                url = links[i].href;
-            }
             links[i].remove();
         }
 
@@ -570,8 +564,6 @@ public class MessageHandler {
         for (var i = 0; i < styles.length; i++) {
             styles[i].remove();
         }
-        
-        return url;
     }-*/;
 
     private void processChanges(JsonObject json) {
