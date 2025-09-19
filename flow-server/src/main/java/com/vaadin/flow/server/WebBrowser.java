@@ -94,7 +94,7 @@ public class WebBrowser implements Serializable {
      * @return The raw browser userAgent string
      * @deprecated use {@link #getUserAgent()} method to get user-agent string
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public String getBrowserApplication() {
         return userAgent;
     }
@@ -135,7 +135,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isFirefox() {
         if (getBrowserDetails() == null) {
             return false;
@@ -153,7 +153,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isIE() {
         if (getBrowserDetails() == null) {
             return false;
@@ -170,7 +170,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isEdge() {
         if (getBrowserDetails() == null) {
             return false;
@@ -189,7 +189,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isSafari() {
         if (getBrowserDetails() == null) {
             return false;
@@ -206,7 +206,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isOpera() {
         if (getBrowserDetails() == null) {
             return false;
@@ -223,7 +223,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isChrome() {
         if (getBrowserDetails() == null) {
             return false;
@@ -244,7 +244,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public int getBrowserMajorVersion() {
         if (getBrowserDetails() == null) {
             return -1;
@@ -262,7 +262,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public int getBrowserMinorVersion() {
         if (getBrowserDetails() == null) {
             return -1;
@@ -279,7 +279,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isLinux() {
         if (getBrowserDetails() == null) {
             return false;
@@ -295,7 +295,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isMacOSX() {
         if (getBrowserDetails() == null) {
             return false;
@@ -311,7 +311,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isWindows() {
         if (getBrowserDetails() == null) {
             return false;
@@ -328,7 +328,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isWindowsPhone() {
         if (getBrowserDetails() == null) {
             return false;
@@ -344,7 +344,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isAndroid() {
         if (getBrowserDetails() == null) {
             return false;
@@ -357,15 +357,13 @@ public class WebBrowser implements Serializable {
      *
      * @return true if run on IPhone false if the user is not using IPhone or if
      *         no information on the browser is present
-     * @deprecated use a parsing library like ua-parser/uap-java to parse the
-     *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
     public boolean isIPhone() {
-        if (getBrowserDetails() == null) {
-            return false;
-        }
-        return browserDetails.isIPhone();
+        return userAgent != null
+                && (userAgent.contains("macintosh")
+                        || userAgent.contains("mac osx")
+                        || userAgent.contains("mac os x"))
+                && userAgent.contains("iphone");
     }
 
     /**
@@ -376,7 +374,7 @@ public class WebBrowser implements Serializable {
      * @deprecated use a parsing library like ua-parser/uap-java to parse the
      *             user agent from {@link #getUserAgent()}
      */
-    @Deprecated
+    @Deprecated(since = "25.0")
     public boolean isChromeOS() {
         if (getBrowserDetails() == null) {
             return false;
