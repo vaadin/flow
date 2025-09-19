@@ -226,11 +226,6 @@ public class DependencyLoader {
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(
-            Dependency.Type resourceType, LoadMode loadMode) {
-        return getResourceLoader(resourceType, loadMode, null);
-    }
-
-    private BiConsumer<String, ResourceLoadListener> getResourceLoader(
             Dependency.Type resourceType, LoadMode loadMode, String dependencyId) {
         ResourceLoader resourceLoader = registry.getResourceLoader();
         boolean inline = loadMode == LoadMode.INLINE;
@@ -238,17 +233,11 @@ public class DependencyLoader {
         switch (resourceType) {
         case STYLESHEET:
             if (inline) {
-                if (dependencyId != null) {
-                    return (data, listener) -> resourceLoader
-                            .inlineStyleSheet(data, listener, dependencyId);
-                }
-                return resourceLoader::inlineStyleSheet;
+                return (data, listener) -> resourceLoader
+                        .inlineStyleSheet(data, listener, dependencyId);
             }
-            if (dependencyId != null) {
-                return (url, listener) -> resourceLoader
-                        .loadStylesheet(url, listener, dependencyId);
-            }
-            return resourceLoader::loadStylesheet;
+            return (url, listener) -> resourceLoader
+                    .loadStylesheet(url, listener, dependencyId);
         case JAVASCRIPT:
             if (inline) {
                 return resourceLoader::inlineScript;
