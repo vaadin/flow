@@ -282,14 +282,7 @@ public class UidlWriter implements Serializable {
                     getDependencyContents(dependency.getUrl(), context));
             dependencyJson.remove(Dependency.KEY_URL);
         }
-        // Add dependency ID if available
-        if (dependencyList != null) {
-            String dependencyId = dependencyList
-                    .getDependencyId(dependency.getUrl());
-            if (dependencyId != null) {
-                dependencyJson.put(Dependency.KEY_ID, dependencyId);
-            }
-        }
+        // The dependency ID is now included in dependency.toJson() if it exists
         return dependencyJson;
     }
 

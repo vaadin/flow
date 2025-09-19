@@ -140,11 +140,10 @@ public class Page implements Serializable {
      * @return a registration object that can be used to remove the style sheet
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
-        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode);
         String dependencyId = UUID.randomUUID().toString();
-
-        // Add dependency with tracking ID
-        ui.getInternals().getDependencyList().add(dependency, dependencyId);
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
+                dependencyId);
+        ui.getInternals().getDependencyList().add(dependency);
 
         // Return Registration for removal
         return () -> ui.getInternals().removeStyleSheet(dependencyId);

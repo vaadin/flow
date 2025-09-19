@@ -50,8 +50,7 @@ public class DependencyList implements Serializable {
      */
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
-    private final Map<String, String> dependencyIdToUrl = new HashMap<>();
-    private final Map<String, String> urlToDependencyId = new HashMap<>();
+    private final Map<String, Dependency> dependencyIdToDependency = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -77,28 +76,6 @@ public class DependencyList implements Serializable {
      *            the dependency to include on the page
      */
     public void add(Dependency dependency) {
-        add(dependency, null);
-    }
-
-    /**
-     * Adds the given dependency to be loaded by the client side with an
-     * optional ID.
-     * <p>
-     * Does not send any previously sent dependencies again.
-     * <p>
-     * Relative URLs are interpreted as relative to the configured
-     * {@code frontend} directory location. You can prefix the URL with
-     * {@code context://} to make it relative to the context path or use an
-     * absolute URL to refer to files outside the frontend directory.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @param dependency
-     *            the dependency to include on the page
-     * @param dependencyId
-     *            optional ID for tracking the dependency
-     */
-    public void add(Dependency dependency, String dependencyId) {
         final String dependencyUrl = dependency.getUrl();
 
         if (urlCache.contains(dependencyUrl)) {
@@ -109,13 +86,13 @@ public class DependencyList implements Serializable {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
 
-            // Track dependency ID if provided
-            if (dependencyId != null) {
-                dependencyIdToUrl.put(dependencyId, dependencyUrl);
-                urlToDependencyId.put(dependencyUrl, dependencyId);
+            // Track dependency by ID if it has one
+            if (dependency.getId() != null) {
+                dependencyIdToDependency.put(dependency.getId(), dependency);
             }
         }
     }
+
 
     private void handleDuplicateDependency(Dependency newDependency,
             Dependency currentDependency) {
@@ -149,18 +126,6 @@ public class DependencyList implements Serializable {
         urlToLoadedDependency.clear();
     }
 
-    /**
-     * Gets the dependency ID associated with the given URL, if any.
-     * <p>
-     * For internal use only. May be renamed or removed in a future release.
-     *
-     * @param url
-     *            the URL to look up
-     * @return the dependency ID or null if not tracked
-     */
-    public String getDependencyId(String url) {
-        return urlToDependencyId.get(url);
-    }
 
     /**
      * Removes a dependency by its ID.
@@ -172,9 +137,9 @@ public class DependencyList implements Serializable {
      * @return true if the dependency was removed, false if it wasn't found
      */
     public boolean remove(String dependencyId) {
-        String url = dependencyIdToUrl.remove(dependencyId);
-        if (url != null) {
-            urlToDependencyId.remove(url);
+        Dependency dependency = dependencyIdToDependency.remove(dependencyId);
+        if (dependency != null) {
+            String url = dependency.getUrl();
             urlToLoadedDependency.remove(url);
             urlCache.remove(url);
             return true;
