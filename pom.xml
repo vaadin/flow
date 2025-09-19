@@ -85,7 +85,7 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>4.0.0-M2</spring.boot.version>
+        <spring.boot.version>4.0.0-M3</spring.boot.version>
         <jakarta.ee.version>11.0.0</jakarta.ee.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
