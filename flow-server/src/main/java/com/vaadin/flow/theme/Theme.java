@@ -75,11 +75,17 @@ import java.lang.annotation.Target;
  * @see AbstractTheme
  * @see NoTheme
  * @since 1.0
+ * @deprecated As of Vaadin 25, this annotation is deprecated. The theming
+ *             system has been reworked to use
+ *             {@link com.vaadin.flow.component.dependency.CssImport} to load
+ *             one or more stylesheets and use mechanisms native to HTML, CSS
+ *             and React (e.g. {@code @import url("morestyles.css")} in CSS).
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Deprecated(since = "25.0")
 public @interface Theme {
 
     /**
