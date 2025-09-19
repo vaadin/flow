@@ -263,6 +263,7 @@ public class ResourceLoader {
             String resourceKey = dependencyIdToResourceKey.get(dependencyId);
             if (resourceKey != null) {
                 loadedResources.delete(resourceKey);
+                loadListeners.delete(resourceKey);  // Also clear any lingering listeners
                 dependencyIdToResourceKey.delete(dependencyId);
             }
         }
