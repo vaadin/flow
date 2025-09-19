@@ -89,13 +89,12 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         README_NOT_CREATED = "Failed to create a README file in "
                 + options.getBuildDirectoryName() + "/"
                 + Constants.DEV_BUNDLE_LOCATION;
+        getLogger().info(
+                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        getLogger().info(
-                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
-
         runFrontendBuildTool("Vite", "vite", "vite", "build");
 
         copyPackageLockToBundleFolder();
@@ -105,6 +104,14 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         // Copy npm assets after devBundle vite as it clears the target
         // directory
         new TaskCopyNpmAssetsFiles(options).execute();
+
+        if (options.isCompressBundle()) {
+            DevBundleUtils.compressBundle(options.getNpmFolder(),
+                    new File(
+                            new File(options.getNpmFolder(),
+                                    options.getBuildDirectoryName()),
+                            Constants.DEV_BUNDLE_LOCATION));
+        }
     }
 
     private static Logger getLogger() {
@@ -215,13 +222,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             if (process != null) {
                 process.destroyForcibly();
             }
-        }
-        if (options.isCompressBundle()) {
-            DevBundleUtils.compressBundle(options.getNpmFolder(),
-                    new File(
-                            new File(options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
         }
     }
 
