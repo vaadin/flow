@@ -1,0 +1,22 @@
+{
+  "description": "Internal Vite plugin for @vaadin/bundles support",
+  "repository": "vaadin/flow",
+  "name": "@vaadin/vite-plugin-vaadin-bundles",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "private": true,
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "index.ts"
+  ],
+  "peerDependencies": {
+    "vite": "6.x"
+  },
+  "devDependencies": {
+    "@types/node": "22.x"
+  }
+}
