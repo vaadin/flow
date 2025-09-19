@@ -235,22 +235,6 @@ public class ResourceLoader {
     }
 
     /**
-     * Clears a resource URL from the loaded resources set, allowing it to be
-     * loaded again.
-     * <p>
-     * This is typically called when a dynamically loaded resource (like a
-     * stylesheet) is removed from the DOM and may need to be re-added later.
-     *
-     * @param url
-     *            the URL to clear from the loaded resources set
-     */
-    public void clearLoadedResource(String url) {
-        if (url != null) {
-            loadedResources.delete(url);
-        }
-    }
-    
-    /**
      * Clears a resource from the loaded resources set by its dependency ID.
      * <p>
      * This is used when a resource is removed from the DOM using its dependency ID.
