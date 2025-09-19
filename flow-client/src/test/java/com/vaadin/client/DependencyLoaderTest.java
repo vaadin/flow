@@ -79,6 +79,14 @@ public class DependencyLoaderTest {
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
         }
+        
+        @Override
+        public void loadStylesheet(String stylesheetUrl,
+                ResourceLoadListener resourceLoadListener, String dependencyId) {
+            loadingStyles.add(stylesheetUrl);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
+        }
 
         @Override
         public void inlineHtml(String htmlContents,
@@ -99,6 +107,14 @@ public class DependencyLoaderTest {
         @Override
         public void inlineStyleSheet(String styleSheetContents,
                 ResourceLoadListener resourceLoadListener) {
+            loadingStyles.add(styleSheetContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
+        }
+        
+        @Override
+        public void inlineStyleSheet(String styleSheetContents,
+                ResourceLoadListener resourceLoadListener, String dependencyId) {
             loadingStyles.add(styleSheetContents);
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, styleSheetContents));
