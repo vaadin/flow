@@ -356,8 +356,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @return if servlet is loaded on startup
      */
@@ -370,8 +370,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
