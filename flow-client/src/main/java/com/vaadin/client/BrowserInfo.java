@@ -44,9 +44,6 @@ public class BrowserInfo {
     private static final String OS_MACOSX = "mac";
     private static final String OS_ANDROID = "android";
 
-    // Common CSS class for all touch devices
-    private static final String UI_TOUCH = "touch";
-
     private static BrowserInfo instance;
 
     private String cssClass = null;
@@ -57,14 +54,7 @@ public class BrowserInfo {
     private BrowserInfo() {
         browserDetails = new BrowserDetails(getBrowserString());
 
-        if (browserDetails.isChrome()) {
-            touchDevice = detectChromeTouchDevice();
-        } else if (browserDetails.isIE()) {
-            touchDevice = detectIETouchDevice();
-        } else {
-            // tests
-            touchDevice = detectTouchDevice();
-        }
+        touchDevice = checkForTouchDevice();
     }
 
     /**
@@ -79,26 +69,34 @@ public class BrowserInfo {
         return instance;
     }
 
-    private native boolean detectTouchDevice()
+    private native boolean checkForTouchDevice()
     /*-{
-        try { document.createEvent("TouchEvent");return true;} catch(e){return false;};
-    }-*/;
-
-    private native boolean detectChromeTouchDevice()
-    /*-{
-        return ("ontouchstart" in window);
-    }-*/;
-
-    private native boolean detectIETouchDevice()
-    /*-{
-        return !!navigator.msMaxTouchPoints;
+        if (navigator && "maxTouchPoints" in navigator) {
+            return navigator.maxTouchPoints > 0;
+        } else if (navigator && "msMaxTouchPoints" in navigator) {
+            return navigator.msMaxTouchPoints > 0;
+        } else {
+            var mQ = $wnd.matchMedia && matchMedia("(pointer:coarse)");
+            if (mQ && mQ.media === "(pointer:coarse)") {
+                return !!mQ.matches;
+            }
+        }
+        try {
+            $doc.createEvent("TouchEvent");
+            return true;
+        } catch(e){
+            return false;
+        }
     }-*/;
 
     /**
      * Checks if the browser is IE.
      *
      * @return true if the browser is IE, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isIE() {
         return browserDetails.isIE();
     }
@@ -107,7 +105,10 @@ public class BrowserInfo {
      * Checks if the browser is Edge.
      *
      * @return true if the browser is Edge, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isEdge() {
         return browserDetails.isEdge();
     }
@@ -116,7 +117,10 @@ public class BrowserInfo {
      * Checks if the browser is Firefox.
      *
      * @return true if the browser is Firefox, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isFirefox() {
         return browserDetails.isFirefox();
     }
@@ -125,7 +129,10 @@ public class BrowserInfo {
      * Checks if the browser is Safari.
      *
      * @return true if the browser is Safari, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isSafari() {
         return browserDetails.isSafari();
     }
@@ -135,7 +142,10 @@ public class BrowserInfo {
      * iOS).
      *
      * @return true if the browser is Safari or running on IOS, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isSafariOrIOS() {
         return isSafari() || isIos();
     }
@@ -144,7 +154,10 @@ public class BrowserInfo {
      * Checks if the browser is Chrome.
      *
      * @return true if the browser is Chrome, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isChrome() {
         return browserDetails.isChrome();
     }
@@ -153,7 +166,10 @@ public class BrowserInfo {
      * Checks if the browser using the Gecko engine.
      *
      * @return true if the browser is using Gecko, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isGecko() {
         return browserDetails.isGecko();
     }
@@ -162,7 +178,10 @@ public class BrowserInfo {
      * Checks if the browser using the Webkit engine.
      *
      * @return true if the browser is using Webkit, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isWebkit() {
         return browserDetails.isWebKit();
     }
@@ -172,7 +191,10 @@ public class BrowserInfo {
      * version for Firefox 2 is 1.8 and 1.9 for Firefox 3.
      *
      * @return The Gecko version or -1 if the browser is not Gecko based
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public float getGeckoVersion() {
         if (!browserDetails.isGecko()) {
             return -1;
@@ -186,7 +208,10 @@ public class BrowserInfo {
      * version returned is the major version e.g., 523.
      *
      * @return The WebKit version or -1 if the browser is not WebKit based
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public float getWebkitVersion() {
         if (!browserDetails.isWebKit()) {
             return -1;
@@ -199,7 +224,10 @@ public class BrowserInfo {
      * Checks if the browser is Opera.
      *
      * @return true if the browser is Opera, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isOpera() {
         return browserDetails.isOpera();
     }
@@ -228,7 +256,10 @@ public class BrowserInfo {
      * Checks if the browser is run on Android.
      *
      * @return true if the browser is run on Android, false otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public boolean isAndroid() {
         return browserDetails.isAndroid();
     }
@@ -258,7 +289,10 @@ public class BrowserInfo {
      * </p>
      *
      * @return The major version of the browser.
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public int getBrowserMajorVersion() {
         return browserDetails.getBrowserMajorVersion();
     }
@@ -269,7 +303,10 @@ public class BrowserInfo {
      * @see #getBrowserMajorVersion()
      *
      * @return The minor version of the browser, or -1 if not known/parsed.
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()}
      */
+    @Deprecated
     public int getBrowserMinorVersion() {
         return browserDetails.getBrowserMinorVersion();
     }
