@@ -9,10 +9,8 @@ currentBranch=$(git rev-parse --abbrev-ref HEAD)
 # Determine update strategy based on branch
 if [ "$currentBranch" = "main" ]; then
   updateTarget="latest"
-  commitMessage="chore: Bump frontend dependencies to latest versions"
 else
   updateTarget="patch"
-  commitMessage="chore: Bump frontend dependencies (patch releases only)"
 fi
 
 echo "Current branch: $currentBranch"
@@ -57,8 +55,3 @@ if [ "$deprecationFound" = true ]; then
   echo "Please review and update these packages manually."
   exit 1
 fi
-
-git add "$depsFolder"
-git commit -m "$commitMessage"
-
-
