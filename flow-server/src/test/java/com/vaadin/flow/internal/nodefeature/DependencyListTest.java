@@ -110,7 +110,7 @@ public class DependencyListTest {
             LoadMode loadMode) {
         assertEquals("Expected to receive exactly one dependency", 1,
                 deps.getPendingSendToClient().size());
-        
+
         Dependency dependency = deps.getPendingSendToClient().iterator().next();
         assertEquals("URL mismatch", url, dependency.getUrl());
         assertEquals("Type mismatch", dependencyType, dependency.getType());

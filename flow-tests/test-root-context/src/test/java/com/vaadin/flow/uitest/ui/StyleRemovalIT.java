@@ -36,7 +36,8 @@ public class StyleRemovalIT extends ChromeBrowserTest {
         WebElement testDiv = findElement(By.id("test-div"));
         String color = testDiv.getCssValue("color");
         Assert.assertTrue("Color should be red, but was: " + color,
-                color.equals("rgb(255, 0, 0)") || color.equals("rgba(255, 0, 0, 1)"));
+                color.equals("rgb(255, 0, 0)")
+                        || color.equals("rgba(255, 0, 0, 1)"));
 
         // Click button to remove stylesheet
         WebElement removeButton = findElement(By.id("remove-style"));
@@ -44,8 +45,11 @@ public class StyleRemovalIT extends ChromeBrowserTest {
 
         // Verify that the style has been removed (back to default)
         String removedColor = testDiv.getCssValue("color");
-        Assert.assertFalse("Color should not be red after removal, but was: " + removedColor,
-                removedColor.equals("rgb(255, 0, 0)") || removedColor.equals("rgba(255, 0, 0, 1)"));
+        Assert.assertFalse(
+                "Color should not be red after removal, but was: "
+                        + removedColor,
+                removedColor.equals("rgb(255, 0, 0)")
+                        || removedColor.equals("rgba(255, 0, 0, 1)"));
     }
 
     @Test
@@ -64,10 +68,12 @@ public class StyleRemovalIT extends ChromeBrowserTest {
         WebElement testDiv = findElement(By.id("test-div"));
         String color = testDiv.getCssValue("color");
         Assert.assertTrue("Color should be red, but was: " + color,
-                color.equals("rgb(255, 0, 0)") || color.equals("rgba(255, 0, 0, 1)"));
+                color.equals("rgb(255, 0, 0)")
+                        || color.equals("rgba(255, 0, 0, 1)"));
         String bgColor = testDiv.getCssValue("background-color");
         Assert.assertTrue("Background should be green, but was: " + bgColor,
-                bgColor.equals("rgb(0, 255, 0)") || bgColor.equals("rgba(0, 255, 0, 1)"));
+                bgColor.equals("rgb(0, 255, 0)")
+                        || bgColor.equals("rgba(0, 255, 0, 1)"));
 
         // Remove first stylesheet
         WebElement removeButton1 = findElement(By.id("remove-style-1"));
@@ -75,11 +81,16 @@ public class StyleRemovalIT extends ChromeBrowserTest {
 
         // Verify only second style remains
         String removedColor = testDiv.getCssValue("color");
-        Assert.assertFalse("Color should not be red after removal, but was: " + removedColor,
-                removedColor.equals("rgb(255, 0, 0)") || removedColor.equals("rgba(255, 0, 0, 1)"));
+        Assert.assertFalse(
+                "Color should not be red after removal, but was: "
+                        + removedColor,
+                removedColor.equals("rgb(255, 0, 0)")
+                        || removedColor.equals("rgba(255, 0, 0, 1)"));
         String bgColorAfter = testDiv.getCssValue("background-color");
-        Assert.assertTrue("Background should still be green, but was: " + bgColorAfter,
-                bgColorAfter.equals("rgb(0, 255, 0)") || bgColorAfter.equals("rgba(0, 255, 0, 1)"));
+        Assert.assertTrue(
+                "Background should still be green, but was: " + bgColorAfter,
+                bgColorAfter.equals("rgb(0, 255, 0)")
+                        || bgColorAfter.equals("rgba(0, 255, 0, 1)"));
 
         // Remove second stylesheet
         WebElement removeButton2 = findElement(By.id("remove-style-2"));
@@ -87,7 +98,10 @@ public class StyleRemovalIT extends ChromeBrowserTest {
 
         // Verify all styles removed
         String finalBgColor = testDiv.getCssValue("background-color");
-        Assert.assertFalse("Background should not be green after removal, but was: " + finalBgColor,
-                finalBgColor.equals("rgb(0, 255, 0)") || finalBgColor.equals("rgba(0, 255, 0, 1)"));
+        Assert.assertFalse(
+                "Background should not be green after removal, but was: "
+                        + finalBgColor,
+                finalBgColor.equals("rgb(0, 255, 0)")
+                        || finalBgColor.equals("rgba(0, 255, 0, 1)"));
     }
 }
