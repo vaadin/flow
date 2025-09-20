@@ -1,0 +1,97 @@
+name: Update Frontend Dependencies
+
+on:
+  schedule:
+    # Runs at 04:00 UTC every Monday
+    - cron: '0 4 * * 1'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  update-dependencies:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [main, '24.9', '24.8']
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ matrix.branch }}
+          # Use a token with sufficient permissions to create PRs
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create branch with current date
+        run: |
+          BRANCH_NAME="update-frontend-dependencies-${{ matrix.branch }}-$(date +%Y-%m-%d)"
+          echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+          git checkout -b $BRANCH_NAME
+
+      - name: Run dependency update script
+        run: |
+          chmod +x scripts/update-frontend-depdendencies.sh
+          ./scripts/update-frontend-depdendencies.sh || true
+
+      - name: Check if there are changes
+        id: check_changes
+        run: |
+          if git diff --quiet HEAD~1; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Push changes
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          git push origin ${{ env.BRANCH_NAME }}
+
+      - name: Determine update strategy description
+        if: steps.check_changes.outputs.has_changes == 'true'
+        run: |
+          if [ "${{ matrix.branch }}" = "main" ]; then
+            echo "UPDATE_DESC=All new versions (major, minor, patch)" >> $GITHUB_ENV
+          else
+            echo "UPDATE_DESC=Patch releases only" >> $GITHUB_ENV
+          fi
+
+      - name: Create Pull Request
+        if: steps.check_changes.outputs.has_changes == 'true'
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ env.BRANCH_NAME }}
+          base: ${{ matrix.branch }}
+          title: "chore: Update frontend dependencies (${{ matrix.branch }})"
+          body: |
+            ## Automated Frontend Dependency Updates
+
+            This PR contains automated updates to frontend dependencies.
+
+            ### Update Strategy
+            - Target Branch: ${{ matrix.branch }}
+            - Updates: ${{ env.UPDATE_DESC }}
+
+            ### Changes
+            The dependencies have been updated using `npm-check-updates`.
+
+            ---
+            *This PR was automatically created by the update-frontend-dependencies workflow.*
+          labels: |
+            dependencies
+            automated
+          assignees: |
+            ${{ github.repository_owner }}
