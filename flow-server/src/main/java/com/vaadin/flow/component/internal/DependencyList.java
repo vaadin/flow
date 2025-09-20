@@ -93,7 +93,6 @@ public class DependencyList implements Serializable {
         }
     }
 
-
     private void handleDuplicateDependency(Dependency newDependency,
             Dependency currentDependency) {
         if (newDependency.getLoadMode() != currentDependency.getLoadMode()) {
@@ -125,7 +124,6 @@ public class DependencyList implements Serializable {
     public void clearPendingSendToClient() {
         urlToLoadedDependency.clear();
     }
-
 
     /**
      * Removes a dependency by its ID.

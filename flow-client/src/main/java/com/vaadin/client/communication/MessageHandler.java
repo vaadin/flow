@@ -548,7 +548,7 @@ public class MessageHandler {
         removeStylesheetByIdFromDom(dependencyId);
         registry.getResourceLoader().clearLoadedResourceById(dependencyId);
     }
-    
+
     private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
         // Remove link elements with matching dependency ID
         var links = $doc.querySelectorAll('link[data-id="' + dependencyId + '"]');

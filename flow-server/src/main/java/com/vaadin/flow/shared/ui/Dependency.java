@@ -200,8 +200,7 @@ public class Dependency implements Serializable {
         }
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url)
-                && Objects.equals(id, that.id);
+                && Objects.equals(url, that.url) && Objects.equals(id, that.id);
 
     }
 

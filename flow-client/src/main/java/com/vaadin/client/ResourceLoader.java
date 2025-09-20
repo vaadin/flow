@@ -206,9 +206,10 @@ public class ResourceLoader {
 
     private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
             .map();
-    
+
     // Map from dependency ID to resource key (URL or content) for removal
-    private final JsMap<String, String> dependencyIdToResourceKey = JsCollections.map();
+    private final JsMap<String, String> dependencyIdToResourceKey = JsCollections
+            .map();
 
     private Registry registry;
 
@@ -237,7 +238,8 @@ public class ResourceLoader {
     /**
      * Clears a resource from the loaded resources set by its dependency ID.
      * <p>
-     * This is used when a resource is removed from the DOM using its dependency ID.
+     * This is used when a resource is removed from the DOM using its dependency
+     * ID.
      *
      * @param dependencyId
      *            the dependency ID of the resource to clear
@@ -590,11 +592,11 @@ public class ResourceLoader {
             final ResourceLoadListener resourceLoadListener,
             final String dependencyId) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
-        
+
         if (dependencyId != null) {
             dependencyIdToResourceKey.set(dependencyId, url);
         }
-        
+
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
             if (resourceLoadListener != null) {
@@ -691,7 +693,7 @@ public class ResourceLoader {
         if (dependencyId != null) {
             dependencyIdToResourceKey.set(dependencyId, styleSheetContents);
         }
-        
+
         final ResourceLoadEvent event = new ResourceLoadEvent(this,
                 styleSheetContents);
         if (loadedResources.has(styleSheetContents)) {

@@ -187,8 +187,8 @@ public class DependencyLoader {
             JsonObject dependencyJson = dependencies.getObject(i);
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-            String dependencyId = dependencyJson.hasKey(Dependency.KEY_ID) 
-                    ? dependencyJson.getString(Dependency.KEY_ID) 
+            String dependencyId = dependencyJson.hasKey(Dependency.KEY_ID)
+                    ? dependencyJson.getString(Dependency.KEY_ID)
                     : null;
             BiConsumer<String, ResourceLoadListener> resourceLoader = getResourceLoader(
                     type, loadMode, dependencyId);
