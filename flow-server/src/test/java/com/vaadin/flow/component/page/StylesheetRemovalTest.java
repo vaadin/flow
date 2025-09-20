@@ -89,28 +89,23 @@ public class StylesheetRemovalTest {
     public void stylesheetCanBeReAddedAfterRemoval() {
         String url = "http://example.com/reusable.css";
         
-        // First addition
         Registration reg1 = page.addStyleSheet(url);
         Collection<Dependency> deps1 = dependencyList.getPendingSendToClient();
         Assert.assertEquals(1, deps1.size());
         Dependency firstDep = deps1.iterator().next();
         String firstId = firstDep.getId();
         
-        // Clear pending (simulate sent to client)
         dependencyList.clearPendingSendToClient();
         
-        // Remove the stylesheet
         reg1.remove();
         Assert.assertTrue(internals.getPendingStyleSheetRemovals().contains(firstId));
         internals.clearPendingStyleSheetRemovals();
         
-        // Re-add the same stylesheet
         Registration reg2 = page.addStyleSheet(url);
         Collection<Dependency> deps2 = dependencyList.getPendingSendToClient();
         Assert.assertEquals(1, deps2.size());
         Dependency secondDep = deps2.iterator().next();
         
-        // Verify new dependency has different ID but same URL
         Assert.assertNotEquals("IDs should differ", firstId, secondDep.getId());
         Assert.assertEquals("URLs should match", url, secondDep.getUrl());
     }
@@ -162,7 +157,6 @@ public class StylesheetRemovalTest {
         }
         Assert.assertNotNull("Should find dependency for url2", idToRemove);
         
-        // Clear pending (simulate sent to client)
         dependencyList.clearPendingSendToClient();
         
         // Remove only the second stylesheet
@@ -182,7 +176,6 @@ public class StylesheetRemovalTest {
         Collection<Dependency> deps = dependencyList.getPendingSendToClient();
         String depId = deps.iterator().next().getId();
         
-        // Clear pending (simulate sent to client)
         dependencyList.clearPendingSendToClient();
         
         // Remove the stylesheet
@@ -214,14 +207,11 @@ public class StylesheetRemovalTest {
         Assert.assertEquals(1, dependencyList.getPendingSendToClient().size());
         dependencyList.clearPendingSendToClient();
         
-        // Try adding same URL again - should be cached (not added)
         page.addStyleSheet(url);
         Assert.assertEquals(0, dependencyList.getPendingSendToClient().size());
         
-        // Remove the stylesheet
         reg.remove();
         
-        // Now it should be added again
         page.addStyleSheet(url);
         Assert.assertEquals(1, dependencyList.getPendingSendToClient().size());
     }

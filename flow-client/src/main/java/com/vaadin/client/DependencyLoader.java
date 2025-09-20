@@ -187,7 +187,6 @@ public class DependencyLoader {
             JsonObject dependencyJson = dependencies.getObject(i);
             Dependency.Type type = Dependency.Type
                     .valueOf(dependencyJson.getString(Dependency.KEY_TYPE));
-            // Check if dependency has an ID for tracking
             String dependencyId = dependencyJson.hasKey(Dependency.KEY_ID) 
                     ? dependencyJson.getString(Dependency.KEY_ID) 
                     : null;
