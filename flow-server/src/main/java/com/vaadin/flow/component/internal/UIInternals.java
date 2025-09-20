@@ -214,6 +214,8 @@ public class UIInternals implements Serializable {
 
     private final DependencyList dependencyList = new DependencyList();
 
+    private final Set<String> pendingStyleSheetRemovals = new LinkedHashSet<>();
+
     private final ConstantPool constantPool = new ConstantPool();
 
     private byte[] lastProcessedMessageHash = null;
@@ -985,6 +987,36 @@ public class UIInternals implements Serializable {
      */
     public DependencyList getDependencyList() {
         return dependencyList;
+    }
+
+    /**
+     * Removes a stylesheet by its dependency ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the stylesheet dependency to remove
+     */
+    public void removeStyleSheet(String dependencyId) {
+        if (dependencyList.remove(dependencyId)) {
+            pendingStyleSheetRemovals.add(dependencyId);
+        }
+    }
+
+    /**
+     * Gets the pending stylesheet removals to be sent to the client.
+     *
+     * @return the set of dependency IDs to remove
+     */
+    public Set<String> getPendingStyleSheetRemovals() {
+        return new HashSet<>(pendingStyleSheetRemovals);
+    }
+
+    /**
+     * Clears the pending stylesheet removals.
+     */
+    public void clearPendingStyleSheetRemovals() {
+        pendingStyleSheetRemovals.clear();
     }
 
     /**

@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,6 +50,7 @@ public class DependencyList implements Serializable {
      */
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
+    private final Map<String, Dependency> dependencyIdToDependency = new HashMap<>();
 
     /**
      * Creates a new instance.
@@ -83,6 +85,11 @@ public class DependencyList implements Serializable {
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
+
+            // Track dependency by ID if it has one
+            if (dependency.getId() != null) {
+                dependencyIdToDependency.put(dependency.getId(), dependency);
+            }
         }
     }
 
@@ -116,5 +123,25 @@ public class DependencyList implements Serializable {
      */
     public void clearPendingSendToClient() {
         urlToLoadedDependency.clear();
+    }
+
+    /**
+     * Removes a dependency by its ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the dependency to remove
+     * @return true if the dependency was removed, false if it wasn't found
+     */
+    public boolean remove(String dependencyId) {
+        Dependency dependency = dependencyIdToDependency.remove(dependencyId);
+        if (dependency != null) {
+            String url = dependency.getUrl();
+            urlToLoadedDependency.remove(url);
+            urlCache.remove(url);
+            return true;
+        }
+        return false;
     }
 }

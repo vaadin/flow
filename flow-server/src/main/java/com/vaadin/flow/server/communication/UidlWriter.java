@@ -171,6 +171,16 @@ public class UidlWriter implements Serializable {
         populateDependencies(response, uiInternals.getDependencyList(),
                 new ResolveContext(service, session.getBrowser()));
 
+        // Add stylesheet removals to response
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
+        if (!stylesheetRemovals.isEmpty()) {
+            ArrayNode removals = JacksonUtils.createArrayNode();
+            stylesheetRemovals.forEach(removals::add);
+            response.set("stylesheetRemovals", removals);
+            uiInternals.clearPendingStyleSheetRemovals();
+        }
+
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.set("constants",
                     uiInternals.getConstantPool().dumpConstants());
@@ -226,8 +236,8 @@ public class UidlWriter implements Serializable {
         }
 
         if (!pendingSendToClient.isEmpty()) {
-            groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> {
+            groupDependenciesByLoadMode(pendingSendToClient, context,
+                    dependencyList).forEach((loadMode, dependencies) -> {
                         try {
                             response.set(loadMode.name(),
                                     JacksonUtils.getMapper()
@@ -246,13 +256,25 @@ public class UidlWriter implements Serializable {
         dependencies
                 .forEach(dependency -> result.merge(dependency.getLoadMode(),
                         JacksonUtils.createArray(
-                                dependencyToJson(dependency, context)),
+                                dependencyToJson(dependency, context, null)),
+                        JacksonUtils.asArray().combiner()));
+        return result;
+    }
+
+    private static Map<LoadMode, ArrayNode> groupDependenciesByLoadMode(
+            Collection<Dependency> dependencies, ResolveContext context,
+            DependencyList dependencyList) {
+        Map<LoadMode, ArrayNode> result = new EnumMap<>(LoadMode.class);
+        dependencies
+                .forEach(dependency -> result.merge(dependency.getLoadMode(),
+                        JacksonUtils.createArray(dependencyToJson(dependency,
+                                context, dependencyList)),
                         JacksonUtils.asArray().combiner()));
         return result;
     }
 
     private static ObjectNode dependencyToJson(Dependency dependency,
-            ResolveContext context) {
+            ResolveContext context, DependencyList dependencyList) {
         ObjectNode dependencyJson = JacksonUtils
                 .mapElemental(dependency.toJson());
         if (dependency.getLoadMode() == LoadMode.INLINE) {
