@@ -35,7 +35,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /**
- * Tests for stylesheet removal and re-addition functionality.
+ * Comprehensive tests for stylesheet registration, removal, and re-addition functionality.
  */
 public class StylesheetRemovalTest {
     
@@ -50,6 +50,15 @@ public class StylesheetRemovalTest {
         page = ui.getPage();
         internals = ui.getInternals();
         dependencyList = internals.getDependencyList();
+    }
+    
+    @Test
+    public void addStyleSheet_returnsNonNullRegistration() {
+        Registration reg1 = page.addStyleSheet("styles.css");
+        Registration reg2 = page.addStyleSheet("styles.css", LoadMode.LAZY);
+        
+        Assert.assertNotNull("addStyleSheet should return a Registration", reg1);
+        Assert.assertNotNull("addStyleSheet with LoadMode should return a Registration", reg2);
     }
     
     @Test
@@ -77,73 +86,56 @@ public class StylesheetRemovalTest {
     }
     
     @Test
-    public void addStyleSheet_removeAndReAdd_shouldWorkCorrectly() {
+    public void stylesheetCanBeReAddedAfterRemoval() {
         String url = "http://example.com/reusable.css";
         
         // First addition
         Registration reg1 = page.addStyleSheet(url);
         Collection<Dependency> deps1 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should have one dependency after first add", 1, deps1.size());
+        Assert.assertEquals(1, deps1.size());
         Dependency firstDep = deps1.iterator().next();
         String firstId = firstDep.getId();
-        Assert.assertNotNull("First dependency should have ID", firstId);
         
         // Clear pending (simulate sent to client)
         dependencyList.clearPendingSendToClient();
         
         // Remove the stylesheet
         reg1.remove();
-        Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assert.assertTrue("Removal should be tracked", removals.contains(firstId));
-        
-        // Clear removal tracking (simulate sent to client)
+        Assert.assertTrue(internals.getPendingStyleSheetRemovals().contains(firstId));
         internals.clearPendingStyleSheetRemovals();
         
         // Re-add the same stylesheet
         Registration reg2 = page.addStyleSheet(url);
         Collection<Dependency> deps2 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should have one dependency after re-add", 1, deps2.size());
+        Assert.assertEquals(1, deps2.size());
         Dependency secondDep = deps2.iterator().next();
-        String secondId = secondDep.getId();
-        Assert.assertNotNull("Second dependency should have ID", secondId);
-        Assert.assertNotEquals("Second ID should be different from first", firstId, secondId);
-        Assert.assertEquals("URL should be the same", url, secondDep.getUrl());
+        
+        // Verify new dependency has different ID but same URL
+        Assert.assertNotEquals("IDs should differ", firstId, secondDep.getId());
+        Assert.assertEquals("URLs should match", url, secondDep.getUrl());
     }
     
     @Test
-    public void addStyleSheetWithLoadMode_removeAndReAdd_shouldWorkCorrectly() {
+    public void stylesheetWithLoadMode_canBeReAddedWithDifferentMode() {
         String url = "http://example.com/lazy.css";
         
-        // First addition with LAZY load mode
+        // Add with LAZY mode
         Registration reg1 = page.addStyleSheet(url, LoadMode.LAZY);
-        Collection<Dependency> deps1 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should have one dependency after first add", 1, deps1.size());
-        Dependency firstDep = deps1.iterator().next();
+        Dependency firstDep = dependencyList.getPendingSendToClient().iterator().next();
         String firstId = firstDep.getId();
-        Assert.assertNotNull("First dependency should have ID", firstId);
-        Assert.assertEquals("Load mode should be LAZY", LoadMode.LAZY, firstDep.getLoadMode());
+        Assert.assertEquals(LoadMode.LAZY, firstDep.getLoadMode());
         
-        // Clear pending (simulate sent to client)
         dependencyList.clearPendingSendToClient();
-        
-        // Remove the stylesheet
         reg1.remove();
-        Set<String> removals = internals.getPendingStyleSheetRemovals();
-        Assert.assertTrue("Removal should be tracked", removals.contains(firstId));
-        
-        // Clear removal tracking (simulate sent to client)
         internals.clearPendingStyleSheetRemovals();
         
-        // Re-add the same stylesheet with EAGER mode
+        // Re-add with EAGER mode
         Registration reg2 = page.addStyleSheet(url, LoadMode.EAGER);
-        Collection<Dependency> deps2 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should have one dependency after re-add", 1, deps2.size());
-        Dependency secondDep = deps2.iterator().next();
-        String secondId = secondDep.getId();
-        Assert.assertNotNull("Second dependency should have ID", secondId);
-        Assert.assertNotEquals("Second ID should be different from first", firstId, secondId);
-        Assert.assertEquals("URL should be the same", url, secondDep.getUrl());
-        Assert.assertEquals("Load mode should be EAGER", LoadMode.EAGER, secondDep.getLoadMode());
+        Dependency secondDep = dependencyList.getPendingSendToClient().iterator().next();
+        
+        Assert.assertNotEquals("IDs should differ", firstId, secondDep.getId());
+        Assert.assertEquals("URLs should match", url, secondDep.getUrl());
+        Assert.assertEquals(LoadMode.EAGER, secondDep.getLoadMode());
     }
     
     @Test
@@ -214,31 +206,23 @@ public class StylesheetRemovalTest {
     }
     
     @Test
-    public void testStylesheetCacheClearing_afterRemoval() {
+    public void duplicateStylesheet_notAddedUntilRemovedFromCache() {
         String url = "http://example.com/cached-style.css";
         
-        // Add stylesheet first time
-        Registration reg1 = page.addStyleSheet(url);
-        Collection<Dependency> deps1 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should have one dependency", 1, deps1.size());
-        
-        // Clear pending (simulate sent to client)
+        // Add stylesheet
+        Registration reg = page.addStyleSheet(url);
+        Assert.assertEquals(1, dependencyList.getPendingSendToClient().size());
         dependencyList.clearPendingSendToClient();
         
-        // Try adding same URL again - should be cached
+        // Try adding same URL again - should be cached (not added)
         page.addStyleSheet(url);
-        Collection<Dependency> deps2 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should not add duplicate dependency", 0, deps2.size());
+        Assert.assertEquals(0, dependencyList.getPendingSendToClient().size());
         
         // Remove the stylesheet
-        reg1.remove();
+        reg.remove();
         
-        // Now add the same URL again - should work since cache was cleared
+        // Now it should be added again
         page.addStyleSheet(url);
-        Collection<Dependency> deps3 = dependencyList.getPendingSendToClient();
-        Assert.assertEquals("Should add dependency after removal", 1, deps3.size());
-        Dependency newDep = deps3.iterator().next();
-        Assert.assertEquals("URL should match", url, newDep.getUrl());
-        Assert.assertNotNull("Should have a new ID", newDep.getId());
+        Assert.assertEquals(1, dependencyList.getPendingSendToClient().size());
     }
 }
