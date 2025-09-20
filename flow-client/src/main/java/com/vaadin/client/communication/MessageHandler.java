@@ -545,10 +545,7 @@ public class MessageHandler {
     }
 
     private void removeStylesheetById(String dependencyId) {
-        // Remove the stylesheet from DOM
         removeStylesheetByIdFromDom(dependencyId);
-        
-        // Clear from loaded resources using the dependency ID
         registry.getResourceLoader().clearLoadedResourceById(dependencyId);
     }
     

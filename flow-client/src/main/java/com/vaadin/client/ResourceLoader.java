@@ -247,7 +247,7 @@ public class ResourceLoader {
             String resourceKey = dependencyIdToResourceKey.get(dependencyId);
             if (resourceKey != null) {
                 loadedResources.delete(resourceKey);
-                loadListeners.delete(resourceKey);  // Also clear any lingering listeners
+                loadListeners.delete(resourceKey);
                 dependencyIdToResourceKey.delete(dependencyId);
             }
         }
@@ -591,7 +591,6 @@ public class ResourceLoader {
             final String dependencyId) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
         
-        // Track dependency ID to resource key mapping
         if (dependencyId != null) {
             dependencyIdToResourceKey.set(dependencyId, url);
         }
@@ -689,7 +688,6 @@ public class ResourceLoader {
     public void inlineStyleSheet(String styleSheetContents,
             final ResourceLoadListener resourceLoadListener,
             final String dependencyId) {
-        // Track dependency ID to resource key mapping
         if (dependencyId != null) {
             dependencyIdToResourceKey.set(dependencyId, styleSheetContents);
         }
