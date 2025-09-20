@@ -36,10 +36,8 @@ public class StyleRemovalView extends Div {
         // Single style add/remove test
         NativeButton addStyle = new NativeButton("Add Style", e -> {
             if (styleRegistration == null) {
-                // Create inline CSS that colors text red
-                String css = "#test-div { color: red !important; }";
                 styleRegistration = UI.getCurrent().getPage()
-                        .addStyleSheet("data:text/css," + css);
+                        .addStyleSheet("/style-removal-red.css");
             }
         });
         addStyle.setId("add-style");
@@ -55,9 +53,8 @@ public class StyleRemovalView extends Div {
         // Multiple styles test
         NativeButton addStyle1 = new NativeButton("Add Style 1", e -> {
             if (styleRegistration1 == null) {
-                String css = "#test-div { color: red !important; }";
                 styleRegistration1 = UI.getCurrent().getPage()
-                        .addStyleSheet("data:text/css," + css);
+                        .addStyleSheet("/style-removal-red.css");
             }
         });
         addStyle1.setId("add-style-1");
@@ -72,9 +69,8 @@ public class StyleRemovalView extends Div {
 
         NativeButton addStyle2 = new NativeButton("Add Style 2", e -> {
             if (styleRegistration2 == null) {
-                String css = "#test-div { background-color: green !important; }";
                 styleRegistration2 = UI.getCurrent().getPage()
-                        .addStyleSheet("data:text/css," + css);
+                        .addStyleSheet("/style-removal-green.css");
             }
         });
         addStyle2.setId("add-style-2");
