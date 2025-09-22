@@ -18,7 +18,7 @@ public class AllowInertSynchronizedPropertyIT extends ChromeBrowserTest {
     protected void open(String... parameters) {
         super.open(parameters);
         modalDialogButton = $(NativeButtonElement.class)
-                .id(ModalDialogView.OPEN_MODAL_STRICT_BUTTON);
+                .id(AllowInertSynchronizedPropertyView.OPEN_MODAL_BUTTON);
     }
 
     @Test
