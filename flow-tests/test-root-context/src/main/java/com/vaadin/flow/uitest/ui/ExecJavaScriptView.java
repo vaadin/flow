@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
@@ -90,8 +91,21 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
+        // Test Component array serialization
+        NativeButton componentArrayButton = createButton(
+                "Pass component array to JS", "componentArrayButton", e -> {
+                    // Cast to Serializable to prevent varargs unpacking
+                    UI.getCurrent().getPage().executeJs(
+                            """
+                                    const components = $0;
+                                    components.forEach(c => c.style.backgroundColor = 'red');
+                                        """,
+                            (Serializable) new Component[] { alertButton,
+                                    focusButton, swapText });
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+                elementAwaitButton, pageAwaitButton, componentArrayButton);
     }
 
     private NativeButton createJsButton(String text, String id, String script,

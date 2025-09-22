@@ -61,6 +61,29 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 result.getText());
     }
 
+    @Test
+    public void testComponentArraySerialization() {
+        open();
+
+        // Click the button that passes a Component array to JavaScript
+        getButton("componentArrayButton").click();
+
+        // Verify that the first three buttons' background color was changed
+        WebElement alertButton = getButton("alertButton");
+        WebElement focusButton = getButton("focusButton");
+        WebElement swapButton = getButton("swapButton");
+
+        // Check that background color was changed to red
+        // Selenium returns colors in rgba format like "rgba(255, 0, 0, 1)"
+        String expectedColor = "rgba(255, 0, 0, 1)";
+        Assert.assertEquals("Alert button should have red background",
+                expectedColor, alertButton.getCssValue("background-color"));
+        Assert.assertEquals("Focus button should have red background",
+                expectedColor, focusButton.getCssValue("background-color"));
+        Assert.assertEquals("Swap button should have red background",
+                expectedColor, swapButton.getCssValue("background-color"));
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

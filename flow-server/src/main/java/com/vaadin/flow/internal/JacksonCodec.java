@@ -85,6 +85,26 @@ public class JacksonCodec {
     public static JsonNode encodeWithTypeInfo(Object value) {
         assert value == null || canEncodeWithTypeInfo(value.getClass());
 
+        // Check if it's an array of Components
+        if (value != null && value.getClass().isArray()) {
+            Class<?> componentType = value.getClass().getComponentType();
+            if (Component.class.isAssignableFrom(componentType)) {
+                // Encode Component array
+                Component[] components = (Component[]) value;
+                ArrayNode arrayNode = JacksonUtils.getMapper()
+                        .createArrayNode();
+                for (Component component : components) {
+                    if (component == null) {
+                        arrayNode.add(JacksonUtils.getMapper().nullNode());
+                    } else {
+                        arrayNode.add(encodeNode(component.getElement()));
+                    }
+                }
+                // Wrap as ARRAY_TYPE to properly identify it
+                return wrapComplexValue(ARRAY_TYPE, arrayNode);
+            }
+        }
+
         if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
@@ -145,14 +165,20 @@ public class JacksonCodec {
     /**
      * Helper for checking whether the type is supported by
      * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration},
+     * arrays (including arrays of {@link Component}), and anything accepted by
+     * {@link #canEncodeWithoutTypeInfo(Class)}.
      *
      * @param type
      *            the type to check
      * @return whether the type can be encoded
      */
     public static boolean canEncodeWithTypeInfo(Class<?> type) {
+        if (type.isArray()) {
+            // All arrays are supported - Component arrays get special handling,
+            // other arrays are handled by Jackson's valueToTree
+            return true;
+        }
         return canEncodeWithoutTypeInfo(type)
                 || Node.class.isAssignableFrom(type)
                 || Component.class.isAssignableFrom(type)
@@ -184,7 +210,8 @@ public class JacksonCodec {
     /**
      * Helper for encoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonNode}. <code>null</code> is also supported.
+     * {@link Boolean}, {@link JsonNode}. Arrays are also supported and will be
+     * encoded recursively. <code>null</code> is also supported.
      *
      * @param value
      *            the value to encode
@@ -195,11 +222,17 @@ public class JacksonCodec {
             return JacksonUtils.getMapper().nullNode();
         }
 
-        assert canEncodeWithoutTypeInfo(value.getClass())
-                : "this:_" + value.getClass();
-
         Class<?> type = value.getClass();
-        if (String.class.equals(value.getClass())) {
+
+        // Handle arrays by using Jackson's valueToTree which handles them
+        // recursively
+        if (type.isArray()) {
+            return JacksonUtils.getMapper().valueToTree(value);
+        }
+
+        assert canEncodeWithoutTypeInfo(type) : "this:_" + type;
+
+        if (String.class.equals(type)) {
             return JacksonUtils.getMapper().valueToTree(value);
         } else if (Integer.class.equals(type)) {
             return JacksonUtils.getMapper()

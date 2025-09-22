@@ -100,7 +100,7 @@ public class ClientJsonCodec {
                 return domNode;
             }
             case JsonCodec.ARRAY_TYPE:
-                return jsonArrayAsJsArray(array.getArray(1));
+                return jsonArrayAsJsArray(tree, array.getArray(1));
             case JsonCodec.RETURN_CHANNEL_TYPE:
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
@@ -184,6 +184,47 @@ public class ClientJsonCodec {
                     "Can't encode" + value.getClass() + " to json");
         }
     }
+
+    /**
+     * Converts a JSON array to a JS array, recursively decoding elements that
+     * may contain type information (e.g., Components).
+     *
+     * @param tree
+     *            the state tree to use for resolving nodes and elements
+     * @param jsonArray
+     *            the JSON array to convert
+     * @return the converted JS array
+     */
+    private static Object jsonArrayAsJsArray(StateTree tree,
+            JsonArray jsonArray) {
+        if (GWT.isScript()) {
+            // In GWT compiled mode, use native JS array creation
+            return createNativeArrayWithDecodedElements(tree, jsonArray);
+        } else {
+            // In JVM tests, use JsArray
+            JsArray<Object> jsArray = JsCollections.array();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                jsArray.push(decodeWithTypeInfo(tree, jsonArray.get(i)));
+            }
+            return jsArray;
+        }
+    }
+
+    /**
+     * Creates a native JavaScript array with decoded elements. This method is
+     * only called in GWT compiled mode.
+     */
+    private static native Object createNativeArrayWithDecodedElements(
+            StateTree tree, JsonArray jsonArray)
+    /*-{
+        var result = [];
+        for (var i = 0; i < jsonArray.@elemental.json.JsonArray::length()(); i++) {
+            var element = jsonArray.@elemental.json.JsonArray::get(I)(i);
+            var decoded = @com.vaadin.client.flow.util.ClientJsonCodec::decodeWithTypeInfo(Lcom/vaadin/client/flow/StateTree;Lelemental/json/JsonValue;)(tree, element);
+            result.push(decoded);
+        }
+        return result;
+    }-*/;
 
     /**
      * Converts a JSON array to a JS array. This is a no-op in compiled
