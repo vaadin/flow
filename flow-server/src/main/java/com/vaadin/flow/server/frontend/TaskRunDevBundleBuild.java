@@ -80,7 +80,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      * Create an instance of the command.
      *
      * @param options
-     *                the task options
+     *            the task options
      */
     TaskRunDevBundleBuild(Options options) {
         this.options = options;
@@ -254,7 +254,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             return;
         }
         File devBundleFolder = getDevBundleFolderInSrc();
-        
+
         // Ensure the directory exists
         if (!devBundleFolder.exists()) {
             devBundleFolder.mkdirs();
