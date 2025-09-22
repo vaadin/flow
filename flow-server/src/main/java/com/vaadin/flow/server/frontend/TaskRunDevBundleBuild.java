@@ -264,7 +264,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (readme.exists()) {
             return;
         }
-        getLogger().info("Adding README to {}", readme);
 
         try {
             boolean created = readme.createNewFile();
