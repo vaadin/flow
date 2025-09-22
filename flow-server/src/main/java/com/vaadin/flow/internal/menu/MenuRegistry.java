@@ -93,7 +93,7 @@ public class MenuRegistry {
         }
     }
 
-    private static ObjectMapper mapper = JsonMapper.builder()
+    private static final ObjectMapper mapper = JsonMapper.builder()
             .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
             .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
             .build();
