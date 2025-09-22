@@ -46,6 +46,7 @@
             <plugin>
                 <groupId>com.vaadin</groupId>
                 <artifactId>flow-dev-bundle-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
