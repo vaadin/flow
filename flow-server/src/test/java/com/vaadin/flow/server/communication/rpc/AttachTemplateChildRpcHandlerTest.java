@@ -17,8 +17,8 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.HashMap;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Test;
 import org.mockito.Mockito;
 
@@ -70,7 +70,7 @@ public class AttachTemplateChildRpcHandlerTest {
         ObjectNode object = JacksonUtils.createObjectNode();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
-        object.put(JsonConstants.RPC_ATTACH_ID, id);
+        object.set(JsonConstants.RPC_ATTACH_ID, id);
 
         StateNode node = Mockito.mock(StateNode.class);
         StateNode parentNode = Mockito.mock(StateNode.class);

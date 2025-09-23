@@ -17,8 +17,8 @@ package com.vaadin.flow.server.webpush;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Web Push message object containing an information to be shown in the

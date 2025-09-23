@@ -22,8 +22,8 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -279,7 +279,7 @@ public class CleanFrontendMojoTest {
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException, MojoExecutionException {
         ObjectNode json = createInitialPackageJson();
-        json.put("dependencies", JacksonUtils.createObjectNode());
+        json.set("dependencies", JacksonUtils.createObjectNode());
         ((ObjectNode) json.get("dependencies")).put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();

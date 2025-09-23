@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 
 import com.vaadin.flow.server.communication.FragmentedMessageHolder;
