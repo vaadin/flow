@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.pro.licensechecker.Product;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 
 /** Utilities for commercial product handling. */

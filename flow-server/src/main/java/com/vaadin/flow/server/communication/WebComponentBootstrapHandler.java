@@ -30,9 +30,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
@@ -279,7 +279,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayNode tags = registry.getConfigurations().stream()
                 .map(conf -> JacksonUtils.createNode(conf.getTag()))
                 .collect(JacksonUtils.asArray());
-        config.put("webcomponents", tags);
+        config.set("webcomponents", tags);
 
         config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
 

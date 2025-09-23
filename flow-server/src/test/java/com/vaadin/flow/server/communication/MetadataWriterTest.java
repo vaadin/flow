@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

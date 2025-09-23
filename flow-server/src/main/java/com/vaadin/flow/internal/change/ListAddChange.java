@@ -20,9 +20,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -126,7 +126,7 @@ public class ListAddChange<T extends Serializable>
 
         ArrayNode newItemsJson = newItems.stream().map(mapper)
                 .collect(JacksonUtils.asArray());
-        json.put(addKey, newItemsJson);
+        json.set(addKey, newItemsJson);
     }
 
     /**
