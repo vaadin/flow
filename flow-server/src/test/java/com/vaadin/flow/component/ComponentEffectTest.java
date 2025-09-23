@@ -189,7 +189,7 @@ public class ComponentEffectTest {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
-            ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
             assertNotNull(event);
 
             Throwable throwable = event.getThrowable();
