@@ -114,7 +114,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 "org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler$SupplierCsrfToken",
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper",
-                "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
+                "tools.jackson.databind.ser.std.ToStringSerializer",
                 DefaultErrorHandler.class.getName(), MenuData.class.getName(),
                 AvailableViewInfo.class.getName(),
                 AvailableViewInfo.DetailDeserializer.class.getName(),

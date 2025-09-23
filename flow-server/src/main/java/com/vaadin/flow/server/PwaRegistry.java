@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletContext;
 
 import javax.imageio.ImageIO;
@@ -248,7 +248,7 @@ public class PwaRegistry implements Serializable {
             iconData.put("type", icon.getType());
             iconList.add(iconData);
         }
-        manifestData.put("icons", iconList);
+        manifestData.set("icons", iconList);
         return manifestData;
     }
 

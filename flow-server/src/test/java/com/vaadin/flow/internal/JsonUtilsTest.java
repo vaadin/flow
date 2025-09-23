@@ -356,23 +356,27 @@ public class JsonUtilsTest {
         BeanWithTemporalFields bean = new BeanWithTemporalFields();
         JsonObject json = JsonUtils.beanToJson(bean);
 
-        Assert.assertTrue("LocalTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(10, 23, 55),
-                        json.getArray("localTime")));
-        Assert.assertTrue("LocalDate not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26),
-                        json.getArray("localDate")));
-        Assert.assertTrue("LocalDateTime not serialized as expected",
-                JsonUtils.jsonEquals(createNumberArray(2024, 6, 26, 10, 23, 55),
-                        json.getArray("localDateTime")));
+        Assert.assertEquals("LocalTime not serialized as expected", "10:23:55",
+                json.getString("localTime"));
+        Assert.assertEquals("LocalDate not serialized as expected",
+                "2024-06-26", json.getString("localDate"));
+        Assert.assertEquals("LocalDateTime not serialized as expected",
+                "2024-06-26T10:23:55", json.getString("localDateTime"));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.zonedDateTime.toEpochSecond(),
-                json.getNumber("zonedDateTime"), 0);
+                bean.zonedDateTime.toEpochSecond(), ZonedDateTime
+                        .parse(json.getString("zonedDateTime")).toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.getNumber("sqlDate"), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.getString("sqlDate")).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.getNumber("date"), 0);
-        Assert.assertEquals(10.0, json.getNumber("duration"), 0);
+                bean.date.getTime(), ZonedDateTime.parse(json.getString("date"))
+                        .toInstant().toEpochMilli(),
+                0);
+        Assert.assertEquals(10.0,
+                Duration.parse(json.getString("duration")).toSeconds(), 0);
     }
 
     @Test
