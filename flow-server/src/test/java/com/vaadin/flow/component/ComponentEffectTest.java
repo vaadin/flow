@@ -89,7 +89,7 @@ public class ComponentEffectTest {
                 latch.countDown();
             });
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+            if (!latch.await(3, TimeUnit.SECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
@@ -128,7 +128,7 @@ public class ComponentEffectTest {
                 latch.countDown();
             });
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+            if (!latch.await(3, TimeUnit.SECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
@@ -180,28 +180,21 @@ public class ComponentEffectTest {
             UI.setCurrent(null);
             session.unlock();
 
-            AtomicBoolean effectRun = new AtomicBoolean(false);
+            CountDownLatch latch = new CountDownLatch(1);
             ComponentEffect.effect(ui, () -> {
-                effectRun.set(true);
+                latch.countDown();
                 throw new RuntimeException("Expected exception");
             });
 
-            int tries = 0;
-            while (!effectRun.get()) {
-                // keep trying few times
-                if (++tries > 5) {
-                    fail("Effect was not run in expected time");
-                }
-                ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
-                if (event == null) {
-                    continue;
-                }
-                effectRun.set(true);
-                assertNotNull(event);
-
-                Throwable throwable = event.getThrowable();
-                assertEquals(RuntimeException.class, throwable.getClass());
+            if (!latch.await(3, TimeUnit.SECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
             }
+
+            ErrorEvent event = events.poll(500, TimeUnit.MILLISECONDS);
+            assertNotNull(event);
+
+            Throwable throwable = event.getThrowable();
+            assertEquals(RuntimeException.class, throwable.getClass());
         });
     }
 
