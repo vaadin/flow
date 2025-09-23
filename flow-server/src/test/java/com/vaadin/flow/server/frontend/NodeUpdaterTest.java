@@ -711,6 +711,86 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void getDefaultDevDependencies_includesWorkbox_whenPwaEnabled() {
+        // Create a mock FrontendDependencies with PWA enabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(true);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertTrue("workbox-core should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertTrue(
+                "workbox-precaching should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaDisabled() {
+        // Create a mock FrontendDependencies with PWA disabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(false);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
+        // Create a mock FrontendDependencies with no PWA configuration
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(null);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
     public void readPackageJson_nonExistingFile_doesNotThrow()
             throws IOException {
         nodeUpdater.readPackageJson("non-existing-folder");

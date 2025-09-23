@@ -43,6 +43,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -373,6 +374,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
+        }
+
+        // Add workbox dependencies only when PWA is enabled
+        if (frontDeps.getPwaConfiguration() != null
+                && frontDeps.getPwaConfiguration().isEnabled()) {
+            defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
         return defaults;
