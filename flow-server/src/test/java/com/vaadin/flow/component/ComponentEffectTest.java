@@ -296,6 +296,9 @@ public class ComponentEffectTest {
             test.run();
         } catch (InterruptedException e) {
             throw new AssertionError(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         } finally {
             VaadinService.getCurrent().destroy();
             CurrentInstance.clearAll();
