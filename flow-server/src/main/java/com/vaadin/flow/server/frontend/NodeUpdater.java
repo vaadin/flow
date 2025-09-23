@@ -377,7 +377,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         }
 
         // Add workbox dependencies only when PWA is enabled
-        if (frontDeps.getPwaConfiguration() != null
+        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
                 && frontDeps.getPwaConfiguration().isEnabled()) {
             defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
