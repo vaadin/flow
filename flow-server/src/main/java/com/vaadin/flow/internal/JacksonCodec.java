@@ -66,6 +66,12 @@ public class JacksonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
+    /**
+     * Type id for a complex type array containing an array of node IDs
+     * representing {@link Component} elements.
+     */
+    public static final int NODE_ARRAY_TYPE = 3;
+
     private JacksonCodec() {
         // Don't create instances
     }
@@ -89,19 +95,24 @@ public class JacksonCodec {
         if (value != null && value.getClass().isArray()) {
             Class<?> componentType = value.getClass().getComponentType();
             if (Component.class.isAssignableFrom(componentType)) {
-                // Encode Component array
+                // Encode Component array as NODE_ARRAY_TYPE with just node IDs
                 Component[] components = (Component[]) value;
-                ArrayNode arrayNode = JacksonUtils.getMapper()
+                ArrayNode idsArray = JacksonUtils.getMapper()
                         .createArrayNode();
                 for (Component component : components) {
                     if (component == null) {
-                        arrayNode.add(JacksonUtils.getMapper().nullNode());
+                        idsArray.add(JacksonUtils.getMapper().nullNode());
                     } else {
-                        arrayNode.add(encodeNode(component.getElement()));
+                        StateNode stateNode = component.getElement().getNode();
+                        if (stateNode.isAttached()) {
+                            idsArray.add(stateNode.getId());
+                        } else {
+                            idsArray.add(JacksonUtils.getMapper().nullNode());
+                        }
                     }
                 }
-                // Wrap as ARRAY_TYPE to properly identify it
-                return wrapComplexValue(ARRAY_TYPE, arrayNode);
+                // Wrap as NODE_ARRAY_TYPE to identify it as a Component array
+                return wrapComplexValue(NODE_ARRAY_TYPE, idsArray);
             }
         }
 

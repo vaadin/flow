@@ -66,6 +66,12 @@ public class JsonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
+    /**
+     * Type id for a complex type array containing an array of node IDs
+     * representing {@link Component} elements.
+     */
+    public static final int NODE_ARRAY_TYPE = 3;
+
     private JsonCodec() {
         // Don't create instances
     }
