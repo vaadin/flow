@@ -74,8 +74,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "Read more [about Vaadin development mode](https://vaadin.com/docs/next/flow/configuration/development-mode#precompiled-bundle).";
     //@formatter:on
 
-    private final String README_NOT_CREATED;
-
     private final Options options;
 
     /**
@@ -86,9 +84,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      */
     TaskRunDevBundleBuild(Options options) {
         this.options = options;
-        README_NOT_CREATED = "Failed to create a README file in "
-                + options.getBuildDirectoryName() + "/"
-                + Constants.DEV_BUNDLE_LOCATION;
         getLogger().info(
                 "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
     }
@@ -107,15 +102,23 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
 
         if (options.isCompressBundle()) {
             DevBundleUtils.compressBundle(options.getNpmFolder(),
-                    new File(
-                            new File(options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
+                    getDevBundleFolderInTarget());
         }
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
+    }
+
+    private File getDevBundleFolderInTarget() {
+        return new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
+                Constants.DEV_BUNDLE_LOCATION);
+    }
+
+    private File getDevBundleFolderInSrc() {
+        return new File(options.getNpmFolder(), Constants.BUNDLE_LOCATION);
     }
 
     private void runFrontendBuildTool(String toolName, String packageName,
@@ -226,10 +229,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
     }
 
     private void copyPackageLockToBundleFolder() {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
-                Constants.DEV_BUNDLE_LOCATION);
+        File devBundleFolder = getDevBundleFolderInTarget();
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
         String packageLockFile = options.isEnablePnpm()
@@ -244,7 +244,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                         new File(devBundleFolder, packageLockFile));
             } catch (IOException e) {
                 getLogger().error("Failed to copy '" + packageLockFile + "' to "
-                        + Constants.DEV_BUNDLE_LOCATION, e);
+                        + getDevBundleFolderInTarget(), e);
             }
         }
     }
@@ -253,24 +253,28 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!options.isCompressBundle()) {
             return;
         }
-        File devBundleFolder = new File(options.getNpmFolder(),
-                Constants.BUNDLE_LOCATION);
-        assert devBundleFolder.exists();
+        File devBundleFolder = getDevBundleFolderInSrc();
+
+        // Ensure the directory exists
+        if (!devBundleFolder.exists()) {
+            devBundleFolder.mkdirs();
+        }
+
+        File readme = new File(devBundleFolder, "README.md");
+        if (readme.exists()) {
+            return;
+        }
 
         try {
-            File readme = new File(devBundleFolder, "README.md");
-            if (readme.exists()) {
-                return;
-            }
             boolean created = readme.createNewFile();
             if (created) {
                 FileUtils.writeStringToFile(readme, README,
                         StandardCharsets.UTF_8);
             } else {
-                getLogger().warn(README_NOT_CREATED);
+                getLogger().warn("Failed to create " + readme);
             }
         } catch (Exception e) {
-            getLogger().error(README_NOT_CREATED, e);
+            getLogger().error("Failed to create " + readme, e);
         }
     }
 }
