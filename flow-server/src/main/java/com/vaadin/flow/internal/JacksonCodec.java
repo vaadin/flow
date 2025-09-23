@@ -97,8 +97,7 @@ public class JacksonCodec {
             if (Component.class.isAssignableFrom(componentType)) {
                 // Encode Component array as NODE_ARRAY_TYPE with just node IDs
                 Component[] components = (Component[]) value;
-                ArrayNode idsArray = JacksonUtils.getMapper()
-                        .createArrayNode();
+                ArrayNode idsArray = JacksonUtils.getMapper().createArrayNode();
                 for (Component component : components) {
                     if (component == null) {
                         idsArray.add(JacksonUtils.getMapper().nullNode());

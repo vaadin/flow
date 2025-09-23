@@ -188,19 +188,17 @@ public class ComponentArraySerializationTest {
 
         // The result should be wrapped as NODE_ARRAY_TYPE (value 3)
         com.fasterxml.jackson.databind.node.ArrayNode arrayNode = (com.fasterxml.jackson.databind.node.ArrayNode) encoded;
-        Assert.assertEquals("First element should be NODE_ARRAY_TYPE (3)", 
+        Assert.assertEquals("First element should be NODE_ARRAY_TYPE (3)",
                 JacksonCodec.NODE_ARRAY_TYPE, arrayNode.get(0).asInt());
 
         // Second element should be an array of node IDs
-        Assert.assertTrue(
-                "Second element should be an array of node IDs",
+        Assert.assertTrue("Second element should be an array of node IDs",
                 arrayNode.get(
                         1) instanceof com.fasterxml.jackson.databind.node.ArrayNode);
 
         com.fasterxml.jackson.databind.node.ArrayNode idsArray = (com.fasterxml.jackson.databind.node.ArrayNode) arrayNode
                 .get(1);
-        Assert.assertEquals("Should have 2 node IDs", 2,
-                idsArray.size());
+        Assert.assertEquals("Should have 2 node IDs", 2, idsArray.size());
         // Check that node IDs are numbers
         Assert.assertTrue("First element should be a node ID",
                 idsArray.get(0).isNumber());
