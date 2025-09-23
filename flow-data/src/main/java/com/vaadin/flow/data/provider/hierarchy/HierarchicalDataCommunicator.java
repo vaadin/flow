@@ -322,8 +322,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given item and removes its sub-hierarchy from the cache.
+     * Calling this method will have no effect if the row is already collapsed.
      *
      * @param item
      *            the item to collapse
@@ -333,8 +333,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Collapses the given items and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given items and removes their sub-hierarchies from the
+     * cache. Calling this method will have no effect if the row is already
+     * collapsed.
      *
      * @param items
      *            the items to collapse
@@ -346,8 +347,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 .toList();
 
         if (rootCache != null) {
-            rootCache.removeDescendantCacheIf(
-                    (cache) -> !isExpanded(cache.getParentItem()));
+            for (T item : collapsedItems) {
+                var itemContext = rootCache.getContextByItem(item);
+                if (itemContext == null) {
+                    continue;
+                }
+
+                var cache = itemContext.cache();
+                var index = itemContext.index();
+                cache.removeSubCache(index);
+            }
         }
 
         if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
@@ -360,8 +369,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Expands the given item and schedules a client update to render children
-     * (if visible). Calling this method will have no effect if the item is
+     * Expands the given item and schedules a client update to fetch and render
+     * visible children. Calling this method will have no effect if the item is
      * already expanded or if it has no children.
      *
      * @param item
@@ -372,8 +381,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Expands the given items and schedules a client update to render children
-     * (if visible). Calling this method will have no effect if the item is
+     * Expands the given items and schedules a client update to fetch and render
+     * visible children. Calling this method will have no effect if the item is
      * already expanded or if it has no children.
      *
      * @param items
