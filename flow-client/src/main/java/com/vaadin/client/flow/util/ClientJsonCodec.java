@@ -68,6 +68,7 @@ public class ClientJsonCodec {
                 return tree.getNode(nodeId);
             }
             case JsonCodec.ARRAY_TYPE:
+            case JsonCodec.NODE_ARRAY_TYPE:
             case JsonCodec.RETURN_CHANNEL_TYPE:
                 return null;
             default:
@@ -101,6 +102,8 @@ public class ClientJsonCodec {
             }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(tree, array.getArray(1));
+            case JsonCodec.NODE_ARRAY_TYPE:
+                return decodeNodeArray(tree, array.getArray(1));
             case JsonCodec.RETURN_CHANNEL_TYPE:
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
@@ -184,6 +187,58 @@ public class ClientJsonCodec {
                     "Can't encode" + value.getClass() + " to json");
         }
     }
+
+    /**
+     * Decodes an array of node IDs into an array of DOM nodes.
+     *
+     * @param tree
+     *            the state tree to use for resolving nodes
+     * @param nodeIds
+     *            the JSON array containing node IDs
+     * @return the array of DOM nodes
+     */
+    private static Object decodeNodeArray(StateTree tree, JsonArray nodeIds) {
+        if (GWT.isScript()) {
+            // In GWT compiled mode, use native JS array creation
+            return createNativeNodeArray(tree, nodeIds);
+        } else {
+            // In JVM tests, use JsArray
+            JsArray<Object> jsArray = JsCollections.array();
+            for (int i = 0; i < nodeIds.length(); i++) {
+                JsonValue nodeIdValue = nodeIds.get(i);
+                if (nodeIdValue.getType() == JsonType.NULL) {
+                    jsArray.push((Object) null);
+                } else {
+                    int nodeId = (int) nodeIdValue.asNumber();
+                    Node domNode = tree.getNode(nodeId).getDomNode();
+                    jsArray.push(domNode);
+                }
+            }
+            return jsArray;
+        }
+    }
+
+    /**
+     * Creates a native JavaScript array of DOM nodes from node IDs.
+     * This method is only called in GWT compiled mode.
+     */
+    private static native Object createNativeNodeArray(StateTree tree,
+            JsonArray nodeIds)
+    /*-{
+        var result = [];
+        for (var i = 0; i < nodeIds.@elemental.json.JsonArray::length()(); i++) {
+            var nodeIdValue = nodeIds.@elemental.json.JsonArray::get(I)(i);
+            if (nodeIdValue.@elemental.json.JsonValue::getType()() == @elemental.json.JsonType::NULL) {
+                result.push(null);
+            } else {
+                var nodeId = nodeIdValue.@elemental.json.JsonValue::asNumber()();
+                var stateNode = tree.@com.vaadin.client.flow.StateTree::getNode(I)(nodeId);
+                var domNode = stateNode.@com.vaadin.client.flow.StateNode::getDomNode()();
+                result.push(domNode);
+            }
+        }
+        return result;
+    }-*/;
 
     /**
      * Converts a JSON array to a JS array, recursively decoding elements that

@@ -124,18 +124,14 @@ public class ClientJsonCodecTest {
         node3.setDomNode(element3);
 
         // Create a JSON array representing Component array
-        // Structure: [ARRAY_TYPE, [[NODE_TYPE, id1], [NODE_TYPE, id2],
-        // [NODE_TYPE, id3]]]
-        JsonArray innerArray = Json.createArray();
-        innerArray.set(0, JsonUtils.createArray(
-                Json.create(JsonCodec.NODE_TYPE), Json.create(10)));
-        innerArray.set(1, JsonUtils.createArray(
-                Json.create(JsonCodec.NODE_TYPE), Json.create(20)));
-        innerArray.set(2, JsonUtils.createArray(
-                Json.create(JsonCodec.NODE_TYPE), Json.create(30)));
+        // Structure: [NODE_ARRAY_TYPE, [id1, id2, id3]]
+        JsonArray idsArray = Json.createArray();
+        idsArray.set(0, Json.create(10));
+        idsArray.set(1, Json.create(20));
+        idsArray.set(2, Json.create(30));
 
         JsonArray json = JsonUtils
-                .createArray(Json.create(JsonCodec.ARRAY_TYPE), innerArray);
+                .createArray(Json.create(JsonCodec.NODE_ARRAY_TYPE), idsArray);
 
         // Decode the array
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
@@ -161,6 +157,46 @@ public class ClientJsonCodecTest {
             // For now, just verify it's not a JsArray of encoded values
             Assert.assertTrue("Decoded value should be an array",
                     decoded.getClass().isArray() || decoded instanceof JsArray);
+        }
+    }
+
+    @Test
+    public void decodeWithTypeInfo_componentArrayWithNulls() {
+        StateTree tree = new StateTree(null);
+
+        // Create a state node with DOM element
+        StateNode node1 = new StateNode(10, tree);
+        tree.registerNode(node1);
+
+        JsElement element1 = new JsElement() {
+        };
+        node1.setDomNode(element1);
+
+        // Create a JSON array representing Component array with nulls
+        // Structure: [NODE_ARRAY_TYPE, [id1, null, id3]]
+        JsonArray idsArray = Json.createArray();
+        idsArray.set(0, Json.create(10));
+        idsArray.set(1, Json.createNull());
+        idsArray.set(2, Json.create(10)); // Reuse same node for simplicity
+
+        JsonArray json = JsonUtils
+                .createArray(Json.create(JsonCodec.NODE_ARRAY_TYPE), idsArray);
+
+        // Decode the array
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
+
+        Assert.assertNotNull("Decoded array should not be null", decoded);
+
+        if (decoded instanceof JsArray) {
+            JsArray<?> decodedArray = (JsArray<?>) decoded;
+            Assert.assertEquals("Array should have 3 elements", 3,
+                    decodedArray.length());
+            Assert.assertSame("First element should be element1", element1,
+                    decodedArray.get(0));
+            Assert.assertNull("Second element should be null",
+                    decodedArray.get(1));
+            Assert.assertSame("Third element should be element1", element1,
+                    decodedArray.get(2));
         }
     }
 
