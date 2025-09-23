@@ -78,12 +78,12 @@ public class ComponentEffectTest {
 
             UI.setCurrent(null);
 
-            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<String> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
             CountDownLatch latch = new CountDownLatch(1);
 
             ComponentEffect.effect(ui, () -> {
-                currentThread.set(Thread.currentThread());
+                currentThread.set(Thread.currentThread().getName());
                 currentUI.set(UI.getCurrent());
                 latch.countDown();
             });
@@ -94,7 +94,7 @@ public class ComponentEffectTest {
 
             Assert.assertTrue(
                     "Expected effect to be executed in Vaadin Executor thread",
-                    currentThread.get().getName()
+                    currentThread.get()
                             .startsWith("VaadinTaskExecutor-thread-"));
             assertSame(ui, currentUI.get());
         });
