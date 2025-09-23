@@ -380,33 +380,6 @@ public class ComponentEffectTest {
     }
 
     @Test
-    public void bindChildren_listSignalWithItemsWithNotEmptyParent_throw() {
-        // When having children initially in parent, exception will be thrown
-        // when binding the effect.
-        runWithFeatureFlagEnabled(() -> {
-            ListSignal<String> taskList = new ListSignal<>(String.class);
-            taskList.insertFirst("first");
-            taskList.insertLast("last");
-
-            TestLayout parentComponent = new TestLayout();
-            var expectedInitialComponent = new TestComponent("initial");
-            parentComponent.add(expectedInitialComponent);
-            new MockUI().add(parentComponent);
-
-            assertThrows(IllegalStateException.class, () -> {
-                ComponentEffect.bindChildren(parentComponent, taskList,
-                        valueSignal -> new TestComponent(valueSignal.value()));
-            });
-
-            var children = parentComponent.getChildren().toList();
-            assertEquals("Parent component children count is wrong", 1,
-                    parentComponent.getComponentCount());
-            assertEquals("initial",
-                    ((TestComponent) children.get(0)).getValue());
-        });
-    }
-
-    @Test
     public void bindChildren_addItem_parentUpdated() {
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -552,12 +525,12 @@ public class ComponentEffectTest {
             List<TestComponent> children = parentComponent.getChildren()
                     .map(TestComponent.class::cast).toList();
 
-            assertEquals(1, children.get(0).attachCounter);
-            assertEquals(1, children.get(0).detachCounter);
-            assertEquals(1, children.get(1).attachCounter);
-            assertEquals(1, children.get(1).detachCounter);
-            assertEquals(0, children.get(2).attachCounter);
-            assertEquals(0, children.get(2).detachCounter);
+            assertEquals(0, children.get(0).attachCounter);
+            assertEquals(0, children.get(0).detachCounter);
+            assertEquals(0, children.get(1).attachCounter);
+            assertEquals(0, children.get(1).detachCounter);
+            assertEquals(1, children.get(2).attachCounter);
+            assertEquals(1, children.get(2).detachCounter);
         });
     }
 
@@ -580,10 +553,10 @@ public class ComponentEffectTest {
 
             assertEquals(0, children.get(0).attachCounter);
             assertEquals(0, children.get(0).detachCounter);
-            assertEquals(1, children.get(1).attachCounter);
-            assertEquals(1, children.get(1).detachCounter);
-            assertEquals(0, children.get(2).attachCounter);
-            assertEquals(0, children.get(2).detachCounter);
+            assertEquals(0, children.get(1).attachCounter);
+            assertEquals(0, children.get(1).detachCounter);
+            assertEquals(1, children.get(2).attachCounter);
+            assertEquals(1, children.get(2).detachCounter);
         });
     }
 
@@ -627,6 +600,157 @@ public class ComponentEffectTest {
     }
 
     @Test
+    public void bindChildren_directParentComponentChanges_sameChildrenSizeBeforeAfter_throw() {
+        // When adding children directly to parent, exception will be thrown
+        // from the effect on next related Signal change.
+        runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertLast("first");
+            taskList.insertLast("middle");
+            TestLayout parentComponent = new TestLayout();
+
+            ui.add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> new TestComponent(valueSignal.value()));
+
+            var directlyAddedComponent1 = new TestComponent("added directly 1");
+            var directlyAddedComponent2 = new TestComponent("added directly 2");
+
+            // doing wrong
+            parentComponent.removeAll();
+            parentComponent.add(directlyAddedComponent1);
+            parentComponent.add(directlyAddedComponent2);
+            // notice that size is still same as original
+
+            // causes the effect to run and exception being thrown
+            taskList.insertLast("last");
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalStateException.class,
+                    event.getThrowable().getClass());
+
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+            // Changes are still applied as exception is thrown in the end of
+            // the effect. Algorithm moves wrongly added elements after signal
+            // list.
+            assertEquals("Parent component children count is wrong", 5,
+                    parentComponent.getComponentCount());
+            assertEquals("first", children.get(0).getValue());
+            assertEquals("middle", children.get(1).getValue());
+            assertEquals("last", children.get(2).getValue());
+            assertEquals("added directly 1", children.get(3).getValue());
+            assertEquals("added directly 2", children.get(4).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_directParentComponentChangeByFactory_throw() {
+        // When adding children directly to parent, exception will be thrown
+        // from the effect on next related Signal change.
+        runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertLast("first");
+            taskList.insertLast("middle");
+            TestLayout parentComponent = new TestLayout();
+
+            ui.add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        String value = valueSignal.value();
+                        var component = new TestComponent(value);
+                        if ("middle".equals(value)) {
+                            // doing wrong
+                            parentComponent
+                                    .add(new TestComponent("added directly"));
+                        }
+                        return component;
+                    });
+
+            // causes the effect to run and exception being thrown
+            taskList.insertLast("last");
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalStateException.class,
+                    event.getThrowable().getClass());
+            assertEquals(
+                    "Parent element must have children matching the list signal. Unexpected child count after child factory call: 2, expected: 1",
+                    event.getThrowable().getMessage());
+
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+            // Exception is thrown after child factory is called for the
+            // 'middle' item
+            assertEquals("Parent component children count is wrong", 2,
+                    parentComponent.getComponentCount());
+            assertEquals("first", children.get(0).getValue());
+            assertEquals("added directly", children.get(1).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_directParentComponentChangeByCustomAttach_throw() {
+        // When adding children directly to parent, exception will be thrown
+        // from the effect on next related Signal change.
+        runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertLast("first");
+            taskList.insertLast("middle");
+            TestLayout parentComponent = new TestLayout();
+
+            ui.add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        String value = valueSignal.value();
+                        var component = new TestComponent(value);
+                        if ("middle".equals(value)) {
+                            component.addAttachListener(event -> {
+                                // doing wrong
+                                parentComponent.add(
+                                        new TestComponent("added directly"));
+                                event.unregisterListener();
+                            });
+                        }
+                        return component;
+                    });
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalStateException.class,
+                    event.getThrowable().getClass());
+            assertEquals(
+                    "Parent element must have children matching the list signal. Unexpected child count: 3, expected: 2",
+                    event.getThrowable().getMessage());
+
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+            // Exception is thrown only in final validation in the end
+            assertEquals("Parent component children count is wrong", 3,
+                    parentComponent.getComponentCount());
+            assertEquals("first", children.get(0).getValue());
+            assertEquals("middle", children.get(1).getValue());
+            assertEquals("added directly", children.get(2).getValue());
+        });
+    }
+
+    @Test
     public void bindChildren_runInTransaction_effectRunOnce() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
@@ -657,9 +781,8 @@ public class ComponentEffectTest {
                 taskList.remove(taskList.value().get(0));
             });
 
-            // getChildren() should be called only once per bindChildren effect
-            // call
-            verify(parentComponent.getElement(), times(1)).getChildren();
+            // getChildren() should be called twice per bindChildren effect call
+            verify(parentComponent.getElement(), times(2)).getChildren();
 
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
@@ -667,6 +790,29 @@ public class ComponentEffectTest {
                     .getChildren().toList().get(0)).getValue());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
                     .toList().get(1)).getValue());
+        });
+    }
+
+    @Test
+    public void bindChildren_withNullFromChildFactory_throws() {
+        runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertFirst("first");
+            TestLayout parentComponent = new TestLayout();
+
+            ui.add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> null);
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalArgumentException.class,
+                    event.getThrowable().getClass());
         });
     }
 

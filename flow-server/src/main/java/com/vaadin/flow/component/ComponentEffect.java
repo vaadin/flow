@@ -162,18 +162,19 @@ public final class ComponentEffect {
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a
      * {@link ValueSignal} from the {@link ListSignal} and returns a
-     * corresponding {@link Component}. The {@link ValueSignal} can be further
-     * bound to the returned component as needed.
+     * corresponding {@link Component}. It shouldn't return <code>null</code>.
+     * The {@link ValueSignal} can be further bound to the returned component as
+     * needed.
      * <p>
      * Example of usage:
      *
      * <pre>
      * ListSignal&lt;String&gt; taskList = new ListSignal&lt;&gt;(String.class);
      *
-     * Div div = new Div();
+     * UnorderedList div = new UnorderedList();
      *
      * ComponentEffect.bindChildren(div, taskList, taskValueSignal -> {
-     *     var listItem = new ListItem(taskValueSignal.value());
+     *     var listItem = new ListItem();
      *     ComponentEffect.bind(listItem, taskValueSignal, HasText::setText);
      *     return listItem;
      * });
@@ -192,8 +193,9 @@ public final class ComponentEffect {
      * @param <PARENT>
      *            the type of the parent component
      * @throws IllegalStateException
-     *             thrown if parent component has children not belonging to the
-     *             signal
+     *             thrown if parent component isn't empty
+     * @throws IllegalArgumentException
+     *             thrown if childFactory returns null
      */
     public static <T, PARENT extends Component & HasComponents> void bindChildren(
             PARENT parent, ListSignal<T> list,
@@ -222,15 +224,32 @@ public final class ComponentEffect {
             throw new IllegalStateException(
                     "Parent element must not have children when binding ListSignal to it");
         }
-        HashMap<ValueSignal<T>, Element> valueSignalToChild = new HashMap<>();
+        // Create a child element cache outside the effect.
+        HashMap<ValueSignal<T>, Element> valueSignalToChildCache = new HashMap<>();
 
         ComponentEffect.effect(parentComponent,
-                () -> runEffect(new UpdateElementByChildSignals<>(parent,
-                        list.value(), childFactory, valueSignalToChild)));
+                () -> runEffect(new BindChildrenEffectContext<>(parent,
+                        list.value(), childFactory, valueSignalToChildCache)));
     }
 
-    private static <T> void runEffect(UpdateElementByChildSignals<T> update) {
-        update.doUpdate();
+    private static <T> void runEffect(BindChildrenEffectContext<T> context) {
+        // Cache the children to avoid multiple traversals
+        LinkedList<Element> remainingChildren = context
+                .parentChildrenToLinkedList();
+
+        if (remainingChildren.size() != context.getCachedChildrenSize()) {
+            throw new IllegalStateException(
+                    "Parent element must have children matching the list signal. Unexpected child count: "
+                            + remainingChildren.size() + ", expected: "
+                            + context.getCachedChildrenSize());
+        }
+        removeNotPresentChildren(context, remainingChildren);
+        updateByChildSignals(context, remainingChildren);
+
+        // Final validation to ensure no unexpected children are present. This
+        // will catch also wrong order and is run as a last to avoid running
+        // expensive validation in middle of the effect.
+        validate(context);
     }
 
     private void enableEffect(Component owner) {
@@ -282,124 +301,156 @@ public final class ComponentEffect {
     }
 
     /**
-     * Helper record to update children of a parent element according to a list
-     * of child signals.
+     * Validate that parent element has no children not belonging to the list of
+     * child signals.
+     */
+    private static <T> void validate(BindChildrenEffectContext<T> context) {
+        LinkedList<Element> children = context.parentChildrenToLinkedList();
+        if (children.size() != context.getCachedChildrenSize()) {
+            throw new IllegalStateException(
+                    "Parent element must have children matching the list signal. Unexpected child count: "
+                            + children.size() + ", expected: "
+                            + context.getCachedChildrenSize());
+        }
+        for (int index = 0; index < children.size(); index++) {
+            Element actualElement = children.get(index);
+            Element expectedElement = context.valueSignalToChildCache
+                    .get(context.childSignalsList.get(index));
+            if (!Objects.equals(actualElement, expectedElement)) {
+                throw new IllegalStateException(
+                        "Parent element must have children matching the list signal. Unexpected child: "
+                                + actualElement + ", expected: "
+                                + expectedElement);
+            }
+        }
+    }
+
+    /**
+     * Remove all existing children in valueSignalToChildCache map that are no
+     * longer present in the list of child signals.
+     */
+    private static <T> void removeNotPresentChildren(
+            BindChildrenEffectContext<T> context,
+            LinkedList<Element> remainingChildren) {
+        var toRemove = new HashSet<>(context.valueSignalToChildCache.keySet());
+        context.childSignalsList.forEach(toRemove::remove);
+        for (ValueSignal<T> removedItem : toRemove) {
+            Element element = context.valueSignalToChildCache
+                    .remove(removedItem);
+            element.removeFromParent();
+            remainingChildren.remove(element);
+        }
+    }
+
+    /**
+     * Align parent element children with the list of child signals without
+     * removing any existing elements. Creates new elements with the element
+     * factory if not found from the cache.
+     */
+    private static <T> void updateByChildSignals(
+            BindChildrenEffectContext<T> context,
+            LinkedList<Element> remainingChildren) {
+        // Cache the children in a HashSet for O(1) lookups and removals
+        HashSet<Element> remainingChildrenSet = new HashSet<>(
+                remainingChildren);
+
+        for (int i = 0; i < context.childSignalsList.size(); i++) {
+            ValueSignal<T> item = context.childSignalsList.get(i);
+
+            Element expectedChild = context.getElement(item);
+            if (remainingChildrenSet.isEmpty() || !Objects
+                    .equals(expectedChild.getParent(), context.parentElement)) {
+                context.parentElement.insertChild(i, expectedChild);
+                continue;
+            }
+
+            // Use LinkedList for order
+            Element actualChild = remainingChildren.pollFirst();
+            if (!Objects.equals(actualChild, expectedChild)) {
+                /*
+                 * A mismatch has been encountered and we need to adjust the
+                 * component children to match the expected order. This
+                 * algorithm optimized for cases where only a single item has
+                 * been moved to a new location and accepts that we might do
+                 * redundant operations in other cases.
+                 */
+                if (Objects.equals(expectedChild, remainingChildren.peek())) {
+                    // Move actual child to a later position
+                    // Remove from current pos. Will be added back later
+                    actualChild.removeFromParent();
+
+                    // Skip next child since that's the expected child
+                    remainingChildren.pollFirst();
+                } else {
+                    // Move expected child from a later position
+                    context.parentElement.insertChild(i, expectedChild);
+
+                    remainingChildrenSet.remove(expectedChild);
+
+                    // Restore previous actual child for next round
+                    remainingChildren.addFirst(actualChild);
+                }
+            }
+        }
+    }
+
+    /**
+     * Record for
+     * {@link #bindChildren(Component, ListSignal, SerializableFunction)} effect
+     * to update children of a parent element according to a list of child
+     * signals.
      *
      * @param parentElement
      *            parent element to update children for
-     * @param childSignals
+     * @param childSignalsList
      *            list of child signals to update by
      * @param childElementFactory
      *            factory to create new child element
-     * @param valueSignalToChild
+     * @param valueSignalToChildCache
      *            map to store existing child elements by value signal
      * @param <T>
      *            the value type of the list signal to update by
      */
-    private record UpdateElementByChildSignals<T>(Element parentElement,
-            List<ValueSignal<T>> childSignals,
+    private record BindChildrenEffectContext<T>(Element parentElement,
+            List<ValueSignal<T>> childSignalsList,
             SerializableFunction<ValueSignal<T>, Element> childElementFactory,
-            HashMap<ValueSignal<T>, Element> valueSignalToChild)
+            HashMap<ValueSignal<T>, Element> valueSignalToChildCache)
             implements
                 Serializable {
 
         /**
          * Return existing element or generate new by child element factory.
+         *
+         * @throws IllegalStateException
+         *             if child factory adds or removes unexpected child
          */
         private Element getElement(ValueSignal<T> item) {
-            return valueSignalToChild.computeIfAbsent(item,
-                    childElementFactory);
+            return valueSignalToChildCache.computeIfAbsent(item, value -> {
+                int sizeBefore = parentElement.getChildCount();
+                var element = childElementFactory.apply(value);
+                // quick validation to catch illegal state early
+                if (element != null
+                        && sizeBefore != parentElement.getChildCount()) {
+                    throw new IllegalStateException(
+                            "Parent element must have children matching the list signal. Unexpected child count after child factory call: "
+                                    + parentElement.getChildCount()
+                                    + ", expected: " + sizeBefore);
+                }
+                return element;
+            });
         }
 
         /**
-         * Update children of the parent element according to the list of child
-         * signals.
+         * Returns size of the <code>valueSignalToChildCache</code> map holding
+         * cached child elements by value signal.
          */
-        private void doUpdate() {
-            // Cache the children to avoid multiple traversals
-            LinkedList<Element> remainingChildren = parentElement.getChildren()
+        private int getCachedChildrenSize() {
+            return valueSignalToChildCache.size();
+        }
+
+        private LinkedList<Element> parentChildrenToLinkedList() {
+            return parentElement.getChildren()
                     .collect(Collectors.toCollection(LinkedList::new));
-
-            validate(remainingChildren);
-            removeNotPresentChildren();
-            updateByChildSignals(remainingChildren);
-        }
-
-        /**
-         * Validate that parent element has no children not belonging to the
-         * list of child signals.
-         */
-        private void validate(LinkedList<Element> children) {
-            if (children.stream().anyMatch(
-                    element -> !valueSignalToChild.containsValue(element))) {
-                throw new IllegalStateException(
-                        "Parent element must not have children not belonging to the signal");
-            }
-        }
-
-        /**
-         * Remove all existing children in valueSignalToChild map that are no
-         * longer present in the list of child signals.
-         */
-        private void removeNotPresentChildren() {
-            var toRemove = new HashSet<>(valueSignalToChild.keySet());
-            childSignals.forEach(toRemove::remove);
-            for (ValueSignal<T> removedItem : toRemove) {
-                Element element = valueSignalToChild.remove(removedItem);
-                element.removeFromParent();
-            }
-        }
-
-        /**
-         * Align parent element children with the list of child signals without
-         * removing any existing elements. Creates new elements with the element
-         * factory if not found from the cache.
-         */
-        private void updateByChildSignals(
-                LinkedList<Element> remainingChildren) {
-            // Cache the children in a HashSet for O(1) lookups and removals
-            HashSet<Element> remainingChildrenSet = new HashSet<>(
-                    remainingChildren);
-
-            for (int i = 0; i < childSignals.size(); i++) {
-                ValueSignal<T> item = childSignals.get(i);
-
-                Element expectedChild = getElement(item);
-                if (remainingChildrenSet.isEmpty() || !Objects
-                        .equals(expectedChild.getParent(), parentElement)) {
-                    parentElement.insertChild(i, expectedChild);
-                    continue;
-                }
-
-                // Use LinkedList for order
-                Element actualChild = remainingChildren.pollFirst();
-                if (!Objects.equals(actualChild, expectedChild)) {
-                    /*
-                     * A mismatch has been encountered and we need to adjust the
-                     * component children to match the expected order. This
-                     * algorithm optimized for cases where only a single item
-                     * has been moved to a new location and accepts that we
-                     * might do redundant operations in other cases.
-                     */
-                    if (expectedChild == remainingChildren.peek()) {
-                        // Move actual child to a later position
-
-                        // Remove from current pos. Will be added back later
-                        actualChild.removeFromParent();
-
-                        // Skip next child since that's the expected child
-                        remainingChildren.pollFirst();
-                    } else {
-                        // Move expected child from a later position
-                        parentElement.insertChild(i, expectedChild);
-
-                        remainingChildrenSet.remove(expectedChild);
-
-                        // Restore previous actual child for next round
-                        remainingChildren.addFirst(actualChild);
-                    }
-                }
-            }
         }
     }
 }
