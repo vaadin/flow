@@ -451,7 +451,12 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                ui.getElement().getNode().setParent(null);
+                try {
+                    ui.getElement().getNode().setParent(null);
+                } catch (IllegalStateException e) {
+                    getLogger().warn("Error detaching closed UI {} ",
+                            ui.getUIId(), e);
+                }
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
