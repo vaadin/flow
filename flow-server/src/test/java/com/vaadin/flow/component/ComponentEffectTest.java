@@ -31,7 +31,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -47,6 +50,22 @@ import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 public class ComponentEffectTest {
+
+    private static MockVaadinServletService service;
+
+    @BeforeClass
+    public static void init() {
+        runWithFeatureFlagEnabled(() -> {
+            service = new MockVaadinServletService();
+        });
+    }
+
+    @AfterClass
+    public static void clean() {
+        CurrentInstance.clearAll();
+        service.destroy();
+    }
+
     @Test
     public void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
         runWithFeatureFlagEnabled(() -> {
@@ -68,7 +87,6 @@ public class ComponentEffectTest {
     @Test
     public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
         runWithFeatureFlagEnabled(() -> {
-            var service = new MockVaadinServletService();
             VaadinService.setCurrent(service);
 
             var session = new MockVaadinSession(service);
@@ -103,7 +121,6 @@ public class ComponentEffectTest {
     @Test
     public void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
         runWithFeatureFlagEnabled(() -> {
-            var service = new MockVaadinServletService();
             VaadinService.setCurrent(service);
 
             var session = new MockVaadinSession(service);
@@ -142,7 +159,6 @@ public class ComponentEffectTest {
     @Test
     public void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
         runWithFeatureFlagEnabled(() -> {
-            var service = new MockVaadinServletService();
             VaadinService.setCurrent(service);
 
             var session = new MockVaadinSession(service);
@@ -166,7 +182,6 @@ public class ComponentEffectTest {
     @Test
     public void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
         runWithFeatureFlagEnabled(() -> {
-            var service = new MockVaadinServletService();
             VaadinService.setCurrent(service);
 
             var session = new MockVaadinSession(service);
@@ -300,7 +315,6 @@ public class ComponentEffectTest {
             e.printStackTrace();
             throw e;
         } finally {
-            VaadinService.getCurrent().destroy();
             CurrentInstance.clearAll();
         }
     }
