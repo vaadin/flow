@@ -94,6 +94,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
         waitUntilNot(
                 driver -> driver.getCurrentUrl().contains("my/login/page"));
         waitUntilNot(driver -> $(LoginOverlayElement.class).exists());
+        System.out.println(
+                "============== After login " + driver.getCurrentUrl());
     }
 
     protected void assertLoginViewShown() {
