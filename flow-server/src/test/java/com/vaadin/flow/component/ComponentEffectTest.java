@@ -751,6 +751,56 @@ public class ComponentEffectTest {
     }
 
     @Test
+    public void bindChildren_directParentComponentChildOrderChanges_throw() {
+        // When adding children directly to parent, exception will be thrown
+        // from the effect on next related Signal change.
+        // Exception is thrown only in final validation in the end when change
+        // can't be detected by just checking size.
+        runWithFeatureFlagEnabled(() -> {
+            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            UI ui = UI.getCurrent();
+
+            ListSignal<String> taskList = new ListSignal<>(String.class);
+            taskList.insertLast("first");
+            taskList.insertLast("middle");
+            taskList.insertLast("last");
+            TestLayout parentComponent = new TestLayout();
+
+            ui.add(parentComponent);
+
+            ComponentEffect.bindChildren(parentComponent, taskList,
+                    valueSignal -> {
+                        String value = valueSignal.value();
+                        var component = new TestComponent(value);
+                        component.getElement().setText(value);
+                        if ("last".equals(value)) {
+                            // doing wrong, change order of first two children
+                            parentComponent.getElement().insertChild(0,
+                                    parentComponent.getElement().getChild(1));
+                        }
+                        return component;
+                    });
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+
+            assertNotNull(event);
+            assertEquals(IllegalStateException.class,
+                    event.getThrowable().getClass());
+            List<TestComponent> children = parentComponent.getChildren()
+                    .map(TestComponent.class::cast).toList();
+
+            assertEquals(
+                    "Parent element must have children matching the list signal. Unexpected child: <div>middle</div>, expected: <div>first</div>",
+                    event.getThrowable().getMessage());
+            assertEquals("Parent component children count is wrong", 3,
+                    parentComponent.getComponentCount());
+            assertEquals("middle", children.get(0).getValue());
+            assertEquals("first", children.get(1).getValue());
+            assertEquals("last", children.get(2).getValue());
+        });
+    }
+
+    @Test
     public void bindChildren_runInTransaction_effectRunOnce() {
         runWithFeatureFlagEnabled(() -> {
             var expectedMockedElements = new ArrayList<Element>();
@@ -844,9 +894,6 @@ public class ComponentEffectTest {
             test.run();
         } catch (InterruptedException e) {
             throw new AssertionError(e);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw e;
         } finally {
             CurrentInstance.clearAll();
         }
