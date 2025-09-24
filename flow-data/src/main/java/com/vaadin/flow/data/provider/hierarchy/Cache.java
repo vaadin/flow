@@ -174,7 +174,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Removes all items and sub-caches from this cache and frees up any
+     * Removes all items and sub-caches from this cache and releases any
      * resources associated with them.
      */
     public void clear() {
