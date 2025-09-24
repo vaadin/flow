@@ -1566,7 +1566,10 @@ public class UI extends Component
      * Makes the child component modal or modeless (i.e.
      * {@link ModalityMode#STRICT} or {@link ModalityMode#MODELESS}). The
      * component needs to be a child of this UI. By default, all child
-     * components are modeless.
+     * components are modeless. Note that calling this doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      *
      * @param childComponent
      *            the child component to change state for
@@ -1588,7 +1591,10 @@ public class UI extends Component
      * Change the child component server side modality by modality mode:
      * {@link ModalityMode#STRICT}, {@link ModalityMode#VISUAL}, or
      * {@link ModalityMode#MODELESS}. The component needs to be a child of this
-     * UI. By default, all child components are modeless.
+     * UI. By default, all child components are modeless. Note that calling this
+     * doesn't show a modality curtain or change the visible state of the
+     * components in the UI - that should be handled by the component
+     * separately. Thus, this is purely a server side feature.
      *
      * @param childComponent
      *            the child component to change state for
