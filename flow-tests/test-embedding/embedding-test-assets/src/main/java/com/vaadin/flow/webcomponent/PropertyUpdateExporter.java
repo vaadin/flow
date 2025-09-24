@@ -16,24 +16,24 @@
 
 package com.vaadin.flow.webcomponent;
 
+import tools.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.JacksonUtils;
 
 public class PropertyUpdateExporter
         extends WebComponentExporter<PropertyUpdateComponent> {
 
     private PropertyConfiguration<PropertyUpdateComponent, Integer> property;
-    private PropertyConfiguration<PropertyUpdateComponent, JsonValue> jsonProperty;
+    private PropertyConfiguration<PropertyUpdateComponent, BaseJsonNode> jsonProperty;
 
     public PropertyUpdateExporter() {
         super("property-update");
 
         property = addProperty("clicks", 0);
-        jsonProperty = addProperty("clicksJson", Json.createNull());
+        jsonProperty = addProperty("clicksJson", JacksonUtils.nullNode());
     }
 
     @Override

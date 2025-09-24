@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import org.junit.Assert;
 import org.junit.Before;
@@ -25,7 +27,6 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -118,9 +119,11 @@ public class UIInternalsTest {
 
         vaadinService = new MockVaadinServletService();
         internals = new UIInternals(ui);
+        MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+        Mockito.when(vaadinService.getDeploymentConfiguration())
+                .thenReturn(config);
         AlwaysLockedVaadinSession session = new AlwaysLockedVaadinSession(
                 vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
     }
@@ -351,7 +354,7 @@ public class UIInternalsTest {
         Mockito.verify(node, Mockito.times(1))
                 .addDetachListener(ArgumentMatchers.any());
 
-        invocation.complete(JsonCodec.encodeWithTypeInfo("OK"));
+        invocation.complete(JacksonCodec.encodeWithTypeInfo("OK"));
 
         Assert.assertEquals(0,
                 internals.getPendingJavaScriptInvocations().count());
@@ -372,7 +375,8 @@ public class UIInternalsTest {
         Mockito.verify(node, Mockito.times(1))
                 .addDetachListener(ArgumentMatchers.any());
 
-        invocation.completeExceptionally(JsonCodec.encodeWithTypeInfo("ERROR"));
+        invocation.completeExceptionally(
+                JacksonCodec.encodeWithTypeInfo("ERROR"));
 
         Assert.assertEquals(0,
                 internals.getPendingJavaScriptInvocations().count());

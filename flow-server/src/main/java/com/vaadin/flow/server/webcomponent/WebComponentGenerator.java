@@ -24,9 +24,9 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.Component;
@@ -35,9 +35,6 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.theme.Theme;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonValue;
 
 /**
  * Generates a client-side web component from a Java class.
@@ -255,17 +252,14 @@ public class WebComponentGenerator {
         } else if (property.getType() == String.class) {
             value = "'" + ((String) property.getDefaultValue()).replaceAll("'",
                     "\\'") + "'";
-        } else if (JsonValue.class.isAssignableFrom(property.getType())) {
-            value = ((JsonValue) property.getDefaultValue()).toJson();
         } else if (JsonNode.class.isAssignableFrom(property.getType())) {
             value = property.getDefaultValue().toString();
         } else {
             throw new UnsupportedPropertyTypeException(String.format(
                     "%s is not a currently supported type for a Property."
-                            + " Please use %s or %s instead.",
+                            + " Please use %s instead.",
                     property.getType().getSimpleName(),
-                    JsonNode.class.getSimpleName(),
-                    JsonValue.class.getSimpleName()));
+                    JsonNode.class.getSimpleName()));
         }
         if (value == null) {
             value = "null";
@@ -307,11 +301,10 @@ public class WebComponentGenerator {
             return "Number";
         } else if (propertyData.getType() == String.class) {
             return "String";
-        } else if (JsonArray.class.isAssignableFrom(propertyData.getType())
-                || ArrayNode.class.isAssignableFrom(propertyData.getType())) {
+        } else if (ArrayNode.class.isAssignableFrom(propertyData.getType())) {
             return "Array";
-        } else if (JsonValue.class.isAssignableFrom(propertyData.getType())
-                || ObjectNode.class.isAssignableFrom(propertyData.getType())) {
+        } else if (BaseJsonNode.class
+                .isAssignableFrom(propertyData.getType())) {
             return "Object";
         } else {
             throw new IllegalStateException(

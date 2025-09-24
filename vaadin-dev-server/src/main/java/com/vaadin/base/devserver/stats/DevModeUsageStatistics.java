@@ -18,7 +18,7 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -153,7 +153,7 @@ public class DevModeUsageStatistics {
                 JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {
-                    clientData.fields().forEachRemaining(
+                    clientData.properties().forEach(
                             e -> project.setValue(e.getKey(), e.getValue()));
                 }
             } catch (Exception e) {

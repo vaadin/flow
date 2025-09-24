@@ -1,7 +1,7 @@
 package com.vaadin.flow.server.menu;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import com.vaadin.flow.router.MenuData;
 import org.junit.Assert;
 import org.junit.Before;
@@ -62,7 +62,7 @@ public class AvailableViewInfoTest {
     }
 
     @Test
-    public void testJsonSerialization() throws JsonProcessingException {
+    public void testJsonSerialization() throws JacksonException {
         var info = createInfo(true, true);
         var json = mapper.writeValueAsString(info);
         Assert.assertEquals("JSON conversion doesn't give the same object",
@@ -70,7 +70,7 @@ public class AvailableViewInfoTest {
     }
 
     @Test
-    public void testJsonSerializationNull() throws JsonProcessingException {
+    public void testJsonSerializationNull() throws JacksonException {
         var info = createInfo(true, false);
         var json = mapper.writeValueAsString(info);
         Assert.assertEquals("JSON conversion doesn't give the same object",

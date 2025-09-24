@@ -248,7 +248,6 @@ public class UITest {
         Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
-        session.setConfiguration(config);
         ((MockVaadinServletService) service).setConfiguration(config);
         ui.getInternals().setSession(session);
 

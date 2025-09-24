@@ -15,15 +15,14 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import tools.jackson.databind.JsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.ModelList;
-
-import elemental.json.JsonValue;
 
 /**
  * A model type corresponding to a list of bean types.
@@ -161,8 +160,8 @@ public class ListModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public JsonValue toJson() {
-        return JsonUtils.createArray(itemType.toJson());
+    public JsonNode toJson() {
+        return JacksonUtils.createArray(itemType.toJson());
     }
 
     @Override

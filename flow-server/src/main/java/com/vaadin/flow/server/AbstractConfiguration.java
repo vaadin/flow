@@ -52,8 +52,7 @@ public interface AbstractConfiguration extends Serializable {
             frontend = new File(getProjectFolder(), frontendFolderPath);
         }
 
-        return FrontendUtils.getLegacyFrontendFolderIfExists(getProjectFolder(),
-                frontend);
+        return FrontendUtils.getFrontendFolder(getProjectFolder(), frontend);
     }
 
     /**

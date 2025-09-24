@@ -18,7 +18,7 @@ package com.vaadin.flow.data.provider;
 import java.io.Serializable;
 import java.util.List;
 
-import elemental.json.JsonValue;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Array update strategy aware class.
@@ -55,7 +55,7 @@ public interface ArrayUpdater extends Serializable {
          * @param items
          *            the items to set
          */
-        void set(int start, List<JsonValue> items);
+        void set(int start, List<JsonNode> items);
 
         /**
          * Commits changes for the given {@code updateId}.

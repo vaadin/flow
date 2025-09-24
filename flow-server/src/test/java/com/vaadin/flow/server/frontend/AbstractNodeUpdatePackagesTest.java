@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -829,8 +829,8 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertFalse(deps.has(DEP_NAME_FLOW_JARS));
         // No old package hash
         Assert.assertFalse(deps.has(VAADIN_APP_PACKAGE_HASH));
-        // Contains initially generated default polymer dep
-        Assert.assertTrue(deps.has("@polymer/polymer"));
+        // No initially generated default polymer dep
+        Assert.assertFalse(deps.has("@polymer/polymer"));
         // Contains new hash
         Assert.assertTrue(packJsonNode.get("vaadin").has("hash"));
     }

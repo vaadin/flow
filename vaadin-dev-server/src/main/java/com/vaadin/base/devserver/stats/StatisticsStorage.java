@@ -21,7 +21,8 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.server.Command;
 
 import org.slf4j.Logger;
@@ -168,7 +169,7 @@ public class StatisticsStorage {
             getUsageStatisticsFile().getParentFile().mkdirs();
             JsonHelpers.getJsonMapper().writeValue(getUsageStatisticsFile(),
                     json);
-        } catch (IOException e) {
+        } catch (JacksonException e) {
             getLogger().debug("Failed to write json", e);
         }
     }

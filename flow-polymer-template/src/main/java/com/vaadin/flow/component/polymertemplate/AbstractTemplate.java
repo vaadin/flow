@@ -19,9 +19,11 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import tools.jackson.databind.node.ArrayNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.templatemodel.BeanModelType;
@@ -30,9 +32,6 @@ import com.vaadin.flow.templatemodel.ModelDescriptor;
 import com.vaadin.flow.templatemodel.ModelType;
 import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.flow.templatemodel.TemplateModelProxyHandler;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 /**
  * @author Vaadin Ltd
@@ -259,15 +258,13 @@ public abstract class AbstractTemplate<M extends TemplateModel>
                                 filterUnsetProperties(propertyNames))));
     }
 
-    private JsonArray filterUnsetProperties(List<String> properties) {
-        JsonArray array = Json.createArray();
+    private ArrayNode filterUnsetProperties(List<String> properties) {
+        ArrayNode array = JacksonUtils.createArrayNode();
         ElementPropertyMap map = getStateNode()
                 .getFeature(ElementPropertyMap.class);
-        int i = 0;
         for (String property : properties) {
             if (!map.hasProperty(property)) {
-                array.set(i, property);
-                i++;
+                array.add(property);
             }
         }
         return array;
@@ -276,14 +273,12 @@ public abstract class AbstractTemplate<M extends TemplateModel>
     /*
      * Keep only properties with getter.
      */
-    private JsonArray filterUpdatableProperties(
+    private ArrayNode filterUpdatableProperties(
             Map<String, Boolean> allowedProperties) {
-        JsonArray array = Json.createArray();
-        int i = 0;
+        ArrayNode array = JacksonUtils.createArrayNode();
         for (Entry<String, Boolean> entry : allowedProperties.entrySet()) {
             if (entry.getValue()) {
-                array.set(i, entry.getKey());
-                i++;
+                array.add(entry.getKey());
             }
         }
         return array;

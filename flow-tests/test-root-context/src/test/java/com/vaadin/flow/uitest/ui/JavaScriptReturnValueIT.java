@@ -102,8 +102,8 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         case "null":
             return prefix;
         case "error-value":
-            // JreJsonObject.asString()
-            return prefix + "[object Object]";
+            // ObjectNode.asText()
+            return prefix;
         default:
             throw new IllegalArgumentException(
                     "Unsupported value type: " + value);

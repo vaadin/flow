@@ -31,8 +31,8 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.hamcrest.MatcherAssert;
 import org.junit.After;
@@ -67,9 +67,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.router.internal.RouteModelTest.parameters;
 import static com.vaadin.flow.router.internal.RouteModelTest.varargs;
@@ -1842,7 +1839,6 @@ public class RouterTest extends RoutingTestBase {
         super.init();
         ui = new RouterTestMockUI(router);
         ui.getSession().lock();
-        ui.getSession().setConfiguration(configuration);
 
         VaadinService.setCurrent(service);
 

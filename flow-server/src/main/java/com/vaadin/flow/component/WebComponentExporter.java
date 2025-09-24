@@ -26,8 +26,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.webcomponent.PropertyConfiguration;
 import com.vaadin.flow.component.webcomponent.WebComponent;
@@ -40,9 +40,6 @@ import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.UnsupportedPropertyTypeException;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Exports a {@link Component} as a web component.
@@ -93,9 +90,8 @@ public abstract class WebComponentExporter<C extends Component>
         implements Serializable {
 
     private static final List<Class> SUPPORTED_TYPES = Collections
-            .unmodifiableList(
-                    Arrays.asList(Boolean.class, String.class, Integer.class,
-                            Double.class, JsonValue.class, JsonNode.class));
+            .unmodifiableList(Arrays.asList(Boolean.class, String.class,
+                    Integer.class, Double.class, BaseJsonNode.class));
 
     private final String tag;
     private HashMap<String, PropertyConfigurationImpl<C, ? extends Serializable>> propertyConfigurationMap = new HashMap<>();
@@ -249,26 +245,6 @@ public abstract class WebComponentExporter<C extends Component>
      *            default value of property.
      * @return fluent {@code PropertyConfiguration} for configuring the property
      */
-    @Deprecated
-    public final PropertyConfiguration<C, JsonValue> addProperty(String name,
-            JsonValue defaultValue) {
-        return addProperty(name, JsonValue.class, defaultValue);
-    }
-
-    /**
-     * Add an {@code JsonValue} property to the exported web component
-     * identified by {@code name}.
-     *
-     * @param name
-     *            name of the property. While all formats are allowed, names in
-     *            camelCase will be converted to dash-separated form, when
-     *            property update events are generated, using form
-     *            "property-name-changed", if the property is called
-     *            "propertyName"
-     * @param defaultValue
-     *            default value of property.
-     * @return fluent {@code PropertyConfiguration} for configuring the property
-     */
     public final PropertyConfiguration<C, BaseJsonNode> addProperty(String name,
             BaseJsonNode defaultValue) {
         return addProperty(name, BaseJsonNode.class, defaultValue);
@@ -361,14 +337,6 @@ public abstract class WebComponentExporter<C extends Component>
             return immutablePropertyMap.values().stream()
                     .map(PropertyConfigurationImpl::getPropertyData)
                     .collect(Collectors.toSet());
-        }
-
-        @Override
-        public WebComponentBinding<C> createWebComponentBinding(
-                Instantiator instantiator, Element element,
-                JsonObject newAttributeDefaults) {
-            return createWebComponentBinding(instantiator, element,
-                    JacksonUtils.mapElemental(newAttributeDefaults));
         }
 
         @Override

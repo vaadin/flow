@@ -47,7 +47,15 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     private void checkForBrowserErrors() {
         checkLogsForErrors(msg -> msg.contains(
-                "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
+                "/private - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "/admin?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "/private?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "restricted/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
                 || msg.contains(
                         "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
                 || (msg.contains("X-Atmosphere-Transport=close")
@@ -94,8 +102,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     protected void login(String username, String password) {
         assertLoginViewShown();
 
-        LoginFormElement form = $(LoginOverlayElement.class).first()
-                .getLoginForm();
+        LoginOverlayElement form = $(LoginOverlayElement.class).first();
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();

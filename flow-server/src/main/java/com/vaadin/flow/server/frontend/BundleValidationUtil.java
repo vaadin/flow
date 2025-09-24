@@ -17,9 +17,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -232,6 +232,17 @@ public final class BundleValidationUtil {
         // removing it from hashes map to prevent other unnecessary checks
         ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY))
                 .remove(FrontendUtils.INDEX_HTML);
+
+        if (isCommercialBannerConditionChanged(options, statsJson)) {
+            UsageStatistics.markAsUsed(
+                    "flow/rebundle-reason-commercial-banner-condition-changed",
+                    null);
+            return true;
+        }
+        // commercial banner file hash has already been checked, if needed.
+        // removing it from hashes map to prevent other unnecessary checks
+        ((ObjectNode) statsJson.get(FRONTEND_HASHES_STATS_KEY)).remove(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS);
 
         if (!BundleValidationUtil.frontendImportsFound(statsJson, options,
                 frontendDependencies)) {
@@ -749,6 +760,44 @@ public final class BundleValidationUtil {
                 return true;
             } else if (!file.exists() && frontendHashes.has(indexFile)) {
                 getLogger().info("Detected deleted {} file", indexFile);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isCommercialBannerConditionChanged(Options options,
+            JsonNode statsJson) throws IOException {
+        final JsonNode frontendHashes = statsJson
+                .get(FRONTEND_HASHES_STATS_KEY);
+        boolean commercialBannerRequested = options.isCommercialBannerEnabled();
+        String commercialBannerPath = FrontendUtils.GENERATED
+                + FrontendUtils.COMMERCIAL_BANNER_JS;
+        boolean hasCommercialBannerHash = frontendHashes
+                .has(commercialBannerPath);
+        if (!commercialBannerRequested && hasCommercialBannerHash) {
+            getLogger().info(
+                    "Detected commercial banner file but commercial banner is not enabled");
+            return true;
+        }
+        if (!options.isProductionMode() && hasCommercialBannerHash) {
+            getLogger().info(
+                    "Detected commercial banner file but commercial banner is not applied in development bundle");
+            return true;
+        }
+        if (commercialBannerRequested && options.isProductionMode()) {
+            if (!hasCommercialBannerHash) {
+                getLogger().info("Detected missing commercial banner file");
+                return true;
+            }
+
+            List<String> faultyContent = new ArrayList<>();
+            compareFrontendHashes(frontendHashes, faultyContent,
+                    commercialBannerPath,
+                    new TaskGenerateCommercialBanner(options).getFileContent());
+            if (!faultyContent.isEmpty()) {
+                getLogger().info(
+                        "Detected changed content for commercial banner file");
                 return true;
             }
         }

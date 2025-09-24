@@ -19,8 +19,9 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.POJONode;
+import com.vaadin.signals.AbstractSignal;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.POJONode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal;
@@ -32,20 +33,23 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * A signal with a value that is computed based on the value of other signals.
  * The signal value will be lazily re-computed when needed after the value has
  * changed for any of the signals that were used when computing the previous
- * value. An {@link Signal#effect(Runnable) effect} or computed signal that uses
- * the value from a computed signal will not be invalidated if the computation
- * is run again but produces the same value as before.
+ * value. If the computation callback throws a {@link RuntimeException}, then
+ * that exception will be re-thrown when accessing the value of this signal. An
+ * {@link Signal#effect(Runnable) effect} or computed signal that uses the value
+ * from a computed signal will not be invalidated if the computation is run
+ * again but produces the same value as before.
  *
  * @param <T>
  *            the value type
  */
-public class ComputedSignal<T> extends Signal<T> {
+public class ComputedSignal<T> extends AbstractSignal<T> {
 
     /*
      * This state is never supposed to be synchronized across a cluster or to
      * Hilla clients.
      */
-    private record ComputedState(Object value, Usage dependencies) {
+    private record ComputedState(Object value, RuntimeException exception,
+            Usage dependencies) {
     }
 
     private final Supplier<T> computation;
@@ -91,7 +95,7 @@ public class ComputedSignal<T> extends Signal<T> {
         ComputedState state = getValidState(data(Transaction.getCurrent()));
 
         // Listen to the new dependencies
-        dependencyRegistration = state.dependencies.onNextChange(() -> {
+        dependencyRegistration = state.dependencies.onNextChange(immediate -> {
             revalidateAndListen();
             return false;
         });
@@ -151,8 +155,8 @@ public class ComputedSignal<T> extends Signal<T> {
             public Runnable onNextChange(TransientListener listener) {
                 Runnable uncount = countActiveExternalListener();
 
-                Runnable superCleanup = superUsage.onNextChange(() -> {
-                    boolean listenToNext = listener.invoke();
+                Runnable superCleanup = superUsage.onNextChange(immediate -> {
+                    boolean listenToNext = listener.invoke(immediate);
                     if (!listenToNext) {
                         uncount.run();
                     }
@@ -171,12 +175,18 @@ public class ComputedSignal<T> extends Signal<T> {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
-            Object[] holder = new Object[1];
-            Usage dependencies = UsageTracker
-                    .track(() -> holder[0] = computation.get());
+            Object[] holder = new Object[2];
+            Usage dependencies = UsageTracker.track(() -> {
+                try {
+                    holder[0] = computation.get();
+                } catch (RuntimeException e) {
+                    holder[1] = e;
+                }
+            });
             Object value = holder[0];
+            RuntimeException exception = (RuntimeException) holder[1];
 
-            state = new ComputedState(value, dependencies);
+            state = new ComputedState(value, exception, dependencies);
 
             submit(new SignalCommand.SetCommand(Id.random(), id(),
                     new POJONode(state)));
@@ -206,6 +216,10 @@ public class ComputedSignal<T> extends Signal<T> {
     @Override
     protected T extractValue(Data data) {
         ComputedState state = getValidState(data);
+
+        if (state.exception != null) {
+            throw state.exception;
+        }
 
         @SuppressWarnings("unchecked")
         T value = (T) state.value;

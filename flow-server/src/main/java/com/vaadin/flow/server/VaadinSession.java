@@ -84,11 +84,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Configuration for the session.
-     */
-    private DeploymentConfiguration configuration;
-
-    /**
      * Default locale of the session.
      */
     private Locale locale = Locale.getDefault();
@@ -350,38 +345,14 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
-     * @deprecated with no replacement. There should only be one
-     *             DeploymentConfiguration per VaadinService, no
-     *             VaadinSession-specific instances.
-     */
-    @Deprecated(since = "24.8", forRemoval = true)
-    public void setConfiguration(DeploymentConfiguration configuration) {
-        checkHasLock();
-        if (configuration == null) {
-            throw new IllegalArgumentException("Can not set to null");
-        }
-        checkSetConfiguration();
-        this.configuration = configuration;
-
-        sessionLockCheckStrategy = configuration.isProductionMode()
-                ? configuration.getSessionLockCheckStrategy()
-                : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-    }
-
-    protected void checkSetConfiguration() {
-        assert this.configuration == null
-                : "Configuration can only be set once";
-    }
-
-    /**
-     * Gets the configuration for this session.
+     * Gets the configuration for this session. Delegates the call to
+     * {@link VaadinService#getDeploymentConfiguration()}.
      *
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
         checkHasLock();
-        return configuration;
+        return service.getDeploymentConfiguration();
     }
 
     /**

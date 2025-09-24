@@ -18,12 +18,13 @@ package com.vaadin.signals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 public class IdTest {
     @Test
@@ -33,7 +34,7 @@ public class IdTest {
     }
 
     @Test
-    void basicJsonSerialization() throws JsonProcessingException {
+    void basicJsonSerialization() throws JacksonException {
         ObjectMapper mapper = new ObjectMapper();
 
         Id id = new Id(4600806552848092835l);
@@ -47,7 +48,7 @@ public class IdTest {
     }
 
     @Test
-    void zeroId_compactJson() throws JsonProcessingException {
+    void zeroId_compactJson() throws JacksonException {
         ObjectMapper mapper = new ObjectMapper();
 
         String jsonString = mapper.writeValueAsString(Id.ZERO);

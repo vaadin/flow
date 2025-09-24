@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.security;
 
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -76,8 +77,8 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
 /**
  * Provides basic Vaadin component-based security configuration for the project.
  * <p>
- * Sets up security rules for a Vaadin application and restricts all URLs except
- * for public resources and internal Vaadin URLs to authenticated user.
+ * Sets up security rules for a Vaadin application and fully restricts all URLs
+ * except for public resources and internal Vaadin URLs.
  * <p>
  * The default behavior can be altered by extending the public/protected methods
  * in the class.
@@ -99,7 +100,29 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  * }
  * </code>
  * </pre>
+ *
+ * @deprecated Use {@link VaadinSecurityConfigurer} instead. It follows the
+ *             Spring's SecurityConfigurer pattern and we recommend use it to
+ *             configure Spring Security with Vaadin:
+ *
+ *             <pre>
+ * <code>&#64;Configuration
+ * &#64;EnableWebSecurity
+ * &#64;Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
+ * public class SecurityConfig {
+ *     &#64;Bean
+ *     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+ *         return http.with(VaadinSecurityConfigurer.vaadin(), configurer -> {}).build();
+ *     }
+ * }
+ * </code>
+ *             </pre>
+ *
+ *             Read more details in <a href=
+ *             "https://vaadin.com/docs/latest/flow/security/vaadin-security-configurer">Security
+ *             Configurer documentation.</a>
  */
+@Deprecated(since = "24.9", forRemoval = true)
 @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
@@ -206,12 +229,14 @@ public abstract class VaadinWebSecurity {
             // Flow pages and/or login page implemented using Flow.
             urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
                     .permitAll();
-            // Public endpoints are OK to access
-            urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
-                    .permitAll();
-            // Checks for known Hilla views
-            urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
-                    .permitAll();
+            if (EndpointRequestUtil.isHillaAvailable()) {
+                // Public endpoints are OK to access
+                urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
+                        .permitAll();
+                // Checks for known Hilla views
+                urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
+                        .permitAll();
+            }
             // Public routes are OK to access
             urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
                     .permitAll();
@@ -223,9 +248,16 @@ public abstract class VaadinWebSecurity {
             // matcher for custom PWA icons and favicon
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
+            if (EndpointRequestUtil.isHillaAvailable()) {
+                // Authenticated endpoints
+                urlRegistry.requestMatchers(requestUtil::isEndpointRequest)
+                        .authenticated();
+            }
+            // private routes require authentication
+            urlRegistry.requestMatchers(requestUtil::isSecuredFlowRoute)
+                    .authenticated();
 
-            // all other requests require authentication
-            urlRegistry.anyRequest().authenticated();
+            // all other requests are denied
         });
 
         accessControl.setEnabled(enableNavigationAccessControl());

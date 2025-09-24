@@ -27,6 +27,7 @@ import com.vaadin.flow.data.binder.HasDataProvider;
 import com.vaadin.flow.data.binder.HasFilterableDataProvider;
 import com.vaadin.flow.data.provider.CallbackDataProvider.CountCallback;
 import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
+import com.vaadin.flow.data.provider.hierarchy.HierarchicalDataProvider.HierarchyFormat;
 import com.vaadin.flow.function.SerializableBiFunction;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
@@ -109,39 +110,23 @@ public interface DataProvider<T, F> extends Serializable {
     void refreshItem(T item);
 
     /**
-     * Refreshes the given item and all of the children of the item as well.
-     *
-     * @see #refreshItem(Object)
-     *
-     *      By default it just does a standard refreshItem, in a hierarchical
-     *      DataProvider it is supposed to refresh all of the children as well
-     *      in case 'refreshChildren' is true.
+     * Refreshes the given item and its children when {@code refreshChildren} is
+     * true.
+     * <p>
+     * This method will reset the item's cached hierarchy which can cause a
+     * content shift if the item also contains <i>expanded</i> children: their
+     * descendants aren't guaranteed to be re-fetched eagerly if they aren't
+     * visible, which may affect the overall size of the rendered hierarchy,
+     * leading to content shifts.
+     * <p>
+     * This method is only supported for hierarchical data providers that use
+     * {@link HierarchyFormat#NESTED}.
      *
      * @param item
      *            the item to refresh
      * @param refreshChildren
      *            whether or not to refresh child items
-     * @deprecated since 24.9 and will be removed in Vaadin 25. Use
-     *             {@link #refreshAll()} instead after changes that affect the
-     *             hierarchy.
-     *             <p>
-     *             Note that while {@code refreshAll} clears all items from the
-     *             cache, it then aims to only reload those that are in the
-     *             viewport. It does not trigger eager loading of the full
-     *             dataset, which makes it an acceptable replacement in terms of
-     *             performance.
-     *             <p>
-     *             In Vaadin 25, {@code refreshAll} will receive an update that
-     *             prevents unexpected scroll jumps when used with new flat data
-     *             providers, see https://github.com/vaadin/platform/issues/7843
-     *             for more details.
-     *             <p>
-     *             However, a similar effect to
-     *             {@link #refreshItem(Object, boolean)} will still be
-     *             reproducible by collapsing and expanding an item within the
-     *             same round-trip.
      */
-    @Deprecated(since = "24.9", forRemoval = true)
     default void refreshItem(T item, boolean refreshChildren) {
         refreshItem(item);
     }

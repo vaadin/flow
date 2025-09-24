@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
@@ -111,7 +111,9 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_includesAllDependencies() {
+    public void getDefaultDependencies_withPolymerTemplate_includesAllDependencies() {
+        fakePolymerTemplateInClasspath();
+
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
@@ -128,28 +130,19 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void react19UsedWhenFeatureFlagIsOn() {
-        Map<String, String> react18Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react18DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-        Mockito.when(options.getFeatureFlags().isEnabled(FeatureFlags.REACT19))
-                .thenReturn(true);
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("construct-style-sheets-polyfill");
+        expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router");
 
-        Map<String, String> react19Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react19DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
+        Set<String> actualDependendencies = defaultDeps.keySet();
 
-        Assert.assertTrue(react18Deps.get("react").startsWith("18."));
-        Assert.assertTrue(react18Deps.get("react-dom").startsWith("18."));
-        Assert.assertTrue(react18DevDeps.get("@types/react").startsWith("18."));
-        Assert.assertTrue(
-                react18DevDeps.get("@types/react-dom").startsWith("18."));
-
-        Assert.assertTrue(react19Deps.get("react").startsWith("19."));
-        Assert.assertTrue(react19Deps.get("react-dom").startsWith("19."));
-        Assert.assertTrue(react19DevDeps.get("@types/react").startsWith("19."));
-        Assert.assertTrue(
-                react19DevDeps.get("@types/react-dom").startsWith("19."));
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
     }
 
     @Test
@@ -186,12 +179,12 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-core");
         expectedDependencies.add("workbox-precaching");
         expectedDependencies.add("glob");
-        expectedDependencies.add("async");
         return expectedDependencies;
     }
 
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
@@ -216,6 +209,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void updateMainDefaultDependencies_vaadinIsProvidedByUser_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
 
         ObjectNode vaadin = JacksonUtils.createObjectNode();
@@ -764,6 +758,16 @@ public class NodeUpdaterTest {
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
+    }
+
+    private void fakePolymerTemplateInClasspath() {
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        try {
+            Mockito.doReturn(clazz).when(finder).loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ObjectNode getMockVaadinCoreVersionsJson() {
