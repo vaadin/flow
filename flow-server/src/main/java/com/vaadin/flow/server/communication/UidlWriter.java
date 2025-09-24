@@ -236,8 +236,8 @@ public class UidlWriter implements Serializable {
         }
 
         if (!pendingSendToClient.isEmpty()) {
-            groupDependenciesByLoadMode(pendingSendToClient, context,
-                    dependencyList).forEach((loadMode, dependencies) -> {
+            groupDependenciesByLoadMode(pendingSendToClient, context)
+                    .forEach((loadMode, dependencies) -> {
                         try {
                             response.set(loadMode.name(),
                                     JacksonUtils.getMapper()
@@ -256,25 +256,13 @@ public class UidlWriter implements Serializable {
         dependencies
                 .forEach(dependency -> result.merge(dependency.getLoadMode(),
                         JacksonUtils.createArray(
-                                dependencyToJson(dependency, context, null)),
-                        JacksonUtils.asArray().combiner()));
-        return result;
-    }
-
-    private static Map<LoadMode, ArrayNode> groupDependenciesByLoadMode(
-            Collection<Dependency> dependencies, ResolveContext context,
-            DependencyList dependencyList) {
-        Map<LoadMode, ArrayNode> result = new EnumMap<>(LoadMode.class);
-        dependencies
-                .forEach(dependency -> result.merge(dependency.getLoadMode(),
-                        JacksonUtils.createArray(dependencyToJson(dependency,
-                                context, dependencyList)),
+                                dependencyToJson(dependency, context)),
                         JacksonUtils.asArray().combiner()));
         return result;
     }
 
     private static ObjectNode dependencyToJson(Dependency dependency,
-            ResolveContext context, DependencyList dependencyList) {
+            ResolveContext context) {
         ObjectNode dependencyJson = JacksonUtils
                 .mapElemental(dependency.toJson());
         if (dependency.getLoadMode() == LoadMode.INLINE) {
