@@ -8,15 +8,17 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
-import org.junit.After;
-import org.junit.Assert;
-import org.openqa.selenium.WebDriver;
-
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.flow.spring.test.AbstractSpringTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.junit.After;
+import org.junit.Assert;
+import org.openqa.selenium.TimeoutException;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.interactions.Actions;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public abstract class AbstractIT extends AbstractSpringTest {
 
@@ -131,20 +133,29 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertPathShown(String path) {
         waitForClientRouter();
-        waitUntil(driver -> {
-            String url = driver.getCurrentUrl();
-            if (!url.startsWith(getRootURL())) {
-                throw new IllegalStateException("URL should start with "
-                        + getRootURL() + " but is " + url);
-            }
-            // HttpSessionRequestCache uses request parameter "continue",
-            // see HttpSessionRequestCache::setMatchingRequestParameterName
-            if (url.endsWith("continue")) {
-                url = url.substring(0, url.length() - 9);
-            }
-            return url.equals(
-                    getRootURL() + getUrlMappingBasePath() + "/" + path);
-        });
+        AtomicReference<String> urlRef = new AtomicReference<>();
+        try {
+            waitUntil(driver -> {
+                String url = driver.getCurrentUrl();
+                if (!url.startsWith(getRootURL())) {
+                    throw new IllegalStateException("URL should start with "
+                            + getRootURL() + " but is " + url);
+                }
+                // HttpSessionRequestCache uses request parameter "continue",
+                // see HttpSessionRequestCache::setMatchingRequestParameterName
+                urlRef.set(url);
+                if (url.endsWith("continue")) {
+                    url = url.substring(0, url.length() - 9);
+                }
+                return url.equals(
+                        getRootURL() + getUrlMappingBasePath() + "/" + path);
+            });
+        } catch (TimeoutException ex) {
+            System.out.println(
+                    "===================================== current url:"
+                            + urlRef.get());
+            throw ex;
+        }
     }
 
     protected void assertResourceShown(String path) {
