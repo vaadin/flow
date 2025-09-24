@@ -23,7 +23,7 @@ import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.internal.StateNode;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
 

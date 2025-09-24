@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -95,7 +95,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     protected void assertArrayUpdateItems(String property, String... expected) {
         Assert.assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().values().stream()
-                        .map((item) -> item.get(property).asText()).toList());
+                        .map((item) -> item.get(property).asString()).toList());
     }
 
     /**
@@ -110,7 +110,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
                 .stream().collect(Collectors.toMap(//
                         (entry) -> entry.getKey(),
-                        (entry) -> entry.getValue().get(property).asText())));
+                        (entry) -> entry.getValue().get(property).asString())));
     }
 
     protected void assertArrayUpdateRange(int start, int length) {
@@ -128,7 +128,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     }
 
     protected void assertArrayUpdateSize(int size) {
-        Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
+        Mockito.verify(arrayUpdater).startUpdate(size);
     }
 
     @SuppressWarnings("unchecked")

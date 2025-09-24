@@ -85,14 +85,13 @@
         <failOnMissingWebXml>false</failOnMissingWebXml>
 
         <!-- Dependencies -->
-        <spring.boot.version>4.0.0-M2</spring.boot.version>
+        <spring.boot.version>4.0.0-M3</spring.boot.version>
         <jakarta.ee.version>11.0.0</jakarta.ee.version>
         <gwt.version>2.9.0</gwt.version>
         <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
         <slf4j.version>2.0.17</slf4j.version>
         <polymer.version>2.6.1</polymer.version>
-        <jackson.version>2.20.0</jackson.version>
-        <jackson.databind.version>${jackson.version}</jackson.databind.version>
+        <jackson.version>3.0.0-rc10</jackson.version>
         <jaxb.version>4.0.5</jaxb.version>
         <guava.version>33.5.0-jre</guava.version>
         <javassist.version>3.30.2-GA</javassist.version>
@@ -195,6 +194,13 @@
     <dependencyManagement>
         <dependencies>
             <dependency>
+                <groupId>tools.jackson</groupId>
+                <artifactId>jackson-bom</artifactId>
+                <version>${jackson.version}</version>  <!-- Use the latest version -->
+                <scope>import</scope>
+                <type>pom</type>
+            </dependency>
+            <dependency>
                 <groupId>jakarta.platform</groupId>
                 <artifactId>jakarta.jakartaee-bom</artifactId>
                 <version>${jakarta.ee.version}</version>
@@ -263,7 +269,7 @@
             <dependency>
                 <groupId>org.mockito</groupId>
                 <artifactId>mockito-core</artifactId>
-                <version>5.19.0</version>
+                <version>5.20.0</version>
             </dependency>
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -338,7 +344,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>3.14.1</version>
             </plugin>
 
             <plugin>
@@ -359,7 +365,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.11.3</version>
+                <version>3.12.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -670,7 +676,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>license-maven-plugin</artifactId>
-                    <version>2.6.0</version>
+                    <version>2.7.0</version>
                     <configuration>
                         <!-- Default is system -->
                         <excludedScopes>system,test</excludedScopes>
