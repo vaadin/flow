@@ -65,7 +65,7 @@ public class UIAccessContextIT extends AbstractIT {
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
         // Try to wait before pressing submit button
-        new Actions(getDriver()).pause(1000).perform();
+        new Actions(getDriver()).pause(100).perform();
         form.submit();
         waitUntilNot(driver -> ((WebDriver) adminContext.getContext())
                 .getCurrentUrl().contains("my/login/page"));
