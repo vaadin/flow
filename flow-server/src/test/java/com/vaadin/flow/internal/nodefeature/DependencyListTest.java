@@ -122,7 +122,7 @@ public class DependencyListTest {
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
 
-        JsonObject actualJson = dependency.toJson();
+        elemental.json.JsonObject actualJson = dependency.toJson();
         ObjectNode actualMapped = JacksonUtils.mapElemental(actualJson);
 
         // Remove the ID field from comparison since it's auto-generated for
