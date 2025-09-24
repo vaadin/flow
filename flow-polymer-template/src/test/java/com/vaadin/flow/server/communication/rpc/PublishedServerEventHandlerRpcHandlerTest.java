@@ -10,6 +10,9 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Properties;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -26,16 +29,12 @@ import com.vaadin.flow.component.polymertemplate.EventHandler;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.ServiceException;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 @NotThreadSafe
 public class PublishedServerEventHandlerRpcHandlerTest {
@@ -96,7 +95,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         private Double[] doubleArg;
         private Integer[] varArg;
         private int[][] doubleArray;
-        private JsonValue jsonValue;
+        private JsonNode jsonValue;
 
         @Override
         @EventHandler
@@ -129,7 +128,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         }
 
         @EventHandler
-        protected void method4(@EventData("foo") JsonValue value) {
+        protected void method4(@EventData("foo") JsonNode value) {
             jsonValue = value;
         }
     }
@@ -202,7 +201,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void methodIsInvoked() {
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "method", Json.createArray(), -1);
+                component.getClass(), "method", JacksonUtils.createArrayNode(),
+                -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -212,7 +212,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         CompositeOfComponentWithMethod composite = new CompositeOfComponentWithMethod();
         ComponentWithMethod component = composite.getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
-                composite.getClass(), "method", Json.createArray(), -1);
+                composite.getClass(), "method", JacksonUtils.createArrayNode(),
+                -1);
 
         Assert.assertTrue(component.isInvoked);
     }
@@ -222,15 +223,16 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         CompositeOfComposite composite = new CompositeOfComposite();
         ComponentWithMethod component = composite.getContent().getContent();
         PublishedServerEventHandlerRpcHandler.invokeMethod(composite,
-                composite.getClass(), "method", Json.createArray(), -1);
+                composite.getClass(), "method", JacksonUtils.createArrayNode(),
+                -1);
 
         Assert.assertTrue(component.isInvoked);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void methodWithoutArgs_argsProvided() {
-        JsonArray args = Json.createArray();
-        args.set(0, true);
+        ArrayNode args = JacksonUtils.createArrayNode();
+        args.add(true);
         ComponentWithMethod component = new ComponentWithMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method", args, -1);
@@ -240,20 +242,22 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void twoEventHandlerMethodsWithTheSameName() {
         ComponentWithTwoEventHandlerMethodSameName component = new ComponentWithTwoEventHandlerMethodSameName();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray(), -1);
+                component.getClass(), "intMethod",
+                JacksonUtils.createArrayNode(), -1);
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void methodWithParametersInvokedWithoutParameters() {
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", Json.createArray(), -1);
+                component.getClass(), "intMethod",
+                JacksonUtils.createArrayNode(), -1);
     }
 
     @Test
     public void methodWithParameterInvokedWithProperParameter() {
-        JsonArray array = Json.createArray();
-        array.set(0, 65);
+        ArrayNode array = JacksonUtils.createArrayNode();
+        array.add(65);
 
         MethodWithParameters component = new MethodWithParameters();
 
@@ -267,12 +271,12 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithArrayParamIsInvoked() {
-        JsonArray array = Json.createArray();
-        array.set(0, "foo");
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, true);
-        secondArg.set(1, false);
-        array.set(1, secondArg);
+        ArrayNode array = JacksonUtils.createArrayNode();
+        array.add("foo");
+        ArrayNode secondArg = JacksonUtils.createArrayNode();
+        secondArg.add(true);
+        secondArg.add(false);
+        array.add(secondArg);
         MethodWithParameters component = new MethodWithParameters();
         attachComponent(component);
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
@@ -285,24 +289,23 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithVarArgIsInvoked_varArgsAreNotArray() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 3.1d);
-        firstArg.set(1, 65.57d);
+        ArrayNode firstArg = JacksonUtils.createArrayNode();
+        firstArg.add(3.1d);
+        firstArg.add(65.57d);
 
-        array.set(0, firstArg);
+        array.add(firstArg);
 
-        array.set(1, Json.createNull());
-        array.set(2, 56);
+        array.add(JacksonUtils.nullNode());
+        array.add(56);
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(
-                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
-                component.doubleArg);
+        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
+                firstArg.get(1).doubleValue() }, component.doubleArg);
 
         Assert.assertNotNull(component.varArg);
         Assert.assertNull(component.varArg[0]);
@@ -312,42 +315,43 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithDoubleArrayIsInvoked() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonArray arg = Json.createArray();
+        ArrayNode arg = JacksonUtils.createArrayNode();
 
-        JsonArray first = Json.createArray();
-        first.set(0, 1);
-        first.set(1, 2);
+        ArrayNode first = JacksonUtils.createArrayNode();
+        first.add(1);
+        first.add(2);
 
-        arg.set(0, first);
+        arg.add(first);
 
-        JsonArray second = Json.createArray();
-        second.set(0, 3);
-        second.set(1, 4);
+        ArrayNode second = JacksonUtils.createArrayNode();
+        second.add(3);
+        second.add(4);
 
-        arg.set(1, second);
+        arg.add(second);
 
-        array.set(0, arg);
+        array.add(arg);
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method3", array, -1);
 
-        Assert.assertArrayEquals(new int[] { (int) first.getNumber(0),
-                (int) first.getNumber(1) }, component.doubleArray[0]);
+        Assert.assertArrayEquals(
+                new int[] { first.get(0).intValue(), first.get(1).intValue() },
+                component.doubleArray[0]);
 
-        Assert.assertArrayEquals(new int[] { (int) second.getNumber(0),
-                (int) second.getNumber(1) }, component.doubleArray[1]);
+        Assert.assertArrayEquals(new int[] { second.get(0).intValue(),
+                second.get(1).intValue() }, component.doubleArray[1]);
     }
 
     @Test
     public void methodWithJsonValueIsInvoked() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("foo", "bar");
-        array.set(0, json);
+        array.add(json);
 
         MethodWithParameters component = new MethodWithParameters();
         attachComponent(component);
@@ -359,36 +363,35 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithVarArgIsInvoked_varArgsIsArray() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 5.6d);
-        firstArg.set(1, 78.36d);
+        ArrayNode firstArg = JacksonUtils.createArrayNode();
+        firstArg.add(5.6d);
+        firstArg.add(78.36d);
 
-        array.set(0, firstArg);
+        array.add(firstArg);
 
-        JsonArray secondArg = Json.createArray();
-        secondArg.set(0, 5);
-        secondArg.set(1, Json.createNull());
-        secondArg.set(2, 2);
-        array.set(1, secondArg);
+        ArrayNode secondArg = JacksonUtils.createArrayNode();
+        secondArg.add(5);
+        secondArg.add(JacksonUtils.nullNode());
+        secondArg.add(2);
+        array.add(secondArg);
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(
-                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
-                component.doubleArg);
+        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
+                firstArg.get(1).doubleValue() }, component.doubleArg);
 
         Assert.assertNotNull(component.varArg);
-        Assert.assertArrayEquals(new Integer[] { (int) secondArg.getNumber(0),
-                null, (int) secondArg.getNumber(2) }, component.varArg);
+        Assert.assertArrayEquals(new Integer[] { secondArg.get(0).intValue(),
+                null, secondArg.get(2).intValue() }, component.varArg);
     }
 
     @Test
     public void methodWithVarArg_acceptNoValues() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
@@ -399,21 +402,20 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithSeveralArgsAndVarArg_acceptNoValues() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonArray firstArg = Json.createArray();
-        firstArg.set(0, 5.6d);
-        firstArg.set(1, 78.36d);
+        ArrayNode firstArg = JacksonUtils.createArrayNode();
+        firstArg.add(5.6d);
+        firstArg.add(78.36d);
 
-        array.set(0, firstArg);
+        array.add(firstArg);
 
         MethodWithParameters component = new MethodWithParameters();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "method2", array, -1);
 
-        Assert.assertArrayEquals(
-                new Double[] { firstArg.getNumber(0), firstArg.getNumber(1) },
-                component.doubleArg);
+        Assert.assertArrayEquals(new Double[] { firstArg.get(0).doubleValue(),
+                firstArg.get(1).doubleValue() }, component.doubleArg);
 
         Assert.assertNotNull(component.varArg);
         Assert.assertEquals(0, component.varArg.length);
@@ -421,9 +423,9 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithVarArg_acceptOneValue() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        array.set(0, "foo");
+        array.add("foo");
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
@@ -435,24 +437,24 @@ public class PublishedServerEventHandlerRpcHandlerTest {
 
     @Test
     public void methodWithVarArg_arrayIsCorrectlyHandled() {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
 
-        JsonArray value = Json.createArray();
-        value.set(0, "foo");
-        array.set(0, value);
+        ArrayNode value = JacksonUtils.createArrayNode();
+        value.add("foo");
+        array.add(value);
 
         MethodWithVarArgParameter component = new MethodWithVarArgParameter();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertArrayEquals(new String[] { value.getString(0) },
+        Assert.assertArrayEquals(new String[] { value.get(0).asText() },
                 component.varArg);
     }
 
     @Test
     public void nullValueAreAcceptedForPrimitive() {
-        JsonArray array = Json.createArray();
-        array.set(0, Json.createNull());
+        ArrayNode array = JacksonUtils.createArrayNode();
+        array.add(JacksonUtils.nullNode());
         MethodWithParameters component = new MethodWithParameters();
         component.intArg = -1;
         component.booleanArg = true;
@@ -471,14 +473,16 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     public void noEventHandlerMethodException() {
         ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation", Json.createArray(), -1);
+                component.getClass(), "operation",
+                JacksonUtils.createArrayNode(), -1);
     }
 
     @Test(expected = IllegalStateException.class)
     public void noMethodException() {
         ComponentWithNoEventHandlerMethod component = new ComponentWithNoEventHandlerMethod();
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "operation1", Json.createArray(), -1);
+                component.getClass(), "operation1",
+                JacksonUtils.createArrayNode(), -1);
     }
 
     @Test
@@ -486,7 +490,8 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         ComponentWithMethodThrowingException component = new ComponentWithMethodThrowingException();
         try {
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                    component.getClass(), "method", Json.createArray(), -1);
+                    component.getClass(), "method",
+                    JacksonUtils.createArrayNode(), -1);
         } catch (RuntimeException e) {
             Assert.assertTrue(e.getCause() instanceof NullPointerException);
         }
@@ -552,7 +557,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     private void requestInvokeMethod(Component component, String method) {
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME, method);
 
         new PublishedServerEventHandlerRpcHandler()

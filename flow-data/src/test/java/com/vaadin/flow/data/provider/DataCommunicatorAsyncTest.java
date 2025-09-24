@@ -11,6 +11,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +30,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
-import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
 public class DataCommunicatorAsyncTest {
@@ -121,7 +121,7 @@ public class DataCommunicatorAsyncTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
                 lastSet = Range.withLength(start, items.size());
             }
 
@@ -141,7 +141,7 @@ public class DataCommunicatorAsyncTest {
         ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
     }
 
@@ -151,7 +151,7 @@ public class DataCommunicatorAsyncTest {
         ui.getPushConfiguration().setPushMode(PushMode.AUTOMATIC);
         dataCommunicator.setDataProvider(createDataProvider(), null);
         dataCommunicator.enablePushUpdates(executor);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertNotEquals("Expected initial reset not yet done.",

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -35,10 +34,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
-
-import elemental.json.JsonValue;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -78,10 +75,8 @@ public class Router implements Serializable {
      *            the location object of the route
      */
     public void initializeUI(UI ui, Location location) {
-        ui.getPage().getHistory()
-                .setHistoryStateChangeHandler(e -> navigate(ui, e.getLocation(),
-                        e.getTrigger(),
-                        JacksonUtils.mapElemental(e.getState().orElse(null))));
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
+                e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
 
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 

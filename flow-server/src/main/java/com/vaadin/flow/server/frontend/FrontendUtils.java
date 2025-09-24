@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,14 +37,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import jakarta.servlet.ServletContext;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -241,6 +241,8 @@ public class FrontendUtils {
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
+    public static final String COMMERCIAL_BANNER_JS = "commercial-banner.js";
+
     public static final String ROUTES_TS = "routes.ts";
 
     public static final String ROUTES_TSX = "routes.tsx";
@@ -258,8 +260,10 @@ public class FrontendUtils {
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
      * folder.
+     *
+     * NOTE: For internal use only.
      */
-    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
+    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.folder";
 
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
@@ -628,23 +632,45 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the legacy frontend folder if available and new folder doesn't exist.
+     * Returns frontend folder to use. Also checks possible legacy frontend
+     * folder configuration.
      *
      * @param projectRoot
      *            project's root directory
      * @param frontendDir
-     *            the frontend directory location from project's configuration
-     * @return correct folder or legacy folder if not user defined
+     *            the frontend directory from project's configuration or default
+     *            if not set
+     * @return frontend directory to use
      */
-    public static File getLegacyFrontendFolderIfExists(File projectRoot,
-            File frontendDir) {
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
+    public static File getFrontendFolder(File projectRoot, File frontendDir) {
+        File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
+
+        if (legacyDir.exists()) {
+            boolean configParamPointsToLegacyDir = legacyDir.toPath().toString()
+                    .replace("./", "").equals(frontendDir.toPath().toString());
+            if (configParamPointsToLegacyDir) {
+                if (new File(projectRoot, DEFAULT_FRONTEND_DIR).exists()) {
+                    getLogger().warn(
+                            "This project has both default ({}) frontend directory"
+                                    + " and legacy ({})- frontend directory present, and "
+                                    + "'frontendDirectory' parameter points to the legacy directory."
+                                    + "\n\nDefault frontend directory will be ignored.",
+                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
+                }
+                return frontendDir;
+            } else {
+                throw new RuntimeException(
+                        "This project has a legacy fronted directory ("
+                                + LEGACY_FRONTEND_DIR
+                                + ") frontend directory present, but no 'frontendDirectory' "
+                                + "configuration parameter set. "
+                                + "Please set the parameter or move the legacy directory contents "
+                                + "to the default frontend folder ("
+                                + DEFAULT_FRONTEND_DIR + ").");
             }
         }
+
+        // Legacy dir does not exist. Use default or custom-set dir.
         return frontendDir;
     }
 

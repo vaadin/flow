@@ -19,7 +19,7 @@ public class SignalUtils {
      *            the signal to get the tree of, not <code>null</code>
      * @return the signal tree instance, not <code>null</code>
      */
-    public static SignalTree treeOf(Signal<?> signal) {
+    public static SignalTree treeOf(AbstractSignal<?> signal) {
         return signal.tree();
     }
 
@@ -39,7 +39,8 @@ public class SignalUtils {
      * @return <code>true</code> if the command is valid, <code>false</code>
      *         otherwise
      */
-    public static boolean isValid(Signal<?> signal, SignalCommand command) {
+    public static boolean isValid(AbstractSignal<?> signal,
+            SignalCommand command) {
         return signal.isValid(command);
     }
 }

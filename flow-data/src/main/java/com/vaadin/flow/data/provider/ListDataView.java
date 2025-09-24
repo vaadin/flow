@@ -283,6 +283,26 @@ public interface ListDataView<T, V extends ListDataView<T, ?>>
     V removeItems(Collection<T> items);
 
     /**
+     * Remove all the items in the list and adds given items to the data list.
+     * <p>
+     * The backing {@link List} must be mutable to use this method. Immutable
+     * data structure will throw an exception.
+     * <p>
+     * Refreshes all items of the component after adding the items, i.e. runs
+     * {@link DataView#refreshAll()}.
+     *
+     * @throws UnsupportedOperationException
+     *             if backing collection doesn't support modification
+     * @param items
+     *            collection of items to set
+     * @return this ListDataView instance
+     * @see #addItems(Collection)
+     * @see #addItemsBefore(Collection, Object)
+     * @see #addItemsAfter(Collection, Object)
+     */
+    V setItems(Collection<T> items);
+
+    /**
      * Sets a filter to be applied to the data. The filter replaces any filter
      * that has been set or added previously. {@code null} will clear all
      * filters.

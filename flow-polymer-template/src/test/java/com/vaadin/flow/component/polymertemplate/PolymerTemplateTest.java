@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
@@ -54,8 +56,6 @@ import com.vaadin.flow.templatemodel.TemplateModel;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -964,9 +964,9 @@ public class PolymerTemplateTest extends HasCurrentService {
                 executionOrder.get(1));
 
         Serializable[] params = executionParams.get(1);
-        JsonArray properties = (JsonArray) params[1];
-        Assert.assertEquals(1, properties.length());
-        Assert.assertEquals("title", properties.get(0).asString());
+        ArrayNode properties = (ArrayNode) params[1];
+        Assert.assertEquals(1, properties.size());
+        Assert.assertEquals("title", properties.get(0).asText());
     }
 
     @Test
@@ -983,12 +983,12 @@ public class PolymerTemplateTest extends HasCurrentService {
                 executionOrder.get(0));
 
         Serializable[] params = executionParams.get(0);
-        JsonArray properties = (JsonArray) params[1];
-        Assert.assertEquals(2, properties.length());
+        ArrayNode properties = (ArrayNode) params[1];
+        Assert.assertEquals(2, properties.size());
 
         Set<String> props = new HashSet<>();
-        props.add(properties.get(0).asString());
-        props.add(properties.get(1).asString());
+        props.add(properties.get(0).asText());
+        props.add(properties.get(1).asText());
         // all model properties except 'list' which has no getter
         Assert.assertTrue(props.contains("message"));
         Assert.assertTrue(props.contains("title"));
@@ -1085,13 +1085,13 @@ public class PolymerTemplateTest extends HasCurrentService {
 
         VirtualChildrenList feature = template.getStateNode()
                 .getFeature(VirtualChildrenList.class);
-        JsonObject object = (JsonObject) feature.get(0)
+        JsonNode object = (JsonNode) feature.get(0)
                 .getFeature(ElementData.class).getPayload();
-        JsonArray path = object.getArray(NodeProperties.PAYLOAD);
+        ArrayNode path = (ArrayNode) object.get(NodeProperties.PAYLOAD);
 
         // check arrays of indices
-        assertEquals(1, path.length());
-        assertEquals(1, (int) path.get(0).asNumber());
+        assertEquals(1, path.size());
+        assertEquals(1, path.get(0).intValue());
     }
 
     private void doParseTemplate_hasChildTemplateOutsideDomRepeat_elementIsCreated(
@@ -1109,20 +1109,21 @@ public class PolymerTemplateTest extends HasCurrentService {
 
     private void assertElementData(StateNode node, String type,
             String payload) {
-        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
+        JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertEquals(type, object.getString(NodeProperties.TYPE));
-        Assert.assertEquals(payload, object.getString(NodeProperties.PAYLOAD));
+        Assert.assertEquals(type, object.get(NodeProperties.TYPE).asText());
+        Assert.assertEquals(payload,
+                object.get(NodeProperties.PAYLOAD).asText());
     }
 
     private void assertTemplateInTempalte(StateNode node) {
-        JsonObject object = (JsonObject) node.getFeature(ElementData.class)
+        JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
-                object.getString(NodeProperties.TYPE));
+                object.get(NodeProperties.TYPE).asText());
 
         Assert.assertTrue(
-                object.get(NodeProperties.PAYLOAD) instanceof JsonArray);
+                object.get(NodeProperties.PAYLOAD) instanceof ArrayNode);
     }
 
     private void assertTemplateInitialization(TemplateInitialization template) {

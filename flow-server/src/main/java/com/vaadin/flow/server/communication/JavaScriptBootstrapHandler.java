@@ -22,8 +22,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -278,19 +278,19 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         ObjectNode appConfig = context.getApplicationParameters();
 
-        appConfig.put("productionMode",
+        appConfig.set("productionMode",
                 JacksonUtils.createNode(productionMode));
         appConfig.put("appId", context.getAppId());
-        appConfig.put("uidl", getInitialUidl(context.getUI()));
-        initial.put("appConfig", appConfig);
+        appConfig.set("uidl", getInitialUidl(context.getUI()));
+        initial.set("appConfig", appConfig);
 
         if (context.getPushMode().isEnabled()) {
             initial.put("pushScript", getPushScript(context));
         }
         if (!session.getConfiguration().isProductionMode()) {
-            initial.put("stats", getStats());
+            initial.set("stats", getStats());
         }
-        initial.put("errors", getErrors(request.getService()));
+        initial.set("errors", getErrors(request.getService()));
 
         return initial;
     }

@@ -19,14 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import tools.jackson.databind.node.ObjectNode;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 
@@ -50,7 +49,7 @@ public class CompositeDataGeneratorTest {
         }
 
         @Override
-        public void generateData(String item, JsonObject jsonObject) {
+        public void generateData(String item, ObjectNode jsonObject) {
             jsonObject.put(jsonKey, jsonValue);
             processed.add(item);
         }
@@ -94,12 +93,12 @@ public class CompositeDataGeneratorTest {
         composite.addDataGenerator(mock2);
         composite.addDataGenerator(mock3);
 
-        JsonObject json = Json.createObject();
+        ObjectNode json = JacksonUtils.createObjectNode();
         composite.generateData("item1", json);
 
-        Assert.assertEquals("value1", json.getString("mock1"));
-        Assert.assertEquals("value2", json.getString("mock2"));
-        Assert.assertEquals("value3", json.getString("mock3"));
+        Assert.assertEquals("value1", json.get("mock1").asText());
+        Assert.assertEquals("value2", json.get("mock2").asText());
+        Assert.assertEquals("value3", json.get("mock3").asText());
         Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));
@@ -136,9 +135,9 @@ public class CompositeDataGeneratorTest {
         composite.addDataGenerator(mock2);
         composite.addDataGenerator(mock3);
 
-        composite.generateData("item1", Json.createObject());
+        composite.generateData("item1", JacksonUtils.createObjectNode());
         composite.refreshData("item1");
-        composite.generateData("item2", Json.createObject());
+        composite.generateData("item2", JacksonUtils.createObjectNode());
         composite.refreshData("item2");
         composite.destroyData("item1");
 
@@ -165,9 +164,9 @@ public class CompositeDataGeneratorTest {
         composite.addDataGenerator(mock2);
         composite.addDataGenerator(mock3);
 
-        composite.generateData("item1", Json.createObject());
+        composite.generateData("item1", JacksonUtils.createObjectNode());
         composite.refreshData("item1");
-        composite.generateData("item2", Json.createObject());
+        composite.generateData("item2", JacksonUtils.createObjectNode());
         composite.refreshData("item2");
         composite.destroyAllData();
 
@@ -185,7 +184,7 @@ public class CompositeDataGeneratorTest {
         Registration registration1 = composite.addDataGenerator(mock1);
         Registration registration2 = composite.addDataGenerator(mock2);
 
-        composite.generateData("item1", Json.createObject());
+        composite.generateData("item1", JacksonUtils.createObjectNode());
         Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
 
@@ -202,9 +201,9 @@ public class CompositeDataGeneratorTest {
     @Test
     public void addDataGenerator_orderIsPreserved() {
         CompositeDataGenerator<String> cdg = new CompositeDataGenerator<>();
-        DataGenerator<String> dg1 = (String, JsonObject) -> {
+        DataGenerator<String> dg1 = (String, ObjectNode) -> {
         };
-        DataGenerator<String> dg2 = (String, JsonObject) -> {
+        DataGenerator<String> dg2 = (String, ObjectNode) -> {
         };
         List<DataGenerator<String>> expected = Arrays.asList(dg1, dg2);
         cdg.addDataGenerator(dg1);
