@@ -16,6 +16,7 @@ import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.flow.spring.test.AbstractSpringTest;
 import com.vaadin.testbench.TestBenchElement;
+import org.openqa.selenium.interactions.Actions;
 
 public abstract class AbstractIT extends AbstractSpringTest {
 
@@ -85,6 +86,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 .getLoginForm();
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
+        // Try to wait before pressing submit button
+        new Actions(getDriver()).pause(1000).perform();
         form.submit();
         waitUntilNot(
                 driver -> driver.getCurrentUrl().contains("my/login/page"));

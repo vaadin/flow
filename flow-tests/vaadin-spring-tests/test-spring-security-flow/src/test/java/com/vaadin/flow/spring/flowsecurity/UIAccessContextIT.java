@@ -17,6 +17,7 @@ import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.interactions.Actions;
 
 public class UIAccessContextIT extends AbstractIT {
 
@@ -63,6 +64,8 @@ public class UIAccessContextIT extends AbstractIT {
                 .first().getLoginForm();
         form.getUsernameField().setValue("emma");
         form.getPasswordField().setValue("emma");
+        // Try to wait before pressing submit button
+        new Actions(getDriver()).pause(1000).perform();
         form.submit();
         waitUntilNot(driver -> ((WebDriver) adminContext.getContext())
                 .getCurrentUrl().contains("my/login/page"));
