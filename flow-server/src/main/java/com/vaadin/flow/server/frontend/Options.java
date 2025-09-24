@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;

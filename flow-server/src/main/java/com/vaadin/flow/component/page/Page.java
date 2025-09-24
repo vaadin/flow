@@ -25,9 +25,9 @@ import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
@@ -262,7 +262,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
-     * <li>{@link com.fasterxml.jackson.databind.node.BaseJsonNode}
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
