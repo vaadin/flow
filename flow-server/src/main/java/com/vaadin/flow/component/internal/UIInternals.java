@@ -1003,8 +1003,12 @@ public class UIInternals implements Serializable {
      *            the ID of the stylesheet dependency to remove
      */
     public void removeStyleSheet(String dependencyId) {
-        if (dependencyList.remove(dependencyId)) {
+        // Always add to pending removals - the client gracefully handles
+        // removal of non-existent IDs. This ensures duplicate registrations
+        // work.
+        if (dependencyId != null) {
             pendingStyleSheetRemovals.add(dependencyId);
+            dependencyList.remove(dependencyId);
         }
     }
 

@@ -51,6 +51,7 @@ public class DependencyList implements Serializable {
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
     private final Map<String, Dependency> dependencyIdToDependency = new HashMap<>();
+    private final Set<String> sentToClient = new HashSet<>();
 
     /**
      * Creates a new instance.
@@ -82,15 +83,14 @@ public class DependencyList implements Serializable {
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
                     .ifPresent(currentDependency -> handleDuplicateDependency(
                             dependency, currentDependency));
-            // Still track the dependency ID for duplicates so removal works
+            // Also track the new dependency ID if it has one (for duplicate
+            // removal tracking)
             if (dependency.getId() != null) {
-                // Get the existing dependency for this URL and update the ID
-                // mapping
-                Dependency existingDep = urlToLoadedDependency
+                Dependency currentDep = urlToLoadedDependency
                         .get(dependencyUrl);
-                if (existingDep != null) {
+                if (currentDep != null) {
                     dependencyIdToDependency.put(dependency.getId(),
-                            existingDep);
+                            currentDep);
                 }
             }
         } else {
@@ -121,9 +121,19 @@ public class DependencyList implements Serializable {
                     "Dependency with url {} was imported with two different loading strategies: {} and {}. The dependency will be loaded as {}.",
                     newDependency.getUrl(), newDependency.getLoadMode(),
                     currentDependency.getLoadMode(), moreEagerLoadMode);
+            // Preserve the ID from either the current or new dependency when
+            // creating replacement
+            String idToUse = currentDependency.getId() != null
+                    ? currentDependency.getId()
+                    : newDependency.getId();
+            Dependency replacementDep = new Dependency(newDependency.getType(),
+                    newDependency.getUrl(), moreEagerLoadMode, idToUse);
             urlToLoadedDependency.replace(newDependency.getUrl(),
-                    new Dependency(newDependency.getType(),
-                            newDependency.getUrl(), moreEagerLoadMode));
+                    replacementDep);
+            // Update the ID mapping if we have an ID
+            if (idToUse != null) {
+                dependencyIdToDependency.put(idToUse, replacementDep);
+            }
         }
     }
 
@@ -133,14 +143,34 @@ public class DependencyList implements Serializable {
      * @return a list containing the dependencies which should be sent
      */
     public Collection<Dependency> getPendingSendToClient() {
-        return urlToLoadedDependency.values();
+        return urlToLoadedDependency.values().stream()
+                .filter(dep -> !sentToClient.contains(dep.getUrl())).toList();
     }
 
     /**
      * Clears the list of dependencies which should be sent to the client.
      */
     public void clearPendingSendToClient() {
-        urlToLoadedDependency.clear();
+        urlToLoadedDependency.keySet().forEach(sentToClient::add);
+    }
+
+    /**
+     * Gets a dependency by its URL and type.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param url
+     *            the URL of the dependency
+     * @param type
+     *            the type of the dependency
+     * @return the dependency, or null if not found
+     */
+    public Dependency getDependencyByUrl(String url, Dependency.Type type) {
+        Dependency dep = urlToLoadedDependency.get(url);
+        if (dep != null && dep.getType() == type) {
+            return dep;
+        }
+        return null;
     }
 
     /**
@@ -158,6 +188,7 @@ public class DependencyList implements Serializable {
             String url = dependency.getUrl();
             urlToLoadedDependency.remove(url);
             urlCache.remove(url);
+            sentToClient.remove(url);
             return true;
         }
         return false;

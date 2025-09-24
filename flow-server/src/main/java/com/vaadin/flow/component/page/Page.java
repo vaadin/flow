@@ -33,6 +33,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -140,18 +141,26 @@ public class Page implements Serializable {
      * @return a registration object that can be used to remove the style sheet
      */
     public Registration addStyleSheet(String url, LoadMode loadMode) {
-        String dependencyId = UUID.randomUUID().toString();
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+
+        // Check if dependency already exists with this URL
+        Dependency existing = dependencyList.getDependencyByUrl(url,
+                Type.STYLESHEET);
+        String dependencyId;
+
+        if (existing != null && existing.getId() != null) {
+            // Reuse the existing dependency's ID for duplicates
+            dependencyId = existing.getId();
+        } else {
+            // Create new ID for new dependencies
+            dependencyId = UUID.randomUUID().toString();
+        }
+
         Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
                 dependencyId);
-        ui.getInternals().getDependencyList().add(dependency);
+        dependencyList.add(dependency);
 
         // Return Registration for removal
-        // Note: If the stylesheet was already loaded (duplicate URL), the
-        // Registration
-        // will still work to remove it when called, even though the duplicate
-        // wasn't
-        // sent to the client. The client gracefully handles removal of
-        // non-existent IDs.
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 

@@ -104,4 +104,43 @@ public class StyleRemovalIT extends ChromeBrowserTest {
                 finalBgColor.equals("rgb(0, 255, 0)")
                         || finalBgColor.equals("rgba(0, 255, 0, 1)"));
     }
+
+    @Test
+    public void duplicateStylesheet_removeWithSecondRegistration() {
+        open();
+
+        WebElement testDiv = findElement(By.id("test-div"));
+        WebElement addButton = findElement(By.id("add-style"));
+
+        // Add stylesheet first time
+        addButton.click();
+
+        // Verify style is applied
+        String colorWithStyle = testDiv.getCssValue("color");
+        Assert.assertTrue("Color should be red after adding style",
+                colorWithStyle.equals("rgb(255, 0, 0)")
+                        || colorWithStyle.equals("rgba(255, 0, 0, 1)"));
+
+        // Add duplicate (second time) - should not change anything visually
+        addButton.click();
+
+        // Verify style is still applied
+        String colorAfterDuplicate = testDiv.getCssValue("color");
+        Assert.assertTrue("Color should still be red after adding duplicate",
+                colorAfterDuplicate.equals("rgb(255, 0, 0)")
+                        || colorAfterDuplicate.equals("rgba(255, 0, 0, 1)"));
+
+        // Remove using the button (which uses the last registration)
+        WebElement removeButton = findElement(By.id("remove-style"));
+        removeButton.click();
+
+        // Verify style is removed (should work because duplicate registrations
+        // return the same dependency ID for removal)
+        String removedColor = testDiv.getCssValue("color");
+        Assert.assertFalse(
+                "Color should not be red after removal with duplicate registration, but was: "
+                        + removedColor,
+                removedColor.equals("rgb(255, 0, 0)")
+                        || removedColor.equals("rgba(255, 0, 0, 1)"));
+    }
 }
