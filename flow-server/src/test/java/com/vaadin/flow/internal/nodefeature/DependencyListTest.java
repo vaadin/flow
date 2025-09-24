@@ -115,6 +115,24 @@ public class DependencyListTest {
         assertEquals("URL mismatch", url, dependency.getUrl());
         assertEquals("Type mismatch", dependencyType, dependency.getType());
         assertEquals("LoadMode mismatch", loadMode, dependency.getLoadMode());
+
+        // Validate JSON representation includes the expected fields
+        ObjectNode expectedJson = JacksonUtils.createObjectNode();
+        expectedJson.put(Dependency.KEY_URL, url);
+        expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
+        expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
+
+        JsonObject actualJson = dependency.toJson();
+        ObjectNode actualMapped = JacksonUtils.mapElemental(actualJson);
+
+        // Remove the ID field from comparison since it's auto-generated for
+        // some dependencies
+        actualMapped.remove(Dependency.KEY_ID);
+
+        assertTrue(String.format(
+                "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
+                expectedJson.toString(), actualMapped.toString()),
+                JacksonUtils.jsonEquals(expectedJson, actualMapped));
     }
 
     @Test

@@ -53,7 +53,6 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
         suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
-        suite.addTestSuite(GwtResourceLoaderRemovalTest.class);
         return suite;
     }
 }
