@@ -232,4 +232,38 @@ public class StylesheetRemovalTest {
         page.addStyleSheet(url);
         Assert.assertEquals(1, dependencyList.getPendingSendToClient().size());
     }
+
+    @Test
+    public void duplicateStylesheet_registrationStillWorks() {
+        String url = "http://example.com/duplicate.css";
+
+        // Add stylesheet twice - second add doesn't send to client
+        Registration reg1 = page.addStyleSheet(url);
+        String firstDepId = dependencyList.getPendingSendToClient().iterator()
+                .next().getId();
+        dependencyList.clearPendingSendToClient();
+
+        Registration reg2 = page.addStyleSheet(url);
+        Assert.assertEquals("Second add should not create pending send", 0,
+                dependencyList.getPendingSendToClient().size());
+
+        // Both registrations can call remove without error
+        // The client gracefully handles removal of non-existent IDs
+        reg2.remove();
+        Set<String> removals = internals.getPendingStyleSheetRemovals();
+        Assert.assertEquals("Should have one removal pending", 1,
+                removals.size());
+        String removedId = removals.iterator().next();
+        Assert.assertNotEquals("Removed ID should be different from first",
+                firstDepId, removedId);
+        internals.clearPendingStyleSheetRemovals();
+
+        // First registration removal actually removes the real dependency
+        reg1.remove();
+        removals = internals.getPendingStyleSheetRemovals();
+        Assert.assertEquals("Should have the original removal pending", 1,
+                removals.size());
+        Assert.assertEquals("Should remove the original dependency ID",
+                firstDepId, removals.iterator().next());
+    }
 }

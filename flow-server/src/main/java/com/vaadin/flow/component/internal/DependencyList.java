@@ -82,13 +82,31 @@ public class DependencyList implements Serializable {
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
                     .ifPresent(currentDependency -> handleDuplicateDependency(
                             dependency, currentDependency));
+            // Still track the dependency ID for duplicates so removal works
+            if (dependency.getId() != null) {
+                // Get the existing dependency for this URL and update the ID
+                // mapping
+                Dependency existingDep = urlToLoadedDependency
+                        .get(dependencyUrl);
+                if (existingDep != null) {
+                    dependencyIdToDependency.put(dependency.getId(),
+                            existingDep);
+                }
+            }
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
 
             // Track dependency by ID if it has one
             if (dependency.getId() != null) {
-                dependencyIdToDependency.put(dependency.getId(), dependency);
+                Dependency existing = dependencyIdToDependency
+                        .put(dependency.getId(), dependency);
+                if (existing != null && !existing.equals(dependency)) {
+                    getLogger().warn(
+                            "Dependency ID '{}' was already used for dependency '{}', now replaced with '{}'",
+                            dependency.getId(), existing.getUrl(),
+                            dependency.getUrl());
+                }
             }
         }
     }

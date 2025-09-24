@@ -146,6 +146,12 @@ public class Page implements Serializable {
         ui.getInternals().getDependencyList().add(dependency);
 
         // Return Registration for removal
+        // Note: If the stylesheet was already loaded (duplicate URL), the
+        // Registration
+        // will still work to remove it when called, even though the duplicate
+        // wasn't
+        // sent to the client. The client gracefully handles removal of
+        // non-existent IDs.
         return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
