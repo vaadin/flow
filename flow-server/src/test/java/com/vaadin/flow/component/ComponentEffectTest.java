@@ -38,7 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -894,13 +893,15 @@ public class ComponentEffectTest {
             test.run();
         } catch (InterruptedException e) {
             throw new AssertionError(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
         } finally {
             CurrentInstance.clearAll();
         }
     }
 
     private LinkedBlockingQueue<ErrorEvent> mockSessionWithErrorHandler() {
-        var service = new MockVaadinServletService();
         VaadinService.setCurrent(service);
 
         var session = new MockVaadinSession(service);
