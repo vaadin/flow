@@ -87,7 +87,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         // Try to wait before pressing submit button
-        new Actions(getDriver()).pause(300).perform();
+        new Actions(getDriver()).pause(500).perform();
         form.submit();
         waitUntilNot(
                 driver -> driver.getCurrentUrl().contains("my/login/page"));
