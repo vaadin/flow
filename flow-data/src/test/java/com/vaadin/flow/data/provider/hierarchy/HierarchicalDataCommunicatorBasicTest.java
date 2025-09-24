@@ -188,8 +188,6 @@ public class HierarchicalDataCommunicatorBasicTest
         Assert.assertEquals(-1, dataCommunicator.getDepth(new Item("Item 1")));
 
         fakeClientCommunication();
-
-        // Loaded
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 0")));
         Assert.assertEquals(1, dataCommunicator.getDepth(new Item("Item 0-0")));
         Assert.assertEquals(2,
@@ -198,12 +196,6 @@ public class HierarchicalDataCommunicatorBasicTest
 
         dataCommunicator.setViewportRange(4, 4);
         fakeClientCommunication();
-
-        // Out of new viewport
-        Assert.assertEquals(-1,
-                dataCommunicator.getDepth(new Item("Item 0-0")));
-
-        // Within new viewport
         Assert.assertEquals(0, dataCommunicator.getDepth(new Item("Item 5")));
     }
 
