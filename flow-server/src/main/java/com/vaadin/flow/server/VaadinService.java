@@ -1225,7 +1225,7 @@ public abstract class VaadinService implements Serializable {
             Optional<Locale> foundLocale = LocaleUtil
                     .getExactLocaleMatch(request, providedLocales);
 
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isEmpty()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
@@ -1235,7 +1235,7 @@ public abstract class VaadinService implements Serializable {
             if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
-                session.setLocale(providedLocales.get(0));
+                session.setLocale(provider.getDefaultLocale());
             }
         }
     }

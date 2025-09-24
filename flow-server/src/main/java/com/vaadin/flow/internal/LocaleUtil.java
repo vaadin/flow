@@ -106,7 +106,7 @@ public final class LocaleUtil {
      * Get the locale from the current UI or from the given I18NProvider.
      * <p>
      * -> If UI is not null, then it is used to get the locale, -> if UI is
-     * null, then the I18NProvider providedLocales first match will be returned,
+     * null, then {@link I18NProvider#getDefaultLocale()} will be returned,
      * -> if I18NProvider is null, then default locale is returned.
      *
      * @param i18NProvider
@@ -117,8 +117,7 @@ public final class LocaleUtil {
             Supplier<Optional<I18NProvider>> i18NProvider) {
         return Optional.ofNullable(UI.getCurrent()).map(UI::getLocale)
                 .or(() -> i18NProvider.get()
-                        .map(I18NProvider::getProvidedLocales)
-                        .flatMap(locales -> locales.stream().findFirst()))
+                        .map(I18NProvider::getDefaultLocale))
                 .orElseGet(Locale::getDefault);
     }
 
