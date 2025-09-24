@@ -240,7 +240,7 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Removes the sub-cache at the specified index, if it exists, and frees up
+     * Removes the sub-cache at the specified index, if it exists, and releases
      * any resources associated with it.
      *
      * @param index
