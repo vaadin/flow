@@ -550,16 +550,10 @@ public class MessageHandler {
     }
 
     private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
-        // Remove link elements with matching dependency ID
-        var links = $doc.querySelectorAll('link[data-id="' + dependencyId + '"]');
-        for (var i = 0; i < links.length; i++) {
-            links[i].remove();
-        }
-
-        // Remove style elements with matching dependency ID
-        var styles = $doc.querySelectorAll('style[data-id="' + dependencyId + '"]');
-        for (var i = 0; i < styles.length; i++) {
-            styles[i].remove();
+        // Remove both link and style elements with matching dependency ID
+        var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].remove();
         }
     }-*/;
 
