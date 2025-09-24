@@ -133,7 +133,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertPathShown(String path) {
         waitForClientRouter();
-        AtomicReference<String> urlRef = new AtomicReference<>();
+        String urlRefPre = driver.getCurrentUrl();
+        AtomicReference<String> urlRefPost = new AtomicReference<>();
         try {
             waitUntil(driver -> {
                 String url = driver.getCurrentUrl();
@@ -143,7 +144,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
                 }
                 // HttpSessionRequestCache uses request parameter "continue",
                 // see HttpSessionRequestCache::setMatchingRequestParameterName
-                urlRef.set(url);
+                urlRefPost.set(url);
                 if (url.endsWith("continue")) {
                     url = url.substring(0, url.length() - 9);
                 }
@@ -152,8 +153,8 @@ public abstract class AbstractIT extends AbstractSpringTest {
             });
         } catch (TimeoutException ex) {
             System.out.println(
-                    "===================================== current url:"
-                            + urlRef.get());
+                    "===================================== " + "PRE url:"
+                            + urlRefPre + ", POST url:" + urlRefPost.get());
             throw ex;
         }
     }
