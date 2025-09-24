@@ -128,19 +128,13 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
 
         dataCommunicator.collapse(new Item("Item 0"));
         fakeClientCommunication();
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
+        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assert.assertFalse(keyMapper.has(new Item("Item 0-1")));
     }
 
     @Test

@@ -200,7 +200,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         fakeClientCommunication();
 
         var keys = captureArrayUpdateItems().values().stream()
-                .map((item) -> item.get("key").asText()).toList();
+                .map((item) -> item.get("key").asString()).toList();
         Assert.assertEquals("initial", keyMapper.get(keys.get(0)).getState());
         Assert.assertEquals("initial", keyMapper.get(keys.get(1)).getState());
         Assert.assertEquals("initial", keyMapper.get(keys.get(2)).getState());
@@ -251,6 +251,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void refreshItemsWithChildren_dataGeneratorDestroyItemCalledForChildren() {
         populateTreeData(treeData, 1, 1, 1);
         dataCommunicator.expand(
@@ -258,20 +259,17 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.setViewportRange(0, 3);
         fakeClientCommunication();
 
-        var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
-            @Override
-            public void generateData(Item item, ObjectNode json) {
-                // NO-OP
-            }
-        });
+        var dataGenerator = Mockito.spy(DataGenerator.class);
         compositeDataGenerator.addDataGenerator(dataGenerator);
 
         dataCommunicator.refresh(new Item("Item 0"), true);
 
         Mockito.verify(dataGenerator, Mockito.never())
                 .destroyData(new Item("Item 0"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0"));
-        Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-0"));
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 0-0"));
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 0-0-0"));
     }
 
     @Test
@@ -319,6 +317,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     public void refreshAllItems_dataGeneratorDestroyAllDataCalled() {
         populateTreeData(treeData, 6, 1, 1);
         dataCommunicator.expand(
@@ -326,12 +325,7 @@ public class HierarchicalDataCommunicatorDataRefreshTest
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
 
-        var dataGenerator = Mockito.spy(new DataGenerator<Item>() {
-            @Override
-            public void generateData(Item item, ObjectNode json) {
-                // NO-OP
-            }
-        });
+        var dataGenerator = Mockito.spy(DataGenerator.class);
         compositeDataGenerator.addDataGenerator(dataGenerator);
 
         dataCommunicator.reset();

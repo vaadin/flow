@@ -65,7 +65,7 @@ public class HierarchicalDataCommunicatorBasicTest
     @Test
     public void flush_arrayUpdaterInitializedOnce() {
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater, Mockito.times(1)).initialize();
+        Mockito.verify(arrayUpdater).initialize();
 
         Mockito.clearInvocations(arrayUpdater);
 
@@ -77,7 +77,7 @@ public class HierarchicalDataCommunicatorBasicTest
     public void setViewportRange_flush_arrayUpdaterInitializedOnce() {
         dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
-        Mockito.verify(arrayUpdater, Mockito.times(1)).initialize();
+        Mockito.verify(arrayUpdater).initialize();
 
         Mockito.clearInvocations(arrayUpdater);
 
