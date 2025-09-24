@@ -96,23 +96,23 @@ public class ComponentEffectTest {
 
             UI.setCurrent(null);
 
-            AtomicReference<String> currentThread = new AtomicReference<>();
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
             CountDownLatch latch = new CountDownLatch(1);
 
             ComponentEffect.effect(ui, () -> {
-                currentThread.set(Thread.currentThread().getName());
+                currentThread.set(Thread.currentThread());
                 currentUI.set(UI.getCurrent());
                 latch.countDown();
             });
 
-            if (!latch.await(3, TimeUnit.SECONDS)) {
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
             Assert.assertTrue(
                     "Expected effect to be executed in Vaadin Executor thread",
-                    currentThread.get()
+                    currentThread.get().getName()
                             .startsWith("VaadinTaskExecutor-thread-"));
             assertSame(ui, currentUI.get());
         });
@@ -144,7 +144,7 @@ public class ComponentEffectTest {
                 latch.countDown();
             });
 
-            if (!latch.await(3, TimeUnit.SECONDS)) {
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
@@ -200,7 +200,7 @@ public class ComponentEffectTest {
                 throw new RuntimeException("Expected exception");
             });
 
-            if (!latch.await(3, TimeUnit.SECONDS)) {
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
