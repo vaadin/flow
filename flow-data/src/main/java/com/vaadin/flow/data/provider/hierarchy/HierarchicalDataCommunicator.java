@@ -381,8 +381,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Expands the given items and schedules a client update to fetch and render
-     * visible children. Calling this method will have no effect if the item is
+     * Expands the given items and schedules a client update to render children
+     * (if visible). Calling this method will have no effect if the item is
      * already expanded or if it has no children.
      *
      * @param items
