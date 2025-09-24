@@ -12,29 +12,32 @@ import org.openqa.selenium.WebElement;
 public class ModalDialogIT extends ChromeBrowserTest {
 
     private TestBenchElement eventLog;
-    private TestBenchElement modalDialogButton;
+    private TestBenchElement modalStrictDialogButton;
+    private TestBenchElement modalVisualDialogButton;
     private TestBenchElement modelessDialogButton;
 
     @Override
     protected void open(String... parameters) {
         super.open(parameters);
         eventLog = $(DivElement.class).id(ModalDialogView.EVENT_LOG);
-        modalDialogButton = $(NativeButtonElement.class)
-                .id(ModalDialogView.OPEN_MODAL_BUTTON);
+        modalStrictDialogButton = $(NativeButtonElement.class)
+                .id(ModalDialogView.OPEN_MODAL_STRICT_BUTTON);
+        modalVisualDialogButton = $(NativeButtonElement.class)
+                .id(ModalDialogView.OPEN_MODAL_VISUAL_BUTTON);
         modelessDialogButton = $(NativeButtonElement.class)
                 .id(ModalDialogView.OPEN_MODELESS_BUTTON);
     }
 
     // #7799
     @Test
-    public void modalDialogOpened_sameShortcutsListeningOnUi_noShortcutTriggered() {
+    public void modalStrictDialogOpened_sameShortcutsListeningOnUi_noShortcutTriggered() {
         open();
 
         pressShortcutKey(
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
-        openDialog(modalDialogButton);
+        openDialog(modalStrictDialogButton);
         pressShortcutKey(getDialogInput());
         // no event occurred
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
@@ -76,7 +79,7 @@ public class ModalDialogIT extends ChromeBrowserTest {
                 $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
-        openDialog(modalDialogButton);
+        openDialog(modalStrictDialogButton);
         pressShortcutKey(getDialogInput());
         // no event occurred
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
@@ -113,6 +116,27 @@ public class ModalDialogIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void modalVisualDialogOpened_sharesShortcutWithUI_bothExecuted() {
+        open();
+
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
+
+        openDialog(modalVisualDialogButton);
+        listenToButtonShortcutOnUI();
+        pressShortcutKey(getDialogInput());
+
+        validateShortcutEvent(1, 1, ModalDialogView.UI_BUTTON);
+        validateLatestShortcutEvent(2, ModalDialogView.DIALOG_BUTTON);
+
+        closeDialog();
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        validateLatestShortcutEvent(3, ModalDialogView.UI_BUTTON);
+    }
+
+    @Test
     public void modelessDialogOpened_sameShortcutListeningOnUiAndDialog_bothExecuted() {
         open();
 
@@ -121,6 +145,28 @@ public class ModalDialogIT extends ChromeBrowserTest {
         validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
 
         openDialog(modelessDialogButton);
+        listenToButtonShortcutOnDialog();
+        pressShortcutKey(getDialogInput());
+
+        validateLatestShortcutEvent(1, ModalDialogView.DIALOG_BUTTON);
+        pressShortcutKey(getDialogInput());
+        validateLatestShortcutEvent(2, ModalDialogView.DIALOG_BUTTON);
+
+        closeDialog();
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        validateLatestShortcutEvent(3, ModalDialogView.UI_BUTTON);
+    }
+
+    @Test
+    public void modalVisualDialogOpened_sameShortcutListeningOnUiAndDialog_bothExecuted() {
+        open();
+
+        pressShortcutKey(
+                $(NativeButtonElement.class).id(ModalDialogView.UI_BUTTON));
+        validateLatestShortcutEvent(0, ModalDialogView.UI_BUTTON);
+
+        openDialog(modalVisualDialogButton);
         listenToButtonShortcutOnDialog();
         pressShortcutKey(getDialogInput());
 
