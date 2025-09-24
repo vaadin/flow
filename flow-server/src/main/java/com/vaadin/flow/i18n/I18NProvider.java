@@ -50,7 +50,7 @@ public interface I18NProvider extends Serializable {
         if (providedLocales.isEmpty()) {
             return null;
         }
-        return getProvidedLocales().get(0);
+        return providedLocales.get(0);
     }
 
     /**
