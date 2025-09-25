@@ -19,7 +19,9 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
@@ -38,6 +40,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.component.dependency.StyleSheet;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
@@ -164,6 +167,8 @@ public class AppShellRegistry implements Serializable {
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
         // PageTitle can be in AppShell and Views
         validOnlyForAppShell.remove(PageTitle.class);
+        // StyleSheet is allowed on Components; do not treat it as an AppShell-only annotation
+        validOnlyForAppShell.remove(StyleSheet.class);
         if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
             // and Push annotation as it is not appShell configured.
@@ -179,7 +184,7 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
-    private AppShellSettings createSettings() {
+    private AppShellSettings createSettings(VaadinRequest request) {
         AppShellSettings settings = new AppShellSettings();
 
         getAnnotations(Meta.class).forEach(
@@ -211,7 +216,47 @@ public class AppShellRegistry implements Serializable {
             settings.setPageTitle(pageTitles.get(0).value());
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
+
+        Set<String> stylesheets = new LinkedHashSet<>();
+
+        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
+            String href = resolveStyleSheetHref(sheet.value(), request);
+            if (href != null && !href.isBlank()) {
+                stylesheets.add(href);
+            }
+        }
+        stylesheets.forEach(href -> settings.addLink("stylesheet", href));
+
         return settings;
+    }
+
+    private String resolveStyleSheetHref(String href, VaadinRequest request) {
+        if (href == null) {
+            return null;
+        }
+        String trimmed = href.trim();
+        if (trimmed.isEmpty()) {
+            return trimmed;
+        }
+
+        // Accept absolute http(s) URLs unchanged
+        String lower = trimmed.toLowerCase();
+        if (lower.startsWith("http://") || lower.startsWith("https://")) {
+            return trimmed;
+        }
+        // Accept context-relative URLs: context://path -> /path
+        final String contextPrefix = "context://";
+        if (lower.startsWith(contextPrefix)) {
+            String path = lower.substring(contextPrefix.length());
+            String contextPath = request.getContextPath();
+            if (!path.startsWith("/")) {
+                path = "/" + path;
+            }
+            return "/" + contextPath + path;
+        }
+
+        // Accept bare paths beginning with '/' as-is
+        return trimmed.startsWith("/") ? trimmed : "/" + trimmed;
     }
 
     /**
@@ -225,7 +270,7 @@ public class AppShellRegistry implements Serializable {
      *            The request to handle
      */
     public void modifyIndexHtml(Document document, VaadinRequest request) {
-        AppShellSettings settings = createSettings();
+        AppShellSettings settings = createSettings(request);
         if (appShellClass != null) {
             VaadinService.getCurrent().getInstantiator()
                     .getOrCreate(appShellClass).configurePage(settings);

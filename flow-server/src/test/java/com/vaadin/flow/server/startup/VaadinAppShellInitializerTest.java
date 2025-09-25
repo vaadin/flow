@@ -58,6 +58,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.component.dependency.StyleSheet;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
@@ -186,6 +187,20 @@ public class VaadinAppShellInitializerTest {
     @Tag("div")
     public static class AppShellExtendingComponent extends Component
             implements AppShellConfigurator {
+    }
+
+    @StyleSheet("./foo.css")
+    public static class ComponentWithStylesheet extends Component {
+    }
+
+    @StyleSheet("context://@vaadin/vaadin-lumo-styles/lumo.css")
+    @StyleSheet("https://cdn.example.com/ui.css")
+    public static class MyAppShellWithStyleSheets implements AppShellConfigurator {
+    }
+
+    @StyleSheet("context://theme-base.css")
+    @StyleSheet("context://theme-base.css")
+    public static class MyAppShellWithDuplicateStyles implements AppShellConfigurator {
     }
 
     @Rule
@@ -438,6 +453,33 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void styleSheetOnAppShell_injectedAsLinksInOrder() throws Exception {
+        classes.add(MyAppShellWithStyleSheets.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(2, links.size());
+        assertEquals("/@vaadin/vaadin-lumo-styles/lumo.css", links.get(0).attr("href"));
+        assertEquals("https://cdn.example.com/ui.css", links.get(1).attr("href"));
+    }
+
+    @Test
+    public void duplicateStyleSheets_deduplicated() throws Exception {
+        classes.add(MyAppShellWithDuplicateStyles.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("/theme-base.css", links.get(0).attr("href"));
+    }
+
+    @Test
     public void should_link_to_PWA_article() throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
@@ -466,6 +508,13 @@ public class VaadinAppShellInitializerTest {
     public void should_throwException_when_appShellExtendsComponent()
             throws Exception {
         classes.add(AppShellExtendingComponent.class);
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void styleSheetOnComponent_notOffending() throws Exception {
+        classes.add(ComponentWithStylesheet.class);
+        // Should not throw as @StyleSheet is allowed on Components
         initializer.process(classes, servletContext);
     }
 

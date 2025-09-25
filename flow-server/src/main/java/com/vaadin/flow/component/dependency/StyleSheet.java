@@ -37,6 +37,14 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * {@link Inherited @Inherited} annotation, the annotations of the possible
  * parent components or implemented interfaces are read when sending the
  * dependencies to the browser.
+ * <p>
+ * When this annotation is placed on the application shell class (a class that
+ * implements {@link com.vaadin.flow.component.page.AppShellConfigurator}), the
+ * referenced style sheets are injected globally into the generated index.html
+ * during bootstrap. Absolute URLs are used as-is; values prefixed with
+ * {@code context://} are resolved to the public resources root and rendered as
+ * context-root absolute hrefs (e.g. {@code context://styles.css} becomes
+ * {@code /styles.css}).
  *
  * @author Vaadin Ltd
  * @since 1.0
