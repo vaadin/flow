@@ -174,7 +174,8 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Removes all items and sub-caches from this cache.
+     * Removes all items and sub-caches from this cache and releases any
+     * resources associated with them.
      */
     public void clear() {
         indexToCache.values().forEach(Cache::clear);
@@ -239,20 +240,16 @@ class Cache<T> implements Serializable {
     }
 
     /**
-     * Removes all descendant caches that match the given predicate.
+     * Removes the sub-cache at the specified index, if it exists, and releases
+     * any resources associated with it.
      *
-     * @param predicate
-     *            the predicate to match caches against
+     * @param index
+     *            the index of the sub-cache to remove
      */
-    public void removeDescendantCacheIf(
-            SerializablePredicate<Cache<T>> predicate) {
-        indexToCache.values().removeIf(cache -> {
-            if (predicate.test(cache)) {
-                cache.clear();
-                return true;
-            }
-            cache.removeDescendantCacheIf(predicate);
-            return false;
-        });
+    public void removeSubCache(int index) {
+        var subCache = indexToCache.remove(index);
+        if (subCache != null) {
+            subCache.clear();
+        }
     }
 }
