@@ -776,13 +776,13 @@ public class UI extends Component
      * locale, which is in turn determined in different ways depending on
      * whether a {@link I18NProvider} is available.
      * <p>
-     * If a i18n provider is available, the locale is determined by selecting
+     * If an i18n provider is available, the locale is determined by selecting
      * the locale from {@link I18NProvider#getProvidedLocales()} that best
      * matches the user agent preferences (i.e. the <code>Accept-Language</code>
      * header). If an exact match is found, then that locale is used. Otherwise,
      * the matching logic looks for the first provided locale that uses the same
-     * language regardless of the country. If no other match is found, then the
-     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * language regardless of the country. If no other match is found, then
+     * {@link I18NProvider#getDefaultLocale()} is used.
      * <p>
      * If no i18n provider is available, then the {@link Locale#getDefault()
      * default JVM locale} is used as the default locale.
