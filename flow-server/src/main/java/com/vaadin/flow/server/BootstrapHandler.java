@@ -1356,12 +1356,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         // Set thread local here so it is available in init
         UI.setCurrent(ui);
         ui.doInit(request, session.getNextUIid(), context.getAppId());
-        session.addUI(ui);
 
         // After init and adding UI to session fire init listeners.
         session.getService().fireUIInitListeners(ui);
 
         initializeUIWithRouter(context, ui);
+
+        session.addUI(ui);
 
         return context;
     }
