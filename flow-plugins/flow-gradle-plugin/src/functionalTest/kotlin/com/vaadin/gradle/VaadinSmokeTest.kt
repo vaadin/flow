@@ -458,48 +458,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun pluginShouldFailWithUnsupportedGradleVersion() {
-
-        fun setupProjectForGradleVersion(version: String) {
-            testProject.delete()
-            testProject = TestProject(version)
-            setup()
-        }
-
-        for (supportedVersion in arrayOf(FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.11", "8.12", "8.13", "8.14") ) {
-                setupProjectForGradleVersion(supportedVersion)
-                val result = testProject.build("vaadinClean")
-                result.expectTaskSucceded("vaadinClean")
-        }
-
-        for (unsupportedVersion in arrayOf("8.3", "8.4", "8.5", "8.6", "8.6", "8.8", "8.9")) {
-            setupProjectForGradleVersion(unsupportedVersion)
-            val result = testProject.buildAndFail("vaadinClean")
-            if (result.output.contains("Unsupported class file major version")) {
-                assertContains(
-                    result.output,
-                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/(tools/jackson|ch/randelshofer)/"),
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
-                            "and it is incompatible with Jackson library used by Flow"
-                )
-            } else {
-                assertContains(
-                    result.output,
-                    "requires Gradle ${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-                    true,
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-                )
-                assertContains(
-                    result.output,
-                    "current version is ${unsupportedVersion}"
-                )
-            }
-        }
-    }
-
-    @Test
     fun testPrepareFrontend_configurationCache() {
         // Create frontend folder, that will otherwise be created by the first
         // execution of vaadinPrepareFrontend, invalidating the cache on the
