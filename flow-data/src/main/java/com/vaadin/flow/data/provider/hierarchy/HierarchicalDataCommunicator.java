@@ -28,8 +28,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.data.provider.ArrayUpdater;
 import com.vaadin.flow.data.provider.CompositeDataGenerator;
@@ -105,7 +105,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private FlushRequest<T> flushRequest = null;
     private Range viewportRange = Range.withLength(0, 0);
-    private int nextUpdateId = 0;
+    private int lastUpdateId = -1;
 
     // package private for testing purposes
     RootCache<T> rootCache;
@@ -316,14 +316,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 "Only HierarchicalDataProvider and its subtypes are supported");
     }
 
-    @Override
-    public void confirmUpdate(int updateId) {
-        // NO-OP
-    }
-
     /**
-     * Collapses the given item and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given item and removes its sub-hierarchy from the cache.
+     * Calling this method will have no effect if the row is already collapsed.
      *
      * @param item
      *            the item to collapse
@@ -333,8 +328,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Collapses the given items and removes its sub-hierarchy. Calling this
-     * method will have no effect if the row is already collapsed.
+     * Collapses the given items and removes their sub-hierarchies from the
+     * cache. Calling this method will have no effect if the row is already
+     * collapsed.
      *
      * @param items
      *            the items to collapse
@@ -346,8 +342,16 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 .toList();
 
         if (rootCache != null) {
-            rootCache.removeDescendantCacheIf(
-                    (cache) -> !isExpanded(cache.getParentItem()));
+            for (T item : collapsedItems) {
+                var itemContext = rootCache.getContextByItem(item);
+                if (itemContext == null) {
+                    continue;
+                }
+
+                var cache = itemContext.cache();
+                var index = itemContext.index();
+                cache.removeSubCache(index);
+            }
         }
 
         if (getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
@@ -665,8 +669,6 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         var end = viewportRange.getEnd();
 
         var viewportItems = preloadFlatRangeForward(start, length);
-        var viewportItemIds = viewportItems.stream()
-                .map(getDataProvider()::getId).collect(Collectors.toSet());
 
         var flatSize = rootCache.getFlatSize();
 
@@ -690,14 +692,48 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 update.set(index, List.of(generateItemJson(item)));
             }
         }
-        update.commit(nextUpdateId++);
+        update.commit(++lastUpdateId);
+    }
 
-        // Clear items that are no longer visible from the cache to free memory.
-        // This also clears them from keyMapper and disposes of their generated
-        // data in dataGenerator to avoid memory leaks on both server and
-        // client side.
-        rootCache.removeDescendantItemIf((item) -> getKeyMapper().has(item)
-                && !viewportItemIds.contains(getDataProvider().getId(item)));
+    /**
+     * Removes no longer visible items from the cache, {@code keyMapper}, and
+     * {@code dataGenerator} so that any associated client-side resources (for
+     * example, DOM elements created by {@code ComponentRenderer}) can also be
+     * released.
+     */
+    @Override
+    public void confirmUpdate(int updateId) {
+        if (updateId != lastUpdateId) {
+            // Postpone cleanup until the most recent update is confirmed
+            return;
+        }
+
+        if (rootCache == null) {
+            // Nothing to clean up
+            return;
+        }
+
+        HashSet<Object> viewportItemIds = new HashSet<>();
+        for (int i = viewportRange.getStart(); i < viewportRange
+                .getEnd(); i++) {
+            var context = rootCache.getContextByFlatIndex(i);
+            if (context == null) {
+                continue;
+            }
+            var cache = context.cache();
+            var index = context.index();
+            if (!cache.hasItem(index)) {
+                continue;
+            }
+
+            var item = cache.getItem(index);
+            viewportItemIds.add(getDataProvider().getId(item));
+        }
+
+        // Remove items from the cache, keyMapper, and dataGenerator
+        rootCache.removeDescendantItemIf((item) -> {
+            return !viewportItemIds.contains(getDataProvider().getId(item));
+        });
     }
 
     private HierarchyFormat getHierarchyFormat() {

@@ -27,8 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -1542,33 +1542,40 @@ public class UI extends Component
     /**
      * Adds the given component as a modal child to the UI, making the UI and
      * all other (existing) components added to the UI impossible for the user
-     * to interact with. This is useful for modal dialogs which should make the
-     * UI in the background inert. Note that this only prevents user
-     * interaction, but doesn't show a modality curtain or change the visible
-     * state of the components in the UI - that should be handled by the
-     * component separately. Thus this is purely a server side feature.
+     * to interact with. Using {@link ModalityMode#STRICT} mode. This is useful
+     * for modal dialogs which should make the UI in the background inert. Note
+     * that this only prevents user interaction, but doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      * <p>
      * When the modal component is removed the UI and its other children are no
      * longer inert, unless there was another component added as modal before.
      *
-     *
      * @param component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     public void addModal(Component component) {
         add(component);
-        getInternals().setChildModal(component);
+        setChildComponentModal(component, true);
     }
 
     /**
-     * Makes the child component modal or modeless. The component needs to be a
-     * child of this UI. By default all child components are modeless.
+     * Makes the child component modal or modeless (i.e.
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#MODELESS}). The
+     * component needs to be a child of this UI. By default, all child
+     * components are modeless. Note that calling this doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      *
      * @param childComponent
      *            the child component to change state for
      * @param modal
      *            {@code true} for modal, {@code false} for modeless
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     /*
      * TODO decide and document whether resize listener still works for UI even
@@ -1576,16 +1583,37 @@ public class UI extends Component
      */
     public void setChildComponentModal(Component childComponent,
             boolean modal) {
+        setChildComponentModal(childComponent,
+                modal ? ModalityMode.STRICT : ModalityMode.MODELESS);
+    }
+
+    /**
+     * Change the child component server side modality by modality mode:
+     * {@link ModalityMode#STRICT}, {@link ModalityMode#VISUAL}, or
+     * {@link ModalityMode#MODELESS}. The component needs to be a child of this
+     * UI. By default, all child components are modeless. Note that calling this
+     * doesn't show a modality curtain or change the visible state of the
+     * components in the UI - that should be handled by the component
+     * separately. Thus, this is purely a server side feature.
+     *
+     * @param childComponent
+     *            the child component to change state for
+     * @param mode
+     *            the modality mode, not null
+     */
+    public void setChildComponentModal(Component childComponent,
+            ModalityMode mode) {
         Objects.requireNonNull(childComponent,
                 "Given child component may not be null");
+        Objects.requireNonNull(mode, "Given modality mode may not be null");
         final Optional<UI> ui = childComponent.getUI();
         if (ui.isPresent() && !ui.get().equals(this)) {
             throw new IllegalStateException(
                     "Given component is not a child in this UI. "
                             + "Add it first as a child of the UI so it is "
-                            + "attached or just use addModal(component).");
+                            + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (modal) {
+        if (mode == ModalityMode.STRICT) {
             getInternals().setChildModal(childComponent);
         } else {
             getInternals().setChildModeless(childComponent);
