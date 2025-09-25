@@ -89,21 +89,27 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
     }
 
     @Test
-    public void changeViewportRangeBackAndForth_noLongerVisibleKeysRemoved() {
+    public void changeViewportRangeBackAndForth_noLongerVisibleKeysRemovedAfterConfirmation() {
         populateTreeData(treeData, 100, 2);
         dataCommunicator.expand(new Item("Item 0"));
+
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
-
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
         Assert.assertTrue(keyMapper.has(new Item("Item 0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
         Assert.assertTrue(keyMapper.has(new Item("Item 1")));
         Assert.assertFalse(keyMapper.has(new Item("Item 2")));
 
-        dataCommunicator.setViewportRange(2, 4);
-        fakeClientCommunication();
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
+        dataCommunicator.setViewportRange(2, 4);
+        fakeClientCommunication(); // not confirmed yet
+        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
+
+        dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
         Assert.assertFalse(keyMapper.has(new Item("Item 0")));
         Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
@@ -111,9 +117,14 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         Assert.assertTrue(keyMapper.has(new Item("Item 2")));
         Assert.assertTrue(keyMapper.has(new Item("Item 3")));
 
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
+        dataCommunicator.setViewportRange(0, 4);
+        fakeClientCommunication(); // not confirmed yet
+        Assert.assertTrue(keyMapper.has(new Item("Item 2")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 3")));
+
+        dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
         Assert.assertTrue(keyMapper.has(new Item("Item 0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
