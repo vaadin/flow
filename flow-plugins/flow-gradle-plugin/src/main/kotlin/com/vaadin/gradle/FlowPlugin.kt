@@ -28,7 +28,7 @@ import org.gradle.util.GradleVersion
  */
 public class FlowPlugin : Plugin<Project> {
     public companion object {
-        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.10"
+        public const val GRADLE_MINIMUM_SUPPORTED_VERSION: String = "8.14"
     }
 
     override fun apply(project: Project) {
