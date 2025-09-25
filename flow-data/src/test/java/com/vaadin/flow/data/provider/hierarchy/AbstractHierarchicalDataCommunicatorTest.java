@@ -152,6 +152,12 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         return result;
     }
 
+    protected int captureArrayUpdateId() {
+        var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(arrayUpdate).commit(argumentCaptor.capture());
+        return argumentCaptor.getValue();
+    }
+
     protected int captureArrayUpdateSize() {
         var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
         Mockito.verify(arrayUpdater).startUpdate(argumentCaptor.capture());
