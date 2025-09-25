@@ -35,13 +35,9 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
         @JvmStatic
         @Parameters(name = "Gradle version {0}")
         fun gradleVersionsUnderTest(): List<GradleVersion> =
-            arrayOf("8.3", "8.6", "8.9").map { GradleVersion(it, false) } +
+            arrayOf("8.3", "8.6", "8.9", "8.13").map { GradleVersion(it, false) } +
                     arrayOf(
-                        FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION,
-                        "8.11",
-                        "8.12",
-                        "8.13",
-                        "8.14"
+                        FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION
                     ).map { GradleVersion(it, true) }
     }
 
