@@ -195,12 +195,14 @@ public class VaadinAppShellInitializerTest {
 
     @StyleSheet("context://@vaadin/vaadin-lumo-styles/lumo.css")
     @StyleSheet("https://cdn.example.com/ui.css")
-    public static class MyAppShellWithStyleSheets implements AppShellConfigurator {
+    public static class MyAppShellWithStyleSheets
+            implements AppShellConfigurator {
     }
 
     @StyleSheet("context://theme-base.css")
     @StyleSheet("context://theme-base.css")
-    public static class MyAppShellWithDuplicateStyles implements AppShellConfigurator {
+    public static class MyAppShellWithDuplicateStyles
+            implements AppShellConfigurator {
     }
 
     @Rule
@@ -462,8 +464,10 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(2, links.size());
-        assertEquals("/@vaadin/vaadin-lumo-styles/lumo.css", links.get(0).attr("href"));
-        assertEquals("https://cdn.example.com/ui.css", links.get(1).attr("href"));
+        assertEquals("/@vaadin/vaadin-lumo-styles/lumo.css",
+                links.get(0).attr("href"));
+        assertEquals("https://cdn.example.com/ui.css",
+                links.get(1).attr("href"));
     }
 
     @Test

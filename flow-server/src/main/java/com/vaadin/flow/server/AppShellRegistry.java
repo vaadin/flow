@@ -167,7 +167,8 @@ public class AppShellRegistry implements Serializable {
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
         // PageTitle can be in AppShell and Views
         validOnlyForAppShell.remove(PageTitle.class);
-        // StyleSheet is allowed on Components; do not treat it as an AppShell-only annotation
+        // StyleSheet is allowed on Components; do not treat it as an
+        // AppShell-only annotation
         validOnlyForAppShell.remove(StyleSheet.class);
         if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation

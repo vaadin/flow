@@ -61,8 +61,8 @@ import jakarta.servlet.annotation.WebListener;
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class,
-        NoTheme.class, StyleSheet.class, StyleSheet.Container.class })
+        BodySize.class, PageTitle.class, Push.class, Theme.class, NoTheme.class,
+        StyleSheet.class, StyleSheet.Container.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

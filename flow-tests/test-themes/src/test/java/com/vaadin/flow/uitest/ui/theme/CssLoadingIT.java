@@ -50,7 +50,8 @@ public class CssLoadingIT extends ChromeBrowserTest {
     public void fakeAuraStylesApplied() {
         open();
 
-        // Verify that the Aura theme stylesheet from @StyleSheet has been applied
+        // Verify that the Aura theme stylesheet from @StyleSheet has been
+        // applied
         // by checking that the CSS custom property is present on :root
         String auraLoaded = (String) executeScript(
                 "return getComputedStyle(document.documentElement).getPropertyValue('--fake-aura-theme-loaded').trim() ");
