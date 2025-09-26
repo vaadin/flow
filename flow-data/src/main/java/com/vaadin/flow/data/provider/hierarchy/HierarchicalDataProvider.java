@@ -345,8 +345,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * to return the index within the given parent item.
      * </ul>
      * <p>
-     * This method has a default implementation for
-     * {@link InMemoryDataProvider}s.
+     * This method has a default implementation for in-memory data providers.
      *
      * @param item
      *            the item to get the index for
@@ -357,14 +356,14 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *             if not implemented
      */
     default int getItemIndex(T item, HierarchicalQuery<T, F> query) {
-        if (!(this instanceof InMemoryDataProvider)) {
-            throw new UnsupportedOperationException(
-                    "The getItemIndex method is not implemented for this data provider");
+        if (isInMemory()) {
+            Objects.requireNonNull(item, "Item cannot be null");
+            Objects.requireNonNull(query, "Query cannot be null");
+            return fetchChildren(query).map(this::getId).toList()
+                    .indexOf(getId(item));
         }
-        Objects.requireNonNull(item, "Item cannot be null");
-        Objects.requireNonNull(query, "Query cannot be null");
-        return fetchChildren(query).map(this::getId).toList()
-                .indexOf(getId(item));
+        throw new UnsupportedOperationException(
+                "The getItemIndex method is not implemented for this data provider");
     }
 
     /**
