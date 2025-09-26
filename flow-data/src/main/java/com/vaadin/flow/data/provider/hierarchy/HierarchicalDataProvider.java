@@ -321,7 +321,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
     public boolean hasChildren(T item);
 
     /**
-     * Get the parent item for the given item.
+     * Gets the parent item for the given item.
      *
      * @param item
      *            the item for which to retrieve the parent item for
