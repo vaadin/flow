@@ -23,7 +23,7 @@
         </dependency>
         <dependency>
             <groupId>com.vaadin</groupId>
-            <artifactId>test-aura-theme</artifactId>
+            <artifactId>test-aura</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

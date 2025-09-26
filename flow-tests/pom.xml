@@ -254,6 +254,7 @@
         <module>test-common</module>
         <module>test-lumo</module>
         <module>test-express-build</module>
+        <module>test-aura</module>
     </modules>
 
     <profiles>
@@ -304,7 +305,6 @@
                 <module>test-redeployment-no-cache</module>
 
                 <module>test-servlet</module>
-                <module>test-aura-theme</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
                 <module>test-themes/pom-devbundle.xml</module>
