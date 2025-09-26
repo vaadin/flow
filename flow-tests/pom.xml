@@ -289,7 +289,6 @@
                 </property>
             </activation>
             <modules>
-                <module>test-aura-theme</module>
                 <module>test-dev-mode</module>
                 <module>test-pwa</module>
                 <module>test-pwa/pom-production.xml</module>
@@ -305,6 +304,7 @@
                 <module>test-redeployment-no-cache</module>
 
                 <module>test-servlet</module>
+                <module>test-aura-theme</module>
                 <module>test-themes</module>
                 <module>test-themes/pom-production.xml</module>
                 <module>test-themes/pom-devbundle.xml</module>
