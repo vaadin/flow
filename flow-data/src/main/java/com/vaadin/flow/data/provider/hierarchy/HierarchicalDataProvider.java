@@ -326,11 +326,9 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @param item
      *            the item for which to retrieve the parent item for
      * @return parent item for the given item or {@code null} if the item is a
-     *         root item.
+     *         root item
      * @throws UnsupportedOperationException
      *             if not implemented
-     * @throws IllegalArgumentException
-     *             if the item is not found
      */
     default T getParent(T item) {
         throw new UnsupportedOperationException(
@@ -344,7 +342,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *            the item to get the index for
      * @param query
      *            given query to request data with
-     * @return the index of the provided item, or -1 if not found
+     * @return the index of the provided item or -1 if not found
      * @throws UnsupportedOperationException
      *             if not implemented
      */
