@@ -123,26 +123,6 @@ public class BrowserDetails implements Serializable {
         } else {
             browserName = BrowserName.UNKNOWN;
         }
-        // isOpera =
-        // isIE =
-        // // IE 11 no longer contains MSIE in the user agent
-        // isIE = isIE || isTrident;
-        //
-        // isSafari = !isChrome && !isIE && !isOpera &&
-        // userAgent.contains("safari");
-        // isFirefox = userAgent.contains(" firefox/") ||
-        // userAgent.contains("fxios/");
-        // if (userAgent.contains(" edge/") || userAgent.contains(" edg/") ||
-        // userAgent.contains(" edga/") || userAgent.contains(" edgios/")) {
-        // isEdge = true;
-        // isChrome = false;
-        // isOpera = false;
-        // isIE = false;
-        // isSafari = false;
-        // isFirefox = false;
-        // isWebKit = false;
-        // isGecko = false;
-        // }
     }
 
     private void parseEngineVersion() {

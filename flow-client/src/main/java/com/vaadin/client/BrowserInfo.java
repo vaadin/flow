@@ -270,7 +270,11 @@ public class BrowserInfo {
      *
      * @return true if scrollTop cannot be trusted on this device, false
      *         otherwise
+     * @deprecated use a parsing library like ua-parser-js to parse the user
+     *             agent from {@link #getBrowserString()} and check version
+     *             against known issues.
      */
+    @Deprecated
     public boolean isAndroidWithBrokenScrollTop() {
         return isAndroid() && (getOperatingSystemMajorVersion() == 3
                 || getOperatingSystemMajorVersion() == 4);
