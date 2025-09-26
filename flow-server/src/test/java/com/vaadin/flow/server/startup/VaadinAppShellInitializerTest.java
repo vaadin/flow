@@ -215,6 +215,15 @@ public class VaadinAppShellInitializerTest {
             implements AppShellConfigurator {
     }
 
+    @StyleSheet("./local.css")
+    public static class MyAppShellWithDotSlash implements AppShellConfigurator {
+    }
+
+    @StyleSheet("../secrets.css")
+    public static class MyAppShellWithTraversal
+            implements AppShellConfigurator {
+    }
+
     @Rule
     public ExpectedException exception = ExpectedException.none();
 
@@ -546,6 +555,31 @@ public class VaadinAppShellInitializerTest {
         assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
         assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
         assertEquals("/ctx/already-absolute.css", links.get(4).attr("href"));
+    }
+
+    @Test
+    public void styleSheetResolution_handlesDotSlash() throws Exception {
+        classes.add(MyAppShellWithDotSlash.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("/local.css", links.get(0).attr("href"));
+    }
+
+    @Test
+    public void styleSheetResolution_rejectsTraversal() throws Exception {
+        classes.add(MyAppShellWithTraversal.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(0, links.size());
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
