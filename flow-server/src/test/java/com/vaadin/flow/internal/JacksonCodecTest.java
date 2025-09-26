@@ -36,7 +36,7 @@ import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public class JacksonCodecTest {
     private static final List<Object> withTypeInfoUnsupportedValues = Arrays
-            .asList(new Object(), new StateNode(), new Date(), new String[0],
+            .asList(new Object(), new StateNode(), new Date(),
                     new ArrayList<>(), new HashSet<>(), new HashMap<>());
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
@@ -252,5 +252,63 @@ public class JacksonCodecTest {
     public void decodeAs_unsupportedType() {
         Assert.assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
                 float.class));
+    }
+
+    @Test
+    public void encodeWithTypeInfo_stringArray() {
+        String[] stringArray = new String[] { "Hello", "World", "Test" };
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(stringArray);
+        Assert.assertNotNull("Encoded String array should not be null",
+                encoded);
+        Assert.assertTrue("Should be an array node", encoded.isArray());
+
+        // It should be wrapped as ARRAY_TYPE
+        Assert.assertEquals("First element should be ARRAY_TYPE",
+                JacksonCodec.ARRAY_TYPE, encoded.get(0).asInt());
+
+        // Second element should be the actual string array
+        JsonNode innerArray = encoded.get(1);
+        Assert.assertTrue("Inner element should be an array",
+                innerArray.isArray());
+        Assert.assertEquals("Should have 3 strings", 3, innerArray.size());
+        Assert.assertEquals("Hello", innerArray.get(0).asText());
+        Assert.assertEquals("World", innerArray.get(1).asText());
+        Assert.assertEquals("Test", innerArray.get(2).asText());
+    }
+
+    @Test
+    public void encodeWithTypeInfo_primitiveArrays() {
+        // Test Integer array
+        Integer[] intArray = new Integer[] { 1, 2, 3 };
+        JsonNode encodedInts = JacksonCodec.encodeWithTypeInfo(intArray);
+        Assert.assertNotNull("Encoded Integer array should not be null",
+                encodedInts);
+        Assert.assertEquals("First element should be ARRAY_TYPE",
+                JacksonCodec.ARRAY_TYPE, encodedInts.get(0).asInt());
+        Assert.assertEquals(1, encodedInts.get(1).get(0).asInt());
+        Assert.assertEquals(2, encodedInts.get(1).get(1).asInt());
+        Assert.assertEquals(3, encodedInts.get(1).get(2).asInt());
+
+        // Test Boolean array
+        Boolean[] boolArray = new Boolean[] { true, false, true };
+        JsonNode encodedBools = JacksonCodec.encodeWithTypeInfo(boolArray);
+        Assert.assertNotNull("Encoded Boolean array should not be null",
+                encodedBools);
+        Assert.assertEquals("First element should be ARRAY_TYPE",
+                JacksonCodec.ARRAY_TYPE, encodedBools.get(0).asInt());
+        Assert.assertTrue(encodedBools.get(1).get(0).asBoolean());
+        Assert.assertFalse(encodedBools.get(1).get(1).asBoolean());
+        Assert.assertTrue(encodedBools.get(1).get(2).asBoolean());
+
+        // Test empty array
+        String[] emptyArray = new String[0];
+        JsonNode encodedEmpty = JacksonCodec.encodeWithTypeInfo(emptyArray);
+        Assert.assertNotNull("Encoded empty array should not be null",
+                encodedEmpty);
+        Assert.assertEquals("First element should be ARRAY_TYPE",
+                JacksonCodec.ARRAY_TYPE, encodedEmpty.get(0).asInt());
+        Assert.assertEquals("Empty array should have 0 elements", 0,
+                encodedEmpty.get(1).size());
     }
 }
