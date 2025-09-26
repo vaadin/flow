@@ -363,7 +363,8 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
         }
         Objects.requireNonNull(item, "Item cannot be null");
         Objects.requireNonNull(query, "Query cannot be null");
-        return fetchChildren(query).map(this::getId).toList().indexOf(getId(item));
+        return fetchChildren(query).map(this::getId).toList()
+                .indexOf(getId(item));
     }
 
     /**
