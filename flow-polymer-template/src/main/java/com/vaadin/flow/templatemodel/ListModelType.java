@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 
 import com.vaadin.flow.internal.JacksonUtils;

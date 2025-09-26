@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Assume;
@@ -429,7 +429,7 @@ public class FrontendUtilsTest {
         linkFolderFile.createNewFile();
 
         final ObjectNode packageJson = JacksonUtils.createObjectNode();
-        packageJson.put(DEPENDENCIES, JacksonUtils.createObjectNode());
+        packageJson.set(DEPENDENCIES, JacksonUtils.createObjectNode());
 
         ((ObjectNode) packageJson.get(DEPENDENCIES)).put("@symbolic/link",
                 "./" + symbolic.getName());

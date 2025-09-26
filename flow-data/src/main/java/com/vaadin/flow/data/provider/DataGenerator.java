@@ -17,7 +17,7 @@ package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A data generator for {@link DataCommunicator}. Used to inject custom data to

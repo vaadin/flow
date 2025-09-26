@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
@@ -330,7 +330,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -358,7 +358,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -438,7 +438,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);

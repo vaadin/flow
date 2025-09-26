@@ -18,7 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;

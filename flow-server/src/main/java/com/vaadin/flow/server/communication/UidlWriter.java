@@ -33,10 +33,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -169,11 +169,11 @@ public class UidlWriter implements Serializable {
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
-            response.put(JsonConstants.UIDL_KEY_EXECUTE,
+            response.set(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList));
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
-            response.put("timings", createPerformanceData(ui));
+            response.set("timings", createPerformanceData(ui));
         }
 
         // Get serverSyncId after all changes has been computed, as push may
@@ -219,7 +219,7 @@ public class UidlWriter implements Serializable {
                             response.set(loadMode.name(),
                                     JacksonUtils.getMapper()
                                             .readTree(dependencies.toString()));
-                        } catch (JsonProcessingException e) {
+                        } catch (JacksonException e) {
                             throw new RuntimeException(e);
                         }
                     });

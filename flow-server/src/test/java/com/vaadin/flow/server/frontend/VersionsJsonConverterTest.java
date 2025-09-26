@@ -17,7 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;

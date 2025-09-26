@@ -18,7 +18,7 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
