@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -60,8 +61,8 @@ import jakarta.servlet.annotation.WebListener;
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class,
-        NoTheme.class })
+        BodySize.class, PageTitle.class, Push.class, Theme.class, NoTheme.class,
+        StyleSheet.class, StyleSheet.Container.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

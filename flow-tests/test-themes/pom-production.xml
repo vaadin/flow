@@ -33,6 +33,11 @@
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-aura</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <defaultGoal>jetty:run</defaultGoal>
