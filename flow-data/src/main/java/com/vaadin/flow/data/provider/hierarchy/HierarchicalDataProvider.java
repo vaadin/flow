@@ -357,18 +357,7 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
         }
         Objects.requireNonNull(item, "Item cannot be null");
         Objects.requireNonNull(query, "Query cannot be null");
-        var itemId = getId(item);
-        Predicate<T> itemMatches = itemToMatch -> Objects.equals(itemId,
-                getId(itemToMatch));
-        var itemFound = new AtomicBoolean(false);
-        var index = (int) fetchChildren(query).takeWhile(i -> {
-            itemFound.set(itemMatches.test(i));
-            return !itemFound.get();
-        }).count();
-        if (!itemFound.get()) {
-            throw new IllegalArgumentException("Item not found");
-        }
-        return index;
+        return fetchChildren(query).map(this::getId).toList().indexOf(getId(item));
     }
 
     /**
