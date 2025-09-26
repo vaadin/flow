@@ -110,9 +110,15 @@ public class TreeDataProvider<T>
     }
 
     @Override
+    public T getParent(T item) {
+        Objects.requireNonNull(item, "Item cannot be null.");
+        return getTreeData().getParent(item);
+    }
+
+    @Override
     public int getDepth(T item) {
         int depth = 0;
-        while ((item = treeData.getParent(item)) != null) {
+        while ((item = getParent(item)) != null) {
             depth++;
         }
         return depth;
