@@ -122,7 +122,7 @@ public class TreeDataProvider<T>
     @Override
     public int getDepth(T item) {
         int depth = 0;
-        while ((item = getParent(item)) != null) {
+        while ((item = treeData.getParent(item)) != null) {
             depth++;
         }
         return depth;
