@@ -207,6 +207,10 @@ public class ResourceLoader {
     private final JsMap<String, JsArray<ResourceLoadListener>> loadListeners = JsCollections
             .map();
 
+    // Map from dependency ID to resource key (URL or content) for removal
+    private final JsMap<String, String> dependencyIdToResourceKey = JsCollections
+            .map();
+
     private Registry registry;
 
     private final boolean supportsHtmlWhenReady = GWT.isClient()
@@ -228,6 +232,26 @@ public class ResourceLoader {
         this.registry = registry;
         if (initFromDom) {
             initLoadedResourcesFromDom();
+        }
+    }
+
+    /**
+     * Clears a resource from the loaded resources set by its dependency ID.
+     * <p>
+     * This is used when a resource is removed from the DOM using its dependency
+     * ID.
+     *
+     * @param dependencyId
+     *            the dependency ID of the resource to clear
+     */
+    public void clearLoadedResourceById(String dependencyId) {
+        if (dependencyId != null) {
+            String resourceKey = dependencyIdToResourceKey.get(dependencyId);
+            if (resourceKey != null) {
+                loadedResources.delete(resourceKey);
+                loadListeners.delete(resourceKey);
+                dependencyIdToResourceKey.delete(dependencyId);
+            }
         }
     }
 
@@ -547,7 +571,32 @@ public class ResourceLoader {
      */
     public void loadStylesheet(final String stylesheetUrl,
             final ResourceLoadListener resourceLoadListener) {
+        loadStylesheet(stylesheetUrl, resourceLoadListener, null);
+    }
+
+    /**
+     * Load a stylesheet with a specific dependency ID for tracking. Calling
+     * this method when the stylesheet is currently loading or already loaded
+     * doesn't cause the stylesheet to be loaded again, but the listener will
+     * still be notified when appropriate.
+     *
+     * @param stylesheetUrl
+     *            the url of the stylesheet to load
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is
+     *            loaded
+     * @param dependencyId
+     *            the ID to track this dependency with (for later removal)
+     */
+    public void loadStylesheet(final String stylesheetUrl,
+            final ResourceLoadListener resourceLoadListener,
+            final String dependencyId) {
         final String url = WidgetUtil.getAbsoluteUrl(stylesheetUrl);
+
+        if (dependencyId != null) {
+            dependencyIdToResourceKey.set(dependencyId, url);
+        }
+
         final ResourceLoadEvent event = new ResourceLoadEvent(this, url);
         if (loadedResources.has(url)) {
             if (resourceLoadListener != null) {
@@ -561,6 +610,9 @@ public class ResourceLoader {
             linkElement.setRel("stylesheet");
             linkElement.setType("text/css");
             linkElement.setHref(url);
+            if (dependencyId != null) {
+                linkElement.setAttribute("data-id", dependencyId);
+            }
 
             if (BrowserInfo.get().isSafariOrIOS()) {
                 // Safari doesn't fire any events for link elements
@@ -621,6 +673,27 @@ public class ResourceLoader {
      */
     public void inlineStyleSheet(String styleSheetContents,
             final ResourceLoadListener resourceLoadListener) {
+        inlineStyleSheet(styleSheetContents, resourceLoadListener, null);
+    }
+
+    /**
+     * Inline a stylesheet with a specific dependency ID for tracking.
+     *
+     * @param styleSheetContents
+     *            the contents to inline
+     * @param resourceLoadListener
+     *            the listener that will get notified when the stylesheet is
+     *            loaded
+     * @param dependencyId
+     *            the ID to track this dependency with (for later removal)
+     */
+    public void inlineStyleSheet(String styleSheetContents,
+            final ResourceLoadListener resourceLoadListener,
+            final String dependencyId) {
+        if (dependencyId != null) {
+            dependencyIdToResourceKey.set(dependencyId, styleSheetContents);
+        }
+
         final ResourceLoadEvent event = new ResourceLoadEvent(this,
                 styleSheetContents);
         if (loadedResources.has(styleSheetContents)) {
@@ -635,6 +708,9 @@ public class ResourceLoader {
             StyleElement styleSheetElement = getDocument().createStyleElement();
             styleSheetElement.setTextContent(styleSheetContents);
             styleSheetElement.setType("text/css");
+            if (dependencyId != null) {
+                styleSheetElement.setAttribute("data-id", dependencyId);
+            }
 
             addCssLoadHandler(styleSheetContents, event, styleSheetElement);
 

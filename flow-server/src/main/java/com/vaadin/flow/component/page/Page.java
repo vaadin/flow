@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 
 import tools.jackson.databind.JsonNode;
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -108,9 +110,10 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url) {
-        addStyleSheet(url, LoadMode.EAGER);
+    public Registration addStyleSheet(String url) {
+        return addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -135,9 +138,30 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
+    public Registration addStyleSheet(String url, LoadMode loadMode) {
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+
+        // Check if dependency already exists with this URL
+        Dependency existing = dependencyList.getDependencyByUrl(url,
+                Type.STYLESHEET);
+        String dependencyId;
+
+        if (existing != null && existing.getId() != null) {
+            // Reuse the existing dependency's ID for duplicates
+            dependencyId = existing.getId();
+        } else {
+            // Create new ID for new dependencies
+            dependencyId = UUID.randomUUID().toString();
+        }
+
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
+                dependencyId);
+        dependencyList.add(dependency);
+
+        // Return Registration for removal
+        return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
     /**
