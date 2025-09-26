@@ -1,0 +1,70 @@
+name: Auto Format PR
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: ${{ github.head_ref }} || ${{ github.ref_name }}-auto-format
+  cancel-in-progress: true
+
+env:
+  HEAD_REF: ${{ github.head_ref }}
+  REF_NAME: ${{ github.ref_name }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+
+jobs:
+  format:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - run: echo "Concurrency Group = ${HEAD_REF:-$REF_NAME}-auto-format"
+      - uses: actions-cool/check-user-permission@main
+        id: checkUser
+        with:
+          username: ${{ github.triggering_actor }}
+          require: 'write'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
+      - name: Skip on external workflow triggering
+        if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' }}
+        run: |
+          echo "🚫 ${{ github.actor }} is an external contributor. A ${{ github.repository }} team member must re-run this job to apply formatting." | tee -a $GITHUB_STEP_SUMMARY
+          exit 0
+      - name: Check out PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.HEAD_SHA }}
+          fetch-depth: 0
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.8.7
+      - name: Run Maven formatter
+        run: mvn -B -ntp formatter:format
+      - name: Commit and push formatting changes (if any)
+        env:
+          PR_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes to commit." | tee -a $GITHUB_STEP_SUMMARY
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(format): apply code formatting via Maven formatter"
+          # Push back to the PR branch
+          git push origin HEAD:${PR_BRANCH}
+          echo "✅ Formatting changes pushed to ${PR_BRANCH}." | tee -a $GITHUB_STEP_SUMMARY
