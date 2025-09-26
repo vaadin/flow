@@ -17,7 +17,9 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,6 +41,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.component.dependency.StyleSheet;
 
@@ -219,7 +222,6 @@ public class AppShellRegistry implements Serializable {
         getAnnotations(Inline.class).forEach(settings::addInline);
 
         Set<String> stylesheets = new LinkedHashSet<>();
-
         for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
             String href = resolveStyleSheetHref(sheet.value(), request);
             if (href != null && !href.isBlank()) {
@@ -249,11 +251,14 @@ public class AppShellRegistry implements Serializable {
         final String contextPrefix = "context://";
         if (lower.startsWith(contextPrefix)) {
             String path = lower.substring(contextPrefix.length());
-            String contextPath = request.getContextPath();
             if (!path.startsWith("/")) {
                 path = "/" + path;
             }
-            return "/" + contextPath + path;
+            String contextPath = request.getContextPath();
+            if (contextPath != null && !contextPath.isEmpty()) {
+                return contextPath + path;
+            }
+            return path;
         }
 
         // Accept bare paths beginning with '/' as-is

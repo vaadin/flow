@@ -193,7 +193,7 @@ public class VaadinAppShellInitializerTest {
     public static class ComponentWithStylesheet extends Component {
     }
 
-    @StyleSheet("context://@vaadin/vaadin-lumo-styles/lumo.css")
+    @StyleSheet("context://my-styles.css")
     @StyleSheet("https://cdn.example.com/ui.css")
     public static class MyAppShellWithStyleSheets
             implements AppShellConfigurator {
@@ -202,6 +202,16 @@ public class VaadinAppShellInitializerTest {
     @StyleSheet("context://theme-base.css")
     @StyleSheet("context://theme-base.css")
     public static class MyAppShellWithDuplicateStyles
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("  /trimmed.css  ")
+    @StyleSheet("   ")
+    @StyleSheet("foo/bar.css")
+    @StyleSheet("HTTP://cdn.Example.com/u.css")
+    @StyleSheet("context://assets/site.css")
+    @StyleSheet("context:///already-absolute.css")
+    public static class MyAppShellWithVariousStyleSheets
             implements AppShellConfigurator {
     }
 
@@ -464,8 +474,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(2, links.size());
-        assertEquals("/@vaadin/vaadin-lumo-styles/lumo.css",
-                links.get(0).attr("href"));
+        assertEquals("/my-styles.css", links.get(0).attr("href"));
         assertEquals("https://cdn.example.com/ui.css",
                 links.get(1).attr("href"));
     }
@@ -522,6 +531,23 @@ public class VaadinAppShellInitializerTest {
         initializer.process(classes, servletContext);
     }
 
+    @Test
+    public void styleSheetResolution_variousScenarios() throws Exception {
+        classes.add(MyAppShellWithVariousStyleSheets.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(5, links.size());
+        assertEquals("/trimmed.css", links.get(0).attr("href"));
+        assertEquals("/foo/bar.css", links.get(1).attr("href"));
+        assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
+        assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
+        assertEquals("/ctx/already-absolute.css", links.get(4).attr("href"));
+    }
+
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
         return new VaadinServletRequest(request, service);
@@ -567,5 +593,22 @@ public class VaadinAppShellInitializerTest {
                 Mockito.anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
+    }
+
+    private VaadinServletRequest createVaadinRequest(String pathInfo,
+            String contextPath) {
+        HttpServletRequest request = createRequest(pathInfo, contextPath);
+        return new VaadinServletRequest(request, service);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo,
+            String contextPath) {
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getServletPath()).thenReturn("");
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getRequestURL())
+                .thenReturn(new StringBuffer(pathInfo));
+        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        return request;
     }
 }
