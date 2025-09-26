@@ -344,11 +344,9 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      *            the item to get the index for
      * @param query
      *            given query to request data with
-     * @return the index of the provided item
+     * @return the index of the provided item, or -1 if not found
      * @throws UnsupportedOperationException
      *             if not implemented
-     * @throws IllegalArgumentException
-     *             if the item is not found
      */
     default int getItemIndex(T item, HierarchicalQuery<T, F> query) {
         if (!(this instanceof InMemoryDataProvider)) {
