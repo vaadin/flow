@@ -149,72 +149,116 @@ public abstract class AbstractNavigationStateRenderer
 
     @Override
     public int handle(NavigationEvent event) {
+        initializeNavigation(event);
+
+        Optional<Integer> earlyReturn = handleEarlyNavigationChecks(event);
+        if (earlyReturn.isPresent()) {
+            return earlyReturn.get();
+        }
+
+        NavigationContext context = prepareNavigationContext(event);
+        if (context.shouldReturnEarly()) {
+            return HttpStatusCode.OK.getCode();
+        }
+
+        return executeNavigation(context);
+    }
+
+    /**
+     * Initialize the navigation state and UI for the given event.
+     */
+    private void initializeNavigation(NavigationEvent event) {
         UI ui = event.getUI();
         ui.getInternals().setLocationForRefresh(event.getLocation());
 
-        final Class<? extends Component> routeTargetType = navigationState
-                .getNavigationTarget();
-        final RouteParameters parameters = navigationState.getRouteParameters();
         final RouteTarget routeTarget = navigationState.getRouteTarget();
-
         routeLayoutTypes = routeTarget != null
                 ? getTargetParentLayouts(routeTarget,
                         event.getSource().getRegistry(),
                         event.getLocation().getPath())
-                : getRouterLayoutTypes(routeTargetType,
+                : getRouterLayoutTypes(navigationState.getNavigationTarget(),
                         ui.getInternals().getRouter());
 
-        assert routeTargetType != null;
+        assert navigationState.getNavigationTarget() != null;
         assert routeLayoutTypes != null;
 
         clearContinueNavigationAction(ui);
-        checkForDuplicates(routeTargetType, routeLayoutTypes);
+        checkForDuplicates(navigationState.getNavigationTarget(), routeLayoutTypes);
+    }
 
+    /**
+     * Handle early navigation checks that may return immediately.
+     */
+    private Optional<Integer> handleEarlyNavigationChecks(NavigationEvent event) {
         Optional<Integer> result = handleBeforeLeaveEvents(event,
-                routeTargetType, parameters);
-
+                navigationState.getNavigationTarget(), navigationState.getRouteParameters());
         if (result.isPresent()) {
-            return result.get();
+            return result;
         }
 
         String route = getFormattedRoute(event);
         if (isClientHandled(route)) {
-            return HttpStatusCode.OK.getCode();
+            return Optional.of(HttpStatusCode.OK.getCode());
         }
 
+        return Optional.empty();
+    }
+
+    /**
+     * Prepare the navigation context including chain population.
+     */
+    private NavigationContext prepareNavigationContext(NavigationEvent event) {
         final ArrayList<HasElement> chain = new ArrayList<>();
-
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
-                routeTargetType, routeLayoutTypes);
+                navigationState.getNavigationTarget(), routeLayoutTypes);
 
-        if (populateChain(chain, preserveOnRefreshTarget, event)) {
-            return HttpStatusCode.OK.getCode();
-        }
+        boolean shouldReturnEarly = populateChain(chain, preserveOnRefreshTarget, event);
 
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
-        // view.
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve view.
+        NavigationEvent finalEvent = adjustEventForPreservedView(event, preserveOnRefreshTarget, chain);
+
+        return new NavigationContext(finalEvent, chain, preserveOnRefreshTarget, shouldReturnEarly);
+    }
+
+    /**
+     * Adjust the navigation event for preserved views if needed.
+     */
+    private NavigationEvent adjustEventForPreservedView(NavigationEvent event, 
+            boolean preserveOnRefreshTarget, ArrayList<HasElement> chain) {
         if (preserveOnRefreshTarget && !chain.isEmpty()) {
-            event = new NavigationEvent(event.getSource(), event.getLocation(),
+            return new NavigationEvent(event.getSource(), event.getLocation(),
                     event.getUI(), NavigationTrigger.REFRESH);
         }
+        return event;
+    }
 
-        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
-        // pushing history state shouldn't be done. So, it's done here to make
-        // sure that when history state is pushed the navigation is not
-        // postponed.
-        // See https://github.com/vaadin/flow/issues/3619 for more info.
-        pushHistoryStateIfNeeded(event, ui);
+    /**
+     * Execute the main navigation logic.
+     */
+    private int executeNavigation(NavigationContext context) {
+        NavigationEvent event = context.getEvent();
+        ArrayList<HasElement> chain = context.getChain();
+        boolean preserveOnRefreshTarget = context.isPreserveOnRefreshTarget();
 
-        result = handleBeforeNavigationEvents(event, routeTargetType,
-                parameters, chain);
+        pushHistoryStateIfNeeded(event, event.getUI());
+
+        Optional<Integer> result = handleBeforeNavigationEvents(event, 
+                navigationState.getNavigationTarget(),
+                navigationState.getRouteParameters(), chain);
         if (result.isPresent()) {
             return result.get();
         }
 
+        return finalizeNavigation(event, chain, preserveOnRefreshTarget);
+    }
+
+    /**
+     * Finalize the navigation by setting up components and handling post-navigation tasks.
+     */
+    private int finalizeNavigation(NavigationEvent event, ArrayList<HasElement> chain, 
+            boolean preserveOnRefreshTarget) {
         final Component componentInstance = (Component) chain.get(0);
 
-        // Preserve the navigation chain if all went well and it's being shown
-        // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
         }
@@ -225,19 +269,39 @@ public abstract class AbstractNavigationStateRenderer
 
         cleanModalComponents(event);
 
-        // Change the UI according to the navigation Component chain.
-        ui.getInternals().showRouteTarget(event.getLocation(),
+        event.getUI().getInternals().showRouteTarget(event.getLocation(),
                 componentInstance, routerLayouts);
 
         int statusCode = locationChangeEvent.getStatusCode();
-        validateStatusCode(statusCode, routeTargetType);
+        validateStatusCode(statusCode, navigationState.getNavigationTarget());
 
-        // After navigation event
-        handleAfterNavigationEvents(ui, parameters);
-
-        updatePageTitle(event, componentInstance, route);
+        handleAfterNavigationEvents(event.getUI(), navigationState.getRouteParameters());
+        updatePageTitle(event, componentInstance, getFormattedRoute(event));
 
         return statusCode;
+    }
+
+    /**
+     * Helper class to hold navigation context during processing.
+     */
+    private static class NavigationContext {
+        private final NavigationEvent event;
+        private final ArrayList<HasElement> chain;
+        private final boolean preserveOnRefreshTarget;
+        private final boolean shouldReturnEarly;
+
+        public NavigationContext(NavigationEvent event, ArrayList<HasElement> chain,
+                boolean preserveOnRefreshTarget, boolean shouldReturnEarly) {
+            this.event = event;
+            this.chain = chain;
+            this.preserveOnRefreshTarget = preserveOnRefreshTarget;
+            this.shouldReturnEarly = shouldReturnEarly;
+        }
+
+        public NavigationEvent getEvent() { return event; }
+        public ArrayList<HasElement> getChain() { return chain; }
+        public boolean isPreserveOnRefreshTarget() { return preserveOnRefreshTarget; }
+        public boolean shouldReturnEarly() { return shouldReturnEarly; }
     }
 
     /**
@@ -256,70 +320,130 @@ public abstract class AbstractNavigationStateRenderer
     private boolean populateChain(ArrayList<HasElement> chain,
             boolean preserveOnRefreshTarget, NavigationEvent event) {
         if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
-            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
-                    event);
-            if (maybeChain.isEmpty()) {
-                // We're returning because the preserved chain is not ready to
-                // be used as is, and requires client data requested within
-                // `getPreservedChain`. Once the data is retrieved from the
-                // client, `handle` method will be invoked with the same
-                // `NavigationEvent` argument.
-                return true;
-            }
-            chain.addAll(maybeChain.get());
-
-            // If partialMatch is set to true check if the cache contains a
-            // chain and possibly request extended details to get window name
-            // to select cached chain.
-            if (chain.isEmpty() && isPreservePartialTarget(
-                    navigationState.getNavigationTarget(), routeLayoutTypes)) {
-                UI ui = event.getUI();
-                if (ui.getInternals().getExtendedClientDetails() == null) {
-                    PreservedComponentCache cache = ui.getSession()
-                            .getAttribute(PreservedComponentCache.class);
-                    if (cache != null && !cache.isEmpty()) {
-                        // As there is a cached chain we get the client details
-                        // to get the window name so we can determine if the
-                        // cache contains a chain for us to use.
-                        ui.getPage().retrieveExtendedClientDetails(
-                                details -> handle(event));
-                        return true;
-                    }
-                } else {
-                    Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(),
-                            ui.getInternals().getExtendedClientDetails()
-                                    .getWindowName());
-                    if (partialChain.isPresent()) {
-                        List<HasElement> oldChain = partialChain.get();
-                        disconnectElements(oldChain, ui);
-
-                        List<RouterLayout> routerLayouts = new ArrayList<>();
-
-                        for (HasElement hasElement : oldChain) {
-                            if (hasElement instanceof RouterLayout) {
-                                routerLayouts.add((RouterLayout) hasElement);
-                            } else {
-                                // Remove any non element from their parent to
-                                // not get old or duplicate route content
-                                hasElement.getElement().removeFromParent();
-                            }
-                        }
-                        ui.getInternals().setRouterTargetChain(routerLayouts);
-                    }
-                }
-            }
+            return handlePreserveOnRefresh(chain, event);
         } else {
-            // Create an empty chain which gets populated later in
-            // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
-            chain.clear();
-
-            // Has any preserved components already been created here? If so,
-            // we don't want to navigate back to them ever so clear cache for
-            // window.
-            clearAllPreservedChains(event.getUI());
+            handleNormalChainCreation(chain, event);
+            return false;
         }
+    }
+
+    /**
+     * Handle chain population for preserve-on-refresh targets.
+     */
+    private boolean handlePreserveOnRefresh(ArrayList<HasElement> chain, NavigationEvent event) {
+        final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(event);
+        if (maybeChain.isEmpty()) {
+            // We're returning because the preserved chain is not ready to
+            // be used as is, and requires client data requested within
+            // `getPreservedChain`. Once the data is retrieved from the
+            // client, `handle` method will be invoked with the same
+            // `NavigationEvent` argument.
+            return true;
+        }
+        
+        chain.addAll(maybeChain.get());
+
+        // Handle partial match if the main chain is still empty
+        if (chain.isEmpty() && isPreservePartialTarget(
+                navigationState.getNavigationTarget(), routeLayoutTypes)) {
+            return handlePartialMatch(event);
+        }
+
         return false;
+    }
+
+    /**
+     * Handle partial match for preserve-on-refresh targets.
+     */
+    private boolean handlePartialMatch(NavigationEvent event) {
+        UI ui = event.getUI();
+        
+        if (needsClientDetailsForPartialMatch(ui)) {
+            return requestClientDetailsForPartialMatch(ui, event);
+        } else {
+            handleExistingPartialMatch(ui);
+            return false;
+        }
+    }
+
+    /**
+     * Check if client details are needed for partial match.
+     */
+    private boolean needsClientDetailsForPartialMatch(UI ui) {
+        if (ui.getInternals().getExtendedClientDetails() != null) {
+            return false;
+        }
+
+        PreservedComponentCache cache = ui.getSession()
+                .getAttribute(PreservedComponentCache.class);
+        return cache != null && !cache.isEmpty();
+    }
+
+    /**
+     * Request client details for partial match processing.
+     */
+    private boolean requestClientDetailsForPartialMatch(UI ui, NavigationEvent event) {
+        // As there is a cached chain we get the client details
+        // to get the window name so we can determine if the
+        // cache contains a chain for us to use.
+        ui.getPage().retrieveExtendedClientDetails(details -> handle(event));
+        return true;
+    }
+
+    /**
+     * Handle partial match when client details are already available.
+     */
+    private void handleExistingPartialMatch(UI ui) {
+        Optional<List<HasElement>> partialChain = getWindowPreservedChain(
+                ui.getSession(),
+                ui.getInternals().getExtendedClientDetails().getWindowName());
+        
+        if (partialChain.isPresent()) {
+            processPartialChain(partialChain.get(), ui);
+        }
+    }
+
+    /**
+     * Process the partial chain by disconnecting elements and setting up router layouts.
+     */
+    private void processPartialChain(List<HasElement> oldChain, UI ui) {
+        disconnectElements(oldChain, ui);
+
+        List<RouterLayout> routerLayouts = extractRouterLayouts(oldChain);
+        ui.getInternals().setRouterTargetChain(routerLayouts);
+    }
+
+    /**
+     * Extract router layouts from the old chain.
+     */
+    private List<RouterLayout> extractRouterLayouts(List<HasElement> oldChain) {
+        List<RouterLayout> routerLayouts = new ArrayList<>();
+
+        for (HasElement hasElement : oldChain) {
+            if (hasElement instanceof RouterLayout) {
+                routerLayouts.add((RouterLayout) hasElement);
+            } else {
+                // Remove any non element from their parent to
+                // not get old or duplicate route content
+                hasElement.getElement().removeFromParent();
+            }
+        }
+
+        return routerLayouts;
+    }
+
+    /**
+     * Handle normal chain creation (non-preserve-on-refresh).
+     */
+    private void handleNormalChainCreation(ArrayList<HasElement> chain, NavigationEvent event) {
+        // Create an empty chain which gets populated later in
+        // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
+        chain.clear();
+
+        // Has any preserved components already been created here? If so,
+        // we don't want to navigate back to them ever so clear cache for
+        // window.
+        clearAllPreservedChains(event.getUI());
     }
 
     /**
@@ -443,10 +567,21 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private void pushHistoryStateIfNeeded(NavigationEvent event, UI ui) {
-        boolean reactEnabled = ui.getInternals().getSession().getService()
-                .getDeploymentConfiguration().isReactEnabled();
-        Location currentLocation = ui.getInternals().getActiveViewLocation();
-        NavigationTrigger eventTrigger = event.getTrigger();
+        if (handleErrorNavigationEvent(event, ui)) {
+            return;
+        }
+
+        if (shouldProcessNormalNavigation(event, ui) || isReactEnabledNavigation(event, ui)) {
+            if (shouldPushHistoryState(event)) {
+                pushHistoryState(event);
+            }
+        }
+    }
+
+    /**
+     * Handle error navigation events, returning true if processing should stop.
+     */
+    private boolean handleErrorNavigationEvent(NavigationEvent event, UI ui) {
         if (event instanceof ErrorNavigationEvent errorEvent) {
             if (isRouterLinkNotFoundNavigationError(errorEvent)) {
                 // #8544
@@ -454,19 +589,39 @@ public abstract class AbstractNavigationStateRenderer
                         "this.scrollPositionHandlerAfterServerNavigation($0);",
                         s));
             }
-        } else if (NavigationTrigger.REFRESH != eventTrigger
-                && !event.isForwardTo()
-                && (currentLocation == null || !event.getLocation()
-                        .getPathWithQueryParameters().equals(currentLocation
-                                .getPathWithQueryParameters()))) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
-        } else if (reactEnabled) {
-            if (shouldPushHistoryState(event)) {
-                pushHistoryState(event);
-            }
+            return true;
         }
+        return false;
+    }
+
+    /**
+     * Check if this is a normal navigation that should be processed.
+     */
+    private boolean shouldProcessNormalNavigation(NavigationEvent event, UI ui) {
+        NavigationTrigger eventTrigger = event.getTrigger();
+        Location currentLocation = ui.getInternals().getActiveViewLocation();
+        
+        return NavigationTrigger.REFRESH != eventTrigger
+                && !event.isForwardTo()
+                && hasLocationChanged(event.getLocation(), currentLocation);
+    }
+
+    /**
+     * Check if the location has actually changed.
+     */
+    private boolean hasLocationChanged(Location newLocation, Location currentLocation) {
+        return currentLocation == null 
+                || !newLocation.getPathWithQueryParameters()
+                        .equals(currentLocation.getPathWithQueryParameters());
+    }
+
+    /**
+     * Check if this is a React-enabled navigation that should be processed.
+     */
+    private boolean isReactEnabledNavigation(NavigationEvent event, UI ui) {
+        boolean reactEnabled = ui.getInternals().getSession().getService()
+                .getDeploymentConfiguration().isReactEnabled();
+        return reactEnabled;
     }
 
     protected void pushHistoryState(NavigationEvent event) {
@@ -738,62 +893,99 @@ public abstract class AbstractNavigationStateRenderer
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
             BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
 
-        Component componentInstance = null;
-        boolean notifyNavigationTarget = false;
+        ComponentContext componentContext = prepareComponentContext(event, chain);
+        
+        return processEventHandlers(eventHandlers, event, beforeNavigation, componentContext);
+    }
 
-        if (chain != null) {
-            // Reverse the chain to the stored ordered, since that is different
-            // from the notification order, and also to keep
-            // LocationChangeEvent.getRouteTargetChain backward compatible.
-            chain = new ArrayList<>(chain);
-            Collections.reverse(chain);
-
-            componentInstance = (Component) chain.get(0);
-
-            locationChangeEvent = new LocationChangeEvent(event.getSource(),
-                    event.getUI(), event.getTrigger(), event.getLocation(),
-                    chain);
-
-            notifyNavigationTarget = true;
+    /**
+     * Prepare the component context for event handling.
+     */
+    private ComponentContext prepareComponentContext(NavigationEvent event, List<HasElement> chain) {
+        if (chain == null) {
+            return new ComponentContext(null, false);
         }
+
+        // Reverse the chain to the stored ordered, since that is different
+        // from the notification order, and also to keep
+        // LocationChangeEvent.getRouteTargetChain backward compatible.
+        List<HasElement> reversedChain = new ArrayList<>(chain);
+        Collections.reverse(reversedChain);
+
+        Component componentInstance = (Component) reversedChain.get(0);
+
+        locationChangeEvent = new LocationChangeEvent(event.getSource(),
+                event.getUI(), event.getTrigger(), event.getLocation(),
+                reversedChain);
+
+        return new ComponentContext(componentInstance, true);
+    }
+
+    /**
+     * Process all event handlers and handle navigation target notification.
+     */
+    private Optional<Integer> processEventHandlers(List<BeforeEnterHandler> eventHandlers,
+            NavigationEvent event, BeforeEnterEvent beforeNavigation, ComponentContext componentContext) {
+        
+        boolean notifyNavigationTarget = componentContext.shouldNotifyTarget();
 
         for (BeforeEnterHandler eventHandler : eventHandlers) {
-
-            // Notify the target itself, i.e. with the url parameter, before
-            // sending the event to the navigation target or any of its
-            // children.
-            if (notifyNavigationTarget
-                    && (isComponentElementEqualsOrChild(eventHandler,
-                            componentInstance))) {
-
-                Optional<Integer> result = notifyNavigationTarget(event,
-                        beforeNavigation, locationChangeEvent,
-                        componentInstance);
-                if (result.isPresent()) {
-                    return result;
-                }
-
-                notifyNavigationTarget = false;
-            }
-
-            Optional<Integer> result = sendBeforeEnterEvent(event,
-                    beforeNavigation, eventHandler);
+            Optional<Integer> result = handleEventHandler(eventHandler, event, beforeNavigation, 
+                    componentContext, notifyNavigationTarget);
             if (result.isPresent()) {
                 return result;
+            }
+
+            // Clear the flag after first matching handler
+            if (notifyNavigationTarget && componentContext.componentInstance != null
+                    && isComponentElementEqualsOrChild(eventHandler, componentContext.componentInstance)) {
+                notifyNavigationTarget = false;
             }
         }
 
-        // Make sure notifyNavigationTarget is executed.
-        if (notifyNavigationTarget) {
-
-            Optional<Integer> result = notifyNavigationTarget(event,
-                    beforeNavigation, locationChangeEvent, componentInstance);
-            if (result.isPresent()) {
-                return result;
-            }
+        // Make sure notifyNavigationTarget is executed if it wasn't already
+        if (notifyNavigationTarget && componentContext.componentInstance != null) {
+            return notifyNavigationTarget(event, beforeNavigation, locationChangeEvent, 
+                    componentContext.componentInstance);
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Handle a single event handler.
+     */
+    private Optional<Integer> handleEventHandler(BeforeEnterHandler eventHandler, NavigationEvent event,
+            BeforeEnterEvent beforeNavigation, ComponentContext componentContext, boolean notifyNavigationTarget) {
+        
+        // Notify the target itself, i.e. with the url parameter, before
+        // sending the event to the navigation target or any of its children.
+        if (notifyNavigationTarget && componentContext.componentInstance != null
+                && isComponentElementEqualsOrChild(eventHandler, componentContext.componentInstance)) {
+
+            Optional<Integer> result = notifyNavigationTarget(event,
+                    beforeNavigation, locationChangeEvent, componentContext.componentInstance);
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+
+        return sendBeforeEnterEvent(event, beforeNavigation, eventHandler);
+    }
+
+    /**
+     * Helper class to hold component context information.
+     */
+    private static class ComponentContext {
+        final Component componentInstance;
+        final boolean shouldNotifyTarget;
+
+        ComponentContext(Component componentInstance, boolean shouldNotifyTarget) {
+            this.componentInstance = componentInstance;
+            this.shouldNotifyTarget = shouldNotifyTarget;
+        }
+
+        boolean shouldNotifyTarget() { return shouldNotifyTarget; }
     }
 
     private Optional<Integer> sendBeforeEnterEvent(NavigationEvent event,
@@ -859,24 +1051,81 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
 
-        boolean queryParameterChanged = beforeEvent.hasRedirectQueryParameters()
+        boolean queryParameterChanged = hasQueryParameterChanged(beforeEvent, event);
+
+        Optional<Integer> forwardResult = handleForwardIfNeeded(event, beforeEvent, queryParameterChanged);
+        if (forwardResult.isPresent()) {
+            return forwardResult;
+        }
+
+        Optional<Integer> rerouteResult = handleRerouteIfNeeded(event, beforeEvent, queryParameterChanged);
+        if (rerouteResult.isPresent()) {
+            return rerouteResult;
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Check if query parameters have changed during the navigation.
+     */
+    private boolean hasQueryParameterChanged(BeforeEvent beforeEvent, NavigationEvent event) {
+        return beforeEvent.hasRedirectQueryParameters()
                 && !beforeEvent.getRedirectQueryParameters()
                         .equals(event.getLocation().getQueryParameters());
+    }
 
-        if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
-                beforeEvent.getForwardTargetType(),
-                beforeEvent.getForwardTargetRouteParameters())
-                || queryParameterChanged
-                || !(navigationState.getResolvedPath() != null
-                        && navigationState.getResolvedPath()
-                                .equals(beforeEvent.getForwardUrl())))) {
+    /**
+     * Handle forward target if needed.
+     */
+    private Optional<Integer> handleForwardIfNeeded(NavigationEvent event, 
+            BeforeEvent beforeEvent, boolean queryParameterChanged) {
+        if (!beforeEvent.hasForwardTarget()) {
+            return Optional.empty();
+        }
+
+        boolean shouldForward = shouldExecuteForward(beforeEvent, queryParameterChanged);
+        if (shouldForward) {
             return Optional.of(forward(event, beforeEvent));
         }
 
-        if (beforeEvent.hasRerouteTarget()
-                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())
-                        || queryParameterChanged)) {
+        return Optional.empty();
+    }
+
+    /**
+     * Determine if forward should be executed based on navigation state and parameters.
+     */
+    private boolean shouldExecuteForward(BeforeEvent beforeEvent, boolean queryParameterChanged) {
+        boolean differentNavigationState = !isSameNavigationState(
+                beforeEvent.getForwardTargetType(),
+                beforeEvent.getForwardTargetRouteParameters());
+        
+        boolean differentResolvedPath = !isMatchingResolvedPath(beforeEvent);
+        
+        return differentNavigationState || queryParameterChanged || differentResolvedPath;
+    }
+
+    /**
+     * Check if the resolved path matches the forward URL.
+     */
+    private boolean isMatchingResolvedPath(BeforeEvent beforeEvent) {
+        return navigationState.getResolvedPath() != null
+                && navigationState.getResolvedPath().equals(beforeEvent.getForwardUrl());
+    }
+
+    /**
+     * Handle reroute target if needed.
+     */
+    private Optional<Integer> handleRerouteIfNeeded(NavigationEvent event, 
+            BeforeEvent beforeEvent, boolean queryParameterChanged) {
+        if (!beforeEvent.hasRerouteTarget()) {
+            return Optional.empty();
+        }
+
+        boolean shouldReroute = !isSameNavigationState(beforeEvent.getRerouteTargetType(),
+                beforeEvent.getRerouteTargetRouteParameters()) || queryParameterChanged;
+        
+        if (shouldReroute) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
@@ -926,53 +1175,89 @@ public abstract class AbstractNavigationStateRenderer
     private NavigationEvent getNavigationEvent(NavigationEvent event,
             BeforeEvent beforeNavigation) {
         if (beforeNavigation.hasErrorParameter()) {
-            ErrorParameter<?> errorParameter = beforeNavigation
-                    .getErrorParameter();
-
-            return new ErrorNavigationEvent(event.getSource(),
-                    event.getLocation(), event.getUI(),
-                    NavigationTrigger.PROGRAMMATIC, errorParameter);
+            return createErrorNavigationEvent(event, beforeNavigation);
         }
 
-        String url;
-        final boolean isForward = beforeNavigation.hasForwardTarget();
-        if (isForward) {
-            url = beforeNavigation.getForwardUrl();
-        } else {
-            url = beforeNavigation.getRerouteUrl();
-        }
+        String url = getRedirectUrl(beforeNavigation);
+        validateRedirectUrl(url, beforeNavigation);
 
-        if (url == null) {
-            final String redirectType;
-            final Class<? extends Component> redirectTarget;
-            final RouteParameters redirectParameters;
-
-            if (isForward) {
-                redirectType = "forward";
-                redirectTarget = beforeNavigation.getForwardTargetType();
-                redirectParameters = beforeNavigation
-                        .getForwardTargetRouteParameters();
-            } else {
-                redirectType = "reroute";
-                redirectTarget = beforeNavigation.getRerouteTargetType();
-                redirectParameters = beforeNavigation
-                        .getRerouteTargetRouteParameters();
-            }
-
-            throw new IllegalStateException(String.format(
-                    "Attempting to %s to unresolved location target %s with route parameters %s",
-                    redirectType, redirectTarget, redirectParameters));
-        }
-
-        QueryParameters queryParameters = beforeNavigation
-                .hasRedirectQueryParameters()
-                        ? beforeNavigation.getRedirectQueryParameters()
-                        : event.getLocation().getQueryParameters();
-
+        QueryParameters queryParameters = getQueryParameters(beforeNavigation, event);
         Location location = new Location(url, queryParameters);
 
         return new NavigationEvent(event.getSource(), location, event.getUI(),
                 NavigationTrigger.PROGRAMMATIC, (BaseJsonNode) null, true);
+    }
+
+    /**
+     * Create an error navigation event.
+     */
+    private NavigationEvent createErrorNavigationEvent(NavigationEvent event, BeforeEvent beforeNavigation) {
+        ErrorParameter<?> errorParameter = beforeNavigation.getErrorParameter();
+        return new ErrorNavigationEvent(event.getSource(),
+                event.getLocation(), event.getUI(),
+                NavigationTrigger.PROGRAMMATIC, errorParameter);
+    }
+
+    /**
+     * Get the redirect URL from the before navigation event.
+     */
+    private String getRedirectUrl(BeforeEvent beforeNavigation) {
+        boolean isForward = beforeNavigation.hasForwardTarget();
+        return isForward ? beforeNavigation.getForwardUrl() : beforeNavigation.getRerouteUrl();
+    }
+
+    /**
+     * Validate the redirect URL and throw exception if invalid.
+     */
+    private void validateRedirectUrl(String url, BeforeEvent beforeNavigation) {
+        if (url != null) {
+            return;
+        }
+
+        RedirectInfo redirectInfo = getRedirectInfo(beforeNavigation);
+        throw new IllegalStateException(String.format(
+                "Attempting to %s to unresolved location target %s with route parameters %s",
+                redirectInfo.type, redirectInfo.target, redirectInfo.parameters));
+    }
+
+    /**
+     * Get redirect information for error reporting.
+     */
+    private RedirectInfo getRedirectInfo(BeforeEvent beforeNavigation) {
+        boolean isForward = beforeNavigation.hasForwardTarget();
+        if (isForward) {
+            return new RedirectInfo("forward", 
+                    beforeNavigation.getForwardTargetType(),
+                    beforeNavigation.getForwardTargetRouteParameters());
+        } else {
+            return new RedirectInfo("reroute",
+                    beforeNavigation.getRerouteTargetType(),
+                    beforeNavigation.getRerouteTargetRouteParameters());
+        }
+    }
+
+    /**
+     * Get query parameters for the navigation event.
+     */
+    private QueryParameters getQueryParameters(BeforeEvent beforeNavigation, NavigationEvent event) {
+        return beforeNavigation.hasRedirectQueryParameters()
+                ? beforeNavigation.getRedirectQueryParameters()
+                : event.getLocation().getQueryParameters();
+    }
+
+    /**
+     * Helper class to hold redirect information.
+     */
+    private static class RedirectInfo {
+        final String type;
+        final Class<? extends Component> target;
+        final RouteParameters parameters;
+
+        RedirectInfo(String type, Class<? extends Component> target, RouteParameters parameters) {
+            this.type = type;
+            this.target = target;
+            this.parameters = parameters;
+        }
     }
 
     /**
@@ -992,30 +1277,63 @@ public abstract class AbstractNavigationStateRenderer
         final UI ui = event.getUI();
         final VaadinSession session = ui.getSession();
 
-        if (ui.getInternals().getExtendedClientDetails() == null) {
-            if (hasPreservedChainOfLocation(session, location)) {
-                // We may have a cached instance for this location, but we
-                // need to retrieve the window name before we can determine
-                // this, so execute a client-side request.
-                ui.getPage().retrieveExtendedClientDetails(
-                        details -> handle(event));
-                return Optional.empty();
-            }
-        } else {
-            final String windowName = ui.getInternals()
-                    .getExtendedClientDetails().getWindowName();
-            final Optional<ArrayList<HasElement>> maybePreserved = getPreservedChain(
-                    session, windowName, event.getLocation());
-            if (maybePreserved.isPresent()) {
-                // Re-use preserved chain for this route
-                ArrayList<HasElement> chain = maybePreserved.get();
-                disconnectElements(chain, ui);
+        if (needsClientDetails(ui)) {
+            return handleMissingClientDetails(session, location, ui, event);
+        }
 
-                return Optional.of(chain);
-            }
+        return handleExistingClientDetails(ui, session, location);
+    }
+
+    /**
+     * Check if client details are needed for preserved chain retrieval.
+     */
+    private boolean needsClientDetails(UI ui) {
+        return ui.getInternals().getExtendedClientDetails() == null;
+    }
+
+    /**
+     * Handle the case where client details are missing.
+     */
+    private Optional<ArrayList<HasElement>> handleMissingClientDetails(
+            VaadinSession session, Location location, UI ui, NavigationEvent event) {
+        
+        if (hasPreservedChainOfLocation(session, location)) {
+            // We may have a cached instance for this location, but we
+            // need to retrieve the window name before we can determine
+            // this, so execute a client-side request.
+            ui.getPage().retrieveExtendedClientDetails(details -> handle(event));
+            return Optional.empty();
         }
 
         return Optional.of(new ArrayList<>(0));
+    }
+
+    /**
+     * Handle the case where client details are available.
+     */
+    private Optional<ArrayList<HasElement>> handleExistingClientDetails(
+            UI ui, VaadinSession session, Location location) {
+        
+        final String windowName = ui.getInternals()
+                .getExtendedClientDetails().getWindowName();
+        final Optional<ArrayList<HasElement>> maybePreserved = getPreservedChain(
+                session, windowName, location);
+        
+        if (maybePreserved.isPresent()) {
+            return handleFoundPreservedChain(maybePreserved.get(), ui);
+        }
+
+        return Optional.of(new ArrayList<>(0));
+    }
+
+    /**
+     * Handle a found preserved chain by disconnecting elements and returning it.
+     */
+    private Optional<ArrayList<HasElement>> handleFoundPreservedChain(
+            ArrayList<HasElement> chain, UI ui) {
+        // Re-use preserved chain for this route
+        disconnectElements(chain, ui);
+        return Optional.of(chain);
     }
 
     private static void disconnectElements(List<HasElement> chain, UI ui) {
