@@ -733,12 +733,18 @@ public final class VaadinSecurityConfigurer
         var exceptionHandlers = new LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler>();
         exceptionHandlers.put(CsrfException.class, (req, res, exc) -> res
                 .setStatus(HttpStatus.UNAUTHORIZED.value()));
+        exceptionHandlers.put(AccessDeniedException.class, (req, res,
+                exc) -> res.setStatus(HttpStatus.UNAUTHORIZED.value()));
         var requestHandlers = new LinkedHashMap<RequestMatcher, AccessDeniedHandler>();
+        AccessDeniedHandlerImpl defaultHandler = new AccessDeniedHandlerImpl();
+        if (formLoginPage != null) {
+            defaultHandler.setErrorPage(formLoginPage);
+        }
         requestHandlers.put(getRequestUtil()::isEndpointRequest,
                 new DelegatingAccessDeniedHandler(exceptionHandlers,
-                        new AccessDeniedHandlerImpl()));
+                        defaultHandler));
         return new RequestMatcherDelegatingAccessDeniedHandler(requestHandlers,
-                new AccessDeniedHandlerImpl());
+                defaultHandler);
     }
 
     private void customizeAuthorizeHttpRequests(

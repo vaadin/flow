@@ -154,6 +154,9 @@ public abstract class VaadinWebSecurity {
 
     private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
+    private String completeHillaLoginViewPath;
+    private AccessDeniedHandlerImpl defaultAccessDeniedHandler;
+
     /**
      * Registers default {@link SecurityFilterChain} bean.
      * <p>
@@ -499,7 +502,10 @@ public abstract class VaadinWebSecurity {
      */
     protected void setLoginView(HttpSecurity http, String hillaLoginViewPath,
             String logoutSuccessUrl) throws Exception {
-        String completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
+        completeHillaLoginViewPath = applyUrlMapping(hillaLoginViewPath);
+        if (defaultAccessDeniedHandler != null) {
+            defaultAccessDeniedHandler.setErrorPage(completeHillaLoginViewPath);
+        }
         http.formLogin(formLogin -> {
             formLogin.loginPage(completeHillaLoginViewPath).permitAll();
             formLogin.successHandler(
@@ -798,20 +804,25 @@ public abstract class VaadinWebSecurity {
     }
 
     private AccessDeniedHandler createAccessDeniedHandler() {
-        final AccessDeniedHandler defaultHandler = new AccessDeniedHandlerImpl();
+        defaultAccessDeniedHandler = new AccessDeniedHandlerImpl();
+        if (completeHillaLoginViewPath != null) {
+            defaultAccessDeniedHandler.setErrorPage(completeHillaLoginViewPath);
+        }
 
         final AccessDeniedHandler http401UnauthorizedHandler = new Http401UnauthorizedAccessDeniedHandler();
 
         final LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler> exceptionHandlers = new LinkedHashMap<>();
         exceptionHandlers.put(CsrfException.class, http401UnauthorizedHandler);
+        exceptionHandlers.put(AccessDeniedException.class,
+                http401UnauthorizedHandler);
 
         final LinkedHashMap<RequestMatcher, AccessDeniedHandler> matcherHandlers = new LinkedHashMap<>();
         matcherHandlers.put(requestUtil::isEndpointRequest,
                 new DelegatingAccessDeniedHandler(exceptionHandlers,
-                        new AccessDeniedHandlerImpl()));
+                        defaultAccessDeniedHandler));
 
         return new RequestMatcherDelegatingAccessDeniedHandler(matcherHandlers,
-                defaultHandler);
+                defaultAccessDeniedHandler);
     }
 
     private static class Http401UnauthorizedAccessDeniedHandler
