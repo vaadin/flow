@@ -335,6 +335,18 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
 
     /**
      * Gets the index of a given item based on the given hierarchical query.
+     * <p>
+     * This method must be implemented in accordance with the selected hierarchy
+     * type, see {@link #getHierarchyFormat()} and {@link HierarchyFormat}.
+     * <ul>
+     * <li>If {@link HierarchyFormat#FLATTENED} is used, it should be
+     * implemented to return the index in the entire flattened tree.
+     * <li>If {@link HierarchyFormat#NESTED} is used, it should be implemented
+     * to return the index within the given parent item.
+     * </ul>
+     * <p>
+     * This method has a default implementation for
+     * {@link InMemoryDataProvider}s.
      *
      * @param item
      *            the item to get the index for
