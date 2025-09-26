@@ -16,8 +16,6 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.DataProvider;
