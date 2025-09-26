@@ -860,8 +860,11 @@ public class ComponentEffectTest {
             ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
 
             assertNotNull(event);
-            assertEquals(IllegalArgumentException.class,
+            assertEquals(IllegalStateException.class,
                     event.getThrowable().getClass());
+            assertEquals(
+                    "ComponentEffect.bindChildren childFactory must not return null",
+                    event.getThrowable().getMessage());
         });
     }
 

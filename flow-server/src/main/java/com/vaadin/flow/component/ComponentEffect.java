@@ -173,9 +173,9 @@ public final class ComponentEffect {
      * <pre>
      * ListSignal&lt;String&gt; taskList = new ListSignal&lt;&gt;(String.class);
      *
-     * UnorderedList div = new UnorderedList();
+     * UnorderedList component = new UnorderedList();
      *
-     * ComponentEffect.bindChildren(div, taskList, taskValueSignal -> {
+     * ComponentEffect.bindChildren(component, taskList, taskValueSignal -> {
      *     var listItem = new ListItem();
      *     ComponentEffect.bind(listItem, taskValueSignal, HasText::setText);
      *     return listItem;
@@ -196,8 +196,6 @@ public final class ComponentEffect {
      *            the type of the parent component
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
-     * @throws IllegalArgumentException
-     *             thrown if childFactory returns null
      */
     public static <T, PARENT extends Component & HasComponents> void bindChildren(
             PARENT parent, ListSignal<T> list,
@@ -209,7 +207,9 @@ public final class ComponentEffect {
                 // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
-                        .map(Component::getElement).orElse(null));
+                        .map(Component::getElement)
+                        .orElseThrow(() -> new IllegalStateException(
+                                "ComponentEffect.bindChildren childFactory must not return null")));
     }
 
     private static <T> void bindChildren(Component parentComponent,
@@ -226,7 +226,9 @@ public final class ComponentEffect {
             throw new IllegalStateException(
                     "Parent element must not have children when binding ListSignal to it");
         }
-        // Create a child element cache outside the effect.
+        // Create a child element cache outside the effect to persist elements
+        // created by the child factory and avoid recreating them each time the
+        // effect runs due to signal changes.
         HashMap<ValueSignal<T>, Element> valueSignalToChildCache = new HashMap<>();
 
         ComponentEffect.effect(parentComponent,
@@ -238,6 +240,9 @@ public final class ComponentEffect {
         // Cache the children to avoid multiple traversals
         LinkedList<Element> remainingChildren = context
                 .parentChildrenToLinkedList();
+        // Cache the children in a HashSet for O(1) lookups and removals
+        HashSet<Element> remainingChildrenSet = new HashSet<>(
+                remainingChildren);
 
         if (remainingChildren.size() != context.getCachedChildrenSize()) {
             throw new IllegalStateException(
@@ -245,8 +250,8 @@ public final class ComponentEffect {
                             + remainingChildren.size() + ", expected: "
                             + context.getCachedChildrenSize());
         }
-        removeNotPresentChildren(context, remainingChildren);
-        updateByChildSignals(context, remainingChildren);
+        removeNotPresentChildren(context, remainingChildrenSet);
+        updateByChildSignals(context, remainingChildren, remainingChildrenSet);
 
         // Final validation to ensure no unexpected children are present. This
         // will catch also wrong order and is run as a last to avoid running
@@ -314,10 +319,10 @@ public final class ComponentEffect {
                             + children.size() + ", expected: "
                             + context.getCachedChildrenSize());
         }
-        for (int index = 0; index < children.size(); index++) {
-            Element actualElement = children.get(index);
+        int index = 0;
+        for (Element actualElement : children) {
             Element expectedElement = context.valueSignalToChildCache
-                    .get(context.childSignalsList.get(index));
+                    .get(context.childSignalsList.get(index++));
             if (!Objects.equals(actualElement, expectedElement)) {
                 throw new IllegalStateException(
                         "Parent element must have children matching the list signal. Unexpected child: "
@@ -333,14 +338,14 @@ public final class ComponentEffect {
      */
     private static <T> void removeNotPresentChildren(
             BindChildrenEffectContext<T> context,
-            LinkedList<Element> remainingChildren) {
+            HashSet<Element> remainingChildrenSet) {
         var toRemove = new HashSet<>(context.valueSignalToChildCache.keySet());
         context.childSignalsList.forEach(toRemove::remove);
         for (ValueSignal<T> removedItem : toRemove) {
             Element element = context.valueSignalToChildCache
                     .remove(removedItem);
             element.removeFromParent();
-            remainingChildren.remove(element);
+            remainingChildrenSet.remove(element);
         }
     }
 
@@ -351,10 +356,8 @@ public final class ComponentEffect {
      */
     private static <T> void updateByChildSignals(
             BindChildrenEffectContext<T> context,
-            LinkedList<Element> remainingChildren) {
-        // Cache the children in a HashSet for O(1) lookups and removals
-        HashSet<Element> remainingChildrenSet = new HashSet<>(
-                remainingChildren);
+            LinkedList<Element> remainingChildren,
+            HashSet<Element> remainingChildrenSet) {
 
         for (int i = 0; i < context.childSignalsList.size(); i++) {
             ValueSignal<T> item = context.childSignalsList.get(i);
@@ -368,6 +371,9 @@ public final class ComponentEffect {
 
             // Use LinkedList for order
             Element actualChild = remainingChildren.pollFirst();
+            if (!remainingChildrenSet.contains(actualChild)) {
+                continue; // skip children that have been removed already
+            }
             if (!Objects.equals(actualChild, expectedChild)) {
                 /*
                  * A mismatch has been encountered and we need to adjust the
