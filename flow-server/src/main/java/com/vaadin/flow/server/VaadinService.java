@@ -55,9 +55,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -704,16 +703,13 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Creates and configures a default instance of {@link ObjectMapper}. The
-     * configured {@link ObjectMapper} includes the registration of the
-     * {@link JavaTimeModule} to handle serialization and deserialization of
-     * Java time API objects.
+     * configured {@link ObjectMapper} handle serialization and deserialization
+     * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
      */
     protected ObjectMapper createDefaultObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        return JacksonUtils.getMapper();
     }
 
     /**
@@ -1251,17 +1247,17 @@ public abstract class VaadinService implements Serializable {
             Optional<Locale> foundLocale = LocaleUtil
                     .getExactLocaleMatch(request, providedLocales);
 
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isEmpty()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
 
-            // Set locale by match found in I18N provider, first provided locale
-            // or else leave as default locale
+            // Set locale by match found in I18N provider, locale provided by
+            // I18nProvider.getDefaultLocale or else leave as default locale
             if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
-                session.setLocale(providedLocales.get(0));
+                session.setLocale(provider.getDefaultLocale());
             }
         }
     }

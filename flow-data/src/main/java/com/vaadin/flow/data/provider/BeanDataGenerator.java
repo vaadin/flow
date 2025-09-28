@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonSerializer;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -50,10 +50,10 @@ public class BeanDataGenerator<T> implements DataGenerator<T> {
         if (value instanceof ObjectNode) {
             ObjectNode object = (ObjectNode) value;
             for (String key : JacksonUtils.getKeys(object)) {
-                data.put(key, object.get(key));
+                data.set(key, object.get(key));
             }
         } else {
-            data.put("value", value);
+            data.set("value", value);
         }
     }
 

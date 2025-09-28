@@ -18,7 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Creates the <code>package.json</code> if missing.

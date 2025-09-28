@@ -40,6 +40,20 @@ public interface I18NProvider extends Serializable {
     List<Locale> getProvidedLocales();
 
     /**
+     * Get the default locale. Per default this is the first locale returned by
+     * {@link #getProvidedLocales}.
+     *
+     * @return default locale
+     */
+    default Locale getDefaultLocale() {
+        List<Locale> providedLocales = getProvidedLocales();
+        if (providedLocales.isEmpty()) {
+            return null;
+        }
+        return providedLocales.get(0);
+    }
+
+    /**
      * Get the translation for key with given locale.
      * <p>
      * Note! For usability and catching missing translations implementation

@@ -23,8 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
@@ -179,7 +179,6 @@ public class NodeUpdaterTest {
         expectedDependencies.add("workbox-core");
         expectedDependencies.add("workbox-precaching");
         expectedDependencies.add("glob");
-        expectedDependencies.add("async");
         return expectedDependencies;
     }
 

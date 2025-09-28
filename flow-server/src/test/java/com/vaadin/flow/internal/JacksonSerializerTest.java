@@ -23,13 +23,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.NumericNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -296,7 +296,7 @@ public class JacksonSerializerTest {
     public void serializeBasicTypes_returnJsonBasicTypes() {
         JsonNode json = JacksonSerializer.toJson("someString");
         Assert.assertTrue("The JsonNode should be instanceof JsonString",
-                json instanceof TextNode);
+                json instanceof StringNode);
         Assert.assertEquals("someString", json.asText());
 
         json = JacksonSerializer.toJson(0);
@@ -336,7 +336,7 @@ public class JacksonSerializerTest {
 
         json = JacksonSerializer.toJson(SomeEnum.SOME_VALUE_1);
         Assert.assertTrue("The JsonNode should be instanceof JsonString",
-                json instanceof TextNode);
+                json instanceof StringNode);
         Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), json.asText());
     }
 
