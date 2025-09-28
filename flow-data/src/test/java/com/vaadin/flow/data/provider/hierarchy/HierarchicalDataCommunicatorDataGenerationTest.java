@@ -42,15 +42,14 @@ public class HierarchicalDataCommunicatorDataGenerationTest
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
 
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 0")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 0-0")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 0-1")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 1")), Mockito.any());
-
         Mockito.verify(dataGenerator, Mockito.never())
                 .generateData(Mockito.eq(new Item("Item 2")), Mockito.any());
 
@@ -59,59 +58,64 @@ public class HierarchicalDataCommunicatorDataGenerationTest
 
         Mockito.verify(dataGenerator, Mockito.never())
                 .generateData(Mockito.eq(new Item("Item 95")), Mockito.any());
-
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 96")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 97")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 98")), Mockito.any());
-        Mockito.verify(dataGenerator, Mockito.times(1))
+        Mockito.verify(dataGenerator)
                 .generateData(Mockito.eq(new Item("Item 99")), Mockito.any());
     }
 
     @Test
-    @SuppressWarnings("unchecked")
-    public void changeViewportRangeBackAndForth_destroyDataCalledForNoLongerVisibleItems() {
+    public void changeViewportRangeBackAndForth_destroyDataCalledForNoLongerVisibleItemsAfterConfirmation() {
         populateTreeData(treeData, 100, 2);
         dataCommunicator.expand(new Item("Item 0"));
+
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
-
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
         Mockito.verify(dataGenerator, Mockito.never())
                 .destroyData(Mockito.any());
 
+        Mockito.clearInvocations(dataGenerator, arrayUpdater, arrayUpdate);
+
         dataCommunicator.setViewportRange(2, 4);
         fakeClientCommunication();
-
-        Mockito.verify(dataGenerator, Mockito.times(1))
-                .destroyData(Mockito.eq(new Item("Item 0")));
-        Mockito.verify(dataGenerator, Mockito.times(1))
-                .destroyData(Mockito.eq(new Item("Item 0-0")));
-
         Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 0-1")));
-        Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 1")));
+                .destroyData(Mockito.any()); // not confirmed yet
 
-        Mockito.clearInvocations(dataGenerator);
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 0"));
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 0-0"));
+        Mockito.verify(dataGenerator, Mockito.never())
+                .destroyData(new Item("Item 0-1"));
+        Mockito.verify(dataGenerator, Mockito.never())
+                .destroyData(new Item("Item 1"));
+
+        Mockito.clearInvocations(dataGenerator, arrayUpdater, arrayUpdate);
 
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
+        Mockito.verify(dataGenerator, Mockito.never())
+                .destroyData(Mockito.any()); // not confirmed yet
 
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
         Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 0")));
+                .destroyData(new Item("Item 0"));
         Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 0-0")));
+                .destroyData(new Item("Item 0-0"));
         Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 0-1")));
+                .destroyData(new Item("Item 0-1"));
         Mockito.verify(dataGenerator, Mockito.never())
-                .destroyData(Mockito.eq(new Item("Item 1")));
-
-        Mockito.verify(dataGenerator, Mockito.times(1))
-                .destroyData(Mockito.eq(new Item("Item 2")));
-        Mockito.verify(dataGenerator, Mockito.times(1))
-                .destroyData(Mockito.eq(new Item("Item 3")));
+                .destroyData(new Item("Item 1"));
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 2"));
+        Mockito.verify(dataGenerator) //
+                .destroyData(new Item("Item 3"));
     }
 
     @Test
@@ -129,7 +133,6 @@ public class HierarchicalDataCommunicatorDataGenerationTest
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0"));
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-0"));
         Mockito.verify(dataGenerator).destroyData(new Item("Item 0-0-1"));
-
         Mockito.verify(dataGenerator, Mockito.never())
                 .destroyData(new Item("Item 0-1"));
         Mockito.verify(dataGenerator, Mockito.never())

@@ -18,9 +18,9 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ValueNode;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;

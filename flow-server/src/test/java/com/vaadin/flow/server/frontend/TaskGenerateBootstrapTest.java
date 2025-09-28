@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -49,6 +50,7 @@ public class TaskGenerateBootstrapTest {
     private static final String DEV_TOOLS_IMPORT = "import '"
             + FrontendUtils.JAR_RESOURCES_IMPORT
             + "vaadin-dev-tools/vaadin-dev-tools.js';";
+    private static final String CUSTOM_MODIFIER_CONTENT = "// custom modifier";
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -59,10 +61,18 @@ public class TaskGenerateBootstrapTest {
 
     private Options options;
 
+    public static class CustomModifier implements TypeScriptBootstrapModifier {
+        @Override
+        public void modify(List<String> lines, Options options,
+                FrontendDependenciesScanner scanner) {
+            lines.add(0, CUSTOM_MODIFIER_CONTENT);
+        }
+    }
+
     @Before
     public void setUp() throws Exception {
         ClassFinder.DefaultClassFinder finder = new ClassFinder.DefaultClassFinder(
-                Collections.singleton(this.getClass()));
+                Set.of(this.getClass(), CustomModifier.class));
         frontDeps = new FrontendDependenciesScanner.FrontendDependenciesScannerFactory()
                 .createScanner(false, finder, false, null, true);
 
@@ -123,6 +133,18 @@ public class TaskGenerateBootstrapTest {
         String content = taskGenerateBootstrap.getFileContent();
         Assert.assertTrue(content.contains(
                 String.format("import './%s';", FEATURE_FLAGS_FILE_NAME)));
+    }
+
+    @Test
+    public void should_importFeatureFlagTSBeforeModifiers()
+            throws ExecutionFailedException {
+        taskGenerateBootstrap.execute();
+        String content = taskGenerateBootstrap.getFileContent();
+        int featureFlagIndex = content.indexOf(
+                String.format("import './%s';", FEATURE_FLAGS_FILE_NAME));
+        int modifierIndex = content.indexOf(CUSTOM_MODIFIER_CONTENT);
+        Assert.assertTrue("Feature flag import should be before any modifier",
+                featureFlagIndex < modifierIndex);
     }
 
     @Test

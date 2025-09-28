@@ -4,6 +4,8 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import com.vaadin.flow.router.AfterNavigationEvent;
+import com.vaadin.flow.router.AfterNavigationObserver;
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
@@ -35,7 +37,7 @@ import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 @AnonymousAllowed
-public class MainView extends AppLayout {
+public class MainView extends AppLayout implements AfterNavigationObserver {
 
     private final Tabs menu;
     private H1 viewTitle;
@@ -180,8 +182,7 @@ public class MainView extends AppLayout {
     }
 
     @Override
-    protected void afterNavigation() {
-        super.afterNavigation();
+    public void afterNavigation(AfterNavigationEvent event) {
         getTabForComponent(getContent()).ifPresent(menu::setSelectedTab);
         viewTitle.setText(getCurrentPageTitle());
     }

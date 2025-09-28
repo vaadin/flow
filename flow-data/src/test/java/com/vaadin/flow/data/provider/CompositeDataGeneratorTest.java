@@ -19,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
 import org.junit.Test;
