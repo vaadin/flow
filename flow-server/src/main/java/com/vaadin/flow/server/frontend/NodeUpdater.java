@@ -32,8 +32,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -422,7 +422,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         ObjectNode vaadinDeps = (ObjectNode) json.get(VAADIN_DEP_KEY);
         if (!json.has(key)) {
-            json.put(key, JacksonUtils.createObjectNode());
+            json.set(key, JacksonUtils.createObjectNode());
         }
         json = (ObjectNode) json.get(key);
         vaadinDeps = (ObjectNode) vaadinDeps.get(key);

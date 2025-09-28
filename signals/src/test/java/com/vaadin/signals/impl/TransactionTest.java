@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;

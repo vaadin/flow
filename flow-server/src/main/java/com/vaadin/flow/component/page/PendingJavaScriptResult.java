@@ -18,7 +18,7 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.function.SerializableConsumer;
