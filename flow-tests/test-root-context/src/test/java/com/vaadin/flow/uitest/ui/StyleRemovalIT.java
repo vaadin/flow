@@ -57,7 +57,7 @@ public class StyleRemovalIT extends ChromeBrowserTest {
         open();
 
         // Add first stylesheet
-        WebElement addButton1 = findElement(By.id("add-style-1"));
+        WebElement addButton1 = findElement(By.id("add-style"));
         addButton1.click();
 
         // Add second stylesheet
@@ -76,7 +76,7 @@ public class StyleRemovalIT extends ChromeBrowserTest {
                         || bgColor.equals("rgba(0, 255, 0, 1)"));
 
         // Remove first stylesheet
-        WebElement removeButton1 = findElement(By.id("remove-style-1"));
+        WebElement removeButton1 = findElement(By.id("remove-style"));
         removeButton1.click();
 
         // Verify only second style remains

@@ -25,7 +25,6 @@ import com.vaadin.flow.shared.Registration;
 public class StyleRemovalView extends Div {
 
     private Registration styleRegistration;
-    private Registration styleRegistration1;
     private Registration styleRegistration2;
 
     public StyleRemovalView() {
@@ -51,22 +50,6 @@ public class StyleRemovalView extends Div {
         removeStyle.setId("remove-style");
 
         // Multiple styles test
-        NativeButton addStyle1 = new NativeButton("Add Style 1", e -> {
-            if (styleRegistration1 == null) {
-                styleRegistration1 = UI.getCurrent().getPage()
-                        .addStyleSheet("/style-removal-red.css");
-            }
-        });
-        addStyle1.setId("add-style-1");
-
-        NativeButton removeStyle1 = new NativeButton("Remove Style 1", e -> {
-            if (styleRegistration1 != null) {
-                styleRegistration1.remove();
-                styleRegistration1 = null;
-            }
-        });
-        removeStyle1.setId("remove-style-1");
-
         NativeButton addStyle2 = new NativeButton("Add Style 2", e -> {
             if (styleRegistration2 == null) {
                 styleRegistration2 = UI.getCurrent().getPage()
@@ -85,6 +68,6 @@ public class StyleRemovalView extends Div {
 
         add(testDiv);
         add(new Div(addStyle, removeStyle));
-        add(new Div(addStyle1, removeStyle1, addStyle2, removeStyle2));
+        add(new Div(addStyle2, removeStyle2));
     }
 }
