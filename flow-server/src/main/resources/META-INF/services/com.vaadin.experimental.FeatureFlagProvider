@@ -1,4 +1,3 @@
 com.vaadin.experimental.CoreFeatureFlagProvider
-com.vaadin.experimental.CopilotFeatureFlagProvider
 com.vaadin.experimental.HillaFeatureFlagProvider
 com.vaadin.experimental.FlowComponentsFeatureFlagProvider
