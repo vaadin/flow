@@ -32,8 +32,6 @@ const documentCssFilename = 'document.css';
 const stylesCssFilename = 'styles.css';
 
 const CSSIMPORT_COMMENT = 'CSSImport end';
-const headerImport = `import 'construct-style-sheets-polyfill';
-`;
 
 /**
  * Generate the [themeName].js file for themeFolder which collects all required information from the folder.
@@ -56,7 +54,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
 
-  let themeFileContent = headerImport;
+  let themeFileContent = "";
   let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
   let componentsFileContent = '';
   var componentsFiles;
