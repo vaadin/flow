@@ -188,7 +188,7 @@ public class JacksonCodec {
             } else {
                 // Create component reference as JsonNode and write it
                 ObjectNode ref = JacksonUtils.createObjectNode();
-                ref.put("__vaadinType", "component");
+                ref.put("@vaadin", "component");
 
                 StateNode stateNode = component.getElement().getNode();
                 if (stateNode.isAttached()) {

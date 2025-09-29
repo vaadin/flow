@@ -172,7 +172,7 @@ public class ClientJsonCodecTest {
         beanJson.put("value", 42);
 
         elemental.json.JsonObject componentRef = Json.createObject();
-        componentRef.put("__vaadinType", "component");
+        componentRef.put("@vaadin", "component");
         componentRef.put("nodeId", componentNode.getId());
         beanJson.put("button", componentRef);
 
@@ -254,7 +254,7 @@ public class ClientJsonCodecTest {
         innerBean.put("text", "inner");
 
         elemental.json.JsonObject componentRef = Json.createObject();
-        componentRef.put("__vaadinType", "component");
+        componentRef.put("@vaadin", "component");
         componentRef.put("nodeId", componentNode.getId());
         innerBean.put("component", componentRef);
 
@@ -300,7 +300,7 @@ public class ClientJsonCodecTest {
         beanJson.put("name", "TestBean");
 
         elemental.json.JsonObject componentRef = Json.createObject();
-        componentRef.put("__vaadinType", "component");
+        componentRef.put("@vaadin", "component");
         componentRef.put("nodeId", Json.createNull());
         beanJson.put("unattached", componentRef);
 

@@ -248,8 +248,8 @@ public class ClientJsonCodec {
         function resolveValue(value) {
             if (value && typeof value === 'object') {
                 // Check if it's a Vaadin type reference
-                if (value.__vaadinType !== undefined) {
-                    switch (value.__vaadinType) {
+                if (value['@vaadin'] !== undefined) {
+                    switch (value['@vaadin']) {
                         case 'component':
                             if (value.nodeId === null || value.nodeId === undefined) {
                                 return null;

@@ -53,7 +53,7 @@ public class BeanSerializationTest {
 
         JsonNode buttonRef = bean.get("button");
         Assert.assertEquals("component",
-                buttonRef.get("__vaadinType").asText());
+                buttonRef.get("@vaadin").asText());
         Assert.assertEquals(button.getElement().getNode().getId(),
                 buttonRef.get("nodeId").asInt());
     }
@@ -77,9 +77,9 @@ public class BeanSerializationTest {
         Assert.assertEquals(3, items.size());
 
         Assert.assertEquals("component",
-                items.get(0).get("__vaadinType").asText());
+                items.get(0).get("@vaadin").asText());
         Assert.assertEquals("component",
-                items.get(1).get("__vaadinType").asText());
+                items.get(1).get("@vaadin").asText());
         Assert.assertTrue(items.get(2).isNull());
     }
 
@@ -107,7 +107,7 @@ public class BeanSerializationTest {
         JsonNode nested = bean.get("nested");
         Assert.assertEquals("inner", nested.get("text").asText());
         Assert.assertEquals("component",
-                nested.get("component").get("__vaadinType").asText());
+                nested.get("component").get("@vaadin").asText());
     }
 
     @Test
@@ -171,12 +171,12 @@ public class BeanSerializationTest {
         Assert.assertEquals("TestForm", bean.get("formName").asText());
 
         JsonNode header = bean.get("header");
-        Assert.assertEquals("component", header.get("__vaadinType").asText());
+        Assert.assertEquals("component", header.get("@vaadin").asText());
         Assert.assertEquals(button1.getElement().getNode().getId(),
                 header.get("nodeId").asInt());
 
         JsonNode footer = bean.get("footer");
-        Assert.assertEquals("component", footer.get("__vaadinType").asText());
+        Assert.assertEquals("component", footer.get("@vaadin").asText());
         Assert.assertEquals(button2.getElement().getNode().getId(),
                 footer.get("nodeId").asInt());
 
@@ -203,7 +203,7 @@ public class BeanSerializationTest {
 
         JsonNode componentRef = bean.get("unattached");
         Assert.assertEquals("component",
-                componentRef.get("__vaadinType").asText());
+                componentRef.get("@vaadin").asText());
         Assert.assertTrue(componentRef.get("nodeId").isNull());
     }
 
@@ -243,7 +243,7 @@ public class BeanSerializationTest {
         JsonNode level3 = level2.get("nested");
         Assert.assertEquals("three", level3.get("level").asText());
         Assert.assertEquals("component",
-                level3.get("button").get("__vaadinType").asText());
+                level3.get("button").get("@vaadin").asText());
     }
 
     private Component getButton() {
