@@ -209,14 +209,13 @@ public class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translate_withoutInstantiator_throwsIllegalStateException() {
+    public void translate_withoutInstantiator_returnsKey() {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
 
-        Assert.assertThrows(
-                "Should throw exception without Instantiator in VaadinService",
-                IllegalStateException.class,
-                () -> I18NProvider.translate("foo.bar"));
+        Assert.assertEquals(
+                "Should return the key with !{}! to show no translation available",
+                "!{foo.bar}!", I18NProvider.translate("foo.bar"));
     }
 
     @Test

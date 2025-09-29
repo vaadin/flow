@@ -100,7 +100,7 @@ public class I18NProviderTest {
     }
 
     @Test
-    public void translate_withoutVaadinService_throwIllegalStateException()
+    public void translate_withoutVaadinService_returnsKey()
             throws ServletException, ServiceException {
         config.setApplicationOrSystemProperty(InitParameters.I18N_PROVIDER,
                 TestProvider.class.getName());
@@ -109,10 +109,9 @@ public class I18NProviderTest {
 
         VaadinService.setCurrent(null);
 
-        Assert.assertThrows(
-                "Should throw exception without active VaadinService",
-                IllegalStateException.class,
-                () -> I18NProvider.translate("foo.bar"));
+        Assert.assertEquals(
+                "Should return the key with !{}! to show no translation available",
+                "!{foo.bar}!", I18NProvider.translate("foo.bar"));
     }
 
     @Before

@@ -23,6 +23,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.internal.LocaleUtil;
 
 /**
@@ -31,6 +33,7 @@ import com.vaadin.flow.internal.LocaleUtil;
  * @since 1.0
  */
 public interface I18NProvider extends Serializable {
+
     /**
      * Get the locales that we have translations for. The first locale should be
      * the default locale.
@@ -145,13 +148,14 @@ public interface I18NProvider extends Serializable {
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
-     * @throws IllegalStateException
-     *             thrown if no I18NProvider found from the VaadinService
      */
     static String translate(Locale locale, String key, Object... params) {
         return LocaleUtil.getI18NProvider()
-                .orElseThrow(() -> new IllegalStateException(
-                        "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
-                .getTranslation(key, locale, params);
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> {
+                    LoggerFactory.getLogger(I18NProvider.class).debug(
+                            "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null.");
+                    return "!{" + key + "}!";
+                });
     }
 }
