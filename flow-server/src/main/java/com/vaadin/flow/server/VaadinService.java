@@ -326,7 +326,7 @@ public abstract class VaadinService implements Serializable {
             initSignalsEnvironment();
         } catch (Exception e) {
             if (FeatureFlags.get(getContext())
-                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS)) {
+                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
                 throw e;
             } else {
                 getLogger().info(
@@ -368,7 +368,7 @@ public abstract class VaadinService implements Serializable {
 
     private void initSignalsEnvironment() {
         boolean enabled = FeatureFlags.get(getContext())
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
         if (enabled) {
             // Trigger check for multiple TaskExecutor candidates
             getExecutor();

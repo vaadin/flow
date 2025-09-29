@@ -15,6 +15,7 @@
  */
 package com.vaadin.experimental;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -30,7 +31,7 @@ import java.util.List;
  *
  * @since 24.7
  */
-public interface FeatureFlagProvider {
+public interface FeatureFlagProvider extends Serializable {
 
     /**
      * Returns the list of features provided by this module.
