@@ -22,8 +22,8 @@ import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
 
-import com.vaadin.client.Console;
 import com.vaadin.client.ConnectionIndicator;
+import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
 import com.vaadin.client.UILifecycle.UIState;
@@ -228,12 +228,18 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         // do not need to start a new one
         if (reconnectAttempt == 1) {
             // Try once immediately
+            Console.debug("Immediate reconnect attempt for " + payload);
             doReconnect(payload);
         } else {
             scheduledReconnect = new Timer() {
                 @Override
                 public void run() {
+                    if (scheduledReconnect != null) {
+                        scheduledReconnect.cancel();
+                    }
                     scheduledReconnect = null;
+                    Console.debug("Scheduled reconnect attempt "
+                            + reconnectAttempt + " for " + payload);
                     doReconnect(payload);
                 }
             };
@@ -259,11 +265,13 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
             return;
         }
         if (payload != null) {
-            Console.debug("Re-sending last message to the server...");
-            registry.getMessageSender().send(payload);
+            Console.debug("Trying to re-establish server connection (UIDL)...");
+            registry.getRequestResponseTracker()
+                    .fireEvent(new ReconnectionAttemptEvent(reconnectAttempt));
         } else {
             // Use heartbeat
-            Console.debug("Trying to re-establish server connection...");
+            Console.debug(
+                    "Trying to re-establish server connection (heartbeat)...");
             registry.getHeartbeat().send();
         }
     }
@@ -448,6 +456,10 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
 
         reconnectionCause = null;
         reconnectAttempt = 0;
+        if (scheduledReconnect != null) {
+            scheduledReconnect.cancel();
+            scheduledReconnect = null;
+        }
         ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
         Console.debug("Re-established connection to server");
@@ -546,7 +558,8 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
          * A servlet filter or equivalent may have intercepted the request and
          * served non-UIDL content (for instance, a login page if the session
          * has expired.) If the response contains a magic substring, do a
-         * synchronous refresh. See #8241.
+         * synchronous refresh. See
+         * https://github.com/vaadin/framework/issues/2059.
          */
         MatchResult refreshToken = RegExp
                 .compile(UIDL_REFRESH_TOKEN + "(:\\s*(.*?))?(\\s|$)")

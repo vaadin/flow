@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
+import tools.jackson.core.JacksonException;
 import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
@@ -57,7 +58,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.communication.PushMode;
-import elemental.json.JsonException;
 
 /**
  * Handles incoming push connections and messages and dispatches them to the
@@ -168,7 +168,7 @@ public class PushHandler {
                     SynchronizedRequestHandler.getRequestBody(reader),
                     vaadinRequest);
             connection.push(false);
-        } catch (JsonException e) {
+        } catch (JacksonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
             sendRefreshAndDisconnect(resource);

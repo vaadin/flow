@@ -58,62 +58,6 @@ public interface FrontendDependenciesScanner extends Serializable {
          * @param generateEmbeddableWebComponents
          *            checks {@code WebComponentExporter} classes for
          *            dependencies if {@code true}, doesn't check otherwise
-         * @return a scanner implementation strategy
-         * @deprecated Use
-         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
-         *             instead.
-         */
-        @Deprecated
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, null);
-        }
-
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         * <p>
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
-         * @param featureFlags
-         *            available feature flags and their status
-         * @return a scanner implementation strategy
-         *
-         * @deprecated Use
-         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
-         *             instead.
-         */
-        @Deprecated
-        public FrontendDependenciesScanner createScanner(
-                boolean allDependenciesScan, ClassFinder finder,
-                boolean generateEmbeddableWebComponents,
-                FeatureFlags featureFlags) {
-            return createScanner(allDependenciesScan, finder,
-                    generateEmbeddableWebComponents, featureFlags, true);
-        }
-
-        /**
-         * Produces scanner implementation based on {@code allDependenciesScan}
-         * value.
-         * <p>
-         *
-         * @param allDependenciesScan
-         *            if {@code true} then full classpath scanning strategy is
-         *            used, otherwise byte scanning strategy is produced
-         * @param finder
-         *            a class finder
-         * @param generateEmbeddableWebComponents
-         *            checks {@code WebComponentExporter} classes for
-         *            dependencies if {@code true}, doesn't check otherwise
          * @param featureFlags
          *            available feature flags and their status
          * @param reactEnabled
@@ -136,25 +80,6 @@ public interface FrontendDependenciesScanner extends Serializable {
             }
         }
 
-        /**
-         * Produces scanner implementation based on the given Options object.
-         *
-         * @param options
-         *            Options to build the scanner from
-         * @return a scanner implementation strategy
-         * @deprecated Use
-         *             {@link FrontendDependenciesScannerFactory#createScanner(boolean, ClassFinder, boolean, FeatureFlags, boolean)}
-         *             instead.
-         */
-        @Deprecated
-        public FrontendDependenciesScanner createScanner(Options options) {
-            boolean reactEnabled = options.isReactEnabled() && FrontendUtils
-                    .isReactRouterRequired(options.getFrontendDirectory());
-            return createScanner(!options.isUseByteCodeScanner(),
-                    options.getClassFinder(),
-                    options.isGenerateEmbeddableWebComponents(),
-                    options.getFeatureFlags(), reactEnabled);
-        }
     }
 
     /**
@@ -170,6 +95,20 @@ public interface FrontendDependenciesScanner extends Serializable {
      * @return the `devDependencies` packages
      */
     Map<String, String> getDevPackages();
+
+    /**
+     * Get all npm package assets for the application.
+     *
+     * @return the npm packages assets
+     */
+    Map<String, List<String>> getAssets();
+
+    /**
+     * Get all npm packages assets needed only for development.
+     *
+     * @return the `dev` npm package assets
+     */
+    Map<String, List<String>> getDevAssets();
 
     /**
      * Get all ES6 modules needed for run the application. Modules that are

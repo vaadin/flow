@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
 import java.nio.file.Files
@@ -26,7 +26,7 @@ import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -44,7 +44,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -198,7 +198,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -229,7 +229,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -268,7 +268,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -312,7 +312,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         testProject.buildFile.writeText("""
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -399,7 +399,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 mavenLocal()
@@ -454,48 +454,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
         expect(true, importsFile.toString()) { importsFile.exists() }
         expect(true, "Addon javascript should be found and imported") {
             importsFile.readText().contains("import 'Frontend/generated/jar-resources/my-addon.js'")
-        }
-    }
-
-    @Test
-    fun pluginShouldFailWithUnsupportedGradleVersion() {
-
-        fun setupProjectForGradleVersion(version: String) {
-            testProject.delete()
-            testProject = TestProject(version)
-            setup()
-        }
-
-        for (supportedVersion in arrayOf(VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.8", "8.10") ) {
-                setupProjectForGradleVersion(supportedVersion)
-                val result = testProject.build("vaadinClean")
-                result.expectTaskSucceded("vaadinClean")
-        }
-
-        for (unsupportedVersion in arrayOf("8.3", "8.4", "8.5", "8.6")) {
-            setupProjectForGradleVersion(unsupportedVersion)
-            val result = testProject.buildAndFail("vaadinClean")
-            if (result.output.contains("Unsupported class file major version")) {
-                assertContains(
-                    result.output,
-                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/com/fasterxml/jackson/"),
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
-                            "and it is incompatible with Jackson library used by Flow"
-                )
-            } else {
-                assertContains(
-                    result.output,
-                    "requires Gradle ${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-                    true,
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${VaadinPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-                )
-                assertContains(
-                    result.output,
-                    "current version is ${unsupportedVersion}"
-                )
-            }
         }
     }
 
@@ -611,7 +569,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
             """
             plugins {
                 id 'war'
-                id 'com.vaadin'
+                id 'com.vaadin.flow'
             }
             repositories {
                 maven {

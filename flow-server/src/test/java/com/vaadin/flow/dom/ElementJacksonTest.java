@@ -29,10 +29,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
@@ -696,27 +696,36 @@ public class ElementJacksonTest extends AbstractNodeTest {
         Element element = ElementFactory.createDiv();
 
         // TODO: Use setPropertyBean when updated to jackson
-        element.setPropertyJson("bean", JacksonUtils.beanToJson(bean));
+        element.setPropertyBean("bean", bean);
         ObjectNode json = (ObjectNode) element.getPropertyRaw("bean");
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
                 JacksonUtils.jsonEquals(
-                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.get("zonedDateTime").longValue(), 0);
+                ZonedDateTime.parse(json.get("zonedDateTime").asString())
+                        .toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.get("sqlDate").longValue(), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.get("date").longValue(), 0);
-        Assert.assertEquals(10.0, json.get("duration").doubleValue(), 0);
+                bean.date.getTime(),
+                ZonedDateTime.parse(json.get("date").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
+        Assert.assertEquals(10.0,
+                Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
     private static Element createPropertyAssertElement(Object value) {
@@ -997,11 +1006,15 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ElementFactory.createDiv().setProperty("className", "foo");
     }
 
+    @Test
     public void setStyle() {
         Element e = ElementFactory.createDiv();
         Style s = e.getStyle();
         s.set("foo", "bar");
         Assert.assertEquals("bar", s.get("foo"));
+        s.set("--lumo-primary-text-color", "hsl(12, 12%, 12%)");
+        Assert.assertEquals("hsl(12, 12%, 12%)",
+                s.get("--lumo-primary-text-color"));
     }
 
     @Test
@@ -1096,7 +1109,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         String style = "width:12em;height:2em";
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
-
+        Assert.assertEquals("2em", e.getStyle().get("height"));
     }
 
     @Test
@@ -1108,14 +1121,31 @@ public class ElementJacksonTest extends AbstractNodeTest {
         testStyleAttribute("width:calc(100% - 80px)");
         testStyleAttribute("width:var(--widthB)");
         testStyleAttribute("color:var(--mainColor)");
-        // Reduced calc does not work (http://cssnext.io/features/#reduced-calc)
-        // testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("font-size:calc(var(--fontSize) * 2)");
+        testStyleAttribute("--lumo-primary-text-color:hsl(12, 12%, 12%)");
+        testStyleAttribute(
+                "background:url(\"https://example.com/images/myImg.jpg?q;param\")");
+        var style = testStyleAttribute(
+                "background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
+        testStyleAttribute(
+                "mask-image:image(url(mask.png), skyblue, linear-gradient(rgb(0 0 0 / 100%), transparent))");
+        style = testStyleAttribute(
+                "width:var(--widthB);color:var(--mainColor);background-image:cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))");
+        Assert.assertEquals("var(--widthB)", style.get("width"));
+        Assert.assertEquals("var(--mainColor)", style.get("color"));
+        Assert.assertEquals(
+                "cross-fade(20% url(first.png?foo;bar&d=3), url(second.png))",
+                style.get("background-image"));
     }
 
-    private void testStyleAttribute(String style) {
+    private Style testStyleAttribute(String style) {
         Element e = ElementFactory.createDiv();
         e.setAttribute("style", style);
         Assert.assertEquals(style, e.getAttribute("style"));
+        return e.getStyle();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -2183,7 +2213,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         span.appendChild(button);
 
         Assert.assertEquals("<div>\n"
-                + " <span>\n  <button>hello</button></span>\n" + "</div>",
+                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
                 div.getOuterHTML());
     }
 
@@ -2214,7 +2244,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         Html html = new Html(
                 "<div style='background:green'><span><button>hello</button></span></div>");
         Assert.assertEquals("<div style=\"background:green\">\n"
-                + " <span>\n  <button>hello</button></span>\n" + "</div>",
+                + " <span>\n  <button>hello</button>\n </span>\n" + "</div>",
                 html.getElement().getOuterHTML());
     }
 

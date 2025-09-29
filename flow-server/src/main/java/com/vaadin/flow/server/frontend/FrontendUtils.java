@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -35,13 +37,12 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.servlet.ServletContext;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -55,12 +56,12 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -240,6 +241,8 @@ public class FrontendUtils {
      */
     public static final String VITE_DEVMODE_TS = "vite-devmode.ts";
 
+    public static final String COMMERCIAL_BANNER_JS = "commercial-banner.js";
+
     public static final String ROUTES_TS = "routes.ts";
 
     public static final String ROUTES_TSX = "routes.tsx";
@@ -257,8 +260,10 @@ public class FrontendUtils {
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
      * folder.
+     *
+     * NOTE: For internal use only.
      */
-    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
+    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.folder";
 
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
@@ -399,7 +404,7 @@ public class FrontendUtils {
     /**
      * Creates a process builder for the given list of program and arguments. If
      * the program is defined as an absolute path, then the directory that
-     * contains the program is also appended to PATH so that the it can locate
+     * contains the program is also appended to PATH so that it can locate
      * related tools.
      *
      * @param command
@@ -407,6 +412,24 @@ public class FrontendUtils {
      * @return a configured process builder
      */
     public static ProcessBuilder createProcessBuilder(List<String> command) {
+        return createProcessBuilder(command, UnaryOperator.identity());
+    }
+
+    /**
+     * Creates a process builder for the given list of program and arguments. If
+     * the program is defined as an absolute path, then the directory that
+     * contains the program is also appended to PATH so that it can locate
+     * related tools.
+     *
+     * @param command
+     *            a list with the program and arguments
+     * @param configureProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder, not {@literal null}.
+     * @return a configured process builder
+     */
+    public static ProcessBuilder createProcessBuilder(List<String> command,
+            UnaryOperator<ProcessBuilder> configureProcessBuilder) {
         ProcessBuilder processBuilder = new ProcessBuilder(command);
 
         /*
@@ -443,7 +466,7 @@ public class FrontendUtils {
             environment.put(pathEnvVar, path);
         }
 
-        return processBuilder;
+        return configureProcessBuilder.apply(processBuilder);
     }
 
     /**
@@ -609,23 +632,45 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the legacy frontend folder if available and new folder doesn't exist.
+     * Returns frontend folder to use. Also checks possible legacy frontend
+     * folder configuration.
      *
      * @param projectRoot
      *            project's root directory
      * @param frontendDir
-     *            the frontend directory location from project's configuration
-     * @return correct folder or legacy folder if not user defined
+     *            the frontend directory from project's configuration or default
+     *            if not set
+     * @return frontend directory to use
      */
-    public static File getLegacyFrontendFolderIfExists(File projectRoot,
-            File frontendDir) {
-        if (!frontendDir.exists() && frontendDir.toPath()
-                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
-            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
-            if (legacy.exists()) {
-                return legacy;
+    public static File getFrontendFolder(File projectRoot, File frontendDir) {
+        File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
+
+        if (legacyDir.exists()) {
+            boolean configParamPointsToLegacyDir = legacyDir.toPath().toString()
+                    .replace("./", "").equals(frontendDir.toPath().toString());
+            if (configParamPointsToLegacyDir) {
+                if (new File(projectRoot, DEFAULT_FRONTEND_DIR).exists()) {
+                    getLogger().warn(
+                            "This project has both default ({}) frontend directory"
+                                    + " and legacy ({})- frontend directory present, and "
+                                    + "'frontendDirectory' parameter points to the legacy directory."
+                                    + "\n\nDefault frontend directory will be ignored.",
+                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
+                }
+                return frontendDir;
+            } else {
+                throw new RuntimeException(
+                        "This project has a legacy fronted directory ("
+                                + LEGACY_FRONTEND_DIR
+                                + ") frontend directory present, but no 'frontendDirectory' "
+                                + "configuration parameter set. "
+                                + "Please set the parameter or move the legacy directory contents "
+                                + "to the default frontend folder ("
+                                + DEFAULT_FRONTEND_DIR + ").");
             }
         }
+
+        // Legacy dir does not exist. Use default or custom-set dir.
         return frontendDir;
     }
 
@@ -866,14 +911,36 @@ public class FrontendUtils {
      */
     public static String executeCommand(List<String> command)
             throws CommandExecutionException {
+        return executeCommand(command, UnaryOperator.identity());
+    }
+
+    /**
+     * Executes a given command as a native process.
+     *
+     * @param command
+     *            the command to be executed and it's arguments.
+     * @param configureProcessBuilder
+     *            the function to make changes to the created instance of
+     *            ProcessBuilder, not {@literal null}.
+     * @return process output string.
+     * @throws CommandExecutionException
+     *             if the process completes exceptionally.
+     */
+    public static String executeCommand(List<String> command,
+            UnaryOperator<ProcessBuilder> configureProcessBuilder)
+            throws CommandExecutionException {
         try {
-            Process process = FrontendUtils.createProcessBuilder(command)
+            Process process = FrontendUtils
+                    .createProcessBuilder(command, configureProcessBuilder)
                     .start();
 
             CompletableFuture<Pair<String, String>> streamConsumer = consumeProcessStreams(
                     process);
             int exitCode = process.waitFor();
             Pair<String, String> outputs = streamConsumer.get();
+
+            process.destroy();
+
             if (exitCode != 0) {
                 throw new CommandExecutionException(exitCode,
                         outputs.getFirst(), outputs.getSecond());

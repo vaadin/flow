@@ -143,9 +143,9 @@ check.dependsOn functionalTest
 gradlePlugin {
     testSourceSets sourceSets.functionalTest
     plugins {
-        vaadinPlugin {
-            id = 'com.vaadin'
-            implementationClass = 'com.vaadin.gradle.VaadinPlugin'
+        flowPlugin {
+            id = 'com.vaadin.flow'
+            implementationClass = 'com.vaadin.flow.gradle.FlowPlugin'
         }
     }
 }
@@ -153,12 +153,12 @@ gradlePlugin {
 pluginBundle {
     website = 'https://vaadin.com/docs/latest/flow/guide/start/gradle'
     vcsUrl = 'https://github.com/vaadin/flow'
-    description = 'Build Vaadin applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
-    tags = ['vaadin']
+    description = 'Build Vaadin Flow applications with Gradle. Please follow the link below to learn which Plugin version to use with particular Vaadin version. Vaadin recommends using the latest Vaadin LTS version.'
+    tags = ['vaadin-flow']
     plugins {
-        vaadinPlugin {
-            id = gradlePlugin.plugins.vaadinPlugin.id
-            displayName = 'Vaadin Gradle Plugin'
+        flowPlugin {
+            id = gradlePlugin.plugins.flowPlugin.id
+            displayName = 'Vaadin Flow Gradle Plugin'
         }
     }
     mavenCoordinates {
@@ -185,7 +185,7 @@ publishing {
  *
  **********************************************************************************************************************/
 wrapper {
-    gradleVersion = '8.7'
+    gradleVersion = '8.14'
     distributionType = Wrapper.DistributionType.ALL
 }
 

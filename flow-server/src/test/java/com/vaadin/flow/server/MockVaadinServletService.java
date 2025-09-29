@@ -17,12 +17,23 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletException;
 
+import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.router.Router;
+import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
@@ -37,6 +48,8 @@ public class MockVaadinServletService extends VaadinServletService {
     private Router router;
 
     private DeploymentConfiguration configuration;
+
+    private Lookup lookup;
 
     private static class MockVaadinServlet extends VaadinServlet {
 
@@ -67,11 +80,22 @@ public class MockVaadinServletService extends VaadinServletService {
         this(new MockDeploymentConfiguration());
     }
 
+    public MockVaadinServletService(boolean init) {
+        this(new MockDeploymentConfiguration(), init);
+    }
+
     public MockVaadinServletService(
             DeploymentConfiguration deploymentConfiguration) {
+        this(deploymentConfiguration, true);
+    }
+
+    public MockVaadinServletService(
+            DeploymentConfiguration deploymentConfiguration, boolean init) {
         super(new MockVaadinServlet(deploymentConfiguration),
                 deploymentConfiguration);
-        init();
+        if (init) {
+            init();
+        }
     }
 
     public void setRouter(Router router) {
@@ -106,10 +130,19 @@ public class MockVaadinServletService extends VaadinServletService {
     @Override
     public void init() {
         try {
+            resetSignalEnvironment();
             MockVaadinServlet servlet = (MockVaadinServlet) getServlet();
             servlet.service = this;
             if (getServlet().getServletConfig() == null) {
                 getServlet().init(new MockServletConfig());
+            }
+            if (lookup == null
+                    && getContext().getAttribute(Lookup.class) == null) {
+                lookup = Mockito.mock(Lookup.class);
+                Mockito.when(lookup.lookup(RoutePathProvider.class))
+                        .thenReturn(new DefaultRoutePathProvider());
+                instrumentMockLookup(lookup);
+                getContext().setAttribute(Lookup.class, lookup);
             }
             super.init();
         } catch (ServiceException | ServletException e) {
@@ -117,13 +150,50 @@ public class MockVaadinServletService extends VaadinServletService {
         }
     }
 
+    protected void instrumentMockLookup(Lookup lookup) {
+        // no-op
+    }
+
     public void setConfiguration(DeploymentConfiguration configuration) {
         this.configuration = configuration;
+    }
+
+    public Lookup getLookup() {
+        return lookup;
     }
 
     @Override
     public DeploymentConfiguration getDeploymentConfiguration() {
         return configuration != null ? configuration
                 : super.getDeploymentConfiguration();
+    }
+
+    private void resetSignalEnvironment() {
+        try {
+            Field environments = SignalEnvironment.class
+                    .getDeclaredField("environments");
+            environments.setAccessible(true);
+            ((List<?>) environments.get(null)).clear();
+        } catch (Exception e) {
+            throw new AssertionError("Failed to reset Signal environment", e);
+        }
+    }
+
+    @Override
+    protected Executor createDefaultExecutor() {
+        Executor executor = super.createDefaultExecutor();
+        if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
+            ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
+            threadPoolExecutor.setThreadFactory(r -> {
+                Thread thread = threadFactory.newThread(r);
+                thread.setUncaughtExceptionHandler((t, e) -> {
+                    LoggerFactory.getLogger(getClass()).error(
+                            "An uncaught exception occurred in thread {}",
+                            t.getName(), e);
+                });
+                return thread;
+            });
+        }
+        return executor;
     }
 }

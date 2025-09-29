@@ -1,8 +1,6 @@
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.io.InputStream;
 import java.lang.reflect.AnnotatedElement;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -11,7 +9,6 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import org.junit.Test;
-import org.objectweb.asm.ClassReader;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -47,9 +44,13 @@ public class ScannerDependenciesTest {
 
     static FrontendDependencies getFrontendDependencies(Class<?>... classes) {
         FrontendDependencies frontendDependencies = new FrontendDependencies(
-                new DefaultClassFinder(
-                        new HashSet<>(new ArrayList<>(Arrays.asList(classes)))),
-                true, null, true);
+                new DefaultClassFinder(new HashSet<>(
+                        new ArrayList<>(Arrays.asList(classes)))) {
+                    @Override
+                    public boolean shouldInspectClass(String className) {
+                        return className.startsWith("com.vaadin");
+                    }
+                }, true, null, true);
         return frontendDependencies;
     }
 
@@ -151,6 +152,7 @@ public class ScannerDependenciesTest {
         DepsTests.assertImportCount(9, deps.getModules());
         assertEquals(1, deps.getPackages().size());
         DepsTests.assertImportCount(6, deps.getScripts());
+        assertEquals(1, deps.getAssets().size());
     }
 
     @Test
@@ -234,7 +236,7 @@ public class ScannerDependenciesTest {
         FrontendDependencies deps = getFrontendDependencies(
                 RouteWithNestedDynamicRouteClass.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
-                "dynamic-component.js", "dynamic-route.js",
+                "dynamic-route.js", "dynamic-component.js",
                 "dynamic-layout.js");
     }
 
@@ -259,7 +261,7 @@ public class ScannerDependenciesTest {
         FrontendDependencies deps = getFrontendDependencies(
                 MethodAnnotationRoute.class);
         DepsTests.assertImportsExcludingUI(deps.getModules(),
-                "./search-field.js", "./search-layout.js");
+                "./search-layout.js", "./search-field.js");
     }
 
     @Route

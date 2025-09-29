@@ -16,6 +16,7 @@
 
 package com.vaadin.flow.server.menu;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
@@ -23,7 +24,17 @@ import java.util.Map;
 import java.util.Objects;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.JsonToken;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.annotation.JsonDeserialize;
+import tools.jackson.databind.annotation.JsonSerialize;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.MenuData;
 
 /**
@@ -49,12 +60,18 @@ import com.vaadin.flow.router.MenuData;
  *            view parameters
  * @param flowLayout
  *            if server layout should be used
+ * @param detail
+ *            additional information to be used in the menu, encoded in JSON
+ *            format
  */
 public record AvailableViewInfo(String title, String[] rolesAllowed,
         boolean loginRequired, String route, boolean lazy, boolean register,
         MenuData menu, List<AvailableViewInfo> children,
         @JsonProperty("params") Map<String, RouteParamType> routeParameters,
-        boolean flowLayout) implements Serializable {
+        boolean flowLayout,
+        @JsonDeserialize(using = DetailDeserializer.class) @JsonSerialize(using = DetailSerializer.class) String detail)
+        implements
+            Serializable {
 
     @Override
     public boolean equals(final Object o) {
@@ -72,13 +89,14 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 && Objects.equals(register, that.register)
                 && Objects.equals(menu, that.menu)
                 && Objects.equals(routeParameters, that.routeParameters)
-                && Objects.equals(flowLayout, that.flowLayout);
+                && Objects.equals(flowLayout, that.flowLayout)
+                && Objects.equals(detail, that.detail);
     }
 
     @Override
     public int hashCode() {
         int result = Objects.hash(title, loginRequired, route, lazy, register,
-                menu, routeParameters);
+                menu, routeParameters, detail);
         result = 31 * result + Arrays.hashCode(rolesAllowed);
         return result;
     }
@@ -90,7 +108,31 @@ public record AvailableViewInfo(String title, String[] rolesAllowed,
                 + ", loginRequired=" + loginRequired + ", route='" + route
                 + '\'' + ", lazy=" + lazy + ", register=" + register + ", menu="
                 + menu + ", flowLayout=" + flowLayout + ", routeParameters="
-                + routeParameters + '}';
+                + routeParameters + ", detail=" + detail + '}';
+    }
+
+    public static class DetailDeserializer extends ValueDeserializer<String> {
+        @Override
+        public String deserialize(JsonParser p, DeserializationContext ctxt) {
+            if (p.currentToken() == JsonToken.VALUE_NULL) {
+                return null;
+            }
+            JsonNode node = p.readValueAsTree();
+            return node.toString();
+        }
+    }
+
+    public static class DetailSerializer extends ValueSerializer<String> {
+        @Override
+        public void serialize(String value, JsonGenerator gen,
+                SerializationContext serializers) {
+            if (value == null) {
+                gen.writeNull();
+                return;
+            }
+            JsonNode node = JacksonUtils.readTree(value);
+            gen.writePOJO(node);
+        }
     }
 
 }

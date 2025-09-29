@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -32,8 +32,8 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
 
 /**
- * Task that installs any Flow webpack plugins into node_modules/@vaadin for use
- * with webpack compilation.
+ * Task that installs any Flow frontend plugins into node_modules/@vaadin for
+ * use with frontend compilation.
  * <p>
  * Plugins are copied to <code>{build directory}/plugins</code> and linked to
  * <code>@vaadin/{plugin name}</code> in node_modules by using (p)npm install.
@@ -44,11 +44,11 @@ import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
  */
 public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
-    private File targetFolder;
+    private final File targetFolder;
 
     /**
-     * Copy Flow webpack plugins into <code>PLUGIN_TARGET</code> under the build
-     * directory.
+     * Copy Flow frontend plugins into <code>PLUGIN_TARGET</code> under the
+     * build directory.
      *
      * @param options
      *            the task options
@@ -64,7 +64,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
                 generatePluginFiles(plugin);
             } catch (IOException ioe) {
                 throw new UncheckedIOException(
-                        "Installation of Flow webpack plugin '" + plugin
+                        "Installation of Flow frontend plugin '" + plugin
                                 + "' failed",
                         ioe);
             }

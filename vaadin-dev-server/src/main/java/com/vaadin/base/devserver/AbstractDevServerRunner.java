@@ -117,6 +117,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private ApplicationConfiguration applicationConfiguration;
 
+    private FrontendTools frontendTools;
+
     private String failedOutput = null;
 
     private transient Runnable waitForRestart;
@@ -142,6 +144,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         applicationConfiguration = lookup
                 .lookup(ApplicationConfiguration.class);
         reuseDevServer = applicationConfiguration.reuseDevServer();
+        frontendTools = new FrontendTools(applicationConfiguration, npmFolder);
         devServerPortFile = getDevServerPortFile(npmFolder);
 
         BiConsumer<Void, ? super Throwable> action = (value, exception) -> {
@@ -153,6 +156,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
         devServerStartFuture = waitFor.whenCompleteAsync(action);
 
+    }
+
+    protected FrontendTools getFrontendTools() {
+        return frontendTools;
     }
 
     private void runOnFutureComplete() {
@@ -356,10 +363,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-        FrontendTools tools = new FrontendTools(config, getProjectRoot());
-        tools.validateNodeAndNpmVersion();
+        frontendTools.validateNodeAndNpmVersion();
 
-        List<String> command = getServerStartupCommand(tools);
+        List<String> command = getServerStartupCommand(frontendTools);
 
         FrontendUtils.console(FrontendUtils.GREEN, START);
         if (getLogger().isDebugEnabled()) {
@@ -370,7 +376,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         processBuilder.command(command);
 
         Map<String, String> environment = processBuilder.environment();
-        updateServerStartupEnvironment(tools, environment);
+        updateServerStartupEnvironment(frontendTools, environment);
 
         try {
             Process process = processBuilder.redirectErrorStream(true).start();

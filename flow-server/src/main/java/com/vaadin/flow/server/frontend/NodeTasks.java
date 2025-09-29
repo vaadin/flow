@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -65,6 +66,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateReactFiles.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
+            TaskGenerateCommercialBanner.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
@@ -78,6 +80,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskCopyNpmAssetsFiles.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -139,6 +142,7 @@ public class NodeTasks implements FallibleCommand {
                                 "flow/prod-pre-compiled-bundle", null);
                     }
                 } else {
+                    commands.add(new TaskGenerateCommercialBanner(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
             } else if (options.isBundleBuild()) {
@@ -246,6 +250,11 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
+        if (commands.stream()
+                .noneMatch(TaskRunDevBundleBuild.class::isInstance)) {
+            commands.add(new TaskCopyNpmAssetsFiles(options));
+        }
+
         String themeName = "";
         PwaConfiguration pwa;
         if (frontendDependencies != null) {
@@ -340,8 +349,14 @@ public class NodeTasks implements FallibleCommand {
             sortCommands(commands);
             GeneratedFilesSupport generatedFilesSupport = new GeneratedFilesSupport();
             for (FallibleCommand command : commands) {
+                long startTime = System.nanoTime();
                 command.setGeneratedFileSupport(generatedFilesSupport);
                 command.execute();
+                Duration durationInNs = Duration
+                        .ofNanos(System.nanoTime() - startTime);
+                getLogger().debug("Task [ {} ] completed in {} ms",
+                        command.getClass().getSimpleName(),
+                        durationInNs.toMillis());
             }
         } finally {
             releaseLock();

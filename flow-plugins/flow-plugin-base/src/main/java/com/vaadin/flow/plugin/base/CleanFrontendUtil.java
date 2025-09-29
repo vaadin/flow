@@ -22,7 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -38,6 +38,7 @@ public class CleanFrontendUtil {
     public static final String DEPENDENCIES = "dependencies";
     public static final String DEV_DEPENDENCIES = "devDependencies";
     public static final String OVERRIDES = "overrides";
+    public static final String PNPM = "pnpm";
 
     /**
      * Exception thrown when cleaning the frontend fails.
@@ -207,6 +208,9 @@ public class CleanFrontendUtil {
         ObjectNode devDependencies = (ObjectNode) packageJson
                 .get(DEV_DEPENDENCIES);
         ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
+        ObjectNode pnpmOverridesSection = packageJson.has(PNPM)
+                ? (ObjectNode) packageJson.get(PNPM).get(OVERRIDES)
+                : null;
 
         if (packageJson.has(VAADIN)) {
             ObjectNode vaadin = (ObjectNode) packageJson.get(VAADIN);
@@ -219,6 +223,7 @@ public class CleanFrontendUtil {
             cleanObject(dependencies, vaadinDependencies);
             cleanObject(devDependencies, vaadinDevDependencies);
             cleanObject(overridesSection, vaadinDependencies, false);
+            cleanObject(pnpmOverridesSection, vaadinDependencies, false);
 
             packageJson.remove(VAADIN);
         }

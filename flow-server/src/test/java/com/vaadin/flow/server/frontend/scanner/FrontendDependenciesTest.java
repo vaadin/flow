@@ -31,7 +31,9 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -157,7 +159,42 @@ public class FrontendDependenciesTest {
 
         Assert.assertEquals("Faulty default theme received", FakeLumo.class,
                 dependencies.getThemeDefinition().getTheme());
+    }
 
+    @Test
+    public void themeDefined_themeCssLoaded() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+                .thenReturn(Collections.singleton(MyAppShell.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        boolean cssFound = false;
+        for (ChunkInfo key : dependencies.getCss().keySet()) {
+            cssFound = cssFound || dependencies.getCss().get(key).stream()
+                    .anyMatch(css -> css.getValue()
+                            .equals("@vaadin/vaadin-lumo-styles/lumo.css"));
+        }
+
+        Assert.assertTrue(cssFound);
+    }
+
+    @Test
+    public void themeNotDefined_ButReferenced_themeCssNotLoaded() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+                .thenReturn(Collections.singleton(ThemeReferenceShell.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        boolean cssFound = false;
+        for (ChunkInfo key : dependencies.getCss().keySet()) {
+            cssFound = cssFound || dependencies.getCss().get(key).stream()
+                    .anyMatch(css -> css.getValue()
+                            .equals("@vaadin/vaadin-lumo-styles/lumo.css"));
+        }
+
+        Assert.assertFalse(cssFound);
     }
 
     @Test
@@ -172,7 +209,6 @@ public class FrontendDependenciesTest {
                 dependencies.getThemeDefinition().getTheme());
         Assert.assertEquals("Faulty variant received", "dark",
                 dependencies.getThemeDefinition().getVariant());
-
     }
 
     @Test
@@ -239,13 +275,13 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "foo.js",
-                "baz.js", "bar.js");
+        DepsTests.assertImportsExcludingUI(dependencies.getModules(), "baz.js",
+                "bar.js", "foo.js");
     }
 
     @Test
-    public void defaultThemeIsLoadedForExporters() throws Exception {
-        FakeLumo.class.newInstance();
+    public void defaultThemeIsNotLoadedForExporters() throws Exception {
+        FakeLumo.class.getDeclaredConstructor().newInstance();
         Mockito.when(classFinder.getSubTypesOf(WebComponentExporter.class))
                 .thenReturn(Stream.of(MyExporter.class)
                         .collect(Collectors.toSet()));
@@ -253,8 +289,8 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, true, null, true);
 
-        Assert.assertNotNull(dependencies.getTheme());
-        Assert.assertNotNull(dependencies.getThemeDefinition());
+        Assert.assertNull(dependencies.getTheme());
+        Assert.assertNull(dependencies.getThemeDefinition());
     }
 
     @Test // #9861
@@ -304,9 +340,9 @@ public class FrontendDependenciesTest {
 
     @Test // #9861
     public void visitedExporter_previousEntryPointsNotOverridden()
-            throws InstantiationException, IllegalAccessException {
+            throws Exception {
 
-        FakeLumo.class.newInstance();
+        FakeLumo.class.getDeclaredConstructor().newInstance();
         // Reference found through first entry point
         Mockito.when(classFinder.getAnnotatedClasses(Route.class))
                 .thenReturn(Collections.singleton(ReferenceExporter.class));
@@ -398,6 +434,48 @@ public class FrontendDependenciesTest {
                 entryPointClass));
     }
 
+    @Test
+    public void classScanningForNpmPackage_collectsNpmAssets()
+            throws ClassNotFoundException {
+        LinkedHashSet<Class<?>> hierarchy = Stream.of(Assets.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(
+                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        Assert.assertEquals(1, dependencies.getAssets().size());
+        Assert.assertEquals(1, dependencies.getAssets().get("images").size());
+        Assert.assertEquals("images/22x25/**:22x25",
+                dependencies.getAssets().get("images").get(0));
+    }
+
+    @Test
+    public void classScanningForNpmPackage_duplicatePackages_collectsAllNpmAssets()
+            throws ClassNotFoundException {
+        LinkedHashSet<Class<?>> hierarchy = Stream
+                .of(Assets.class, DuplicatedAssets.class)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        Mockito.when(
+                classFinder.getAnnotatedClasses(NpmPackage.class.getName()))
+                .thenReturn(hierarchy);
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        Assert.assertEquals(1, dependencies.getAssets().size());
+        Assert.assertEquals(2, dependencies.getAssets().get("images").size());
+        Assert.assertTrue(dependencies.getAssets().get("images")
+                .contains("images/22x25/**:22x25"));
+        Assert.assertTrue(dependencies.getAssets().get("images")
+                .contains("images/28x28/**:28x28"));
+
+    }
+
     private static EntryPointData getEntryPointByClass(
             FrontendDependencies dependencies, Class<?> entryPointClass) {
         Optional<EntryPointData> childEntryPoint = dependencies.getEntryPoints()
@@ -440,6 +518,7 @@ public class FrontendDependenciesTest {
         }
     }
 
+    @CssImport("@vaadin/vaadin-lumo-styles/lumo.css")
     public static class FakeLumo implements AbstractTheme {
         public FakeLumo() {
         }
@@ -453,6 +532,10 @@ public class FrontendDependenciesTest {
         public String getThemeUrl() {
             return null;
         }
+    }
+
+    public static class ThemeReferenceShell implements AppShellConfigurator {
+        FakeLumo lumo = new FakeLumo();
     }
 
     @Theme(themeClass = FakeLumo.class)
@@ -530,5 +613,17 @@ public class FrontendDependenciesTest {
     @Layout
     @JsModule("reference.js")
     public static class MainLayout extends Component implements RouterLayout {
+    }
+
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/22x25/**:22x25" })
+    @Tag("div")
+    public static class Assets extends Component {
+    }
+
+    @Tag("div")
+    @NpmPackage(value = "images", version = "1.1.1", assets = {
+            "images/28x28/**:28x28" })
+    public static class DuplicatedAssets extends Component {
     }
 }

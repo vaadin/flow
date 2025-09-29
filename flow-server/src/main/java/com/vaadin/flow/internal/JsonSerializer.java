@@ -75,7 +75,7 @@ public final class JsonSerializer {
             return toJsonArray(bean);
         }
         if (bean instanceof JsonSerializable) {
-            return ((JsonSerializable) bean).toJson();
+            return Json.parse(((JsonSerializable) bean).toString());
         }
 
         Optional<JsonValue> simpleType = tryToConvertToSimpleType(bean);
@@ -207,7 +207,7 @@ public final class JsonSerializer {
 
         T instance;
         try {
-            instance = type.newInstance();
+            instance = type.getDeclaredConstructor().newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not create an instance of type " + type
@@ -219,7 +219,7 @@ public final class JsonSerializer {
             if (instance instanceof JsonSerializable
                     && json instanceof JsonObject) {
                 return type.cast(JsonSerializable.class.cast(instance)
-                        .readJson((JsonObject) json));
+                        .readJson(JacksonUtils.readTree(json.toJson())));
             }
 
             JsonObject jsonObject = (JsonObject) json;
@@ -391,7 +391,8 @@ public final class JsonSerializer {
                             + "'. Use Lists, Sets or concrete classes that implement java.util.Collection.");
         }
         try {
-            return (Collection<?>) collectionType.newInstance();
+            return (Collection<?>) collectionType.getDeclaredConstructor()
+                    .newInstance();
         } catch (Exception e) {
             throw new IllegalArgumentException(
                     "Could not create an instance of the collection of type "

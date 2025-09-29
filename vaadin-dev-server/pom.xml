@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
     <artifactId>vaadin-dev-server</artifactId>
     <name>Vaadin Development Mode Server</name>
@@ -36,18 +36,24 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>open</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-io</groupId>
+                    <artifactId>commons-io</artifactId>
+                </exclusion>
+            </exclusions>
             <version>8.5.0.4</version>
         </dependency>
 
         <dependency>
             <groupId>com.github.javaparser</groupId>
             <artifactId>javaparser-core</artifactId>
-            <version>3.26.4</version>
+            <version>3.27.0</version>
         </dependency>
         <dependency>
             <groupId>io.methvin</groupId>
             <artifactId>directory-watcher</artifactId>
-            <version>0.19.0</version>
+            <version>0.19.1</version>
             <exclusions>
                 <exclusion>
                     <groupId>net.java.dev.jna</groupId>
@@ -66,21 +72,19 @@
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-api</artifactId>
-            <version>${jakarta.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.websocket</groupId>
             <artifactId>jakarta.websocket-client-api</artifactId>
-            <version>${jakarta.websocket.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <!-- Test dependencies -->
-
         <dependency>
             <groupId>jakarta.platform</groupId>
             <artifactId>jakarta.jakartaee-web-api</artifactId>
+            <version>${jakarta.ee.version}</version>
             <scope>test</scope>
         </dependency>
 
@@ -94,6 +98,12 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-simple</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility</artifactId>
             <scope>test</scope>
         </dependency>
 
@@ -115,7 +125,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
                 <executions>
                     <execution>
                         <id>npm-install</id>

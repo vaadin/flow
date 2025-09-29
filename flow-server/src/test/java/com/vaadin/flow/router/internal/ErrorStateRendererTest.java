@@ -18,6 +18,8 @@ package com.vaadin.flow.router.internal;
 import java.util.Collections;
 import java.util.List;
 
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -46,11 +48,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class ErrorStateRendererTest {
 
@@ -173,7 +171,7 @@ public class ErrorStateRendererTest {
         // which reroute to ErrorTarget and this is an infinite loop
         renderer.handle(event);
 
-        JsonObject routerLinkState = Json.createObject();
+        ObjectNode routerLinkState = new ObjectMapper().createObjectNode();
         routerLinkState.put("href", "router_link");
         routerLinkState.put("scrollPositionX", 0d);
         routerLinkState.put("scrollPositionY", 0d);
@@ -221,9 +219,7 @@ public class ErrorStateRendererTest {
         };
 
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
-        MockUI ui = new MockUI(session);
-        return ui;
+        return new MockUI(session);
     }
 }

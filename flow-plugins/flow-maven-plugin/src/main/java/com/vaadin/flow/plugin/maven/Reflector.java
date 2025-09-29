@@ -38,9 +38,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -70,6 +71,8 @@ public final class Reflector {
     private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
             "org.reflections:reflections:jar",
             "org.zeroturnaround:zt-exec:jar");
+    private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
+            Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
     private static final Logger log = LoggerFactory.getLogger(Reflector.class);
 
     private final URLClassLoader isolatedClassLoader;
@@ -413,16 +416,10 @@ public final class Reflector {
                 filteredUrls.toArray(new URL[0]), mavenApiClassLoader);
     }
 
-    // TODO: include also provided scope
     private static boolean isProductionDependency(Artifact artifact) {
         return artifact.getFile() != null
                 && artifact.getArtifactHandler().isAddedToClasspath()
-                && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                        || Artifact.SCOPE_RUNTIME.equals(artifact.getScope())
-                        || Artifact.SCOPE_SYSTEM.equals(artifact.getScope())
-                        || (Artifact.SCOPE_PROVIDED.equals(artifact.getScope())
-                                && artifact.getFile().getPath().matches(
-                                        INCLUDE_FROM_COMPILE_DEPS_REGEX)));
+                && PRODUCTION_SCOPE_FILTER.include(artifact);
     }
 
     /**
@@ -602,13 +599,13 @@ public final class Reflector {
         String json;
         try {
             json = mapper.writeValueAsString(source);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Cannot encode "
                     + targetClass.getName() + " object to JSON", e);
         }
         try {
             return mapper.readValue(json, targetClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Cannot decode JSON to "
                     + targetClass.getName() + " object", e);
         }

@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +38,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -47,9 +45,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -107,8 +105,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
     public static final String SERVICE_WORKER_HEADER = "Service-Worker";
 
-    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
-
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
             + "window.__gwtStatsEvent = function(event) {"
@@ -144,32 +140,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String URL = "url";
 
     private final PageBuilder pageBuilder;
-
-    private static final Set<String> nonHtmlFetchDests;
-
-    static {
-        // Full list at
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
-        Set<String> dests = new HashSet<>();
-        dests.add("audio");
-        dests.add("audioworklet");
-        dests.add("font");
-        dests.add("image");
-        dests.add("manifest");
-        dests.add("paintworklet");
-        dests.add("script"); // NOSONAR
-        dests.add("serviceworker");
-        dests.add("sharedworker");
-        dests.add("style");
-        dests.add("track");
-        dests.add("video");
-        dests.add("worker");
-        dests.add("xslt");
-
-        // "empty" requests are used when service worker caches / so they need
-        // to be allowed
-        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
-    }
 
     /**
      * Creates an instance of the handler with default {@link PageBuilder}.
@@ -620,15 +590,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
             return false;
         }
-        String fetchDest = request.getHeader(FETCH_DEST_HEADER);
-        if (fetchDest == null) {
-            // Old browsers do not send the header at all
-            return true;
-        }
-        if (nonHtmlFetchDests.contains(fetchDest)) {
-            return false;
-        }
-        return true;
+        return !HandlerHelper.isNonHtmlInitiatedRequest(request);
     }
 
     @Override
@@ -1278,7 +1240,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 if (atmosphereVersion != null) {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
-                appConfig.put("versionInfo", versionInfo);
+                appConfig.set("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
                         deploymentConfiguration.isDevToolsEnabled());
             }
@@ -1297,7 +1259,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 putValueOrNull(sessExpMsg, URL,
                         systemMessages.getSessionExpiredURL());
 
-                appConfig.put("sessExpMsg", sessExpMsg);
+                appConfig.set("sessExpMsg", sessExpMsg);
             }
 
             String contextRoot = contextCallback.apply(request);

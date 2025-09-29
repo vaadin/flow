@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.internal.UsageStatistics;
@@ -46,6 +46,7 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
+import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
@@ -53,7 +54,6 @@ import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_ENABLE_DEV_SERVER;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
@@ -138,9 +138,6 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.has(FRONTEND_HOTDEPLOY)) {
             params.put(FRONTEND_HOTDEPLOY, String
                     .valueOf(buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue()));
-        } else if (buildInfo.has(SERVLET_PARAMETER_ENABLE_DEV_SERVER)) {
-            params.put(FRONTEND_HOTDEPLOY, String.valueOf(buildInfo
-                    .get(SERVLET_PARAMETER_ENABLE_DEV_SERVER).booleanValue()));
         }
         if (buildInfo.has(SERVLET_PARAMETER_REUSE_DEV_SERVER)) {
             params.put(SERVLET_PARAMETER_REUSE_DEV_SERVER,
@@ -200,6 +197,11 @@ public class AbstractConfigurationFactory implements Serializable {
         if (buildInfo.has(NPM_EXCLUDE_WEB_COMPONENTS)) {
             params.put(NPM_EXCLUDE_WEB_COMPONENTS, String.valueOf(
                     buildInfo.get(NPM_EXCLUDE_WEB_COMPONENTS).booleanValue()));
+        }
+
+        if (buildInfo.has(COMMERCIAL_BANNER_TOKEN)) {
+            params.put(COMMERCIAL_BANNER_TOKEN, String.valueOf(
+                    buildInfo.get(COMMERCIAL_BANNER_TOKEN).booleanValue()));
         }
 
         setDevModePropertiesUsingTokenData(params, buildInfo);

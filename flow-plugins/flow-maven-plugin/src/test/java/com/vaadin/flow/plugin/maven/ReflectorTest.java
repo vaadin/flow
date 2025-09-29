@@ -199,10 +199,12 @@ public class ReflectorTest {
 
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(4, urlSet.size());
+        Assert.assertEquals(5, urlSet.size());
         Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
         Assert.assertTrue(urlSet.contains(
                 toURLExternalForm("com.vaadin.test-compile-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin.test-provided-1.0.jar")));
         Assert.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin.test-system-1.0.jar")));
         Assert.assertTrue(urlSet

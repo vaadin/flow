@@ -277,7 +277,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             }
         }
         forceBrowserReload = forceBrowserReload
-                || getForceReloadHolder(vaadinService).shouldReloadPage();
+                || (getForceReloadHolder(vaadinService).shouldReloadPage()
+                        && redefined);
 
         boolean uiTreeNeedsRefresh = false;
         EnumMap<UIRefreshStrategy, List<UI>> refreshActions = null;

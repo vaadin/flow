@@ -251,17 +251,17 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
+    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
-        Assert.assertFalse("Expected dev server to be disabled by default",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be disabled by default",
+                Mode.DEVELOPMENT_BUNDLE, config.getMode());
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
-        Assert.assertTrue("Expected dev server to be enabled when set true",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be enabled when set true",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
     }
 
     @Test
@@ -294,40 +294,6 @@ public class DefaultDeploymentConfigurationTest {
 
         Assert.assertTrue("ProductionMode should be enabled",
                 config.isProductionMode());
-        Assert.assertFalse(
-                "Frontend hotdeploy should return false in production mode",
-                config.frontendHotdeploy());
-    }
-
-    @Test
-    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
-            throws IOException {
-        File projectRoot = tempFolder.getRoot();
-        File legacyFrontend = tempFolder
-                .newFolder(FrontendUtils.LEGACY_FRONTEND_DIR);
-
-        File legacyFrontendViews = new File(legacyFrontend,
-                FrontendUtils.HILLA_VIEWS_PATH);
-        if (!legacyFrontendViews.mkdir()) {
-            Assert.fail("Failed to generate legacy frontend views folder");
-        }
-
-        File viewFile = new File(legacyFrontendViews, "MyView.tsx");
-        org.apache.commons.io.FileUtils.writeStringToFile(viewFile,
-                "export default function MyView(){}", "UTF-8");
-
-        try (MockedStatic<EndpointRequestUtil> util = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            util.when(EndpointRequestUtil::isHillaAvailable).thenReturn(true);
-            Properties init = new Properties();
-            init.put(FrontendUtils.PROJECT_BASEDIR,
-                    projectRoot.getAbsolutePath());
-            DefaultDeploymentConfiguration config = createDeploymentConfig(
-                    init);
-            boolean hotdeploy = config.frontendHotdeploy();
-            Assert.assertTrue("Should use the legacy frontend folder",
-                    hotdeploy);
-        }
     }
 
     private DefaultDeploymentConfiguration createDeploymentConfig(

@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
@@ -178,7 +178,7 @@ public class DefaultApplicationConfigurationFactory
     }
 
     /**
-     * Check if the webpack.generated.js resources is inside 2 jars
+     * Check if the vite.generated.ts resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
      * accept a build info file from inside jar with a single jar in the path.
      * <p>

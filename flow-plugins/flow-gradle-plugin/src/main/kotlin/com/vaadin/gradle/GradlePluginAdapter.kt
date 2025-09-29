@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
 import java.net.URI
@@ -123,9 +123,10 @@ internal class GradlePluginAdapter private constructor(
                     it.componentFilter { componentId ->
                         // a componentId different ModuleComponentIdentifier
                         // could be a local library, should not be filtered out
-                        val accepted = componentId !is ModuleComponentIdentifier || artifactFilter.test(
-                            componentId.moduleIdentifier
-                        )
+                        val accepted =
+                            componentId !is ModuleComponentIdentifier || artifactFilter.test(
+                                componentId.moduleIdentifier
+                            )
                         accepted
                     }
                 }.files
@@ -233,8 +234,10 @@ internal class GradlePluginAdapter private constructor(
         return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
     }
 
-    override fun webpackOutputDirectory(): File =
-        config.webpackOutputDirectory.get()
+    override fun webpackOutputDirectory(): File = frontendOutputDirectory()
+
+    override fun frontendOutputDirectory(): File =
+        config.frontendOutputDirectory.get()
 
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()
@@ -312,6 +315,11 @@ internal class GradlePluginAdapter private constructor(
     override fun frontendExtraFileExtensions(): List<String> =
         config.frontendExtraFileExtensions.get()
 
-    override fun isFrontendIgnoreVersionChecks(): Boolean = config.frontendIgnoreVersionChecks.get()
+    override fun isFrontendIgnoreVersionChecks(): Boolean =
+        config.frontendIgnoreVersionChecks.get()
+
+    override fun isCommercialBannerEnabled(): Boolean {
+        return config.commercialWithBanner.get()
+    }
 
 }

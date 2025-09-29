@@ -150,15 +150,6 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
-    public boolean frontendHotdeploy() {
-        if (isOwnProperty(FRONTEND_HOTDEPLOY)) {
-            return getBooleanProperty(FRONTEND_HOTDEPLOY,
-                    FrontendUtils.isHillaUsed(getFrontendFolder()));
-        }
-        return parentConfig.frontendHotdeploy();
-    }
-
-    @Override
     public File getFrontendFolder() {
         return parentConfig.getFrontendFolder();
     }

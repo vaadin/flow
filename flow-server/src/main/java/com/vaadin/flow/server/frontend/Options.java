@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -88,6 +88,8 @@ public class Options implements Serializable {
 
     private FrontendDependenciesScanner frontendDependenciesScanner;
 
+    private boolean copyAssets = true;
+
     /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example <code>"v16.0.0"</code>. Defaults to
@@ -138,6 +140,8 @@ public class Options implements Serializable {
     private boolean cleanOldGeneratedFiles = false;
 
     private boolean frontendIgnoreVersionChecks = false;
+
+    private boolean commercialBannerEnabled = false;
 
     /**
      * Creates a new instance.
@@ -217,27 +221,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the webpack related properties.
-     *
-     * @param webappResourcesDirectory
-     *            the directory to set for webpack to output its build results,
-     *            meant for serving from context root.
-     * @param resourceOutputDirectory
-     *            the directory to output generated non-served resources, such
-     *            as the "config/stats.json" stats file, and the
-     *            "config/flow-build-info.json" token file.
-     * @return this builder
-     * @deprecated to be removed, use
-     *             {@link #withBuildResultFolders(File, File)} instead.
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public Options withWebpack(File webappResourcesDirectory,
-            File resourceOutputDirectory) {
-        return withBuildResultFolders(webappResourcesDirectory,
-                resourceOutputDirectory);
-    }
-
-    /**
      * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
@@ -251,20 +234,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    /**
-     * Sets whether to perform always perform clean up procedure. Default is
-     * <code>false</code>. When the value is false, npm related files will only
-     * be removed when a platform version update is detected.
-     *
-     * This method is only for tests.
-     *
-     * @param forceClean
-     *            <code>true</code> to clean npm files always, otherwise
-     *            <code>false</code>
-     * @return this builder
-     */
-    @Deprecated
-    public Options enableNpmFileCleaning(boolean forceClean) {
+    // Visible only for tests
+    Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -787,14 +758,6 @@ public class Options implements Serializable {
         return enableConfigUpdate;
     }
 
-    /**
-     * @deprecated use {@link #isEnableConfigUpdate()}
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public boolean isEnableWebpackConfigUpdate() {
-        return isEnableConfigUpdate();
-    }
-
     public boolean isRunNpmInstall() {
         return runNpmInstall;
     }
@@ -807,6 +770,11 @@ public class Options implements Serializable {
         return generateEmbeddableWebComponents;
     }
 
+    /**
+     * @deprecated used internally only for testing, to be removed without a
+     *             replacement.
+     */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
         return cleanNpmFiles;
     }
@@ -1055,6 +1023,30 @@ public class Options implements Serializable {
     }
 
     /**
+     * Checks if the commercial banner is enabled for the build.
+     *
+     * @return {@code true} if the commercial banner is enabled, {@code false}
+     *         otherwise
+     */
+    public boolean isCommercialBannerEnabled() {
+        return commercialBannerEnabled;
+    }
+
+    /**
+     * Sets whether the build could generate an application with a commercial
+     * banner.
+     *
+     * @param enableCommercialBanner
+     *            a boolean value indicating whether the built application could
+     *            add a commercial banner.
+     * @return this builder
+     */
+    public Options withCommercialBanner(boolean enableCommercialBanner) {
+        this.commercialBannerEnabled = enableCommercialBanner;
+        return this;
+    }
+
+    /**
      * Gets the frontend dependencies scanner to use. If not is not pre-set,
      * this initializes a new one based on the Options set.
      *
@@ -1070,5 +1062,31 @@ public class Options implements Serializable {
                             getFeatureFlags(), reactEnabled);
         }
         return frontendDependenciesScanner;
+    }
+
+    /**
+     * Sets whether to copy npm assets or not. True by default.
+     *
+     * @param copyAssets
+     *            boolean value indicating if npm assets should be copied.
+     * @return this builder
+     */
+    public Options setCopyAssets(boolean copyAssets) {
+        this.copyAssets = copyAssets;
+        return this;
+    }
+
+    /**
+     * Get if npm assets should be copied for this Options execution.
+     * <p>
+     * NOTE! For a devBundleBuild copy assets will always be true!
+     *
+     * @return {@code false} to skip copying except for devBundleBuild.
+     */
+    public boolean copyAssets() {
+        if (isDevBundleBuild()) {
+            return true;
+        }
+        return copyAssets;
     }
 }

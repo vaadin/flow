@@ -28,9 +28,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
@@ -201,6 +201,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // this invokes any custom listeners and should be run when the whole
         // page is constructed
         service.modifyIndexHtmlResponse(indexHtmlResponse);
+
+        addCommercialBanner(service.getDeploymentConfiguration(),
+                indexDocument);
 
         try {
             response.getOutputStream()
@@ -630,6 +633,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // Workaround for https://github.com/vitejs/vite/issues/5142
         indexHtmlDocument.head().prepend(
                 "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
+    }
+
+    static void addCommercialBanner(DeploymentConfiguration config,
+            Document indexDocument) {
+        System.clearProperty("vaadin." + Constants.COMMERCIAL_BANNER_TOKEN);
+        if (config.isProductionMode() && config
+                .getBooleanProperty(Constants.COMMERCIAL_BANNER_TOKEN, false)) {
+            Element elm = new Element(SCRIPT);
+            elm.attr(SCRIPT_INITIAL, "");
+            elm.attr("type", "module");
+            elm.appendChild(new DataNode(
+                    """
+                            const root = document.body.attachShadow({ mode: 'closed' })
+                            root.innerHTML = '<slot></slot><vaadin-commercial-banner></vaadin-commercial-banner>'
+                            """));
+            indexDocument.head().insertChildren(0, elm);
+        }
     }
 
     // Holds parsed index.html to avoid re-parsing on every request in

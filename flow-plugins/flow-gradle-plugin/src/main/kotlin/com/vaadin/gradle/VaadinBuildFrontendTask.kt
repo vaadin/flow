@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import com.vaadin.experimental.FeatureFlags
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
+import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.BundleValidationUtil
 import com.vaadin.flow.server.frontend.FrontendUtils
 import com.vaadin.flow.server.frontend.Options
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
-import com.vaadin.flow.server.frontend.scanner.ClassFinder
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
 import com.vaadin.pro.licensechecker.LicenseChecker
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Internal
@@ -85,7 +86,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
         check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
 
         val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
-            .withFrontendDirectory(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()))
+            .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))
             .withFrontendGeneratedFolder(config.generatedTsFolder.get())
         val cleanTask = TaskCleanFrontendFiles(options)
 
@@ -116,9 +117,20 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
             }
         }
         LicenseChecker.setStrictOffline(true)
-        val licenseRequired = BuildFrontendUtil.validateLicenses(adapter.get(), frontendDependencies)
+        val (licenseRequired: Boolean, commercialBannerRequired: Boolean) = try {
+            Pair(
+                BuildFrontendUtil.validateLicenses(
+                    adapter.get(),
+                    frontendDependencies
+                ), false
+            )
+        } catch (e: MissingLicenseKeyException) {
+            logger.info(e.message)
+            Pair(true, true)
+        }
 
-        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired)
+        BuildFrontendUtil.updateBuildFile(adapter.get(), licenseRequired, commercialBannerRequired
+        )
     }
 
 
@@ -135,7 +147,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * @return `true` to remove created files, `false` to keep the files
      */
     protected open fun cleanFrontendFiles(): Boolean {
-        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getGeneratedFrontendDirectory(adapter.get()),
+        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(adapter.get()),
                         adapter.get().classFinder)) {
             /*
              * Override this to not clean generated frontend files after the

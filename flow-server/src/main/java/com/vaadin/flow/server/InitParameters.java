@@ -42,11 +42,6 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
-    /**
-     * Enable dev server is deprecated. use {@link #FRONTEND_HOTDEPLOY}
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
@@ -272,6 +267,13 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
+
+    /**
+     * Configuration name to enable adding a commercial banner to the
+     * application when commercial components are used without a valid license
+     * key.
+     */
+    public static final String COMMERCIAL_WITH_BANNER = "commercialWithBanner";
 
     /**
      * Configuration name for cleaning or leaving frontend files in build.

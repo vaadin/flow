@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletContext;
 
 import javax.imageio.ImageIO;
@@ -42,13 +45,10 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
 
 /**
  * Registry for PWA data.
@@ -157,7 +157,7 @@ public class PwaRegistry implements Serializable {
         offlineHash = offlineHtml.hashCode();
 
         // Initialize manifest.webmanifest
-        manifestJson = initializeManifest().toJson();
+        manifestJson = initializeManifest().toString();
 
         // Initialize sw-runtime.js
         runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
@@ -225,8 +225,8 @@ public class PwaRegistry implements Serializable {
      *
      * @return manifest.webmanifest contents json object
      */
-    private JsonObject initializeManifest() {
-        JsonObject manifestData = Json.createObject();
+    private JsonNode initializeManifest() {
+        ObjectNode manifestData = JacksonUtils.createObjectNode();
         // Add basic properties
         manifestData.put("name", pwaConfiguration.getAppName());
         manifestData.put("short_name", pwaConfiguration.getShortName());
@@ -240,16 +240,15 @@ public class PwaRegistry implements Serializable {
         manifestData.put("start_url", pwaConfiguration.getStartUrl());
 
         // Add icons
-        JsonArray iconList = Json.createArray();
-        int iconIndex = 0;
+        ArrayNode iconList = JacksonUtils.createArrayNode();
         for (PwaIcon icon : getManifestIcons()) {
-            JsonObject iconData = Json.createObject();
+            ObjectNode iconData = JacksonUtils.createObjectNode();
             iconData.put("src", icon.getHref());
             iconData.put("sizes", icon.getSizes());
             iconData.put("type", icon.getType());
-            iconList.set(iconIndex++, iconData);
+            iconList.add(iconData);
         }
-        manifestData.put("icons", iconList);
+        manifestData.set("icons", iconList);
         return manifestData;
     }
 
@@ -279,7 +278,7 @@ public class PwaRegistry implements Serializable {
         // Add manifest to precache
         filesToCache.add(manifestCache());
 
-        // Add user defined resources. Do not serve these via Webpack, as the
+        // Add user defined resources. Do not serve these via dev-server, as the
         // file system location from which a resource is served depends on
         // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {

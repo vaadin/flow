@@ -31,8 +31,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
@@ -44,6 +44,11 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.JS_VERSION;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_NAME;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.NPM_VERSION;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
 
 /**
  * Updates <code>package.json</code> by visiting {@link NpmPackage} annotations
@@ -114,6 +119,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         ObjectNode overridesSection = getOverridesSection(packageJson);
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
+        ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
             if (!overridesSection.has(dependency)
                     && shouldLockDependencyVersion(dependency, dependencies,
@@ -133,7 +139,106 @@ public class TaskUpdatePackages extends NodeUpdater {
             }
         }
 
+        /*
+         * Remove platform dependencies for all existing dependencies and
+         * devDependencies
+         */
+        for (String dependency : JacksonUtils.getKeys(dependencies)) {
+            fullPlatformDependencies.remove(dependency);
+        }
+        for (String dependency : JacksonUtils.getKeys(devDependencies)) {
+            fullPlatformDependencies.remove(dependency);
+        }
+
+        // After removing any existing dependencies and devDependencies add all
+        // platform versions to overrides block
+        for (String dependency : JacksonUtils
+                .getKeys(fullPlatformDependencies)) {
+            try {
+                FrontendVersion frontendVersion = new FrontendVersion(
+                        fullPlatformDependencies.get(dependency).textValue());
+                if ("SNAPSHOT".equals(frontendVersion.getBuildIdentifier())) {
+                    continue;
+                }
+                overridesSection.set(dependency, JacksonUtils
+                        .createNode(frontendVersion.getFullVersion()));
+                versionLockingUpdated = true;
+            } catch (NumberFormatException nfe) {
+                continue;
+            }
+        }
+
         return versionLockingUpdated;
+    }
+
+    /**
+     * Collect all platform npm dependencies from vaadin-core-versions.json and
+     * vaadin-versions.json to use in overrides so that any component versions
+     * get locked even when they are transitive.
+     *
+     * @return json containing all npm keys and versions
+     * @throws IOException
+     *             thrown for exception reading stream
+     */
+    private ObjectNode getFullPlatformDependencies() throws IOException {
+        ObjectNode platformDependencies = JacksonUtils.createObjectNode();
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+        if (coreVersionsResource == null) {
+            return platformDependencies;
+        }
+
+        try (InputStream content = coreVersionsResource.openStream()) {
+            collectDependencies(
+                    JacksonUtils.readTree(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    platformDependencies);
+        }
+
+        URL vaadinVersionsResource = finder
+                .getResource(Constants.VAADIN_VERSIONS_JSON);
+        if (vaadinVersionsResource == null) {
+            // vaadin is not on the classpath, only vaadin-core is present.
+            return platformDependencies;
+        }
+
+        try (InputStream content = vaadinVersionsResource.openStream()) {
+            collectDependencies(
+                    JacksonUtils.readTree(
+                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    platformDependencies);
+        }
+
+        return platformDependencies;
+    }
+
+    private void collectDependencies(JsonNode obj, ObjectNode collection) {
+        for (String key : JacksonUtils.getKeys(obj)) {
+            JsonNode value = obj.get(key);
+            if (!(value instanceof ObjectNode)) {
+                continue;
+            }
+            if (value.has(NPM_NAME)) {
+                String npmName = value.get(NPM_NAME).textValue();
+                if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
+                    return;
+                }
+                String version;
+                if (value.has(NPM_VERSION)) {
+                    version = value.get(NPM_VERSION).textValue();
+                } else if (value.has(JS_VERSION)) {
+                    version = value.get(JS_VERSION).textValue();
+                } else {
+                    log().debug(
+                            "dependency '{}' has no 'npmVersion'/'jsVersion'.",
+                            npmName);
+                    continue;
+                }
+                collection.put(npmName, version);
+            } else {
+                collectDependencies(value, collection);
+            }
+        }
     }
 
     private boolean shouldLockDependencyVersion(String dependency,
@@ -166,9 +271,37 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private ObjectNode getOverridesSection(ObjectNode packageJson) {
         ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
+        ObjectNode oldOverrides = null;
+        if (options.isEnablePnpm()) {
+            if (overridesSection != null) {
+                oldOverrides = overridesSection;
+                // remove npm overrides when moving to pnpm
+                packageJson.remove(OVERRIDES);
+            }
+            JsonNode pnpm = packageJson.get(PNPM);
+            if (pnpm == null) {
+                overridesSection = null;
+            } else {
+                overridesSection = (ObjectNode) pnpm.get(OVERRIDES);
+            }
+        } else if (packageJson.has(PNPM)) {
+            oldOverrides = overridesSection;
+            // remove pnpm overrides for npm
+            ((ObjectNode) packageJson.get(PNPM)).remove(OVERRIDES);
+        }
         if (overridesSection == null) {
-            overridesSection = JacksonUtils.createObjectNode();
-            packageJson.set(OVERRIDES, overridesSection);
+            overridesSection = oldOverrides == null
+                    ? JacksonUtils.createObjectNode()
+                    : oldOverrides;
+            if (options.isEnablePnpm()) {
+                ObjectNode pnpmNode = packageJson.has(PNPM)
+                        ? (ObjectNode) packageJson.get(PNPM)
+                        : JacksonUtils.createObjectNode();
+                packageJson.set(PNPM, pnpmNode);
+                pnpmNode.set(OVERRIDES, overridesSection);
+            } else {
+                packageJson.set(OVERRIDES, overridesSection);
+            }
         }
         return overridesSection;
     }

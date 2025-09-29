@@ -74,21 +74,6 @@ public class LocationUtil {
     }
 
     /**
-     * Parses the given path to parts split by the path separator, ignoring the
-     * query string and fragment if either present. The path is verified with
-     * {@link #verifyRelativePath(String)}.
-     *
-     * @param path
-     *            the path to parse
-     * @return tha path split into parts
-     * @deprecated use {@link #parsePathToSegments(String, boolean)}
-     */
-    @Deprecated
-    public static List<String> parsePathToSegments(String path) {
-        return parsePathToSegments(path, true);
-    }
-
-    /**
      * Parses the given path to parts split by the path separator.
      * <p>
      * Ignores the query string and fragment if either is present and

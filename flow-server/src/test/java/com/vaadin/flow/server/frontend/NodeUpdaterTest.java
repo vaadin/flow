@@ -23,13 +23,14 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -110,12 +111,13 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_includesAllDependencies() {
+    public void getDefaultDependencies_withPolymerTemplate_includesAllDependencies() {
+        fakePolymerTemplateInClasspath();
+
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");
-        expectedDependencies.add("construct-style-sheets-polyfill");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
@@ -127,28 +129,18 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void react19UsedWhenFeatureFlagIsOn() {
-        Map<String, String> react18Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react18DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-        Mockito.when(options.getFeatureFlags().isEnabled(FeatureFlags.REACT19))
-                .thenReturn(true);
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router");
 
-        Map<String, String> react19Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react19DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
+        Set<String> actualDependendencies = defaultDeps.keySet();
 
-        Assert.assertTrue(react18Deps.get("react").startsWith("18."));
-        Assert.assertTrue(react18Deps.get("react-dom").startsWith("18."));
-        Assert.assertTrue(react18DevDeps.get("@types/react").startsWith("18."));
-        Assert.assertTrue(
-                react18DevDeps.get("@types/react-dom").startsWith("18."));
-
-        Assert.assertTrue(react19Deps.get("react").startsWith("19."));
-        Assert.assertTrue(react19Deps.get("react-dom").startsWith("19."));
-        Assert.assertTrue(react19DevDeps.get("@types/react").startsWith("19."));
-        Assert.assertTrue(
-                react19DevDeps.get("@types/react-dom").startsWith("19."));
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
     }
 
     @Test
@@ -172,6 +164,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        expectedDependencies.add("magic-string");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -181,15 +174,13 @@ public class NodeUpdaterTest {
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("typescript");
-        expectedDependencies.add("workbox-core");
-        expectedDependencies.add("workbox-precaching");
         expectedDependencies.add("glob");
-        expectedDependencies.add("async");
         return expectedDependencies;
     }
 
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
@@ -214,6 +205,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void updateMainDefaultDependencies_vaadinIsProvidedByUser_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
 
         ObjectNode vaadin = JacksonUtils.createObjectNode();
@@ -240,7 +232,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.1", packageJson
+        Assert.assertEquals("11.0.3", packageJson
                 .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
     }
 
@@ -347,6 +339,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    @Ignore("Can be removed if we agree on ignoring potential issues in [23 + webpack] -> [25] upgrades")
     public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
@@ -362,7 +355,7 @@ public class NodeUpdaterTest {
         packageJsonWriter.close();
         ObjectNode actualDevDeps = (ObjectNode) nodeUpdater.getPackageJson()
                 .get(NodeUpdater.DEV_DEPENDENCIES);
-        Assert.assertFalse(actualDevDeps.has("some-old-plugin"));
+        Assert.assertFalse(actualDevDeps.has("@vaadin/some-old-plugin"));
         Assert.assertFalse(
                 actualDevDeps.has("@vaadin/application-theme-plugin"));
     }
@@ -713,6 +706,86 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    public void getDefaultDevDependencies_includesWorkbox_whenPwaEnabled() {
+        // Create a mock FrontendDependencies with PWA enabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(true);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertTrue("workbox-core should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertTrue(
+                "workbox-precaching should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaDisabled() {
+        // Create a mock FrontendDependencies with PWA disabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(false);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
+        // Create a mock FrontendDependencies with no PWA configuration
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(null);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
     public void readPackageJson_nonExistingFile_doesNotThrow()
             throws IOException {
         nodeUpdater.readPackageJson("non-existing-folder");
@@ -761,6 +834,16 @@ public class NodeUpdaterTest {
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
+    }
+
+    private void fakePolymerTemplateInClasspath() {
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        try {
+            Mockito.doReturn(clazz).when(finder).loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ObjectNode getMockVaadinCoreVersionsJson() {

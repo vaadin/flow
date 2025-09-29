@@ -1,6 +1,6 @@
 # Vaadin Gradle Plugin
 
-This is the official Vaadin Gradle Plugin for Vaadin 19 and newer.
+This is the official Vaadin Gradle Plugin for Vaadin 25 and newer.
 The implementation is based on `flow-plugin-base` which is also used by the Vaadin Maven plugin.
 
 Prerequisites:
@@ -43,6 +43,7 @@ Vaadin recommends using the latest Vaadin LTS (Long-Term Support) version.
 | 0.20.0.0.alpha3              | experimental support for Vaadin 19 and 20      |
 | 20.0.0                       | Vaadin 20 and higher                           |
 | 24.0.0                       | Vaadin 24 and higher                           |
+| 25.0.0                       | Vaadin 25 and higher                           |
 
 ## Tasks
 
@@ -209,7 +210,7 @@ Alternatively, you can build and publish the Flow Gradle plugin into the local M
 
 1. Clone the Base Starter Gradle project.
 2. Add `mavenLocal()` to `buildscript.repositories` as the first place to look up.
-3. Add `dependencies { classpath 'com.vaadin:flow-gradle-plugin:24.8-SNAPSHOT' }` to `buildscript.repositories`.
+3. Add `dependencies { classpath 'com.vaadin:flow-gradle-plugin:25.0-SNAPSHOT' }` to `buildscript.repositories`.
 4. Run `./gradlew clean build publishToMavenLocal` in the `flow-plugins/flow-gradle-plugin` repo folder.
 5. Run the previous command with `-x functionalTest` to skip functional tests.
 6. If you now run `./gradlew vaadinPrepareFrontend` in the Starter project folder, Gradle will use the local version of the Flow plugin. You can verify that by adding `println()` statements into the `VaadinPrepareFrontendTask` class.

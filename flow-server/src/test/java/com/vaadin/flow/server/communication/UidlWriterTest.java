@@ -24,8 +24,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
@@ -446,7 +446,7 @@ public class UidlWriterTest {
         when(vaadinRequestMock.getHttpServletRequest())
                 .thenReturn(servletRequestMock);
 
-        ui.doInit(vaadinRequestMock, 1);
+        ui.doInit(vaadinRequestMock, 1, "foo");
         ui.getInternals().getRouter().initializeUI(ui,
                 UITest.requestToLocation(vaadinRequestMock));
 

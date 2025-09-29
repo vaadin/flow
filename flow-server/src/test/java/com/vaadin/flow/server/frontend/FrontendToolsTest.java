@@ -874,6 +874,39 @@ public class FrontendToolsTest {
                         .replace("\\", "/"));
     }
 
+    @Test
+    public void getViteExecutable_returnsCorrectPath()
+            throws IOException, FrontendUtils.CommandExecutionException {
+        var projectDir = tmpDir.newFolder();
+        var packageJson = Files
+                .createFile(projectDir.toPath().resolve("package.json"));
+
+        Files.write(packageJson, """
+                  {
+                  "name": "test",
+                  "private": true
+                }
+                """.getBytes());
+        Files.createDirectories(
+                projectDir.toPath().resolve("node_modules/vite/"));
+        var vitePackageJson = Files.createFile(
+                projectDir.toPath().resolve("node_modules/vite/package.json"));
+
+        Files.write(vitePackageJson, """
+                {
+                  "name": "vite",
+                  "version": "4.0.0",
+                  "bin": {
+                    "vite": "bin/vite.js"
+                  }
+                }
+                """.getBytes());
+        var vite = tools.getNpmPackageExecutable("vite", "vite", projectDir);
+        Assert.assertEquals(
+                projectDir.toPath().resolve("node_modules/vite/bin/vite.js"),
+                vite);
+    }
+
     private void assertNpmCommand(Supplier<String> path) throws IOException {
         createStubNode(false, true, vaadinHomeDir);
 

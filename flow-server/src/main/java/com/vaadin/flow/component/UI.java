@@ -27,7 +27,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,6 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -88,10 +88,6 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -217,25 +213,9 @@ public class UI extends Component
      * Internal initialization method, should not be overridden. This method is
      * not declared as final because that would break compatibility with e.g.
      * CDI.
-     *
-     * @param request
-     *            the initialization request
-     * @param uiId
-     *            the id of the new ui
-     *
-     * @see #getUIId()
-     * @deprecated Use {@link #doInit(VaadinRequest, int, String)} instead
-     */
-    @Deprecated
-    public void doInit(VaadinRequest request, int uiId) {
-        doInit(request, uiId,
-                getSession().getService().getMainDivId(getSession(), request));
-    }
-
-    /**
-     * Internal initialization method, should not be overridden. This method is
-     * not declared as final because that would break compatibility with e.g.
-     * CDI.
+     * <p>
+     * {@code appId} can be obtained by calling
+     * {@code getService().getMainDivId(getSession(), getRequest())}.
      *
      * @param request
      *            the initialization request
@@ -754,8 +734,11 @@ public class UI extends Component
          */
         session.getService().runPendingAccessTasks(session);
 
-        if (!getInternals().isDirty()) {
-            // Do not push if there is nothing to push
+        if (!getInternals().isDirty()
+                || getInternals().getStateTree().isPreparingForResync()) {
+            // Do not push: there is nothing to push, or UI is preparing for
+            // resync and should not asynchronously dispatch messages to the
+            // client until the process is completed
             return;
         }
 
@@ -793,13 +776,13 @@ public class UI extends Component
      * locale, which is in turn determined in different ways depending on
      * whether a {@link I18NProvider} is available.
      * <p>
-     * If a i18n provider is available, the locale is determined by selecting
+     * If an i18n provider is available, the locale is determined by selecting
      * the locale from {@link I18NProvider#getProvidedLocales()} that best
      * matches the user agent preferences (i.e. the <code>Accept-Language</code>
      * header). If an exact match is found, then that locale is used. Otherwise,
      * the matching logic looks for the first provided locale that uses the same
-     * language regardless of the country. If no other match is found, then the
-     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * language regardless of the country. If no other match is found, then
+     * {@link I18NProvider#getDefaultLocale()} is used.
      * <p>
      * If no i18n provider is available, then the {@link Locale#getDefault()
      * default JVM locale} is used as the default locale.
@@ -1303,18 +1286,6 @@ public class UI extends Component
     }
 
     /**
-     * Gets the router used for navigating in this UI.
-     *
-     * @return a router
-     *
-     * @deprecated For internal use only. Will be removed in the future.
-     */
-    @Deprecated
-    public Router getRouter() {
-        return internals.getRouter();
-    }
-
-    /**
      * Registers a task to be executed before the response is sent to the
      * client. The tasks are executed in order of registration. If tasks
      * register more tasks, they are executed after all already registered tasks
@@ -1571,33 +1542,40 @@ public class UI extends Component
     /**
      * Adds the given component as a modal child to the UI, making the UI and
      * all other (existing) components added to the UI impossible for the user
-     * to interact with. This is useful for modal dialogs which should make the
-     * UI in the background inert. Note that this only prevents user
-     * interaction, but doesn't show a modality curtain or change the visible
-     * state of the components in the UI - that should be handled by the
-     * component separately. Thus this is purely a server side feature.
+     * to interact with. Using {@link ModalityMode#STRICT} mode. This is useful
+     * for modal dialogs which should make the UI in the background inert. Note
+     * that this only prevents user interaction, but doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      * <p>
      * When the modal component is removed the UI and its other children are no
      * longer inert, unless there was another component added as modal before.
      *
-     *
      * @param component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     public void addModal(Component component) {
         add(component);
-        getInternals().setChildModal(component);
+        setChildComponentModal(component, true);
     }
 
     /**
-     * Makes the child component modal or modeless. The component needs to be a
-     * child of this UI. By default all child components are modeless.
+     * Makes the child component modal or modeless (i.e.
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#MODELESS}). The
+     * component needs to be a child of this UI. By default, all child
+     * components are modeless. Note that calling this doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      *
      * @param childComponent
      *            the child component to change state for
      * @param modal
      *            {@code true} for modal, {@code false} for modeless
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     /*
      * TODO decide and document whether resize listener still works for UI even
@@ -1605,16 +1583,37 @@ public class UI extends Component
      */
     public void setChildComponentModal(Component childComponent,
             boolean modal) {
+        setChildComponentModal(childComponent,
+                modal ? ModalityMode.STRICT : ModalityMode.MODELESS);
+    }
+
+    /**
+     * Change the child component server side modality by modality mode:
+     * {@link ModalityMode#STRICT}, {@link ModalityMode#VISUAL}, or
+     * {@link ModalityMode#MODELESS}. The component needs to be a child of this
+     * UI. By default, all child components are modeless. Note that calling this
+     * doesn't show a modality curtain or change the visible state of the
+     * components in the UI - that should be handled by the component
+     * separately. Thus, this is purely a server side feature.
+     *
+     * @param childComponent
+     *            the child component to change state for
+     * @param mode
+     *            the modality mode, not null
+     */
+    public void setChildComponentModal(Component childComponent,
+            ModalityMode mode) {
         Objects.requireNonNull(childComponent,
                 "Given child component may not be null");
+        Objects.requireNonNull(mode, "Given modality mode may not be null");
         final Optional<UI> ui = childComponent.getUI();
         if (ui.isPresent() && !ui.get().equals(this)) {
             throw new IllegalStateException(
                     "Given component is not a child in this UI. "
                             + "Add it first as a child of the UI so it is "
-                            + "attached or just use addModal(component).");
+                            + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (modal) {
+        if (mode == ModalityMode.STRICT) {
             getInternals().setChildModal(childComponent);
         } else {
             getInternals().setChildModeless(childComponent);
@@ -1823,33 +1822,6 @@ public class UI extends Component
      * Connect a client with the server side UI. This method is invoked each
      * time client router navigates to a server route.
      *
-     * @param flowRoutePath
-     *            flow route path that should be attached to the client element
-     * @param flowRouteQuery
-     *            flow route query string
-     * @param appShellTitle
-     *            client side title of the application shell
-     * @param historyState
-     *            client side history state value
-     * @param trigger
-     *            navigation trigger
-     *
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and connectClient is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void connectClient(String flowRoutePath, String flowRouteQuery,
-            String appShellTitle, JsonValue historyState, String trigger) {
-        browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
-                flowRouteQuery, appShellTitle,
-                JacksonUtils.mapElemental(historyState), trigger));
-    }
-
-    /**
-     * Connect a client with the server side UI. This method is invoked each
-     * time client router navigates to a server route.
-     *
      * @param event
      *            the event from the browser
      */
@@ -1884,8 +1856,8 @@ public class UI extends Component
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
-            JsonObject state = event.historyState == null ? null
-                    : Json.parse(event.historyState.toString());
+            BaseJsonNode state = event.historyState == null ? null
+                    : (BaseJsonNode) event.historyState;
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
                             state, location, navigationTrigger));
@@ -1927,28 +1899,6 @@ public class UI extends Component
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
-    }
-
-    /**
-     * Check that the view can be leave. This method is invoked when the client
-     * router tries to navigate to a client route while the current route is a
-     * server route.
-     * <p>
-     * This is only called when client route navigates from a server to a client
-     * view.
-     *
-     * @param route
-     *            the route that is navigating to.
-     * @param query
-     *            route query string
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and leave navigation is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void leaveNavigation(String route, String query) {
-        leaveNavigation(
-                new BrowserLeaveNavigationEvent(this, false, route, query));
     }
 
     /**

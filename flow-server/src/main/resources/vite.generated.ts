@@ -16,32 +16,25 @@ import settings from '#settingsImport#';
 import {
   AssetInfo,
   ChunkInfo,
-  build,
   defineConfig,
   mergeConfig,
   OutputOptions,
   PluginOption,
-  InlineConfig,
   UserConfigFn
 } from 'vite';
-import { getManifest, type ManifestTransform } from 'workbox-build';
 
 import * as rollup from 'rollup';
 import brotli from 'rollup-plugin-brotli';
 import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
-
-import { createRequire } from 'module';
+import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
+import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
+import vaadinBundlesPlugin from '#buildFolder#/plugins/vite-plugin-vaadin-bundles';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
 
 //#vitePluginFileSystemRouterImport#
-
-// Make `require` compatible with ES modules
-const require = createRequire(import.meta.url);
-
-const appShellUrl = '.';
 
 const frontendFolder = path.resolve(__dirname, settings.frontendFolder);
 const themeFolder = path.resolve(frontendFolder, settings.themeFolder);
@@ -56,6 +49,7 @@ const buildOutputFolder = devBundle ? devBundleFolder : frontendBundleFolder;
 const statsFolder = path.resolve(__dirname, devBundle ? settings.devBundleStatsOutput : settings.statsOutput);
 const statsFile = path.resolve(statsFolder, 'stats.json');
 const bundleSizeFile = path.resolve(statsFolder, 'bundle-size.html');
+const i18nFolder = path.resolve(__dirname, settings.i18nOutput);
 const nodeModulesFolder = path.resolve(__dirname, 'node_modules');
 const webComponentTags = '#webComponentTags#';
 
@@ -80,102 +74,20 @@ const themeOptions = {
   projectStaticAssetsOutputFolder: devBundle
     ? path.resolve(devBundleFolder, '../assets')
     : path.resolve(__dirname, settings.staticOutput),
-  frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder)
+  frontendGeneratedFolder: path.resolve(frontendFolder, settings.generatedFolder),
+  projectStaticOutput:  path.resolve(__dirname, settings.staticOutput),
+  javaResourceFolder: settings.javaResourceFolder ? path.resolve(__dirname, settings.javaResourceFolder) : ''
 };
 
 const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-component.html'));
+const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
+const hasCommercialBanner = existsSync(commercialBannerComponent);
+
+const target = ['safari15', 'es2022'];
 
 // Block debug and trace logs.
 console.trace = () => {};
 console.debug = () => {};
-
-function injectManifestToSWPlugin(): rollup.Plugin {
-  const rewriteManifestIndexHtmlUrl: ManifestTransform = (manifest) => {
-    const indexEntry = manifest.find((entry) => entry.url === 'index.html');
-    if (indexEntry) {
-      indexEntry.url = appShellUrl;
-    }
-
-    return { manifest, warnings: [] };
-  };
-
-  return {
-    name: 'vaadin:inject-manifest-to-sw',
-    async transform(code, id) {
-      if (/sw\.(ts|js)$/.test(id)) {
-        const { manifestEntries } = await getManifest({
-          globDirectory: buildOutputFolder,
-          globPatterns: ['**/*'],
-          globIgnores: ['**/*.br', 'pwa-icons/**'],
-          manifestTransforms: [rewriteManifestIndexHtmlUrl],
-          maximumFileSizeToCacheInBytes: 100 * 1024 * 1024 // 100mb,
-        });
-
-        return code.replace('self.__WB_MANIFEST', JSON.stringify(manifestEntries));
-      }
-    }
-  };
-}
-
-function buildSWPlugin(opts: { devMode: boolean }): PluginOption {
-  let buildConfig: InlineConfig;
-  let buildOutput: rollup.RollupOutput;
-  const devMode = opts.devMode;
-
-  return {
-    name: 'vaadin:build-sw',
-    enforce: 'post',
-    async configResolved(viteConfig) {
-      buildConfig = {
-        base: viteConfig.base,
-        root: viteConfig.root,
-        mode: viteConfig.mode,
-        resolve: viteConfig.resolve,
-        define: {
-          ...viteConfig.define,
-          'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
-        },
-        build: {
-          write: !devMode,
-          minify: viteConfig.build.minify,
-          outDir: viteConfig.build.outDir,
-          sourcemap: viteConfig.command === 'serve' || viteConfig.build.sourcemap,
-          emptyOutDir: false,
-          modulePreload: false,
-          target: ['safari15', 'es2022'],
-          rollupOptions: {
-            input: {
-              sw: settings.clientServiceWorkerSource
-            },
-            output: {
-              exports: 'none',
-              entryFileNames: 'sw.js',
-              inlineDynamicImports: true,
-            },
-          },
-        },
-      };
-    },
-    async buildStart() {
-      if (devMode) {
-        buildOutput = await build(buildConfig) as rollup.RollupOutput;
-      }
-    },
-    async load(id) {
-      if (id.endsWith('sw.js')) {
-        return buildOutput.output[0].code;
-      }
-    },
-    async closeBundle() {
-      if (!devMode) {
-        await build({
-          ...buildConfig,
-          plugins: [injectManifestToSWPlugin(), brotli()]
-        });
-      }
-    },
-  };
-}
 
 function statsExtracterPlugin(): PluginOption {
   function collectThemeJsonsInFrontend(themeJsonContents: Record<string, string>, themeName: string) {
@@ -347,6 +259,10 @@ function statsExtracterPlugin(): PluginOption {
         );
         frontendFiles[`index.ts`] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
       }
+      if (hasCommercialBanner) {
+        const fileBuffer = readFileSync(commercialBannerComponent, { encoding: 'utf-8' }).replace(/\r\n/g, '\n');
+        frontendFiles[settings.generatedFolder + '/commercial-banner.js'] = createHash('sha256').update(fileBuffer, 'utf8').digest('hex');
+      }
 
       const themeJsonContents: Record<string, string> = {};
       const themesFolder = path.resolve(jarResourcesFolder, 'themes');
@@ -382,159 +298,6 @@ function statsExtracterPlugin(): PluginOption {
         indexHtmlGenerated: rowsGenerated
       };
       writeFileSync(statsFile, JSON.stringify(stats, null, 1));
-    }
-  };
-}
-function vaadinBundlesPlugin(): PluginOption {
-  type ExportInfo =
-    | string
-    | {
-        namespace?: string;
-        source: string;
-      };
-
-  type ExposeInfo = {
-    exports: ExportInfo[];
-  };
-
-  type PackageInfo = {
-    version: string;
-    exposes: Record<string, ExposeInfo>;
-  };
-
-  type BundleJson = {
-    packages: Record<string, PackageInfo>;
-  };
-
-  const disabledMessage = 'Vaadin component dependency bundles are disabled.';
-
-  const modulesDirectory = nodeModulesFolder.replace(/\\/g, '/');
-
-  let vaadinBundleJson: BundleJson;
-
-  function parseModuleId(id: string): { packageName: string; modulePath: string } {
-    const [scope, scopedPackageName] = id.split('/', 3);
-    const packageName = scope.startsWith('@') ? `${scope}/${scopedPackageName}` : scope;
-    const modulePath = `.${id.substring(packageName.length)}`;
-    return {
-      packageName,
-      modulePath
-    };
-  }
-
-  function getExports(id: string): string[] | undefined {
-    const { packageName, modulePath } = parseModuleId(id);
-    const packageInfo = vaadinBundleJson.packages[packageName];
-
-    if (!packageInfo) return;
-
-    const exposeInfo: ExposeInfo = packageInfo.exposes[modulePath];
-    if (!exposeInfo) return;
-
-    const exportsSet = new Set<string>();
-    for (const e of exposeInfo.exports) {
-      if (typeof e === 'string') {
-        exportsSet.add(e);
-      } else {
-        const { namespace, source } = e;
-        if (namespace) {
-          exportsSet.add(namespace);
-        } else {
-          const sourceExports = getExports(source);
-          if (sourceExports) {
-            sourceExports.forEach((e) => exportsSet.add(e));
-          }
-        }
-      }
-    }
-    return Array.from(exportsSet);
-  }
-
-  function getExportBinding(binding: string) {
-    return binding === 'default' ? '_default as default' : binding;
-  }
-
-  function getImportAssigment(binding: string) {
-    return binding === 'default' ? 'default: _default' : binding;
-  }
-
-  return {
-    name: 'vaadin:bundles',
-    enforce: 'pre',
-    apply(config, { command }) {
-      if (command !== 'serve') return false;
-
-      try {
-        const vaadinBundleJsonPath = require.resolve('@vaadin/bundles/vaadin-bundle.json');
-        vaadinBundleJson = JSON.parse(readFileSync(vaadinBundleJsonPath, { encoding: 'utf8' }));
-      } catch (e: unknown) {
-        if (typeof e === 'object' && (e as { code: string }).code === 'MODULE_NOT_FOUND') {
-          vaadinBundleJson = { packages: {} };
-          console.info(`@vaadin/bundles npm package is not found, ${disabledMessage}`);
-          return false;
-        } else {
-          throw e;
-        }
-      }
-
-      const versionMismatches: Array<{ name: string; bundledVersion: string; installedVersion: string }> = [];
-      for (const [name, packageInfo] of Object.entries(vaadinBundleJson.packages)) {
-        let installedVersion: string | undefined = undefined;
-        try {
-          const { version: bundledVersion } = packageInfo;
-          const installedPackageJsonFile = path.resolve(modulesDirectory, name, 'package.json');
-          const packageJson = JSON.parse(readFileSync(installedPackageJsonFile, { encoding: 'utf8' }));
-          installedVersion = packageJson.version;
-          if (installedVersion && installedVersion !== bundledVersion) {
-            versionMismatches.push({
-              name,
-              bundledVersion,
-              installedVersion
-            });
-          }
-        } catch (_) {
-          // ignore package not found
-        }
-      }
-      if (versionMismatches.length) {
-        console.info(`@vaadin/bundles has version mismatches with installed packages, ${disabledMessage}`);
-        console.info(`Packages with version mismatches: ${JSON.stringify(versionMismatches, undefined, 2)}`);
-        vaadinBundleJson = { packages: {} };
-        return false;
-      }
-
-      return true;
-    },
-    async config(config) {
-      return mergeConfig(
-        {
-          optimizeDeps: {
-            exclude: [
-              // Vaadin bundle
-              '@vaadin/bundles',
-              ...Object.keys(vaadinBundleJson.packages),
-              '@vaadin/vaadin-material-styles'
-            ]
-          }
-        },
-        config
-      );
-    },
-    load(rawId) {
-      const [path, params] = rawId.split('?');
-      if (!path.startsWith(modulesDirectory)) return;
-
-      const id = path.substring(modulesDirectory.length + 1);
-      const bindings = getExports(id);
-      if (bindings === undefined) return;
-
-      const cacheSuffix = params ? `?${params}` : '';
-      const bundlePath = `@vaadin/bundles/vaadin.js${cacheSuffix}`;
-
-      return `import { init as VaadinBundleInit, get as VaadinBundleGet } from '${bundlePath}';
-await VaadinBundleInit('default');
-const { ${bindings.map(getImportAssigment).join(', ')} } = (await VaadinBundleGet('./node_modules/${id}'))();
-export { ${bindings.map(getExportBinding).join(', ')} };`;
     }
   };
 }
@@ -664,6 +427,7 @@ function preserveUsageStats() {
 export const vaadinConfig: UserConfigFn = (env) => {
   const devMode = env.mode === 'development';
   const productionMode = !devMode && !devBundle
+  const commercialBanner = productionMode && hasCommercialBanner;
 
   if (devMode && process.env.watchDogPort) {
     // Open a connection with the Java dev-mode handler in order to finish
@@ -698,12 +462,23 @@ export const vaadinConfig: UserConfigFn = (env) => {
       outDir: buildOutputFolder,
       emptyOutDir: devBundle,
       assetsDir: 'VAADIN/build',
-      target: ['safari15', 'es2022'],
+      target,
       rollupOptions: {
         input: {
           indexhtml: projectIndexHtml,
 
           ...(hasExportedWebComponents ? { webcomponenthtml: path.resolve(frontendFolder, 'web-component.html') } : {})
+        },
+        output: {
+          // Workaround to enable dynamic imports with top-level await for
+          // commonjs modules, such as "atmosphere.js" in Hilla. Extracting
+          // Rollup's commonjs helpers into separate manual chunk avoids
+          // circular dependencies in this case. Caused
+          //   - https://github.com/vitejs/vite/issues/10995
+          //   - https://github.com/rollup/rollup/issues/5884
+          //   - https://github.com/vitejs/vite/issues/19695
+          //   - https://github.com/vitejs/vite/issues/12209
+          manualChunks: (id: string) => id.startsWith('\0commonjsHelpers.js') ? 'commonjsHelpers' : null
         },
         onwarn: (warning: rollup.RollupLog, defaultHandler: rollup.LoggingFunction) => {
           const ignoreEvalWarning = [
@@ -719,6 +494,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
       }
     },
     optimizeDeps: {
+      esbuildOptions: {
+        target,
+      },
       entries: [
         // Pre-scan entrypoints in Vite to avoid reloading on first open
         'generated/vaadin.ts'
@@ -735,9 +513,13 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       productionMode && brotli(),
-      devMode && vaadinBundlesPlugin(),
+      devMode && vaadinBundlesPlugin({
+        nodeModulesFolder
+      }),
       devMode && showRecompileReason(),
-      settings.offlineEnabled && buildSWPlugin({ devMode }),
+      settings.offlineEnabled && serviceWorkerPlugin({
+        srcPath: settings.clientServiceWorkerSource,
+      }),
       !devMode && statsExtracterPlugin(),
       !productionMode && preserveUsageStats(),
       themePlugin({ devMode }),
@@ -779,6 +561,14 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
+      productionMode && vaadinI18n({
+        cwd: __dirname,
+        meta: {
+          output: {
+            dir: i18nFolder,
+          },
+        },
+      }),
       {
         name: 'vaadin:force-remove-html-middleware',
         configureServer(server) {
@@ -798,14 +588,21 @@ export const vaadinConfig: UserConfigFn = (env) => {
             if (path !== '/web-component.html') {
               return;
             }
-
-            return [
+            const scripts = [
               {
                 tag: 'script',
                 attrs: { type: 'module', src: `/generated/vaadin-web-component.ts` },
                 injectTo: 'head'
               }
             ];
+            if (commercialBanner) {
+              scripts.push({
+                tag: 'script',
+                attrs: { type: 'module', src: '/generated/commercial-banner.js' },
+                injectTo: 'head'
+              });
+            }
+            return scripts;
           }
         }
       },
@@ -832,15 +629,22 @@ export const vaadinConfig: UserConfigFn = (env) => {
               attrs: { type: 'module', src: '/generated/vaadin.ts' },
               injectTo: 'head'
             });
+            if (commercialBanner) {
+              scripts.push({
+                tag: 'script',
+                attrs: { type: 'module', src: '/generated/commercial-banner.js' },
+                injectTo: 'head'
+              });
+            }
             return scripts;
           }
         }
       },
+      //#vitePluginFileSystemRouter#
       checker({
         typescript: true
       }),
       productionMode && visualizer({ brotliSize: true, filename: bundleSizeFile })
-      //#vitePluginFileSystemRouter#
     ]
   };
 };

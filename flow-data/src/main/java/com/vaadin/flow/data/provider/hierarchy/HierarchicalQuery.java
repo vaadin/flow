@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.QuerySortOrder;
@@ -36,6 +39,8 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
 
     private final T parent;
 
+    private final Set<Object> expandedItemIds;
+
     /**
      * Constructs a new hierarchical query object with given filter and parent
      * node.
@@ -48,6 +53,25 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      */
     public HierarchicalQuery(F filter, T parent) {
         super(filter);
+        this.expandedItemIds = Collections.emptySet();
+        this.parent = parent;
+    }
+
+    /**
+     * Constructs a new hierarchical query object with given filter, expanded
+     * items and parent node.
+     *
+     * @param filter
+     *            filtering for fetching; can be <code>null</code>
+     * @param expandedItemIds
+     *            the set of expanded item IDs
+     * @param parent
+     *            the hierarchical parent object, <code>null</code>
+     *            corresponding to the root node
+     */
+    public HierarchicalQuery(F filter, Set<Object> expandedItemIds, T parent) {
+        super(filter);
+        this.expandedItemIds = expandedItemIds;
         this.parent = parent;
     }
 
@@ -73,6 +97,35 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
             List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
             F filter, T parent) {
         super(offset, limit, sortOrders, inMemorySorting, filter);
+        this.expandedItemIds = Collections.emptySet();
+        this.parent = parent;
+    }
+
+    /**
+     * Constructs a new hierarchical query object with given offset, limit,
+     * sorting, filtering and expanded items.
+     *
+     * @param offset
+     *            first index to fetch
+     * @param limit
+     *            fetched item count
+     * @param sortOrders
+     *            sorting order for fetching; used for sorting backends
+     * @param inMemorySorting
+     *            comparator for sorting in-memory data
+     * @param filter
+     *            filtering for fetching; can be <code>null</code>
+     * @param expandedItemIds
+     *            the set of expanded item IDs
+     * @param parent
+     *            the hierarchical parent object, <code>null</code>
+     *            corresponding to the root node
+     */
+    public HierarchicalQuery(int offset, int limit,
+            List<QuerySortOrder> sortOrders, Comparator<T> inMemorySorting,
+            F filter, Set<Object> expandedItemIds, T parent) {
+        super(offset, limit, sortOrders, inMemorySorting, filter);
+        this.expandedItemIds = expandedItemIds;
         this.parent = parent;
     }
 
@@ -94,5 +147,14 @@ public class HierarchicalQuery<T, F> extends Query<T, F> {
      */
     public Optional<T> getParentOptional() {
         return Optional.ofNullable(parent);
+    }
+
+    /**
+     * Gets the set of item IDs that are currently expanded in the hierarchy.
+     *
+     * @return the set of expanded item IDs
+     */
+    public Set<Object> getExpandedItemIds() {
+        return expandedItemIds;
     }
 }

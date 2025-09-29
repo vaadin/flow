@@ -15,20 +15,23 @@
  */
 package com.vaadin.flow.server;
 
-import jakarta.servlet.http.HttpServletRequest;
-
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -57,6 +60,34 @@ public class HandlerHelper implements Serializable {
 
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
+
+    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+
+    private static final Set<String> nonHtmlFetchDests;
+
+    static {
+        // Full list at
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
+        Set<String> dests = new HashSet<>();
+        dests.add("audio");
+        dests.add("audioworklet");
+        dests.add("font");
+        dests.add("image");
+        dests.add("manifest");
+        dests.add("paintworklet");
+        dests.add("script"); // NOSONAR
+        dests.add("serviceworker");
+        dests.add("sharedworker");
+        dests.add("style");
+        dests.add("track");
+        dests.add("video");
+        dests.add("worker");
+        dests.add("xslt");
+
+        // "empty" requests are used when service worker caches / so they need
+        // to be allowed
+        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
+    }
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -181,6 +212,11 @@ public class HandlerHelper implements Serializable {
 
     private static boolean isFrameworkInternalRequest(String servletMappingPath,
             String requestedPath, String requestTypeParameter) {
+        // Hilla push requests do not respect Vaadin servlet mapping
+        if (isHillaPush(requestedPath)) {
+            return true;
+        }
+
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
@@ -204,8 +240,6 @@ public class HandlerHelper implements Serializable {
                         .equals(requestedPathWithoutServletMapping.get())) {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
-            return true;
-        } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {
             return true;
         }
 
@@ -510,6 +544,59 @@ public class HandlerHelper implements Serializable {
                               // typically do not need a security
                               // context but also uploads go here
         };
+    }
+
+    /**
+     * Determines whether the given HTTP request is initiated by a non-HTML
+     * context.
+     *
+     * This is based on the value of the {@literal Sec-Fetch-Dest} in the
+     * request headers. If the header value is absent or does not match certain
+     * predefined values, it is considered an HTML-initiated request.
+     *
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest">Sec-Fetch-Dest
+     * header</a> documentation for more details.
+     *
+     * @param request
+     *            the HTTP servlet request to evaluate
+     * @return {@code true} if the request is initiated by a non-HTML context;
+     *         {@code false} otherwise
+     */
+    public static boolean isNonHtmlInitiatedRequest(
+            HttpServletRequest request) {
+        return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));
+    }
+
+    /**
+     * Determines whether the given request is initiated by a non-HTML context.
+     *
+     * This is based on the value of the {@literal Sec-Fetch-Dest} in the
+     * request headers. If the header value is absent or does not match certain
+     * predefined values, it is considered an HTML-initiated request.
+     *
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest">Sec-Fetch-Dest
+     * header</a> documentation for more details.
+     *
+     * @param request
+     *            the Vaadin request to evaluate
+     * @return {@code true} if the request is initiated by a non-HTML context;
+     *         {@code false} otherwise
+     */
+    public static boolean isNonHtmlInitiatedRequest(VaadinRequest request) {
+        return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));
+    }
+
+    // The above public methods are indirectly tested by
+    // IndexHtmlRequestHandlerTest and VaadinDefaultRequestCacheTest
+    private static boolean isNonHtmlInitiatedRequest(String fetchDest) {
+        if (fetchDest == null) {
+            // Old browsers do not send the header at all, assume the request
+            // is HTML initiated
+            return false;
+        }
+        return nonHtmlFetchDests.contains(fetchDest);
     }
 
 }

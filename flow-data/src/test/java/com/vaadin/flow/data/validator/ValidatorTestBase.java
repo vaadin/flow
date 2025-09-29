@@ -17,6 +17,7 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Locale;
 
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
@@ -45,7 +46,8 @@ public class ValidatorTestBase {
     }
 
     protected <T> void assertPasses(T value, Validator<? super T> validator) {
-        ValidationResult result = validator.apply(value, new ValueContext());
+        ValidationResult result = validator.apply(value,
+                new ValueContext(new Binder()));
         if (result.isError()) {
             Assert.fail(value + " should pass " + validator + " but got "
                     + result.getErrorMessage());
@@ -55,7 +57,7 @@ public class ValidatorTestBase {
     protected <T> void assertFails(T value, String errorMessage,
             Validator<? super T> validator) {
         ValidationResult result = validator.apply(value,
-                new ValueContext(localeContext));
+                new ValueContext(new Binder(), localeContext));
         Assert.assertTrue(result.isError());
         Assert.assertEquals(errorMessage, result.getErrorMessage());
     }

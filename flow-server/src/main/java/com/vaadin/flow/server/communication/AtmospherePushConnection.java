@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
@@ -465,6 +465,11 @@ public class AtmospherePushConnection
 
         boolean alreadySeen(int lastSeenOnClient) {
             return serverSyncId <= lastSeenOnClient;
+        }
+
+        @Override
+        public String toString() {
+            return "PushMessage " + serverSyncId + ", body: " + message;
         }
     }
 

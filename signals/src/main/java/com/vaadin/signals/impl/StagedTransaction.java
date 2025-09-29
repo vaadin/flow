@@ -115,6 +115,16 @@ public class StagedTransaction extends Transaction {
 
     private boolean failing = false;
 
+    /**
+     * Indicates that a commit is in progress or already performed. Application
+     * code can run as part of notifying listeners at the end of a commit. At
+     * that point, this transaction is still the current transaction which means
+     * that any applied changes would end up ignored. To avoid that, writes
+     * during a commit are delegated to the outer transaction. Reads also need
+     * to be delegated so that any writes can be read.
+     */
+    private boolean committing = false;
+
     private final Transaction outer;
 
     /**
@@ -130,20 +140,22 @@ public class StagedTransaction extends Transaction {
 
     @Override
     protected void commit(Consumer<ResultOrError<Void>> resultHandler) {
+        assert !committing;
+        committing = true;
+
         if (openTrees.isEmpty()) {
             resultHandler.accept(new SignalOperation.Result<>(null));
             return;
         }
 
-        ResultCollector collector = new ResultCollector(openTrees.keySet(),
-                resultHandler);
-
         if (outer instanceof StagedTransaction outerTx) {
+            ResultCollector collector = new ResultCollector(openTrees.keySet(),
+                    resultHandler);
             for (SignalTree tree : openTrees.keySet()) {
                 outerTx.include(tree, createChange(tree, collector), true);
             }
         } else {
-            commitTwoPhase(collector);
+            commitTwoPhase(resultHandler);
 
             for (SignalTree tree : openTrees.keySet()) {
                 CommandsAndHandlers staged = openTrees.get(tree).staged;
@@ -156,7 +168,7 @@ public class StagedTransaction extends Transaction {
         }
     }
 
-    private void commitTwoPhase(ResultCollector collector) {
+    private void commitTwoPhase(Consumer<ResultOrError<Void>> resultHandler) {
         /*
          * Order by id to ensure all transactions lock trees in the same order.
          * Without this, there could be a deadlock if one transaction has
@@ -167,6 +179,8 @@ public class StagedTransaction extends Transaction {
                 .filter(entry -> !entry.getValue().staged.isEmpty())
                 .map(Entry::getKey).sorted(Comparator.comparing(SignalTree::id))
                 .toList();
+
+        ResultCollector collector = new ResultCollector(trees, resultHandler);
 
         try {
             trees.forEach(tree -> tree.getLock().lock());
@@ -217,6 +231,11 @@ public class StagedTransaction extends Transaction {
     @Override
     public void include(SignalTree tree, SignalCommand command,
             Consumer<CommandResult> resultHandler, boolean applyToTree) {
+        if (committing) {
+            outer.include(tree, command, resultHandler, applyToTree);
+            return;
+        }
+
         include(tree, new CommandsAndHandlers(command, resultHandler),
                 applyToTree);
     }
@@ -238,6 +257,10 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public TreeRevision read(SignalTree tree) {
+        if (committing) {
+            return outer.read(tree);
+        }
+
         TreeState state = getOrCreateTreeState(tree);
         return failing ? state.base : state.revision;
     }
@@ -275,10 +298,5 @@ public class StagedTransaction extends Transaction {
 
             state.staged.notifyResultHandlers(results);
         }
-    }
-
-    @Override
-    protected boolean readonly() {
-        return false;
     }
 }

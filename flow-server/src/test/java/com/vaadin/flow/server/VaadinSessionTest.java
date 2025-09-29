@@ -37,6 +37,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.frontend.MockLogger;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -73,6 +74,8 @@ public class VaadinSessionTest {
     public static class VaadinSessionWithMockLogger extends VaadinSession {
         public final MockLogger mockLogger = new MockLogger();
 
+        private DeploymentConfiguration config;
+
         public VaadinSessionWithMockLogger(VaadinService service) {
             super(service);
             mockLogger.includeStackTrace = true;
@@ -84,7 +87,11 @@ public class VaadinSessionTest {
         }
 
         @Override
-        protected void checkSetConfiguration() {
+        public DeploymentConfiguration getConfiguration() {
+            if (config == null) {
+                config = new MockDeploymentConfiguration();
+            }
+            return config;
         }
     }
 
@@ -143,11 +150,6 @@ public class VaadinSessionTest {
         session = new VaadinSessionWithMockLogger(mockService);
         mockService.storeSession(session, mockWrappedSession);
 
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        session.lock();
-        session.setConfiguration(configuration);
-        session.unlock();
-
         ui = new UI();
         vaadinRequest = new VaadinServletRequest(
                 Mockito.mock(HttpServletRequest.class), mockService) {
@@ -186,7 +188,7 @@ public class VaadinSessionTest {
 
         ui.getInternals().setSession(session);
 
-        ui.doInit(vaadinRequest, session.getNextUIid());
+        ui.doInit(vaadinRequest, session.getNextUIid(), "foo");
 
         session.addUI(ui);
 
@@ -428,7 +430,7 @@ public class VaadinSessionTest {
 
         anotherUI.getInternals().setSession(session);
 
-        anotherUI.doInit(vaadinRequest, session.getNextUIid());
+        anotherUI.doInit(vaadinRequest, session.getNextUIid(), "foo");
 
         session.addUI(anotherUI);
 
@@ -620,13 +622,11 @@ public class VaadinSessionTest {
         session.checkHasLock();
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
-        session.setConfiguration(configuration);
         session.checkHasLock();
     }
 
@@ -635,7 +635,8 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -656,7 +657,8 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -675,7 +677,8 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 

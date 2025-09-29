@@ -24,8 +24,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
@@ -68,7 +68,8 @@ public class TaskInstallFrontendBuildPluginsTest {
         String[] expectedPlugins = new String[] { "application-theme-plugin",
                 "theme-loader", "theme-live-reload-plugin",
                 "build-status-plugin", "rollup-plugin-postcss-lit-custom",
-                "react-function-location-plugin" };
+                "react-function-location-plugin", "rollup-plugin-vaadin-i18n",
+                "vite-plugin-service-worker", "vite-plugin-vaadin-bundles" };
         final List<String> plugins = FrontendPluginsUtil.getPlugins();
         Assert.assertEquals("Unexpected number of plugins in 'plugins.json'",
                 expectedPlugins.length, plugins.size());

@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>24.8-SNAPSHOT</version>
+        <version>25.0-SNAPSHOT</version>
     </parent>
 
     <artifactId>flow-jandex</artifactId>
@@ -101,7 +101,7 @@
             <plugin>
                 <groupId>io.smallrye</groupId>
                 <artifactId>jandex-maven-plugin</artifactId>
-                <version>3.2.7</version>
+                <version>3.3.2</version>
                 <executions>
                     <execution>
                         <id>make-index</id>

@@ -24,6 +24,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
+
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -32,8 +34,6 @@ import org.junit.rules.ExpectedException;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-
-import elemental.json.JsonValue;
 
 public class AbstractLazyDataViewTest {
 
@@ -70,7 +70,7 @@ public class AbstractLazyDataViewTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
 
             }
 
@@ -174,7 +174,7 @@ public class AbstractLazyDataViewTest {
         final AtomicInteger itemCount = new AtomicInteger(0);
         dataView.addItemCountChangeListener(
                 event -> itemCount.set(event.getItemCount()));
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
 
         Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
 
@@ -188,7 +188,7 @@ public class AbstractLazyDataViewTest {
         final AtomicInteger itemCount = new AtomicInteger(0);
         dataView.addItemCountChangeListener(
                 event -> itemCount.set(event.getItemCount()));
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataView.setItemCountUnknown();
 
         Assert.assertEquals("Invalid item count reported", 0, itemCount.get());
@@ -230,7 +230,7 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void getItems_withDefinedSize() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -244,7 +244,7 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void getItems_withUndefinedSize() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         AtomicInteger limit = new AtomicInteger(50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
@@ -270,7 +270,7 @@ public class AbstractLazyDataViewTest {
 
     @Test
     public void getItem_correctIndex_itemObtained() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -287,7 +287,7 @@ public class AbstractLazyDataViewTest {
     public void getItem_negativeIndex_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage("Index must be non-negative");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -302,7 +302,7 @@ public class AbstractLazyDataViewTest {
     public void getItem_emptyData_throws() {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage("Requested index 0 on empty data.");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -318,7 +318,7 @@ public class AbstractLazyDataViewTest {
         exceptionRule.expect(IndexOutOfBoundsException.class);
         exceptionRule.expectMessage(
                 "Given index 3 is outside of the accepted range '0 - 2'");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();

@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.ErrorTargetEntry;
@@ -35,10 +34,8 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
-
-import elemental.json.JsonValue;
 
 /**
  * The router takes care of serving content when the user navigates within a
@@ -78,10 +75,8 @@ public class Router implements Serializable {
      *            the location object of the route
      */
     public void initializeUI(UI ui, Location location) {
-        ui.getPage().getHistory()
-                .setHistoryStateChangeHandler(e -> navigate(ui, e.getLocation(),
-                        e.getTrigger(),
-                        JacksonUtils.mapElemental(e.getState().orElse(null))));
+        ui.getPage().getHistory().setHistoryStateChangeHandler(e -> navigate(ui,
+                e.getLocation(), e.getTrigger(), e.getState().orElse(null)));
 
         int statusCode = navigate(ui, location, NavigationTrigger.PAGE_LOAD);
 
@@ -246,69 +241,6 @@ public class Router implements Serializable {
             }
         }
         return HttpStatusCode.NOT_MODIFIED.getCode();
-    }
-
-    /**
-     * Navigates the given UI to the given location. For internal use only.
-     * <p>
-     * This method pushes to the browser history if the <code>trigger</code> is
-     * {@link NavigationTrigger#ROUTER_LINK} or
-     * {@link NavigationTrigger#UI_NAVIGATE}.
-     *
-     * @param ui
-     *            the UI to update, not <code>null</code>
-     * @param location
-     *            the location to navigate to, not <code>null</code>
-     * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
-     * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
-     * @return the HTTP status code resulting from the navigation
-     * @see UI#navigate(String)
-     * @see UI#navigate(String, QueryParameters)
-     */
-    @Deprecated
-    public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state) {
-        return navigate(ui, location, trigger, state, false, false);
-    }
-
-    /**
-     * Navigates the given UI to the given location. For internal use only.
-     * <p>
-     * This method pushes to the browser history if the <code>trigger</code> is
-     * {@link NavigationTrigger#ROUTER_LINK} or
-     * {@link NavigationTrigger#UI_NAVIGATE}.
-     *
-     * @param ui
-     *            the UI to update, not <code>null</code>
-     * @param location
-     *            the location to navigate to, not <code>null</code>
-     * @param trigger
-     *            the type of user action that triggered this navigation, not
-     *            <code>null</code>
-     * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
-     * @param forceInstantiation
-     *            if set to {@code true}, the navigation target will always be
-     *            instantiated
-     * @param recreateLayoutChain
-     *            if set to {@code true}, the complete layout chain up to the
-     *            navigation target will be re-instantiated. Requires
-     *            {@code forceInstantiation} to be true to have an effect.
-     * @return the HTTP status code resulting from the navigation
-     * @see UI#navigate(String)
-     * @see UI#navigate(String, QueryParameters)
-     */
-    @Deprecated
-    public int navigate(UI ui, Location location, NavigationTrigger trigger,
-            JsonValue state, boolean forceInstantiation,
-            boolean recreateLayoutChain) {
-        return navigate(ui, location, trigger, JacksonUtils.mapElemental(state),
-                forceInstantiation, recreateLayoutChain);
     }
 
     private boolean handleNavigationForLocation(UI ui, Location location) {

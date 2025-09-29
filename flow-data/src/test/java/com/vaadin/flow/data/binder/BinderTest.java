@@ -42,6 +42,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.binder.Binder.Binding;
@@ -942,6 +943,61 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
     }
 
     @Test
+    public void withValidator_isAppliedIsEvaluated() {
+        // Binding has validator which always fails
+        Binding<Person, String> nameBinding = binder.forField(nameField)
+                .withValidator(name -> false, "")
+                .bind(Person::getFirstName, Person::setFirstName);
+        binder.setBean(item);
+
+        // Base state -> not valid
+        Assert.assertFalse(binder.isValid());
+
+        // Default -> non-visible field -> valid
+        ((Component) nameBinding.getField()).setVisible(false);
+        Assert.assertTrue(binder.isValid());
+
+        // isApplied = false -> valid
+        ((Component) nameBinding.getField()).setVisible(true);
+        nameBinding.setIsAppliedPredicate(p -> false);
+        Assert.assertTrue(binder.isValid());
+
+        // isApplied = true -> not valid
+        nameBinding.setIsAppliedPredicate(p -> true);
+        Assert.assertFalse(binder.isValid());
+
+        // Check removing predicate and restoring default behavior
+        nameBinding.setIsAppliedPredicate(null);
+        Assert.assertFalse(binder.isValid());
+        ((Component) nameBinding.getField()).setVisible(false);
+        Assert.assertTrue(binder.isValid());
+    }
+
+    @Test
+    public void writeBean_isAppliedIsEvaluated() {
+        AtomicInteger invokes = new AtomicInteger();
+
+        binder.forField(nameField).withValidator(name -> false, "")
+                .bind(Person::getFirstName, Person::setFirstName)
+                .setIsAppliedPredicate(p -> {
+                    invokes.incrementAndGet();
+                    return false;
+                });
+
+        binder.readBean(item);
+        nameField.setValue("");
+
+        binder.writeBeanIfValid(item);
+        Assert.assertEquals("writeBeanIfValid should have invoked isApplied", 1,
+                invokes.get());
+
+        binder.writeBeanAsDraft(item);
+        Assert.assertEquals("writeBeanAsDraft should have invoked isApplied", 2,
+                invokes.get());
+
+    }
+
+    @Test
     public void setRequired_withErrorMessage_fieldGetsRequiredIndicatorAndValidator() {
         TestTextField textField = new TestTextField();
         assertFalse(textField.isRequiredIndicatorVisible());
@@ -1361,14 +1417,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertTrue(binder.isValid());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void isValidTest_unbound_binder_throws_with_bean_level_validation() {
+    @Test
+    public void isValidTest_unbound_binder_passes_with_bean_level_validation() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.withValidator(Validator.from(
                 person -> !person.getFirstName().equals("fail bean validation"),
                 ""));
-        binder.isValid();
+        Assert.assertTrue(binder.isValid());
     }
 
     @Test
@@ -1690,20 +1746,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertFalse(binder.validate().isOk());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void beanvalidation_isValid_throws_with_readBean() {
+    @Test
+    public void beanvalidation_isValid_passes_with_readBean() {
         TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+        binder.withValidator(Validator.alwaysFail("fail"));
 
         binder.readBean(item);
 
         Assert.assertTrue(binder.isValid());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void beanvalidation_validate_throws_with_readBean() {
+    @Test
+    public void beanvalidation_validate_passes_with_readBean() {
         TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+        binder.withValidator(Validator.alwaysFail("fail"));
 
         binder.readBean(item);
 

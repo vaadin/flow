@@ -86,16 +86,15 @@ public class HotswapperTest {
 
     Hotswapper hotswapper;
     Lookup lookup;
-    private VaadinService service;
+    private MockVaadinServletService service;
     private VaadinHotswapper flowHotswapper;
     private VaadinHotswapper hillaHotswapper;
     private BrowserLiveReload liveReload;
 
     @Before
     public void setup() {
-        lookup = Mockito.mock(Lookup.class);
         service = new MockVaadinServletService();
-        service.getContext().setAttribute(Lookup.class, lookup);
+        lookup = service.getLookup();
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -944,7 +943,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushDisabled_forcePageReload_fullReloadTriggered()
+    public void onHotswap_pushDisabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -957,6 +956,22 @@ public class HotswapperTest {
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).refresh(anyBoolean());
         Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushDisabled_forcePageReload_loadedClass_notReload()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload, never()).reload();
     }
 
     @Test
@@ -986,7 +1001,7 @@ public class HotswapperTest {
     }
 
     @Test
-    public void onHotswap_pushEnabled_forcePageReload_fullReloadTriggered()
+    public void onHotswap_pushEnabled_forcePageReload_redefinedClass_fullReloadTriggered()
             throws ServiceException {
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
@@ -1000,6 +1015,23 @@ public class HotswapperTest {
         ui.assertNotRefreshed();
         Mockito.verify(liveReload, never()).refresh(anyBoolean());
         Mockito.verify(liveReload).reload();
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_forcePageReload_loadedClass_noReload()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession();
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+
+        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
+        ui.enablePush();
+
+        Hotswapper.forcePageReload(service, true);
+        hotswapper.onHotswap(new String[] { MyRoute.class.getName() }, false);
+
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+        Mockito.verify(liveReload, never()).reload();
     }
 
     @Test
@@ -1065,14 +1097,18 @@ public class HotswapperTest {
                 uiInitInstalled.set(true);
                 return super.addUIInitListener(listener);
             }
+
+            @Override
+            protected void instrumentMockLookup(Lookup lookup) {
+                ApplicationConfiguration appConfig = Mockito
+                        .mock(ApplicationConfiguration.class);
+                Mockito.when(appConfig.isProductionMode()).then(
+                        i -> getDeploymentConfiguration().isProductionMode());
+                Mockito.when(
+                        lookup.lookup(ApplicationConfigurationFactory.class))
+                        .thenReturn(context -> appConfig);
+            }
         };
-        ApplicationConfiguration appConfig = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).then(i -> vaadinService
-                .getDeploymentConfiguration().isProductionMode());
-        Mockito.when(lookup.lookup(ApplicationConfigurationFactory.class))
-                .thenReturn(context -> appConfig);
-        vaadinService.getContext().setAttribute(Lookup.class, lookup);
         Hotswapper.register(vaadinService);
 
         Assert.assertTrue(
@@ -1102,21 +1138,27 @@ public class HotswapperTest {
             @Override
             public Registration addSessionInitListener(
                     SessionInitListener listener) {
-                sessionInitInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    sessionInitInstalled.set(true);
+                }
                 return super.addSessionInitListener(listener);
             }
 
             @Override
             public Registration addSessionDestroyListener(
                     SessionDestroyListener listener) {
-                sessionDestroyInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    sessionDestroyInstalled.set(true);
+                }
                 return super.addSessionDestroyListener(listener);
             }
 
             @Override
             public Registration addServiceDestroyListener(
                     ServiceDestroyListener listener) {
-                serviceDestroyInstalled.set(true);
+                if (listener instanceof Hotswapper) {
+                    serviceDestroyInstalled.set(true);
+                }
                 return super.addServiceDestroyListener(listener);
             }
         };
@@ -1333,16 +1375,12 @@ public class HotswapperTest {
         WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
         when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
 
-        MockVaadinSession session = new MockVaadinSession(service) {
+        return new MockVaadinSession(service) {
             @Override
             public WrappedSession getSession() {
                 return wrappedSession;
             }
         };
-        session.getLockInstance().lock();
-        session.setConfiguration(service.getDeploymentConfiguration());
-        session.getLockInstance().unlock();
-        return session;
     }
 
     private String[] toClassNameArray(Collection<Class<?>> classes) {

@@ -21,6 +21,9 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
     private Snapshot submitted = new Snapshot(id(), true);
 
+    /**
+     * Creates a new asynchronous signal tree.
+     */
     protected AsynchronousSignalTree() {
         super(Type.ASYNCHRONOUS);
     }
@@ -54,6 +57,7 @@ public abstract class AsynchronousSignalTree extends SignalTree {
 
             confirmed = new Snapshot(builder);
 
+            // Remove any pending commands that are now confirmed from the queue
             unconfirmedCommands.removeHandledCommands(results.keySet());
 
             Snapshot oldSubmitted = submitted;
@@ -64,6 +68,7 @@ public abstract class AsynchronousSignalTree extends SignalTree {
              * in that case
              */
             if (!unconfirmedCommands.isEmpty()) {
+                // Re-apply pending commands that remain in the queue
                 builder.apply(unconfirmedCommands.getCommands());
 
                 submitted = new Snapshot(builder);
@@ -74,6 +79,8 @@ public abstract class AsynchronousSignalTree extends SignalTree {
             notifyObservers(oldSubmitted, submitted);
 
             unconfirmedCommands.notifyResultHandlers(results, commands);
+
+            notifyProcessedCommandSubscribers(commands, results);
         });
     }
 

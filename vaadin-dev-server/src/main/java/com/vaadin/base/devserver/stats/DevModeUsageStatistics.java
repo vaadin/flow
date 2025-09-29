@@ -22,12 +22,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.vaadin.flow.server.Constants;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 import com.vaadin.pro.licensechecker.MachineId;
 
@@ -184,7 +184,7 @@ public class DevModeUsageStatistics {
                 JsonNode clientData = JsonHelpers.getJsonMapper()
                         .readTree(json);
                 if (clientData != null && clientData.isObject()) {
-                    clientData.fields().forEachRemaining(
+                    clientData.properties().forEach(
                             e -> project.setValue(e.getKey(), e.getValue()));
                 }
             } catch (Exception e) {

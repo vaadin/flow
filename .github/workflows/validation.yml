@@ -1,29 +1,36 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '24.7', '24.6', '24.5', '23.5']
+    branches: [main, '24.9', '24.8', '24.7', '23.6']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.head_ref || github.ref_name }}
+  group: ${{ github.head_ref }} || ${{ github.ref_name }}
   cancel-in-progress: true
+env:
+  HEAD_REF: ${{ github.head_ref }}
+  REF_NAME: ${{ github.ref_name }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 jobs:
   build:
     timeout-minutes: 30
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = ${{ github.head_ref || github.ref_name }}"
+      - run: echo "Concurrency Group = ${HEAD_REF:-$REF_NAME}"
       - uses: actions-cool/check-user-permission@main
         id: checkUser
         with:
           username: ${{github.triggering_actor}}
           require: 'write'
+        env:
+          HEAD_REF: ${{ github.head_ref }}
+          REF_NAME: ${{ github.ref_name }}
       - name: Fail on external workflow triggering
         if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' }}
         run: |
@@ -36,10 +43,10 @@ jobs:
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.9.0'
+          node-version: '22.14.0'
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -61,7 +68,7 @@ jobs:
         id: set-matrix
         run: |
           echo "matrix-it=$(./scripts/computeMatrix.js it-tests --parallel=13 current module args)" >> $GITHUB_OUTPUT
-          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=1 current module args)" >> $GITHUB_OUTPUT
+          echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
           cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
@@ -80,11 +87,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
@@ -146,17 +153,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '20.9.0'
+          node-version: '22.14.0'
       - uses: pnpm/action-setup@v3
         with:
-          version: '8.3.1'
+          version: '8.6.11'
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
@@ -231,7 +238,7 @@ jobs:
       pull-requests: write
     if: ${{ failure() || success() }}
     needs: [unit-tests, it-tests]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
         uses: actions/upload-artifact/merge@v4
@@ -240,7 +247,7 @@ jobs:
           pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
+          ref: ${{env.HEAD_SHA}}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output

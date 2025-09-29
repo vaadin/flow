@@ -9,13 +9,15 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
@@ -283,78 +285,29 @@ public class TransactionTest {
     }
 
     @Test
-    void readonly_externalChange_repeatableRead() {
+    void writeThrough_readValueInObserver_updatedValueRead() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Transaction.runInTransaction(() -> {
-            JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
-
-            // Writes directly to the tree, skipping the transaction
-            tree.commitSingleCommand(TestUtil.writeRootValueCommand());
-
-            JsonNode afterUpdate = TestUtil.readTransactionRootValue(tree);
-            assertNull(afterUpdate);
-            assertSame(beforeUpdate, afterUpdate);
-        }, Type.READ_ONLY);
-
-        JsonNode outsideTransaction = TestUtil.readTransactionRootValue(tree);
-        assertNotNull(outsideTransaction);
-    }
-
-    @Test
-    void readonly_writeSyncTree_throws() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(false);
-
-        assertThrows(IllegalStateException.class, () -> {
-            Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            }, Type.READ_ONLY);
+        List<String> invocations = new ArrayList<>();
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            invocations.add(TestUtil.readTransactionRootValue(tree).asText());
+            return true;
         });
-    }
-
-    @Test
-    void readonly_writeAsyncTree_throws() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        assertThrows(IllegalStateException.class, () -> {
-            Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            }, Type.READ_ONLY);
-        });
-    }
-
-    @Test
-    void readonly_writeComputedTree_accepted() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(true);
 
         Transaction.runInTransaction(() -> {
+            // Include original value in read revision
+            TestUtil.readTransactionRootValue(tree);
+
             Transaction.getCurrent().include(tree,
-                    TestUtil.writeRootValueCommand(), null);
-        }, Type.READ_ONLY);
+                    TestUtil.writeRootValueCommand("update"), null);
+        }, Type.WRITE_THROUGH);
 
-        assertNotNull(TestUtil.readSubmittedRootValue(tree));
-    }
-
-    @Test
-    void readonly_writeInNoTransaction_acceptedButIgnoredInTransaction() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(false);
-
-        Transaction.runInTransaction(() -> {
-            Transaction.runWithoutTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            });
-        }, Type.READ_ONLY);
-
-        assertNotNull(TestUtil.readSubmittedRootValue(tree));
+        assertEquals(List.of("update"), invocations);
     }
 
     @Test
     void transactionWrapping_inFull_acceptAll() {
         Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
             Transaction.runInTransaction(dummyTask(), Type.STAGED);
             Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
             Transaction.runWithoutTransaction(dummyTask());
@@ -364,28 +317,10 @@ public class TransactionTest {
     @Test
     void transactionWrapping_inWriteThrough_acceptAll() {
         Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
             Transaction.runInTransaction(dummyTask(), Type.STAGED);
             Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
             Transaction.runWithoutTransaction(dummyTask());
         }, Type.WRITE_THROUGH);
-    }
-
-    @Test
-    void transactionWrapping_readOnly_acceptOnlyReadOnlyAndNoTransaction() {
-        Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
-
-            assertThrows(IllegalStateException.class, () -> {
-                Transaction.runInTransaction(dummyTask(), Type.STAGED);
-            });
-
-            assertThrows(IllegalStateException.class, () -> {
-                Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
-            });
-
-            Transaction.runWithoutTransaction(dummyTask());
-        }, Type.READ_ONLY);
     }
 
     private static Runnable dummyTask() {

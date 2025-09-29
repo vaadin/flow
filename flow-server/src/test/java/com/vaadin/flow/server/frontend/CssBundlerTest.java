@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -285,14 +286,15 @@ public class CssBundlerTest {
     private void assertImportWorks(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
         Assert.assertEquals(importCss, TEST_CSS.trim(),
-                CssBundler.inlineImports(f.getParentFile(), f).trim());
+                CssBundler.inlineImports(f.getParentFile(), f,
+                        new ObjectMapper().createArrayNode()).trim());
 
     }
 
     private void assertImportNotHandled(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
-        Assert.assertEquals(importCss,
-                CssBundler.inlineImports(f.getParentFile(), f));
+        Assert.assertEquals(importCss, CssBundler.inlineImports(
+                f.getParentFile(), f, new ObjectMapper().createArrayNode()));
 
     }
 

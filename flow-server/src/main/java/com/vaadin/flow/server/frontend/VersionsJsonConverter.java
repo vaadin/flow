@@ -20,9 +20,9 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,9 +43,9 @@ class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
     static final String VAADIN_BUNDLES = "@vaadin/bundles";
-    private static final String JS_VERSION = "jsVersion";
-    private static final String NPM_NAME = "npmName";
-    private static final String NPM_VERSION = "npmVersion";
+    static final String JS_VERSION = "jsVersion";
+    static final String NPM_NAME = "npmName";
+    static final String NPM_VERSION = "npmVersion";
 
     /**
      * Key for exclusions array.

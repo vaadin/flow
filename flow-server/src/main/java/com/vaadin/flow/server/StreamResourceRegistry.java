@@ -22,7 +22,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
@@ -84,7 +87,7 @@ public class StreamResourceRegistry implements Serializable {
      * attribute value or property value) via the registration handler. The
      * registration handler should be used to unregister resource when it's not
      * needed anymore. Note that it is the developer's responsibility to
-     * unregister resources. Otherwise resources won't be garbage collected
+     * unregister resources. Otherwise, resources won't be garbage collected
      * until the session expires which causes memory leak.
      *
      * @param resource
@@ -99,6 +102,85 @@ public class StreamResourceRegistry implements Serializable {
                 resource.getId(), resource.getName());
         res.put(registration.getResourceUri(), resource);
         return registration;
+    }
+
+    /**
+     * Registers a stream resource in the session and returns registration
+     * handler. Registration is done without a specific owner element and thus
+     * bound to UI element.
+     * <p>
+     * You can get resource URI to use it in the application (e.g. set an
+     * attribute value or property value) via the registration handler. The
+     * registration handler should be used to unregister the resource when it's
+     * not needed anymore. Note that it is the developer's responsibility to
+     * unregister resources. Otherwise, resources won't be garbage collected
+     * until the session expires which causes memory leak.
+     *
+     * @param elementRequestHandler
+     *            element request handler to register
+     *
+     * @return registration handler
+     */
+    public StreamRegistration registerResource(
+            ElementRequestHandler elementRequestHandler) {
+        return registerResource(elementRequestHandler,
+                UI.getCurrent().getElement());
+    }
+
+    /**
+     * Registers a stream resource in the session and returns registration
+     * handler.
+     * <p>
+     * You can get resource URI to use it in the application (e.g. set an
+     * attribute value or property value) via the registration handler. The
+     * registration handler should be used to unregister the resource when it's
+     * not needed anymore. Note that it is the developer's responsibility to
+     * unregister resources. Otherwise, resources won't be garbage collected
+     * until the session expires which causes memory leak.
+     *
+     * @param elementRequestHandler
+     *            element request handler to register
+     * @param owner
+     *            owner element this request handler is scoped to
+     *
+     * @return registration handler
+     */
+    public StreamRegistration registerResource(
+            ElementRequestHandler elementRequestHandler, Element owner) {
+        AbstractStreamResource wrappedResource = new ElementStreamResource(
+                elementRequestHandler, owner);
+        return registerResource(wrappedResource);
+    }
+
+    /**
+     * Internal wrapper class for wrapping {@link ElementRequestHandler}
+     * instances as {@link AbstractStreamResource} compatible instances.
+     *
+     * For internal use only. May be renamed or removed in a future release.
+     */
+    public static class ElementStreamResource extends AbstractStreamResource {
+        private final ElementRequestHandler elementRequestHandler;
+        private final Element owner;
+
+        public ElementStreamResource(
+                ElementRequestHandler elementRequestHandler, Element owner) {
+            this.elementRequestHandler = elementRequestHandler;
+            this.owner = owner;
+        }
+
+        public ElementRequestHandler getElementRequestHandler() {
+            return elementRequestHandler;
+        }
+
+        @Override
+        public String getName() {
+            return elementRequestHandler.getUrlPostfix() == null ? ""
+                    : elementRequestHandler.getUrlPostfix();
+        }
+
+        public Element getOwner() {
+            return owner;
+        }
     }
 
     /**

@@ -33,6 +33,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.project.MavenProject;
@@ -57,6 +58,8 @@ public final class Reflector {
     private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
             "org.reflections:reflections:jar",
             "org.zeroturnaround:zt-exec:jar");
+    private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
+            Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
 
     private final URLClassLoader isolatedClassLoader;
     private List<String> dependenciesIncompatibility;
@@ -269,15 +272,7 @@ public final class Reflector {
                         .contains(artifact.getGroupId()))
                 .filter(artifact -> artifact.getFile() != null
                         && artifact.getArtifactHandler().isAddedToClasspath()
-                        && (Artifact.SCOPE_COMPILE.equals(artifact.getScope())
-                                || Artifact.SCOPE_RUNTIME
-                                        .equals(artifact.getScope())
-                                || Artifact.SCOPE_SYSTEM
-                                        .equals(artifact.getScope())
-                                || (Artifact.SCOPE_PROVIDED
-                                        .equals(artifact.getScope())
-                                        && artifact.getFile().getPath().matches(
-                                                INCLUDE_FROM_COMPILE_DEPS_REGEX))))
+                        && PRODUCTION_SCOPE_FILTER.include(artifact))
                 .collect(Collectors.toMap(keyMapper, Function.identity())));
 
         if (mojoExecution != null) {

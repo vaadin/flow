@@ -20,6 +20,8 @@ import java.util.Collection;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,16 +32,14 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.internal.KeyboardEvent;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class ComponentEventBusTest {
 
@@ -105,7 +105,7 @@ public class ComponentEventBusTest {
     }
 
     private void fireDomEvent(Component component, String domEvent,
-            JsonObject eventData) {
+            JsonNode eventData) {
         Element e = component.getElement();
         e.getNode().getFeature(ElementListenerMap.class).fireEvent(
                 new com.vaadin.flow.dom.DomEvent(e, domEvent, eventData));
@@ -173,7 +173,7 @@ public class ComponentEventBusTest {
     @Test
     public void mappedDomEvent_fire_noListeners() {
         TestComponent c = new TestComponent();
-        fireDomEvent(c, "dom-event", Json.createObject());
+        fireDomEvent(c, "dom-event", JacksonUtils.createObjectNode());
     }
 
     @Test
@@ -367,27 +367,27 @@ public class ComponentEventBusTest {
                 second.getEvent().getComponent());
     }
 
-    private JsonObject createStateNodeIdData(String key, int value) {
+    private JsonNode createStateNodeIdData(String key, int value) {
         return createData(JsonConstants.MAP_STATE_NODE_EVENT_DATA + key, value);
     }
 
-    private JsonObject createStateNodeIdData(String key, int value, String key2,
+    private JsonNode createStateNodeIdData(String key, int value, String key2,
             int value2) {
         return createData(JsonConstants.MAP_STATE_NODE_EVENT_DATA + key, value,
                 JsonConstants.MAP_STATE_NODE_EVENT_DATA + key2, value2);
     }
 
-    private JsonObject createData(String key, Object value) {
-        JsonObject data = Json.createObject();
-        data.put(key, JsonCodec.encodeWithoutTypeInfo(value));
+    private JsonNode createData(String key, Object value) {
+        ObjectNode data = JacksonUtils.createObjectNode();
+        data.set(key, JacksonCodec.encodeWithoutTypeInfo(value));
         return data;
     }
 
-    private JsonObject createData(String key, Object value, String key2,
+    private JsonNode createData(String key, Object value, String key2,
             Object value2) {
-        JsonObject data = Json.createObject();
-        data.put(key, JsonCodec.encodeWithoutTypeInfo(value));
-        data.put(key2, JsonCodec.encodeWithoutTypeInfo(value2));
+        ObjectNode data = JacksonUtils.createObjectNode();
+        data.set(key, JacksonCodec.encodeWithoutTypeInfo(value));
+        data.set(key2, JacksonCodec.encodeWithoutTypeInfo(value2));
         return data;
     }
 
@@ -399,8 +399,8 @@ public class ComponentEventBusTest {
                 eventTracker);
         remover.remove();
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 1);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                1);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventNotCalled();
@@ -417,8 +417,8 @@ public class ComponentEventBusTest {
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         component.addListener(MappedToDomEvent.class, eventTracker);
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 1);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                1);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventCalled(component, true);
@@ -433,7 +433,7 @@ public class ComponentEventBusTest {
         EventTracker<MappedToDomEvent> eventTracker = new EventTracker<>();
         component.addListener(MappedToDomEvent.class, eventTracker);
 
-        JsonObject eventData = Json.createObject();
+        ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("event.someData", 42);
         eventData.put("event.moreData", 1);
         fireDomEvent(component, "dom-event", eventData);
@@ -503,7 +503,7 @@ public class ComponentEventBusTest {
         Assert.assertEquals(2, component.getEventBus().componentEventData
                 .get(MappedToDomEvent.class).size());
 
-        fireDomEvent(component, "dom-event", Json.createObject());
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
         Assert.assertEquals(2, calls);
 
         reg1.remove();
@@ -512,7 +512,7 @@ public class ComponentEventBusTest {
         Assert.assertEquals(1, component.getEventBus().componentEventData
                 .get(MappedToDomEvent.class).size());
 
-        fireDomEvent(component, "dom-event", Json.createObject());
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
 
         Assert.assertEquals(3, calls);
 
@@ -520,7 +520,7 @@ public class ComponentEventBusTest {
         Assert.assertEquals(0,
                 component.getEventBus().componentEventData.size());
 
-        fireDomEvent(component, "dom-event", Json.createObject());
+        fireDomEvent(component, "dom-event", JacksonUtils.createObjectNode());
         Assert.assertEquals(3, calls);
     }
 
@@ -536,8 +536,8 @@ public class ComponentEventBusTest {
                 .addListener(MappedToDomNoDataEvent.class, eventTracker2);
         remover.remove();
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 1);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                1);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventNotCalled();
@@ -556,8 +556,8 @@ public class ComponentEventBusTest {
         component.addListener(MappedToDomEvent.class, eventTracker);
         component.addListener(MappedToDomNoDataEvent.class, eventTracker2);
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 19);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                19);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventCalled(component, true);
@@ -577,8 +577,8 @@ public class ComponentEventBusTest {
         component.addListener(MappedToDomEvent.class, eventTracker);
         component.addListener(MappedToDomEvent.class, eventTracker2);
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 19);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                19);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventCalled(component, true);
@@ -603,8 +603,8 @@ public class ComponentEventBusTest {
                 eventTracker2);
         remover.remove();
 
-        JsonObject eventData = createData("event.someData", 42,
-                "event.moreData", 19);
+        JsonNode eventData = createData("event.someData", 42, "event.moreData",
+                19);
         fireDomEvent(component, "dom-event", eventData);
 
         eventTracker.assertEventNotCalled();

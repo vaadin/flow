@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils;
 public class FrontendStubs {
 
     public static final String VITE_SERVER = "node_modules/vite/bin/vite.js";
+    public static final String VITE_PACKAGE_JSON = "node_modules/vite/package.json";
     public static final String VITE_TEST_OUT_FILE = "vite-out.test";
 
     private static final String NPM_BIN_PATH = System.getProperty("os.name")
@@ -145,6 +146,18 @@ public class FrontendStubs {
             throws IOException {
         createStubDevServer(new File(baseDir, VITE_SERVER), VITE_TEST_OUT_FILE,
                 readyString, milliSecondsToRun, enableListening);
+
+        var packageJson = new File(baseDir, VITE_PACKAGE_JSON);
+        packageJson.createNewFile();
+        FileUtils.write(packageJson, """
+                        {
+                          "name": "vite",
+                          "version": "4.0.0",
+                          "bin": {
+                            "vite": "bin/vite.js"
+                          }
+                        }
+                """, StandardCharsets.UTF_8);
     }
 
     /**

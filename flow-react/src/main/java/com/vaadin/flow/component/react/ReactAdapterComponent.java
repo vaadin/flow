@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.react;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -27,13 +27,10 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import elemental.json.JsonValue;
 
 /**
  * An abstract implementation of an adapter for integrating with React
@@ -154,24 +151,6 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
-     * @deprecated use {@link #readFromJson(JsonNode, Class)} instead
-     */
-    @Deprecated
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            Class<T> typeClass) {
-        return JsonUtils.readValue(jsonValue, typeClass);
-    }
-
-    /**
-     * Converts JsonValue into Java object of given type.
-     *
-     * @param jsonValue
-     *            JSON value to convert, not {@code null}
-     * @param typeClass
-     *            type class of converted object instance
-     * @return converted object instance
-     * @param <T>
-     *            type of result instance
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             Class<T> typeClass) {
@@ -188,41 +167,10 @@ public abstract class ReactAdapterComponent extends Component {
      * @return converted object instance
      * @param <T>
      *            type of result instance
-     * @deprecated use {@link #readFromJson(JsonNode, TypeReference)} instead
-     */
-    @Deprecated
-    protected static <T> T readFromJson(JsonValue jsonValue,
-            TypeReference<T> typeReference) {
-        return JsonUtils.readValue(jsonValue, typeReference);
-    }
-
-    /**
-     * Converts JsonValue into Java object of given type.
-     *
-     * @param jsonValue
-     *            JSON value to convert, not {@code null}
-     * @param typeReference
-     *            type reference of converted object instance
-     * @return converted object instance
-     * @param <T>
-     *            type of result instance
      */
     protected static <T> T readFromJson(JsonNode jsonValue,
             TypeReference<T> typeReference) {
         return JacksonUtils.readValue(jsonValue, typeReference);
-    }
-
-    /**
-     * Converts Java object into JsonValue.
-     *
-     * @param object
-     *            Java object to convert
-     * @return converted JSON value
-     * @deprecated use {@link #writeToJson(Object)}
-     */
-    @Deprecated
-    protected static JsonValue writeAsJson(Object object) {
-        return JsonUtils.writeValue(object);
     }
 
     /**
@@ -272,9 +220,6 @@ public abstract class ReactAdapterComponent extends Component {
             return JacksonUtils.createNode(doubleValue);
         } else if (rawValue instanceof Boolean booleanValue) {
             return JacksonUtils.createNode(booleanValue);
-        } else if (rawValue instanceof JsonValue jsonValue) {
-            // TODO: remove when elemental dropped
-            return JacksonUtils.mapElemental(jsonValue);
         } else {
             return JacksonUtils.createNode(rawValue.toString());
         }

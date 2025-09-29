@@ -29,6 +29,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,25 +37,22 @@ import org.junit.Test;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult.JavaScriptException;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.SingleCaptureConsumer;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonString;
-import elemental.json.JsonValue;
-
 public class PendingJavaScriptInvocationTest {
-    private static final JsonString fooJsonString = Json.create("foo");
+    private static final JsonNode fooJsonString = JacksonUtils
+            .createNode("foo");
 
     private PendingJavaScriptInvocation invocation;
 
-    private SingleCaptureConsumer<JsonValue> jsonSuccessConsumer;
+    private SingleCaptureConsumer<JsonNode> jsonSuccessConsumer;
     private SingleCaptureConsumer<String> stringSuccessConsumer;
     private SingleCaptureConsumer<String> errorConsumer;
 
-    private BiConsumer<JsonValue, Throwable> jsonFutureHandler;
+    private BiConsumer<JsonNode, Throwable> jsonFutureHandler;
     private BiConsumer<String, Throwable> stringFutureHandler;
 
     @Before
@@ -252,10 +250,10 @@ public class PendingJavaScriptInvocationTest {
     public void blockFromInvokingThread_throws() throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
-            CompletableFuture<JsonValue> completableFuture = invocation
+            CompletableFuture<JsonNode> completableFuture = invocation
                     .toCompletableFuture();
 
-            for (Callable<JsonValue> action : createBlockingActions(
+            for (Callable<JsonNode> action : createBlockingActions(
                     completableFuture)) {
                 try {
                     action.call();
@@ -275,15 +273,15 @@ public class PendingJavaScriptInvocationTest {
             throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
-            CompletableFuture<JsonValue> completableFuture = invocation
+            CompletableFuture<JsonNode> completableFuture = invocation
                     .toCompletableFuture();
 
-            JsonObject value = Json.createObject();
+            JsonNode value = JacksonUtils.createObjectNode();
             invocation.complete(value);
 
-            for (Callable<JsonValue> action : createBlockingActions(
+            for (Callable<JsonNode> action : createBlockingActions(
                     completableFuture)) {
-                JsonValue actionValue = action.call();
+                JsonNode actionValue = action.call();
                 Assert.assertSame(value, actionValue);
             }
 
@@ -296,13 +294,14 @@ public class PendingJavaScriptInvocationTest {
             throws Exception {
         MockVaadinSession session = new MockVaadinSession();
         session.runWithLock(() -> {
-            CompletableFuture<JsonValue> completableFuture = invocation
+            CompletableFuture<JsonNode> completableFuture = invocation
                     .toCompletableFuture();
 
             String errorMessage = "error message";
-            invocation.completeExceptionally(Json.create(errorMessage));
+            invocation.completeExceptionally(
+                    JacksonUtils.createNode(errorMessage));
 
-            for (Callable<JsonValue> action : createBlockingActions(
+            for (Callable<JsonNode> action : createBlockingActions(
                     completableFuture)) {
                 try {
                     action.call();
@@ -326,17 +325,17 @@ public class PendingJavaScriptInvocationTest {
 
         session.lock();
         try {
-            CompletableFuture<JsonValue> completableFuture = invocation
+            CompletableFuture<JsonNode> completableFuture = invocation
                     .toCompletableFuture();
 
-            List<Future<JsonValue>> futures = createBlockingActions(
+            List<Future<JsonNode>> futures = createBlockingActions(
                     completableFuture).stream().map(executor::submit)
                     .collect(Collectors.toList());
 
             Assert.assertEquals("All futures should be pending", 0,
                     futures.stream().filter(Future::isDone).count());
 
-            JsonObject value = Json.createObject();
+            JsonNode value = JacksonUtils.createObjectNode();
             invocation.complete(value);
 
             executor.shutdown();
@@ -347,7 +346,7 @@ public class PendingJavaScriptInvocationTest {
 
             futures.forEach(future -> {
                 try {
-                    JsonValue futureValue = future.get();
+                    JsonNode futureValue = future.get();
                     Assert.assertSame(value, futureValue);
                 } catch (Exception e) {
                     throw new RuntimeException(e);

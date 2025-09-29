@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.vaadin.gradle
+package com.vaadin.flow.gradle
 
 import java.io.File
 import java.io.Serializable
@@ -44,11 +44,22 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val productionMode: Property<Boolean>
 
     /**
-     * The folder where webpack should output index.js and other generated
+     * The folder where the frontend build tool should output index.js and other generated
      * files. Defaults to `null` which will use the auto-detected value of
      * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
      */
+    @Deprecated(
+        "use frontendOutputDirectory instead",
+        replaceWith = ReplaceWith("frontendOutputDirectory")
+    )
     public abstract val webpackOutputDirectory: Property<File>
+
+    /**
+     * The folder where the frontend build tool should output index.js and other generated
+     * files. Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
+     */
+    public abstract val frontendOutputDirectory: Property<File>
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -302,6 +313,12 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
 
+    /**
+     * Allows building a version of the application with a commercial banner
+     * when commercial components are used without a license key.
+     */
+    public abstract val commercialWithBanner: Property<Boolean>
+
     public fun filterClasspath(
         @DelegatesTo(
             value = ClasspathFilter::class,
@@ -365,14 +382,18 @@ public class PluginEffectiveConfiguration(
             }
 
 
-    public val webpackOutputDirectory: Provider<File> =
-        extension.webpackOutputDirectory
-            .convention(sourceSetName.map {
-                File(
-                    project.getBuildResourcesDir(it),
-                    Constants.VAADIN_WEBAPP_RESOURCES
+    public val frontendOutputDirectory: Provider<File> =
+        extension.frontendOutputDirectory.convention(
+            extension.webpackOutputDirectory
+                .convention(
+                    sourceSetName.map {
+                        File(
+                            project.getBuildResourcesDir(it),
+                            Constants.VAADIN_WEBAPP_RESOURCES
+                        )
+                    }
                 )
-            })
+        )
 
     public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
@@ -390,7 +411,7 @@ public class PluginEffectiveConfiguration(
     // and GradlePluginAdapter
     public val effectiveFrontendDirectory: Provider<File> =
         npmFolder.zip(frontendDirectory) { npmFolder, frontendDirectory ->
-            FrontendUtils.getLegacyFrontendFolderIfExists(
+            FrontendUtils.getFrontendFolder(
                 npmFolder,
                 frontendDirectory
             )
@@ -578,6 +599,13 @@ public class PluginEffectiveConfiguration(
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
+    public val commercialWithBanner: Provider<Boolean> =
+        extension.commercialWithBanner.convention(false)
+            .overrideWithSystemPropertyFlag(
+                project,
+                "vaadin.${InitParameters.COMMERCIAL_WITH_BANNER}"
+            )
+
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
         FrontendToolsSettings(it.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
@@ -617,7 +645,7 @@ public class PluginEffectiveConfiguration(
     override fun toString(): String = "PluginEffectiveConfiguration(" +
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
-            "webpackOutputDirectory=${webpackOutputDirectory.get()}, " +
+            "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +
@@ -653,6 +681,7 @@ public class PluginEffectiveConfiguration(
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
             "npmExcludeWebComponents=${npmExcludeWebComponents.get()}" +
+            "commercialWithBanner=${commercialWithBanner.get()}" +
             ")"
 
     public companion object {
@@ -661,16 +690,6 @@ public class PluginEffectiveConfiguration(
                 project,
                 VaadinFlowPluginExtension.get(project)
             )
-
-        /*
-        public fun toolsSettings(extension: VaadinFlowPluginExtension): Provider<FrontendToolsSettings> =
-            extension.npmFolder.map {
-                FrontendToolsSettings(it.absolutePath) {
-                    FrontendUtils.getVaadinHomeDirectory()
-                        .absolutePath
-                }
-            }
-         */
 
     }
 }

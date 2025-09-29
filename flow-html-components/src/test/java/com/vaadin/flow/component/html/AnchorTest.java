@@ -15,15 +15,19 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Optional;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.AbstractStreamResource;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Text;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.ServletResourceDownloadHandler;
 
 public class AnchorTest extends ComponentTest {
 
@@ -33,6 +37,14 @@ public class AnchorTest extends ComponentTest {
     public void tearDown() {
         ui = null;
         UI.setCurrent(null);
+    }
+
+    @Override
+    public void setup() throws IntrospectionException, InstantiationException,
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
+        whitelistProperty("download");
+        super.setup();
     }
 
     @Test
@@ -268,6 +280,158 @@ public class AnchorTest extends ComponentTest {
 
         Assert.assertTrue(anchor.getElement().hasAttribute("href"));
         Assert.assertNotEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setDownload_hrefIsRemoved_enableAnchor_hrefIsRestored() {
+        mockUI();
+        DownloadHandler downloadHandler = event -> event.getWriter()
+                .write("foo");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        Assert.assertFalse(anchor.getElement().hasAttribute("href"));
+        Assert.assertEquals(href, anchor.getHref());
+
+        anchor.setEnabled(true);
+        Assert.assertEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void disabledAnchor_setDownloadWhenDisabled_hrefIsPreserved() {
+        mockUI();
+        DownloadHandler downloadHandler = event -> event.getWriter()
+                .write("foo");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+        String href = anchor.getHref();
+        anchor.setEnabled(false);
+
+        anchor.setHref(new AbstractStreamResource() {
+
+            @Override
+            public String getName() {
+                return "baz";
+            }
+        });
+
+        anchor.setEnabled(true);
+
+        Assert.assertTrue(anchor.getElement().hasAttribute("href"));
+        Assert.assertNotEquals(href, anchor.getHref());
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_downloadAttributeIsSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void anchorWithDownloadAttributeSet_newHandler_downloadAttributeCleared() {
+        mockUI();
+        ServletResourceDownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.isDownload());
+
+        downloadHandler.inline();
+
+        anchor.setHref(downloadHandler);
+
+        Assert.assertFalse(
+                "Setting inline download handler should clear download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void anchorWithDownloadAttributeSet_newCustomHandler_downloadAttributeNotTouched() {
+        mockUI();
+        Anchor anchor = new Anchor("/home", "bar");
+        anchor.getElement().setAttribute("download", true);
+
+        Assert.assertTrue(
+                "Pre-built download handlers should set download attribute",
+                anchor.isDownload());
+
+        anchor.setHref(event -> event.getWriter().write("foo"));
+
+        Assert.assertTrue(
+                "Setting custom download handler should not clear download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void anchorWithDownloadHandler_inlineSet_downloadAttributeIsNotSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path").inline();
+        Anchor anchor = new Anchor(downloadHandler, "bar");
+
+        Assert.assertFalse(
+                "Inline download handlers should not add download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void anchorWithLinkModeDownload_downloadAttributeIsSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path").inline();
+        Anchor anchor = new Anchor(downloadHandler, AttachmentType.DOWNLOAD,
+                "bar");
+
+        Assert.assertTrue(
+                "Inline download handlers should not add download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void anchorWithLinkModeInline_downloadAttributeIsNotSet() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(downloadHandler, AttachmentType.INLINE,
+                "bar");
+
+        Assert.assertFalse(
+                "Inline download handlers should not add download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void customDownloadHandler_constructorSetsDownloadMode() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(event -> {
+        }, "bar");
+
+        Assert.assertTrue(
+                "Custom download handlers should by default add download attribute",
+                anchor.isDownload());
+    }
+
+    @Test
+    public void customDownloadHandler_nullType_constructorSetsDownloadMode() {
+        mockUI();
+        DownloadHandler downloadHandler = DownloadHandler
+                .forServletResource("null/path");
+        Anchor anchor = new Anchor(event -> {
+        }, null, "bar");
+
+        Assert.assertTrue(
+                "Custom download handlers should by default add download attribute",
+                anchor.isDownload());
     }
 
     private void mockUI() {

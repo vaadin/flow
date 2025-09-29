@@ -248,7 +248,6 @@ public class UITest {
         Mockito.when(config.getBuildFolder()).thenReturn("build");
 
         session.lock();
-        session.setConfiguration(config);
         ((MockVaadinServletService) service).setConfiguration(config);
         ui.getInternals().setSession(session);
 
@@ -263,7 +262,7 @@ public class UITest {
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        ui.doInit(request, 0);
+        ui.doInit(request, 0, "foo");
         ui.getInternals().getRouter().initializeUI(ui,
                 requestToLocation(request));
 
@@ -1220,6 +1219,20 @@ public class UITest {
 
         Assert.assertFalse(
                 "Setting modal to false should have removed all modality",
+                fixture.ui.hasModalComponent());
+    }
+
+    @Test
+    public void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertTrue("Fixture should have set a modal component",
+                fixture.ui.hasModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        Assert.assertFalse(
+                "Setting modal to VISUAL should have removed all server side modality",
                 fixture.ui.hasModalComponent());
     }
 

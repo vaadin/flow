@@ -22,6 +22,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -35,8 +36,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -62,7 +63,9 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 import com.vaadin.pro.licensechecker.Product;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
@@ -83,7 +86,6 @@ import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
@@ -154,7 +156,7 @@ public class BuildFrontendUtil {
                 .withFrontendHotdeploy(adapter.isFrontendHotdeploy())
                 .withFrontendDirectory(getFrontendDirectory(adapter))
                 .withBuildDirectory(adapter.buildFolder())
-                .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                .withBuildResultFolders(adapter.frontendOutputDirectory(),
                         adapter.servletResourceOutputDirectory())
                 .withJarFrontendResourcesFolder(
                         getJarFrontendResourcesFolder(adapter))
@@ -173,7 +175,8 @@ public class BuildFrontendUtil {
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
                 .withFrontendIgnoreVersionChecks(
-                        adapter.isFrontendIgnoreVersionChecks());
+                        adapter.isFrontendIgnoreVersionChecks())
+                .setCopyAssets(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -338,7 +341,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true)
                     .useByteCodeScanner(adapter.optimizeBundle())
@@ -370,7 +373,8 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
-                    .withFrontendDependenciesScanner(frontendDependencies);
+                    .withFrontendDependenciesScanner(frontendDependencies)
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -411,7 +415,7 @@ public class BuildFrontendUtil {
                     .withFrontendDirectory(getFrontendDirectory(adapter))
                     .withBuildDirectory(adapter.buildFolder())
                     .withRunNpmInstall(adapter.runNpmInstall())
-                    .withBuildResultFolders(adapter.webpackOutputDirectory(),
+                    .withBuildResultFolders(adapter.frontendOutputDirectory(),
                             adapter.servletResourceOutputDirectory())
                     .enablePackagesUpdate(true).useByteCodeScanner(false)
                     .withJarFrontendResourcesFolder(
@@ -463,8 +467,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        return FrontendUtils.getLegacyFrontendFolderIfExists(
-                adapter.npmFolder(), adapter.frontendDirectory());
+        return FrontendUtils.getFrontendFolder(adapter.npmFolder(),
+                adapter.frontendDirectory());
     }
 
     /**
@@ -505,8 +509,26 @@ public class BuildFrontendUtil {
         FrontendTools tools = new FrontendTools(settings);
         tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
-        ProdBundleUtils.compressBundle(adapter.projectBaseDirectory().toFile(),
-                adapter.servletResourceOutputDirectory());
+        String tokenContent = "";
+        File tokenFile = getTokenFile(adapter);
+        try {
+            tokenContent = Files.readString(tokenFile.toPath());
+            tokenFile.delete();
+        } catch (IOException ex) {
+            getLogger().error("Failed to read token file content.", ex);
+        }
+
+        try {
+            ProdBundleUtils.compressBundle(
+                    adapter.projectBaseDirectory().toFile(),
+                    adapter.servletResourceOutputDirectory());
+        } finally {
+            try {
+                Files.writeString(tokenFile.toPath(), tokenContent);
+            } catch (IOException ex) {
+                getLogger().error("Failed to write token file content.", ex);
+            }
+        }
     }
 
     /**
@@ -521,17 +543,26 @@ public class BuildFrontendUtil {
      */
     public static void runVite(PluginAdapterBase adapter,
             FrontendTools frontendTools) throws TimeoutException {
-        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite/bin/vite.js",
+        runFrontendBuildTool(adapter, frontendTools, "Vite", "vite", "vite",
                 Collections.emptyMap(), "build");
     }
 
     private static void runFrontendBuildTool(PluginAdapterBase adapter,
-            FrontendTools frontendTools, String toolName, String executable,
-            Map<String, String> environment, String... params)
-            throws TimeoutException {
+            FrontendTools frontendTools, String toolName, String packageName,
+            String binaryName, Map<String, String> environment,
+            String... params) throws TimeoutException {
 
-        File buildExecutable = new File(adapter.npmFolder(),
-                NODE_MODULES + executable);
+        File buildExecutable;
+        try {
+            buildExecutable = frontendTools.getNpmPackageExecutable(packageName,
+                    binaryName, adapter.npmFolder()).toFile();
+        } catch (FrontendUtils.CommandExecutionException e) {
+            throw new IllegalStateException(String.format("""
+                    Unable to locate %s executable. Expected the "%s" npm \
+                    package to be installed and to provide the "%s" binary. \
+                    Double check that the npm dependencies are installed.""",
+                    toolName, packageName, binaryName));
+        }
         if (!buildExecutable.isFile()) {
             throw new IllegalStateException(String.format(
                     "Unable to locate %s executable by path '%s'. Double"
@@ -583,12 +614,19 @@ public class BuildFrontendUtil {
      * @param adapter
      *            the PluginAdapterBase
      * @param frontendDependencies
+     *            frontend dependencies scanner
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
+     * @throws MissingLicenseKeyException
+     *             if commercial components are used in a commercial
+     *             banner-enabled build and no license key is present
+     * @throws LicenseException
+     *             if commercial components are used without a license and
+     *             commercial banner is not enabled
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
-        File outputFolder = adapter.webpackOutputDirectory();
+        File outputFolder = adapter.frontendOutputDirectory();
 
         String statsJsonContent = null;
         try {
@@ -623,21 +661,59 @@ public class BuildFrontendUtil {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion(), BuildType.PRODUCTION);
-            } catch (Exception e) {
-                try {
-                    getLogger().debug(
-                            "License check for {} failed. Invalidating output",
-                            component);
+                        component.getVersion(), BuildType.PRODUCTION, null);
+            } catch (MissingLicenseKeyException ex) {
+                // Commercial product in use but no license key present,
+                // no need to check further.
+                // If a commercial banner build has been requested, just forward
+                // the exception and let the caller handle it. Otherwise fail
+                // immediately suggesting the commercial banner build.
+                String productsList = commercialComponents.stream()
+                        .map(product -> "* " + product.getName())
+                        .collect(Collectors.joining(System.lineSeparator()));
+                if (adapter.isCommercialBannerEnabled()) {
+                    throw new MissingLicenseKeyException(
+                            """
+                                    The application contains the unlicensed components listed below and is displaying a commercial banner.
+                                    %1$s
 
-                    FileUtils.deleteDirectory(outputFolder);
-                } catch (IOException e1) {
-                    getLogger().debug("Failed to remove {}", outputFolder);
+                                    Go to https://vaadin.com/pricing to obtain a license
+                                    """
+                                    .formatted(productsList));
                 }
+                invalidateOutput(component, outputFolder);
+                throw new LicenseException(String.format(
+                        """
+                                Commercial features require a subscription.
+                                Your application contains the following commercial components and no license was found:
+                                %1$s
+
+                                If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                                Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                                You can also build a watermarked version of the application configuring
+                                the '%2$s' property of the Maven or Gradle plugin
+                                or run the build with the '-Dvaadin.%2$s' system parameter
+                                """,
+                        productsList, InitParameters.COMMERCIAL_WITH_BANNER));
+            } catch (Exception e) {
+                invalidateOutput(component, outputFolder);
                 throw e;
             }
         }
         return !commercialComponents.isEmpty();
+    }
+
+    private static void invalidateOutput(Product component, File outputFolder) {
+        try {
+            getLogger().debug(
+                    "License check for {} failed. Invalidating output",
+                    component);
+
+            FileUtils.deleteDirectory(outputFolder);
+        } catch (IOException e) {
+            getLogger().debug("Failed to remove {}", outputFolder);
+        }
     }
 
     private static Logger getLogger() {
@@ -738,11 +814,17 @@ public class BuildFrontendUtil {
      *
      * @param adapter
      *            - the PluginAdapterBase.
-     * @deprecated use {@link #updateBuildFile(PluginAdapterBuild, boolean)}
+     * @param licenseRequired
+     *            {@literal true} if a license was required for the production
+     *            build.
+     * @deprecated use
+     *             {@link #updateBuildFile(PluginAdapterBuild, boolean, boolean)}
+     *             instead
      */
-    @Deprecated
-    public static void updateBuildFile(PluginAdapterBuild adapter) {
-        updateBuildFile(adapter, false);
+    @Deprecated(since = "24.9", forRemoval = true)
+    public static void updateBuildFile(PluginAdapterBuild adapter,
+            boolean licenseRequired) {
+        updateBuildFile(adapter, licenseRequired, false);
     }
 
     /**
@@ -756,9 +838,20 @@ public class BuildFrontendUtil {
      * @param licenseRequired
      *            {@literal true} if a license was required for the production
      *            build.
+     * @param needsCommercialBanner
+     *            {@literal true} if a commercial banner should be applied to
+     *            the application at runtime.
      */
     public static void updateBuildFile(PluginAdapterBuild adapter,
-            boolean licenseRequired) {
+            boolean licenseRequired, boolean needsCommercialBanner) {
+        if (needsCommercialBanner && !adapter.isCommercialBannerEnabled()) {
+            throw new IllegalStateException(
+                    """
+                            Commercial banner is required for this build but has not been enabled in the Maven or Gradle plugin configuration. \
+                            This should never happen and is caused by a bug in the Vaadin plugin. \
+                            Please report the error at https://github.com/vaadin/flow/issues. \
+                            As a workaround, enable the commercial banner setting in the plugin configuration.""");
+        }
         File tokenFile = getTokenFile(adapter);
         if (!tokenFile.exists()) {
             adapter.logWarn(
@@ -795,21 +888,28 @@ public class BuildFrontendUtil {
             // license-server
             buildInfo.remove(Constants.PREMIUM_FEATURES);
             buildInfo.remove(Constants.DAU_TOKEN);
+            buildInfo.remove(Constants.COMMERCIAL_BANNER_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
+            boolean applyCommercialBanner = needsCommercialBanner
+                    && adapter.isCommercialBannerEnabled();
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
                     buildInfo.put(Constants.DAU_TOKEN, true);
                     checkLicenseCheckerAtRuntime(adapter);
                 }
+                if (applyCommercialBanner) {
+                    adapter.logInfo("Application commercial banner enabled");
+                    buildInfo.put(Constants.COMMERCIAL_BANNER_TOKEN, true);
+                }
             }
             if (isControlCenterAvailable(adapter.getClassFinder())
-                    && LicenseChecker.isValidLicense(
+                    && (applyCommercialBanner || LicenseChecker.isValidLicense(
                             "vaadin-commercial-cc-client", null,
-                            BuildType.PRODUCTION)) {
+                            BuildType.PRODUCTION))) {
                 adapter.logInfo("Premium Features are enabled");
                 buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }

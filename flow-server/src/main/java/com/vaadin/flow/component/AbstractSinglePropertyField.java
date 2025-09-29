@@ -21,7 +21,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import com.googlecode.gentyref.GenericTypeReflector;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
@@ -33,8 +34,6 @@ import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.util.SharedUtil;
-
-import elemental.json.JsonValue;
 
 /**
  * Abstract field that is based on a single element property.
@@ -132,7 +131,7 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
                 Integer.valueOf(0));
         typeHandlers.put(BaseJsonNode.class,
                 getJsonHandler(BaseJsonNode.class));
-        typeHandlers.put(JsonValue.class, getHandler(JsonValue.class));
+        typeHandlers.put(JsonNode.class, getJsonHandler(BaseJsonNode.class));
     }
 
     private final SerializableBiConsumer<C, T> propertyWriter;
@@ -152,10 +151,10 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
      * @param defaultValue
      *            the default value to use if the property isn't defined
      * @param acceptNullValues
-     *            if <code>true</code>, an exception will be thrown if the model
-     *            value is set to <code>null</code>; if <code>false</code> the
-     *            property will be removed when the model value is set to
-     *            <code>null</code>
+     *            if <code>true</code>, the property will be removed when the
+     *            model value is set to <code>null</code> ; if
+     *            <code>false</code> an exception will be thrown if the model
+     *            value is set to <code>null</code>
      */
     @SuppressWarnings("unchecked")
     public AbstractSinglePropertyField(String propertyName, T defaultValue,
@@ -260,9 +259,6 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
         TypeHandler<P> typeHandler = (TypeHandler<P>) typeHandlers.get(clazz);
         if (typeHandler == null && BaseJsonNode.class.isAssignableFrom(clazz)) {
             typeHandler = getJsonHandler((Class) clazz);
-        } else if (typeHandler == null
-                && JsonValue.class.isAssignableFrom(clazz)) {
-            typeHandler = getHandler((Class) clazz);
         }
         if (typeHandler == null) {
             throw new IllegalArgumentException(
@@ -371,20 +367,6 @@ public abstract class AbstractSinglePropertyField<C extends AbstractField<C, T>,
     @Override
     protected void setPresentationValue(T newPresentationValue) {
         propertyWriter.accept((C) this, newPresentationValue);
-    }
-
-    @Deprecated
-    private static <P extends JsonValue> TypeHandler<P> getHandler(
-            Class<P> type) {
-        ElementGetter<P> getter = (element, property, defaultValue) -> {
-            Serializable value = element.getPropertyRaw(property);
-            // JsonValue is passed straight through, other primitive
-            // values are jsonified
-            return type.cast(JsonCodec.encodeWithoutTypeInfo(value));
-        };
-        ElementSetter<P> setter = (element, property, value) -> element
-                .setPropertyJson(property, value);
-        return new TypeHandler<P>(setter, getter, null);
     }
 
     private static <P extends BaseJsonNode> TypeHandler<P> getJsonHandler(

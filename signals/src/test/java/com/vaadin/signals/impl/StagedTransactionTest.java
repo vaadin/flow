@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
@@ -330,7 +330,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -358,7 +358,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -438,7 +438,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -480,6 +480,46 @@ public class StagedTransactionTest {
         tree.confirmSubmitted();
 
         assertFalse(operation.result().get().successful());
+    }
+
+    @Test
+    void commit_treeWithoutChanges_resultResolved() {
+        SynchronousSignalTree t1 = new SynchronousSignalTree(false);
+        SynchronousSignalTree t2 = new SynchronousSignalTree(false);
+
+        var operation = Transaction.runInTransaction(() -> {
+            TestUtil.readTransactionRootValue(t1);
+            Transaction.getCurrent().include(t2,
+                    TestUtil.writeRootValueCommand(), null);
+        });
+
+        TestUtil.assertSuccess(operation);
+    }
+
+    @Test
+    void commit_readAndWriteInChangeHandler_bypassesTransaction() {
+        SynchronousSignalTree tree = new SynchronousSignalTree(false);
+
+        AtomicReference<String> valueInObserver = new AtomicReference<>();
+
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("observer"), null);
+
+            String value = TestUtil.readTransactionRootValue(tree).asText();
+            valueInObserver.set(value);
+
+            return false;
+        });
+
+        Transaction.runInTransaction(() -> {
+            Transaction.getCurrent().include(tree,
+                    TestUtil.writeRootValueCommand("tx"), null);
+        });
+
+        assertEquals("observer", valueInObserver.get());
+        assertEquals("observer",
+                TestUtil.readConfirmedRootValue(tree).asText());
     }
 
     @Test

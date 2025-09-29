@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 import jakarta.servlet.ServletContext;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
@@ -44,6 +46,7 @@ import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.Menu;
 import com.vaadin.flow.router.Route;
@@ -62,9 +65,6 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
 import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_PROD_PATH;
@@ -144,7 +144,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(10, menuItems.size());
@@ -158,7 +158,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), nestedLoginRequiredRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(0, menuItems.size());
@@ -171,7 +171,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
 
         Assert.assertEquals(13, menuItems.size());
@@ -191,7 +191,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(false);
         Assert.assertEquals(15, menuItems.size());
 
@@ -218,6 +218,8 @@ public class MenuRegistryTest {
             throws IOException {
         Mockito.when(deploymentConfiguration.isProductionMode())
                 .thenReturn(true);
+        // Clear any production mode execution route contents
+        MenuRegistry.clearFileRoutesCache();
 
         tmpDir.newFolder("META-INF", "VAADIN");
         File clientFiles = new File(tmpDir.getRoot(),
@@ -232,11 +234,14 @@ public class MenuRegistryTest {
             menuRegistry.when(() -> MenuRegistry.getClassLoader())
                     .thenReturn(mockClassLoader);
 
-            Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+            Map<String, AvailableViewInfo> menuItems = MenuRegistry
                     .getMenuItems(true);
 
             Assert.assertEquals(10, menuItems.size());
             assertClientRoutes(menuItems);
+        } finally {
+            // Clear our routes from production mode cache
+            MenuRegistry.clearFileRoutesCache();
         }
     }
 
@@ -247,7 +252,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(2, menuItems.size());
@@ -266,7 +271,7 @@ public class MenuRegistryTest {
         Arrays.asList(MyRoute.class, MyInfo.class)
                 .forEach(routeConfiguration::setAnnotatedRoute);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(12, menuItems.size());
@@ -307,7 +312,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(13, menuItems.size());
@@ -336,7 +341,7 @@ public class MenuRegistryTest {
         File clientFiles = new File(generated, FILE_ROUTES_JSON_NAME);
         Files.writeString(clientFiles.toPath(), testClientRouteFile);
 
-        Map<String, AvailableViewInfo> menuItems = new MenuRegistry()
+        Map<String, AvailableViewInfo> menuItems = MenuRegistry
                 .getMenuItems(true);
 
         Assert.assertEquals(11, menuItems.size());
@@ -388,9 +393,10 @@ public class MenuRegistryTest {
     @Test
     public void hasHillaAutoLayout_fileRoutesHasSingleRootLayout_true()
             throws IOException {
-        JsonArray fileRoutes = JsonUtil.parse(testClientRouteFile);
-        JsonObject layout = fileRoutes.getObject(0);
-        JsonArray children = layout.getArray("children");
+        ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
+                .readTree(testClientRouteFile);
+        JsonNode layout = fileRoutes.get(0);
+        ArrayNode children = (ArrayNode) layout.get("children");
         Assert.assertNotNull(children);
 
         assertHasHillaMainLayout(testClientRouteFile, true);
@@ -399,11 +405,12 @@ public class MenuRegistryTest {
     @Test
     public void hasHillaAutoLayout_fileRoutesHasEmptyChildren_true()
             throws IOException {
-        JsonArray fileRoutes = JsonUtil.parse(emptyChildren);
-        JsonObject layout = fileRoutes.getObject(0);
-        JsonArray children = layout.getArray("children");
+        ArrayNode fileRoutes = (ArrayNode) JacksonUtils.getMapper()
+                .readTree(emptyChildren);
+        JsonNode layout = fileRoutes.get(0);
+        ArrayNode children = (ArrayNode) layout.get("children");
         Assert.assertNotNull(children);
-        Assert.assertEquals(0, children.length());
+        Assert.assertEquals(0, children.size());
 
         assertHasHillaMainLayout(emptyChildren, true);
     }

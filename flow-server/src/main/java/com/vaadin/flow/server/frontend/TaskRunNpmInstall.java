@@ -29,8 +29,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 
@@ -70,7 +70,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
             + "%n 2) Manually installing a newer version of npx: npm install -g npx"
             + "%n 3) Manually installing a newer version of pnpm: npm install -g pnpm"
             + "%n 4) Deleting the following files from your Vaadin project's folder (if present):"
-            + "%n        node_modules, package-lock.json, webpack.generated.js, pnpm-lock.yaml"
+            + "%n        node_modules, package-lock.json, vite.generated.ts, webpack.generated.js, pnpm-lock.yaml"
             + "%n======================================================================================================%n";
 
     private final NodeUpdater packageUpdater;

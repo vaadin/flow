@@ -12,7 +12,7 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,36 +64,6 @@ public class CssBundler {
                     + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
 
     private static Pattern urlPattern = Pattern.compile(URL);
-
-    /**
-     * Recurse over CSS import and inlines all ot them into a single CSS block.
-     * <p>
-     * </p>
-     * Unresolvable imports are put on the top of the resulting code, because
-     * {@code @import} statements must come before any other CSS instruction,
-     * otherwise the import is ignored by the browser.
-     * <p>
-     * </p>
-     * Along with import resolution and code inline, URLs
-     * ({@code url('image.png')} referencing theme resources rewritten to be
-     * correctly served by Vaadin at runtime.
-     *
-     * @param themeFolder
-     *            location of theme folder on the filesystem.
-     * @param cssFile
-     *            the CSS file to process.
-     * @return the processed stylesheet content, with inlined imports and
-     *         rewritten URLs.
-     * @throws IOException
-     *             if filesystem resources can not be read.
-     * @deprecated this method does not resolve theme assets, use
-     *             {@link #inlineImports(File, File, JsonNode)} instead.
-     */
-    @Deprecated
-    public static String inlineImports(File themeFolder, File cssFile)
-            throws IOException {
-        return inlineImports(themeFolder, cssFile, Set.of());
-    }
 
     /**
      * Recurse over CSS import and inlines all ot them into a single CSS block.

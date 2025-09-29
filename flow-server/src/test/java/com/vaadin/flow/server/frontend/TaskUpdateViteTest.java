@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -17,12 +18,11 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
 import static com.vaadin.flow.server.frontend.TaskUpdateSettingsFile.DEV_SETTINGS_FILE;
 
 public class TaskUpdateViteTest {
@@ -112,14 +112,15 @@ public class TaskUpdateViteTest {
         updateSettings.execute();
         File settings = new File(temporaryFolder.getRoot(),
                 "target/" + DEV_SETTINGS_FILE);
-        JsonObject settingsJson = Json.parse(
+        ObjectNode settingsJson = JacksonUtils.readTree(
                 IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
 
         final Matcher matcher = Pattern
-                .compile("settings\\.(?!json)([a-zA-z]*)").matcher(template);
+                .compile("settings\\.(?!json)([a-zA-z][a-zA-z0-9]*)")
+                .matcher(template);
         StringBuilder faulty = new StringBuilder();
         while (matcher.find()) {
-            if (!settingsJson.hasKey(matcher.group(1))) {
+            if (!settingsJson.has(matcher.group(1))) {
                 faulty.append(matcher.group(1)).append('\n');
             }
         }
@@ -152,7 +153,7 @@ public class TaskUpdateViteTest {
         Assert.assertTrue(
                 "vitePluginFileSystemRouter({isDevMode: devMode}) should be used.",
                 template.contains(
-                        ", vitePluginFileSystemRouter({isDevMode: devMode})"));
+                        "vitePluginFileSystemRouter({isDevMode: devMode}),"));
     }
 
     @Test
@@ -172,7 +173,7 @@ public class TaskUpdateViteTest {
                 template.contains("import vitePluginFileSystemRouter from '"
                         + TaskUpdateVite.FILE_SYSTEM_ROUTER_DEPENDENCY + "';"));
         Assert.assertFalse("vitePluginFileSystemRouter() should be used.",
-                template.contains(", vitePluginFileSystemRouter()"));
+                template.contains("vitePluginFileSystemRouter(),"));
 
     }
 

@@ -22,14 +22,14 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
+import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
@@ -52,6 +52,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
     String buildDirectory;
     String themeName;
     PwaConfiguration pwaConfiguration;
+    File javaResourceFolder;
 
     TaskUpdateSettingsFile(Options builder, String themeName,
             PwaConfiguration pwaConfiguration) {
@@ -63,6 +64,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         this.buildDirectory = builder.getBuildDirectoryName();
         this.themeName = themeName;
         this.pwaConfiguration = pwaConfiguration;
+        this.javaResourceFolder = builder.getJavaResourceFolder();
     }
 
     @Override
@@ -70,7 +72,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         if (npmFolder == null)
             return;
 
-        JsonObject settings = Json.createObject();
+        ObjectNode settings = JacksonUtils.createObjectNode();
         settings.put("frontendFolder",
                 FrontendUtils.getUnixPath(frontendDirectory.toPath()));
         settings.put("themeFolder", "themes");
@@ -105,6 +107,8 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         String devBundleStatsFolderString = FrontendUtils.getUnixPath(new File(
                 DevBundleUtils.getDevBundleFolder(npmFolder, buildDirectory),
                 "config").toPath());
+        String i18nOutputFolderString = FrontendUtils.getUnixPath(
+                Paths.get(buildDirectory, "classes", BUNDLE_FOLDER));
         settings.put("staticOutput",
                 FrontendUtils.getUnixPath(new File(staticOutput).toPath()));
         settings.put("generatedFolder", "generated");
@@ -112,8 +116,14 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
         settings.put("frontendBundleOutput", webappResources);
         settings.put("devBundleOutput", devBundleOutputFolderString);
         settings.put("devBundleStatsOutput", devBundleStatsFolderString);
+        settings.put("i18nOutput", i18nOutputFolderString);
         settings.put("jarResourcesFolder",
                 FrontendUtils.getUnixPath(jarFrontendResourcesFolder.toPath()));
+
+        settings.put("javaResourceFolder",
+                javaResourceFolder != null
+                        ? FrontendUtils.getUnixPath(javaResourceFolder.toPath())
+                        : "");
 
         settings.put("themeName", themeName);
 
@@ -129,7 +139,7 @@ public class TaskUpdateSettingsFile implements FallibleCommand, Serializable {
                 buildDirectory + "/" + DEV_SETTINGS_FILE);
 
         try {
-            FileIOUtils.writeIfChanged(settingsFile, stringify(settings, 2));
+            FileIOUtils.writeIfChanged(settingsFile, settings.toString());
         } catch (IOException e) {
             log().error("Failed to write file: {}", settingsFile, e);
         }

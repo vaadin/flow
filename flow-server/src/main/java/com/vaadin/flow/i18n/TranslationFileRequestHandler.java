@@ -24,17 +24,25 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.MissingResourceException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
 /**
  * Handles translation file requests. Translation file requests are internal
@@ -62,37 +70,41 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
+    static final String CHUNK_PARAMETER_NAME = "chunks";
+
+    static final String KEYS_PARAMETER_NAME = "keys";
+
     static final String RETRIEVED_LOCALE_HEADER_NAME = "X-Vaadin-Retrieved-Locale";
 
-    private static final Locale FALLBACK_LOCALE = Locale.ROOT;
+    static final String CHUNK_RESOURCE = BUNDLE_FOLDER + "/i18n.json";
 
-    private final DefaultI18NProvider i18NProvider;
+    private final I18NProvider i18NProvider;
 
-    private final boolean hasFallbackBundle;
+    private final ClassLoader classLoader;
 
-    public TranslationFileRequestHandler(I18NProvider i18NProvider) {
-        boolean hasDefaultI18NProvider = i18NProvider != null
-                && DefaultI18NProvider.class.equals(i18NProvider.getClass());
-        this.i18NProvider = hasDefaultI18NProvider
-                ? (DefaultI18NProvider) i18NProvider
-                : null;
-        this.hasFallbackBundle = hasFallbackBundle();
+    private Map<String, String[]> chunkData;
+
+    public TranslationFileRequestHandler(I18NProvider i18NProvider,
+            ClassLoader classLoader) {
+        this.i18NProvider = i18NProvider;
+        this.classLoader = classLoader;
     }
 
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
         if (i18NProvider == null) {
-            handleCustomI18NProvider(session, response);
+            handleMissingI18NProvider(session, response);
             return true;
         }
-        Locale locale = getLocale(request);
-        ResourceBundle translationPropertyFile = getTranslationPropertyFile(
-                locale);
-        if (translationPropertyFile == null) {
+        var locale = getLocale(request);
+        var chunks = request.getParameterMap().get(CHUNK_PARAMETER_NAME);
+        var keys = request.getParameterMap().get(KEYS_PARAMETER_NAME);
+        var translations = collectTranslations(chunks, keys, locale);
+        if (translations.isEmpty()) {
             handleNotFound(response);
         } else {
-            handleFound(response, translationPropertyFile);
+            handleFound(locale, response, translations);
         }
         return true;
     }
@@ -103,22 +115,22 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                 HandlerHelper.RequestType.TRANSLATION_FILE);
     }
 
-    private void handleFound(VaadinResponse response,
-            ResourceBundle translationPropertyFile) throws IOException {
+    private void handleFound(Locale locale, VaadinResponse response,
+            ObjectNode translations) throws IOException {
         response.setStatus(HttpStatusCode.OK.getCode());
         response.setHeader(RETRIEVED_LOCALE_HEADER_NAME,
-                translationPropertyFile.getLocale().toLanguageTag());
+                locale.toLanguageTag());
         response.setHeader("Content-Type", JsonConstants.JSON_CONTENT_TYPE);
-        writeFileToResponse(response, translationPropertyFile);
+        response.getWriter().write(translations.toString());
     }
 
     private void handleNotFound(VaadinResponse response) {
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
-    private void handleCustomI18NProvider(VaadinSession session,
+    private void handleMissingI18NProvider(VaadinSession session,
             VaadinResponse response) throws IOException {
-        String errorMessage = "Loading translations is not supported when using a custom i18n provider.";
+        String errorMessage = "Missing I18nProvider implementation, loading translations is not supported.";
         if (session.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
@@ -129,12 +141,28 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         getLogger().debug(errorMessage);
     }
 
-    private void writeFileToResponse(VaadinResponse response,
-            ResourceBundle translationPropertyFile) throws IOException {
-        ObjectNode json = JacksonUtils.createObjectNode();
-        translationPropertyFile.keySet().forEach(
-                key -> json.put(key, translationPropertyFile.getString(key)));
-        response.getWriter().write(json.toString());
+    private ObjectNode collectTranslations(String[] chunks, String[] keys,
+            Locale locale) {
+        var json = JacksonUtils.createObjectNode();
+
+        var chunkStream = Optional.ofNullable(chunks).map(chunkNames -> {
+            var chunkData = getChunkData();
+            // for each chunk name, retrieve the keys from the chunk data
+            return Arrays.stream(chunks).map(chunkData::get)
+                    .filter(Objects::nonNull).flatMap(Arrays::stream);
+        });
+
+        // add single keys if requested
+        var keyStream = Optional.ofNullable(keys).map(Arrays::stream);
+
+        var requestedKeys = Stream.of(chunkStream, keyStream)
+                .filter(Optional::isPresent).flatMap(Optional::orElseThrow)
+                .collect(Collectors.toSet());
+        var translations = requestedKeys.isEmpty()
+                ? i18NProvider.getAllTranslations(locale)
+                : i18NProvider.getTranslations(requestedKeys, locale);
+        translations.forEach(json::put);
+        return json;
     }
 
     private Locale getLocale(VaadinRequest request) {
@@ -150,80 +178,48 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         return Locale.forLanguageTag(languageTag);
     }
 
-    private ResourceBundle getTranslationPropertyFile(Locale locale) {
-        Locale bestMatchLocale = getBestMatchLocale(locale);
-        if (bestMatchLocale == null) {
-            if (FALLBACK_LOCALE.equals(locale)) {
-                getLogger().debug(
-                        "Missing the requested default bundle for {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX);
-            } else {
-                getLogger().debug(
-                        "Missing resource bundles for {}, both the requested locale {} and the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
-            }
-            return null;
-        }
-        if (!locale.equals(bestMatchLocale)) {
-            if (FALLBACK_LOCALE.equals(bestMatchLocale)) {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the default bundle.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName());
-            } else {
-                getLogger().debug(
-                        "Missing resource bundle for {} and locale {}. Using the best match locale {}.",
-                        DefaultI18NProvider.BUNDLE_PREFIX,
-                        locale.getDisplayName(),
-                        bestMatchLocale.getDisplayName());
-            }
-        }
-        return i18NProvider.getBundle(bestMatchLocale,
-                ResourceBundle.Control.getNoFallbackControl(
-                        ResourceBundle.Control.FORMAT_PROPERTIES));
-    }
+    /**
+     * Retrieves the chunk data from the JSON file.
+     *
+     * @return a map containing chunk names and their corresponding keys
+     */
+    private Map<String, String[]> getChunkData() {
+        if (chunkData == null) {
+            chunkData = new HashMap<>();
+            URL chunkResource = classLoader.getResource(CHUNK_RESOURCE);
 
-    private Locale getBestMatchLocale(Locale locale) {
-        Set<Locale> providedLocales = Set
-                .copyOf(i18NProvider.getProvidedLocales());
-        if (providedLocales.contains(locale)) {
-            return locale;
-        }
-        Optional<Locale> languageAndCountryMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage())
-                        && providedLocale.getCountry()
-                                .equals(locale.getCountry()))
-                .findAny();
-        if (languageAndCountryMatch.isPresent()) {
-            return languageAndCountryMatch.get();
-        }
-        Optional<Locale> languageMatch = providedLocales.stream()
-                .filter(providedLocale -> providedLocale.getLanguage()
-                        .equals(locale.getLanguage()))
-                .findAny();
-        if (languageMatch.isPresent()) {
-            return languageMatch.get();
-        }
-        if (hasFallbackBundle) {
-            return FALLBACK_LOCALE;
-        }
-        return null;
-    }
+            if (chunkResource != null) {
+                try (InputStream chunkStream = chunkResource.openStream()) {
+                    var json = JacksonUtils.getMapper().readTree(chunkStream);
+                    var chunksNode = json.get("chunks");
 
-    private boolean hasFallbackBundle() {
-        if (this.i18NProvider != null) {
-            try {
-                this.i18NProvider.getBundle(FALLBACK_LOCALE,
-                        ResourceBundle.Control.getNoFallbackControl(
-                                ResourceBundle.Control.FORMAT_PROPERTIES));
-                return true;
-            } catch (MissingResourceException e) {
-                // NO-OP
+                    if (chunksNode != null && chunksNode.isObject()) {
+                        Collection<String> fieldNames = chunksNode
+                                .propertyNames();
+
+                        for (String chunkName : fieldNames) {
+                            JsonNode keysNode = chunksNode.get(chunkName)
+                                    .get("keys");
+
+                            if (keysNode != null && keysNode.isArray()) {
+                                String[] keys = new String[keysNode.size()];
+
+                                for (int i = 0; i < keysNode.size(); i++) {
+                                    keys[i] = keysNode.get(i).asText();
+                                }
+
+                                chunkData.put(chunkName, keys);
+                            }
+                        }
+                    }
+                } catch (IOException e) {
+                    getLogger().error("Error while reading the resource "
+                            + CHUNK_RESOURCE, e);
+                }
             }
         }
-        return false;
+
+        return chunkData;
     }
 
     private Logger getLogger() {

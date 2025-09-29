@@ -45,4 +45,19 @@ import java.lang.annotation.Target;
 @Inherited
 @Documented
 public @interface PreserveOnRefresh {
+
+    /**
+     * Set to true if refresh should also reuse partial chain components of
+     * stored view chain.
+     * <p>
+     * This means that when navigating from a preserve on refresh target to a
+     * new url in the same client window context, where windowName matches, the
+     * router layouts that have been preserved will be reused without
+     * re-creation for the new route.
+     * <p>
+     * Default is {@code false} so only url match is repopulated.
+     *
+     * @return {@code true} if partial chain match should be checked and used
+     */
+    boolean partialMatch() default false;
 }
