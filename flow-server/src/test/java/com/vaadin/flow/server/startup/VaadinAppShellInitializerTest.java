@@ -58,6 +58,7 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.component.dependency.StyleSheet;
 
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
@@ -185,6 +186,41 @@ public class VaadinAppShellInitializerTest {
 
     @Tag("div")
     public static class AppShellExtendingComponent extends Component
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("./foo.css")
+    public static class ComponentWithStylesheet extends Component {
+    }
+
+    @StyleSheet("context://my-styles.css")
+    @StyleSheet("https://cdn.example.com/ui.css")
+    public static class MyAppShellWithStyleSheets
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("context://theme-base.css")
+    @StyleSheet("context://theme-base.css")
+    public static class MyAppShellWithDuplicateStyles
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("  /trimmed.css  ")
+    @StyleSheet("   ")
+    @StyleSheet("foo/bar.css")
+    @StyleSheet("HTTP://cdn.Example.com/u.css")
+    @StyleSheet("context://assets/site.css")
+    @StyleSheet("context:///already-absolute.css")
+    public static class MyAppShellWithVariousStyleSheets
+            implements AppShellConfigurator {
+    }
+
+    @StyleSheet("./local.css")
+    public static class MyAppShellWithDotSlash implements AppShellConfigurator {
+    }
+
+    @StyleSheet("../secrets.css")
+    public static class MyAppShellWithTraversal
             implements AppShellConfigurator {
     }
 
@@ -438,6 +474,34 @@ public class VaadinAppShellInitializerTest {
     }
 
     @Test
+    public void styleSheetOnAppShell_injectedAsLinksInOrder() throws Exception {
+        classes.add(MyAppShellWithStyleSheets.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(2, links.size());
+        assertEquals("/my-styles.css", links.get(0).attr("href"));
+        assertEquals("https://cdn.example.com/ui.css",
+                links.get(1).attr("href"));
+    }
+
+    @Test
+    public void duplicateStyleSheets_deduplicated() throws Exception {
+        classes.add(MyAppShellWithDuplicateStyles.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("/theme-base.css", links.get(0).attr("href"));
+    }
+
+    @Test
     public void should_link_to_PWA_article() throws Exception {
         Mockito.when(appConfig.getBooleanProperty(
                 Constants.ALLOW_APPSHELL_ANNOTATIONS, false)).thenReturn(true);
@@ -467,6 +531,55 @@ public class VaadinAppShellInitializerTest {
             throws Exception {
         classes.add(AppShellExtendingComponent.class);
         initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void styleSheetOnComponent_notOffending() throws Exception {
+        classes.add(ComponentWithStylesheet.class);
+        // Should not throw as @StyleSheet is allowed on Components
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void styleSheetResolution_variousScenarios() throws Exception {
+        classes.add(MyAppShellWithVariousStyleSheets.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(5, links.size());
+        assertEquals("/trimmed.css", links.get(0).attr("href"));
+        assertEquals("/foo/bar.css", links.get(1).attr("href"));
+        assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
+        assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
+        assertEquals("/ctx/already-absolute.css", links.get(4).attr("href"));
+    }
+
+    @Test
+    public void styleSheetResolution_handlesDotSlash() throws Exception {
+        classes.add(MyAppShellWithDotSlash.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(1, links.size());
+        assertEquals("/local.css", links.get(0).attr("href"));
+    }
+
+    @Test
+    public void styleSheetResolution_rejectsTraversal() throws Exception {
+        classes.add(MyAppShellWithTraversal.class);
+        initializer.process(classes, servletContext);
+
+        AppShellRegistry.getInstance(context).modifyIndexHtml(document,
+                createVaadinRequest("/", "/ctx"));
+
+        List<Element> links = document.head().select("link[rel=stylesheet]");
+        assertEquals(0, links.size());
     }
 
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
@@ -514,5 +627,22 @@ public class VaadinAppShellInitializerTest {
                 Mockito.anyBoolean()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         return config;
+    }
+
+    private VaadinServletRequest createVaadinRequest(String pathInfo,
+            String contextPath) {
+        HttpServletRequest request = createRequest(pathInfo, contextPath);
+        return new VaadinServletRequest(request, service);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo,
+            String contextPath) {
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getServletPath()).thenReturn("");
+        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
+        Mockito.when(request.getRequestURL())
+                .thenReturn(new StringBuffer(pathInfo));
+        Mockito.when(request.getContextPath()).thenReturn(contextPath);
+        return request;
     }
 }
