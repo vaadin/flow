@@ -159,6 +159,7 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@rollup/pluginutils");
         expectedDependencies.add("rollup-plugin-visualizer");
         expectedDependencies.add("vite-plugin-checker");
+        expectedDependencies.add("workbox-build");
         expectedDependencies.add("transform-ast");
         expectedDependencies.add("strip-css-comments");
         expectedDependencies.add("@babel/preset-react");
@@ -175,8 +176,6 @@ public class NodeUpdaterTest {
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("typescript");
-        expectedDependencies.add("workbox-core");
-        expectedDependencies.add("workbox-precaching");
         expectedDependencies.add("glob");
         return expectedDependencies;
     }
