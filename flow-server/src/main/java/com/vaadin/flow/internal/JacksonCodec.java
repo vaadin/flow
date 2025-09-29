@@ -178,8 +178,8 @@ public class JacksonCodec {
     /**
      * Custom Jackson serializer for Component instances.
      */
-    private static class ComponentSerializer
-            extends ValueSerializer<Component> {
+    private static class ComponentSerializer extends ValueSerializer<Component>
+            implements Serializable {
         @Override
         public void serialize(Component component, JsonGenerator gen,
                 SerializationContext ctxt) throws JacksonException {
