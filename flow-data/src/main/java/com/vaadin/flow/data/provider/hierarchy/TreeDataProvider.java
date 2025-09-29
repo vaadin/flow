@@ -110,6 +110,16 @@ public class TreeDataProvider<T>
     }
 
     @Override
+    public T getParent(T item) {
+        Objects.requireNonNull(item, "Item cannot be null.");
+        try {
+            return getTreeData().getParent(item);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    @Override
     public int getDepth(T item) {
         int depth = 0;
         while ((item = treeData.getParent(item)) != null) {
