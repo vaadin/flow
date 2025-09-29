@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -49,6 +50,8 @@ public class DependencyList implements Serializable {
      */
     private final Set<String> urlCache = new HashSet<>();
     private final Map<String, Dependency> urlToLoadedDependency = new LinkedHashMap<>();
+    private final Map<String, Dependency> dependencyIdToDependency = new HashMap<>();
+    private final Set<String> sentToClient = new HashSet<>();
 
     /**
      * Creates a new instance.
@@ -80,9 +83,31 @@ public class DependencyList implements Serializable {
             Optional.ofNullable(urlToLoadedDependency.get(dependencyUrl))
                     .ifPresent(currentDependency -> handleDuplicateDependency(
                             dependency, currentDependency));
+            // Also track the new dependency ID if it has one (for duplicate
+            // removal tracking)
+            if (dependency.getId() != null) {
+                Dependency currentDep = urlToLoadedDependency
+                        .get(dependencyUrl);
+                if (currentDep != null) {
+                    dependencyIdToDependency.put(dependency.getId(),
+                            currentDep);
+                }
+            }
         } else {
             urlCache.add(dependencyUrl);
             urlToLoadedDependency.put(dependencyUrl, dependency);
+
+            // Track dependency by ID if it has one
+            if (dependency.getId() != null) {
+                Dependency existing = dependencyIdToDependency
+                        .put(dependency.getId(), dependency);
+                if (existing != null && !existing.equals(dependency)) {
+                    getLogger().warn(
+                            "Dependency ID '{}' was already used for dependency '{}', now replaced with '{}'",
+                            dependency.getId(), existing.getUrl(),
+                            dependency.getUrl());
+                }
+            }
         }
     }
 
@@ -96,9 +121,19 @@ public class DependencyList implements Serializable {
                     "Dependency with url {} was imported with two different loading strategies: {} and {}. The dependency will be loaded as {}.",
                     newDependency.getUrl(), newDependency.getLoadMode(),
                     currentDependency.getLoadMode(), moreEagerLoadMode);
+            // Preserve the ID from either the current or new dependency when
+            // creating replacement
+            String idToUse = currentDependency.getId() != null
+                    ? currentDependency.getId()
+                    : newDependency.getId();
+            Dependency replacementDep = new Dependency(newDependency.getType(),
+                    newDependency.getUrl(), moreEagerLoadMode, idToUse);
             urlToLoadedDependency.replace(newDependency.getUrl(),
-                    new Dependency(newDependency.getType(),
-                            newDependency.getUrl(), moreEagerLoadMode));
+                    replacementDep);
+            // Update the ID mapping if we have an ID
+            if (idToUse != null) {
+                dependencyIdToDependency.put(idToUse, replacementDep);
+            }
         }
     }
 
@@ -108,13 +143,54 @@ public class DependencyList implements Serializable {
      * @return a list containing the dependencies which should be sent
      */
     public Collection<Dependency> getPendingSendToClient() {
-        return urlToLoadedDependency.values();
+        return urlToLoadedDependency.values().stream()
+                .filter(dep -> !sentToClient.contains(dep.getUrl())).toList();
     }
 
     /**
      * Clears the list of dependencies which should be sent to the client.
      */
     public void clearPendingSendToClient() {
-        urlToLoadedDependency.clear();
+        urlToLoadedDependency.keySet().forEach(sentToClient::add);
+    }
+
+    /**
+     * Gets a dependency by its URL and type.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param url
+     *            the URL of the dependency
+     * @param type
+     *            the type of the dependency
+     * @return the dependency, or null if not found
+     */
+    public Dependency getDependencyByUrl(String url, Dependency.Type type) {
+        Dependency dep = urlToLoadedDependency.get(url);
+        if (dep != null && dep.getType() == type) {
+            return dep;
+        }
+        return null;
+    }
+
+    /**
+     * Removes a dependency by its ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the dependency to remove
+     * @return true if the dependency was removed, false if it wasn't found
+     */
+    public boolean remove(String dependencyId) {
+        Dependency dependency = dependencyIdToDependency.remove(dependencyId);
+        if (dependency != null) {
+            String url = dependency.getUrl();
+            urlToLoadedDependency.remove(url);
+            urlCache.remove(url);
+            sentToClient.remove(url);
+            return true;
+        }
+        return false;
     }
 }
