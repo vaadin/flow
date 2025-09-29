@@ -25,6 +25,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -65,6 +66,11 @@ public class JsonCodec {
      * {@link ReturnChannelRegistration} reference.
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
+
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
 
     private JsonCodec() {
         // Don't create instances
@@ -111,7 +117,12 @@ public class JsonCodec {
     private static JsonValue encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE, Json.create(stateNode.getId()));
+            // Use the same format as bean serialization for consistency
+            JsonObject ref = Json.createObject();
+            ref.put("@vaadin", "component");
+            ref.put("nodeId", stateNode.getId());
+            // Wrap as BEAN_TYPE so client knows to decode it specially
+            return wrapComplexValue(BEAN_TYPE, ref);
         } else {
             return Json.createNull();
         }

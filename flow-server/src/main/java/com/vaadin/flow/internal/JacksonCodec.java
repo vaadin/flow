@@ -138,8 +138,12 @@ public class JacksonCodec {
     private static JsonNode encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE,
-                    JacksonUtils.getMapper().valueToTree(stateNode.getId()));
+            // Use the same format as ComponentSerializer for consistency
+            ObjectNode ref = JacksonUtils.createObjectNode();
+            ref.put("@vaadin", "component");
+            ref.put("nodeId", stateNode.getId());
+            // Wrap as BEAN_TYPE so client knows to decode it specially
+            return wrapComplexValue(BEAN_TYPE, ref);
         } else {
             return JacksonUtils.getMapper().nullNode();
         }

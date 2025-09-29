@@ -274,4 +274,27 @@ public class JacksonCodecTest {
         Assert.assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
                 float.class));
     }
+
+    @Test
+    public void encodeWithTypeInfo_singleComponent() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(element);
+
+        // Should be wrapped as [BEAN_TYPE, componentRef]
+        Assert.assertTrue("Should be an array", encoded.isArray());
+        Assert.assertEquals("Should have 2 elements", 2, encoded.size());
+        Assert.assertEquals("First element should be BEAN_TYPE",
+                JacksonCodec.BEAN_TYPE, encoded.get(0).intValue());
+
+        // Check the component reference format
+        JsonNode componentRef = encoded.get(1);
+        Assert.assertTrue("Second element should be an object",
+                componentRef.isObject());
+        Assert.assertEquals("Should have @vaadin=component", "component",
+                componentRef.get("@vaadin").asText());
+        Assert.assertNotNull("Should have nodeId", componentRef.get("nodeId"));
+    }
 }
