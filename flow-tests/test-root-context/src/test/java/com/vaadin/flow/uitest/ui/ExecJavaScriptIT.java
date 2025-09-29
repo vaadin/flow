@@ -222,6 +222,69 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 status.getText());
     }
 
+    @Test
+    public void testMapPrimitives() {
+        open();
+        WebElement button = findElement(By.id("mapPrimitivesButton"));
+        button.click();
+
+        waitUntil(driver -> findElement(By.id("mapPrimitivesStatus")) != null);
+
+        WebElement result = findElement(By.id("mapPrimitivesResult"));
+        String text = result.getText();
+        // Keys should be sorted: one, three, two
+        Assert.assertEquals("Map primitives should match", "one=1,three=3,two=2",
+                text);
+
+        WebElement status = findElement(By.id("mapPrimitivesStatus"));
+        Assert.assertEquals("Primitive map sent and received", status.getText());
+    }
+
+    @Test
+    public void testMapComponents() {
+        open();
+        WebElement button = findElement(By.id("mapComponentsButton"));
+        button.click();
+
+        waitUntil(driver -> findElement(By.id("mapComponentsStatus")) != null);
+
+        WebElement result = findElement(By.id("mapComponentsResult"));
+        String text = result.getText();
+        // Should contain sorted keys with component tags
+        Assert.assertTrue("Should contain button1",
+                text.contains("button1=vaadin-button"));
+        Assert.assertTrue("Should contain button2",
+                text.contains("button2=vaadin-button"));
+        Assert.assertTrue("Should contain div", text.contains("div=div"));
+
+        WebElement status = findElement(By.id("mapComponentsStatus"));
+        Assert.assertEquals("Component map sent and received", status.getText());
+    }
+
+    @Test
+    public void testMapMixedTypes() {
+        open();
+        WebElement button = findElement(By.id("mapMixedButton"));
+        button.click();
+
+        waitUntil(driver -> findElement(By.id("mapMixedStatus")) != null);
+
+        WebElement result = findElement(By.id("mapMixedResult"));
+        String text = result.getText();
+        // Check all different value types in the map
+        Assert.assertTrue("Should contain component",
+                text.contains("component=element:vaadin-button"));
+        Assert.assertTrue("Should contain list", text.contains("list=array:3"));
+        Assert.assertTrue("Should contain null value",
+                text.contains("nullValue=null"));
+        Assert.assertTrue("Should contain number", text.contains("number=number:42"));
+        Assert.assertTrue("Should contain string",
+                text.contains("string=string:hello"));
+
+        WebElement status = findElement(By.id("mapMixedStatus"));
+        Assert.assertEquals("Mixed map sent and received", status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

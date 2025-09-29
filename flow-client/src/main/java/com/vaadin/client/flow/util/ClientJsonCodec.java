@@ -43,6 +43,11 @@ public class ClientJsonCodec {
      */
     public static final int BEAN_TYPE = 5;
 
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
+
     private ClientJsonCodec() {
         // Prevent instantiation
     }
@@ -72,6 +77,7 @@ public class ClientJsonCodec {
             case JsonCodec.ARRAY_TYPE:
             case JsonCodec.RETURN_CHANNEL_TYPE:
             case BEAN_TYPE:
+            case MAP_TYPE:
                 return null;
             default:
                 throw new IllegalArgumentException(
@@ -118,6 +124,8 @@ public class ClientJsonCodec {
                         tree.getRegistry().getServerConnector());
             case BEAN_TYPE:
                 return decodeBeanWithComponents(tree, array.get(1));
+            case MAP_TYPE:
+                return decodeMapAsJsObject(tree, array.getObject(1));
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
@@ -280,6 +288,51 @@ public class ClientJsonCodec {
         }
         return false;
     }
+
+    /**
+     * Converts a JSON object (Map representation) to a JS object with support
+     * for complex types.
+     *
+     * @param tree
+     *            the state tree for resolving complex types (can be null for
+     *            primitive maps)
+     * @param mapJson
+     *            the JSON object representing the map
+     * @return the converted JS object
+     */
+    public static Object decodeMapAsJsObject(StateTree tree, JsonObject mapJson) {
+        if (GWT.isScript()) {
+            return createNativeMapObject(tree, mapJson);
+        } else {
+            // JVM test implementation - return the JsonObject for testing
+            return mapJson;
+        }
+    }
+
+    private static native Object createNativeMapObject(StateTree tree,
+            JsonObject mapJson)
+    /*-{
+        var result = {};
+        
+        // Iterate over all keys in the JSON object (keys are always strings)
+        var keys = mapJson.@elemental.json.JsonObject::keys()();
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var value = mapJson.@elemental.json.JsonObject::get(Ljava/lang/String;)(key);
+            
+            // Decode the value
+            var decodedValue;
+            if (value && @com.vaadin.client.flow.util.ClientJsonCodec::needsTypeDecoding(Lelemental/json/JsonValue;)(value)) {
+                decodedValue = @com.vaadin.client.flow.util.ClientJsonCodec::decodeWithTypeInfo(Lcom/vaadin/client/flow/StateTree;Lelemental/json/JsonValue;)(tree, value);
+            } else {
+                decodedValue = @com.vaadin.client.flow.util.ClientJsonCodec::decodeWithoutTypeInfo(Lelemental/json/JsonValue;)(value);
+            }
+            
+            result[key] = decodedValue;
+        }
+        
+        return result;
+    }-*/;
 
     /**
      * Decodes a bean object containing component references with lazy

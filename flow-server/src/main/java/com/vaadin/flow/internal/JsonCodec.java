@@ -67,6 +67,11 @@ public class JsonCodec {
      */
     public static final int BEAN_TYPE = 5;
 
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
+
     private JsonCodec() {
         // Don't create instances
     }

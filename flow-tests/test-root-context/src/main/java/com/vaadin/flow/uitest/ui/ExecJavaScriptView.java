@@ -342,8 +342,99 @@ public class ExecJavaScriptView extends AbstractDivView {
                             + "document.body.appendChild(status);", mixed);
                 });
 
+        // Test 8: Map of primitives
+        NativeButton mapPrimitivesButton = createButton("Test Map Primitives",
+                "mapPrimitivesButton", e -> {
+                    java.util.Map<String, Integer> map = new java.util.HashMap<>();
+                    map.put("one", 1);
+                    map.put("two", 2);
+                    map.put("three", 3);
+
+                    e.getSource().getElement().executeJs("const map = $0; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'mapPrimitivesResult'; "
+                            + "const keys = Object.keys(map).sort(); "
+                            + "result.textContent = keys.map(k => k + '=' + map[k]).join(','); "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'mapPrimitivesStatus'; "
+                            + "status.textContent = 'Primitive map sent and received'; "
+                            + "document.body.appendChild(status);", map);
+                });
+
+        // Test 9: Map with components
+        NativeButton mapComponentsButton = createButton("Test Map Components",
+                "mapComponentsButton", e -> {
+                    NativeButton button1 = createButton("Map Button 1", "mapBtn1");
+                    NativeButton button2 = createButton("Map Button 2", "mapBtn2");
+                    Div div1 = new Div();
+                    div1.setText("Map Div");
+                    add(button1, button2, div1);
+
+                    java.util.Map<String, com.vaadin.flow.component.Component> map = new java.util.HashMap<>();
+                    map.put("button1", button1);
+                    map.put("button2", button2);
+                    map.put("div", div1);
+
+                    e.getSource().getElement().executeJs("const map = $0; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'mapComponentsResult'; "
+                            + "let text = []; "
+                            + "for (const key in map) { "
+                            + "  const comp = map[key]; "
+                            + "  if (comp && comp.tagName) { "
+                            + "    text.push(key + '=' + comp.tagName.toLowerCase()); "
+                            + "  } " + "} "
+                            + "result.textContent = text.sort().join(','); "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'mapComponentsStatus'; "
+                            + "status.textContent = 'Component map sent and received'; "
+                            + "document.body.appendChild(status);", map);
+                });
+
+        // Test 10: Map mixed types
+        NativeButton mapMixedButton = createButton("Test Map Mixed", "mapMixedButton",
+                e -> {
+                    NativeButton button = createButton("Mixed Map Button", "mixedMapBtn");
+                    add(button);
+
+                    java.util.Map<String, Object> map = new java.util.HashMap<>();
+                    map.put("string", "hello");
+                    map.put("number", 42);
+                    map.put("component", button);
+                    map.put("list", java.util.Arrays.asList("a", "b", "c"));
+                    map.put("nullValue", null);
+
+                    e.getSource().getElement().executeJs("const map = $0; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'mapMixedResult'; "
+                            + "let text = []; "
+                            + "for (const key in map) { "
+                            + "  const value = map[key]; "
+                            + "  if (value === null) { "
+                            + "    text.push(key + '=null'); "
+                            + "  } else if (typeof value === 'string') { "
+                            + "    text.push(key + '=string:' + value); "
+                            + "  } else if (typeof value === 'number') { "
+                            + "    text.push(key + '=number:' + value); "
+                            + "  } else if (Array.isArray(value)) { "
+                            + "    text.push(key + '=array:' + value.length); "
+                            + "  } else if (value.tagName) { "
+                            + "    text.push(key + '=element:' + value.tagName.toLowerCase()); "
+                            + "  } else { "
+                            + "    text.push(key + '=unknown'); " + "  } " + "} "
+                            + "result.textContent = text.sort().join(','); "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'mapMixedStatus'; "
+                            + "status.textContent = 'Mixed map sent and received'; "
+                            + "document.body.appendChild(status);", map);
+                });
+
         add(simpleBeanButton, nestedBeanButton, componentBeanButton,
                 listPrimitivesButton, listBeansButton, listComponentsButton,
-                listMixedButton);
+                listMixedButton, mapPrimitivesButton, mapComponentsButton,
+                mapMixedButton);
     }
 }

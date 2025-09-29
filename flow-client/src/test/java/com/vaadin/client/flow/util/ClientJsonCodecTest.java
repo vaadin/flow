@@ -454,4 +454,141 @@ public class ClientJsonCodecTest {
                 decoded);
     }
 
+    @Test
+    public void decodeWithTypeInfo_mapOfPrimitives() {
+        // Create a Map with primitives
+        elemental.json.JsonObject mapJson = Json.createObject();
+        mapJson.put("one", Json.create(1));
+        mapJson.put("two", Json.create(2));
+        mapJson.put("three", Json.create(3));
+
+        // Wrap as MAP_TYPE
+        JsonArray wrappedMap = Json.createArray();
+        wrappedMap.set(0, ClientJsonCodec.MAP_TYPE);
+        wrappedMap.set(1, mapJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, wrappedMap);
+
+        Assert.assertNotNull("Decoded map should not be null", decoded);
+        // In JVM tests, it returns the JsonObject
+        Assert.assertTrue("Should return JsonObject in JVM",
+                decoded instanceof elemental.json.JsonObject);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_mapWithComponents() {
+        StateTree tree = new StateTree(null);
+        StateNode node1 = new StateNode(52, tree);
+        StateNode node2 = new StateNode(53, tree);
+        tree.registerNode(node1);
+        tree.registerNode(node2);
+
+        JsElement element1 = new JsElement() {
+        };
+        JsElement element2 = new JsElement() {
+        };
+        node1.setDomNode(element1);
+        node2.setDomNode(element2);
+
+        // Create a Map with component values
+        elemental.json.JsonObject mapJson = Json.createObject();
+
+        elemental.json.JsonObject ref1 = Json.createObject();
+        ref1.put("@vaadin", "component");
+        ref1.put("nodeId", node1.getId());
+        mapJson.put("button", ref1);
+
+        elemental.json.JsonObject ref2 = Json.createObject();
+        ref2.put("@vaadin", "component");
+        ref2.put("nodeId", node2.getId());
+        mapJson.put("input", ref2);
+
+        // Wrap as MAP_TYPE
+        JsonArray wrappedMap = Json.createArray();
+        wrappedMap.set(0, ClientJsonCodec.MAP_TYPE);
+        wrappedMap.set(1, mapJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedMap);
+
+        Assert.assertNotNull("Decoded map should not be null", decoded);
+        // In JVM tests, it returns the JsonObject
+        Assert.assertTrue("Should return JsonObject in JVM",
+                decoded instanceof elemental.json.JsonObject);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_mapMixed() {
+        StateTree tree = new StateTree(null);
+        StateNode componentNode = new StateNode(54, tree);
+        tree.registerNode(componentNode);
+
+        JsElement element = new JsElement() {
+        };
+        componentNode.setDomNode(element);
+
+        // Create a Map with mixed types
+        elemental.json.JsonObject mapJson = Json.createObject();
+        mapJson.put("string", Json.create("value"));
+        mapJson.put("number", Json.create(42));
+        mapJson.put("nullValue", Json.createNull());
+
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("@vaadin", "component");
+        componentRef.put("nodeId", componentNode.getId());
+        mapJson.put("component", componentRef);
+
+        // Add a nested array
+        JsonArray nestedArray = Json.createArray();
+        nestedArray.set(0, Json.create("a"));
+        nestedArray.set(1, Json.create("b"));
+        JsonArray wrappedArray = Json.createArray();
+        wrappedArray.set(0, JsonCodec.ARRAY_TYPE);
+        wrappedArray.set(1, nestedArray);
+        mapJson.put("list", wrappedArray);
+
+        // Wrap as MAP_TYPE
+        JsonArray wrappedMap = Json.createArray();
+        wrappedMap.set(0, ClientJsonCodec.MAP_TYPE);
+        wrappedMap.set(1, mapJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedMap);
+
+        Assert.assertNotNull("Decoded map should not be null", decoded);
+    }
+
+    @Test
+    public void decodeStateNode_map() {
+        // Test that decodeStateNode returns null for MAP_TYPE
+        elemental.json.JsonObject mapJson = Json.createObject();
+        mapJson.put("key", Json.create("value"));
+
+        JsonArray wrappedMap = Json.createArray();
+        wrappedMap.set(0, ClientJsonCodec.MAP_TYPE);
+        wrappedMap.set(1, mapJson);
+
+        StateNode decoded = ClientJsonCodec.decodeStateNode(null, wrappedMap);
+
+        Assert.assertNull("decodeStateNode should return null for MAP_TYPE",
+                decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_mapWithNullValue() {
+        // Create a Map with null value
+        elemental.json.JsonObject mapJson = Json.createObject();
+        mapJson.put("key1", Json.create("value1"));
+        mapJson.put("key2", Json.createNull());
+
+        // Wrap as MAP_TYPE
+        JsonArray wrappedMap = Json.createArray();
+        wrappedMap.set(0, ClientJsonCodec.MAP_TYPE);
+        wrappedMap.set(1, mapJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, wrappedMap);
+
+        Assert.assertNotNull("Decoded map should not be null", decoded);
+        Assert.assertTrue("Should return JsonObject in JVM",
+                decoded instanceof elemental.json.JsonObject);
+    }
+
 }

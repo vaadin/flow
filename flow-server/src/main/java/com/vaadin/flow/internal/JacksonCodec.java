@@ -76,6 +76,11 @@ public class JacksonCodec {
      */
     public static final int BEAN_TYPE = 5;
 
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
+
     private JacksonCodec() {
         // Don't create instances
     }
@@ -115,6 +120,21 @@ public class JacksonCodec {
                 arrayNode.add(encodeWithTypeInfo(item));
             }
             return wrapComplexValue(ARRAY_TYPE, arrayNode);
+        } else if (value instanceof java.util.Map<?, ?>) {
+            // Handle Map as MAP_TYPE - only String keys are supported
+            ObjectNode mapNode = JacksonUtils.createObjectNode();
+            java.util.Map<?, ?> map = (java.util.Map<?, ?>) value;
+            for (java.util.Map.Entry<?, ?> entry : map.entrySet()) {
+                Object key = entry.getKey();
+                if (key != null && !(key instanceof String)) {
+                    throw new IllegalArgumentException(
+                            "Map keys must be Strings. Found: " + key.getClass().getName());
+                }
+                String keyStr = (String) key;
+                // Encode value with type info
+                mapNode.set(keyStr, encodeWithTypeInfo(entry.getValue()));
+            }
+            return wrapComplexValue(MAP_TYPE, mapNode);
         } else {
             // All other types (including arrays and beans) encode as BEAN_TYPE
             // using Jackson's built-in serialization
