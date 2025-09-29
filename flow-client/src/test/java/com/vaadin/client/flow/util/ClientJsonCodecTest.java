@@ -81,46 +81,8 @@ public class ClientJsonCodecTest {
     }
 
     @Test
-    public void decodeWithTypeInfo_element() {
-        StateTree tree = new StateTree(null);
-        StateNode node = new StateNode(42, tree);
-        tree.registerNode(node);
-
-        JsElement element = new JsElement() {
-
-        };
-        node.setDomNode(element);
-
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
-
-        Assert.assertSame(element, decoded);
-    }
-
-    @Test
     public void encodeWithoutTypeInfo() {
         encodePrimitiveValues(ClientJsonCodec::encodeWithoutTypeInfo);
-    }
-
-    @Test
-    public void decodeStateNode_node() {
-        StateTree tree = new StateTree(null);
-        StateNode node = new StateNode(43, tree);
-        tree.registerNode(node);
-
-        JsElement element = new JsElement() {
-
-        };
-        node.setDomNode(element);
-
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
-
-        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
-
-        Assert.assertSame(node, decoded);
     }
 
     @Test
@@ -216,12 +178,12 @@ public class ClientJsonCodecTest {
         JsonArray componentsArray = Json.createArray();
 
         elemental.json.JsonObject ref1 = Json.createObject();
-        ref1.put("__vaadinType", "component");
+        ref1.put("@vaadin", "component");
         ref1.put("nodeId", node1.getId());
         componentsArray.set(0, ref1);
 
         elemental.json.JsonObject ref2 = Json.createObject();
-        ref2.put("__vaadinType", "component");
+        ref2.put("@vaadin", "component");
         ref2.put("nodeId", node2.getId());
         componentsArray.set(1, ref2);
 
@@ -329,6 +291,68 @@ public class ClientJsonCodecTest {
         StateNode decoded = ClientJsonCodec.decodeStateNode(null, wrappedBean);
 
         Assert.assertNull("decodeStateNode should return null for BEAN_TYPE",
+                decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_directComponentReference() {
+        // Test the new format where single Components are serialized directly
+        StateTree tree = new StateTree(null);
+        StateNode componentNode = new StateNode(48, tree);
+        tree.registerNode(componentNode);
+
+        JsElement element = new JsElement() {
+        };
+        componentNode.setDomNode(element);
+
+        // Create a direct component reference (new format)
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("@vaadin", "component");
+        componentRef.put("nodeId", componentNode.getId());
+
+        // Decode the direct component reference
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, componentRef);
+
+        Assert.assertNotNull("Decoded component should not be null", decoded);
+        // Should return the element directly
+        Assert.assertSame("Should return the element", element, decoded);
+    }
+
+    @Test
+    public void decodeStateNode_directComponentReference() {
+        // Test that decodeStateNode handles the new component format
+        StateTree tree = new StateTree(null);
+        StateNode node = new StateNode(43, tree);
+        tree.registerNode(node);
+
+        JsElement element = new JsElement() {
+        };
+        node.setDomNode(element);
+
+        // Create a direct component reference (new format)
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("@vaadin", "component");
+        componentRef.put("nodeId", node.getId());
+
+        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, componentRef);
+
+        Assert.assertSame(node, decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_directComponentReferenceWithNullNodeId() {
+        StateTree tree = new StateTree(null);
+
+        // Create a direct component reference with null nodeId
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("@vaadin", "component");
+        componentRef.put("nodeId", Json.createNull());
+
+        // Decode the direct component reference
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, componentRef);
+
+        // Should return null for null nodeId
+        Assert.assertNull("Decoded component with null nodeId should be null",
                 decoded);
     }
 

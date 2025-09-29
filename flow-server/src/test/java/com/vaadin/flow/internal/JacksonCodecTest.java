@@ -127,11 +127,13 @@ public class JacksonCodecTest {
 
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
 
-        assertJsonEquals(
-                JacksonUtils.createArray(
-                        objectMapper.valueToTree(JacksonCodec.NODE_TYPE),
-                        objectMapper.valueToTree(element.getNode().getId())),
-                json);
+        // Should be a direct object without array wrapper
+        Assert.assertTrue("Should be an object", json.isObject());
+        Assert.assertEquals("Should have @vaadin=component", "component",
+                json.get("@vaadin").asText());
+        Assert.assertNotNull("Should have nodeId", json.get("nodeId"));
+        Assert.assertEquals("Should have nodeId matching element",
+                element.getNode().getId(), json.get("nodeId").intValue());
     }
 
     @Test
@@ -283,18 +285,12 @@ public class JacksonCodecTest {
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(element);
 
-        // Should be wrapped as [BEAN_TYPE, componentRef]
-        Assert.assertTrue("Should be an array", encoded.isArray());
-        Assert.assertEquals("Should have 2 elements", 2, encoded.size());
-        Assert.assertEquals("First element should be BEAN_TYPE",
-                JacksonCodec.BEAN_TYPE, encoded.get(0).intValue());
-
-        // Check the component reference format
-        JsonNode componentRef = encoded.get(1);
-        Assert.assertTrue("Second element should be an object",
-                componentRef.isObject());
+        // Should be a direct object without array wrapper
+        Assert.assertTrue("Should be an object", encoded.isObject());
         Assert.assertEquals("Should have @vaadin=component", "component",
-                componentRef.get("@vaadin").asText());
-        Assert.assertNotNull("Should have nodeId", componentRef.get("nodeId"));
+                encoded.get("@vaadin").asText());
+        Assert.assertNotNull("Should have nodeId", encoded.get("nodeId"));
+        Assert.assertEquals("Should have nodeId matching element",
+                element.getNode().getId(), encoded.get("nodeId").intValue());
     }
 }

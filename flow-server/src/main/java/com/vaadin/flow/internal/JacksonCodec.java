@@ -61,11 +61,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  */
 public class JacksonCodec {
     /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
      * Type id for a complex type array containing a {@link ArrayNode}.
      */
     public static final int ARRAY_TYPE = 1;
@@ -142,8 +137,9 @@ public class JacksonCodec {
             ObjectNode ref = JacksonUtils.createObjectNode();
             ref.put("@vaadin", "component");
             ref.put("nodeId", stateNode.getId());
-            // Wrap as BEAN_TYPE so client knows to decode it specially
-            return wrapComplexValue(BEAN_TYPE, ref);
+            // Return directly without array wrapper - the @vaadin key is
+            // sufficient identification
+            return ref;
         } else {
             return JacksonUtils.getMapper().nullNode();
         }

@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -68,10 +69,6 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId);
-            }
             case JsonCodec.ARRAY_TYPE:
             case JsonCodec.RETURN_CHANNEL_TYPE:
             case BEAN_TYPE:
@@ -80,6 +77,19 @@ public class ClientJsonCodec {
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
             }
+        } else if (json.getType() == JsonType.OBJECT) {
+            // Check if this is a direct component reference
+            JsonObject obj = (JsonObject) json;
+            if (obj.hasKey("@vaadin")
+                    && "component".equals(obj.getString("@vaadin"))) {
+                JsonValue nodeIdValue = obj.get("nodeId");
+                if (nodeIdValue != null
+                        && nodeIdValue.getType() != JsonType.NULL) {
+                    int nodeId = (int) nodeIdValue.asNumber();
+                    return tree.getNode(nodeId);
+                }
+            }
+            return null;
         } else {
             return null;
         }
@@ -100,11 +110,6 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
-                Node domNode = tree.getNode(nodeId).getDomNode();
-                return domNode;
-            }
             case JsonCodec.ARRAY_TYPE:
                 return jsonArrayAsJsArray(array.getArray(1));
             case JsonCodec.RETURN_CHANNEL_TYPE:
@@ -117,6 +122,27 @@ public class ClientJsonCodec {
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
             }
+        } else if (json.getType() == JsonType.OBJECT) {
+            // Check if this is a direct component reference
+            JsonObject obj = (JsonObject) json;
+            if (obj.hasKey("@vaadin")) {
+                String type = obj.getString("@vaadin");
+                if ("component".equals(type)) {
+                    // Handle component reference directly
+                    JsonValue nodeIdValue = obj.get("nodeId");
+                    if (nodeIdValue != null
+                            && nodeIdValue.getType() != JsonType.NULL) {
+                        int nodeId = (int) nodeIdValue.asNumber();
+                        Node domNode = tree.getNode(nodeId).getDomNode();
+                        return domNode;
+                    }
+                    return null;
+                } else {
+                    // Other Vaadin types (beans, etc.) - decode normally
+                    return decodeBeanWithComponents(tree, json);
+                }
+            }
+            return decodeWithoutTypeInfo(json);
         } else {
             return decodeWithoutTypeInfo(json);
         }
@@ -230,9 +256,7 @@ public class ClientJsonCodec {
         if (GWT.isScript()) {
             return createNativeBeanWithComponents(tree, beanJson);
         } else {
-            // JVM test implementation - return JsonValue as-is
-            // In real GWT/browser, this would be a JavaScript object with
-            // resolved components
+            // Return JsonValue for GWT tests that run in JVM during compilation
             return beanJson;
         }
     }
