@@ -156,4 +156,180 @@ public class ClientJsonCodecTest {
                 JsonUtils.jsonEquals(expected, actual));
     }
 
+    @Test
+    public void decodeWithTypeInfo_beanWithComponent() {
+        StateTree tree = new StateTree(null);
+        StateNode componentNode = new StateNode(44, tree);
+        tree.registerNode(componentNode);
+
+        JsElement element = new JsElement() {
+        };
+        componentNode.setDomNode(element);
+
+        // Create a bean JSON with a component reference
+        elemental.json.JsonObject beanJson = Json.createObject();
+        beanJson.put("name", "TestBean");
+        beanJson.put("value", 42);
+
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("__vaadinType", "component");
+        componentRef.put("nodeId", componentNode.getId());
+        beanJson.put("button", componentRef);
+
+        // Wrap as BEAN_TYPE
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, beanJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedBean);
+
+        Assert.assertNotNull("Decoded bean should not be null", decoded);
+
+        // In JVM tests, this returns the raw JsonValue
+        // In real GWT, it would be a JavaScript object with component
+        // resolution
+        Assert.assertTrue("Should decode to JsonValue in JVM tests",
+                decoded instanceof JsonValue);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_beanWithComponentArray() {
+        StateTree tree = new StateTree(null);
+
+        // Create multiple component nodes
+        StateNode node1 = new StateNode(45, tree);
+        StateNode node2 = new StateNode(46, tree);
+        tree.registerNode(node1);
+        tree.registerNode(node2);
+
+        JsElement element1 = new JsElement() {
+        };
+        JsElement element2 = new JsElement() {
+        };
+        node1.setDomNode(element1);
+        node2.setDomNode(element2);
+
+        // Create a bean with component array
+        elemental.json.JsonObject beanJson = Json.createObject();
+        beanJson.put("title", "Form");
+
+        JsonArray componentsArray = Json.createArray();
+
+        elemental.json.JsonObject ref1 = Json.createObject();
+        ref1.put("__vaadinType", "component");
+        ref1.put("nodeId", node1.getId());
+        componentsArray.set(0, ref1);
+
+        elemental.json.JsonObject ref2 = Json.createObject();
+        ref2.put("__vaadinType", "component");
+        ref2.put("nodeId", node2.getId());
+        componentsArray.set(1, ref2);
+
+        componentsArray.set(2, Json.createNull());
+
+        beanJson.put("components", componentsArray);
+
+        // Wrap as BEAN_TYPE
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, beanJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedBean);
+
+        Assert.assertNotNull("Decoded bean should not be null", decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_nestedBeansWithComponents() {
+        StateTree tree = new StateTree(null);
+        StateNode componentNode = new StateNode(47, tree);
+        tree.registerNode(componentNode);
+
+        JsElement element = new JsElement() {
+        };
+        componentNode.setDomNode(element);
+
+        // Create nested bean structure
+        elemental.json.JsonObject innerBean = Json.createObject();
+        innerBean.put("text", "inner");
+
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("__vaadinType", "component");
+        componentRef.put("nodeId", componentNode.getId());
+        innerBean.put("component", componentRef);
+
+        elemental.json.JsonObject outerBean = Json.createObject();
+        outerBean.put("id", "outer");
+        outerBean.put("nested", innerBean);
+
+        // Wrap as BEAN_TYPE
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, outerBean);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedBean);
+
+        Assert.assertNotNull("Decoded nested bean should not be null", decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_beanWithNullComponent() {
+        StateTree tree = new StateTree(null);
+
+        // Create a bean with null component reference
+        elemental.json.JsonObject beanJson = Json.createObject();
+        beanJson.put("text", "TestBean");
+        beanJson.put("component", Json.createNull());
+
+        // Wrap as BEAN_TYPE
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, beanJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedBean);
+
+        Assert.assertNotNull("Decoded bean should not be null", decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_beanWithUnattachedComponent() {
+        StateTree tree = new StateTree(null);
+
+        // Create a bean with component reference that has null nodeId
+        elemental.json.JsonObject beanJson = Json.createObject();
+        beanJson.put("name", "TestBean");
+
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("__vaadinType", "component");
+        componentRef.put("nodeId", Json.createNull());
+        beanJson.put("unattached", componentRef);
+
+        // Wrap as BEAN_TYPE
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, beanJson);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedBean);
+
+        Assert.assertNotNull(
+                "Decoded bean with unattached component should not be null",
+                decoded);
+    }
+
+    @Test
+    public void decodeStateNode_bean() {
+        // Test that decodeStateNode returns null for BEAN_TYPE
+        elemental.json.JsonObject beanJson = Json.createObject();
+        beanJson.put("field", "value");
+
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, beanJson);
+
+        StateNode decoded = ClientJsonCodec.decodeStateNode(null, wrappedBean);
+
+        Assert.assertNull("decodeStateNode should return null for BEAN_TYPE",
+                decoded);
+    }
+
 }

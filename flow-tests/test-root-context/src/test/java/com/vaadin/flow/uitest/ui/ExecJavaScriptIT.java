@@ -61,6 +61,87 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 result.getText());
     }
 
+    @Test
+    public void testBeanSerializationSimpleTypes() {
+        open();
+
+        // Test simple bean with only primitive types
+        getButton("simpleBeanButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("simpleBeanResult")));
+        Assert.assertEquals("name=TestBean, value=42, active=true",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("simpleBeanStatus")));
+        Assert.assertEquals("Simple bean sent and received", status.getText());
+    }
+
+    @Test
+    public void testBeanSerializationNestedBeans() {
+        open();
+
+        // Test nested beans
+        getButton("nestedBeanButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("nestedBeanResult")));
+        Assert.assertEquals("title=Outer, simple.name=Inner, simple.value=100",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("nestedBeanStatus")));
+        Assert.assertEquals("Nested bean sent and received", status.getText());
+    }
+
+    @Test
+    public void testBeanSerializationWithComponents() {
+        open();
+
+        // Test bean with component references
+        getButton("componentBeanButton").click();
+
+        // Wait for the components to be added
+        waitUntil(d -> findElement(By.id("beanButton")));
+        waitUntil(d -> findElement(By.id("beanDiv")));
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("componentBeanResult")));
+        String text = result.getText();
+
+        // Verify the bean fields were received
+        Assert.assertTrue("Should contain label",
+                text.contains("label=Main bean"));
+
+        // Verify the button component was resolved correctly
+        Assert.assertTrue("Should contain button tag",
+                text.contains("button.tag=button"));
+        Assert.assertTrue("Should contain button text",
+                text.contains("button.text=Bean Button"));
+
+        // Verify the nested bean fields
+        Assert.assertTrue("Should contain nested description",
+                text.contains("nested.desc=Nested with component"));
+
+        // Verify the nested div component was resolved correctly
+        Assert.assertTrue("Should contain div tag",
+                text.contains("nested.div.tag=div"));
+        Assert.assertTrue("Should contain div text",
+                text.contains("nested.div.text=Bean Div"));
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("componentBeanStatus")));
+        Assert.assertEquals("Component bean sent and received",
+                status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

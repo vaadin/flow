@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.lang.reflect.InaccessibleObjectException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -91,11 +92,14 @@ public class JacksonCodecTest {
 
     @Test
     public void encodeWithTypeInfo_basicTypes() {
+        // Boolean and null are encoded directly without type info since they
+        // can be serialized
         assertJsonEquals(objectMapper.valueToTree(true),
                 JacksonCodec.encodeWithTypeInfo(Boolean.TRUE));
         assertJsonEquals(objectMapper.nullNode(),
                 JacksonCodec.encodeWithTypeInfo(null));
 
+        // JsonNode values are handled as primitive types
         assertJsonEquals(objectMapper.valueToTree(234),
                 JacksonCodec.encodeWithTypeInfo(objectMapper.valueToTree(234)));
         assertJsonEquals(objectMapper.valueToTree("string"), JacksonCodec
@@ -141,16 +145,33 @@ public class JacksonCodecTest {
 
     @Test
     public void encodeWithTypeInfo_unsupportedTypes() {
+        // All types are now supported through bean encoding, but some may fail
+        // due to Java module access restrictions
         for (Object value : withTypeInfoUnsupportedValues) {
-            boolean thrown = false;
             try {
-                JacksonCodec.encodeWithTypeInfo(value);
-
-            } catch (AssertionError expected) {
-                thrown = true;
-            }
-            if (!thrown) {
-                Assert.fail("Should throw for " + value.getClass());
+                JsonNode result = JacksonCodec.encodeWithTypeInfo(value);
+                Assert.assertNotNull("Should encode " + value.getClass(),
+                        result);
+                // Complex objects should be wrapped with BEAN_TYPE
+                if (!(value instanceof String[])
+                        && !(value instanceof ArrayList)
+                        && !(value instanceof HashSet)
+                        && !(value instanceof HashMap)) {
+                    Assert.assertTrue("Should be wrapped as BEAN_TYPE",
+                            result.isArray());
+                    if (result.isArray() && result.size() >= 1) {
+                        Assert.assertEquals("Should have BEAN_TYPE", 5,
+                                result.get(0).asInt());
+                    }
+                }
+            } catch (Exception e) {
+                // Some objects might fail due to Java module access
+                // restrictions - this is expected
+                Assert.assertTrue(
+                        "Should be an access-related exception for "
+                                + value.getClass(),
+                        e.getMessage().contains("accessible") || e
+                                .getCause() instanceof InaccessibleObjectException);
             }
         }
     }

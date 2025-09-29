@@ -37,6 +37,11 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class ClientJsonCodec {
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
+
     private ClientJsonCodec() {
         // Prevent instantiation
     }
@@ -69,6 +74,7 @@ public class ClientJsonCodec {
             }
             case JsonCodec.ARRAY_TYPE:
             case JsonCodec.RETURN_CHANNEL_TYPE:
+            case BEAN_TYPE:
                 return null;
             default:
                 throw new IllegalArgumentException(
@@ -105,6 +111,8 @@ public class ClientJsonCodec {
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
                         tree.getRegistry().getServerConnector());
+            case BEAN_TYPE:
+                return decodeBeanWithComponents(tree, array.get(1));
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
@@ -205,5 +213,78 @@ public class ClientJsonCodec {
         }
         return jsArray;
     }
+
+    /**
+     * Decodes a bean object containing component references with lazy
+     * resolution. Component lookups happen when the value is accessed, not
+     * during parsing.
+     *
+     * @param tree
+     *            the state tree to use for resolving component references
+     * @param beanJson
+     *            the JSON representation of the bean
+     * @return the decoded bean with lazy component resolution
+     */
+    private static Object decodeBeanWithComponents(StateTree tree,
+            JsonValue beanJson) {
+        if (GWT.isScript()) {
+            return createNativeBeanWithComponents(tree, beanJson);
+        } else {
+            // JVM test implementation - return JsonValue as-is
+            // In real GWT/browser, this would be a JavaScript object with
+            // resolved components
+            return beanJson;
+        }
+    }
+
+    /**
+     * Creates a native JavaScript object from the bean JSON with lazy component
+     * resolution. Component references are resolved when accessed, not during
+     * parsing.
+     */
+    private static native Object createNativeBeanWithComponents(StateTree tree,
+            JsonValue beanJson)
+    /*-{
+        function resolveValue(value) {
+            if (value && typeof value === 'object') {
+                // Check if it's a Vaadin type reference
+                if (value.__vaadinType !== undefined) {
+                    switch (value.__vaadinType) {
+                        case 'component':
+                            if (value.nodeId === null || value.nodeId === undefined) {
+                                return null;
+                            }
+                            var stateNode = tree.@com.vaadin.client.flow.StateTree::getNode(I)(value.nodeId);
+                            return stateNode.@com.vaadin.client.flow.StateNode::getDomNode()();
+                        // Future types can be added here
+                        // case 'returnChannel':
+                        // case 'template':
+                        default:
+                            // Unknown type, return as-is
+                            return value;
+                    }
+                }
+
+                // Handle arrays
+                if (Array.isArray(value)) {
+                    return value.map(resolveValue);
+                }
+
+                // Handle nested objects
+                var result = {};
+                for (var key in value) {
+                    if (value.hasOwnProperty(key)) {
+                        result[key] = resolveValue(value[key]);
+                    }
+                }
+                return result;
+            }
+            return value;
+        }
+
+        // Parse and resolve in one pass
+        var parsed = beanJson;
+        return resolveValue(parsed);
+    }-*/;
 
 }
