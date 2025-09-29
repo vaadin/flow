@@ -16,16 +16,18 @@
 package com.vaadin.flow.server;
 
 /**
- * Exception indicating that the application's routes have been configured
- * incorrectly.
+ * Exception indicating that the application configuration is incorrect.
+ * <p>
+ * Usually thrown if {@link com.vaadin.flow.component.page.AppShellConfigurator}
+ * extending class has incorrent annotations.
  *
  * @since 1.0
  */
 public class InvalidApplicationConfigurationException extends RuntimeException {
 
     /**
-     * Constructs a new invalid route configuration runtime exception with the
-     * specified detail message.
+     * Constructs a new invalid application configuration runtime exception with
+     * the specified detail message.
      *
      * @param message
      *            the detail message. The detail message is saved for later
