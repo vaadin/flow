@@ -293,4 +293,137 @@ public class JacksonCodecTest {
         Assert.assertEquals("Should have nodeId matching element",
                 element.getNode().getId(), encoded.get("nodeId").intValue());
     }
+
+    @Test
+    public void encodeWithTypeInfo_listOfPrimitives() {
+        List<String> stringList = Arrays.asList("one", "two", "three");
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(stringList);
+
+        // Should be encoded as ARRAY_TYPE
+        Assert.assertTrue("Should be an array", encoded.isArray());
+        Assert.assertEquals("Should have type marker", JacksonCodec.ARRAY_TYPE,
+                encoded.get(0).intValue());
+
+        JsonNode arrayContent = encoded.get(1);
+        Assert.assertTrue("Content should be an array", arrayContent.isArray());
+        Assert.assertEquals("Should have 3 elements", 3, arrayContent.size());
+        Assert.assertEquals("First element", "one",
+                arrayContent.get(0).asText());
+        Assert.assertEquals("Second element", "two",
+                arrayContent.get(1).asText());
+        Assert.assertEquals("Third element", "three",
+                arrayContent.get(2).asText());
+    }
+
+    @Test
+    public void encodeWithTypeInfo_listOfComponents() {
+        UI ui = new UI();
+        Element elem1 = ElementFactory.createDiv();
+        Element elem2 = ElementFactory.createSpan();
+        ui.getElement().appendChild(elem1, elem2);
+
+        List<Element> elements = Arrays.asList(elem1, elem2);
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(elements);
+
+        // Should be encoded as ARRAY_TYPE
+        Assert.assertTrue("Should be an array", encoded.isArray());
+        Assert.assertEquals("Should have type marker", JacksonCodec.ARRAY_TYPE,
+                encoded.get(0).intValue());
+
+        JsonNode arrayContent = encoded.get(1);
+        Assert.assertTrue("Content should be an array", arrayContent.isArray());
+        Assert.assertEquals("Should have 2 elements", 2, arrayContent.size());
+
+        // First element should be a component reference
+        JsonNode firstComponent = arrayContent.get(0);
+        Assert.assertTrue("Should be an object", firstComponent.isObject());
+        Assert.assertEquals("Should have @vaadin=component", "component",
+                firstComponent.get("@vaadin").asText());
+        Assert.assertEquals("Should have correct nodeId",
+                elem1.getNode().getId(),
+                firstComponent.get("nodeId").intValue());
+
+        // Second element should be a component reference
+        JsonNode secondComponent = arrayContent.get(1);
+        Assert.assertTrue("Should be an object", secondComponent.isObject());
+        Assert.assertEquals("Should have @vaadin=component", "component",
+                secondComponent.get("@vaadin").asText());
+        Assert.assertEquals("Should have correct nodeId",
+                elem2.getNode().getId(),
+                secondComponent.get("nodeId").intValue());
+    }
+
+    @Test
+    public void encodeWithTypeInfo_listMixed() {
+        UI ui = new UI();
+        Element element = ElementFactory.createDiv();
+        ui.getElement().appendChild(element);
+
+        List<Object> mixed = Arrays.asList("text", 42, element, null);
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(mixed);
+
+        // Should be encoded as ARRAY_TYPE
+        Assert.assertTrue("Should be an array", encoded.isArray());
+        Assert.assertEquals("Should have type marker", JacksonCodec.ARRAY_TYPE,
+                encoded.get(0).intValue());
+
+        JsonNode arrayContent = encoded.get(1);
+        Assert.assertTrue("Content should be an array", arrayContent.isArray());
+        Assert.assertEquals("Should have 4 elements", 4, arrayContent.size());
+
+        // Check each element
+        Assert.assertEquals("First element should be string", "text",
+                arrayContent.get(0).asText());
+        Assert.assertEquals("Second element should be number", 42,
+                arrayContent.get(1).intValue());
+
+        JsonNode componentRef = arrayContent.get(2);
+        Assert.assertTrue("Third element should be object",
+                componentRef.isObject());
+        Assert.assertEquals("Should have @vaadin=component", "component",
+                componentRef.get("@vaadin").asText());
+
+        Assert.assertTrue("Fourth element should be null",
+                arrayContent.get(3).isNull());
+    }
+
+    public static class BeanWithList {
+        public String name;
+        public List<String> items;
+
+        public BeanWithList() {
+        }
+
+        public BeanWithList(String name, List<String> items) {
+            this.name = name;
+            this.items = items;
+        }
+    }
+
+    @Test
+    public void encodeWithTypeInfo_beanWithList() {
+        List<String> items = Arrays.asList("item1", "item2", "item3");
+        BeanWithList bean = new BeanWithList("TestBean", items);
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
+
+        // Should be encoded as BEAN_TYPE
+        Assert.assertTrue("Should be an array", encoded.isArray());
+        Assert.assertEquals("Should have type marker", JacksonCodec.BEAN_TYPE,
+                encoded.get(0).intValue());
+
+        JsonNode beanContent = encoded.get(1);
+        Assert.assertTrue("Content should be an object",
+                beanContent.isObject());
+        Assert.assertEquals("Should have name field", "TestBean",
+                beanContent.get("name").asText());
+
+        // The items field should be an array (not wrapped with ARRAY_TYPE
+        // inside bean)
+        JsonNode itemsField = beanContent.get("items");
+        Assert.assertTrue("items field should be an array",
+                itemsField.isArray());
+        Assert.assertEquals("Should have 3 items", 3, itemsField.size());
+        Assert.assertEquals("First item", "item1", itemsField.get(0).asText());
+    }
 }

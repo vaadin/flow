@@ -226,6 +226,124 @@ public class ExecJavaScriptView extends AbstractDivView {
                             beanWithComp);
                 });
 
-        add(simpleBeanButton, nestedBeanButton, componentBeanButton);
+        // Test 4: List of primitives
+        NativeButton listPrimitivesButton = createButton("Test List Primitives",
+                "listPrimitivesButton", e -> {
+                    java.util.List<String> stringList = java.util.Arrays
+                            .asList("first", "second", "third");
+                    java.util.List<Integer> intList = java.util.Arrays.asList(1,
+                            2, 3, 4, 5);
+
+                    e.getSource().getElement().executeJs("const strings = $0; "
+                            + "const ints = $1; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'listPrimitivesResult'; "
+                            + "result.textContent = 'strings=' + strings.join(',') + ' ints=' + ints.join(','); "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'listPrimitivesStatus'; "
+                            + "status.textContent = 'Primitive lists sent and received'; "
+                            + "document.body.appendChild(status);", stringList,
+                            intList);
+                });
+
+        // Test 5: List of beans
+        NativeButton listBeansButton = createButton("Test List Beans",
+                "listBeansButton", e -> {
+                    java.util.List<SimpleBean> beans = java.util.Arrays.asList(
+                            new SimpleBean("Bean1", 10, true),
+                            new SimpleBean("Bean2", 20, false),
+                            new SimpleBean("Bean3", 30, true));
+
+                    e.getSource().getElement().executeJs("const beans = $0; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'listBeansResult'; "
+                            + "let text = 'count=' + beans.length; "
+                            + "beans.forEach((bean, i) => { "
+                            + "  text += ' [' + i + ']=' + bean.name + ':' + bean.value; "
+                            + "}); " + "result.textContent = text; "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'listBeansStatus'; "
+                            + "status.textContent = 'Bean list sent and received'; "
+                            + "document.body.appendChild(status);", beans);
+                });
+
+        // Test 6: List of components
+        NativeButton listComponentsButton = createButton("Test List Components",
+                "listComponentsButton", e -> {
+                    // Create components that will be referenced in the list
+                    NativeButton btn1 = new NativeButton("Button 1");
+                    btn1.setId("listBtn1");
+                    add(btn1);
+
+                    NativeButton btn2 = new NativeButton("Button 2");
+                    btn2.setId("listBtn2");
+                    add(btn2);
+
+                    Div div1 = new Div("Div 1");
+                    div1.setId("listDiv1");
+                    add(div1);
+
+                    java.util.List<Component> components = java.util.Arrays
+                            .asList(btn1, btn2, div1);
+
+                    e.getSource().getElement()
+                            .executeJs("const components = $0; "
+                                    + "const result = document.createElement('div'); "
+                                    + "result.id = 'listComponentsResult'; "
+                                    + "let text = 'count=' + components.length; "
+                                    + "components.forEach((comp, i) => { "
+                                    + "  if (comp && comp.tagName) { "
+                                    + "    text += ' [' + i + ']=' + comp.tagName.toLowerCase() + ':' + comp.textContent; "
+                                    + "  } " + "}); "
+                                    + "result.textContent = text; "
+                                    + "document.body.appendChild(result); "
+                                    + "const status = document.createElement('span'); "
+                                    + "status.id = 'listComponentsStatus'; "
+                                    + "status.textContent = 'Component list sent and received'; "
+                                    + "document.body.appendChild(status);",
+                                    components);
+                });
+
+        // Test 7: Mixed list with primitives, beans, and components
+        NativeButton listMixedButton = createButton("Test List Mixed",
+                "listMixedButton", e -> {
+                    NativeButton mixedBtn = new NativeButton("Mixed Button");
+                    mixedBtn.setId("mixedBtn");
+                    add(mixedBtn);
+
+                    java.util.List<Object> mixed = java.util.Arrays.asList(
+                            "string value", 42,
+                            new SimpleBean("MixedBean", 99, true), mixedBtn,
+                            null);
+
+                    e.getSource().getElement().executeJs("const mixed = $0; "
+                            + "const result = document.createElement('div'); "
+                            + "result.id = 'listMixedResult'; "
+                            + "let text = 'count=' + mixed.length; "
+                            + "mixed.forEach((item, i) => { "
+                            + "  text += ' [' + i + ']='; "
+                            + "  if (item === null) { " + "    text += 'null'; "
+                            + "  } else if (typeof item === 'string') { "
+                            + "    text += 'string:' + item; "
+                            + "  } else if (typeof item === 'number') { "
+                            + "    text += 'number:' + item; "
+                            + "  } else if (item.name !== undefined && item.value !== undefined) { "
+                            + "    text += 'bean:' + item.name; "
+                            + "  } else if (item.tagName) { "
+                            + "    text += 'element:' + item.tagName.toLowerCase(); "
+                            + "  } else { " + "    text += 'unknown'; " + "  } "
+                            + "}); " + "result.textContent = text; "
+                            + "document.body.appendChild(result); "
+                            + "const status = document.createElement('span'); "
+                            + "status.id = 'listMixedStatus'; "
+                            + "status.textContent = 'Mixed list sent and received'; "
+                            + "document.body.appendChild(status);", mixed);
+                });
+
+        add(simpleBeanButton, nestedBeanButton, componentBeanButton,
+                listPrimitivesButton, listBeansButton, listComponentsButton,
+                listMixedButton);
     }
 }

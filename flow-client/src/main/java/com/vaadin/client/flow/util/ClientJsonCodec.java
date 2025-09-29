@@ -111,7 +111,7 @@ public class ClientJsonCodec {
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
             case JsonCodec.ARRAY_TYPE:
-                return jsonArrayAsJsArray(array.getArray(1));
+                return jsonArrayAsJsArray(tree, array.getArray(1));
             case JsonCodec.RETURN_CHANNEL_TYPE:
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
@@ -228,16 +228,57 @@ public class ClientJsonCodec {
      * @return the converted JS array
      */
     public static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
+        return jsonArrayAsJsArray(null, jsonArray);
+    }
+
+    /**
+     * Converts a JSON array to a JS array with support for complex types.
+     *
+     * @param tree
+     *            the state tree for resolving complex types (can be null for
+     *            primitive arrays)
+     * @param jsonArray
+     *            the JSON array to convert
+     * @return the converted JS array
+     */
+    public static JsArray<Object> jsonArrayAsJsArray(StateTree tree,
+            JsonArray jsonArray) {
         JsArray<Object> jsArray;
         if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
+            // In browser, need to decode each element to handle complex types
             jsArray = JsCollections.array();
             for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(decodeWithoutTypeInfo(jsonArray.get(i)));
+                JsonValue item = jsonArray.get(i);
+                if (tree != null && needsTypeDecoding(item)) {
+                    jsArray.push(decodeWithTypeInfo(tree, item));
+                } else {
+                    jsArray.push(decodeWithoutTypeInfo(item));
+                }
+            }
+        } else {
+            // JVM test implementation
+            jsArray = JsCollections.array();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JsonValue item = jsonArray.get(i);
+                if (tree != null && needsTypeDecoding(item)) {
+                    jsArray.push(decodeWithTypeInfo(tree, item));
+                } else {
+                    jsArray.push(decodeWithoutTypeInfo(item));
+                }
             }
         }
         return jsArray;
+    }
+
+    private static boolean needsTypeDecoding(JsonValue value) {
+        // Check if this value needs type-aware decoding
+        if (value.getType() == JsonType.ARRAY) {
+            return true; // Could be a typed array
+        } else if (value.getType() == JsonType.OBJECT) {
+            JsonObject obj = (JsonObject) value;
+            return obj.hasKey("@vaadin"); // Has type information
+        }
+        return false;
     }
 
     /**

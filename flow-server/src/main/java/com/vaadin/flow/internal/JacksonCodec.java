@@ -108,6 +108,13 @@ public class JacksonCodec {
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else if (value instanceof java.util.Collection<?>) {
+            // Handle collections (List, Set, etc.) as arrays
+            ArrayNode arrayNode = JacksonUtils.createArrayNode();
+            for (Object item : (java.util.Collection<?>) value) {
+                arrayNode.add(encodeWithTypeInfo(item));
+            }
+            return wrapComplexValue(ARRAY_TYPE, arrayNode);
         } else {
             // All other types (including arrays and beans) encode as BEAN_TYPE
             // using Jackson's built-in serialization

@@ -100,6 +100,86 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testListSerializationPrimitives() {
+        open();
+
+        // Test list of primitives
+        getButton("listPrimitivesButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("listPrimitivesResult")));
+        Assert.assertEquals("strings=first,second,third ints=1,2,3,4,5",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("listPrimitivesStatus")));
+        Assert.assertEquals("Primitive lists sent and received",
+                status.getText());
+    }
+
+    @Test
+    public void testListSerializationBeans() {
+        open();
+
+        // Test list of beans
+        getButton("listBeansButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("listBeansResult")));
+        Assert.assertEquals("count=3 [0]=Bean1:10 [1]=Bean2:20 [2]=Bean3:30",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("listBeansStatus")));
+        Assert.assertEquals("Bean list sent and received", status.getText());
+    }
+
+    @Test
+    public void testListSerializationComponents() {
+        open();
+
+        // Test list of components
+        getButton("listComponentsButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("listComponentsResult")));
+        Assert.assertEquals(
+                "count=3 [0]=vaadin-button:Button 1 [1]=vaadin-button:Button 2 [2]=div:Div 1",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("listComponentsStatus")));
+        Assert.assertEquals("Component list sent and received",
+                status.getText());
+    }
+
+    @Test
+    public void testListSerializationMixed() {
+        open();
+
+        // Test mixed list with primitives, beans, and components
+        getButton("listMixedButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("listMixedResult")));
+        Assert.assertEquals(
+                "count=5 [0]=string:string value [1]=number:42 [2]=bean:MixedBean [3]=element:vaadin-button [4]=null",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("listMixedStatus")));
+        Assert.assertEquals("Mixed list sent and received", status.getText());
+    }
+
+    @Test
     public void testBeanSerializationWithComponents() {
         open();
 

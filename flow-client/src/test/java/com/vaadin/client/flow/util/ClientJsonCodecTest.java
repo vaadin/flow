@@ -340,6 +340,104 @@ public class ClientJsonCodecTest {
     }
 
     @Test
+    public void decodeWithTypeInfo_arrayWithComplexTypes() {
+        StateTree tree = new StateTree(null);
+        StateNode componentNode = new StateNode(49, tree);
+        tree.registerNode(componentNode);
+
+        JsElement element = new JsElement() {
+        };
+        componentNode.setDomNode(element);
+
+        // Create an array with mixed types
+        JsonArray itemsArray = Json.createArray();
+
+        // Add primitive
+        itemsArray.set(0, Json.create("hello"));
+
+        // Add component reference
+        elemental.json.JsonObject componentRef = Json.createObject();
+        componentRef.put("@vaadin", "component");
+        componentRef.put("nodeId", componentNode.getId());
+        itemsArray.set(1, componentRef);
+
+        // Add bean
+        elemental.json.JsonObject bean = Json.createObject();
+        bean.put("name", "test");
+        bean.put("value", 42);
+        JsonArray wrappedBean = Json.createArray();
+        wrappedBean.set(0, ClientJsonCodec.BEAN_TYPE);
+        wrappedBean.set(1, bean);
+        itemsArray.set(2, wrappedBean);
+
+        // Wrap as ARRAY_TYPE
+        JsonArray wrappedArray = Json.createArray();
+        wrappedArray.set(0, JsonCodec.ARRAY_TYPE);
+        wrappedArray.set(1, itemsArray);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedArray);
+
+        Assert.assertNotNull("Decoded array should not be null", decoded);
+        Assert.assertTrue("Should be a JsArray", decoded instanceof JsArray);
+
+        JsArray<?> decodedArray = (JsArray<?>) decoded;
+        Assert.assertEquals("Should have 3 items", 3, decodedArray.length());
+        Assert.assertEquals("First item should be string", "hello",
+                decodedArray.get(0));
+        Assert.assertSame("Second item should be the element", element,
+                decodedArray.get(1));
+        // Third item is a bean - in JVM tests it returns JsonValue
+        Assert.assertNotNull("Third item should not be null",
+                decodedArray.get(2));
+    }
+
+    @Test
+    public void decodeWithTypeInfo_arrayOfComponents() {
+        StateTree tree = new StateTree(null);
+        StateNode node1 = new StateNode(50, tree);
+        StateNode node2 = new StateNode(51, tree);
+        tree.registerNode(node1);
+        tree.registerNode(node2);
+
+        JsElement element1 = new JsElement() {
+        };
+        JsElement element2 = new JsElement() {
+        };
+        node1.setDomNode(element1);
+        node2.setDomNode(element2);
+
+        // Create an array of component references
+        JsonArray itemsArray = Json.createArray();
+
+        elemental.json.JsonObject ref1 = Json.createObject();
+        ref1.put("@vaadin", "component");
+        ref1.put("nodeId", node1.getId());
+        itemsArray.set(0, ref1);
+
+        elemental.json.JsonObject ref2 = Json.createObject();
+        ref2.put("@vaadin", "component");
+        ref2.put("nodeId", node2.getId());
+        itemsArray.set(1, ref2);
+
+        // Wrap as ARRAY_TYPE
+        JsonArray wrappedArray = Json.createArray();
+        wrappedArray.set(0, JsonCodec.ARRAY_TYPE);
+        wrappedArray.set(1, itemsArray);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, wrappedArray);
+
+        Assert.assertNotNull("Decoded array should not be null", decoded);
+        Assert.assertTrue("Should be a JsArray", decoded instanceof JsArray);
+
+        JsArray<?> decodedArray = (JsArray<?>) decoded;
+        Assert.assertEquals("Should have 2 items", 2, decodedArray.length());
+        Assert.assertSame("First item should be element1", element1,
+                decodedArray.get(0));
+        Assert.assertSame("Second item should be element2", element2,
+                decodedArray.get(1));
+    }
+
+    @Test
     public void decodeWithTypeInfo_directComponentReferenceWithNullNodeId() {
         StateTree tree = new StateTree(null);
 
