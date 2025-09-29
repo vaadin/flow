@@ -27,11 +27,25 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.shared.ui.LoadMode;
 
 /**
- * Defines style sheet dependencies on a {@link Component} class. For adding
- * multiple style sheets for a single component, you can use this annotation
- * multiple times.
+ * Loads style sheets into the browser according to a given loading mode. Style
+ * sheet URLs can be either a file served by the application itself, or an
+ * external URL.
  * <p>
+ * Can defines style sheet dependencies for a {@link Component} class or
+ * globally.
+ * <p>
+ * When this annotation is placed on the
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator}, the referenced
+ * style sheets are injected globally into the generated {@code index.html}
+ * during bootstrap. In this case the style sheet is always inlined in the body
+ * of the html page, thus {@link LoadMode} values are ignored.
+ * <p>
+ * For adding multiple style sheets, you can use this annotation multiple times.
  * It is guaranteed that dependencies will be loaded only once.
+ * <p>
+ * Absolute URLs are used as-is; values prefixed with {@code context://} are
+ * resolved using context path (e.g. {@code context://styles.css} becomes
+ * {@code /my-app/styles.css}) for context path {@code /my-app}.
  * <p>
  * NOTE: while this annotation is not inherited using the
  * {@link Inherited @Inherited} annotation, the annotations of the possible
