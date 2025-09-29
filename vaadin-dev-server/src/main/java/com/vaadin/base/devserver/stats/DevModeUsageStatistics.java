@@ -20,7 +20,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -100,9 +99,9 @@ public class DevModeUsageStatistics {
             getLogger().info("Telemetry");
             getLogger().info("---------");
             getLogger().info("Vaadin collects usage data in order to help us improve your experience. "
-                + "You can opt-out of telemetry by setting the {} environment variable.",
-                Constants.TELEMETRY_OPT_OUT_ENV_VARIABLE);
-            getLogger().info("Read more about Vaadin telemetry at: PUT_YOUR_LINK_HERE");
+                + "You can opt-out of telemetry by setting the {} environment variable value to 'false'.",
+                Constants.VAADIN_USAGE_STATS_ENABLED);
+            getLogger().info("Read more about Vaadin telemetry at https://vaadin.com/docs/latest/flow/configuration/development-mode#usage-statistics");
 
             try {
                 Files.createDirectories(statisticDirPath);
