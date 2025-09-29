@@ -92,22 +92,29 @@ public class DevModeUsageStatistics {
 
         getLogger().debug("Telemetry enabled");
 
-        final Path statisticDirPath = storage.getUsageStatisticsFile().getParentFile().toPath();
-        final Path firstSeenPath = statisticDirPath.resolve("telemetry-notice-seen.txt");
-        if(!Files.exists(firstSeenPath)) {
-            // Inspired by https://learn.microsoft.com/en-us/dotnet/core/tools/telemetry#disclosure
+        final Path statisticDirPath = storage.getUsageStatisticsFile()
+                .getParentFile().toPath();
+        final Path firstSeenPath = statisticDirPath
+                .resolve("telemetry-notice-seen.txt");
+        if (!Files.exists(firstSeenPath)) {
+            // Inspired by
+            // https://learn.microsoft.com/en-us/dotnet/core/tools/telemetry#disclosure
             getLogger().info("Telemetry");
             getLogger().info("---------");
-            getLogger().info("Vaadin collects usage data in order to help us improve your experience. "
-                + "You can opt-out of telemetry by setting the {} environment variable value to 'false'.",
-                Constants.VAADIN_USAGE_STATS_ENABLED);
-            getLogger().info("Read more about Vaadin telemetry at https://vaadin.com/docs/latest/flow/configuration/development-mode#usage-statistics");
+            getLogger().info(
+                    "Vaadin collects usage data in order to help us improve your experience. "
+                            + "You can opt-out of telemetry by setting the {} environment variable value to 'false'.",
+                    Constants.VAADIN_USAGE_STATS_ENABLED);
+            getLogger().info(
+                    "Read more about Vaadin telemetry at https://vaadin.com/docs/latest/flow/configuration/development-mode#usage-statistics");
 
             try {
                 Files.createDirectories(statisticDirPath);
                 Files.writeString(firstSeenPath, Instant.now().toString());
             } catch (IOException ioe) {
-                getLogger().warn("Failed to create telemetry notice first seen file", ioe);
+                getLogger().warn(
+                        "Failed to create telemetry notice first seen file",
+                        ioe);
             }
         }
 

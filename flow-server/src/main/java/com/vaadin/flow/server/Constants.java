@@ -150,17 +150,20 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
-     * The name of the environment variable that controls whether server-side usage statistics is enabled.
+     * The name of the environment variable that controls whether server-side
+     * usage statistics is enabled.
      *
-     * Usage statistics is disabled if the environment variable is set to "false".
+     * Usage statistics are disabled if the environment variable is set to
+     * "false".
      */
     public static final String VAADIN_USAGE_STATS_ENABLED = "VAADIN_USAGE_STATS_ENABLED";
 
     /**
      * The default value for whether usage statistics is enabled.
      */
-    public static final boolean DEFAULT_DEVMODE_STATS =
-            !"false".equalsIgnoreCase(System.getenv(Constants.VAADIN_USAGE_STATS_ENABLED));
+    public static final boolean DEFAULT_DEVMODE_STATS = !"false"
+            .equalsIgnoreCase(
+                    System.getenv(Constants.VAADIN_USAGE_STATS_ENABLED));
 
     /**
      * Internal parameter which prevent validation for annotations which are
