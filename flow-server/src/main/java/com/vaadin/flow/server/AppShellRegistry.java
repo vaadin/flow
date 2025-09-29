@@ -264,14 +264,15 @@ public class AppShellRegistry implements Serializable {
         if (href.startsWith("./")) {
             href = href.substring(2);
         }
-        if (href.contains("..")) {
+        // Accept bare paths beginning with '/' as-is
+        href = href.startsWith("/") ? href : "/" + href;
+        if (HandlerHelper.isPathUnsafe(href)) {
             log.warn(
                     "@StyleSheet href containing traversals ('../') are not allowed, ignored: "
                             + href);
             return null;
         }
-        // Accept bare paths beginning with '/' as-is
-        return href.startsWith("/") ? href : "/" + href;
+        return href;
     }
 
     /**
