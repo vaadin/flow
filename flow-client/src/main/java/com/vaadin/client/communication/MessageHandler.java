@@ -438,6 +438,10 @@ public class MessageHandler {
                 processChanges(json);
             }
 
+            if (json.hasKey("stylesheetRemovals")) {
+                processStylesheetRemovals(json.getArray("stylesheetRemovals"));
+            }
+
             if (json.hasKey(JsonConstants.UIDL_KEY_EXECUTE)) {
                 // Invoke JS only after all tree changes have been
                 // propagated and after post flush listeners added during
@@ -525,6 +529,33 @@ public class MessageHandler {
         }
 
     }
+
+    private void processStylesheetRemovals(JsonArray removals) {
+        if (removals == null || removals.length() == 0) {
+            return;
+        }
+
+        Console.debug(
+                "Processing " + removals.length() + " stylesheet removals");
+
+        for (int i = 0; i < removals.length(); i++) {
+            String dependencyId = removals.getString(i);
+            removeStylesheetById(dependencyId);
+        }
+    }
+
+    private void removeStylesheetById(String dependencyId) {
+        removeStylesheetByIdFromDom(dependencyId);
+        registry.getResourceLoader().clearLoadedResourceById(dependencyId);
+    }
+
+    private native void removeStylesheetByIdFromDom(String dependencyId) /*-{
+        // Remove both link and style elements with matching dependency ID
+        var elements = $doc.querySelectorAll('link[data-id="' + dependencyId + '"], style[data-id="' + dependencyId + '"]');
+        for (var i = 0; i < elements.length; i++) {
+            elements[i].remove();
+        }
+    }-*/;
 
     private void processChanges(JsonObject json) {
         StateTree tree = registry.getStateTree();
