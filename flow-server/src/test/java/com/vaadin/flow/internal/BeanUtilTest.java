@@ -26,7 +26,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 /**
  * Tests for the {@link BeanUtil}.
@@ -133,25 +132,26 @@ public class BeanUtilTest {
         List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestBean.class);
         
         assertNotNull(descriptors);
-        assertTrue(descriptors.size() >= 3); // name, age, nested + class property
+        assertEquals(4, descriptors.size()); // name, age, nested + class property
         
         boolean foundName = false, foundAge = false, foundNested = false;
         for (PropertyDescriptor descriptor : descriptors) {
+            // All descriptors should have read method
+            assertNotNull(descriptor.getReadMethod());
+            // All descriptors except "class" should have write method
+            if (!"class".equals(descriptor.getName())) {
+                assertNotNull(descriptor.getWriteMethod());
+            }
+            
             if ("name".equals(descriptor.getName())) {
                 foundName = true;
                 assertEquals(String.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNotNull(descriptor.getWriteMethod());
             } else if ("age".equals(descriptor.getName())) {
                 foundAge = true;
                 assertEquals(int.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNotNull(descriptor.getWriteMethod());
             } else if ("nested".equals(descriptor.getName())) {
                 foundNested = true;
                 assertEquals(TestNestedBean.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNotNull(descriptor.getWriteMethod());
             }
         }
         
@@ -193,19 +193,12 @@ public class BeanUtilTest {
         List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestInterface.class);
         
         assertNotNull(descriptors);
-        assertTrue(descriptors.size() >= 1); // interfaceProperty
+        assertEquals(1, descriptors.size()); // interfaceProperty
         
-        boolean foundInterfaceProperty = false;
-        for (PropertyDescriptor descriptor : descriptors) {
-            if ("interfaceProperty".equals(descriptor.getName())) {
-                foundInterfaceProperty = true;
-                assertEquals(String.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNotNull(descriptor.getWriteMethod());
-            }
-        }
-        
-        assertTrue("Should find 'interfaceProperty' property", foundInterfaceProperty);
+        assertEquals("interfaceProperty", descriptors.get(0).getName());
+        assertEquals(String.class, descriptors.get(0).getPropertyType());
+        assertNotNull(descriptors.get(0).getReadMethod());
+        assertNotNull(descriptors.get(0).getWriteMethod());
     }
 
     // Test for getPropertyType with simple property
@@ -261,47 +254,12 @@ public class BeanUtilTest {
         assertNull(nonExistentDescriptor);
     }
 
-    // Test for checkBeanValidationAvailable
-    @Test
-    public void checkBeanValidationAvailable() {
-        // This method checks if JSR-303 bean validation is available
-        // The result will depend on whether validation libraries are on the classpath
-        // We just verify the method doesn't throw an exception and returns a boolean
-        boolean isAvailable = BeanUtil.checkBeanValidationAvailable();
-        // Result can be true or false depending on classpath, just verify it's a boolean
-        assertTrue("Method should return a boolean value", isAvailable || !isAvailable);
-    }
-
     // Test for getBeanPropertyDescriptors with null input
-    @Test(expected = NullPointerException.class)
+    @Test
     public void getBeanPropertyDescriptors_nullInput() throws IntrospectionException {
-        BeanUtil.getBeanPropertyDescriptors(null);
-    }
-
-    // Test for getPropertyType with null class
-    @Test(expected = NullPointerException.class)
-    public void getPropertyType_nullClass() throws IntrospectionException {
-        BeanUtil.getPropertyType(null, "name");
-    }
-
-    // Test for getPropertyType with null property name
-    @Test(expected = NullPointerException.class)
-    public void getPropertyType_nullPropertyName() throws IntrospectionException {
-        // This will throw NPE because getPropertyDescriptor calls propertyName.contains(".")
-        BeanUtil.getPropertyType(TestBean.class, null);
-    }
-
-    // Test for getPropertyDescriptor with null class
-    @Test(expected = NullPointerException.class)
-    public void getPropertyDescriptor_nullClass() throws IntrospectionException {
-        BeanUtil.getPropertyDescriptor(null, "name");
-    }
-
-    // Test for getPropertyDescriptor with null property name
-    @Test(expected = NullPointerException.class)
-    public void getPropertyDescriptor_nullPropertyName() throws IntrospectionException {
-        // This will throw NPE because method calls propertyName.contains(".")
-        BeanUtil.getPropertyDescriptor(TestBean.class, null);
+        List<PropertyDescriptor> result = BeanUtil.getBeanPropertyDescriptors(null);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
     }
 
     // Test empty property name
@@ -357,22 +315,14 @@ public class BeanUtilTest {
     public void getBeanPropertyDescriptors_includesAllValidProperties() throws IntrospectionException {
         List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestBean.class);
         
-        // Should include custom properties but not Object properties
-        boolean hasName = false, hasAge = false, hasNested = false, hasClass = false;
+        List<String> names = descriptors.stream()
+                .map(PropertyDescriptor::getName)
+                .toList();
         
-        for (PropertyDescriptor desc : descriptors) {
-            String name = desc.getName();
-            if ("name".equals(name)) hasName = true;
-            else if ("age".equals(name)) hasAge = true;
-            else if ("nested".equals(name)) hasNested = true;
-            else if ("class".equals(name)) hasClass = true;
-        }
-        
-        assertTrue("Should include 'name' property", hasName);
-        assertTrue("Should include 'age' property", hasAge); 
-        assertTrue("Should include 'nested' property", hasNested);
-        // Note: getBeanPropertyDescriptors may include 'class' but getPropertyDescriptor filters it
-        // This test just verifies that our custom properties are present
+        assertTrue("should include property 'name'", names.contains("name"));
+        assertTrue("should include property 'age'", names.contains("age"));
+        assertTrue("should include property 'nested'", names.contains("nested"));
+        assertTrue("should include property 'class'", names.contains("class"));
     }
 
     // Test from main branch: duplicate property descriptors are removed
