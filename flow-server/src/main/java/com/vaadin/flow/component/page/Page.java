@@ -270,18 +270,13 @@ public class Page implements Serializable {
      * return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
+     * named <code>$0</code>, <code>$1</code>, and so on. All types supported
+     * by Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link tools.jackson.databind.node.BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
-     * <li>Any bean object (serialized using Jackson and available as a standard JavaScript object)
+     * <li>{@link Element} - will be sent as <code>null</code> if the server-side
+     * element instance is not attached when the invocation is sent to the client
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode} - sent as-is without additional wrapping
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
