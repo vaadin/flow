@@ -170,16 +170,17 @@ public class BeanUtilTest {
         
         boolean foundRecordProperty = false, foundRecordAge = false;
         for (PropertyDescriptor descriptor : descriptors) {
+            // All descriptors should have read method
+            assertNotNull(descriptor.getReadMethod());
+            // Records are immutable, so no write methods
+            assertNull(descriptor.getWriteMethod());
+            
             if ("recordProperty".equals(descriptor.getName())) {
                 foundRecordProperty = true;
                 assertEquals(String.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNull(descriptor.getWriteMethod()); // Records are immutable
             } else if ("recordAge".equals(descriptor.getName())) {
                 foundRecordAge = true;
                 assertEquals(int.class, descriptor.getPropertyType());
-                assertNotNull(descriptor.getReadMethod());
-                assertNull(descriptor.getWriteMethod()); // Records are immutable
             }
         }
         
