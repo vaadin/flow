@@ -1421,6 +1421,25 @@ public class Element extends Node<Element> {
                 + paramPlaceholderString + ")", jsParameters);
     }
 
+    /**
+     * Calls the given JavaScript function with this element as
+     * <code>this</code> and the given arguments.
+     *
+     * @deprecated Use {@link #callJsFunction(String, Object...)} instead. This method
+     *             exists only for binary compatibility.
+     * @param functionName
+     *            the name of the function to call
+     * @param arguments
+     *            the arguments to pass to the function
+     * @return a pending result that can be used to get a return value from the
+     *         execution
+     */
+    @Deprecated
+    public PendingJavaScriptResult callJsFunction(String functionName,
+            Serializable[] arguments) {
+        return callJsFunction(functionName, (Object[]) arguments);
+    }
+
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
@@ -1483,6 +1502,25 @@ public class Element extends Node<Element> {
 
         return scheduleJavaScriptInvocation(wrappedExpression,
                 wrappedParameters);
+    }
+
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This method
+     *             exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(

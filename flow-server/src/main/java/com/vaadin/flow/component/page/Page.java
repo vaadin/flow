@@ -310,6 +310,24 @@ public class Page implements Serializable {
     }
 
     /**
+     * Executes the given JavaScript expression in the browser.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This method
+     *             exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to execute
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
+    }
+
+    /**
      * Gets a representation of <code>window.history</code> for this page.
      *
      * @return the history representation
