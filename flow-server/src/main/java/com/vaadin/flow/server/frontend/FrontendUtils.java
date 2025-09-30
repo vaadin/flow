@@ -642,31 +642,17 @@ public class FrontendUtils {
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
         File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
-        boolean frontendDirExists = new File(projectRoot, DEFAULT_FRONTEND_DIR)
-                .exists();
 
         if (legacyDir.exists()) {
-            boolean configParamPointsToLegacyDir = legacyDir.toPath().toString()
-                    .replace("./", "").equals(frontendDir.toPath().toString());
-            if (configParamPointsToLegacyDir) {
-                if (frontendDirExists) {
-                    getLogger().warn(
-                            "This project has both default ({}) frontend directory"
-                                    + " and legacy ({})- frontend directory present, and "
-                                    + "'frontendDirectory' parameter points to the legacy directory."
-                                    + "\n\nDefault frontend directory will be ignored.",
-                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
-                }
-                return frontendDir;
-            } else {
-                getLogger().warn(
-                        "This project has a legacy fronted directory ({}) "
-                                + "present and it will be used as a fallback. "
-                                + "It is recommended to move its contents to "
-                                + "the default frontend directory ({}).",
-                        LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-                return legacyDir;
-            }
+            getLogger().warn("This project has a legacy fronted directory ({}) "
+                    + "present and it will be used as a fallback."
+                    + "\n\nSupport for the legacy directory will be removed "
+                    + "in a future release. Please move its contents to "
+                    + "the default frontend directory ({}), or delete it "
+                    + "if its contents are not needed in the project. "
+                    + "Also remove 'frontendDirectory' parameter if present.",
+                    LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+            return legacyDir;
         }
 
         // Legacy dir does not exist. Use default or custom-set dir.
