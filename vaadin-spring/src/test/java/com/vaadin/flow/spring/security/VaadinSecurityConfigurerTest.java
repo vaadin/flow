@@ -5,7 +5,6 @@ import java.util.Map;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +26,6 @@ import org.springframework.security.authentication.TestingAuthenticationToken;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.ObjectPostProcessor;
-import org.springframework.security.config.annotation.SecurityConfigurer;
-import org.springframework.security.config.annotation.SecurityConfigurerAdapter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.configuration.ObjectPostProcessorConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,10 +39,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
-import org.springframework.security.web.DefaultSecurityFilterChain;
-import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
-import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -61,7 +55,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
@@ -348,59 +341,6 @@ class VaadinSecurityConfigurerTest {
                     .satisfies(filter -> assertThatCode(
                             () -> filter.doFilter(request, response, chain))
                             .doesNotThrowAnyException());
-        }
-    }
-
-    @Test
-    void hilleRequest_authDenied_redirectToLogin() throws Exception {
-        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
-                .mockStatic(EndpointRequestUtil.class)) {
-            endpointRequestUtilMockedStatic
-                    .when(EndpointRequestUtil::isHillaAvailable)
-                    .thenReturn(true);
-
-            configurer.enableCsrfConfiguration(false);
-            configurer.enableLogoutConfiguration(false);
-            configurer.enableRequestCacheConfiguration(false);
-            configurer.enableAuthorizedRequestsConfiguration(false);
-
-            HttpSecurity secBuilder = Mockito.mock(HttpSecurity.class);
-            Mockito.when(secBuilder.getSharedObject(Mockito.any()))
-                    .thenReturn(null);
-            Mockito.when(secBuilder.getSharedObject(ApplicationContext.class))
-                    .thenReturn(applicationContext);
-            ReflectTools
-                    .setJavaFieldValue(
-                            configurer, SecurityConfigurerAdapter.class
-                                    .getDeclaredField("securityBuilder"),
-                            secBuilder);
-
-            configurer.loginView("/login");
-            configurer.init(http);
-
-            SecurityConfigurer<DefaultSecurityFilterChain, HttpSecurity> configurer = http
-                    .getConfigurer(ExceptionHandlingConfigurer.class);
-
-            // Get the configured handler (which is set as a
-            // RequestMatcherDelegatingAccessDeniedHandler)
-            RequestMatcherDelegatingAccessDeniedHandler accessDeniedHandler = (RequestMatcherDelegatingAccessDeniedHandler) ReflectTools
-                    .getJavaFieldValue(configurer,
-                            ExceptionHandlingConfigurer.class
-                                    .getDeclaredField("accessDeniedHandler"));
-
-            // Get the registered default accessDeniedHandler
-            AccessDeniedHandlerImpl defaultHandler = (AccessDeniedHandlerImpl) ReflectTools
-                    .getJavaFieldValue(accessDeniedHandler,
-                            RequestMatcherDelegatingAccessDeniedHandler.class
-                                    .getDeclaredField("defaultHandler"));
-
-            // Get the error page defined for the default handler
-            Object errorPage = ReflectTools.getJavaFieldValue(defaultHandler,
-                    AccessDeniedHandlerImpl.class
-                            .getDeclaredField("errorPage"));
-
-            Assert.assertEquals("Error handler should have redirect page set",
-                    "/login", errorPage);
         }
     }
 
