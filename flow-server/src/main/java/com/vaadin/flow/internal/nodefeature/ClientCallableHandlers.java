@@ -54,13 +54,12 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
 
     @Override
     protected void ensureSupportedParameterTypes(Method method) {
-        // decoder may be able to convert any value to any type so no need to
-        // limit supported types
+        // All parameter types are supported through JSON deserialization
     }
 
     @Override
     protected void ensureSupportedReturnType(Method method) {
-        // All types are now supported since we can encode any object as a bean
+        // All return types are supported through JSON serialization
     }
 
     @Override

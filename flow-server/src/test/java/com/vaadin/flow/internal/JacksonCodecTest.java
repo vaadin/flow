@@ -36,7 +36,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public class JacksonCodecTest {
-    private static final List<Object> withTypeInfoUnsupportedValues = Arrays
+    private static final List<Object> complexTypeValues = Arrays
             .asList(new Object(), new StateNode(), new Date(), new String[0],
                     new ArrayList<>(), new HashSet<>(), new HashMap<>());
 
@@ -73,7 +73,7 @@ public class JacksonCodecTest {
     @Test
     public void encodeWithoutTypeInfo_unsupportedTypes() {
         List<Object> unsupported = new ArrayList<>(
-                withTypeInfoUnsupportedValues);
+                complexTypeValues);
         unsupported.add(ElementFactory.createDiv());
 
         for (Object value : unsupported) {
@@ -141,9 +141,8 @@ public class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithTypeInfo_formerlyUnsupportedTypesNowEncodedAsBeans() {
-        // These types were previously unsupported but now should be encoded as beans
-        for (Object value : withTypeInfoUnsupportedValues) {
+    public void encodeWithTypeInfo_complexTypesEncodedAsBeans() {
+        for (Object value : complexTypeValues) {
             JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
             
             // Should be directly encoded as JSON objects (no type wrapper needed)
