@@ -66,10 +66,6 @@ public class JacksonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
-    /**
-     * Type id for a complex type array containing a bean object.
-     */
-    public static final int BEAN_TYPE = 5;
 
     private JacksonCodec() {
         // Don't create instances
@@ -106,9 +102,8 @@ public class JacksonCodec {
             }
             return encoded;
         } else {
-            // Encode as bean using Jackson serialization
-            JsonNode beanJson = JacksonUtils.getMapper().valueToTree(value);
-            return wrapComplexValue(BEAN_TYPE, beanJson);
+            // Encode as bean using Jackson serialization - send directly as JSON
+            return JacksonUtils.getMapper().valueToTree(value);
         }
     }
 

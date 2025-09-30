@@ -146,14 +146,11 @@ public class JacksonCodecTest {
         for (Object value : withTypeInfoUnsupportedValues) {
             JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
             
-            // Should be [5, {json object}] - encoded as beans
-            Assert.assertTrue("Should be array for " + value.getClass(), encoded.isArray());
-            Assert.assertEquals("Should be wrapped with BEAN_TYPE for " + value.getClass(),
-                    JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
-            
-            // The second element should be the Jackson-serialized object
-            JsonNode beanJson = encoded.get(1);
-            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), beanJson);
+            // Should be directly encoded as JSON objects (no type wrapper needed)
+            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), encoded);
+            // For objects, should be object node; for collections, array node, etc.
+            Assert.assertTrue("Should be valid JSON for " + value.getClass(), 
+                    encoded.isObject() || encoded.isArray() || encoded.isValueNode());
         }
     }
 
@@ -263,14 +260,10 @@ public class JacksonCodecTest {
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
 
-        // Should be [5, {json object}]
-        Assert.assertTrue("Should be array", encoded.isArray());
-        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
-                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
-
-        JsonNode beanJson = encoded.get(1);
-        Assert.assertEquals("Test", beanJson.get("text").asText());
-        Assert.assertEquals(42, beanJson.get("value").asInt());
+        // Should be directly encoded as JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("Test", encoded.get("text").asText());
+        Assert.assertEquals(42, encoded.get("value").asInt());
     }
 
     @Test
@@ -281,15 +274,11 @@ public class JacksonCodecTest {
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(outer);
 
-        // Should be [5, {json object}]
-        Assert.assertTrue("Should be array", encoded.isArray());
-        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
-                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
+        // Should be directly encoded as JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("outer", encoded.get("name").asText());
 
-        JsonNode beanJson = encoded.get(1);
-        Assert.assertEquals("outer", beanJson.get("name").asText());
-
-        JsonNode nestedJson = beanJson.get("nested");
+        JsonNode nestedJson = encoded.get("nested");
         Assert.assertEquals("inner", nestedJson.get("text").asText());
         Assert.assertEquals(123, nestedJson.get("number").asInt());
     }
@@ -332,14 +321,10 @@ public class JacksonCodecTest {
         
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
         
-        // Should be [5, {json object}]
-        Assert.assertTrue("Should be array", encoded.isArray());
-        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
-                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
-        
-        JsonNode beanJson = encoded.get(1);
-        Assert.assertEquals("TestBean", beanJson.get("text").asText());
-        Assert.assertEquals(42, beanJson.get("value").asInt());
+        // Should be directly encoded as JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("TestBean", encoded.get("text").asText());
+        Assert.assertEquals(42, encoded.get("value").asInt());
     }
 
     private static class NonSerializableBean {
