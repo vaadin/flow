@@ -60,21 +60,7 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
 
     @Override
     protected void ensureSupportedReturnType(Method method) {
-        Class<?> returnType = method.getReturnType();
-        if (returnType.isPrimitive()) {
-            returnType = ReflectTools.convertPrimitiveType(returnType);
-        }
-
-        if (!void.class.equals(returnType)
-                && !JsonCodec.canEncodeWithTypeInfo(returnType)) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only return types that can be used as Element.executeJs parameters are supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is \"%s\"",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotationFqn(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
+        // All types are now supported since we can encode any object as a bean
     }
 
     @Override

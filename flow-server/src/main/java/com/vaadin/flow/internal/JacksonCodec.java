@@ -84,7 +84,6 @@ public class JacksonCodec {
      * @return the value encoded as JSON
      */
     public static JsonNode encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
 
         if (value == null) {
             return encodeWithoutTypeInfo(value);
@@ -148,21 +147,6 @@ public class JacksonCodec {
                 || JsonNode.class.isAssignableFrom(type);
     }
 
-    /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration},
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)},
-     * and any bean object.
-     *
-     * @param type
-     *            the type to check
-     * @return whether the type can be encoded
-     */
-    public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        // All types can be encoded - either as primitives, special types, or beans
-        return true;
-    }
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
@@ -218,7 +202,6 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return (JsonNode) value;
         }
-        assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
                 "Can't encode " + value.getClass() + " to json");
     }
@@ -284,7 +267,6 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(
                     "Unknown type " + type.getName());
         }
