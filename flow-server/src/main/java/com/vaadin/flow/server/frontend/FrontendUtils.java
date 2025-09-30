@@ -644,13 +644,15 @@ public class FrontendUtils {
         File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
 
         if (legacyDir.exists()) {
-            getLogger().warn("This project has a legacy frontend directory ({}) "
-                    + "present and it will be used as a fallback."
-                    + "\n\nSupport for the legacy directory will be removed "
-                    + "in a future release. Please move its contents to "
-                    + "the default frontend directory ({}), or delete it "
-                    + "if its contents are not needed in the project. "
-                    + "Also remove 'frontendDirectory' parameter if present.",
+            getLogger().warn(
+                    "This project has a legacy frontend directory ({}) "
+                            + "present and it will be used as a fallback."
+                            + "\n\nSupport for the legacy directory will be removed "
+                            + "in a future release. Please move its contents to "
+                            + "the default frontend directory ({}), or delete it "
+                            + "if its contents are not needed in the project. "
+                            + "Also remove 'frontendDirectory' parameter that "
+                            + "points to the legacy directory, if present.",
                     LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
             return legacyDir;
         }
