@@ -236,7 +236,8 @@ public class JacksonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * {@link Double}, primitives boolean, int, double, {@link JsonNode}, and
+     * any bean object that can be deserialized from JSON.
      *
      * @param <T>
      *            the decoded type
@@ -246,7 +247,7 @@ public class JacksonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported
+     *             if the type was unsupported or deserialization failed
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
@@ -266,8 +267,15 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            // Try to deserialize as a bean using Jackson
+            try {
+                return JacksonUtils.getMapper().treeToValue(json, type);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot deserialize JSON to type " + type.getName()
+                                + ": " + e.getMessage(),
+                        e);
+            }
         }
 
     }
