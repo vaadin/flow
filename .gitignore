@@ -26,6 +26,9 @@
 # Python
 scripts/*.pyc
 
+# Java bytecode
+*.class
+
 # Intellij Idea files
 .idea
 *.iml
