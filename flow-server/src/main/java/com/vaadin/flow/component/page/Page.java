@@ -281,6 +281,7 @@ public class Page implements Serializable {
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
+     * <li>Any bean object (serialized using Jackson and available as a standard JavaScript object)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -296,7 +297,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -545,7 +546,7 @@ public class Page implements Serializable {
      * proxy between the client and the server.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return window.location.href}.
      * <p>
      * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
@@ -578,7 +579,7 @@ public class Page implements Serializable {
      * request and passed to the callback.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return document.dir}.
      *
      * @param callback

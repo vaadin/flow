@@ -1380,7 +1380,7 @@ public class Element extends Node<Element> {
      * registered, the return value will be ignored.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
+     * at the same time that {@link Page#executeJs(String, Object...)}
      * calls are invoked.
      * <p>
      * If the element is not attached or not visible, the function call will be
@@ -1399,7 +1399,7 @@ public class Element extends Node<Element> {
      *         execution
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable... arguments) {
+            Object... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
@@ -1447,6 +1447,7 @@ public class Element extends Node<Element> {
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
+     * <li>Any bean object (serialized using Jackson and available as a standard JavaScript object)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1465,15 +1466,14 @@ public class Element extends Node<Element> {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
 
         // Add "this" as the last parameter
-        Serializable[] wrappedParameters;
+        Object[] wrappedParameters;
         if (parameters.length == 0) {
-            wrappedParameters = new Serializable[] { this };
+            wrappedParameters = new Object[] { this };
         } else {
-            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1,
-                    Serializable[].class);
+            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1);
             wrappedParameters[parameters.length] = this;
         }
 
@@ -1486,7 +1486,7 @@ public class Element extends Node<Element> {
     }
 
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Serializable[] parameters) {
+            String expression, Object[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,

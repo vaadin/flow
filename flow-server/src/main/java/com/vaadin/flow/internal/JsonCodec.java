@@ -90,7 +90,9 @@ public class JsonCodec {
     public static JsonValue encodeWithTypeInfo(Object value) {
         assert value == null || canEncodeWithTypeInfo(value.getClass());
 
-        if (value instanceof Component) {
+        if (value == null) {
+            return encodeWithoutTypeInfo(value);
+        } else if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
@@ -151,19 +153,17 @@ public class JsonCodec {
     /**
      * Helper for checking whether the type is supported by
      * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration},
+     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)},
+     * and any bean object.
      *
      * @param type
      *            the type to check
      * @return whether the type can be encoded
      */
     public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type)
-                || Serializable.class.isAssignableFrom(type);
+        // All types can be encoded - either as primitives, special types, or beans
+        return true;
     }
 
     /**

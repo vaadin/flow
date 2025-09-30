@@ -141,18 +141,19 @@ public class JacksonCodecTest {
     }
 
     @Test
-    public void encodeWithTypeInfo_unsupportedTypes() {
+    public void encodeWithTypeInfo_formerlyUnsupportedTypesNowEncodedAsBeans() {
+        // These types were previously unsupported but now should be encoded as beans
         for (Object value : withTypeInfoUnsupportedValues) {
-            boolean thrown = false;
-            try {
-                JacksonCodec.encodeWithTypeInfo(value);
-
-            } catch (AssertionError expected) {
-                thrown = true;
-            }
-            if (!thrown) {
-                Assert.fail("Should throw for " + value.getClass());
-            }
+            JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
+            
+            // Should be [5, {json object}] - encoded as beans
+            Assert.assertTrue("Should be array for " + value.getClass(), encoded.isArray());
+            Assert.assertEquals("Should be wrapped with BEAN_TYPE for " + value.getClass(),
+                    JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
+            
+            // The second element should be the Jackson-serialized object
+            JsonNode beanJson = encoded.get(1);
+            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), beanJson);
         }
     }
 
@@ -259,35 +260,35 @@ public class JacksonCodecTest {
     public void testSimpleBeanSerialization() {
         // Test simple bean serialization without any Components
         SimpleBean bean = new SimpleBean("Test", 42);
-        
+
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
-        
+
         // Should be [5, {json object}]
         Assert.assertTrue("Should be array", encoded.isArray());
-        Assert.assertEquals("Should be wrapped with BEAN_TYPE", JacksonCodec.BEAN_TYPE, 
-                encoded.get(0).asInt());
-        
+        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
+                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
+
         JsonNode beanJson = encoded.get(1);
         Assert.assertEquals("Test", beanJson.get("text").asText());
         Assert.assertEquals(42, beanJson.get("value").asInt());
     }
-    
+
     @Test
     public void testNestedBeanSerialization() {
         // Test nested beans
         NestedBean nested = new NestedBean("inner", 123);
         OuterBean outer = new OuterBean("outer", nested);
-        
+
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(outer);
-        
+
         // Should be [5, {json object}]
         Assert.assertTrue("Should be array", encoded.isArray());
-        Assert.assertEquals("Should be wrapped with BEAN_TYPE", JacksonCodec.BEAN_TYPE, 
-                encoded.get(0).asInt());
-        
+        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
+                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
+
         JsonNode beanJson = encoded.get(1);
         Assert.assertEquals("outer", beanJson.get("name").asText());
-        
+
         JsonNode nestedJson = beanJson.get("nested");
         Assert.assertEquals("inner", nestedJson.get("text").asText());
         Assert.assertEquals(123, nestedJson.get("number").asInt());
@@ -297,30 +298,57 @@ public class JacksonCodecTest {
     private static class SimpleBean implements Serializable {
         public String text;
         public int value;
-        
+
         public SimpleBean(String text, int value) {
             this.text = text;
             this.value = value;
         }
     }
-    
+
     private static class NestedBean implements Serializable {
         public String text;
         public int number;
-        
+
         public NestedBean(String text, int number) {
             this.text = text;
             this.number = number;
         }
     }
-    
+
     private static class OuterBean implements Serializable {
         public String name;
         public NestedBean nested;
-        
+
         public OuterBean(String name, NestedBean nested) {
             this.name = name;
             this.nested = nested;
+        }
+    }
+
+    @Test
+    public void testNonSerializableBeanSerialization() {
+        // Test that non-Serializable objects can be serialized as beans
+        NonSerializableBean bean = new NonSerializableBean("TestBean", 42);
+        
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
+        
+        // Should be [5, {json object}]
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should be wrapped with BEAN_TYPE",
+                JacksonCodec.BEAN_TYPE, encoded.get(0).asInt());
+        
+        JsonNode beanJson = encoded.get(1);
+        Assert.assertEquals("TestBean", beanJson.get("text").asText());
+        Assert.assertEquals(42, beanJson.get("value").asInt());
+    }
+
+    private static class NonSerializableBean {
+        public String text;
+        public int value;
+        
+        public NonSerializableBean(String text, int value) {
+            this.text = text;
+            this.value = value;
         }
     }
 }
