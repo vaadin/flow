@@ -158,6 +158,16 @@ public class UidlWriter implements Serializable {
         populateDependencies(response, uiInternals.getDependencyList(),
                 new ResolveContext(service));
 
+        // Add stylesheet removals to response
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
+        if (!stylesheetRemovals.isEmpty()) {
+            ArrayNode removals = JacksonUtils.createArrayNode();
+            stylesheetRemovals.forEach(removals::add);
+            response.set("stylesheetRemovals", removals);
+            uiInternals.clearPendingStyleSheetRemovals();
+        }
+
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.set("constants",
                     uiInternals.getConstantPool().dumpConstants());

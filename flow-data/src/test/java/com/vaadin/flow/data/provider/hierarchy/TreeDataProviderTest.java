@@ -288,6 +288,25 @@ public class TreeDataProviderTest
         assertEquals(8, sizeWithUnfilteredQuery());
     }
 
+    @Test
+    public void rootItem_getParent_returnsNull() {
+        var rootItem = rootData.get(0);
+        assertNull(getDataProvider().getParent(rootItem));
+    }
+
+    @Test
+    public void childItem_getParent_returnsParent() {
+        var rootItem = rootData.get(0);
+        var childItem = data.getChildren(rootItem).get(0);
+        assertEquals(rootItem, data.getParent(childItem));
+    }
+
+    @Test
+    public void notPresentItem_getParent_returnsNull() {
+        var itemNotPresentInProvider = new StrBean("Not present", -1, 0);
+        assertNull(getDataProvider().getParent(itemNotPresentInProvider));
+    }
+
     @Override
     public void filteringListDataProvider_convertFilter() {
         HierarchicalDataProvider<StrBean, String> strFilterDataProvider = getDataProvider()

@@ -254,6 +254,7 @@
         <module>test-common</module>
         <module>test-lumo</module>
         <module>test-express-build</module>
+        <module>test-aura</module>
     </modules>
 
     <profiles>

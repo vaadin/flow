@@ -21,9 +21,6 @@
 import { resolve } from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 
-const headerImport = `import 'construct-style-sheets-polyfill';
-`;
-
 /**
  * Generate the css.generated.js file for css imports which collects all required information.
  *
@@ -34,9 +31,7 @@ function writeCssFiles(options) {
   const outputFolder = options.frontendGeneratedFolder;
   const cssFilename = 'css.generated.js';
 
-  let cssFileContent = headerImport;
-
-  cssFileContent += `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
+  let cssFileContent = `import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
   cssFileContent += `import { webcomponentGlobalCssInjector } from 'Frontend/generated/jar-resources/theme-util.js';\n`;
 
   cssFileContent += `let needsReloadOnChanges = false;\n`;
