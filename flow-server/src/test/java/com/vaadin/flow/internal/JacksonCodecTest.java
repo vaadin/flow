@@ -68,7 +68,6 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createArrayNode(),
                 objectMapper.createArrayNode());
 
-        // Test that complex types work with type info
         for (Object value : complexTypeValues) {
             JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
             Assert.assertNotNull(
@@ -250,7 +249,6 @@ public class JacksonCodecTest {
 
     @Test
     public void testSimpleBeanSerialization() {
-        // Test simple bean serialization without any Components
         SimpleBean bean = new SimpleBean("Test", 42);
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
@@ -263,7 +261,6 @@ public class JacksonCodecTest {
 
     @Test
     public void testNestedBeanSerialization() {
-        // Test nested beans
         NestedBean nested = new NestedBean("inner", 123);
         OuterBean outer = new OuterBean("outer", nested);
 
@@ -278,10 +275,12 @@ public class JacksonCodecTest {
         Assert.assertEquals(123, nestedJson.get("number").asInt());
     }
 
-    // Test classes
     private static class SimpleBean {
         public String text;
         public int value;
+
+        public SimpleBean() {
+        }
 
         public SimpleBean(String text, int value) {
             this.text = text;
@@ -293,6 +292,9 @@ public class JacksonCodecTest {
         public String text;
         public int number;
 
+        public NestedBean() {
+        }
+
         public NestedBean(String text, int number) {
             this.text = text;
             this.number = number;
@@ -303,10 +305,74 @@ public class JacksonCodecTest {
         public String name;
         public NestedBean nested;
 
+        public OuterBean() {
+        }
+
         public OuterBean(String name, NestedBean nested) {
             this.name = name;
             this.nested = nested;
         }
     }
 
+    @Test
+    public void testDecodeAsSimpleBean() {
+        ObjectNode json = objectMapper.createObjectNode();
+        json.put("text", "TestBean");
+        json.put("value", 42);
+
+        SimpleBean decoded = JacksonCodec.decodeAs(json, SimpleBean.class);
+
+        Assert.assertEquals("TestBean", decoded.text);
+        Assert.assertEquals(42, decoded.value);
+    }
+
+    @Test
+    public void testDecodeAsNestedBean() {
+        ObjectNode nestedJson = objectMapper.createObjectNode();
+        nestedJson.put("text", "NestedTest");
+        nestedJson.put("number", 456);
+
+        ObjectNode outerJson = objectMapper.createObjectNode();
+        outerJson.put("name", "OuterTest");
+        outerJson.set("nested", nestedJson);
+
+        OuterBean decoded = JacksonCodec.decodeAs(outerJson, OuterBean.class);
+
+        Assert.assertEquals("OuterTest", decoded.name);
+        Assert.assertEquals("NestedTest", decoded.nested.text);
+        Assert.assertEquals(456, decoded.nested.number);
+    }
+
+    @Test
+    public void testDecodeAsNullValue() {
+        JsonNode nullNode = objectMapper.nullNode();
+
+        SimpleBean decoded = JacksonCodec.decodeAs(nullNode, SimpleBean.class);
+        Assert.assertNull(decoded);
+    }
+
+    @Test
+    public void testDecodeAsInvalidJson() {
+        JsonNode invalidJson = objectMapper.valueToTree("not an object");
+
+        try {
+            JacksonCodec.decodeAs(invalidJson, SimpleBean.class);
+            Assert.fail("Should have thrown IllegalArgumentException");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue(
+                    e.getMessage().contains("Cannot deserialize JSON to type"));
+        }
+    }
+
+    @Test
+    public void testDecodeAsPreservesExistingBehavior() {
+        Assert.assertEquals("test", JacksonCodec
+                .decodeAs(objectMapper.valueToTree("test"), String.class));
+        Assert.assertEquals(Integer.valueOf(42), JacksonCodec
+                .decodeAs(objectMapper.valueToTree(42), Integer.class));
+        Assert.assertEquals(Boolean.TRUE, JacksonCodec
+                .decodeAs(objectMapper.valueToTree(true), Boolean.class));
+        Assert.assertEquals(Double.valueOf(3.14), JacksonCodec
+                .decodeAs(objectMapper.valueToTree(3.14), Double.class));
+    }
 }

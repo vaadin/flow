@@ -1452,6 +1452,10 @@ public class Element extends Node<Element> {
      * value once it becomes available. If no return value handler is
      * registered, the return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
      * <code>$0</code>, <code>$1</code>, and so on. All types supported by
