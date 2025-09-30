@@ -57,10 +57,6 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
         // All parameter types are supported through JSON deserialization
     }
 
-    @Override
-    protected void ensureSupportedReturnType(Method method) {
-        // All return types are supported through JSON serialization
-    }
 
     @Override
     protected DisabledUpdateMode getUpdateMode(Method method) {
