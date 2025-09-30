@@ -88,7 +88,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
-     * deserialization are supported, including custom bean classes and collections.
+     * deserialization are supported, including custom bean classes,
+     * collections, and maps.
      * <p>
      * Handlers can only be added before the execution has been sent to the
      * browser.
@@ -126,7 +127,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
-     * deserialization are supported, including custom bean classes and collections.
+     * deserialization are supported, including custom bean classes,
+     * collections, and maps.
      * <p>
      * A handler can only be added before the execution has been sent to the
      * browser.
@@ -153,7 +155,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * <p>
      * The JavaScript return value will be automatically converted to the
      * specified target type. All types supported by Jackson for JSON
-     * deserialization are supported, including custom bean classes and collections.
+     * deserialization are supported, including custom bean classes,
+     * collections, and maps.
      * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.

@@ -99,16 +99,13 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         getButton("listButton").click();
 
-        WebElement result = waitUntil(
-                d -> findElement(By.id("listResult")));
+        WebElement result = waitUntil(d -> findElement(By.id("listResult")));
         Assert.assertEquals(
                 "List: [0]: name=FirstItem, value=10, active=true | [1]: name=SecondItem, value=20, active=false | [2]: name=ThirdItem, value=30, active=true",
                 result.getText());
 
-        WebElement status = waitUntil(
-                d -> findElement(By.id("listStatus")));
-        Assert.assertEquals("List serialization completed",
-                status.getText());
+        WebElement status = waitUntil(d -> findElement(By.id("listStatus")));
+        Assert.assertEquals("List serialization completed", status.getText());
     }
 
     @Test
@@ -119,12 +116,41 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
 
         WebElement result = waitUntil(
                 d -> findElement(By.id("returnListResult")));
-        Assert.assertEquals("Returned list with 2 items",
-                result.getText());
+        Assert.assertEquals("Returned list with 2 items", result.getText());
 
         WebElement status = waitUntil(
                 d -> findElement(By.id("returnListStatus")));
         Assert.assertEquals("List returned", status.getText());
+    }
+
+    @Test
+    public void testMapSerialization() {
+        open();
+
+        getButton("mapButton").click();
+
+        WebElement result = waitUntil(d -> findElement(By.id("mapResult")));
+        Assert.assertEquals(
+                "Map: firstKey={name=FirstBean, value=100, active=true} | secondKey={name=SecondBean, value=200, active=false} | thirdKey={name=ThirdBean, value=300, active=true}",
+                result.getText());
+
+        WebElement status = waitUntil(d -> findElement(By.id("mapStatus")));
+        Assert.assertEquals("Map serialization completed", status.getText());
+    }
+
+    @Test
+    public void testMapReturnValue() {
+        open();
+
+        getButton("returnMapButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnMapResult")));
+        Assert.assertEquals("Returned map with 2 keys", result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnMapStatus")));
+        Assert.assertEquals("Map returned", status.getText());
     }
 
     private WebElement getButton(String id) {

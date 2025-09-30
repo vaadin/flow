@@ -17,7 +17,9 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -140,9 +142,31 @@ public class ExecJavaScriptView extends AbstractDivView {
                             });
                 });
 
+        NativeButton mapButton = createButton("Map Serialization", "mapButton",
+                e -> testMapSerialization());
+
+        NativeButton returnMapButton = createButton("Return Map",
+                "returnMapButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return {key1: {name: 'First', value: 1, active: true}, key2: {name: 'Second', value: 2, active: false}}")
+                            .then(Map.class, map -> {
+                                Div result = new Div();
+                                result.setId("returnMapResult");
+                                result.setText("Returned map with " + map.size()
+                                        + " keys");
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnMapStatus");
+                                status.setText("Map returned");
+                                add(status);
+                            });
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
-                returnBeanButton, listButton, returnListButton);
+                returnBeanButton, listButton, returnListButton, mapButton,
+                returnMapButton);
     }
 
     private void testBeanSerialization() {
@@ -199,6 +223,38 @@ public class ExecJavaScriptView extends AbstractDivView {
                         document.body.appendChild(statusDiv);
                         """,
                 beanList);
+    }
+
+    private void testMapSerialization() {
+        Map<String, SimpleBean> beanMap = new LinkedHashMap<>();
+        beanMap.put("firstKey", new SimpleBean("FirstBean", 100, true));
+        beanMap.put("secondKey", new SimpleBean("SecondBean", 200, false));
+        beanMap.put("thirdKey", new SimpleBean("ThirdBean", 300, true));
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const beanMap = $0;
+
+                        let result = 'Map: ';
+                        const keys = Object.keys(beanMap);
+                        for (let i = 0; i < keys.length; i++) {
+                            const key = keys[i];
+                            const bean = beanMap[key];
+                            result += `${key}={name=${bean.name}, value=${bean.value}, active=${bean.active}}`;
+                            if (i < keys.length - 1) result += ' | ';
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'mapResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'mapStatus';
+                        statusDiv.textContent = 'Map serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                beanMap);
     }
 
     public static class SimpleBean {

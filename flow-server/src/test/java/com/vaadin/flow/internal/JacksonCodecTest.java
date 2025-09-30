@@ -20,7 +20,9 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import tools.jackson.databind.JsonNode;
@@ -479,4 +481,92 @@ public class JacksonCodecTest {
         Assert.assertTrue("Should contain value 300", values.contains(300));
         Assert.assertTrue("Should contain value 400", values.contains(400));
     }
+
+    @Test
+    public void testMapOfBeansSerialization() {
+        Map<String, SimpleBean> beanMap = new LinkedHashMap<>();
+        beanMap.put("first", new SimpleBean("FirstBean", 100));
+        beanMap.put("second", new SimpleBean("SecondBean", 200));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanMap);
+
+        // Should be directly encoded as JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("Should have 2 properties", 2, encoded.size());
+
+        Assert.assertEquals("FirstBean",
+                encoded.get("first").get("text").asText());
+        Assert.assertEquals(100, encoded.get("first").get("value").asInt());
+        Assert.assertEquals("SecondBean",
+                encoded.get("second").get("text").asText());
+        Assert.assertEquals(200, encoded.get("second").get("value").asInt());
+    }
+
+    @Test
+    public void testMapOfBeansDeserialization() {
+        // Create JSON object manually
+        ObjectNode beanMap = objectMapper.createObjectNode();
+
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "Alpha");
+        bean1.put("value", 500);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "Beta");
+        bean2.put("value", 600);
+
+        beanMap.set("key1", bean1);
+        beanMap.set("key2", bean2);
+
+        // Test that Jackson can handle Map<String, SimpleBean> deserialization
+        Map<String, SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                beanMap,
+                JacksonUtils.getMapper().getTypeFactory().constructMapType(
+                        Map.class, String.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 elements", 2, decoded.size());
+        Assert.assertEquals("Alpha", decoded.get("key1").text);
+        Assert.assertEquals(500, decoded.get("key1").value);
+        Assert.assertEquals("Beta", decoded.get("key2").text);
+        Assert.assertEquals(600, decoded.get("key2").value);
+    }
+
+    @Test
+    public void testMapOfIntegersSerialization() {
+        Map<String, Integer> integerMap = new LinkedHashMap<>();
+        integerMap.put("first", 100);
+        integerMap.put("second", 200);
+        integerMap.put("third", 300);
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(integerMap);
+
+        // Should be directly encoded as JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("Should have 3 properties", 3, encoded.size());
+
+        Assert.assertEquals(100, encoded.get("first").asInt());
+        Assert.assertEquals(200, encoded.get("second").asInt());
+        Assert.assertEquals(300, encoded.get("third").asInt());
+    }
+
+    @Test
+    public void testMapOfIntegersDeserialization() {
+        // Create JSON object manually
+        ObjectNode integerMap = objectMapper.createObjectNode();
+        integerMap.put("key1", 42);
+        integerMap.put("key2", 84);
+        integerMap.put("key3", 126);
+
+        // Test that Jackson can handle Map<String, Integer> deserialization
+        Map<String, Integer> decoded = JacksonUtils.getMapper().convertValue(
+                integerMap,
+                JacksonUtils.getMapper().getTypeFactory().constructMapType(
+                        Map.class, String.class, Integer.class));
+
+        Assert.assertEquals("Should have 3 elements", 3, decoded.size());
+        Assert.assertEquals(Integer.valueOf(42), decoded.get("key1"));
+        Assert.assertEquals(Integer.valueOf(84), decoded.get("key2"));
+        Assert.assertEquals(Integer.valueOf(126), decoded.get("key3"));
+    }
+
 }

@@ -271,7 +271,8 @@ public class Page implements Serializable {
      * <p>
      * Return values from JavaScript can be automatically deserialized into Java
      * objects. All types supported by Jackson for JSON deserialization are
-     * supported as return values, including custom bean classes and collections.
+     * supported as return values, including custom bean classes, collections,
+     * and maps.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. All types supported by
