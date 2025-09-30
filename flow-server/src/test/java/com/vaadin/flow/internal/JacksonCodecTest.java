@@ -35,9 +35,9 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
 
 public class JacksonCodecTest {
-    private static final List<Object> complexTypeValues = Arrays
-            .asList(new Object(), new StateNode(), new Date(), new String[0],
-                    new ArrayList<>(), new HashSet<>(), new HashMap<>());
+    private static final List<Object> complexTypeValues = Arrays.asList(
+            new Object(), new StateNode(), new Date(), new String[0],
+            new ArrayList<>(), new HashSet<>(), new HashMap<>());
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -71,16 +71,18 @@ public class JacksonCodecTest {
         // Test that complex types work with type info
         for (Object value : complexTypeValues) {
             JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
-            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), encoded);
-            Assert.assertTrue("Should be valid JSON for " + value.getClass(), 
-                    encoded.isObject() || encoded.isArray() || encoded.isValueNode());
+            Assert.assertNotNull(
+                    "Bean JSON should not be null for " + value.getClass(),
+                    encoded);
+            Assert.assertTrue("Should be valid JSON for " + value.getClass(),
+                    encoded.isObject() || encoded.isArray()
+                            || encoded.isValueNode());
         }
     }
 
     @Test
     public void encodeWithoutTypeInfo_unsupportedTypes() {
-        List<Object> unsupported = new ArrayList<>(
-                complexTypeValues);
+        List<Object> unsupported = new ArrayList<>(complexTypeValues);
         unsupported.add(ElementFactory.createDiv());
 
         for (Object value : unsupported) {
@@ -146,7 +148,6 @@ public class JacksonCodecTest {
 
         assertJsonEquals(objectMapper.nullNode(), json);
     }
-
 
     private static void assertJsonEquals(JsonNode expected, JsonNode actual) {
         Assert.assertTrue(

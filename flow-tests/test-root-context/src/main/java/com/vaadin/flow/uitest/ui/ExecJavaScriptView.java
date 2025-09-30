@@ -110,15 +110,15 @@ public class ExecJavaScriptView extends AbstractDivView {
                 """
                         const simpleBean = $0;
                         const nestedBean = $1;
-                        
+
                         const simpleResult = `simple: name=${simpleBean.name}, value=${simpleBean.value}, active=${simpleBean.active}`;
                         const nestedResult = `nested: title=${nestedBean.title}, inner.name=${nestedBean.simple.name}, inner.value=${nestedBean.simple.value}`;
-                        
+
                         const resultDiv = document.createElement('div');
                         resultDiv.id = 'beanResult';
                         resultDiv.textContent = simpleResult + ' | ' + nestedResult;
                         document.body.appendChild(resultDiv);
-                        
+
                         const statusDiv = document.createElement('div');
                         statusDiv.id = 'beanStatus';
                         statusDiv.textContent = 'Bean serialization test completed';

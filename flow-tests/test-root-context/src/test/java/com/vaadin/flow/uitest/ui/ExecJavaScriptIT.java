@@ -69,15 +69,15 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         getButton("beanButton").click();
 
         // Wait for the result div to appear
-        WebElement result = waitUntil(
-                d -> findElement(By.id("beanResult")));
-        Assert.assertEquals("simple: name=TestBean, value=42, active=true | nested: title=Outer, inner.name=Inner, inner.value=100",
+        WebElement result = waitUntil(d -> findElement(By.id("beanResult")));
+        Assert.assertEquals(
+                "simple: name=TestBean, value=42, active=true | nested: title=Outer, inner.name=Inner, inner.value=100",
                 result.getText());
 
         // Verify status message
-        WebElement status = waitUntil(
-                d -> findElement(By.id("beanStatus")));
-        Assert.assertEquals("Bean serialization test completed", status.getText());
+        WebElement status = waitUntil(d -> findElement(By.id("beanStatus")));
+        Assert.assertEquals("Bean serialization test completed",
+                status.getText());
     }
 
     private WebElement getButton(String id) {

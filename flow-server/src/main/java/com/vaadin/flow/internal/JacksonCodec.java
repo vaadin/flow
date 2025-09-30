@@ -66,7 +66,6 @@ public class JacksonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
-
     private JacksonCodec() {
         // Don't create instances
     }
@@ -101,7 +100,8 @@ public class JacksonCodec {
             }
             return encoded;
         } else {
-            // Encode as bean using Jackson serialization - send directly as JSON
+            // Encode as bean using Jackson serialization - send directly as
+            // JSON
             return JacksonUtils.getMapper().valueToTree(value);
         }
     }
@@ -146,7 +146,6 @@ public class JacksonCodec {
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonNode.class.isAssignableFrom(type);
     }
-
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This

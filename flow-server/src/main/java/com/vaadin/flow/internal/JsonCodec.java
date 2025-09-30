@@ -66,7 +66,6 @@ public class JsonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
-
     private JsonCodec() {
         // Don't create instances
     }
@@ -101,7 +100,8 @@ public class JsonCodec {
             }
             return encoded;
         } else {
-            // Encode as bean using Jackson via JsonValue conversion - send directly as JSON
+            // Encode as bean using Jackson via JsonValue conversion - send
+            // directly as JSON
             return JsonUtils.writeValue(value);
         }
     }
@@ -143,7 +143,6 @@ public class JsonCodec {
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonValue.class.isAssignableFrom(type);
     }
-
 
     /**
      * Encodes a "primitive" value or a constant pool reference to JSON. This
