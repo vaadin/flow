@@ -29,7 +29,7 @@ import elemental.client.Browser;
  * @since 1.0
  */
 public final class Console {
-    private static boolean shouldLogToBrowserConsole;
+    private static boolean isProductionMode = false;
 
     @FunctionalInterface
     // Runnable that can throw
@@ -48,8 +48,38 @@ public final class Console {
      *            if an application is in the production mode or not
      */
     public static void setProductionMode(boolean isProductionMode) {
-        shouldLogToBrowserConsole = !isProductionMode;
+        Console.isProductionMode = isProductionMode;
     }
+
+    /**
+     * Checks if logging to browser console should be enabled. Returns true if
+     * either: - Not in production mode, or - The localStorage flag
+     * "vaadin.browserLog" is set to "true"
+     *
+     * @return true if browser console logging should be enabled
+     */
+    private static boolean shouldLogToBrowserConsole() {
+        if (!isProductionMode) {
+            return true;
+        }
+        // Check localStorage for override flag in production mode
+        return GWT.isScript() && isLocalStorageFlagEnabled();
+    }
+
+    /**
+     * Checks if the localStorage flag "vaadin.browserLog" is set to "true".
+     *
+     * @return true if the flag is set to "true", false otherwise
+     */
+    private static native boolean isLocalStorageFlagEnabled()
+    /*-{
+        try {
+            return $wnd.localStorage && $wnd.localStorage.getItem('vaadin.browserLog') === 'true';
+        } catch (e) {
+            // localStorage might not be available or accessible
+            return false;
+        }
+    }-*/;
 
     /**
      * If not in production mode, logs the given message to the browser console
@@ -63,7 +93,7 @@ public final class Console {
      */
     public static void debug(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole) {
+            if (shouldLogToBrowserConsole()) {
                 Browser.getWindow().getConsole().debug(message);
             }
         } else {
@@ -83,7 +113,7 @@ public final class Console {
      */
     public static void log(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole) {
+            if (shouldLogToBrowserConsole()) {
                 Browser.getWindow().getConsole().log(message);
             }
         } else {
@@ -103,7 +133,7 @@ public final class Console {
      */
     public static void warn(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole) {
+            if (shouldLogToBrowserConsole()) {
                 Browser.getWindow().getConsole().warn(message);
             }
         } else {
@@ -123,7 +153,7 @@ public final class Console {
      */
     public static void error(Object message) {
         if (GWT.isScript()) {
-            if (shouldLogToBrowserConsole) {
+            if (shouldLogToBrowserConsole()) {
                 Browser.getWindow().getConsole().error(message);
             }
         } else {

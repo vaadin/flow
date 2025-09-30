@@ -22,12 +22,18 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
+
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -39,9 +45,6 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 /**
  * Represents the web page open in the browser, containing the UI it is
@@ -107,9 +110,10 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url) {
-        addStyleSheet(url, LoadMode.EAGER);
+    public Registration addStyleSheet(String url) {
+        return addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -134,9 +138,30 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
+    public Registration addStyleSheet(String url, LoadMode loadMode) {
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+
+        // Check if dependency already exists with this URL
+        Dependency existing = dependencyList.getDependencyByUrl(url,
+                Type.STYLESHEET);
+        String dependencyId;
+
+        if (existing != null && existing.getId() != null) {
+            // Reuse the existing dependency's ID for duplicates
+            dependencyId = existing.getId();
+        } else {
+            // Create new ID for new dependencies
+            dependencyId = UUID.randomUUID().toString();
+        }
+
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
+                dependencyId);
+        dependencyList.add(dependency);
+
+        // Return Registration for removal
+        return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
     /**
@@ -252,7 +277,7 @@ public class Page implements Serializable {
      * <li>{@link Integer}
      * <li>{@link Double}
      * <li>{@link Boolean}
-     * <li>{@link JsonValue}
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode}
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
@@ -328,8 +353,8 @@ public class Page implements Serializable {
             resizeReceiver = ui.getElement()
                     .addEventListener("window-resize", e -> {
                         var evt = new BrowserWindowResizeEvent(this,
-                                (int) e.getEventData().getNumber("event.w"),
-                                (int) e.getEventData().getNumber("event.h"));
+                                e.getEventData().get("event.w").intValue(),
+                                e.getEventData().get("event.h").intValue());
                         // Clone list to avoid issues if listener unregisters
                         // itself
                         new ArrayList<>(resizeListeners)
@@ -457,7 +482,7 @@ public class Page implements Serializable {
             return;
         }
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
             handleExtendedClientDetailsResponse(json);
             receiver.receiveDetails(
                     ui.getInternals().getExtendedClientDetails());
@@ -469,24 +494,25 @@ public class Page implements Serializable {
         executeJs(js).then(resultHandler, errorHandler);
     }
 
-    private void handleExtendedClientDetailsResponse(JsonValue json) {
+    private void handleExtendedClientDetailsResponse(JsonNode json) {
         ExtendedClientDetails cachedDetails = ui.getInternals()
                 .getExtendedClientDetails();
         if (cachedDetails != null) {
             return;
         }
-        if (!(json instanceof JsonObject)) {
+        if (!(json instanceof ObjectNode)) {
             throw new RuntimeException("Expected a JSON object");
         }
-        final JsonObject jsonObj = (JsonObject) json;
+        final ObjectNode jsonObj = (ObjectNode) json;
 
         // Note that JSON returned is a plain string -> string map, the actual
         // parsing of the fields happens in ExtendedClient's constructor. If a
         // field is missing or the wrong type, pass on null for default.
         final Function<String, String> getStringElseNull = key -> {
-            final JsonValue jsValue = jsonObj.get(key);
-            if (jsValue != null && JsonType.STRING.equals(jsValue.getType())) {
-                return jsValue.asString();
+            final JsonNode jsValue = jsonObj.get(key);
+            if (jsValue != null
+                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                return jsValue.asText();
             } else {
                 return null;
             }

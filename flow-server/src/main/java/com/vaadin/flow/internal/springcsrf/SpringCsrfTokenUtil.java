@@ -17,7 +17,7 @@ package com.vaadin.flow.internal.springcsrf;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
 

@@ -12,7 +12,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.CommandResult.Accept;
@@ -106,16 +106,16 @@ public class AsynchronousSignalTreeTest {
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("Confirmed")));
 
-        assertEquals(new TextNode("Submitted"),
+        assertEquals(new StringNode("Submitted"),
                 TestUtil.readSubmittedRootValue(tree));
-        assertEquals(new TextNode("Confirmed"),
+        assertEquals(new StringNode("Confirmed"),
                 TestUtil.readConfirmedRootValue(tree));
 
         tree.confirmSubmitted();
 
-        assertEquals(new TextNode("Submitted"),
+        assertEquals(new StringNode("Submitted"),
                 TestUtil.readSubmittedRootValue(tree));
-        assertEquals(new TextNode("Submitted"),
+        assertEquals(new StringNode("Submitted"),
                 TestUtil.readConfirmedRootValue(tree));
     }
 
@@ -146,12 +146,12 @@ public class AsynchronousSignalTreeTest {
         // Directly confirm another command:
         tree.confirm(List.of(TestUtil.writeRootValueCommand("confirmed")));
 
-        assertEquals(new TextNode("confirmed"),
+        assertEquals(new StringNode("confirmed"),
                 ((SignalCommand.SetCommand) resultContainer.get().getKey())
                         .value());
 
         tree.confirmSubmitted();
-        assertEquals(new TextNode("submitted"),
+        assertEquals(new StringNode("submitted"),
                 ((SignalCommand.SetCommand) resultContainer.get().getKey())
                         .value());
 

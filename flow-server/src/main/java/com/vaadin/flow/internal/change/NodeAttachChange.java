@@ -16,11 +16,11 @@
 
 package com.vaadin.flow.internal.change;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * Change describing that a node has been attached.
@@ -43,7 +43,7 @@ public class NodeAttachChange extends NodeChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_ATTACH);
     }
 }

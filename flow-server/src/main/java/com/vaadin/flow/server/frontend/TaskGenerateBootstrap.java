@@ -74,7 +74,6 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-        lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
         if (options.isReactEnabled()) {
             lines.add("import './vaadin-react.js';");
@@ -87,6 +86,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         for (TypeScriptBootstrapModifier modifier : modifiers) {
             modifier.modify(lines, options, frontDeps);
         }
+        lines.add(0,
+                String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         return String.join(System.lineSeparator(), lines);
     }
 
@@ -122,6 +123,11 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
                     + ".global.generated.js';");
             lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
+            lines.add("");
+        } else {
+            lines.add("import './css.generated.js';");
+            lines.add("import { applyCss } from './css.generated.js';");
+            lines.add("applyCss(document);");
             lines.add("");
         }
         return lines;

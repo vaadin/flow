@@ -185,7 +185,7 @@ publishing {
  *
  **********************************************************************************************************************/
 wrapper {
-    gradleVersion = '8.7'
+    gradleVersion = '8.14'
     distributionType = Wrapper.DistributionType.ALL
 }
 

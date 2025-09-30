@@ -24,6 +24,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
@@ -37,12 +40,8 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 /**
  * Base class for handling Web Push notifications.
@@ -147,8 +146,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void subscriptionExists(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
-            receiver.state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            receiver.state(Boolean.parseBoolean(json.toString()));
         };
 
         executeJavascript(ui,
@@ -165,8 +164,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void isNotificationDenied(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
-                .state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toString()));
 
         executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationDenied()")
@@ -182,8 +181,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void isNotificationGranted(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
-                .state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toString()));
 
         executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationGranted()")
@@ -200,8 +199,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void subscribe(UI ui, WebPushSubscriptionResponse receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
-            JsonObject responseJson = Json.parse(json.toJson());
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            ObjectNode responseJson = JacksonUtils.readTree(json.toString());
             receiver.subscription(generateSubscription(responseJson));
         };
         executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)",
@@ -263,18 +262,18 @@ public class WebPush {
         }
     }
 
-    private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
+    private SerializableConsumer<JsonNode> handlePossiblyEmptySubscription(
             WebPushSubscriptionResponse receiver) {
         return json -> {
-            JsonObject responseJson;
+            ObjectNode responseJson;
             // It may happen that an error is sent as a plain string
-            if (json.getType() == JsonType.STRING) {
-                responseJson = Json.createObject();
-                responseJson.put("message", json.asString());
+            if (json.getNodeType() == JsonNodeType.STRING) {
+                responseJson = JacksonUtils.createObjectNode();
+                responseJson.put("message", json.asText());
             } else {
-                responseJson = Json.parse(json.toJson());
+                responseJson = JacksonUtils.readTree(json.toString());
             }
-            if (responseJson.hasKey("message")) {
+            if (responseJson.has("message")) {
                 receiver.subscription(null);
             } else {
                 receiver.subscription(generateSubscription(responseJson));
@@ -283,12 +282,12 @@ public class WebPush {
     }
 
     private WebPushSubscription generateSubscription(
-            JsonObject subscriptionJson) {
+            ObjectNode subscriptionJson) {
         WebPushKeys keys = new WebPushKeys(
-                subscriptionJson.getObject("keys").getString("p256dh"),
-                subscriptionJson.getObject("keys").getString("auth"));
-        return new WebPushSubscription(subscriptionJson.getString("endpoint"),
-                keys);
+                subscriptionJson.get("keys").get("p256dh").asText(),
+                subscriptionJson.get("keys").get("auth").asText());
+        return new WebPushSubscription(
+                subscriptionJson.get("endpoint").asText(), keys);
     }
 
     private Logger getLogger() {

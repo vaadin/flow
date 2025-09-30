@@ -16,10 +16,8 @@
 package com.vaadin.flow.component;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -27,40 +25,196 @@ import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
+import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.NumberSignal;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 public class ComponentEffectTest {
-    private static final Executor executor = Runnable::run;
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static MockVaadinServletService service;
+
+    @BeforeClass
+    public static void init() {
+        runWithFeatureFlagEnabled(() -> {
+            service = new MockVaadinServletService();
+        });
+    }
+
+    @AfterClass
+    public static void clean() {
+        CurrentInstance.clearAll();
+        service.destroy();
+    }
+
+    @Test
+    public void effect_triggeredWithOwnerUILocked_effectRunSynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            MockUI ui = new MockUI();
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+            });
+
+            assertSame(Thread.currentThread(), currentThread.get());
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_triggeredWithNoUILocked_effectRunAsynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            session.unlock();
+
+            UI.setCurrent(null);
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+                latch.countDown();
+            });
+
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
+            }
+
+            Assert.assertTrue(
+                    "Expected effect to be executed in Vaadin Executor thread",
+                    currentThread.get().getName()
+                            .startsWith("VaadinTaskExecutor-thread-"));
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_triggeredWithOtherUILocked_effectRunAsynchronously() {
+        runWithFeatureFlagEnabled(() -> {
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+            session.unlock();
+
+            VaadinSession.setCurrent(null);
+            UI.setCurrent(null);
+
+            MockUI otherUi = new MockUI();
+            UI.setCurrent(otherUi);
+
+            AtomicReference<Thread> currentThread = new AtomicReference<>();
+            AtomicReference<UI> currentUI = new AtomicReference<>();
+            CountDownLatch latch = new CountDownLatch(1);
+
+            ComponentEffect.effect(ui, () -> {
+                currentThread.set(Thread.currentThread());
+                currentUI.set(UI.getCurrent());
+                latch.countDown();
+            });
+
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
+            }
+
+            Assert.assertTrue(
+                    "Expected effect to be executed in Vaadin Executor thread",
+                    currentThread.get().getName()
+                            .startsWith("VaadinTaskExecutor-thread-"));
+            assertSame(ui, currentUI.get());
+        });
+    }
+
+    @Test
+    public void effect_throwExceptionWhenRunningDirectly_delegatedToErrorHandler() {
+        runWithFeatureFlagEnabled(() -> {
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+
+            var events = new ArrayList<ErrorEvent>();
+            session.setErrorHandler(events::add);
+
+            ComponentEffect.effect(ui, () -> {
+                throw new RuntimeException("Expected exception");
+            });
+
+            assertEquals(1, events.size());
+
+            Throwable throwable = events.get(0).getThrowable();
+            assertEquals(RuntimeException.class, throwable.getClass());
+        });
+    }
+
+    @Test
+    public void effect_throwExceptionWhenRunningAsynchronously_delegatedToErrorHandler() {
+        runWithFeatureFlagEnabled(() -> {
+            VaadinService.setCurrent(service);
+
+            var session = new MockVaadinSession(service);
+            session.lock();
+            var ui = new MockUI(session);
+
+            var events = new LinkedBlockingQueue<ErrorEvent>();
+            session.setErrorHandler(events::add);
+
+            UI.setCurrent(null);
+            session.unlock();
+
+            CountDownLatch latch = new CountDownLatch(1);
+            ComponentEffect.effect(ui, () -> {
+                latch.countDown();
+                throw new RuntimeException("Expected exception");
+            });
+
+            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+                fail("Expected signal effect to be computed asynchronously");
+            }
+
+            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            assertNotNull(event);
+
+            Throwable throwable = event.getThrowable();
+            assertEquals(RuntimeException.class, throwable.getClass());
+        });
+    }
 
     @Test
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
             ValueSignal<String> signal = new ValueSignal<>("initial");
             AtomicInteger count = new AtomicInteger();
@@ -106,7 +260,7 @@ public class ComponentEffectTest {
 
     @Test
     public void bind_signalValueChanges_componentUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
+        runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
             ValueSignal<String> signal = new ValueSignal<>("initial");
 
@@ -142,93 +296,26 @@ public class ComponentEffectTest {
         });
     }
 
-    @Test
-    public void format_customLocale_signalValuesChange_formattedStringUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
-            TestComponent component = new TestComponent();
-
-            MockUI ui = new MockUI();
-            ui.add(component);
-
-            ValueSignal<String> stringSignal = new ValueSignal<>("test");
-            NumberSignal numberSignal = new NumberSignal(42.23456);
-
-            Registration registration = ComponentEffect.format(component,
-                    TestComponent::setValue, Locale.ENGLISH,
-                    "The price of %s is %.2f", stringSignal, numberSignal);
-
-            assertEquals("Initial formatted value should be set",
-                    "The price of test is 42.23", component.getValue());
-
-            // Change int signal value
-            numberSignal.value(20.12345);
-
-            assertEquals(
-                    "Formatted value should be updated with new numeric value",
-                    "The price of test is 20.12", component.getValue());
-
-            // Change string signal value
-            stringSignal.value("updated");
-
-            assertEquals(
-                    "Formatted value should be updated with new string value",
-                    "The price of updated is 20.12", component.getValue());
-
-            registration.remove();
-
-            numberSignal.value(30.3456);
-            stringSignal.value("final");
-
-            assertEquals(
-                    "Formatted value should not be updated after registration is removed",
-                    "The price of updated is 20.12", component.getValue());
-        });
+    @FunctionalInterface
+    private interface InterruptableRunnable {
+        void run() throws InterruptedException;
     }
 
-    @Test
-    public void format_defaultLocale_signalValuesChange_formattedStringUpdated() {
-        runWithSignalEnvironmentMocks(() -> {
-            TestComponent component = new TestComponent();
-
-            MockUI ui = new MockUI();
-            ui.add(component);
-
-            ValueSignal<String> stringSignal = new ValueSignal<>("test");
-            ValueSignal<Integer> numberSignal = new ValueSignal<>(42);
-
-            ComponentEffect.format(component, TestComponent::setValue,
-                    "The price of %s is %d", stringSignal, numberSignal);
-
-            assertEquals("Initial formatted value should be set",
-                    "The price of test is 42", component.getValue());
-        });
-    }
-
-    /**
-     * Other tests may already have initialized the environment with the feature
-     * flag off and executors that would throw an exception, so it's too late
-     * now to mock the feature flags. Thus we need to "reinitialize" the
-     * environment.
-     */
-    private static void runWithSignalEnvironmentMocks(Runnable test) {
-        try (var environment = mockStatic(SignalEnvironment.class);
-                var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
+    private static void runWithFeatureFlagEnabled(InterruptableRunnable test) {
+        try (var featureFlagStaticMock = mockStatic(FeatureFlags.class)) {
             FeatureFlags flags = mock(FeatureFlags.class);
             when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
                     .thenReturn(true);
             featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
                     .thenReturn(flags);
-            environment.when(() -> SignalEnvironment.initialized())
-                    .thenReturn(true);
-            environment.when(() -> SignalEnvironment.defaultDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.synchronousDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.asynchronousDispatcher())
-                    .thenReturn(executor);
-            environment.when(() -> SignalEnvironment.objectMapper())
-                    .thenReturn(objectMapper);
             test.run();
+        } catch (InterruptedException e) {
+            throw new AssertionError(e);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw e;
+        } finally {
+            CurrentInstance.clearAll();
         }
     }
 

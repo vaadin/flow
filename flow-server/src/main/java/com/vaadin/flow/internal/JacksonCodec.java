@@ -18,10 +18,10 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.JsonNodeType;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -195,12 +195,16 @@ public class JacksonCodec {
             return JacksonUtils.getMapper().nullNode();
         }
 
-        assert canEncodeWithoutTypeInfo(value.getClass());
+        assert canEncodeWithoutTypeInfo(value.getClass())
+                : "this:_" + value.getClass();
 
         Class<?> type = value.getClass();
         if (String.class.equals(value.getClass())) {
             return JacksonUtils.getMapper().valueToTree(value);
-        } else if (Integer.class.equals(type) || Double.class.equals(type)) {
+        } else if (Integer.class.equals(type)) {
+            return JacksonUtils.getMapper()
+                    .valueToTree(((Number) value).intValue());
+        } else if (Double.class.equals(type)) {
             return JacksonUtils.getMapper()
                     .valueToTree(((Number) value).doubleValue());
         } else if (Boolean.class.equals(type)) {
@@ -218,13 +222,13 @@ public class JacksonCodec {
      * Helper for decoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
      * {@link Boolean}, {@link JsonNode}.
-     * {@link com.fasterxml.jackson.databind.node.NullNode} is also supported.
+     * {@link tools.jackson.databind.node.NullNode} is also supported.
      *
      * @param json
      *            the JSON value to decode
      * @return the decoded value
      */
-    public static Serializable decodeWithoutTypeInfo(ObjectNode json) {
+    public static Serializable decodeWithoutTypeInfo(BaseJsonNode json) {
         assert json != null;
         switch (json.getNodeType()) {
         case BOOLEAN:
@@ -264,13 +268,14 @@ public class JacksonCodec {
         }
         Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
         if (type == String.class) {
-            return type.cast(json.asText());
+            return type.cast(json.asText(""));
         } else if (convertedType == Boolean.class) {
-            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
+            return (T) convertedType
+                    .cast(Boolean.valueOf(json.asBoolean(false)));
         } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.doubleValue()));
+            return (T) convertedType.cast(Double.valueOf(json.asDouble(0.0)));
         } else if (convertedType == Integer.class) {
-            return (T) convertedType.cast(Integer.valueOf(json.intValue()));
+            return (T) convertedType.cast(Integer.valueOf(json.asInt(0)));
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {

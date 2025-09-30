@@ -20,10 +20,12 @@ import jakarta.servlet.ServletException;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
@@ -168,18 +170,30 @@ public class MockVaadinServletService extends VaadinServletService {
 
     private void resetSignalEnvironment() {
         try {
-            Field state = SignalEnvironment.class.getDeclaredField("state");
-            state.setAccessible(true);
-            ((AtomicReference<?>) state.get(null)).set(null);
-
-            Field dispatcherOverrides = SignalEnvironment.class
-                    .getDeclaredField("dispatcherOverrides");
-            dispatcherOverrides.setAccessible(true);
-            ((List<?>) dispatcherOverrides.get(null)).clear();
-
+            Field environments = SignalEnvironment.class
+                    .getDeclaredField("environments");
+            environments.setAccessible(true);
+            ((List<?>) environments.get(null)).clear();
         } catch (Exception e) {
             throw new AssertionError("Failed to reset Signal environment", e);
         }
     }
 
+    @Override
+    protected Executor createDefaultExecutor() {
+        Executor executor = super.createDefaultExecutor();
+        if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
+            ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
+            threadPoolExecutor.setThreadFactory(r -> {
+                Thread thread = threadFactory.newThread(r);
+                thread.setUncaughtExceptionHandler((t, e) -> {
+                    LoggerFactory.getLogger(getClass()).error(
+                            "An uncaught exception occurred in thread {}",
+                            t.getName(), e);
+                });
+                return thread;
+            });
+        }
+        return executor;
+    }
 }

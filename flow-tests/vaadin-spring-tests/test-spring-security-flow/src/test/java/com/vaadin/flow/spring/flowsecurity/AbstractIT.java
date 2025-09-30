@@ -19,6 +19,8 @@ import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
@@ -45,7 +47,15 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     private void checkForBrowserErrors() {
         checkLogsForErrors(msg -> msg.contains(
-                "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
+                "/private - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "/admin?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "/private?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "restricted/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
+                || msg.contains(
+                        "admin-only/secret.txt - Failed to load resource: the server responded with a status of 403")
                 || msg.contains(
                         "admin-only/secret.txt?continue - Failed to load resource: the server responded with a status of 403")
                 || (msg.contains("X-Atmosphere-Transport=close")
@@ -92,8 +102,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     protected void login(String username, String password) {
         assertLoginViewShown();
 
-        LoginFormElement form = $(LoginOverlayElement.class).first()
-                .getLoginForm();
+        LoginOverlayElement form = $(LoginOverlayElement.class).first();
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();
@@ -152,6 +161,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
 
     protected void assertPathShown(String path) {
         waitForClientRouter();
+        Logger log = LoggerFactory.getLogger(AbstractIT.class);
         waitUntil(driver -> {
             String url = driver.getCurrentUrl();
             if (!url.startsWith(getRootURL())) {
@@ -163,6 +173,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
             if (url.endsWith("continue")) {
                 url = url.substring(0, url.length() - 9);
             }
+            log.debug("trying to match url `{}` to path `{}`", url, path);
             return url.equals(
                     getRootURL() + getUrlMappingBasePath() + "/" + path);
         });

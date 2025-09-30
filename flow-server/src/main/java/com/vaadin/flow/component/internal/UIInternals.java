@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,8 +88,6 @@ import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import elemental.json.JsonValue;
-
 /**
  * Holds UI-specific methods and data which are intended for internal use by the
  * framework.
@@ -135,11 +134,7 @@ public class UIInternals implements Serializable {
              */
             for (Object argument : parameters) {
                 // Throws IAE for unsupported types
-                if (argument instanceof JsonValue) {
-                    JsonCodec.encodeWithTypeInfo(argument);
-                } else {
-                    JacksonCodec.encodeWithTypeInfo(argument);
-                }
+                JacksonCodec.encodeWithTypeInfo(argument);
             }
 
             this.expression = expression;
@@ -184,7 +179,7 @@ public class UIInternals implements Serializable {
      */
     private long lastHeartbeatTimestamp = System.currentTimeMillis();
 
-    private List<PendingJavaScriptInvocation> pendingJsInvocations = new ArrayList<>();
+    private Set<PendingJavaScriptInvocation> pendingJsInvocations = new LinkedHashSet<>();
 
     private final HashMap<StateNode, PendingJavaScriptInvocationDetachListener> pendingJsInvocationDetachListeners = new HashMap<>();
 
@@ -218,6 +213,8 @@ public class UIInternals implements Serializable {
     private volatile VaadinSession session;
 
     private final DependencyList dependencyList = new DependencyList();
+
+    private final Set<String> pendingStyleSheetRemovals = new LinkedHashSet<>();
 
     private final ConstantPool constantPool = new ConstantPool();
 
@@ -456,7 +453,12 @@ public class UIInternals implements Serializable {
                             + ".");
         } else {
             if (session == null) {
-                ui.getElement().getNode().setParent(null);
+                try {
+                    ui.getElement().getNode().setParent(null);
+                } catch (IllegalStateException e) {
+                    getLogger().warn("Error detaching closed UI {} ",
+                            ui.getUIId(), e);
+                }
                 // Disable push when the UI is detached. Otherwise the
                 // push connection and possibly VaadinSession will live on.
                 ui.getPushConfiguration().setPushMode(PushMode.DISABLED);
@@ -634,7 +636,7 @@ public class UIInternals implements Serializable {
         readyToSend.forEach(PendingJavaScriptInvocation::setSentToBrowser);
 
         // ensure collection is mutable
-        pendingJsInvocations = new ArrayList<>(partition.get(false));
+        pendingJsInvocations = new LinkedHashSet<>(partition.get(false));
         pendingJsInvocations
                 .forEach(this::registerDetachListenerForPendingInvocation);
         return readyToSend;
@@ -677,8 +679,7 @@ public class UIInternals implements Serializable {
 
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
-            UIInternals.this.pendingJsInvocations.removeIf(
-                    pendingInvocation -> pendingInvocation.equals(invocation));
+            UIInternals.this.pendingJsInvocations.remove(invocation);
             if (invocationList.isEmpty() && registration != null) {
                 registration.remove();
                 registration = null;
@@ -991,6 +992,40 @@ public class UIInternals implements Serializable {
      */
     public DependencyList getDependencyList() {
         return dependencyList;
+    }
+
+    /**
+     * Removes a stylesheet by its dependency ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the stylesheet dependency to remove
+     */
+    public void removeStyleSheet(String dependencyId) {
+        // Always add to pending removals - the client gracefully handles
+        // removal of non-existent IDs. This ensures duplicate registrations
+        // work.
+        if (dependencyId != null) {
+            pendingStyleSheetRemovals.add(dependencyId);
+            dependencyList.remove(dependencyId);
+        }
+    }
+
+    /**
+     * Gets the pending stylesheet removals to be sent to the client.
+     *
+     * @return the set of dependency IDs to remove
+     */
+    public Set<String> getPendingStyleSheetRemovals() {
+        return new HashSet<>(pendingStyleSheetRemovals);
+    }
+
+    /**
+     * Clears the pending stylesheet removals.
+     */
+    public void clearPendingStyleSheetRemovals() {
+        pendingStyleSheetRemovals.clear();
     }
 
     /**

@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.MockUI;
 

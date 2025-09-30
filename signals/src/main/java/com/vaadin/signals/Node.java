@@ -19,8 +19,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 /**
  * A node in a signal tree. Each node represents as signal entry. Nodes are
@@ -29,6 +32,13 @@ import com.fasterxml.jackson.databind.node.NullNode;
  * signal data or an {@link Alias} node that allows multiple signal ids to
  * reference the same data.
  */
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, include = JsonTypeInfo.As.PROPERTY)
+@JsonSubTypes(value = {
+
+        @Type(value = Node.Data.class, name = "d"),
+        @Type(value = Node.Alias.class, name = "a")
+
+})
 public sealed interface Node {
 
     /**

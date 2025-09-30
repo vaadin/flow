@@ -32,8 +32,8 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -43,6 +43,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
@@ -301,13 +302,12 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
+        if (!isPolymerTemplateModuleAvailable(options)) {
+            dependencies.remove("@polymer/polymer");
+        }
         if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                dependencies
-                        .putAll(readDependencies("react19", "dependencies"));
-            }
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
@@ -374,9 +374,12 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                defaults.putAll(readDependencies("react19", "devDependencies"));
-            }
+        }
+
+        // Add workbox dependencies only when PWA is enabled
+        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
+                && frontDeps.getPwaConfiguration().isEnabled()) {
+            defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
         return defaults;
@@ -419,7 +422,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         ObjectNode vaadinDeps = (ObjectNode) json.get(VAADIN_DEP_KEY);
         if (!json.has(key)) {
-            json.put(key, JacksonUtils.createObjectNode());
+            json.set(key, JacksonUtils.createObjectNode());
         }
         json = (ObjectNode) json.get(key);
         vaadinDeps = (ObjectNode) vaadinDeps.get(key);
@@ -632,6 +635,16 @@ public abstract class NodeUpdater implements FallibleCommand {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/lit", packageJsonKey));
             }
+        }
+    }
+
+    private boolean isPolymerTemplateModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 }

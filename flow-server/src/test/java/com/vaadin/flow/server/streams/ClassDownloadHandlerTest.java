@@ -17,6 +17,7 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
@@ -128,6 +129,7 @@ public class ClassDownloadHandlerTest {
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
+        Assert.assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -178,6 +180,7 @@ public class ClassDownloadHandlerTest {
         } catch (Exception e) {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
     @Test

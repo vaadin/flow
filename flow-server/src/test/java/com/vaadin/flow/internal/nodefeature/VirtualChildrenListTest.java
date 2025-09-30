@@ -22,10 +22,10 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import com.vaadin.flow.internal.StateNode;
+
+import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
-
-import elemental.json.JsonObject;
 
 public class VirtualChildrenListTest {
 
@@ -41,22 +41,22 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
+        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asText());
 
         StateNode anotherChild = new StateNode(ElementData.class);
         list.add(0, anotherChild, "bar", (String) null);
 
         Assert.assertEquals(anotherChild, list.get(0));
 
-        payload = (JsonObject) anotherChild.getFeature(ElementData.class)
+        payload = (JsonNode) anotherChild.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asString());
+        Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asText());
     }
 
     @Test
@@ -65,13 +65,13 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
+        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asText());
         Assert.assertEquals("bar",
-                payload.get(NodeProperties.PAYLOAD).asString());
+                payload.get(NodeProperties.PAYLOAD).asText());
     }
 
     @Test
@@ -105,7 +105,7 @@ public class VirtualChildrenListTest {
         Assert.assertEquals(0, list.size());
         Assert.assertEquals(-1, list.indexOf(child));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNull(payload);
     }

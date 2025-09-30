@@ -344,7 +344,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertFalse(usage.hasChanges());
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -366,7 +366,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return true;
         });
@@ -387,7 +387,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -410,7 +410,7 @@ public class ValueSignalTest extends SignalTestBase {
             signal.value();
         });
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -436,13 +436,13 @@ public class ValueSignalTest extends SignalTestBase {
 
         signal.value("update");
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             falseCount.incrementAndGet();
             return false;
         });
         assertEquals(1, falseCount.intValue());
 
-        usage.onNextChange(() -> {
+        usage.onNextChange(immediate -> {
             trueCount.incrementAndGet();
             return true;
         });
@@ -482,44 +482,33 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
-    void result_successfulOperation_resolvedThroughOverrideDispatcher() {
-        TestExecutor dispatcher = useTestOverrideDispatcher();
+    void result_successfulOperation_resolvedThroughResultNotifier() {
+        TestExecutor notifier = useTestResultNotifier();
 
         ValueSignal<String> signal = new ValueSignal<>(String.class);
         SignalOperation<String> operation = signal.value("update");
 
         assertFalse(operation.result().isDone());
-        assertEquals(1, dispatcher.countPendingTasks());
+        assertEquals(1, notifier.countPendingTasks());
 
-        dispatcher.runPendingTasks();
+        notifier.runPendingTasks();
         assertTrue(operation.result().isDone());
-        assertEquals(0, dispatcher.countPendingTasks());
+        assertEquals(0, notifier.countPendingTasks());
     }
 
     @Test
-    void result_failingOperation_resolvedThroughOverrideDispatcher() {
-        TestExecutor dispatcher = useTestOverrideDispatcher();
+    void result_failingOperation_resolvedThroughResultNotifier() {
+        TestExecutor notifier = useTestResultNotifier();
 
         ValueSignal<String> signal = new ValueSignal<>(String.class);
         SignalOperation<Void> operation = signal.replace("other", "update");
 
         assertFalse(operation.result().isDone());
-        assertEquals(1, dispatcher.countPendingTasks());
+        assertEquals(1, notifier.countPendingTasks());
 
-        dispatcher.runPendingTasks();
+        notifier.runPendingTasks();
         assertTrue(operation.result().isDone());
-        assertEquals(0, dispatcher.countPendingTasks());
-    }
-
-    @Test
-    void result_onlyBaseDispatcher_resolvedDirectly() {
-        TestExecutor dispatcher = useTestDispatcher();
-
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
-        SignalOperation<Void> operation = signal.replace("other", "update");
-
-        assertTrue(operation.result().isDone());
-        assertEquals(0, dispatcher.countPendingTasks());
+        assertEquals(0, notifier.countPendingTasks());
     }
 
     @Test
@@ -662,17 +651,6 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertSuccess(operation);
         assertEquals("value update", signal.value());
-    }
-
-    @Test
-    void transaction_updateInReadOnlyTransaction_rejected() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
-
-        Transaction.runInTransaction(() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                signal.update(ignore -> "update");
-            });
-        }, Transaction.Type.READ_ONLY);
     }
 
     @Test

@@ -66,6 +66,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateReactFiles.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
+            TaskGenerateCommercialBanner.class,
             TaskGenerateTsConfig.class,
             TaskGenerateTsDefinitions.class,
             TaskGenerateServiceWorker.class,
@@ -79,6 +80,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskCopyNpmAssetsFiles.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -140,6 +142,7 @@ public class NodeTasks implements FallibleCommand {
                                 "flow/prod-pre-compiled-bundle", null);
                     }
                 } else {
+                    commands.add(new TaskGenerateCommercialBanner(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
             } else if (options.isBundleBuild()) {
@@ -245,6 +248,11 @@ public class NodeTasks implements FallibleCommand {
         if (options.getLocalResourcesFolder() != null
                 && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyLocalFrontendFiles(options));
+        }
+
+        if (commands.stream()
+                .noneMatch(TaskRunDevBundleBuild.class::isInstance)) {
+            commands.add(new TaskCopyNpmAssetsFiles(options));
         }
 
         String themeName = "";

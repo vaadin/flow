@@ -24,6 +24,7 @@ import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Rule;
@@ -33,6 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
@@ -159,13 +161,27 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
+        assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+                Constants.PREMIUM_FEATURES, true);
+    }
+
+    @Test
+    public void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
+            throws IOException {
+        assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+                Constants.COMMERCIAL_BANNER_TOKEN, true);
+    }
+
+    private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+            String attributeName, Object value) throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
 
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = "{ \"" + Constants.PREMIUM_FEATURES + "\": true }";
+        String content = JsonUtils.mapToJson(Map.of(attributeName, value))
+                .toString();
         mockClassPathTokenFile(resourceProvider, content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -173,9 +189,15 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(propertyNames.contains(Constants.PREMIUM_FEATURES));
-        Assert.assertTrue(configuration
-                .getBooleanProperty(Constants.PREMIUM_FEATURES, false));
+        Assert.assertTrue(propertyNames.contains(attributeName));
+        if (value instanceof Boolean) {
+            Assert.assertTrue(
+                    configuration.getBooleanProperty(attributeName, false));
+        } else {
+            Assert.assertEquals(
+                    configuration.getStringProperty(attributeName, null),
+                    value.toString());
+        }
     }
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,

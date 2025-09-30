@@ -94,7 +94,7 @@
         <dependency>
             <groupId>commons-codec</groupId>
             <artifactId>commons-codec</artifactId>
-            <version>1.18.0</version>
+            <version>1.19.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.equinox.preferences</artifactId>
-            <version>3.11.400</version>
+            <version>3.12.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>org.eclipse.platform</groupId>
             <artifactId>org.eclipse.core.contenttype</artifactId>
-            <version>3.9.600</version>
+            <version>3.9.700</version>
             <scope>test</scope>
         </dependency>
 

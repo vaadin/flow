@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.NullNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -30,10 +30,6 @@ import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
-import com.vaadin.flow.internal.JsonCodec;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * Represents a single instance of a exported web component instance embedded
@@ -47,7 +43,7 @@ import elemental.json.JsonValue;
  * @since 2.0
  *
  * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
- *      com.vaadin.flow.dom.Element, elemental.json.JsonObject) to create
+ *      com.vaadin.flow.dom.Element, tools.jackson.databind.JsonNode) to create
  *      {@code WebComponentBindings}
  */
 public final class WebComponentBinding<C extends Component>
@@ -102,35 +98,6 @@ public final class WebComponentBinding<C extends Component>
         }
 
         propertyBinding.updateValue(value);
-    }
-
-    /**
-     * Updates a property bound to the {@code component}. Converts the {@code
-     * jsonValue} into the correct type if able and then calls
-     * {@link #updateProperty(String, java.io.Serializable)}.
-     *
-     * @param propertyName
-     *            name of the property, not {@code null}
-     * @param jsonValue
-     *            new value to set for the property
-     * @throws NullPointerException
-     *             if {@code propertyName} is {@code null}
-     * @throws IllegalArgumentException
-     *             if no bound property can be found for {@code propertyName}
-     * @throws IllegalArgumentException
-     *             if the {@code jsonValue} cannot be converted to the type of
-     *             the property identified by {@code propertyName}.
-     */
-    @Deprecated
-    public void updateProperty(String propertyName, JsonValue jsonValue) {
-        Objects.requireNonNull(propertyName,
-                "Parameter 'propertyName' must not be null!");
-
-        Class<? extends Serializable> propertyType = getPropertyType(
-                propertyName);
-
-        Serializable value = jsonValueToConcreteType(jsonValue, propertyType);
-        updateProperty(propertyName, value);
     }
 
     /**
@@ -267,83 +234,14 @@ public final class WebComponentBinding<C extends Component>
                 binding);
     }
 
-    /**
-     * Adds a property to {@code this} web component binding based on the {@code
-     * propertyConfiguration}. If a property with an existing name is bound, the
-     * previous binding is removed.
-     *
-     * @param propertyConfiguration
-     *            property configuration, not {@code null}
-     * @param overrideDefault
-     *            set to {@code true} if the property should be initialized with
-     *            {@code startingValue} instead of default value found in
-     *            {@link PropertyData}
-     * @param startingValue
-     *            starting value for the property. Can be {@code null}.
-     *            {@code overrideDefault} must be {@code true} for this value to
-     *            have any effect
-     * @throws NullPointerException
-     *             if {@code propertyConfiguration} is {@code null}
-     */
-    @Deprecated
-    public void bindProperty(
-            PropertyConfigurationImpl<C, ? extends Serializable> propertyConfiguration,
-            boolean overrideDefault, JsonValue startingValue) {
-        Objects.requireNonNull(propertyConfiguration,
-                "Parameter 'propertyConfiguration' cannot be null!");
-
-        final SerializableBiConsumer<C, Serializable> consumer = propertyConfiguration
-                .getOnChangeHandler();
-
-        final Serializable selectedStartingValue = !overrideDefault
-                ? propertyConfiguration.getPropertyData().getDefaultValue()
-                : jsonValueToConcreteType(startingValue,
-                        propertyConfiguration.getPropertyData().getType());
-
-        final PropertyBinding<? extends Serializable> binding = new PropertyBinding<>(
-                propertyConfiguration.getPropertyData(),
-                consumer == null ? null
-                        : value -> consumer.accept(component, value),
-                selectedStartingValue);
-
-        properties.put(propertyConfiguration.getPropertyData().getName(),
-                binding);
-    }
-
-    @Deprecated
-    private Serializable jsonValueToConcreteType(JsonValue jsonValue,
-            Class<? extends Serializable> type) {
-        Objects.requireNonNull(type, "Parameter 'type' must not be null!");
-
-        if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
-            Serializable value = null;
-            if (jsonValue != null) {
-                value = JsonCodec.decodeAs(jsonValue, type);
-            }
-            return value;
-        } else {
-            throw new IllegalArgumentException(
-                    String.format("Received '%s' was not convertible to '%s'",
-                            JsonValue.class.getName(), type.getName()));
-        }
-    }
-
     private Serializable jsonValueToConcreteType(JsonNode jsonValue,
             Class<? extends Serializable> type) {
         Objects.requireNonNull(type, "Parameter 'type' must not be null!");
 
         if (JacksonCodec.canEncodeWithoutTypeInfo(type)) {
             Serializable value = null;
-            if (jsonValue != null) {
-                value = JacksonCodec.decodeAs(jsonValue, type);
-            }
-            return value;
-        } else if (JsonCodec.canEncodeWithoutTypeInfo(type)) {
-            // TODO: Remove when ClientCallable works with jackson types only.
-            Serializable value = null;
             if (jsonValue != null && !(jsonValue instanceof NullNode)) {
-                value = JsonCodec.decodeAs(Json.parse(jsonValue.toString()),
-                        type);
+                value = JacksonCodec.decodeAs(jsonValue, type);
             }
             return value;
         } else {

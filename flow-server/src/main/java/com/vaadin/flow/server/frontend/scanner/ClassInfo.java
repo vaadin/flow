@@ -16,7 +16,8 @@ public class ClassInfo {
     String route = "";
     String layout;
     ThemeData theme = new ThemeData();
-    Set<String> children = new HashSet<>();
+    Set<String> children = new LinkedHashSet<>();
+    boolean loadCss = true;
 
     public ClassInfo(String className) {
         this.className = className;

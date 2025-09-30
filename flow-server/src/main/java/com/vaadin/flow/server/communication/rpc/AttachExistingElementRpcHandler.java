@@ -17,6 +17,8 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -24,8 +26,6 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * RPC handler for a client-side response on attach existing element request.
@@ -52,20 +52,20 @@ public class AttachExistingElementRpcHandler
 
     @Override
     protected Optional<Runnable> handleNode(StateNode node,
-            JsonObject invocationJson) {
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_TAG_NAME);
-        assert invocationJson.hasKey(JsonConstants.RPC_ATTACH_INDEX);
+            JsonNode invocationJson) {
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_REQUESTED_ID);
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_TAG_NAME);
+        assert invocationJson.has(JsonConstants.RPC_ATTACH_INDEX);
 
-        int requestedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_REQUESTED_ID);
-        int assignedId = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_ASSIGNED_ID);
-        String tag = invocationJson
-                .getString(JsonConstants.RPC_ATTACH_TAG_NAME);
-        int index = (int) invocationJson
-                .getNumber(JsonConstants.RPC_ATTACH_INDEX);
+        int requestedId = invocationJson
+                .get(JsonConstants.RPC_ATTACH_REQUESTED_ID).intValue();
+        int assignedId = invocationJson
+                .get(JsonConstants.RPC_ATTACH_ASSIGNED_ID).intValue();
+        String tag = invocationJson.get(JsonConstants.RPC_ATTACH_TAG_NAME)
+                .asText();
+        int index = invocationJson.get(JsonConstants.RPC_ATTACH_INDEX)
+                .intValue();
 
         AttachExistingElementFeature feature = node
                 .getFeature(AttachExistingElementFeature.class);

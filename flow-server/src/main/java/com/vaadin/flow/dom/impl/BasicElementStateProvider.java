@@ -24,6 +24,8 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -54,9 +56,6 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootData;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -114,6 +113,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                 Collections.singletonList(ElementData.class), features);
 
         node.getFeature(ElementData.class).setTag(tag);
+
+        if (tag.equals("svg")) {
+            node.getFeature(ElementData.class)
+                    .setNamespace("http://www.w3.org/2000/svg");
+        } else if (tag.equals("math")) {
+            node.getFeature(ElementData.class)
+                    .setNamespace("http://www.w3.org/1998/Math/MathML");
+        }
 
         return node;
     }
@@ -355,12 +362,12 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     public void visit(StateNode node, NodeVisitor visitor) {
         Element element = Element.get(node);
         ElementData data = node.getFeature(ElementData.class);
-        JsonValue payload = data.getPayload();
+        JsonNode payload = data.getPayload();
 
         boolean visitDescendants;
-        if (payload instanceof JsonObject) {
-            JsonObject object = (JsonObject) payload;
-            String type = object.getString(NodeProperties.TYPE);
+        if (payload instanceof JsonNode) {
+            JsonNode object = (JsonNode) payload;
+            String type = object.get(NodeProperties.TYPE).asText();
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);
@@ -378,7 +385,8 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
                     element);
         } else {
             throw new IllegalStateException(
-                    "Unexpected payload in element data : " + payload.toJson());
+                    "Unexpected payload in element data : "
+                            + payload.toString());
         }
 
         if (visitDescendants) {

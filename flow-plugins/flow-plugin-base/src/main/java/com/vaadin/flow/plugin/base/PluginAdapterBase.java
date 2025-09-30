@@ -376,4 +376,18 @@ public interface PluginAdapterBase {
      * @return {@code true} to ignore node/npm tool version checks
      */
     boolean isFrontendIgnoreVersionChecks();
+
+    /**
+     * Specifies whether to allow building a version of the application with a
+     * commercial banner when commercial components are used without a license
+     * key.
+     *
+     * @return {@code true} to enable commercial banner when commercial
+     *         components are used without a valid license key, {@code false} to
+     *         fail the build in this situation
+     */
+    default boolean isCommercialBannerEnabled() {
+        return false;
+    }
+
 }
