@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -68,6 +67,14 @@ public class JacksonCodecTest {
         assertJsonEquals(json, json);
         assertJsonEquals(objectMapper.createArrayNode(),
                 objectMapper.createArrayNode());
+
+        // Test that complex types work with type info
+        for (Object value : complexTypeValues) {
+            JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
+            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), encoded);
+            Assert.assertTrue("Should be valid JSON for " + value.getClass(), 
+                    encoded.isObject() || encoded.isArray() || encoded.isValueNode());
+        }
     }
 
     @Test
@@ -140,18 +147,6 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.nullNode(), json);
     }
 
-    @Test
-    public void encodeWithTypeInfo_complexTypesEncodedAsBeans() {
-        for (Object value : complexTypeValues) {
-            JsonNode encoded = JacksonCodec.encodeWithTypeInfo(value);
-            
-            // Should be directly encoded as JSON objects (no type wrapper needed)
-            Assert.assertNotNull("Bean JSON should not be null for " + value.getClass(), encoded);
-            // For objects, should be object node; for collections, array node, etc.
-            Assert.assertTrue("Should be valid JSON for " + value.getClass(), 
-                    encoded.isObject() || encoded.isArray() || encoded.isValueNode());
-        }
-    }
 
     private static void assertJsonEquals(JsonNode expected, JsonNode actual) {
         Assert.assertTrue(
@@ -283,7 +278,7 @@ public class JacksonCodecTest {
     }
 
     // Test classes
-    private static class SimpleBean implements Serializable {
+    private static class SimpleBean {
         public String text;
         public int value;
 
@@ -293,7 +288,7 @@ public class JacksonCodecTest {
         }
     }
 
-    private static class NestedBean implements Serializable {
+    private static class NestedBean {
         public String text;
         public int number;
 
@@ -303,7 +298,7 @@ public class JacksonCodecTest {
         }
     }
 
-    private static class OuterBean implements Serializable {
+    private static class OuterBean {
         public String name;
         public NestedBean nested;
 
@@ -313,26 +308,4 @@ public class JacksonCodecTest {
         }
     }
 
-    @Test
-    public void testNonSerializableBeanSerialization() {
-        // Test that non-Serializable objects can be serialized as beans
-        NonSerializableBean bean = new NonSerializableBean("TestBean", 42);
-        
-        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
-        
-        // Should be directly encoded as JSON object
-        Assert.assertTrue("Should be object", encoded.isObject());
-        Assert.assertEquals("TestBean", encoded.get("text").asText());
-        Assert.assertEquals(42, encoded.get("value").asInt());
-    }
-
-    private static class NonSerializableBean {
-        public String text;
-        public int value;
-        
-        public NonSerializableBean(String text, int value) {
-            this.text = text;
-            this.value = value;
-        }
-    }
 }

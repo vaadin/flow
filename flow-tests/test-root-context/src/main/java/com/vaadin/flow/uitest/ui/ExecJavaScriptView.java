@@ -92,58 +92,39 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
-        // Bean serialization tests
-        NativeButton simpleBeanButton = createButton("Simple Bean",
-                "simpleBeanButton", e -> testSimpleBean());
-        NativeButton nestedBeanButton = createButton("Nested Bean",
-                "nestedBeanButton", e -> testNestedBean());
+        // Bean serialization test
+        NativeButton beanButton = createButton("Bean Serialization",
+                "beanButton", e -> testBeanSerialization());
 
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton, simpleBeanButton,
-                nestedBeanButton);
+                elementAwaitButton, pageAwaitButton, beanButton);
     }
 
-    private void testSimpleBean() {
-        SimpleBean bean = new SimpleBean("TestBean", 42, true);
-
-        UI.getCurrent().getPage().executeJs(
-                """
-                        const bean = $0;
-                        const result = `name=${bean.name}, value=${bean.value}, active=${bean.active}`;
-
-                        const resultDiv = document.createElement('div');
-                        resultDiv.id = 'simpleBeanResult';
-                        resultDiv.textContent = result;
-                        document.body.appendChild(resultDiv);
-
-                        const statusDiv = document.createElement('div');
-                        statusDiv.id = 'simpleBeanStatus';
-                        statusDiv.textContent = 'Simple bean sent and received';
-                        document.body.appendChild(statusDiv);
-                        """,
-                bean);
-    }
-
-    private void testNestedBean() {
+    private void testBeanSerialization() {
+        // Test both simple and nested beans in one test
+        SimpleBean simple = new SimpleBean("TestBean", 42, true);
         SimpleBean inner = new SimpleBean("Inner", 100, false);
-        NestedBean outer = new NestedBean("Outer", inner);
+        NestedBean nested = new NestedBean("Outer", inner);
 
         UI.getCurrent().getPage().executeJs(
                 """
-                        const bean = $0;
-                        const result = `title=${bean.title}, simple.name=${bean.simple.name}, simple.value=${bean.simple.value}`;
-
+                        const simpleBean = $0;
+                        const nestedBean = $1;
+                        
+                        const simpleResult = `simple: name=${simpleBean.name}, value=${simpleBean.value}, active=${simpleBean.active}`;
+                        const nestedResult = `nested: title=${nestedBean.title}, inner.name=${nestedBean.simple.name}, inner.value=${nestedBean.simple.value}`;
+                        
                         const resultDiv = document.createElement('div');
-                        resultDiv.id = 'nestedBeanResult';
-                        resultDiv.textContent = result;
+                        resultDiv.id = 'beanResult';
+                        resultDiv.textContent = simpleResult + ' | ' + nestedResult;
                         document.body.appendChild(resultDiv);
-
+                        
                         const statusDiv = document.createElement('div');
-                        statusDiv.id = 'nestedBeanStatus';
-                        statusDiv.textContent = 'Nested bean sent and received';
+                        statusDiv.id = 'beanStatus';
+                        statusDiv.textContent = 'Bean serialization test completed';
                         document.body.appendChild(statusDiv);
                         """,
-                outer);
+                simple, nested);
     }
 
     public static class SimpleBean {
