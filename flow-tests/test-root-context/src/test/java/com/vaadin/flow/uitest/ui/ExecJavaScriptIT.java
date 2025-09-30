@@ -61,6 +61,44 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 result.getText());
     }
 
+    @Test
+    public void testBeanSerializationSimpleTypes() {
+        open();
+
+        // Test simple bean with only primitive types
+        getButton("simpleBeanButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("simpleBeanResult")));
+        Assert.assertEquals("name=TestBean, value=42, active=true",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("simpleBeanStatus")));
+        Assert.assertEquals("Simple bean sent and received", status.getText());
+    }
+
+    @Test
+    public void testBeanSerializationNestedBeans() {
+        open();
+
+        // Test nested beans
+        getButton("nestedBeanButton").click();
+
+        // Wait for the result div to appear
+        WebElement result = waitUntil(
+                d -> findElement(By.id("nestedBeanResult")));
+        Assert.assertEquals("title=Outer, simple.name=Inner, simple.value=100",
+                result.getText());
+
+        // Verify status message
+        WebElement status = waitUntil(
+                d -> findElement(By.id("nestedBeanStatus")));
+        Assert.assertEquals("Nested bean sent and received", status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

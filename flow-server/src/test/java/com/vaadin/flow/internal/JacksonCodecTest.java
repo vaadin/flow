@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -252,5 +253,74 @@ public class JacksonCodecTest {
     public void decodeAs_unsupportedType() {
         Assert.assertNull(JacksonCodec.decodeAs(objectMapper.valueToTree("foo"),
                 float.class));
+    }
+
+    @Test
+    public void testSimpleBeanSerialization() {
+        // Test simple bean serialization without any Components
+        SimpleBean bean = new SimpleBean("Test", 42);
+        
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(bean);
+        
+        // Should be [5, {json object}]
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should be wrapped with BEAN_TYPE", JacksonCodec.BEAN_TYPE, 
+                encoded.get(0).asInt());
+        
+        JsonNode beanJson = encoded.get(1);
+        Assert.assertEquals("Test", beanJson.get("text").asText());
+        Assert.assertEquals(42, beanJson.get("value").asInt());
+    }
+    
+    @Test
+    public void testNestedBeanSerialization() {
+        // Test nested beans
+        NestedBean nested = new NestedBean("inner", 123);
+        OuterBean outer = new OuterBean("outer", nested);
+        
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(outer);
+        
+        // Should be [5, {json object}]
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should be wrapped with BEAN_TYPE", JacksonCodec.BEAN_TYPE, 
+                encoded.get(0).asInt());
+        
+        JsonNode beanJson = encoded.get(1);
+        Assert.assertEquals("outer", beanJson.get("name").asText());
+        
+        JsonNode nestedJson = beanJson.get("nested");
+        Assert.assertEquals("inner", nestedJson.get("text").asText());
+        Assert.assertEquals(123, nestedJson.get("number").asInt());
+    }
+
+    // Test classes
+    private static class SimpleBean implements Serializable {
+        public String text;
+        public int value;
+        
+        public SimpleBean(String text, int value) {
+            this.text = text;
+            this.value = value;
+        }
+    }
+    
+    private static class NestedBean implements Serializable {
+        public String text;
+        public int number;
+        
+        public NestedBean(String text, int number) {
+            this.text = text;
+            this.number = number;
+        }
+    }
+    
+    private static class OuterBean implements Serializable {
+        public String name;
+        public NestedBean nested;
+        
+        public OuterBean(String name, NestedBean nested) {
+            this.name = name;
+            this.nested = nested;
+        }
     }
 }

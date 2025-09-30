@@ -92,8 +92,75 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
+        // Bean serialization tests
+        NativeButton simpleBeanButton = createButton("Simple Bean", "simpleBeanButton", 
+                e -> testSimpleBean());
+        NativeButton nestedBeanButton = createButton("Nested Bean", "nestedBeanButton", 
+                e -> testNestedBean());
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+                elementAwaitButton, pageAwaitButton, simpleBeanButton, nestedBeanButton);
+    }
+
+    private void testSimpleBean() {
+        SimpleBean bean = new SimpleBean("TestBean", 42, true);
+        
+        UI.getCurrent().getPage().executeJs("""
+            const bean = $0;
+            const result = `name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.id = 'simpleBeanResult';
+            resultDiv.textContent = result;
+            document.body.appendChild(resultDiv);
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'simpleBeanStatus';
+            statusDiv.textContent = 'Simple bean sent and received';
+            document.body.appendChild(statusDiv);
+            """, bean);
+    }
+
+    private void testNestedBean() {
+        SimpleBean inner = new SimpleBean("Inner", 100, false);
+        NestedBean outer = new NestedBean("Outer", inner);
+        
+        UI.getCurrent().getPage().executeJs("""
+            const bean = $0;
+            const result = `title=${bean.title}, simple.name=${bean.simple.name}, simple.value=${bean.simple.value}`;
+            
+            const resultDiv = document.createElement('div');
+            resultDiv.id = 'nestedBeanResult';
+            resultDiv.textContent = result;
+            document.body.appendChild(resultDiv);
+            
+            const statusDiv = document.createElement('div');
+            statusDiv.id = 'nestedBeanStatus';
+            statusDiv.textContent = 'Nested bean sent and received';
+            document.body.appendChild(statusDiv);
+            """, outer);
+    }
+
+    public static class SimpleBean implements Serializable {
+        public String name;
+        public int value;
+        public boolean active;
+        
+        public SimpleBean(String name, int value, boolean active) {
+            this.name = name;
+            this.value = value;
+            this.active = active;
+        }
+    }
+
+    public static class NestedBean implements Serializable {
+        public String title;
+        public SimpleBean simple;
+        
+        public NestedBean(String title, SimpleBean simple) {
+            this.title = title;
+            this.simple = simple;
+        }
     }
 
     private NativeButton createJsButton(String text, String id, String script,

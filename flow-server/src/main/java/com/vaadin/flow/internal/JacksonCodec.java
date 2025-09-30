@@ -66,6 +66,11 @@ public class JacksonCodec {
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
 
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
+
     private JacksonCodec() {
         // Don't create instances
     }
@@ -91,13 +96,17 @@ public class JacksonCodec {
             return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
-        } else {
+        } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             JsonNode encoded = encodeWithoutTypeInfo(value);
             if (encoded.getNodeType() == JsonNodeType.ARRAY) {
                 // Must "escape" arrays
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else {
+            // Encode as bean using Jackson serialization
+            JsonNode beanJson = JacksonUtils.getMapper().valueToTree(value);
+            return wrapComplexValue(BEAN_TYPE, beanJson);
         }
     }
 
@@ -156,7 +165,8 @@ public class JacksonCodec {
         return canEncodeWithoutTypeInfo(type)
                 || Node.class.isAssignableFrom(type)
                 || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
+                || ReturnChannelRegistration.class.isAssignableFrom(type)
+                || Serializable.class.isAssignableFrom(type);
     }
 
     /**
