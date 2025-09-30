@@ -16,6 +16,8 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -117,9 +119,30 @@ public class ExecJavaScriptView extends AbstractDivView {
                             });
                 });
 
+        NativeButton listButton = createButton("List Serialization",
+                "listButton", e -> testListSerialization());
+
+        NativeButton returnListButton = createButton("Return List",
+                "returnListButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return [{name: 'First', value: 1, active: true}, {name: 'Second', value: 2, active: false}]")
+                            .then(List.class, list -> {
+                                Div result = new Div();
+                                result.setId("returnListResult");
+                                result.setText("Returned list with "
+                                        + list.size() + " items");
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnListStatus");
+                                status.setText("List returned");
+                                add(status);
+                            });
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
-                returnBeanButton);
+                returnBeanButton, listButton, returnListButton);
     }
 
     private void testBeanSerialization() {
@@ -146,6 +169,36 @@ public class ExecJavaScriptView extends AbstractDivView {
                         document.body.appendChild(statusDiv);
                         """,
                 simple, nested);
+    }
+
+    private void testListSerialization() {
+        List<SimpleBean> beanList = Arrays.asList(
+                new SimpleBean("FirstItem", 10, true),
+                new SimpleBean("SecondItem", 20, false),
+                new SimpleBean("ThirdItem", 30, true));
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const beanArray = $0;
+
+                        let result = 'List: ';
+                        for (let i = 0; i < beanArray.length; i++) {
+                            const bean = beanArray[i];
+                            result += `[${i}]: name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+                            if (i < beanArray.length - 1) result += ' | ';
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'listResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'listStatus';
+                        statusDiv.textContent = 'List serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                beanList);
     }
 
     public static class SimpleBean {

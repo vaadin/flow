@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -374,5 +375,108 @@ public class JacksonCodecTest {
                 .decodeAs(objectMapper.valueToTree(true), Boolean.class));
         Assert.assertEquals(Double.valueOf(3.14), JacksonCodec
                 .decodeAs(objectMapper.valueToTree(3.14), Double.class));
+    }
+
+    @Test
+    public void testListOfBeansSerialization() {
+        List<SimpleBean> beanList = Arrays.asList(new SimpleBean("First", 1),
+                new SimpleBean("Second", 2), new SimpleBean("Third", 3));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanList);
+
+        // Should be directly encoded as JSON array
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 3 elements", 3, encoded.size());
+
+        Assert.assertEquals("First", encoded.get(0).get("text").asText());
+        Assert.assertEquals(1, encoded.get(0).get("value").asInt());
+        Assert.assertEquals("Second", encoded.get(1).get("text").asText());
+        Assert.assertEquals(2, encoded.get(1).get("value").asInt());
+        Assert.assertEquals("Third", encoded.get(2).get("text").asText());
+        Assert.assertEquals(3, encoded.get(2).get("value").asInt());
+    }
+
+    @Test
+    public void testListOfBeansDeserialization() {
+        // Create JSON array manually
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "FirstBean");
+        bean1.put("value", 100);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "SecondBean");
+        bean2.put("value", 200);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(bean1)
+                .add(bean2);
+
+        // Test that Jackson can handle List<SimpleBean> deserialization
+        List<SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                arrayJson, JacksonUtils.getMapper().getTypeFactory()
+                        .constructCollectionType(List.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 elements", 2, decoded.size());
+        Assert.assertEquals("FirstBean", decoded.get(0).text);
+        Assert.assertEquals(100, decoded.get(0).value);
+        Assert.assertEquals("SecondBean", decoded.get(1).text);
+        Assert.assertEquals(200, decoded.get(1).value);
+    }
+
+    @Test
+    public void testSetOfBeansSerialization() {
+        Set<SimpleBean> beanSet = new HashSet<>(Arrays.asList(
+                new SimpleBean("Alpha", 10), new SimpleBean("Beta", 20)));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanSet);
+
+        // Should be directly encoded as JSON array
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 2 elements", 2, encoded.size());
+
+        // Since Set order is not guaranteed, collect all texts and values
+        Set<String> texts = new HashSet<>();
+        Set<Integer> values = new HashSet<>();
+        for (JsonNode node : encoded) {
+            texts.add(node.get("text").asText());
+            values.add(node.get("value").asInt());
+        }
+
+        Assert.assertTrue("Should contain Alpha", texts.contains("Alpha"));
+        Assert.assertTrue("Should contain Beta", texts.contains("Beta"));
+        Assert.assertTrue("Should contain value 10", values.contains(10));
+        Assert.assertTrue("Should contain value 20", values.contains(20));
+    }
+
+    @Test
+    public void testSetOfBeansDeserialization() {
+        // Create JSON array manually
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "Gamma");
+        bean1.put("value", 300);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "Delta");
+        bean2.put("value", 400);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(bean1)
+                .add(bean2);
+
+        // Test that Jackson can handle Set<SimpleBean> deserialization
+        Set<SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                arrayJson, JacksonUtils.getMapper().getTypeFactory()
+                        .constructCollectionType(Set.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 elements", 2, decoded.size());
+
+        // Since Set order is not guaranteed, collect all texts and values
+        Set<String> texts = decoded.stream().map(b -> b.text)
+                .collect(java.util.stream.Collectors.toSet());
+        Set<Integer> values = decoded.stream().map(b -> b.value)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Assert.assertTrue("Should contain Gamma", texts.contains("Gamma"));
+        Assert.assertTrue("Should contain Delta", texts.contains("Delta"));
+        Assert.assertTrue("Should contain value 300", values.contains(300));
+        Assert.assertTrue("Should contain value 400", values.contains(400));
     }
 }
