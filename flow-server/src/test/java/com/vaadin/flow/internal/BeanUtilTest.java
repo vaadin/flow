@@ -29,15 +29,16 @@ import static org.junit.Assert.assertTrue;
 
 /**
  * Tests for the {@link BeanUtil}.
- * 
- * This test class provides comprehensive coverage for all public methods of BeanUtil:
- * - getBeanPropertyDescriptors(): Tests with regular classes, records, interfaces
- * - getPropertyType(): Tests simple, nested, record, and interface properties  
- * - getPropertyDescriptor(): Tests simple and nested property access
- * - checkBeanValidationAvailable(): Tests JSR-303 availability checking
- * 
- * Edge cases covered include null inputs, empty strings, non-existent properties,
- * deep nesting, and proper filtering of Object.class methods.
+ *
+ * This test class provides comprehensive coverage for all public methods of
+ * BeanUtil: - getBeanPropertyDescriptors(): Tests with regular classes,
+ * records, interfaces - getPropertyType(): Tests simple, nested, record, and
+ * interface properties - getPropertyDescriptor(): Tests simple and nested
+ * property access - checkBeanValidationAvailable(): Tests JSR-303 availability
+ * checking
+ *
+ * Edge cases covered include null inputs, empty strings, non-existent
+ * properties, deep nesting, and proper filtering of Object.class methods.
  */
 public class BeanUtilTest {
 
@@ -86,10 +87,12 @@ public class BeanUtilTest {
 
     public interface TestInterface {
         String getInterfaceProperty();
+
         void setInterfaceProperty(String value);
     }
 
-    public record TestRecord(String recordProperty, int recordAge) {}
+    public record TestRecord(String recordProperty, int recordAge) {
+    }
 
     // Test helper classes for duplicate property test from main branch
     public interface FirstInterface {
@@ -128,12 +131,15 @@ public class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with regular class
     @Test
-    public void getBeanPropertyDescriptors_regularClass() throws IntrospectionException {
-        List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestBean.class);
-        
+    public void getBeanPropertyDescriptors_regularClass()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(TestBean.class);
+
         assertNotNull(descriptors);
-        assertEquals(4, descriptors.size()); // name, age, nested + class property
-        
+        assertEquals(4, descriptors.size()); // name, age, nested + class
+                                             // property
+
         boolean foundName = false, foundAge = false, foundNested = false;
         for (PropertyDescriptor descriptor : descriptors) {
             // All descriptors should have read method
@@ -142,7 +148,7 @@ public class BeanUtilTest {
             if (!"class".equals(descriptor.getName())) {
                 assertNotNull(descriptor.getWriteMethod());
             }
-            
+
             if ("name".equals(descriptor.getName())) {
                 foundName = true;
                 assertEquals(String.class, descriptor.getPropertyType());
@@ -151,10 +157,11 @@ public class BeanUtilTest {
                 assertEquals(int.class, descriptor.getPropertyType());
             } else if ("nested".equals(descriptor.getName())) {
                 foundNested = true;
-                assertEquals(TestNestedBean.class, descriptor.getPropertyType());
+                assertEquals(TestNestedBean.class,
+                        descriptor.getPropertyType());
             }
         }
-        
+
         assertTrue("Should find 'name' property", foundName);
         assertTrue("Should find 'age' property", foundAge);
         assertTrue("Should find 'nested' property", foundNested);
@@ -162,19 +169,21 @@ public class BeanUtilTest {
 
     // Test for getBeanPropertyDescriptors with record
     @Test
-    public void getBeanPropertyDescriptors_record() throws IntrospectionException {
-        List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestRecord.class);
-        
+    public void getBeanPropertyDescriptors_record()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(TestRecord.class);
+
         assertNotNull(descriptors);
         assertEquals(2, descriptors.size()); // recordProperty, recordAge
-        
+
         boolean foundRecordProperty = false, foundRecordAge = false;
         for (PropertyDescriptor descriptor : descriptors) {
             // All descriptors should have read method
             assertNotNull(descriptor.getReadMethod());
             // Records are immutable, so no write methods
             assertNull(descriptor.getWriteMethod());
-            
+
             if ("recordProperty".equals(descriptor.getName())) {
                 foundRecordProperty = true;
                 assertEquals(String.class, descriptor.getPropertyType());
@@ -183,19 +192,22 @@ public class BeanUtilTest {
                 assertEquals(int.class, descriptor.getPropertyType());
             }
         }
-        
-        assertTrue("Should find 'recordProperty' property", foundRecordProperty);
+
+        assertTrue("Should find 'recordProperty' property",
+                foundRecordProperty);
         assertTrue("Should find 'recordAge' property", foundRecordAge);
     }
 
     // Test for getBeanPropertyDescriptors with interface
     @Test
-    public void getBeanPropertyDescriptors_interface() throws IntrospectionException {
-        List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestInterface.class);
-        
+    public void getBeanPropertyDescriptors_interface()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(TestInterface.class);
+
         assertNotNull(descriptors);
         assertEquals(1, descriptors.size()); // interfaceProperty
-        
+
         assertEquals("interfaceProperty", descriptors.get(0).getName());
         assertEquals(String.class, descriptors.get(0).getPropertyType());
         assertNotNull(descriptors.get(0).getReadMethod());
@@ -207,7 +219,7 @@ public class BeanUtilTest {
     public void getPropertyType_simpleProperty() throws IntrospectionException {
         Class<?> nameType = BeanUtil.getPropertyType(TestBean.class, "name");
         assertEquals(String.class, nameType);
-        
+
         Class<?> ageType = BeanUtil.getPropertyType(TestBean.class, "age");
         assertEquals(int.class, ageType);
     }
@@ -215,21 +227,26 @@ public class BeanUtilTest {
     // Test for getPropertyType with nested property
     @Test
     public void getPropertyType_nestedProperty() throws IntrospectionException {
-        Class<?> nestedValueType = BeanUtil.getPropertyType(TestBean.class, "nested.value");
+        Class<?> nestedValueType = BeanUtil.getPropertyType(TestBean.class,
+                "nested.value");
         assertEquals(String.class, nestedValueType);
     }
 
     // Test for getPropertyType with non-existent property
     @Test
-    public void getPropertyType_nonExistentProperty() throws IntrospectionException {
-        Class<?> nonExistentType = BeanUtil.getPropertyType(TestBean.class, "nonExistent");
+    public void getPropertyType_nonExistentProperty()
+            throws IntrospectionException {
+        Class<?> nonExistentType = BeanUtil.getPropertyType(TestBean.class,
+                "nonExistent");
         assertNull(nonExistentType);
     }
 
     // Test for getPropertyDescriptor with simple property
     @Test
-    public void getPropertyDescriptor_simpleProperty() throws IntrospectionException {
-        PropertyDescriptor nameDescriptor = BeanUtil.getPropertyDescriptor(TestBean.class, "name");
+    public void getPropertyDescriptor_simpleProperty()
+            throws IntrospectionException {
+        PropertyDescriptor nameDescriptor = BeanUtil
+                .getPropertyDescriptor(TestBean.class, "name");
         assertNotNull(nameDescriptor);
         assertEquals("name", nameDescriptor.getName());
         assertEquals(String.class, nameDescriptor.getPropertyType());
@@ -239,8 +256,10 @@ public class BeanUtilTest {
 
     // Test for getPropertyDescriptor with nested property
     @Test
-    public void getPropertyDescriptor_nestedProperty() throws IntrospectionException {
-        PropertyDescriptor nestedValueDescriptor = BeanUtil.getPropertyDescriptor(TestBean.class, "nested.value");
+    public void getPropertyDescriptor_nestedProperty()
+            throws IntrospectionException {
+        PropertyDescriptor nestedValueDescriptor = BeanUtil
+                .getPropertyDescriptor(TestBean.class, "nested.value");
         assertNotNull(nestedValueDescriptor);
         assertEquals("value", nestedValueDescriptor.getName());
         assertEquals(String.class, nestedValueDescriptor.getPropertyType());
@@ -250,79 +269,96 @@ public class BeanUtilTest {
 
     // Test for getPropertyDescriptor with non-existent property
     @Test
-    public void getPropertyDescriptor_nonExistentProperty() throws IntrospectionException {
-        PropertyDescriptor nonExistentDescriptor = BeanUtil.getPropertyDescriptor(TestBean.class, "nonExistent");
+    public void getPropertyDescriptor_nonExistentProperty()
+            throws IntrospectionException {
+        PropertyDescriptor nonExistentDescriptor = BeanUtil
+                .getPropertyDescriptor(TestBean.class, "nonExistent");
         assertNull(nonExistentDescriptor);
     }
 
     // Test for getBeanPropertyDescriptors with null input
     @Test
-    public void getBeanPropertyDescriptors_nullInput() throws IntrospectionException {
-        List<PropertyDescriptor> result = BeanUtil.getBeanPropertyDescriptors(null);
+    public void getBeanPropertyDescriptors_nullInput()
+            throws IntrospectionException {
+        List<PropertyDescriptor> result = BeanUtil
+                .getBeanPropertyDescriptors(null);
         assertNotNull(result);
         assertTrue(result.isEmpty());
     }
 
     // Test empty property name
     @Test
-    public void getPropertyType_emptyPropertyName() throws IntrospectionException {
+    public void getPropertyType_emptyPropertyName()
+            throws IntrospectionException {
         Class<?> result = BeanUtil.getPropertyType(TestBean.class, "");
         assertNull(result);
     }
 
     // Test empty property name for descriptor
     @Test
-    public void getPropertyDescriptor_emptyPropertyName() throws IntrospectionException {
-        PropertyDescriptor result = BeanUtil.getPropertyDescriptor(TestBean.class, "");
+    public void getPropertyDescriptor_emptyPropertyName()
+            throws IntrospectionException {
+        PropertyDescriptor result = BeanUtil
+                .getPropertyDescriptor(TestBean.class, "");
         assertNull(result);
     }
 
     // Test property with deep nesting
     @Test
-    public void getPropertyType_deepNestedProperty() throws IntrospectionException {
-        // This would fail because our test bean doesn't have deep nesting, 
+    public void getPropertyType_deepNestedProperty()
+            throws IntrospectionException {
+        // This would fail because our test bean doesn't have deep nesting,
         // but tests the recursive behavior
-        Class<?> result = BeanUtil.getPropertyType(TestBean.class, "nested.nonExistent.value");
+        Class<?> result = BeanUtil.getPropertyType(TestBean.class,
+                "nested.nonExistent.value");
         assertNull(result);
     }
 
     // Test getPropertyType with record
     @Test
     public void getPropertyType_recordProperty() throws IntrospectionException {
-        Class<?> recordPropertyType = BeanUtil.getPropertyType(TestRecord.class, "recordProperty");
+        Class<?> recordPropertyType = BeanUtil.getPropertyType(TestRecord.class,
+                "recordProperty");
         assertEquals(String.class, recordPropertyType);
-        
-        Class<?> recordAgeType = BeanUtil.getPropertyType(TestRecord.class, "recordAge");
+
+        Class<?> recordAgeType = BeanUtil.getPropertyType(TestRecord.class,
+                "recordAge");
         assertEquals(int.class, recordAgeType);
     }
 
     // Test interface properties
     @Test
-    public void getPropertyType_interfaceProperty() throws IntrospectionException {
-        Class<?> interfacePropertyType = BeanUtil.getPropertyType(TestInterface.class, "interfaceProperty");
+    public void getPropertyType_interfaceProperty()
+            throws IntrospectionException {
+        Class<?> interfacePropertyType = BeanUtil
+                .getPropertyType(TestInterface.class, "interfaceProperty");
         assertEquals(String.class, interfacePropertyType);
     }
 
     // Test that Object methods are filtered out
     @Test
-    public void getPropertyDescriptor_objectMethodsFiltered() throws IntrospectionException {
+    public void getPropertyDescriptor_objectMethodsFiltered()
+            throws IntrospectionException {
         // The "class" property should be filtered out by BeanUtil
-        PropertyDescriptor classProperty = BeanUtil.getPropertyDescriptor(TestBean.class, "class");
+        PropertyDescriptor classProperty = BeanUtil
+                .getPropertyDescriptor(TestBean.class, "class");
         assertNull("Object.getClass() should be filtered out", classProperty);
     }
 
     // Test that getBeanPropertyDescriptors includes all valid properties
     @Test
-    public void getBeanPropertyDescriptors_includesAllValidProperties() throws IntrospectionException {
-        List<PropertyDescriptor> descriptors = BeanUtil.getBeanPropertyDescriptors(TestBean.class);
-        
+    public void getBeanPropertyDescriptors_includesAllValidProperties()
+            throws IntrospectionException {
+        List<PropertyDescriptor> descriptors = BeanUtil
+                .getBeanPropertyDescriptors(TestBean.class);
+
         List<String> names = descriptors.stream()
-                .map(PropertyDescriptor::getName)
-                .toList();
-        
+                .map(PropertyDescriptor::getName).toList();
+
         assertTrue("should include property 'name'", names.contains("name"));
         assertTrue("should include property 'age'", names.contains("age"));
-        assertTrue("should include property 'nested'", names.contains("nested"));
+        assertTrue("should include property 'nested'",
+                names.contains("nested"));
         assertTrue("should include property 'class'", names.contains("class"));
     }
 
