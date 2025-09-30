@@ -28,6 +28,22 @@ import com.vaadin.flow.dom.DisabledUpdateMode;
  * using the notation <code>this.$server.method()</code>. The method will return
  * a Promise which will be resolved with either the return value from the server
  * or a generic rejection if the server-side method throws an exception.
+ * <p>
+ * The annotated method may accept parameters of the following types:
+ * <ul>
+ * <li>{@link String}
+ * <li>{@link Boolean} and boolean
+ * <li>{@link Integer} and int
+ * <li>{@link Double} and double
+ * <li>{@link tools.jackson.databind.node.BaseJsonNode} and its subtypes
+ * <li>{@link com.vaadin.flow.dom.Element}
+ * <li>{@link Component} (will be received as its root {@link com.vaadin.flow.dom.Element})
+ * <li>{@link java.util.List} of supported types (received as JavaScript arrays)
+ * <li>{@link java.util.Set} of supported types (received as JavaScript arrays)
+ * <li>{@link java.util.Map} with {@link String} keys and supported value types
+ * (received as JavaScript objects). Note that only String keys are allowed.
+ * <li>Java Beans with properties of supported types (received as JavaScript objects)
+ * </ul>
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -25,6 +25,7 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -51,11 +52,6 @@ import elemental.json.JsonValue;
  */
 public class JsonCodec {
     /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
      * Type id for a complex type array containing a {@link JsonArray}.
      */
     public static final int ARRAY_TYPE = 1;
@@ -65,6 +61,16 @@ public class JsonCodec {
      * {@link ReturnChannelRegistration} reference.
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
+
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
+
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
 
     private JsonCodec() {
         // Don't create instances
@@ -111,7 +117,13 @@ public class JsonCodec {
     private static JsonValue encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE, Json.create(stateNode.getId()));
+            // Use the same format as bean serialization for consistency
+            JsonObject ref = Json.createObject();
+            ref.put("@vaadin", "component");
+            ref.put("nodeId", stateNode.getId());
+            // Return directly without array wrapper - the @vaadin key is
+            // sufficient identification
+            return ref;
         } else {
             return Json.createNull();
         }

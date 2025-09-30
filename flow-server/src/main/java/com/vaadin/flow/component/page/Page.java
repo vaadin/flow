@@ -281,6 +281,17 @@ public class Page implements Serializable {
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
+     * <li>{@link Component} (will be sent as the root {@link Element})
+     * <li>{@link java.util.List} of supported types (will be sent as a JavaScript
+     * array)
+     * <li>{@link java.util.Set} of supported types (will be sent as a JavaScript
+     * array)
+     * <li>{@link java.util.Map} with {@link String} keys and supported value types
+     * (will be sent as a JavaScript object). Note that only String keys are
+     * allowed.
+     * <li>Java Beans with properties of supported types. Beans will be sent as
+     * JavaScript objects with bean properties as object properties. Getters will
+     * be ignored, only fields are included.
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do

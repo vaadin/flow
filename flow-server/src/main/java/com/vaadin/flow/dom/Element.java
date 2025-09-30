@@ -1385,8 +1385,13 @@ public class Element extends Node<Element> {
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
+     * <p>
+     * Supported argument types are the same as for
+     * {@link #executeJs(String, Serializable...)}: primitives, {@link Element},
+     * {@link Component}, {@link java.util.List}, {@link java.util.Set},
+     * {@link java.util.Map} (with String keys only), and Java Beans.
      *
-     * @see JsonCodec JsonCodec for supported argument types
+     * @see #executeJs(String, Serializable...) for detailed list of supported types
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
@@ -1394,7 +1399,7 @@ public class Element extends Node<Element> {
      * @param arguments
      *            the arguments to pass to the function. Must be of a type
      *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
+     *            {@link #executeJs(String, Serializable...)}
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
@@ -1447,6 +1452,17 @@ public class Element extends Node<Element> {
      * <li>{@link Element} (will be sent as <code>null</code> if the server-side
      * element instance is not attached when the invocation is sent to the
      * client)
+     * <li>{@link Component} (will be sent as the root {@link Element})
+     * <li>{@link java.util.List} of supported types (will be sent as a JavaScript
+     * array)
+     * <li>{@link java.util.Set} of supported types (will be sent as a JavaScript
+     * array)
+     * <li>{@link java.util.Map} with {@link String} keys and supported value types
+     * (will be sent as a JavaScript object). Note that only String keys are
+     * allowed.
+     * <li>Java Beans with properties of supported types. Beans will be sent as
+     * JavaScript objects with bean properties as object properties. Getters will
+     * be ignored, only fields are included.
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do

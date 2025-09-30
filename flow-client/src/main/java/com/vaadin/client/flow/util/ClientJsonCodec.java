@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -37,6 +38,16 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class ClientJsonCodec {
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
+
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
+
     private ClientJsonCodec() {
         // Prevent instantiation
     }
@@ -63,17 +74,28 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
-                return tree.getNode(nodeId);
-            }
             case JsonCodec.ARRAY_TYPE:
             case JsonCodec.RETURN_CHANNEL_TYPE:
+            case BEAN_TYPE:
+            case MAP_TYPE:
                 return null;
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
             }
+        } else if (json.getType() == JsonType.OBJECT) {
+            // Check if this is a direct component reference
+            JsonObject obj = (JsonObject) json;
+            if (obj.hasKey("@vaadin")
+                    && "component".equals(obj.getString("@vaadin"))) {
+                JsonValue nodeIdValue = obj.get("nodeId");
+                if (nodeIdValue != null
+                        && nodeIdValue.getType() != JsonType.NULL) {
+                    int nodeId = (int) nodeIdValue.asNumber();
+                    return tree.getNode(nodeId);
+                }
+            }
+            return null;
         } else {
             return null;
         }
@@ -94,21 +116,41 @@ public class ClientJsonCodec {
             JsonArray array = (JsonArray) json;
             int typeId = (int) array.getNumber(0);
             switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
-                Node domNode = tree.getNode(nodeId).getDomNode();
-                return domNode;
-            }
             case JsonCodec.ARRAY_TYPE:
-                return jsonArrayAsJsArray(array.getArray(1));
+                return jsonArrayAsJsArray(tree, array.getArray(1));
             case JsonCodec.RETURN_CHANNEL_TYPE:
                 return createReturnChannelCallback((int) array.getNumber(1),
                         (int) array.getNumber(2),
                         tree.getRegistry().getServerConnector());
+            case BEAN_TYPE:
+                return decodeBeanWithComponents(tree, array.get(1));
+            case MAP_TYPE:
+                return decodeMapAsJsObject(tree, array.getObject(1));
             default:
                 throw new IllegalArgumentException(
                         "Unsupported complex type in " + array.toJson());
             }
+        } else if (json.getType() == JsonType.OBJECT) {
+            // Check if this is a direct component reference
+            JsonObject obj = (JsonObject) json;
+            if (obj.hasKey("@vaadin")) {
+                String type = obj.getString("@vaadin");
+                if ("component".equals(type)) {
+                    // Handle component reference directly
+                    JsonValue nodeIdValue = obj.get("nodeId");
+                    if (nodeIdValue != null
+                            && nodeIdValue.getType() != JsonType.NULL) {
+                        int nodeId = (int) nodeIdValue.asNumber();
+                        Node domNode = tree.getNode(nodeId).getDomNode();
+                        return domNode;
+                    }
+                    return null;
+                } else {
+                    // Other Vaadin types (beans, etc.) - decode normally
+                    return decodeBeanWithComponents(tree, json);
+                }
+            }
+            return decodeWithoutTypeInfo(json);
         } else {
             return decodeWithoutTypeInfo(json);
         }
@@ -194,16 +236,173 @@ public class ClientJsonCodec {
      * @return the converted JS array
      */
     public static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
+        return jsonArrayAsJsArray(null, jsonArray);
+    }
+
+    /**
+     * Converts a JSON array to a JS array with support for complex types.
+     *
+     * @param tree
+     *            the state tree for resolving complex types (can be null for
+     *            primitive arrays)
+     * @param jsonArray
+     *            the JSON array to convert
+     * @return the converted JS array
+     */
+    public static JsArray<Object> jsonArrayAsJsArray(StateTree tree,
+            JsonArray jsonArray) {
         JsArray<Object> jsArray;
         if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
+            // In browser, need to decode each element to handle complex types
             jsArray = JsCollections.array();
             for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(decodeWithoutTypeInfo(jsonArray.get(i)));
+                JsonValue item = jsonArray.get(i);
+                if (tree != null && needsTypeDecoding(item)) {
+                    jsArray.push(decodeWithTypeInfo(tree, item));
+                } else {
+                    jsArray.push(decodeWithoutTypeInfo(item));
+                }
+            }
+        } else {
+            // JVM test implementation
+            jsArray = JsCollections.array();
+            for (int i = 0; i < jsonArray.length(); i++) {
+                JsonValue item = jsonArray.get(i);
+                if (tree != null && needsTypeDecoding(item)) {
+                    jsArray.push(decodeWithTypeInfo(tree, item));
+                } else {
+                    jsArray.push(decodeWithoutTypeInfo(item));
+                }
             }
         }
         return jsArray;
     }
+
+    private static boolean needsTypeDecoding(JsonValue value) {
+        // Check if this value needs type-aware decoding
+        if (value.getType() == JsonType.ARRAY) {
+            return true; // Could be a typed array
+        } else if (value.getType() == JsonType.OBJECT) {
+            JsonObject obj = (JsonObject) value;
+            return obj.hasKey("@vaadin"); // Has type information
+        }
+        return false;
+    }
+
+    /**
+     * Converts a JSON object (Map representation) to a JS object with support
+     * for complex types.
+     *
+     * @param tree
+     *            the state tree for resolving complex types (can be null for
+     *            primitive maps)
+     * @param mapJson
+     *            the JSON object representing the map
+     * @return the converted JS object
+     */
+    public static Object decodeMapAsJsObject(StateTree tree, JsonObject mapJson) {
+        if (GWT.isScript()) {
+            return createNativeMapObject(tree, mapJson);
+        } else {
+            // JVM test implementation - return the JsonObject for testing
+            return mapJson;
+        }
+    }
+
+    private static native Object createNativeMapObject(StateTree tree,
+            JsonObject mapJson)
+    /*-{
+        var result = {};
+        
+        // Iterate over all keys in the JSON object (keys are always strings)
+        var keys = mapJson.@elemental.json.JsonObject::keys()();
+        for (var i = 0; i < keys.length; i++) {
+            var key = keys[i];
+            var value = mapJson.@elemental.json.JsonObject::get(Ljava/lang/String;)(key);
+            
+            // Decode the value
+            var decodedValue;
+            if (value && @com.vaadin.client.flow.util.ClientJsonCodec::needsTypeDecoding(Lelemental/json/JsonValue;)(value)) {
+                decodedValue = @com.vaadin.client.flow.util.ClientJsonCodec::decodeWithTypeInfo(Lcom/vaadin/client/flow/StateTree;Lelemental/json/JsonValue;)(tree, value);
+            } else {
+                decodedValue = @com.vaadin.client.flow.util.ClientJsonCodec::decodeWithoutTypeInfo(Lelemental/json/JsonValue;)(value);
+            }
+            
+            result[key] = decodedValue;
+        }
+        
+        return result;
+    }-*/;
+
+    /**
+     * Decodes a bean object containing component references with lazy
+     * resolution. Component lookups happen when the value is accessed, not
+     * during parsing.
+     *
+     * @param tree
+     *            the state tree to use for resolving component references
+     * @param beanJson
+     *            the JSON representation of the bean
+     * @return the decoded bean with lazy component resolution
+     */
+    private static Object decodeBeanWithComponents(StateTree tree,
+            JsonValue beanJson) {
+        if (GWT.isScript()) {
+            return createNativeBeanWithComponents(tree, beanJson);
+        } else {
+            // Return JsonValue for GWT tests that run in JVM during compilation
+            return beanJson;
+        }
+    }
+
+    /**
+     * Creates a native JavaScript object from the bean JSON with lazy component
+     * resolution. Component references are resolved when accessed, not during
+     * parsing.
+     */
+    private static native Object createNativeBeanWithComponents(StateTree tree,
+            JsonValue beanJson)
+    /*-{
+        function resolveValue(value) {
+            if (value && typeof value === 'object') {
+                // Check if it's a Vaadin type reference
+                if (value['@vaadin'] !== undefined) {
+                    switch (value['@vaadin']) {
+                        case 'component':
+                            if (value.nodeId === null || value.nodeId === undefined) {
+                                return null;
+                            }
+                            var stateNode = tree.@com.vaadin.client.flow.StateTree::getNode(I)(value.nodeId);
+                            return stateNode.@com.vaadin.client.flow.StateNode::getDomNode()();
+                        // Future types can be added here
+                        // case 'returnChannel':
+                        // case 'template':
+                        default:
+                            // Unknown type, return as-is
+                            return value;
+                    }
+                }
+
+                // Handle arrays
+                if (Array.isArray(value)) {
+                    return value.map(resolveValue);
+                }
+
+                // Handle nested objects
+                var result = {};
+                for (var key in value) {
+                    if (value.hasOwnProperty(key)) {
+                        result[key] = resolveValue(value[key]);
+                    }
+                }
+                return result;
+            }
+            return value;
+        }
+
+        // Parse and resolve in one pass
+        var parsed = beanJson;
+        return resolveValue(parsed);
+    }-*/;
 
 }

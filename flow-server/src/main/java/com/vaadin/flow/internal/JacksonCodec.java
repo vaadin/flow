@@ -18,11 +18,21 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -51,11 +61,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  */
 public class JacksonCodec {
     /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
      * Type id for a complex type array containing a {@link ArrayNode}.
      */
     public static final int ARRAY_TYPE = 1;
@@ -65,6 +70,16 @@ public class JacksonCodec {
      * {@link ReturnChannelRegistration} reference.
      */
     public static final int RETURN_CHANNEL_TYPE = 2;
+
+    /**
+     * Type id for a complex type array containing a bean object.
+     */
+    public static final int BEAN_TYPE = 5;
+
+    /**
+     * Type id for a complex type array containing a Map object.
+     */
+    public static final int MAP_TYPE = 6;
 
     private JacksonCodec() {
         // Don't create instances
@@ -83,21 +98,55 @@ public class JacksonCodec {
      * @return the value encoded as JSON
      */
     public static JsonNode encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
-
-        if (value instanceof Component) {
+        if (value == null) {
+            return JacksonUtils.getMapper().nullNode();
+        } else if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
-        } else {
+        } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             JsonNode encoded = encodeWithoutTypeInfo(value);
             if (encoded.getNodeType() == JsonNodeType.ARRAY) {
                 // Must "escape" arrays
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else if (value instanceof java.util.Collection<?>) {
+            // Handle collections (List, Set, etc.) as arrays
+            ArrayNode arrayNode = JacksonUtils.createArrayNode();
+            for (Object item : (java.util.Collection<?>) value) {
+                arrayNode.add(encodeWithTypeInfo(item));
+            }
+            return wrapComplexValue(ARRAY_TYPE, arrayNode);
+        } else if (value instanceof java.util.Map<?, ?>) {
+            // Handle Map as MAP_TYPE - only String keys are supported
+            ObjectNode mapNode = JacksonUtils.createObjectNode();
+            java.util.Map<?, ?> map = (java.util.Map<?, ?>) value;
+            for (java.util.Map.Entry<?, ?> entry : map.entrySet()) {
+                Object key = entry.getKey();
+                if (key != null && !(key instanceof String)) {
+                    throw new IllegalArgumentException(
+                            "Map keys must be Strings. Found: " + key.getClass().getName());
+                }
+                String keyStr = (String) key;
+                // Encode value with type info
+                mapNode.set(keyStr, encodeWithTypeInfo(entry.getValue()));
+            }
+            return wrapComplexValue(MAP_TYPE, mapNode);
+        } else {
+            // All other types (including arrays and beans) encode as BEAN_TYPE
+            // using Jackson's built-in serialization
+            JsonNode beanJson;
+            if (value.getClass().isArray()) {
+                // Handle arrays directly with Jackson
+                beanJson = JacksonUtils.getMapper().valueToTree(value);
+            } else {
+                // Handle complex objects as beans
+                beanJson = encodeBean(value);
+            }
+            return wrapComplexValue(BEAN_TYPE, beanJson);
         }
     }
 
@@ -111,8 +160,13 @@ public class JacksonCodec {
     private static JsonNode encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE,
-                    JacksonUtils.getMapper().valueToTree(stateNode.getId()));
+            // Use the same format as ComponentSerializer for consistency
+            ObjectNode ref = JacksonUtils.createObjectNode();
+            ref.put("@vaadin", "component");
+            ref.put("nodeId", stateNode.getId());
+            // Return directly without array wrapper - the @vaadin key is
+            // sufficient identification
+            return ref;
         } else {
             return JacksonUtils.getMapper().nullNode();
         }
@@ -123,6 +177,56 @@ public class JacksonCodec {
                 .concat(Stream.of(JacksonUtils.getMapper().valueToTree(typeId)),
                         Stream.of(values))
                 .collect(JacksonUtils.asArray());
+    }
+
+    private static JsonNode encodeBean(Object bean) {
+        // Use Jackson with custom Component serializer
+        ObjectMapper mapper = createBeanMapper();
+        return mapper.valueToTree(bean);
+    }
+
+    private static ObjectMapper createBeanMapper() {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Component.class, new ComponentSerializer());
+
+        return JsonMapper.builder().addModule(module).configure(
+                tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
+                false)
+                .changeDefaultVisibility(vc -> vc
+                        .withVisibility(PropertyAccessor.FIELD,
+                                JsonAutoDetect.Visibility.ANY)
+                        .withVisibility(PropertyAccessor.GETTER,
+                                JsonAutoDetect.Visibility.NONE)
+                        .withVisibility(PropertyAccessor.SETTER,
+                                JsonAutoDetect.Visibility.NONE))
+                .build();
+    }
+
+    /**
+     * Custom Jackson serializer for Component instances.
+     */
+    private static class ComponentSerializer extends ValueSerializer<Component>
+            implements Serializable {
+        @Override
+        public void serialize(Component component, JsonGenerator gen,
+                SerializationContext ctxt) throws JacksonException {
+            if (component == null) {
+                gen.writeNull();
+            } else {
+                // Create component reference as JsonNode and write it
+                ObjectNode ref = JacksonUtils.createObjectNode();
+                ref.put("@vaadin", "component");
+
+                StateNode stateNode = component.getElement().getNode();
+                if (stateNode.isAttached()) {
+                    ref.put("nodeId", stateNode.getId());
+                } else {
+                    ref.putNull("nodeId");
+                }
+
+                gen.writePOJO(ref);
+            }
+        }
     }
 
     /**
@@ -140,23 +244,6 @@ public class JacksonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonNode.class.isAssignableFrom(type);
-    }
-
-    /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
-     *
-     * @param type
-     *            the type to check
-     * @return whether the type can be encoded
-     */
-    public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
