@@ -32,6 +32,7 @@ import elemental.client.Browser;
 import elemental.dom.Element;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 
 public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
 
@@ -302,10 +303,10 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                     }
                 });
 
-        JsonArray serializedChannel = Json.createArray();
-        serializedChannel.set(0, JsonCodec.RETURN_CHANNEL_TYPE);
-        serializedChannel.set(1, expectedNodeId);
-        serializedChannel.set(2, expectedChannelId);
+        JsonObject serializedChannel = Json.createObject();
+        serializedChannel.put("@v", "return");
+        serializedChannel.put("nodeId", expectedNodeId);
+        serializedChannel.put("channelId", expectedChannelId);
 
         JsonArray invocation = Json.createArray();
         // Assign channel as $0

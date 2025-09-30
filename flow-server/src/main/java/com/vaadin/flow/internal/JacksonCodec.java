@@ -60,33 +60,15 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 24.7
  */
 public class JacksonCodec {
-    /**
-     * Type id for a complex type array containing a {@link ArrayNode}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
-
-    /**
-     * Type id for a complex type array containing a bean object.
-     */
-    public static final int BEAN_TYPE = 5;
 
     private JacksonCodec() {
         // Don't create instances
     }
 
     /**
-     * Helper for encoding values that might not have a native representation in
-     * JSON. Such types are encoded as an JSON array starting with an id
-     * defining the actual type and followed by the actual data. Supported value
-     * types are any native JSON type supported by
-     * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
-     * {@link Component} (encoded as its root element).
+     * Helper for encoding values using the universal @v format for special types.
+     * Components and return channels use @v references, while arrays and beans
+     * use standard Jackson serialization with custom serializers.
      *
      * @param value
      *            the value to encode
@@ -102,65 +84,45 @@ public class JacksonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
-            JsonNode encoded = encodeWithoutTypeInfo(value);
-            if (encoded.getNodeType() == JsonNodeType.ARRAY) {
-                // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
-            }
-            return encoded;
+            // Native JSON types - no wrapping needed
+            return encodeWithoutTypeInfo(value);
         } else {
-            // All other types (including arrays and beans) encode as BEAN_TYPE
-            // using Jackson's built-in serialization
-            JsonNode beanJson;
-            if (value.getClass().isArray()) {
-                // Handle arrays directly with Jackson
-                beanJson = JacksonUtils.getMapper().valueToTree(value);
-            } else {
-                // Handle complex objects as beans
-                beanJson = encodeBean(value);
-            }
-            return wrapComplexValue(BEAN_TYPE, beanJson);
+            // All other types use standard Jackson serialization with custom serializers
+            return encodeWithCustomSerializers(value);
         }
     }
 
-    private static ArrayNode encodeReturnChannel(
+    private static JsonNode encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                JacksonUtils.getMapper().valueToTree(value.getStateNodeId()),
-                JacksonUtils.getMapper().valueToTree(value.getChannelId()));
+        ObjectNode ref = JacksonUtils.createObjectNode();
+        ref.put("@v", "return");
+        ref.put("nodeId", value.getStateNodeId());
+        ref.put("channelId", value.getChannelId());
+        return ref;
     }
 
     private static JsonNode encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            // Use the same format as ComponentSerializer for consistency
             ObjectNode ref = JacksonUtils.createObjectNode();
-            ref.put("@vaadin", "component");
-            ref.put("nodeId", stateNode.getId());
-            // Return directly without array wrapper - the @vaadin key is
-            // sufficient identification
+            ref.put("@v", "node");
+            ref.put("id", stateNode.getId());
             return ref;
         } else {
             return JacksonUtils.getMapper().nullNode();
         }
     }
 
-    private static ArrayNode wrapComplexValue(int typeId, JsonNode... values) {
-        return Stream
-                .concat(Stream.of(JacksonUtils.getMapper().valueToTree(typeId)),
-                        Stream.of(values))
-                .collect(JacksonUtils.asArray());
+    private static JsonNode encodeWithCustomSerializers(Object value) {
+        // Use Jackson with custom serializers for special types
+        ObjectMapper mapper = createCustomMapper();
+        return mapper.valueToTree(value);
     }
 
-    private static JsonNode encodeBean(Object bean) {
-        // Use Jackson with custom Component serializer
-        ObjectMapper mapper = createBeanMapper();
-        return mapper.valueToTree(bean);
-    }
-
-    private static ObjectMapper createBeanMapper() {
+    private static ObjectMapper createCustomMapper() {
         SimpleModule module = new SimpleModule();
         module.addSerializer(Component.class, new ComponentSerializer());
+        module.addSerializer(ReturnChannelRegistration.class, new ReturnChannelSerializer());
 
         return JsonMapper.builder().addModule(module).configure(
                 tools.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES,
@@ -186,17 +148,36 @@ public class JacksonCodec {
             if (component == null) {
                 gen.writeNull();
             } else {
-                // Create component reference as JsonNode and write it
                 ObjectNode ref = JacksonUtils.createObjectNode();
-                ref.put("@vaadin", "component");
+                ref.put("@v", "node");
 
                 StateNode stateNode = component.getElement().getNode();
                 if (stateNode.isAttached()) {
-                    ref.put("nodeId", stateNode.getId());
+                    ref.put("id", stateNode.getId());
                 } else {
-                    ref.putNull("nodeId");
+                    ref.putNull("id");
                 }
 
+                gen.writePOJO(ref);
+            }
+        }
+    }
+
+    /**
+     * Custom Jackson serializer for ReturnChannelRegistration instances.
+     */
+    private static class ReturnChannelSerializer extends ValueSerializer<ReturnChannelRegistration>
+            implements Serializable {
+        @Override
+        public void serialize(ReturnChannelRegistration returnChannel, JsonGenerator gen,
+                SerializationContext ctxt) throws JacksonException {
+            if (returnChannel == null) {
+                gen.writeNull();
+            } else {
+                ObjectNode ref = JacksonUtils.createObjectNode();
+                ref.put("@v", "return");
+                ref.put("nodeId", returnChannel.getStateNodeId());
+                ref.put("channelId", returnChannel.getChannelId());
                 gen.writePOJO(ref);
             }
         }

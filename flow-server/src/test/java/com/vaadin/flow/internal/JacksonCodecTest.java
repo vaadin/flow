@@ -107,13 +107,9 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createObjectNode(), JacksonCodec
                 .encodeWithTypeInfo(objectMapper.createObjectNode()));
 
-        // Array is escaped
-        assertJsonEquals(
-                JacksonUtils.createArray(
-                        objectMapper.valueToTree(JacksonCodec.ARRAY_TYPE),
-                        objectMapper.createArrayNode()),
-                JacksonCodec
-                        .encodeWithTypeInfo(objectMapper.createArrayNode()));
+        // Arrays are now encoded directly without wrapping
+        assertJsonEquals(objectMapper.createArrayNode(),
+                JacksonCodec.encodeWithTypeInfo(objectMapper.createArrayNode()));
     }
 
     @Test
@@ -129,11 +125,11 @@ public class JacksonCodecTest {
 
         // Should be a direct object without array wrapper
         Assert.assertTrue("Should be an object", json.isObject());
-        Assert.assertEquals("Should have @vaadin=component", "component",
-                json.get("@vaadin").asText());
-        Assert.assertNotNull("Should have nodeId", json.get("nodeId"));
-        Assert.assertEquals("Should have nodeId matching element",
-                element.getNode().getId(), json.get("nodeId").intValue());
+        Assert.assertEquals("Should have @v=node", "node",
+                json.get("@v").asText());
+        Assert.assertNotNull("Should have id", json.get("id"));
+        Assert.assertEquals("Should have id matching element",
+                element.getNode().getId(), json.get("id").intValue());
     }
 
     @Test
@@ -154,18 +150,7 @@ public class JacksonCodecTest {
                 JsonNode result = JacksonCodec.encodeWithTypeInfo(value);
                 Assert.assertNotNull("Should encode " + value.getClass(),
                         result);
-                // Complex objects should be wrapped with BEAN_TYPE
-                if (!(value instanceof String[])
-                        && !(value instanceof ArrayList)
-                        && !(value instanceof HashSet)
-                        && !(value instanceof HashMap)) {
-                    Assert.assertTrue("Should be wrapped as BEAN_TYPE",
-                            result.isArray());
-                    if (result.isArray() && result.size() >= 1) {
-                        Assert.assertEquals("Should have BEAN_TYPE", 5,
-                                result.get(0).asInt());
-                    }
-                }
+                // Objects are now encoded directly using Jackson without wrapping
             } catch (Exception e) {
                 // Some objects might fail due to Java module access
                 // restrictions - this is expected
@@ -287,10 +272,10 @@ public class JacksonCodecTest {
 
         // Should be a direct object without array wrapper
         Assert.assertTrue("Should be an object", encoded.isObject());
-        Assert.assertEquals("Should have @vaadin=component", "component",
-                encoded.get("@vaadin").asText());
-        Assert.assertNotNull("Should have nodeId", encoded.get("nodeId"));
-        Assert.assertEquals("Should have nodeId matching element",
-                element.getNode().getId(), encoded.get("nodeId").intValue());
+        Assert.assertEquals("Should have @v=node", "node",
+                encoded.get("@v").asText());
+        Assert.assertNotNull("Should have id", encoded.get("id"));
+        Assert.assertEquals("Should have id matching element",
+                element.getNode().getId(), encoded.get("id").intValue());
     }
 }

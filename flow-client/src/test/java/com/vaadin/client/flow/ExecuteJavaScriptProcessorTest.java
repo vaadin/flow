@@ -153,8 +153,8 @@ public class ExecuteJavaScriptProcessorTest {
         node.setDomNode(element);
 
         JsonObject json = Json.createObject();
-        json.put("@vaadin", "component");
-        json.put("nodeId", node.getId());
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -189,8 +189,8 @@ public class ExecuteJavaScriptProcessorTest {
         registry.getStateTree().registerNode(node);
 
         JsonObject json = Json.createObject();
-        json.put("@vaadin", "component");
-        json.put("nodeId", node.getId());
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -230,8 +230,8 @@ public class ExecuteJavaScriptProcessorTest {
         registry.getStateTree().registerNode(node);
 
         JsonObject json = Json.createObject();
-        json.put("@vaadin", "component");
-        json.put("nodeId", node.getId());
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -270,8 +270,8 @@ public class ExecuteJavaScriptProcessorTest {
         registry.getStateTree().registerNode(node);
 
         JsonObject json = Json.createObject();
-        json.put("@vaadin", "component");
-        json.put("nodeId", node.getId());
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());

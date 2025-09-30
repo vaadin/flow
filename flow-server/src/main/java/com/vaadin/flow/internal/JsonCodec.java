@@ -51,41 +51,21 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class JsonCodec {
-    /**
-     * Type id for a complex type array containing a {@link JsonArray}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
-
-    /**
-     * Type id for a complex type array containing a bean object.
-     */
-    public static final int BEAN_TYPE = 5;
 
     private JsonCodec() {
         // Don't create instances
     }
 
     /**
-     * Helper for encoding values that might not have a native representation in
-     * JSON. Such types are encoded as an JSON array starting with an id
-     * defining the actual type and followed by the actual data. Supported value
-     * types are any native JSON type supported by
-     * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
-     * {@link Component} (encoded as its root element).
+     * Helper for encoding values using the universal @v format for special types.
+     * Components and return channels use @v references, while arrays and other
+     * types use their native JSON representation.
      *
      * @param value
      *            the value to encode
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
-
         if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
@@ -93,41 +73,32 @@ public class JsonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else {
-            JsonValue encoded = encodeWithoutTypeInfo(value);
-            if (encoded.getType() == JsonType.ARRAY) {
-                // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
-            }
-            return encoded;
+            // Native JSON types - no wrapping needed
+            return encodeWithoutTypeInfo(value);
         }
     }
 
     private static JsonValue encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                Json.create(value.getStateNodeId()),
-                Json.create(value.getChannelId()));
+        JsonObject ref = Json.createObject();
+        ref.put("@v", "return");
+        ref.put("nodeId", value.getStateNodeId());
+        ref.put("channelId", value.getChannelId());
+        return ref;
     }
 
     private static JsonValue encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            // Use the same format as bean serialization for consistency
             JsonObject ref = Json.createObject();
-            ref.put("@vaadin", "component");
-            ref.put("nodeId", stateNode.getId());
-            // Return directly without array wrapper - the @vaadin key is
-            // sufficient identification
+            ref.put("@v", "node");
+            ref.put("id", stateNode.getId());
             return ref;
         } else {
             return Json.createNull();
         }
     }
 
-    private static JsonArray wrapComplexValue(int typeId, JsonValue... values) {
-        return Stream.concat(Stream.of(Json.create(typeId)), Stream.of(values))
-                .collect(JsonUtils.asArray());
-    }
 
     /**
      * Helper for checking whether the type is supported by
@@ -146,11 +117,12 @@ public class JsonCodec {
                 || JsonValue.class.isAssignableFrom(type);
     }
 
+
     /**
      * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
+     * {@link #encodeWithTypeInfo(Object)}. With the new universal @v format,
+     * this supports all primitive types, Components, Elements, ReturnChannelRegistrations,
+     * and any type that can be serialized by Jackson.
      *
      * @param type
      *            the type to check
@@ -160,7 +132,8 @@ public class JsonCodec {
         return canEncodeWithoutTypeInfo(type)
                 || Node.class.isAssignableFrom(type)
                 || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
+                || ReturnChannelRegistration.class.isAssignableFrom(type)
+                || java.io.Serializable.class.isAssignableFrom(type);
     }
 
     /**
