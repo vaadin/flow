@@ -57,7 +57,6 @@ public class ClientCallableHandlers extends AbstractServerHandlers<Component> {
         // All parameter types are supported through JSON deserialization
     }
 
-
     @Override
     protected DisabledUpdateMode getUpdateMode(Method method) {
         return method.getAnnotation(ClientCallable.class).value();
