@@ -644,7 +644,7 @@ public class FrontendUtils {
         File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
 
         if (legacyDir.exists()) {
-            getLogger().warn("This project has a legacy fronted directory ({}) "
+            getLogger().warn("This project has a legacy frontend directory ({}) "
                     + "present and it will be used as a fallback."
                     + "\n\nSupport for the legacy directory will be removed "
                     + "in a future release. Please move its contents to "
