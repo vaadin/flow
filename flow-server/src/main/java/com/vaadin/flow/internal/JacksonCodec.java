@@ -23,6 +23,8 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -92,7 +94,7 @@ public class JacksonCodec {
     private static JsonNode encodeReturnChannel(
             ReturnChannelRegistration value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
-        tools.jackson.databind.node.ObjectNode obj = mapper.createObjectNode();
+        ObjectNode obj = mapper.createObjectNode();
         obj.put("@v", "return");
         obj.put("nodeId", value.getStateNodeId());
         obj.put("channelId", value.getChannelId());
@@ -103,8 +105,7 @@ public class JacksonCodec {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
             ObjectMapper mapper = JacksonUtils.getMapper();
-            tools.jackson.databind.node.ObjectNode obj = mapper
-                    .createObjectNode();
+            ObjectNode obj = mapper.createObjectNode();
             obj.put("@v", "node");
             obj.put("id", stateNode.getId());
             return obj;
@@ -192,7 +193,7 @@ public class JacksonCodec {
      * Helper for decoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
      * {@link Boolean}, {@link JsonNode}.
-     * {@link tools.jackson.databind.node.NullNode} is also supported.
+     * {@link NullNode} is also supported.
      *
      * @param json
      *            the JSON value to decode

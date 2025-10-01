@@ -27,6 +27,7 @@ import com.vaadin.flow.internal.JsonCodec;
 import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -209,7 +210,7 @@ public class ClientJsonCodec {
         } else {
             // JVM implementation
             if (json.getType() == JsonType.OBJECT) {
-                return ((elemental.json.JsonObject) json).getString(key);
+                return ((JsonObject) json).getString(key);
             }
             return null;
         }
@@ -229,7 +230,7 @@ public class ClientJsonCodec {
         } else {
             // JVM implementation
             if (json.getType() == JsonType.OBJECT) {
-                return ((elemental.json.JsonObject) json).getNumber(key);
+                return ((JsonObject) json).getNumber(key);
             }
             return 0;
         }
@@ -251,9 +252,8 @@ public class ClientJsonCodec {
             return decodeObjectWithTypeInfoNative(tree, json);
         } else {
             // JVM implementation - recursively decode properties
-            elemental.json.JsonObject obj = (elemental.json.JsonObject) json;
-            elemental.json.JsonObject result = elemental.json.Json
-                    .createObject();
+            JsonObject obj = (JsonObject) json;
+            JsonObject result = Json.createObject();
             for (String key : obj.keys()) {
                 JsonValue value = obj.get(key);
                 result.put(key, (JsonValue) decodeWithTypeInfo(tree, value));
