@@ -83,21 +83,26 @@ public class JacksonCodec {
      * @return the value encoded as JSON
      */
     public static JsonNode encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
 
-        if (value instanceof Component) {
+        if (value == null) {
+            return encodeWithoutTypeInfo(value);
+        } else if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
-        } else {
+        } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             JsonNode encoded = encodeWithoutTypeInfo(value);
             if (encoded.getNodeType() == JsonNodeType.ARRAY) {
                 // Must "escape" arrays
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else {
+            // Encode as bean using Jackson serialization - send directly as
+            // JSON
+            return JacksonUtils.getMapper().valueToTree(value);
         }
     }
 
@@ -140,23 +145,6 @@ public class JacksonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonNode.class.isAssignableFrom(type);
-    }
-
-    /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
-     *
-     * @param type
-     *            the type to check
-     * @return whether the type can be encoded
-     */
-    public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
@@ -213,7 +201,6 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return (JsonNode) value;
         }
-        assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
                 "Can't encode " + value.getClass() + " to json");
     }
@@ -279,7 +266,6 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            assert !canEncodeWithoutTypeInfo(type);
             throw new IllegalArgumentException(
                     "Unknown type " + type.getName());
         }

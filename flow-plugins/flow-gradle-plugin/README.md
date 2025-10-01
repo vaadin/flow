@@ -4,7 +4,7 @@ This is the official Vaadin Gradle Plugin for Vaadin 25 and newer.
 The implementation is based on `flow-plugin-base` which is also used by the Vaadin Maven plugin.
 
 Prerequisites:
-* Java 17 or higher
+* Java 21 or higher
 * node.js and npm. Vaadin will now automatically install node.js and npm, but you can also install those locally:
   * Windows/Mac: [node.js Download site](https://nodejs.org/en/download/)
   * Linux: Use package manager e.g. `sudo apt install npm`
