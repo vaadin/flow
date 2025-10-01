@@ -114,7 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
-            startWatchingPublicResourcesCss(context, config);
+            startWatchingPublicResourcesCss(context);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -246,13 +246,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
 
-    private void startWatchingPublicResourcesCss(VaadinContext context,
-            ApplicationConfiguration config) {
-        if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
-            // In dev-server (Vite) mode or production, static files are handled
-            // elsewhere
-            return;
-        }
+    private void startWatchingPublicResourcesCss(VaadinContext context) {
         try {
             File resourcesFolder = new File(
                     "src/main/resources/META-INF/resources");
