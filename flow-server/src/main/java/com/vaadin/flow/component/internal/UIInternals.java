@@ -109,12 +109,12 @@ public class UIInternals implements Serializable {
     private static Set<String> bundledImports = BundleUtils.loadBundleImports();
 
     /**
-     * A {@link Page#executeJs(String, Serializable...)} invocation that has not
-     * yet been sent to the client.
+     * A {@link Page#executeJs(String, Object...)} invocation that has not yet
+     * been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
-        private final List<Serializable> parameters = new ArrayList<>();
+        private final List<Object> parameters = new ArrayList<>();
 
         /**
          * Creates a new invocation.
@@ -124,8 +124,7 @@ public class UIInternals implements Serializable {
          * @param parameters
          *            a list of parameters to use when invoking the script
          */
-        public JavaScriptInvocation(String expression,
-                Serializable... parameters) {
+        public JavaScriptInvocation(String expression, Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
