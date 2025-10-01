@@ -76,7 +76,7 @@ mvn verify -Dit.test=ExecJavaScriptIT
 ### Code Quality
 
 ```bash
-# Format code (runs automatically on compile)
+# Format code
 mvn formatter:format
 
 # Run checkstyle validation
