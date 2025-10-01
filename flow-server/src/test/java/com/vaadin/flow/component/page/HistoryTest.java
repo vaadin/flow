@@ -48,7 +48,7 @@ public class HistoryTest {
 
         private String expression;
 
-        private Serializable[] parameters;
+        private Object[] parameters;
 
         public TestPage(UI ui) {
             super(ui);
@@ -56,7 +56,7 @@ public class HistoryTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             this.parameters = parameters;
             return null;

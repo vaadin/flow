@@ -83,21 +83,26 @@ public class JacksonCodec {
      * @return the value encoded as JSON
      */
     public static JsonNode encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
 
-        if (value instanceof Component) {
+        if (value == null) {
+            return encodeWithoutTypeInfo(value);
+        } else if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
-        } else {
+        } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             JsonNode encoded = encodeWithoutTypeInfo(value);
             if (encoded.getNodeType() == JsonNodeType.ARRAY) {
                 // Must "escape" arrays
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else {
+            // Encode as bean using Jackson serialization - send directly as
+            // JSON
+            return JacksonUtils.getMapper().valueToTree(value);
         }
     }
 
@@ -140,23 +145,6 @@ public class JacksonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonNode.class.isAssignableFrom(type);
-    }
-
-    /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
-     *
-     * @param type
-     *            the type to check
-     * @return whether the type can be encoded
-     */
-    public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
@@ -213,7 +201,6 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return (JsonNode) value;
         }
-        assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
                 "Can't encode " + value.getClass() + " to json");
     }
@@ -249,7 +236,8 @@ public class JacksonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * {@link Double}, primitives boolean, int, double, {@link JsonNode}, and
+     * any bean object that can be deserialized from JSON.
      *
      * @param <T>
      *            the decoded type
@@ -259,7 +247,7 @@ public class JacksonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported
+     *             if the type was unsupported or deserialization failed
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
@@ -279,9 +267,15 @@ public class JacksonCodec {
         } else if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            assert !canEncodeWithoutTypeInfo(type);
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            // Try to deserialize as a bean using Jackson
+            try {
+                return JacksonUtils.getMapper().treeToValue(json, type);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot deserialize JSON to type " + type.getName()
+                                + ": " + e.getMessage(),
+                        e);
+            }
         }
 
     }

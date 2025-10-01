@@ -364,7 +364,7 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... params) {
+                        Object... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
                 }

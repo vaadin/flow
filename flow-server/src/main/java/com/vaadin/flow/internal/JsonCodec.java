@@ -18,6 +18,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -83,21 +85,26 @@ public class JsonCodec {
      * @return the value encoded as JSON
      */
     public static JsonValue encodeWithTypeInfo(Object value) {
-        assert value == null || canEncodeWithTypeInfo(value.getClass());
 
-        if (value instanceof Component) {
+        if (value == null) {
+            return encodeWithoutTypeInfo(value);
+        } else if (value instanceof Component) {
             return encodeNode(((Component) value).getElement());
         } else if (value instanceof Node<?>) {
             return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
-        } else {
+        } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             JsonValue encoded = encodeWithoutTypeInfo(value);
             if (encoded.getType() == JsonType.ARRAY) {
                 // Must "escape" arrays
                 encoded = wrapComplexValue(ARRAY_TYPE, encoded);
             }
             return encoded;
+        } else {
+            // Encode as bean using Jackson via JsonValue conversion - send
+            // directly as JSON
+            return JsonUtils.writeValue(value);
         }
     }
 
@@ -137,23 +144,6 @@ public class JsonCodec {
         return String.class.equals(type) || Integer.class.equals(type)
                 || Double.class.equals(type) || Boolean.class.equals(type)
                 || JsonValue.class.isAssignableFrom(type);
-    }
-
-    /**
-     * Helper for checking whether the type is supported by
-     * {@link #encodeWithTypeInfo(Object)}. Supported values types are
-     * {@link Node}, {@link Component}, {@link ReturnChannelRegistration} and
-     * anything accepted by {@link #canEncodeWithoutTypeInfo(Class)}.
-     *
-     * @param type
-     *            the type to check
-     * @return whether the type can be encoded
-     */
-    public static boolean canEncodeWithTypeInfo(Class<?> type) {
-        return canEncodeWithoutTypeInfo(type)
-                || Node.class.isAssignableFrom(type)
-                || Component.class.isAssignableFrom(type)
-                || ReturnChannelRegistration.class.isAssignableFrom(type);
     }
 
     /**
@@ -203,7 +193,6 @@ public class JsonCodec {
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return (JsonValue) value;
         }
-        assert !canEncodeWithoutTypeInfo(type);
         throw new IllegalArgumentException(
                 "Can't encode " + value.getClass() + " to json");
     }
@@ -238,7 +227,8 @@ public class JsonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * {@link Double}, primitives boolean, int, double, {@link JsonValue}, and
+     * any bean object that can be deserialized from JSON.
      *
      * @param <T>
      *            the decoded type
@@ -248,7 +238,7 @@ public class JsonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported
+     *             if the type was unsupported or deserialization failed
      */
     public static <T> T decodeAs(JsonValue json, Class<T> type) {
         assert json != null;
@@ -268,9 +258,19 @@ public class JsonCodec {
         } else if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            assert !canEncodeWithoutTypeInfo(type);
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            // Try to deserialize as a bean using Jackson via JsonValue
+            // conversion
+            try {
+                // Convert JsonValue to JsonNode for Jackson deserialization
+                JsonNode jsonNode = JacksonUtils.getMapper()
+                        .readTree(json.toJson());
+                return JacksonUtils.getMapper().treeToValue(jsonNode, type);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot deserialize JSON to type " + type.getName()
+                                + ": " + e.getMessage(),
+                        e);
+            }
         }
 
     }

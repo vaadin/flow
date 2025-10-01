@@ -69,7 +69,7 @@ public class PolymerTemplateTest extends HasCurrentService {
     private DeploymentConfiguration configuration;
 
     private List<Object> executionOrder = new ArrayList<>();
-    private List<Serializable[]> executionParams = new ArrayList<>();
+    private List<Object[]> executionParams = new ArrayList<>();
 
     // Field to prevent current instance from being garbage collected
     private UI ui;
@@ -477,7 +477,7 @@ public class PolymerTemplateTest extends HasCurrentService {
 
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... parameters) {
+                        Object... parameters) {
                     executionOrder.add(expression);
                     executionParams.add(parameters);
                     return null;
@@ -963,7 +963,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertEquals("this.populateModelProperties($0, $1)",
                 executionOrder.get(1));
 
-        Serializable[] params = executionParams.get(1);
+        Object[] params = executionParams.get(1);
         ArrayNode properties = (ArrayNode) params[1];
         Assert.assertEquals(1, properties.size());
         Assert.assertEquals("title", properties.get(0).asText());
@@ -982,7 +982,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertEquals("this.registerUpdatableModelProperties($0, $1)",
                 executionOrder.get(0));
 
-        Serializable[] params = executionParams.get(0);
+        Object[] params = executionParams.get(0);
         ArrayNode properties = (ArrayNode) params[1];
         Assert.assertEquals(2, properties.size());
 
