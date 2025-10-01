@@ -135,6 +135,7 @@ Components extend `Component` and use:
 - Use TestBench for browser automation
 - Test full client-server interaction
 - Require running application server
+- **When an IT fails: Use Playwright to debug the browser behavior and understand what's actually happening in the UI**
 
 ### Common Patterns
 
