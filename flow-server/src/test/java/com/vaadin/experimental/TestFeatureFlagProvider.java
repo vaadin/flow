@@ -23,7 +23,7 @@ import java.util.List;
  * This provider is only available during test execution and will not be
  * included in production builds.
  *
- * @since 24.7
+ * @since 25.0
  */
 public class TestFeatureFlagProvider implements FeatureFlagProvider {
 

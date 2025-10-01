@@ -29,7 +29,7 @@ import java.util.List;
  * This allows each module to define its own feature flags that will only be
  * loaded when the module is on the classpath.
  *
- * @since 24.7
+ * @since 25.0
  */
 public interface FeatureFlagProvider extends Serializable {
 

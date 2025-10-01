@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Provides Hilla-related feature flags.
  *
- * @since 24.7
+ * @since 25.0
  */
 public class HillaFeatureFlagProvider implements FeatureFlagProvider {
 

@@ -20,7 +20,7 @@ import java.util.List;
 /**
  * Provides feature flags for Flow Components.
  *
- * @since 24.7
+ * @since 25.0
  */
 public class FlowComponentsFeatureFlagProvider implements FeatureFlagProvider {
 
