@@ -24,18 +24,18 @@ import java.util.List;
  */
 public class FlowComponentsFeatureFlagProvider implements FeatureFlagProvider {
 
-    private static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
+    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
             "Master Detail Layout component", "masterDetailLayoutComponent",
             "https://github.com/vaadin/platform/issues/7173", true,
             "com.vaadin.flow.component.masterdetaillayout.MasterDetailLayout");
 
-    private static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
             "HorizontalLayout and VerticalLayout improvements",
             "layoutComponentImprovements",
             "https://github.com/vaadin/flow-components/issues/6998", true,
             null);
 
-    private static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
             "Form Layout auto-responsive mode enabled by default",
             "defaultAutoResponsiveFormLayout",
             "https://github.com/vaadin/platform/issues/7172", true, null);

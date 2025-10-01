@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class CoreFeatureFlagProvider implements FeatureFlagProvider {
 
-    private static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
+    public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
             "Collaboration Kit backend for clustering support",
             "collaborationEngineBackend",
             "https://github.com/vaadin/platform/issues/1988", true, null);
@@ -33,7 +33,7 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
             "Flow Full-stack Signals", "flowFullstackSignals",
             "https://github.com/vaadin/platform/issues/7373", true, null);
 
-    private static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
             "Accessible disabled buttons", "accessibleDisabledButtons",
             "https://github.com/vaadin/web-components/issues/4585", true, null);
 

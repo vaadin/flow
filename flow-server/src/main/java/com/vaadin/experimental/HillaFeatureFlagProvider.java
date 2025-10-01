@@ -24,7 +24,7 @@ import java.util.List;
  */
 public class HillaFeatureFlagProvider implements FeatureFlagProvider {
 
-    private static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
+    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
             "Hilla Full-stack Signals", "fullstackSignals",
             "https://github.com/vaadin/hilla/discussions/1902", true, null);
 
