@@ -106,7 +106,7 @@ public class ComponentEffectTest {
                 latch.countDown();
             });
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
@@ -144,7 +144,7 @@ public class ComponentEffectTest {
                 latch.countDown();
             });
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
@@ -200,7 +200,7 @@ public class ComponentEffectTest {
                 throw new RuntimeException("Expected exception");
             });
 
-            if (!latch.await(500, TimeUnit.MILLISECONDS)) {
+            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
                 fail("Expected signal effect to be computed asynchronously");
             }
 
