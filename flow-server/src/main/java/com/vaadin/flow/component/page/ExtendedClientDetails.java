@@ -27,8 +27,7 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * Please note that all information is fetched only once, and <em>not updated
  * automatically</em>. To retrieve updated values, you can execute JS with
- * {@link Page#executeJs(String, Serializable...)} and get the current value
- * back.
+ * {@link Page#executeJs(String, Object...)} and get the current value back.
  *
  * @author Vaadin Ltd
  * @since 2.0
