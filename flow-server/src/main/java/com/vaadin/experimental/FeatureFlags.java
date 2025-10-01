@@ -54,6 +54,17 @@ public class FeatureFlags implements Serializable {
 
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
+    // Feature constants pointing to provider definitions for backward compatibility
+    public static final Feature COLLABORATION_ENGINE_BACKEND = CoreFeatureFlagProvider.COLLABORATION_ENGINE_BACKEND;
+    public static final Feature FLOW_FULLSTACK_SIGNALS = CoreFeatureFlagProvider.FLOW_FULLSTACK_SIGNALS;
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = CoreFeatureFlagProvider.ACCESSIBLE_DISABLED_BUTTONS;
+    public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
+    public static final Feature COPILOT_EXPERIMENTAL = CoreFeatureFlagProvider.COPILOT_EXPERIMENTAL;
+    public static final Feature HILLA_FULLSTACK_SIGNALS = HillaFeatureFlagProvider.HILLA_FULLSTACK_SIGNALS;
+    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = FlowComponentsFeatureFlagProvider.MASTER_DETAIL_LAYOUT_COMPONENT;
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = FlowComponentsFeatureFlagProvider.LAYOUT_COMPONENT_IMPROVEMENTS;
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = FlowComponentsFeatureFlagProvider.DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT;
+
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
