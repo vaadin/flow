@@ -114,6 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
+            startWatchingPublicResourcesCss(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -245,4 +246,26 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
 
+    private void startWatchingPublicResourcesCss(VaadinContext context,
+            ApplicationConfiguration config) {
+        if (config.getMode() != Mode.DEVELOPMENT_BUNDLE) {
+            // In dev-server (Vite) mode or production, static files are handled
+            // elsewhere
+            return;
+        }
+        try {
+            File resourcesFolder = new File(
+                    "src/main/resources/META-INF/resources");
+            if (!resourcesFolder.isDirectory()) {
+                getLogger().debug("No public resources folder found at {}",
+                        resourcesFolder);
+                return;
+            }
+            registerWatcherShutdownCommand(new PublicResourcesCssLiveUpdater(
+                    resourcesFolder, context));
+        } catch (Exception e) {
+            getLogger().error(
+                    "Failed to start live-reload for public CSS resources", e);
+        }
+    }
 }
