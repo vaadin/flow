@@ -29,6 +29,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -564,7 +565,7 @@ public class ComponentEffectTest {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -583,7 +584,7 @@ public class ComponentEffectTest {
             // causes the effect to run and exception being thrown
             taskList.insertLast("last");
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
@@ -603,7 +604,7 @@ public class ComponentEffectTest {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -628,7 +629,7 @@ public class ComponentEffectTest {
             // causes the effect to run and exception being thrown
             taskList.insertLast("last");
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
@@ -654,7 +655,7 @@ public class ComponentEffectTest {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -679,23 +680,23 @@ public class ComponentEffectTest {
             // causes the effect to run and exception being thrown
             taskList.insertLast("last");
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
                     event.getThrowable().getClass());
             assertEquals(
-                    "Parent element must have children matching the list signal. Unexpected child count after child factory call: 2, expected: 1",
+                    "Parent element must have children matching the list signal. Unexpected child at index 2: <div></div>, expected: none",
                     event.getThrowable().getMessage());
 
             List<TestComponent> children = parentComponent.getChildren()
                     .map(TestComponent.class::cast).toList();
-            // Exception is thrown after child factory is called for the
-            // 'middle' item
-            assertEquals("Parent component children count is wrong", 2,
+            // Exception is thrown only in final validation in the end
+            assertEquals("Parent component children count is wrong", 3,
                     parentComponent.getComponentCount());
             assertEquals("first", children.get(0).getValue());
-            assertEquals("added directly", children.get(1).getValue());
+            assertEquals("middle", children.get(1).getValue());
+            assertEquals("added directly", children.get(2).getValue());
         });
     }
 
@@ -704,7 +705,7 @@ public class ComponentEffectTest {
         // When adding children directly to parent, exception will be thrown
         // from the effect on next related Signal change.
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -729,13 +730,13 @@ public class ComponentEffectTest {
                         return component;
                     });
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
                     event.getThrowable().getClass());
             assertEquals(
-                    "Parent element must have children matching the list signal. Unexpected child count: 3, expected: 2",
+                    "Parent element must have children matching the list signal. Unexpected child at index 2: <div></div>, expected: none",
                     event.getThrowable().getMessage());
 
             List<TestComponent> children = parentComponent.getChildren()
@@ -756,7 +757,7 @@ public class ComponentEffectTest {
         // Exception is thrown only in final validation in the end when change
         // can't be detected by just checking size.
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -780,7 +781,7 @@ public class ComponentEffectTest {
                         return component;
                     });
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
@@ -789,7 +790,7 @@ public class ComponentEffectTest {
                     .map(TestComponent.class::cast).toList();
 
             assertEquals(
-                    "Parent element must have children matching the list signal. Unexpected child: <div>middle</div>, expected: <div>first</div>",
+                    "Parent element must have children matching the list signal. Unexpected child at index 0: <div>middle</div>, expected: <div>first</div>",
                     event.getThrowable().getMessage());
             assertEquals("Parent component children count is wrong", 3,
                     parentComponent.getComponentCount());
@@ -845,7 +846,7 @@ public class ComponentEffectTest {
     @Test
     public void bindChildren_withNullFromChildFactory_throws() {
         runWithFeatureFlagEnabled(() -> {
-            LinkedBlockingQueue<ErrorEvent> events = mockSessionWithErrorHandler();
+            LinkedList<ErrorEvent> events = mockLockedSessionWithErrorHandler();
             UI ui = UI.getCurrent();
 
             ListSignal<String> taskList = new ListSignal<>(String.class);
@@ -857,7 +858,7 @@ public class ComponentEffectTest {
             ComponentEffect.bindChildren(parentComponent, taskList,
                     valueSignal -> null);
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
+            ErrorEvent event = events.pollFirst();
 
             assertNotNull(event);
             assertEquals(IllegalStateException.class,
@@ -904,14 +905,14 @@ public class ComponentEffectTest {
         }
     }
 
-    private LinkedBlockingQueue<ErrorEvent> mockSessionWithErrorHandler() {
+    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
         VaadinService.setCurrent(service);
 
         var session = new MockVaadinSession(service);
         session.lock();
 
         var ui = new MockUI(session);
-        var events = new LinkedBlockingQueue<ErrorEvent>();
+        var events = new LinkedList<ErrorEvent>();
         session.setErrorHandler(events::add);
 
         return events;

@@ -313,22 +313,26 @@ public final class ComponentEffect {
      */
     private static <T> void validate(BindChildrenEffectContext<T> context) {
         LinkedList<Element> children = context.parentChildrenToLinkedList();
-        if (children.size() != context.getCachedChildrenSize()) {
-            throw new IllegalStateException(
-                    "Parent element must have children matching the list signal. Unexpected child count: "
-                            + children.size() + ", expected: "
-                            + context.getCachedChildrenSize());
-        }
         int index = 0;
         for (Element actualElement : children) {
-            Element expectedElement = context.valueSignalToChildCache
-                    .get(context.childSignalsList.get(index++));
-            if (!Objects.equals(actualElement, expectedElement)) {
-                throw new IllegalStateException(
-                        "Parent element must have children matching the list signal. Unexpected child: "
-                                + actualElement + ", expected: "
-                                + expectedElement);
+            if (index >= context.childSignalsList.size()) {
+                throw new IllegalStateException(String.format(
+                        "Parent element must have children matching the list signal. Unexpected child at index %1$s: %2$s, expected: %3$s",
+                        index, actualElement, "none"));
             }
+            Element expectedElement = context.valueSignalToChildCache
+                    .get(context.childSignalsList.get(index));
+            if (!Objects.equals(actualElement, expectedElement)) {
+                throw new IllegalStateException(String.format(
+                        "Parent element must have children matching the list signal. Unexpected child at index %1$s: %2$s, expected: %3$s",
+                        index, actualElement, expectedElement));
+            }
+            index++;
+        }
+        if (children.size() > context.getCachedChildrenSize()) {
+            throw new IllegalStateException(String.format(
+                    "Parent element must have children matching the list signal. Too many children: %1$s, expected: %2$s",
+                    children.size(), context.getCachedChildrenSize()));
         }
     }
 
@@ -433,19 +437,8 @@ public final class ComponentEffect {
          *             if child factory adds or removes unexpected child
          */
         private Element getElement(ValueSignal<T> item) {
-            return valueSignalToChildCache.computeIfAbsent(item, value -> {
-                int sizeBefore = parentElement.getChildCount();
-                var element = childElementFactory.apply(value);
-                // quick validation to catch illegal state early
-                if (element != null
-                        && sizeBefore != parentElement.getChildCount()) {
-                    throw new IllegalStateException(
-                            "Parent element must have children matching the list signal. Unexpected child count after child factory call: "
-                                    + parentElement.getChildCount()
-                                    + ", expected: " + sizeBefore);
-                }
-                return element;
-            });
+            return valueSignalToChildCache.computeIfAbsent(item,
+                    childElementFactory);
         }
 
         /**
