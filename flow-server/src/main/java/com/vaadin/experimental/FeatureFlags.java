@@ -406,11 +406,14 @@ public class FeatureFlags implements Serializable {
                         String existingProvider = featureIdToProvider
                                 .get(feature.getId());
                         if (existingProvider != null) {
-                            throw new IllegalStateException(String.format(
-                                    "Feature flag conflict: Feature ID '%s' is defined by both '%s' and '%s'. "
-                                            + "Each feature flag must have a unique ID across all providers.",
+                            getLogger().warn(
+                                    "Feature flag conflict: Feature ID '{}' is defined by both '{}' and '{}'. "
+                                            + "Using the first definition from '{}'. "
+                                            + "Each feature flag should have a unique ID across all providers.",
                                     feature.getId(), existingProvider,
-                                    providerName));
+                                    providerName, existingProvider);
+                            // Skip this duplicate feature
+                            continue;
                         }
 
                         featureIdToProvider.put(feature.getId(), providerName);
