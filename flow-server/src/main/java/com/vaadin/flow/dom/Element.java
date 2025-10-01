@@ -1392,8 +1392,9 @@ public class Element extends Node<Element> {
      * @param arguments
      *            the arguments to pass to the function. All types supported by
      *            Jackson for JSON serialization are supported. Special cases:
-     *            {@link Element} instances will be sent as <code>null</code> if
-     *            not attached when invoked.
+     *            {@link Element} instances (will be sent as DOM element
+     *            references to the browser if attached when invoked, or as
+     *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
@@ -1458,10 +1459,11 @@ public class Element extends Node<Element> {
      * Jackson for JSON serialization are supported as parameters. Special
      * cases:
      * <ul>
-     * <li>{@link Element} - will be sent as <code>null</code> if the
-     * server-side element instance is not attached when the invocation is sent
-     * to the client
-     * <li>{@link BaseJsonNode} - sent as-is without additional wrapping
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do

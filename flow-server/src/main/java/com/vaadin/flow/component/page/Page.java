@@ -274,11 +274,12 @@ public class Page implements Serializable {
      * Jackson for JSON serialization are supported as parameters. Special
      * cases:
      * <ul>
-     * <li>{@link Element} - will be sent as <code>null</code> if the
-     * server-side element instance is not attached when the invocation is sent
-     * to the client
-     * <li>{@link tools.jackson.databind.node.BaseJsonNode} - sent as-is without
-     * additional wrapping
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
+     * additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
