@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
+import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
@@ -147,10 +148,44 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "Bean With Component", "beanWithComponentButton",
                 e -> testBeanWithComponentSerialization());
 
+        // @ClientCallable integration tests
+        NativeButton clientCallableBeanButton = createButton(
+                "ClientCallable Bean", "clientCallableBeanButton", e -> {
+                    // Test @ClientCallable with bean parameter
+                    SimpleBean testBean = new SimpleBean("ClientCallableTest",
+                            99, true);
+                    getElement().executeJs(
+                            "this.$server.handleClientCallableBean($0)",
+                            testBean);
+                });
+
+        NativeButton clientCallableListButton = createButton(
+                "ClientCallable List", "clientCallableListButton", e -> {
+                    // Test @ClientCallable with list parameter
+                    List<SimpleBean> testList = Arrays.asList(
+                            new SimpleBean("Item1", 111, true),
+                            new SimpleBean("Item2", 222, false));
+                    getElement().executeJs(
+                            "this.$server.handleClientCallableList($0)",
+                            testList);
+                });
+
+        NativeButton clientCallableNestedButton = createButton(
+                "ClientCallable Nested", "clientCallableNestedButton", e -> {
+                    // Test @ClientCallable with nested bean parameter
+                    NestedBean nested = new NestedBean("ClientCallableNested",
+                            new SimpleBean("NestedInner", 333, false));
+                    getElement().executeJs(
+                            "this.$server.handleClientCallableNested($0)",
+                            nested);
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
                 returnBeanButton, listButton, returnListButton,
-                componentArrayButton, beanWithComponentButton);
+                componentArrayButton, beanWithComponentButton,
+                clientCallableBeanButton, clientCallableListButton,
+                clientCallableNestedButton);
     }
 
     private void testBeanSerialization() {
@@ -298,6 +333,58 @@ public class ExecJavaScriptView extends AbstractDivView {
             this.component = component;
             this.value = value;
         }
+    }
+
+    @ClientCallable
+    public void handleClientCallableBean(SimpleBean bean) {
+        Div result = new Div();
+        result.setId("clientCallableBeanResult");
+        result.setText("ClientCallable Bean: name=" + bean.name + ", value="
+                + bean.value + ", active=" + bean.active);
+        add(result);
+
+        Div status = new Div();
+        status.setId("clientCallableBeanStatus");
+        status.setText("ClientCallable bean handled");
+        add(status);
+    }
+
+    @ClientCallable
+    public void handleClientCallableList(List<SimpleBean> beanList) {
+        Div result = new Div();
+        result.setId("clientCallableListResult");
+        StringBuilder text = new StringBuilder("ClientCallable List: ");
+        for (int i = 0; i < beanList.size(); i++) {
+            SimpleBean bean = beanList.get(i);
+            text.append("[").append(i).append("]: name=").append(bean.name)
+                    .append(", value=").append(bean.value).append(", active=")
+                    .append(bean.active);
+            if (i < beanList.size() - 1)
+                text.append(" | ");
+        }
+        result.setText(text.toString());
+        add(result);
+
+        Div status = new Div();
+        status.setId("clientCallableListStatus");
+        status.setText("ClientCallable list handled");
+        add(status);
+    }
+
+    @ClientCallable
+    public void handleClientCallableNested(NestedBean nested) {
+        Div result = new Div();
+        result.setId("clientCallableNestedResult");
+        result.setText("ClientCallable Nested: title=" + nested.title
+                + ", simple.name=" + nested.simple.name + ", simple.value="
+                + nested.simple.value + ", simple.active="
+                + nested.simple.active);
+        add(result);
+
+        Div status = new Div();
+        status.setId("clientCallableNestedStatus");
+        status.setText("ClientCallable nested bean handled");
+        add(status);
     }
 
     public static class SimpleBean {

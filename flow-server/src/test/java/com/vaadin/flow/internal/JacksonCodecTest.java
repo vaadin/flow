@@ -485,7 +485,7 @@ public class JacksonCodecTest {
 
         JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanSet);
 
-        // Should be direct array
+        // With the new approach, sets are directly serialized as JSON arrays
         Assert.assertTrue("Should be array", encoded.isArray());
         Assert.assertEquals("Should have 2 elements", 2, encoded.size());
 
