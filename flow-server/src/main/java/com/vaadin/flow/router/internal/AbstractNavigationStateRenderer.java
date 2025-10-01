@@ -65,6 +65,8 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.RouteTarget;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.RouteRegistry;
@@ -799,7 +801,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     private Optional<Integer> createChainIfEmptyAndExecuteBeforeEnterNavigation(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain) {
+            ArrayList<HasElement> chain) {
 
         // Always send the beforeNavigation event first to the registered
         // listeners
@@ -824,7 +826,7 @@ public abstract class AbstractNavigationStateRenderer
 
     private Optional<Integer> sendBeforeEnterEventAndPopulateChain(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain) {
+            ArrayList<HasElement> chain) {
         List<HasElement> oldChain = event.getUI().getInternals()
                 .getActiveRouterTargetsChain();
 
@@ -871,9 +873,8 @@ public abstract class AbstractNavigationStateRenderer
 
     private Optional<Integer> sendBeforeEnterEventToExistingChain(
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
-            List<HasElement> chain) {
+            ArrayList<HasElement> chain) {
         // Reverse the chain so that the target is last.
-        chain = new ArrayList<>(chain);
         Collections.reverse(chain);
 
         // Used when the chain already exists by being preserved on refresh.
@@ -891,7 +892,7 @@ public abstract class AbstractNavigationStateRenderer
      */
     private Optional<Integer> sendBeforeEnterEvent(
             List<BeforeEnterHandler> eventHandlers, NavigationEvent event,
-            BeforeEnterEvent beforeNavigation, List<HasElement> chain) {
+            BeforeEnterEvent beforeNavigation, ArrayList<HasElement> chain) {
 
         ComponentContext componentContext = prepareComponentContext(event, chain);
         
@@ -901,7 +902,7 @@ public abstract class AbstractNavigationStateRenderer
     /**
      * Prepare the component context for event handling.
      */
-    private ComponentContext prepareComponentContext(NavigationEvent event, List<HasElement> chain) {
+    private ComponentContext prepareComponentContext(NavigationEvent event, ArrayList<HasElement> chain) {
         if (chain == null) {
             return new ComponentContext(null, false);
         }
