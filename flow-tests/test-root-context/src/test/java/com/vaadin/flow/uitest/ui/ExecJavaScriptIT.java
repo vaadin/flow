@@ -61,6 +61,38 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 result.getText());
     }
 
+    @Test
+    public void testBeanSerialization() {
+        open();
+
+        getButton("beanButton").click();
+
+        WebElement result = waitUntil(d -> findElement(By.id("beanResult")));
+        Assert.assertEquals(
+                "simple: name=TestBean, value=42, active=true | nested: title=Outer, inner.name=Inner, inner.value=100",
+                result.getText());
+
+        WebElement status = waitUntil(d -> findElement(By.id("beanStatus")));
+        Assert.assertEquals("Bean serialization completed", status.getText());
+    }
+
+    @Test
+    public void testBeanReturnValue() {
+        open();
+
+        getButton("returnBeanButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnBeanResult")));
+        Assert.assertEquals(
+                "Returned: title=ReturnedNested, simple.name=InnerReturned, simple.value=777, simple.active=true",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnBeanStatus")));
+        Assert.assertEquals("Bean returned", status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }
