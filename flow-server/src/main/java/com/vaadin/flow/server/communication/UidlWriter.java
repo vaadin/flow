@@ -85,19 +85,15 @@ public class UidlWriter implements Serializable {
      */
     public static class ResolveContext implements Serializable {
         private VaadinService service;
-        private WebBrowser browser;
 
         /**
          * Creates a new context.
          *
          * @param service
          *            the service which is resolving
-         * @param browser
-         *            the browser
          */
-        public ResolveContext(VaadinService service, WebBrowser browser) {
+        public ResolveContext(VaadinService service) {
             this.service = Objects.requireNonNull(service);
-            this.browser = Objects.requireNonNull(browser);
         }
 
         /**
@@ -107,15 +103,6 @@ public class UidlWriter implements Serializable {
          */
         public VaadinService getService() {
             return service;
-        }
-
-        /**
-         * Gets the browser info used for resolving.
-         *
-         * @return the browser
-         */
-        public WebBrowser getBrowser() {
-            return browser;
         }
 
     }
@@ -169,7 +156,17 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, uiInternals.getDependencyList(),
-                new ResolveContext(service, session.getBrowser()));
+                new ResolveContext(service));
+
+        // Add stylesheet removals to response
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
+        if (!stylesheetRemovals.isEmpty()) {
+            ArrayNode removals = JacksonUtils.createArrayNode();
+            stylesheetRemovals.forEach(removals::add);
+            response.set("stylesheetRemovals", removals);
+            uiInternals.clearPendingStyleSheetRemovals();
+        }
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.set("constants",

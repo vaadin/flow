@@ -22,6 +22,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.function.Function;
 
 import tools.jackson.databind.JsonNode;
@@ -32,6 +33,7 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -108,9 +110,10 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url) {
-        addStyleSheet(url, LoadMode.EAGER);
+    public Registration addStyleSheet(String url) {
+        return addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -135,9 +138,30 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
+    public Registration addStyleSheet(String url, LoadMode loadMode) {
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+
+        // Check if dependency already exists with this URL
+        Dependency existing = dependencyList.getDependencyByUrl(url,
+                Type.STYLESHEET);
+        String dependencyId;
+
+        if (existing != null && existing.getId() != null) {
+            // Reuse the existing dependency's ID for duplicates
+            dependencyId = existing.getId();
+        } else {
+            // Create new ID for new dependencies
+            dependencyId = UUID.randomUUID().toString();
+        }
+
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
+                dependencyId);
+        dependencyList.add(dependency);
+
+        // Return Registration for removal
+        return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
     /**
@@ -246,17 +270,16 @@ public class Page implements Serializable {
      * return value will be ignored.
      * <p>
      * The given parameters will be available to the expression as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
+     * named <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link tools.jackson.databind.node.BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
+     * additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -272,7 +295,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -282,6 +305,24 @@ public class Page implements Serializable {
         ui.getInternals().addJavaScriptInvocation(execution);
 
         return execution;
+    }
+
+    /**
+     * Executes the given JavaScript expression in the browser.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to execute
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
     }
 
     /**
@@ -521,7 +562,7 @@ public class Page implements Serializable {
      * proxy between the client and the server.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return window.location.href}.
      * <p>
      * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
@@ -554,7 +595,7 @@ public class Page implements Serializable {
      * request and passed to the callback.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return document.dir}.
      *
      * @param callback

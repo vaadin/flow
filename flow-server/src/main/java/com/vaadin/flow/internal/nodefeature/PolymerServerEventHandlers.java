@@ -21,6 +21,7 @@ import java.lang.reflect.Parameter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -81,6 +82,19 @@ public class PolymerServerEventHandlers
     @Override
     protected String getHandlerAnnotationFqn() {
         return "com.vaadin.flow.component.polymertemplate.EventHandler";
+    }
+
+    @Override
+    protected void ensureSupportedReturnType(Method method) {
+        if (!void.class.equals(method.getReturnType())) {
+            String msg = String.format(Locale.ENGLISH,
+                    "Only void handler methods are supported. "
+                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
+                    method.getDeclaringClass().getName(), method.getName(),
+                    getHandlerAnnotationFqn(),
+                    method.getReturnType().getSimpleName());
+            throw new IllegalStateException(msg);
+        }
     }
 
     @Override

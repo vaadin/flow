@@ -17,14 +17,20 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Component;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -37,7 +43,10 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
+import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.Theme;
+import com.vaadin.flow.component.dependency.StyleSheet;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
@@ -68,6 +77,8 @@ public class AppShellRegistry implements Serializable {
     // There must be no more than one of the following elements per document
     private static final String[] UNIQUE_ELEMENTS = { "meta[name=viewport]",
             "meta[name=description]", "title", "base" };
+    private static final Logger log = LoggerFactory
+            .getLogger(AppShellRegistry.class);
 
     private Class<? extends AppShellConfigurator> appShellClass;
 
@@ -164,6 +175,9 @@ public class AppShellRegistry implements Serializable {
         List<Class<?>> validOnlyForAppShell = (List) getValidAnnotations();
         // PageTitle can be in AppShell and Views
         validOnlyForAppShell.remove(PageTitle.class);
+        // StyleSheet is allowed on Components; do not treat it as an
+        // AppShell-only annotation
+        validOnlyForAppShell.remove(StyleSheet.class);
         if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
             // and Push annotation as it is not appShell configured.
@@ -179,7 +193,7 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
-    private AppShellSettings createSettings() {
+    private AppShellSettings createSettings(String contextPath) {
         AppShellSettings settings = new AppShellSettings();
 
         getAnnotations(Meta.class).forEach(
@@ -211,7 +225,54 @@ public class AppShellRegistry implements Serializable {
             settings.setPageTitle(pageTitles.get(0).value());
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
+
+        Set<String> stylesheets = new LinkedHashSet<>();
+        for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
+            String href = resolveStyleSheetHref(sheet.value(), contextPath);
+            if (href != null && !href.isBlank()) {
+                stylesheets.add(href);
+            }
+        }
+        stylesheets.forEach(href -> settings.addLink("stylesheet", href));
+
         return settings;
+    }
+
+    private String resolveStyleSheetHref(String href, String contextPath) {
+        if (href == null || href.isBlank()) {
+            return null;
+        }
+        href = href.trim();
+        // Accept absolute http(s) URLs unchanged
+        String lower = href.toLowerCase();
+        if (lower.startsWith("http://") || lower.startsWith("https://")) {
+            return href;
+        }
+        // Accept context-relative URLs: context://path -> /path
+        String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+        if (lower.startsWith(contextProtocol)) {
+            String path = href.substring(contextProtocol.length());
+            if (!path.startsWith("/")) {
+                path = "/" + path;
+            }
+            if (contextPath != null && !contextPath.isEmpty()) {
+                return contextPath + path;
+            }
+            return path;
+        }
+        // Treat ./ as relative path to static resources location
+        if (href.startsWith("./")) {
+            href = href.substring(2);
+        }
+        // Accept bare paths beginning with '/' as-is
+        href = href.startsWith("/") ? href : "/" + href;
+        if (HandlerHelper.isPathUnsafe(href)) {
+            log.warn(
+                    "@StyleSheet href containing traversals ('../') are not allowed, ignored: "
+                            + href);
+            return null;
+        }
+        return href;
     }
 
     /**
@@ -225,7 +286,7 @@ public class AppShellRegistry implements Serializable {
      *            The request to handle
      */
     public void modifyIndexHtml(Document document, VaadinRequest request) {
-        AppShellSettings settings = createSettings();
+        AppShellSettings settings = createSettings(request.getContextPath());
         if (appShellClass != null) {
             VaadinService.getCurrent().getInstantiator()
                     .getOrCreate(appShellClass).configurePage(settings);

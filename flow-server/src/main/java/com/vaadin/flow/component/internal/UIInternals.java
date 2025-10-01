@@ -109,12 +109,12 @@ public class UIInternals implements Serializable {
     private static Set<String> bundledImports = BundleUtils.loadBundleImports();
 
     /**
-     * A {@link Page#executeJs(String, Serializable...)} invocation that has not
-     * yet been sent to the client.
+     * A {@link Page#executeJs(String, Object...)} invocation that has not yet
+     * been sent to the client.
      */
     public static class JavaScriptInvocation implements Serializable {
         private final String expression;
-        private final List<Serializable> parameters = new ArrayList<>();
+        private final List<Object> parameters = new ArrayList<>();
 
         /**
          * Creates a new invocation.
@@ -124,8 +124,7 @@ public class UIInternals implements Serializable {
          * @param parameters
          *            a list of parameters to use when invoking the script
          */
-        public JavaScriptInvocation(String expression,
-                Serializable... parameters) {
+        public JavaScriptInvocation(String expression, Object... parameters) {
             /*
              * To ensure attached elements are actually attached, the parameters
              * won't be serialized until the phase the UIDL message is created.
@@ -213,6 +212,8 @@ public class UIInternals implements Serializable {
     private volatile VaadinSession session;
 
     private final DependencyList dependencyList = new DependencyList();
+
+    private final Set<String> pendingStyleSheetRemovals = new LinkedHashSet<>();
 
     private final ConstantPool constantPool = new ConstantPool();
 
@@ -990,6 +991,40 @@ public class UIInternals implements Serializable {
      */
     public DependencyList getDependencyList() {
         return dependencyList;
+    }
+
+    /**
+     * Removes a stylesheet by its dependency ID.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param dependencyId
+     *            the ID of the stylesheet dependency to remove
+     */
+    public void removeStyleSheet(String dependencyId) {
+        // Always add to pending removals - the client gracefully handles
+        // removal of non-existent IDs. This ensures duplicate registrations
+        // work.
+        if (dependencyId != null) {
+            pendingStyleSheetRemovals.add(dependencyId);
+            dependencyList.remove(dependencyId);
+        }
+    }
+
+    /**
+     * Gets the pending stylesheet removals to be sent to the client.
+     *
+     * @return the set of dependency IDs to remove
+     */
+    public Set<String> getPendingStyleSheetRemovals() {
+        return new HashSet<>(pendingStyleSheetRemovals);
+    }
+
+    /**
+     * Clears the pending stylesheet removals.
+     */
+    public void clearPendingStyleSheetRemovals() {
+        pendingStyleSheetRemovals.clear();
     }
 
     /**
