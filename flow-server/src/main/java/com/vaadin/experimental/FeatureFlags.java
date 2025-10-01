@@ -24,7 +24,9 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -382,10 +384,25 @@ public class FeatureFlags implements Serializable {
                     FeatureFlagProvider.class,
                     this.getClass().getClassLoader());
 
+            Map<String, String> featureIdToProvider = new HashMap<>();
+
             for (FeatureFlagProvider provider : loader) {
                 List<Feature> providerFeatures = provider.getFeatures();
                 if (providerFeatures != null) {
+                    String providerName = provider.getClass().getName();
                     for (Feature feature : providerFeatures) {
+                        // Check for feature ID conflicts
+                        String existingProvider = featureIdToProvider
+                                .get(feature.getId());
+                        if (existingProvider != null) {
+                            throw new IllegalStateException(String.format(
+                                    "Feature flag conflict: Feature ID '%s' is defined by both '%s' and '%s'. "
+                                            + "Each feature flag must have a unique ID across all providers.",
+                                    feature.getId(), existingProvider,
+                                    providerName));
+                        }
+
+                        featureIdToProvider.put(feature.getId(), providerName);
                         // Create new Feature instances to ensure proper
                         // isolation
                         features.add(new Feature(feature));
