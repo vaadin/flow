@@ -192,8 +192,7 @@ public class JacksonCodec {
     /**
      * Helper for decoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonNode}.
-     * {@link NullNode} is also supported.
+     * {@link Boolean}, {@link JsonNode}. {@link NullNode} is also supported.
      *
      * @param json
      *            the JSON value to decode
