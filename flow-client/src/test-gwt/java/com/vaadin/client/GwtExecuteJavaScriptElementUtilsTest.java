@@ -302,10 +302,11 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                     }
                 });
 
-        JsonArray serializedChannel = Json.createArray();
-        serializedChannel.set(0, JsonCodec.RETURN_CHANNEL_TYPE);
-        serializedChannel.set(1, expectedNodeId);
-        serializedChannel.set(2, expectedChannelId);
+        // Create @v object format for return channel
+        elemental.json.JsonObject serializedChannel = Json.createObject();
+        serializedChannel.put("@v", "return");
+        serializedChannel.put("nodeId", expectedNodeId);
+        serializedChannel.put("channelId", expectedChannelId);
 
         JsonArray invocation = Json.createArray();
         // Assign channel as $0

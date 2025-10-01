@@ -59,21 +59,14 @@ public class ClientJsonCodec {
      * @return the decoded state node if any
      */
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
-        if (json.getType() == JsonType.ARRAY) {
-            JsonArray array = (JsonArray) json;
-            int typeId = (int) array.getNumber(0);
-            switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
+        if (json.getType() == JsonType.OBJECT) {
+            // Check for @v object format
+            String type = getStringProperty(json, "@v");
+            if ("node".equals(type)) {
+                int nodeId = (int) getNumberProperty(json, "id");
                 return tree.getNode(nodeId);
             }
-            case JsonCodec.ARRAY_TYPE:
-            case JsonCodec.RETURN_CHANNEL_TYPE:
-                return null;
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported complex type in " + array.toJson());
-            }
+            return null;
         } else {
             return null;
         }
@@ -90,25 +83,26 @@ public class ClientJsonCodec {
      * @return the decoded value
      */
     public static Object decodeWithTypeInfo(StateTree tree, JsonValue json) {
-        if (json.getType() == JsonType.ARRAY) {
-            JsonArray array = (JsonArray) json;
-            int typeId = (int) array.getNumber(0);
-            switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
+        if (json.getType() == JsonType.OBJECT) {
+            // Check for @v object format
+            String type = getStringProperty(json, "@v");
+            if ("node".equals(type)) {
+                int nodeId = (int) getNumberProperty(json, "id");
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
-            }
-            case JsonCodec.ARRAY_TYPE:
-                return jsonArrayAsJsArray(array.getArray(1));
-            case JsonCodec.RETURN_CHANNEL_TYPE:
-                return createReturnChannelCallback((int) array.getNumber(1),
-                        (int) array.getNumber(2),
+            } else if ("return".equals(type)) {
+                int nodeId = (int) getNumberProperty(json, "nodeId");
+                int channelId = (int) getNumberProperty(json, "channelId");
+                return createReturnChannelCallback(nodeId, channelId,
                         tree.getRegistry().getServerConnector());
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported complex type in " + array.toJson());
             }
+            // Regular JSON object - decode recursively to handle nested @v
+            // references
+            return decodeObjectWithTypeInfo(tree, json);
+        } else if (json.getType() == JsonType.ARRAY) {
+            // Regular JSON array - decode recursively to handle nested @v
+            // references
+            return decodeArrayWithTypeInfo(tree, (JsonArray) json);
         } else {
             return decodeWithoutTypeInfo(json);
         }
@@ -202,6 +196,92 @@ public class ClientJsonCodec {
             for (int i = 0; i < jsonArray.length(); i++) {
                 jsArray.push(decodeWithoutTypeInfo(jsonArray.get(i)));
             }
+        }
+        return jsArray;
+    }
+
+    /**
+     * Helper method to get a string property from a JSON object.
+     */
+    private static String getStringProperty(JsonValue json, String key) {
+        if (GWT.isScript()) {
+            return getStringPropertyNative(json, key);
+        } else {
+            // JVM implementation
+            if (json.getType() == JsonType.OBJECT) {
+                return ((elemental.json.JsonObject) json).getString(key);
+            }
+            return null;
+        }
+    }
+
+    private static native String getStringPropertyNative(JsonValue json,
+            String key) /*-{
+        return json[key];
+    }-*/;
+
+    /**
+     * Helper method to get a number property from a JSON object.
+     */
+    private static double getNumberProperty(JsonValue json, String key) {
+        if (GWT.isScript()) {
+            return getNumberPropertyNative(json, key);
+        } else {
+            // JVM implementation
+            if (json.getType() == JsonType.OBJECT) {
+                return ((elemental.json.JsonObject) json).getNumber(key);
+            }
+            return 0;
+        }
+    }
+
+    private static native double getNumberPropertyNative(JsonValue json,
+            String key) /*-{
+        return json[key];
+    }-*/;
+
+    /**
+     * Recursively decodes a JSON object, processing any nested @v references.
+     */
+    private static Object decodeObjectWithTypeInfo(StateTree tree,
+            JsonValue json) {
+        if (GWT.isScript()) {
+            // Need to recursively process the object to decode any nested @v
+            // references
+            return decodeObjectWithTypeInfoNative(tree, json);
+        } else {
+            // JVM implementation - recursively decode properties
+            elemental.json.JsonObject obj = (elemental.json.JsonObject) json;
+            elemental.json.JsonObject result = elemental.json.Json
+                    .createObject();
+            for (String key : obj.keys()) {
+                JsonValue value = obj.get(key);
+                result.put(key, (JsonValue) decodeWithTypeInfo(tree, value));
+            }
+            return result;
+        }
+    }
+
+    private static native Object decodeObjectWithTypeInfoNative(StateTree tree,
+            JsonValue json) /*-{
+        var result = {};
+        for (var key in json) {
+            if (json.hasOwnProperty(key)) {
+                var value = json[key];
+                result[key] = @ClientJsonCodec::decodeWithTypeInfo(*)(tree, value);
+            }
+        }
+        return result;
+    }-*/;
+
+    /**
+     * Recursively decodes a JSON array, processing any nested @v references.
+     */
+    private static JsArray<Object> decodeArrayWithTypeInfo(StateTree tree,
+            JsonArray jsonArray) {
+        JsArray<Object> jsArray = JsCollections.array();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            jsArray.push(decodeWithTypeInfo(tree, jsonArray.get(i)));
         }
         return jsArray;
     }

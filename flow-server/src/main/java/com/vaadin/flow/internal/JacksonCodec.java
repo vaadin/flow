@@ -19,6 +19,7 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.JsonNodeType;
@@ -50,21 +51,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 24.7
  */
 public class JacksonCodec {
-    /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
-     * Type id for a complex type array containing a {@link ArrayNode}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
 
     private JacksonCodec() {
         // Don't create instances
@@ -93,41 +79,38 @@ public class JacksonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
-            JsonNode encoded = encodeWithoutTypeInfo(value);
-            if (encoded.getNodeType() == JsonNodeType.ARRAY) {
-                // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
-            }
-            return encoded;
+            // Native JSON types - no wrapping needed
+            return encodeWithoutTypeInfo(value);
         } else {
-            // Encode as bean using Jackson serialization - send directly as
-            // JSON
+            // All other types (including arrays and beans) use standard Jackson
+            // serialization
+            // Component references within will be handled by custom serializers
             return JacksonUtils.getMapper().valueToTree(value);
         }
     }
 
-    private static ArrayNode encodeReturnChannel(
+    private static JsonNode encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                JacksonUtils.getMapper().valueToTree(value.getStateNodeId()),
-                JacksonUtils.getMapper().valueToTree(value.getChannelId()));
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        tools.jackson.databind.node.ObjectNode obj = mapper.createObjectNode();
+        obj.put("@v", "return");
+        obj.put("nodeId", value.getStateNodeId());
+        obj.put("channelId", value.getChannelId());
+        return obj;
     }
 
     private static JsonNode encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE,
-                    JacksonUtils.getMapper().valueToTree(stateNode.getId()));
+            ObjectMapper mapper = JacksonUtils.getMapper();
+            tools.jackson.databind.node.ObjectNode obj = mapper
+                    .createObjectNode();
+            obj.put("@v", "node");
+            obj.put("id", stateNode.getId());
+            return obj;
         } else {
             return JacksonUtils.getMapper().nullNode();
         }
-    }
-
-    private static ArrayNode wrapComplexValue(int typeId, JsonNode... values) {
-        return Stream
-                .concat(Stream.of(JacksonUtils.getMapper().valueToTree(typeId)),
-                        Stream.of(values))
-                .collect(JacksonUtils.asArray());
     }
 
     /**

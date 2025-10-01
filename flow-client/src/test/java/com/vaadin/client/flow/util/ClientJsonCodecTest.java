@@ -91,10 +91,12 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject jsonObject = Json.createObject();
+        jsonObject.put("@v", "node");
+        jsonObject.put("id", node.getId());
 
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonObject);
 
         Assert.assertSame(element, decoded);
     }
@@ -115,10 +117,12 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject jsonObject = Json.createObject();
+        jsonObject.put("@v", "node");
+        jsonObject.put("id", node.getId());
 
-        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, json);
+        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, jsonObject);
 
         Assert.assertSame(node, decoded);
     }

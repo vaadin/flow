@@ -106,13 +106,9 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createObjectNode(), JacksonCodec
                 .encodeWithTypeInfo(objectMapper.createObjectNode()));
 
-        // Array is escaped
-        assertJsonEquals(
-                JacksonUtils.createArray(
-                        objectMapper.valueToTree(JacksonCodec.ARRAY_TYPE),
-                        objectMapper.createArrayNode()),
-                JacksonCodec
-                        .encodeWithTypeInfo(objectMapper.createArrayNode()));
+        // Array is now encoded directly (no wrapping needed)
+        assertJsonEquals(objectMapper.createArrayNode(), JacksonCodec
+                .encodeWithTypeInfo(objectMapper.createArrayNode()));
     }
 
     @Test
@@ -126,11 +122,12 @@ public class JacksonCodecTest {
 
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
 
-        assertJsonEquals(
-                JacksonUtils.createArray(
-                        objectMapper.valueToTree(JacksonCodec.NODE_TYPE),
-                        objectMapper.valueToTree(element.getNode().getId())),
-                json);
+        // Should now use @v object format
+        ObjectNode expected = objectMapper.createObjectNode();
+        expected.put("@v", "node");
+        expected.put("id", element.getNode().getId());
+
+        assertJsonEquals(expected, json);
     }
 
     @Test

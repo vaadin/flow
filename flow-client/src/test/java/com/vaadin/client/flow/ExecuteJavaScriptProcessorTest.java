@@ -153,8 +153,10 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -188,8 +190,10 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -228,8 +232,10 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -267,8 +273,10 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v object format for node
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v", "node");
+        json.put("id", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
