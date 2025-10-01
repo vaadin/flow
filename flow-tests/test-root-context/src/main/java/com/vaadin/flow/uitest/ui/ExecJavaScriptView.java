@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -92,16 +93,36 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
-        // Bean serialization test
         NativeButton beanButton = createButton("Bean Serialization",
                 "beanButton", e -> testBeanSerialization());
 
+        NativeButton returnBeanButton = createButton("Return Bean",
+                "returnBeanButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return {title: 'ReturnedNested', simple: {name: 'InnerReturned', value: 777, active: true}}")
+                            .then(NestedBean.class, bean -> {
+                                Div result = new Div();
+                                result.setId("returnBeanResult");
+                                result.setText("Returned: title=" + bean.title
+                                        + ", simple.name=" + bean.simple.name
+                                        + ", simple.value=" + bean.simple.value
+                                        + ", simple.active="
+                                        + bean.simple.active);
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnBeanStatus");
+                                status.setText("Bean returned");
+                                add(status);
+                            });
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton, beanButton);
+                elementAwaitButton, pageAwaitButton, beanButton,
+                returnBeanButton);
     }
 
     private void testBeanSerialization() {
-        // Test both simple and nested beans in one test
         SimpleBean simple = new SimpleBean("TestBean", 42, true);
         SimpleBean inner = new SimpleBean("Inner", 100, false);
         NestedBean nested = new NestedBean("Outer", inner);
@@ -121,7 +142,7 @@ public class ExecJavaScriptView extends AbstractDivView {
 
                         const statusDiv = document.createElement('div');
                         statusDiv.id = 'beanStatus';
-                        statusDiv.textContent = 'Bean serialization test completed';
+                        statusDiv.textContent = 'Bean serialization completed';
                         document.body.appendChild(statusDiv);
                         """,
                 simple, nested);
@@ -131,6 +152,9 @@ public class ExecJavaScriptView extends AbstractDivView {
         public String name;
         public int value;
         public boolean active;
+
+        public SimpleBean() {
+        }
 
         public SimpleBean(String name, int value, boolean active) {
             this.name = name;
@@ -142,6 +166,9 @@ public class ExecJavaScriptView extends AbstractDivView {
     public static class NestedBean {
         public String title;
         public SimpleBean simple;
+
+        public NestedBean() {
+        }
 
         public NestedBean(String title, SimpleBean simple) {
             this.title = title;
