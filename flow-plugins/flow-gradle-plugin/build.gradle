@@ -69,7 +69,7 @@ dependencies {
     implementation("com.vaadin:flow-plugin-base:${pom.parent.version}")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.jetbrains.kotlin:kotlin-test:1.9.20")
+    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:1.9.20")
 }
 
 idea {
