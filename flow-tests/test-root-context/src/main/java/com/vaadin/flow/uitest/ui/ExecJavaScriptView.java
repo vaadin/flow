@@ -92,8 +92,61 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
+        // Bean serialization test
+        NativeButton beanButton = createButton("Bean Serialization",
+                "beanButton", e -> testBeanSerialization());
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+                elementAwaitButton, pageAwaitButton, beanButton);
+    }
+
+    private void testBeanSerialization() {
+        // Test both simple and nested beans in one test
+        SimpleBean simple = new SimpleBean("TestBean", 42, true);
+        SimpleBean inner = new SimpleBean("Inner", 100, false);
+        NestedBean nested = new NestedBean("Outer", inner);
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const simpleBean = $0;
+                        const nestedBean = $1;
+
+                        const simpleResult = `simple: name=${simpleBean.name}, value=${simpleBean.value}, active=${simpleBean.active}`;
+                        const nestedResult = `nested: title=${nestedBean.title}, inner.name=${nestedBean.simple.name}, inner.value=${nestedBean.simple.value}`;
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'beanResult';
+                        resultDiv.textContent = simpleResult + ' | ' + nestedResult;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'beanStatus';
+                        statusDiv.textContent = 'Bean serialization test completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                simple, nested);
+    }
+
+    public static class SimpleBean {
+        public String name;
+        public int value;
+        public boolean active;
+
+        public SimpleBean(String name, int value, boolean active) {
+            this.name = name;
+            this.value = value;
+            this.active = active;
+        }
+    }
+
+    public static class NestedBean {
+        public String title;
+        public SimpleBean simple;
+
+        public NestedBean(String title, SimpleBean simple) {
+            this.title = title;
+            this.simple = simple;
+        }
     }
 
     private NativeButton createJsButton(String text, String id, String script,

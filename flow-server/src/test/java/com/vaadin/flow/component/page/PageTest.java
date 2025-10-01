@@ -55,7 +55,7 @@ public class PageTest {
 
         private String expression;
 
-        private Serializable firstParam;
+        private Object firstParam;
 
         public TestPage(UI ui) {
             super(ui);
@@ -63,7 +63,7 @@ public class PageTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
@@ -92,7 +92,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -158,7 +158,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -217,7 +217,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
                 Assert.assertEquals(
                         "Expected javascript for fetching location is wrong.",
@@ -318,17 +318,17 @@ public class PageTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -348,11 +348,11 @@ public class PageTest {
     @Test
     public void open_openInSameWindow_closeTheClientApplication() {
         AtomicReference<String> capture = new AtomicReference<>();
-        List<Serializable> params = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable[] parameters) {
+                    Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
                 return Mockito.mock(PendingJavaScriptResult.class);

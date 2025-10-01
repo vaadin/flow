@@ -4,10 +4,10 @@
   "dependencies": {
     "react": "19.1.1",
     "react-dom": "19.1.1",
-    "react-router": "7.9.1"
+    "react-router": "7.9.3"
   },
   "devDependencies": {
-    "@types/react": "19.1.13",
+    "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9"
   }
 }
