@@ -452,21 +452,21 @@ public class PublishedServerEventHandlerRpcHandlerTest {
     }
 
     @Test
-    public void nullValueAreAcceptedForPrimitive() {
+    public void nullValueShouldFailForPrimitive() {
         ArrayNode array = JacksonUtils.createArrayNode();
         array.add(JacksonUtils.nullNode());
         MethodWithParameters component = new MethodWithParameters();
         component.intArg = -1;
         component.booleanArg = true;
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "intMethod", array, -1);
+        
+        // Passing null to a primitive parameter should throw an exception
+        Assert.assertThrows(IllegalArgumentException.class, () -> {
+            PublishedServerEventHandlerRpcHandler.invokeMethod(component,
+                    component.getClass(), "intMethod", array, -1);
+        });
 
-        Assert.assertEquals(0, component.intArg);
-
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "booleanMethod", array, -1);
-
-        Assert.assertFalse(component.booleanArg);
+        // Verify the field was not modified
+        Assert.assertEquals(-1, component.intArg);
     }
 
     @Test(expected = IllegalStateException.class)
