@@ -169,6 +169,6 @@ public class WebComponentTest {
                 (ValueNode) JacksonUtils.createNode(true));
         verify(element, Mockito.times(5)).executeJs(
                 ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(Serializable[].class));
+                ArgumentMatchers.any(Object[].class));
     }
 }
