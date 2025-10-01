@@ -126,6 +126,7 @@
             ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}
         </osgi.bundle.version>
         <bnd.version>7.1.0</bnd.version>
+        <bnd.skip>true</bnd.skip>
         <osgi.core.version>7.0.0</osgi.core.version>
         <osgi.compendium.version>7.0.0</osgi.compendium.version>
         <osgi.annotation.version>8.1.0</osgi.annotation.version>
