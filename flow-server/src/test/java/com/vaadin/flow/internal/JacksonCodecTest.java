@@ -455,7 +455,7 @@ public class JacksonCodecTest {
     }
 
     @Test
-    public void testDecodeAsPreservesExistingBehavior() {
+    public void testDecodeAsForPrimitiveTypes() {
         Assert.assertEquals("test", JacksonCodec
                 .decodeAs(objectMapper.valueToTree("test"), String.class));
         Assert.assertEquals(Integer.valueOf(42), JacksonCodec
