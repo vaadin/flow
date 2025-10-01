@@ -52,10 +52,6 @@ public class FeatureFlags implements Serializable {
 
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
-    // Convenience references to commonly used feature flags from providers
-    public static final Feature FLOW_FULLSTACK_SIGNALS = CoreFeatureFlagProvider.FLOW_FULLSTACK_SIGNALS;
-    public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
-
     private List<Feature> features = new ArrayList<>();
 
     File propertiesFolder = null;
