@@ -68,7 +68,8 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createArrayNode(),
                 objectMapper.createArrayNode());
 
-        // Test specific complex types - these are now handled via Jackson serialization
+        // Test specific complex types - these are now handled via Jackson
+        // serialization
         testComplexTypeSerialization();
     }
 
@@ -275,57 +276,74 @@ public class JacksonCodecTest {
         // Test Object - should serialize as empty object
         Object obj = new Object();
         JsonNode objEncoded = JacksonCodec.encodeWithTypeInfo(obj);
-        Assert.assertTrue("Object should serialize as JSON object", objEncoded.isObject());
-        Assert.assertEquals("Object should serialize as empty object", 0, objEncoded.size());
+        Assert.assertTrue("Object should serialize as JSON object",
+                objEncoded.isObject());
+        Assert.assertEquals("Object should serialize as empty object", 0,
+                objEncoded.size());
 
         // Test StateNode - should serialize as object with state properties
         StateNode stateNode = new StateNode();
         JsonNode stateNodeEncoded = JacksonCodec.encodeWithTypeInfo(stateNode);
-        Assert.assertTrue("StateNode should serialize as JSON object", stateNodeEncoded.isObject());
+        Assert.assertTrue("StateNode should serialize as JSON object",
+                stateNodeEncoded.isObject());
         // StateNode should have some internal structure
-        Assert.assertTrue("StateNode should have properties", stateNodeEncoded.size() > 0);
+        Assert.assertTrue("StateNode should have properties",
+                stateNodeEncoded.size() > 0);
 
         // Test Date - should serialize as timestamp number or ISO string
-        Date date = new Date(1234567890000L); // Fixed timestamp for consistent testing
+        Date date = new Date(1234567890000L); // Fixed timestamp for consistent
+                                              // testing
         JsonNode dateEncoded = JacksonCodec.encodeWithTypeInfo(date);
-        Assert.assertTrue("Date should serialize as number or string", 
+        Assert.assertTrue("Date should serialize as number or string",
                 dateEncoded.isNumber() || dateEncoded.isTextual());
         if (dateEncoded.isNumber()) {
-            Assert.assertEquals("Date should serialize to correct timestamp", 
+            Assert.assertEquals("Date should serialize to correct timestamp",
                     1234567890000L, dateEncoded.asLong());
         }
 
         // Test String array - should serialize as JSON array
-        String[] stringArray = new String[]{"hello", "world"};
+        String[] stringArray = new String[] { "hello", "world" };
         JsonNode arrayEncoded = JacksonCodec.encodeWithTypeInfo(stringArray);
-        Assert.assertTrue("String array should serialize as JSON array", arrayEncoded.isArray());
-        Assert.assertEquals("Array should have correct length", 2, arrayEncoded.size());
-        Assert.assertEquals("First element should be correct", "hello", arrayEncoded.get(0).asText());
-        Assert.assertEquals("Second element should be correct", "world", arrayEncoded.get(1).asText());
+        Assert.assertTrue("String array should serialize as JSON array",
+                arrayEncoded.isArray());
+        Assert.assertEquals("Array should have correct length", 2,
+                arrayEncoded.size());
+        Assert.assertEquals("First element should be correct", "hello",
+                arrayEncoded.get(0).asText());
+        Assert.assertEquals("Second element should be correct", "world",
+                arrayEncoded.get(1).asText());
 
         // Test ArrayList - should serialize as JSON array
         ArrayList<String> arrayList = new ArrayList<>();
         arrayList.add("item1");
         arrayList.add("item2");
         JsonNode listEncoded = JacksonCodec.encodeWithTypeInfo(arrayList);
-        Assert.assertTrue("ArrayList should serialize as JSON array", listEncoded.isArray());
-        Assert.assertEquals("List should have correct size", 2, listEncoded.size());
-        Assert.assertEquals("First list item should be correct", "item1", listEncoded.get(0).asText());
-        Assert.assertEquals("Second list item should be correct", "item2", listEncoded.get(1).asText());
+        Assert.assertTrue("ArrayList should serialize as JSON array",
+                listEncoded.isArray());
+        Assert.assertEquals("List should have correct size", 2,
+                listEncoded.size());
+        Assert.assertEquals("First list item should be correct", "item1",
+                listEncoded.get(0).asText());
+        Assert.assertEquals("Second list item should be correct", "item2",
+                listEncoded.get(1).asText());
 
         // Test HashSet - should serialize as JSON array (order may vary)
         HashSet<String> hashSet = new HashSet<>();
         hashSet.add("value1");
         hashSet.add("value2");
         JsonNode setEncoded = JacksonCodec.encodeWithTypeInfo(hashSet);
-        Assert.assertTrue("HashSet should serialize as JSON array", setEncoded.isArray());
-        Assert.assertEquals("Set should have correct size", 2, setEncoded.size());
+        Assert.assertTrue("HashSet should serialize as JSON array",
+                setEncoded.isArray());
+        Assert.assertEquals("Set should have correct size", 2,
+                setEncoded.size());
         // Verify both values are present (order not guaranteed with HashSet)
         boolean hasValue1 = false, hasValue2 = false;
         for (JsonNode node : setEncoded) {
             String value = node.asText();
-            if ("value1".equals(value)) hasValue1 = true;
-            if ("value2".equals(value)) hasValue2 = true;
+            if ("value1".equals(value))
+                hasValue1 = true;
+            if ("value2".equals(value))
+                hasValue2 = true;
         }
         Assert.assertTrue("Set should contain value1", hasValue1);
         Assert.assertTrue("Set should contain value2", hasValue2);
@@ -336,11 +354,16 @@ public class JacksonCodecTest {
         hashMap.put("key2", 42);
         hashMap.put("key3", true);
         JsonNode mapEncoded = JacksonCodec.encodeWithTypeInfo(hashMap);
-        Assert.assertTrue("HashMap should serialize as JSON object", mapEncoded.isObject());
-        Assert.assertEquals("Map should have correct size", 3, mapEncoded.size());
-        Assert.assertEquals("String value should be correct", "stringValue", mapEncoded.get("key1").asText());
-        Assert.assertEquals("Integer value should be correct", 42, mapEncoded.get("key2").asInt());
-        Assert.assertEquals("Boolean value should be correct", true, mapEncoded.get("key3").asBoolean());
+        Assert.assertTrue("HashMap should serialize as JSON object",
+                mapEncoded.isObject());
+        Assert.assertEquals("Map should have correct size", 3,
+                mapEncoded.size());
+        Assert.assertEquals("String value should be correct", "stringValue",
+                mapEncoded.get("key1").asText());
+        Assert.assertEquals("Integer value should be correct", 42,
+                mapEncoded.get("key2").asInt());
+        Assert.assertEquals("Boolean value should be correct", true,
+                mapEncoded.get("key3").asBoolean());
     }
 
     // Test classes
