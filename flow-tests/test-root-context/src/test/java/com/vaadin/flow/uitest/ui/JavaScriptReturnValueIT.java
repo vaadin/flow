@@ -76,7 +76,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         } else {
             String actualStatus = findElement(By.id("status")).getText();
             
-            // Special case for error-value success: just check that it starts with "Error:"
+            // Error objects cannot be converted to String, so they trigger error handler
             if ("error-value".equals(value) && "success".equals(outcome)) {
                 Assert.assertTrue("Expected error message for " + combinationId 
                         + " but got: " + actualStatus,
@@ -103,9 +103,8 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
             }
         }
 
-        // Error objects returned as success now trigger the error handler
-        // because Jackson fails to convert ObjectNode to String
-        // This case is handled specially in testCombination method
+        // Error objects cannot be converted to String type, which triggers the
+        // error handler. This case is handled specially in testCombination method
 
         switch (value) {
         case "string":
@@ -115,7 +114,7 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         case "null":
             return prefix;
         case "error-value":
-            // This case is now handled above for success, only reached for failure
+            // For failure cases, the Error object message is included
             return prefix;
         default:
             throw new IllegalArgumentException(
