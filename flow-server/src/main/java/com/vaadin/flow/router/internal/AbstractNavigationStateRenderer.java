@@ -951,28 +951,62 @@ public abstract class AbstractNavigationStateRenderer
             return Optional.of(forwardToExternalUrl(event, beforeEvent));
         }
 
-        boolean queryParameterChanged = beforeEvent.hasRedirectQueryParameters()
-                && !beforeEvent.getRedirectQueryParameters()
-                        .equals(event.getLocation().getQueryParameters());
-
-        if (beforeEvent.hasForwardTarget() && (!isSameNavigationState(
-                beforeEvent.getForwardTargetType(),
-                beforeEvent.getForwardTargetRouteParameters())
-                || queryParameterChanged
-                || !(navigationState.getResolvedPath() != null
-                        && navigationState.getResolvedPath()
-                                .equals(beforeEvent.getForwardUrl())))) {
+        if (beforeEvent.hasForwardTarget() && shouldExecuteForward(event, beforeEvent)) {
             return Optional.of(forward(event, beforeEvent));
         }
 
-        if (beforeEvent.hasRerouteTarget()
-                && (!isSameNavigationState(beforeEvent.getRerouteTargetType(),
-                        beforeEvent.getRerouteTargetRouteParameters())
-                        || queryParameterChanged)) {
+        if (beforeEvent.hasRerouteTarget() && shouldExecuteReroute(event, beforeEvent)) {
             return Optional.of(reroute(event, beforeEvent));
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Check if query parameters have changed during rerouting/forwarding.
+     *
+     * @param beforeEvent the before event with potential redirect parameters
+     * @param event the navigation event with current location
+     * @return true if query parameters have changed
+     */
+    private boolean hasQueryParameterChanged(BeforeEvent beforeEvent, NavigationEvent event) {
+        return beforeEvent.hasRedirectQueryParameters()
+                && !beforeEvent.getRedirectQueryParameters()
+                        .equals(event.getLocation().getQueryParameters());
+    }
+
+    /**
+     * Determine if forward navigation should execute.
+     *
+     * @param event the navigation event
+     * @param beforeEvent the before event with forward target
+     * @return true if forward should execute
+     */
+    private boolean shouldExecuteForward(NavigationEvent event, BeforeEvent beforeEvent) {
+        boolean queryParameterChanged = hasQueryParameterChanged(beforeEvent, event);
+        boolean differentNavigationState = !isSameNavigationState(
+                beforeEvent.getForwardTargetType(),
+                beforeEvent.getForwardTargetRouteParameters());
+        boolean differentResolvedPath = !(navigationState.getResolvedPath() != null
+                && navigationState.getResolvedPath().equals(beforeEvent.getForwardUrl()));
+        
+        return differentNavigationState || queryParameterChanged || differentResolvedPath;
+    }
+
+    /**
+     * Determine if reroute navigation should execute.
+     *
+     * @param event the navigation event
+     * @param beforeEvent the before event with reroute target
+     * @return true if reroute should execute
+     */
+    private boolean shouldExecuteReroute(NavigationEvent event, BeforeEvent beforeEvent) {
+        boolean queryParameterChanged = hasQueryParameterChanged(beforeEvent, event);
+        boolean differentNavigationState = !isSameNavigationState(
+                beforeEvent.getRerouteTargetType(),
+                beforeEvent.getRerouteTargetRouteParameters());
+        
+        return differentNavigationState || queryParameterChanged;
     }
 
     private boolean isSameNavigationState(Class<? extends Component> targetType,
