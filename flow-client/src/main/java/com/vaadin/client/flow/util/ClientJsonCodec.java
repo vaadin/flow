@@ -257,12 +257,13 @@ public class ClientJsonCodec {
      */
     private static JsArray<Object> decodeArrayWithTypeInfo(StateTree tree,
             JsonArray jsonArray) {
+        JsArray<Object> jsArray = JsCollections.array();
         for (int i = 0; i < jsonArray.length(); i++) {
             JsonValue originalValue = jsonArray.get(i);
             Object decoded = decodeWithTypeInfo(tree, originalValue);
-            jsonArray.set(i, (JsonValue) WidgetUtil.crazyJsCast(decoded));
+            jsArray.push(i, decoded);
         }
-        return jsonArrayAsJsArray(jsonArray);
+        return jsArray;
     }
 
 }
