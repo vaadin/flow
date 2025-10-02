@@ -68,7 +68,7 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createArrayNode(),
                 objectMapper.createArrayNode());
 
-        // Test specific complex types - these are now handled via Jackson
+        // Test specific complex types - handled via Jackson
         // serialization
         testComplexTypeSerialization();
     }
@@ -106,7 +106,7 @@ public class JacksonCodecTest {
         assertJsonEquals(objectMapper.createObjectNode(), JacksonCodec
                 .encodeWithTypeInfo(objectMapper.createObjectNode()));
 
-        // Array is now encoded directly (no wrapping needed)
+        // Array is encoded directly (no wrapping needed)
         assertJsonEquals(objectMapper.createArrayNode(), JacksonCodec
                 .encodeWithTypeInfo(objectMapper.createArrayNode()));
     }
@@ -122,7 +122,7 @@ public class JacksonCodecTest {
 
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
 
-        // Should now use compact @v-node format
+        // Verify @v-node format is used for element encoding
         ObjectNode expected = objectMapper.createObjectNode();
         expected.put("@v-node", element.getNode().getId());
 

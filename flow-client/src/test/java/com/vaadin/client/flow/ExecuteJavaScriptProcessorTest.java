@@ -153,7 +153,7 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject json = Json.createObject();
         json.put("@v-node", node.getId());
 
@@ -189,7 +189,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject json = Json.createObject();
         json.put("@v-node", node.getId());
 
@@ -230,7 +230,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject json = Json.createObject();
         json.put("@v-node", node.getId());
 
@@ -270,7 +270,7 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject json = Json.createObject();
         json.put("@v-node", node.getId());
 

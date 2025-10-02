@@ -79,7 +79,7 @@ public class JsonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
-            // Native JSON types - no wrapping needed (arrays are now direct)
+            // Native JSON types - no wrapping needed
             return encodeWithoutTypeInfo(value);
         } else {
             // Encode as bean using Jackson via JsonValue conversion - send

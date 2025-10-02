@@ -91,7 +91,7 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject jsonObject = Json.createObject();
         jsonObject.put("@v-node", node.getId());
 
@@ -116,7 +116,7 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        // Create compact @v-node format
+        // Create @v-node format
         elemental.json.JsonObject jsonObject = Json.createObject();
         jsonObject.put("@v-node", node.getId());
 

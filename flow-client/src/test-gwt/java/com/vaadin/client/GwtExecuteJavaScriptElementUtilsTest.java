@@ -302,7 +302,7 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                     }
                 });
 
-        // Create compact @v-return format
+        // Create @v-return format
         elemental.json.JsonObject serializedChannel = Json.createObject();
         JsonArray channelArray = Json.createArray();
         channelArray.set(0, expectedNodeId);

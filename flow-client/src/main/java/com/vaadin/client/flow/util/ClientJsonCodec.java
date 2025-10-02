@@ -61,7 +61,7 @@ public class ClientJsonCodec {
      */
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
-            // Check for compact @v-node format
+            // Check for @v-node format
             JsonValue nodeIdValue = getProperty(json, "@v-node");
             if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
@@ -95,7 +95,7 @@ public class ClientJsonCodec {
      */
     public static Object decodeWithTypeInfo(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
-            // Check for compact @v-node format
+            // Check for @v-node format
             JsonValue nodeIdValue = getProperty(json, "@v-node");
             if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
@@ -103,7 +103,7 @@ public class ClientJsonCodec {
                 return domNode;
             }
             
-            // Check for compact @v-return format
+            // Check for @v-return format
             JsonValue returnArray = getProperty(json, "@v-return");
             if (returnArray != null && returnArray.getType() == JsonType.ARRAY) {
                 JsonArray array = (JsonArray) returnArray;
