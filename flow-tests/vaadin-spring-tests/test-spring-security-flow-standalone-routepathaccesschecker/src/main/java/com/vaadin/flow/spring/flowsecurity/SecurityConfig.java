@@ -1,26 +1,8 @@
 package com.vaadin.flow.spring.flowsecurity;
 
-import jakarta.servlet.ServletContext;
-
-import java.util.stream.Collectors;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
@@ -29,10 +11,33 @@ import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.SpringAccessPathChecker;
+import com.vaadin.flow.spring.security.UidlRedirectStrategy;
+import jakarta.servlet.ServletContext;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.provisioning.InMemoryUserDetailsManager;
+import org.springframework.security.web.DefaultSecurityFilterChain;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
+import org.springframework.security.web.access.PathPatternRequestTransformer;
+import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
+
+import java.security.Principal;
+import java.util.stream.Collectors;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.RequestUtil.antMatchers;
-import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @Configuration
@@ -60,7 +65,14 @@ public class SecurityConfig {
     @Bean
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
         return new NavigationAccessControlConfigurer()
-                .withRoutePathAccessChecker();
+                .withLoginView(LoginView.class).withRoutePathAccessChecker();
+    }
+
+    @Bean
+    @Primary
+    static HttpServletRequestTransformer customRequestTransformer() {
+        return SpringAccessPathChecker.principalAwareRequestTransformer(
+                new PathPatternRequestTransformer());
     }
 
     @Bean
@@ -68,43 +80,73 @@ public class SecurityConfig {
             AuthenticationContext authenticationContext) throws Exception {
         // Setup
         http.csrf(AbstractHttpConfigurer::disable); // simple for testing
-                                                    // purpose
+        // purpose
 
         // Homemade security for Vaadin application, not fully functional as the
         // configuration provided by VaadinWebSecurity
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
+                // Ensures that SpringPathAccessChecker does not fail when matchers get Principal from HTTP request
+                .requestMatchers(request -> {
+                    Principal principal = request.getUserPrincipal();
+                    if (principal == null) {
+                        // Do nothing, just avoid IDE complain about not used variable
+                    }
+                    return false; // no need to match rule, we just want to access principal.
+                }).denyAll()
                 // Permit access to static resources
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
-                    .permitAll()
+                .permitAll()
+                // Permit access to vaadin's internal communication
+                .requestMatchers(request -> HandlerHelper
+                        .isFrameworkInternalRequest("/*", request))
+                .permitAll()
+                .requestMatchers(requestUtil::isAnonymousRoute)
+                .permitAll()
+                // Permit technical access to vaadin's static files
+                .requestMatchers(antMatchers("/VAADIN/**")).permitAll()
+                // custom request matchers. using 'routeAwareAntMatcher' to
+                // allow checking route and alias paths against patterns
                 .requestMatchers(antMatchers("/admin-only/**", "/admin"))
-                    .hasAnyRole(ROLE_ADMIN)
+                .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/private"))
-                    .authenticated()
+                .authenticated()
                 .requestMatchers(antMatchers("/", "/public/**", "/another"))
-                    .permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/error"))
-                    .permitAll()
+                .permitAll()
+
+                .requestMatchers(antMatchers("/error"))
+                .permitAll()
                 // routes aliases
                 .requestMatchers(antMatchers("/alias-for-admin"))
-                    .hasAnyRole(ROLE_ADMIN)
+                .hasAnyRole(ROLE_ADMIN)
                 .requestMatchers(antMatchers("/home", "/hey/**"))
-                    .permitAll()
-                );
+                .permitAll()
+                .requestMatchers(antMatchers("/all-logged-in/**", "/passthrough/**"))
+                .authenticated()
+        );
         // @formatter:on
-        http.with(vaadin(),
-                cfg -> cfg.loginView(LoginView.class, getLogoutSuccessUrl())
-                        .addLogoutHandler(
-                                (request, response, authentication) -> {
-                                    UI ui = UI.getCurrent();
-                                    ui.accessSynchronously(() -> ui.getPage()
-                                            .setLocation(UrlUtil
-                                                    .getServletPathRelative(
-                                                            getLogoutSuccessUrl(),
-                                                            request)));
-                                }));
+        http.logout(cfg -> {
+            SimpleUrlLogoutSuccessHandler logoutSuccessHandler = new SimpleUrlLogoutSuccessHandler();
+            logoutSuccessHandler.setDefaultTargetUrl(getLogoutSuccessUrl());
+            logoutSuccessHandler
+                    .setRedirectStrategy(new UidlRedirectStrategy());
+            cfg.logoutSuccessHandler(logoutSuccessHandler);
+            cfg.addLogoutHandler((request, response, authentication) -> {
+                UI ui = UI.getCurrent();
+                ui.accessSynchronously(() -> ui.getPage().setLocation(
+                        UrlUtil.getServletPathRelative(getLogoutSuccessUrl(),
+                                request)));
+            });
+        });
+        // Custom login page with form authentication
+        http.formLogin(cfg -> cfg.loginPage("/my/login/page").permitAll());
+        DefaultSecurityFilterChain filterChain = http.build();
+        // Test application uses AuthenticationContext, configure it with
+        // the logout handlers
+        AuthenticationContext.applySecurityConfiguration(http,
+                authenticationContext);
 
-        return http.build();
+        return filterChain;
     }
 
     public String getLogoutSuccessUrl() {
