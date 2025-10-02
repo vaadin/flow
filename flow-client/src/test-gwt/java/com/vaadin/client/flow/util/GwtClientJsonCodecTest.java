@@ -99,13 +99,22 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create @v-node format
-        elemental.json.JsonObject jsonObject = Json.createObject();
-        jsonObject.put("@v-node", node.getId());
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonObject);
+        // Parse @v-node format from JSON string
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree,
+                Json.parse("{\"@v-node\": 42}"));
 
         assertSame(element, decoded);
+    }
+
+    @Test
+    public void decodeWithTypeInfo_plainObject() {
+        // When server sends a BaseJsonNode, it arrives as a plain JSON object
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null,
+                Json.parse("{\"name\": \"test\", \"value\": 42, \"active\": true}"));
+        assertNotNull(decoded);
+        assertEquals("test", getObjectProperty(decoded, "name"));
+        assertEquals(Double.valueOf(42), getObjectProperty(decoded, "value"));
+        assertEquals(Boolean.TRUE, getObjectProperty(decoded, "active"));
     }
 
     @Test
@@ -127,11 +136,9 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create @v-node format
-        elemental.json.JsonObject jsonObject = Json.createObject();
-        jsonObject.put("@v-node", node.getId());
-
-        StateNode decoded = ClientJsonCodec.decodeStateNode(tree, jsonObject);
+        // Parse @v-node format from JSON string
+        StateNode decoded = ClientJsonCodec.decodeStateNode(tree,
+                Json.parse("{\"@v-node\": 43}"));
 
         assertSame(node, decoded);
     }
@@ -216,16 +223,16 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create nested object containing @v-node reference
-        elemental.json.JsonObject nestedObject = Json.createObject();
-        nestedObject.put("@v-node", node.getId());
+        // Parse nested object containing @v-node reference from JSON string
+        String json = "" //
+                + "{" //
+                + "    \"data\": \"test\"," //
+                + "    \"element\": {\"@v-node\": 100}," //
+                + "    \"count\": 42" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
 
-        elemental.json.JsonObject outerObject = Json.createObject();
-        outerObject.put("data", "test");
-        outerObject.put("element", nestedObject);
-        outerObject.put("count", 42);
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, outerObject);
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonValue);
 
         // Should return a native JS object that has properties accessible by
         // name
@@ -249,21 +256,17 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         node1.setDomNode(element1);
         node2.setDomNode(element2);
 
-        // Create array containing @v-node references and primitives
-        JsonArray jsonArray = Json.createArray();
-        jsonArray.set(0, "first");
+        // Parse array containing @v-node references and primitives from JSON string
+        String json = "" //
+                + "[" //
+                + "    \"first\"," //
+                + "    {\"@v-node\": 200}," //
+                + "    42," //
+                + "    {\"@v-node\": 201}" //
+                + "]";
+        JsonValue jsonValue = Json.parse(json);
 
-        elemental.json.JsonObject nodeRef1 = Json.createObject();
-        nodeRef1.put("@v-node", node1.getId());
-        jsonArray.set(1, nodeRef1);
-
-        jsonArray.set(2, 42);
-
-        elemental.json.JsonObject nodeRef2 = Json.createObject();
-        nodeRef2.put("@v-node", node2.getId());
-        jsonArray.set(3, nodeRef2);
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonArray);
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonValue);
 
         assertTrue("Should decode to JsArray",
                 decoded instanceof JsArray);
@@ -287,30 +290,21 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create complex nested structure with both @v-node and @v-return
-        // references
-        elemental.json.JsonObject nodeRef = Json.createObject();
-        nodeRef.put("@v-node", node.getId());
+        // Parse complex nested structure with both @v-node and @v-return references
+        // from JSON string
+        String json = "" //
+                + "{" //
+                + "    \"title\": \"Complex Structure\"," //
+                + "    \"items\": [" //
+                + "        {\"@v-node\": 300}," //
+                + "        \"middle\"," //
+                + "        {\"@v-return\": [123, 456]}" //
+                + "    ]," //
+                + "    \"metadata\": {}" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
 
-        elemental.json.JsonObject returnRef = Json.createObject();
-        JsonArray returnArray = Json.createArray();
-        returnArray.set(0, 123);
-        returnArray.set(1, 456);
-        returnRef.put("@v-return", returnArray);
-
-        // Nested array containing both types
-        JsonArray mixedArray = Json.createArray();
-        mixedArray.set(0, nodeRef);
-        mixedArray.set(1, "middle");
-        mixedArray.set(2, returnRef);
-
-        // Outer object containing the mixed array and other properties
-        elemental.json.JsonObject outerObject = Json.createObject();
-        outerObject.put("title", "Complex Structure");
-        outerObject.put("items", mixedArray);
-        outerObject.put("metadata", Json.createObject());
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, outerObject);
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonValue);
 
         // Should return a native JS object that has properties accessible by
         // name
@@ -339,36 +333,31 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create deeply nested structure: object -> array -> object -> array ->
-        // @v-node
-        elemental.json.JsonObject nodeRef = Json.createObject();
-        nodeRef.put("@v-node", node.getId());
+        // Parse deeply nested structure from JSON string: object -> array -> object ->
+        // array -> @v-node
+        String json = "" //
+                + "{" //
+                + "    \"level\": 1," //
+                + "    \"nested\": [" //
+                + "        \"top\"," //
+                + "        {" //
+                + "            \"level\": 2," //
+                + "            \"data\": [" //
+                + "                {" //
+                + "                    \"level\": 3," //
+                + "                    \"content\": [" //
+                + "                        \"deep\"," //
+                + "                        {\"@v-node\": 400}" //
+                + "                    ]" //
+                + "                }," //
+                + "                true" //
+                + "            ]" //
+                + "        }" //
+                + "    ]" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
 
-        JsonArray deepArray = Json.createArray();
-        deepArray.set(0, "deep");
-        deepArray.set(1, nodeRef);
-
-        elemental.json.JsonObject deepObject = Json.createObject();
-        deepObject.put("level", 3);
-        deepObject.put("content", deepArray);
-
-        JsonArray midArray = Json.createArray();
-        midArray.set(0, deepObject);
-        midArray.set(1, true);
-
-        elemental.json.JsonObject midObject = Json.createObject();
-        midObject.put("level", 2);
-        midObject.put("data", midArray);
-
-        JsonArray topArray = Json.createArray();
-        topArray.set(0, "top");
-        topArray.set(1, midObject);
-
-        elemental.json.JsonObject topObject = Json.createObject();
-        topObject.put("level", 1);
-        topObject.put("nested", topArray);
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, topObject);
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonValue);
 
         // Should return a native JS object with recursively decoded nested
         // structures
@@ -388,7 +377,7 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         assertEquals(Boolean.TRUE, dataArray.get(1));
 
         Object deepResult = dataArray.get(0);
-        assertEquals(Double.valueOf(3.0),
+        assertEquals(3.0,
                 getObjectProperty(deepResult, "level"));
 
         JsArray<?> contentArray = (JsArray<?>) getObjectProperty(deepResult,
@@ -396,6 +385,87 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         assertEquals("deep", contentArray.get(0));
         assertSame("Deeply nested element should be decoded to DOM node",
                 element, contentArray.get(1));
+    }
+
+    @Test
+    public void testNestedJsonObjectPassthrough() {
+        // Test nested objects - parse from JSON string
+        String json = "" //
+                + "{" //
+                + "    \"outer\": \"parent\"," //
+                + "    \"nested\": {" //
+                + "        \"innerName\": \"nested\"," //
+                + "        \"innerValue\": 100" //
+                + "    }" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, jsonValue);
+
+        assertNotNull(decoded);
+        assertEquals("parent", getObjectProperty(decoded, "outer"));
+
+        // The nested object should also be properly decoded
+        Object decodedInnerObject = getObjectProperty(decoded, "nested");
+        assertNotNull(decodedInnerObject);
+        Object decodedInnerObjectValue = getObjectProperty(decodedInnerObject, "innerValue");
+        assertEquals("nested", getObjectProperty(decodedInnerObject, "innerName"));
+        assertEquals(Double.valueOf(100), decodedInnerObjectValue);
+    }
+
+    @Test
+    public void testJsonArrayInObjectPassthrough() {
+        // Test array inside object - parse from JSON string
+        String json = "" //
+                + "{" //
+                + "    \"items\": [\"first\", \"second\", 42]," //
+                + "    \"count\": 3" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, jsonValue);
+
+        assertNotNull(decoded);
+        assertEquals(Double.valueOf(3), getObjectProperty(decoded, "count"));
+
+        // The array should be decoded as JsArray
+        Object itemsValue = getObjectProperty(decoded, "items");
+        assertNotNull(itemsValue);
+        // After decoding, arrays become JsArray
+        assertTrue("Items should be JsArray",
+                itemsValue instanceof JsArray);
+    }
+
+    @Test
+    public void testComplexJsonObjectWithPrimitivesPassthrough() {
+        // Test complex object with various primitive types - parse from JSON string
+        String json = "" //
+                + "{" //
+                + "    \"string\": \"text value\"," //
+                + "    \"number\": 3.14159," //
+                + "    \"integer\": 42," //
+                + "    \"boolean\": false," //
+                + "    \"nullValue\": null" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, jsonValue);
+
+        assertNotNull(decoded);
+        assertEquals("text value", getObjectProperty(decoded, "string"));
+        assertEquals(Double.valueOf(3.14159), getObjectProperty(decoded, "number"));
+        assertEquals(Double.valueOf(42), getObjectProperty(decoded, "integer"));
+        assertEquals(Boolean.FALSE, getObjectProperty(decoded, "boolean"));
+        assertNull(getObjectProperty(decoded, "nullValue"));
+    }
+
+    @Test
+    public void testEmptyJsonObjectPassthrough() {
+        // Test empty object - parse from JSON string
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, Json.parse("{}"));
+
+        assertNotNull(decoded);
+        // Empty object should decode to an empty native JS object
     }
 
 }
