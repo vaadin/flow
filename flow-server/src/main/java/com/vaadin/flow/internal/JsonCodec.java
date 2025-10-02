@@ -225,21 +225,11 @@ public class JsonCodec {
         if (json.getType() == JsonType.NULL && !type.isPrimitive()) {
             return null;
         }
-        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-        if (type == String.class) {
-            return type.cast(json.asString());
-        } else if (convertedType == Boolean.class) {
-            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
-        } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.asNumber()));
-        } else if (convertedType == Integer.class) {
-            return (T) convertedType
-                    .cast(Integer.valueOf((int) json.asNumber()));
-        } else if (JsonValue.class.isAssignableFrom(type)) {
+        if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            // Try to deserialize as a bean using Jackson via JsonValue
-            // conversion
+            // Use Jackson for all deserialization via JsonValue conversion -
+            // it handles primitives, strings, and complex objects uniformly
             try {
                 // Convert JsonValue to JsonNode for Jackson deserialization
                 JsonNode jsonNode = JacksonUtils.getMapper()

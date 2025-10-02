@@ -57,7 +57,6 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         valueSelect.addOption("String", "'foo'");
         valueSelect.addOption("Number", "42");
         valueSelect.addOption("null", "null");
-        valueSelect.addOption("Error", "new Error('message')", "error-value");
 
         // Promise semantics to use
         NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>(
