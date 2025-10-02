@@ -156,29 +156,32 @@ public abstract class AbstractNavigationStateRenderer
         final RouteParameters parameters = navigationState.getRouteParameters();
         final UI ui = event.getUI();
 
-        Optional<Integer> earlyReturn = handleEarlyReturnChecks(event, routeTargetType, parameters);
+        Optional<Integer> earlyReturn = handleEarlyReturnChecks(event,
+                routeTargetType, parameters);
         if (earlyReturn.isPresent()) {
             return earlyReturn.get();
         }
 
         final ArrayList<HasElement> chain = new ArrayList<>();
-        
+
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
         if (populateChain(chain, preserveOnRefreshTarget, event)) {
             return HttpStatusCode.OK.getCode();
         }
-        
-        NavigationEvent updatedEvent = adjustNavigationEventIfNeeded(event, preserveOnRefreshTarget, chain, ui);
 
-        Optional<Integer> result = handleBeforeNavigationEvents(updatedEvent, routeTargetType,
-                parameters, chain);
+        NavigationEvent updatedEvent = adjustNavigationEventIfNeeded(event,
+                preserveOnRefreshTarget, chain, ui);
+
+        Optional<Integer> result = handleBeforeNavigationEvents(updatedEvent,
+                routeTargetType, parameters, chain);
         if (result.isPresent()) {
             return result.get();
         }
 
-        return finalizeNavigation(updatedEvent, routeTargetType, parameters, chain, preserveOnRefreshTarget, ui);
+        return finalizeNavigation(updatedEvent, routeTargetType, parameters,
+                chain, preserveOnRefreshTarget, ui);
     }
 
     /**
@@ -208,17 +211,23 @@ public abstract class AbstractNavigationStateRenderer
 
     /**
      * Handle early return checks that may exit navigation early.
-     * 
-     * @param event the navigation event
-     * @param routeTargetType the route target type
-     * @param parameters the route parameters
-     * @return Optional containing the return code if navigation should exit early, empty otherwise
+     *
+     * @param event
+     *            the navigation event
+     * @param routeTargetType
+     *            the route target type
+     * @param parameters
+     *            the route parameters
+     * @return Optional containing the return code if navigation should exit
+     *         early, empty otherwise
      */
     private Optional<Integer> handleEarlyReturnChecks(NavigationEvent event,
-            Class<? extends Component> routeTargetType, RouteParameters parameters) {
-        
+            Class<? extends Component> routeTargetType,
+            RouteParameters parameters) {
+
         // Check before leave events
-        Optional<Integer> result = handleBeforeLeaveEvents(event, routeTargetType, parameters);
+        Optional<Integer> result = handleBeforeLeaveEvents(event,
+                routeTargetType, parameters);
         if (result.isPresent()) {
             return result;
         }
@@ -233,23 +242,31 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * Adjust the navigation event if needed for preserve-on-refresh and handle history state.
-     * 
-     * @param event the original navigation event
-     * @param preserveOnRefreshTarget whether this is a preserve-on-refresh target
-     * @param chain the populated navigation chain
-     * @param ui the UI instance
+     * Adjust the navigation event if needed for preserve-on-refresh and handle
+     * history state.
+     *
+     * @param event
+     *            the original navigation event
+     * @param preserveOnRefreshTarget
+     *            whether this is a preserve-on-refresh target
+     * @param chain
+     *            the populated navigation chain
+     * @param ui
+     *            the UI instance
      * @return the potentially updated navigation event
      */
     private NavigationEvent adjustNavigationEventIfNeeded(NavigationEvent event,
-            boolean preserveOnRefreshTarget, ArrayList<HasElement> chain, UI ui) {
-        
+            boolean preserveOnRefreshTarget, ArrayList<HasElement> chain,
+            UI ui) {
+
         NavigationEvent resultEvent = event;
-        
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve view.
+
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
+        // view.
         if (preserveOnRefreshTarget && !chain.isEmpty()) {
-            resultEvent = new NavigationEvent(event.getSource(), event.getLocation(),
-                    event.getUI(), NavigationTrigger.REFRESH);
+            resultEvent = new NavigationEvent(event.getSource(),
+                    event.getLocation(), event.getUI(),
+                    NavigationTrigger.REFRESH);
         }
 
         // If the navigation is postponed, using BeforeLeaveEvent#postpone,
@@ -263,22 +280,32 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     /**
-     * Finalize the navigation by setting up components, handling UI updates, and completing the navigation process.
-     * 
-     * @param event the navigation event
-     * @param routeTargetType the route target type
-     * @param parameters the route parameters
-     * @param chain the populated navigation chain
-     * @param preserveOnRefreshTarget whether this is a preserve-on-refresh target
-     * @param ui the UI instance
+     * Finalize the navigation by setting up components, handling UI updates,
+     * and completing the navigation process.
+     *
+     * @param event
+     *            the navigation event
+     * @param routeTargetType
+     *            the route target type
+     * @param parameters
+     *            the route parameters
+     * @param chain
+     *            the populated navigation chain
+     * @param preserveOnRefreshTarget
+     *            whether this is a preserve-on-refresh target
+     * @param ui
+     *            the UI instance
      * @return the final navigation status code
      */
-    private int finalizeNavigation(NavigationEvent event, Class<? extends Component> routeTargetType,
-            RouteParameters parameters, ArrayList<HasElement> chain, boolean preserveOnRefreshTarget, UI ui) {
-        
+    private int finalizeNavigation(NavigationEvent event,
+            Class<? extends Component> routeTargetType,
+            RouteParameters parameters, ArrayList<HasElement> chain,
+            boolean preserveOnRefreshTarget, UI ui) {
+
         final Component componentInstance = (Component) chain.get(0);
 
-        // Preserve the navigation chain if all went well and it's being shown on the UI.
+        // Preserve the navigation chain if all went well and it's being shown
+        // on the UI.
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
         }
