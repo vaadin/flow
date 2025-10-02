@@ -875,12 +875,13 @@ public abstract class AbstractNavigationStateRenderer
             BeforeEnterEvent beforeNavigation, NavigationEvent event,
             ArrayList<HasElement> chain) {
         // Reverse the chain so that the target is last.
-        Collections.reverse(chain);
+        List<HasElement> reversedChain = new ArrayList<>(chain);
+        Collections.reverse(reversedChain);
 
         // Used when the chain already exists by being preserved on refresh.
         // See `isPreserveOnRefreshTarget` method implementation and usage.
         List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
-                EventUtil.collectBeforeEnterObserversFromChain(chain, event
+                EventUtil.collectBeforeEnterObserversFromChain(reversedChain, event
                         .getUI().getInternals().getActiveRouterTargetsChain()));
 
         return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
