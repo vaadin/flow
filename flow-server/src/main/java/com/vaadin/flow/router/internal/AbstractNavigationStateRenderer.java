@@ -184,7 +184,7 @@ public abstract class AbstractNavigationStateRenderer
         // See https://github.com/vaadin/flow/issues/3619 for more info.
         pushHistoryStateIfNeeded(event, ui);
 
-        result = handleBeforeNavigationEvents(event, routeTargetType,
+        Optional<Integer> result = handleBeforeNavigationEvents(event, routeTargetType,
                 parameters, chain);
         if (result.isPresent()) {
             return result.get();
@@ -214,6 +214,7 @@ public abstract class AbstractNavigationStateRenderer
         // After navigation event
         handleAfterNavigationEvents(ui, parameters);
 
+        String route = getFormattedRoute(event);
         updatePageTitle(event, componentInstance, route);
 
         return statusCode;
