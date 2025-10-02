@@ -404,9 +404,15 @@ public abstract class AbstractNavigationStateRenderer
      * Handle partial match when client details are already available.
      */
     private void handleExistingPartialMatch(UI ui) {
+        ExtendedClientDetails clientDetails = ui.getInternals().getExtendedClientDetails();
+        if (clientDetails == null) {
+            // Client details became null between check and usage, skip processing
+            return;
+        }
+        
         Optional<List<HasElement>> partialChain = getWindowPreservedChain(
                 ui.getSession(),
-                ui.getInternals().getExtendedClientDetails().getWindowName());
+                clientDetails.getWindowName());
         
         if (partialChain.isPresent()) {
             processPartialChain(partialChain.get(), ui);
