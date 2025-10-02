@@ -1,8 +1,13 @@
 package com.vaadin.flow.spring.security;
 
-import java.util.List;
-import java.util.Map;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
@@ -54,12 +59,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
+import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -101,6 +102,9 @@ class VaadinSecurityConfigurerTest {
 
     @MockitoBean
     private EndpointRequestUtil endpointRequestUtil;
+
+    @MockitoBean
+    private FileRouterRequestUtil fileRouterRequestUtil;
 
     @BeforeEach
     void setUp() {
@@ -330,6 +334,37 @@ class VaadinSecurityConfigurerTest {
             request.setPathInfo(path);
 
             Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+                    .thenReturn(true);
+
+            var filters = http.with(configurer, Customizer.withDefaults())
+                    .build().getFilters();
+
+            assertThat(filters)
+                    .filteredOn(AuthorizationFilter.class::isInstance)
+                    .singleElement()
+                    .satisfies(filter -> assertThatCode(
+                            () -> filter.doFilter(request, response, chain))
+                            .doesNotThrowAnyException());
+        }
+    }
+
+    @Test
+    void hilla_checkAllowedRoutes() throws Exception {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            endpointRequestUtilMockedStatic
+                    .when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+
+            var auth = new TestingAuthenticationToken("user", "password",
+                    List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            var path = "/hilla-view";
+            var request = new MockHttpServletRequest("POST", path);
+            request.setPathInfo(path);
+
+            // Simulate usage of Hilla API, accessing request principal
+            Mockito.when(fileRouterRequestUtil.isRouteAllowed(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())
