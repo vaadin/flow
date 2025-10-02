@@ -254,20 +254,11 @@ public class JacksonCodec {
         if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
             return null;
         }
-        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-        if (type == String.class) {
-            return type.cast(json.asText(""));
-        } else if (convertedType == Boolean.class) {
-            return (T) convertedType
-                    .cast(Boolean.valueOf(json.asBoolean(false)));
-        } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.asDouble(0.0)));
-        } else if (convertedType == Integer.class) {
-            return (T) convertedType.cast(Integer.valueOf(json.asInt(0)));
-        } else if (JsonNode.class.isAssignableFrom(type)) {
+        if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            // Try to deserialize as a bean using Jackson
+            // Use Jackson for all deserialization - it handles primitives,
+            // strings, and complex objects uniformly
             try {
                 return JacksonUtils.getMapper().treeToValue(json, type);
             } catch (Exception e) {
