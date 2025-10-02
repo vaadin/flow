@@ -156,16 +156,9 @@ public abstract class AbstractNavigationStateRenderer
         final RouteParameters parameters = navigationState.getRouteParameters();
         final UI ui = event.getUI();
 
-        Optional<Integer> result = handleBeforeLeaveEvents(event,
-                routeTargetType, parameters);
-
-        if (result.isPresent()) {
-            return result.get();
-        }
-
-        String route = getFormattedRoute(event);
-        if (isClientHandled(route)) {
-            return HttpStatusCode.OK.getCode();
+        Optional<Integer> earlyReturn = handleEarlyReturnChecks(event, routeTargetType, parameters);
+        if (earlyReturn.isPresent()) {
+            return earlyReturn.get();
         }
 
         final ArrayList<HasElement> chain = new ArrayList<>();
@@ -249,6 +242,32 @@ public abstract class AbstractNavigationStateRenderer
 
         clearContinueNavigationAction(ui);
         checkForDuplicates(routeTargetType, routeLayoutTypes);
+    }
+
+    /**
+     * Handle early return checks that may exit navigation early.
+     * 
+     * @param event the navigation event
+     * @param routeTargetType the route target type
+     * @param parameters the route parameters
+     * @return Optional containing the return code if navigation should exit early, empty otherwise
+     */
+    private Optional<Integer> handleEarlyReturnChecks(NavigationEvent event,
+            Class<? extends Component> routeTargetType, RouteParameters parameters) {
+        
+        // Check before leave events
+        Optional<Integer> result = handleBeforeLeaveEvents(event, routeTargetType, parameters);
+        if (result.isPresent()) {
+            return result;
+        }
+
+        // Check if route is client handled
+        String route = getFormattedRoute(event);
+        if (isClientHandled(route)) {
+            return Optional.of(HttpStatusCode.OK.getCode());
+        }
+
+        return Optional.empty();
     }
 
     /**
