@@ -17,34 +17,28 @@ package com.vaadin.client.flow.util;
 
 import java.util.function.Function;
 
-import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
 
 import elemental.js.dom.JsElement;
 import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
-public class GwtClientJsonCodecTest {
+public class GwtClientJsonCodecTest extends ClientEngineTestBase {
 
     /**
      * Helper method to get property from a decoded object. The decoded object
-     * is now a Map, so we can access properties directly.
+     * is a native JS object, so we need to use native access.
      */
-    private static Object getObjectProperty(Object obj, String key) {
-        if (obj instanceof java.util.Map) {
-            return ((java.util.Map<?, ?>) obj).get(key);
-        } else {
-            throw new RuntimeException(
-                    "Expected Map but got " + obj.getClass());
-        }
-    }
+    private static native Object getObjectProperty(Object obj, String key)
+    /*-{
+        return obj[key];
+    }-*/;
 
     @Test
     public void decodeWithoutTypeInfo() {
@@ -53,14 +47,14 @@ public class GwtClientJsonCodecTest {
 
     private static void decodePrimitiveValues(
             Function<JsonValue, Object> decoder) {
-        Assert.assertEquals("string", decoder.apply(Json.create("string")));
+        assertEquals("string", decoder.apply(Json.create("string")));
 
-        Assert.assertEquals(Double.valueOf(3.14),
+        assertEquals(Double.valueOf(3.14),
                 decoder.apply(Json.create(3.14)));
 
-        Assert.assertEquals(Boolean.TRUE, decoder.apply(Json.create(true)));
+        assertEquals(Boolean.TRUE, decoder.apply(Json.create(true)));
 
-        Assert.assertNull(decoder.apply(Json.createNull()));
+        assertNull(decoder.apply(Json.createNull()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -81,17 +75,19 @@ public class GwtClientJsonCodecTest {
 
     @Test
     public void decodeWithTypeInfo_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
+        // Create a simple JSON array directly
+        JsonArray json = Json.createArray();
+        json.set(0, "string");
+        json.set(1, true);
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(null, json);
 
-        Assert.assertTrue(decoded instanceof JsArray);
+        assertTrue(decoded instanceof JsArray);
         JsArray<?> decodedArray = (JsArray<?>) decoded;
 
-        Assert.assertEquals(2, decodedArray.length());
-        Assert.assertEquals("string", decodedArray.get(0));
-        Assert.assertEquals(Boolean.TRUE, decodedArray.get(1));
+        assertEquals(2, decodedArray.length());
+        assertEquals("string", decodedArray.get(0));
+        assertEquals(Boolean.TRUE, decodedArray.get(1));
     }
 
     @Test
@@ -100,9 +96,7 @@ public class GwtClientJsonCodecTest {
         StateNode node = new StateNode(42, tree);
         tree.registerNode(node);
 
-        JsElement element = new JsElement() {
-
-        };
+        JsElement element = createTestElement();
         node.setDomNode(element);
 
         // Create @v-node format
@@ -111,7 +105,7 @@ public class GwtClientJsonCodecTest {
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonObject);
 
-        Assert.assertSame(element, decoded);
+        assertSame(element, decoded);
     }
 
     @Test
@@ -119,15 +113,18 @@ public class GwtClientJsonCodecTest {
         encodePrimitiveValues(ClientJsonCodec::encodeWithoutTypeInfo);
     }
 
+    private static native JsElement createTestElement()
+    /*-{
+        return document.createElement('div');
+    }-*/;
+
     @Test
     public void decodeStateNode_node() {
         StateTree tree = new StateTree(null);
         StateNode node = new StateNode(43, tree);
         tree.registerNode(node);
 
-        JsElement element = new JsElement() {
-
-        };
+        JsElement element = createTestElement();
         node.setDomNode(element);
 
         // Create @v-node format
@@ -136,20 +133,22 @@ public class GwtClientJsonCodecTest {
 
         StateNode decoded = ClientJsonCodec.decodeStateNode(tree, jsonObject);
 
-        Assert.assertSame(node, decoded);
+        assertSame(node, decoded);
     }
 
     @Test
     public void decodeStateNode_array() {
-        JsonValue json = JsonCodec.encodeWithTypeInfo(JsonUtils
-                .createArray(Json.create("string"), Json.create(true)));
+        // Create a simple JSON array directly
+        JsonArray json = Json.createArray();
+        json.set(0, "string");
+        json.set(1, true);
 
-        Assert.assertNull(ClientJsonCodec.decodeStateNode(null, json));
+        assertNull(ClientJsonCodec.decodeStateNode(null, json));
     }
 
     @Test
     public void decodeStateNode_primitive() {
-        Assert.assertNull(
+        assertNull(
                 ClientJsonCodec.decodeStateNode(null, Json.create("string")));
     }
 
@@ -167,9 +166,9 @@ public class GwtClientJsonCodecTest {
     }
 
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
-        Assert.assertTrue(
-                actual.toJson() + " does not equal " + expected.toJson(),
-                JsonUtils.jsonEquals(expected, actual));
+        assertEquals(
+                "JSON values do not match",
+                expected.toJson(), actual.toJson());
     }
 
     @Test
@@ -181,10 +180,10 @@ public class GwtClientJsonCodecTest {
 
         try {
             ClientJsonCodec.decodeWithTypeInfo(null, unknownType);
-            Assert.fail(
+            fail(
                     "Expected IllegalArgumentException for unknown @v- type");
         } catch (IllegalArgumentException e) {
-            Assert.assertTrue(
+            assertTrue(
                     "Exception message should mention the unknown key",
                     e.getMessage().contains("@v-unknown"));
         }
@@ -199,10 +198,10 @@ public class GwtClientJsonCodecTest {
 
         try {
             ClientJsonCodec.decodeStateNode(null, unknownType);
-            Assert.fail(
+            fail(
                     "Expected IllegalArgumentException for unknown @v- type");
         } catch (IllegalArgumentException e) {
-            Assert.assertTrue(
+            assertTrue(
                     "Exception message should mention the unknown key",
                     e.getMessage().contains("@v-future"));
         }
@@ -214,8 +213,7 @@ public class GwtClientJsonCodecTest {
         StateNode node = new StateNode(100, tree);
         tree.registerNode(node);
 
-        JsElement element = new JsElement() {
-        };
+        JsElement element = createTestElement();
         node.setDomNode(element);
 
         // Create nested object containing @v-node reference
@@ -231,10 +229,10 @@ public class GwtClientJsonCodecTest {
 
         // Should return a native JS object that has properties accessible by
         // name
-        Assert.assertEquals("test", getObjectProperty(decoded, "data"));
-        Assert.assertEquals(Double.valueOf(42.0),
+        assertEquals("test", getObjectProperty(decoded, "data"));
+        assertEquals(Double.valueOf(42.0),
                 getObjectProperty(decoded, "count"));
-        Assert.assertSame("Nested element should be decoded to DOM node",
+        assertSame("Nested element should be decoded to DOM node",
                 element, getObjectProperty(decoded, "element"));
     }
 
@@ -246,10 +244,8 @@ public class GwtClientJsonCodecTest {
         tree.registerNode(node1);
         tree.registerNode(node2);
 
-        JsElement element1 = new JsElement() {
-        };
-        JsElement element2 = new JsElement() {
-        };
+        JsElement element1 = createTestElement();
+        JsElement element2 = createTestElement();
         node1.setDomNode(element1);
         node2.setDomNode(element2);
 
@@ -269,16 +265,16 @@ public class GwtClientJsonCodecTest {
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonArray);
 
-        Assert.assertTrue("Should decode to JsArray",
+        assertTrue("Should decode to JsArray",
                 decoded instanceof JsArray);
         JsArray<?> result = (JsArray<?>) decoded;
 
-        Assert.assertEquals(4, result.length());
-        Assert.assertEquals("first", result.get(0));
-        Assert.assertSame("First element should be decoded to DOM node",
+        assertEquals(4, result.length());
+        assertEquals("first", result.get(0));
+        assertSame("First element should be decoded to DOM node",
                 element1, result.get(1));
-        Assert.assertEquals(Double.valueOf(42.0), result.get(2));
-        Assert.assertSame("Second element should be decoded to DOM node",
+        assertEquals(Double.valueOf(42.0), result.get(2));
+        assertSame("Second element should be decoded to DOM node",
                 element2, result.get(3));
     }
 
@@ -288,8 +284,7 @@ public class GwtClientJsonCodecTest {
         StateNode node = new StateNode(300, tree);
         tree.registerNode(node);
 
-        JsElement element = new JsElement() {
-        };
+        JsElement element = createTestElement();
         node.setDomNode(element);
 
         // Create complex nested structure with both @v-node and @v-return
@@ -319,19 +314,19 @@ public class GwtClientJsonCodecTest {
 
         // Should return a native JS object that has properties accessible by
         // name
-        Assert.assertEquals("Complex Structure",
+        assertEquals("Complex Structure",
                 getObjectProperty(decoded, "title"));
 
         Object itemsObj = getObjectProperty(decoded, "items");
-        Assert.assertTrue("Items should be JsArray",
+        assertTrue("Items should be JsArray",
                 itemsObj instanceof JsArray);
         JsArray<?> items = (JsArray<?>) itemsObj;
 
-        Assert.assertEquals(3, items.length());
-        Assert.assertSame("First item should be decoded DOM node", element,
+        assertEquals(3, items.length());
+        assertSame("First item should be decoded DOM node", element,
                 items.get(0));
-        Assert.assertEquals("middle", items.get(1));
-        Assert.assertNotNull("Return channel should create callback",
+        assertEquals("middle", items.get(1));
+        assertNotNull("Return channel should create callback",
                 items.get(2));
     }
 
@@ -341,8 +336,7 @@ public class GwtClientJsonCodecTest {
         StateNode node = new StateNode(400, tree);
         tree.registerNode(node);
 
-        JsElement element = new JsElement() {
-        };
+        JsElement element = createTestElement();
         node.setDomNode(element);
 
         // Create deeply nested structure: object -> array -> object -> array ->
@@ -378,29 +372,29 @@ public class GwtClientJsonCodecTest {
 
         // Should return a native JS object with recursively decoded nested
         // structures
-        Assert.assertEquals(Double.valueOf(1.0),
+        assertEquals(Double.valueOf(1.0),
                 getObjectProperty(decoded, "level"));
 
         JsArray<?> nestedArray = (JsArray<?>) getObjectProperty(decoded,
                 "nested");
-        Assert.assertEquals("top", nestedArray.get(0));
+        assertEquals("top", nestedArray.get(0));
 
         Object midResult = nestedArray.get(1);
-        Assert.assertEquals(Double.valueOf(2.0),
+        assertEquals(Double.valueOf(2.0),
                 getObjectProperty(midResult, "level"));
 
         JsArray<?> dataArray = (JsArray<?>) getObjectProperty(midResult,
                 "data");
-        Assert.assertEquals(Boolean.TRUE, dataArray.get(1));
+        assertEquals(Boolean.TRUE, dataArray.get(1));
 
         Object deepResult = dataArray.get(0);
-        Assert.assertEquals(Double.valueOf(3.0),
+        assertEquals(Double.valueOf(3.0),
                 getObjectProperty(deepResult, "level"));
 
         JsArray<?> contentArray = (JsArray<?>) getObjectProperty(deepResult,
                 "content");
-        Assert.assertEquals("deep", contentArray.get(0));
-        Assert.assertSame("Deeply nested element should be decoded to DOM node",
+        assertEquals("deep", contentArray.get(0));
+        assertSame("Deeply nested element should be decoded to DOM node",
                 element, contentArray.get(1));
     }
 
