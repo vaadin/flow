@@ -167,37 +167,9 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
                 4, "Item 4"));
     }
 
-    @Test
-    public void resolveIndexPath_correctIndexReturned() {
-        dataCommunicator.expand(
-                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
-
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(0));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(50, dataCommunicator.resolveIndexPath(50));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(54, dataCommunicator.resolveIndexPath(-50));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-104));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-    }
-
-    @Test
-    public void invalidIndexPath_resolveIndexPath_correctIndexReturned() {
-        dataCommunicator.expand(
-                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
-
-        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(2, 2, 2));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(103, dataCommunicator.resolveIndexPath(1000));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-1000));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
+    @Test(expected = UnsupportedOperationException.class)
+    public void resolveIndexPath_throws() {
+        dataCommunicator.resolveIndexPath(2, 2, 2);
     }
 
     @Test

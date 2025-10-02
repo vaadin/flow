@@ -471,17 +471,34 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Ensures that all items along the specified path are preloaded into the
-     * cache, starting from the root level, and returns the flat index of the
-     * target item.
+     * Resolves the flat index of the item by traversing its hierarchical path
+     * and expanding its ancestors (all items in the path except the last one).
+     * <p>
+     * Supported only for data providers with {@link HierarchyFormat#NESTED},
+     * where HierarchicalDataCommunicator stores items hierarchically, not as a
+     * flat list.
      *
      * @since 25.0
      * @param path
      *            the hierarchical path to the item, where each element
      *            represents the index within its respective level
-     * @return the flat index of the target item after resolving all ancestors
+     * @return the flat index of the target item after resolving its ancestors
+     * @throws IllegalArgumentException
+     *             if the hierarchy format is other than
+     *             {@link HierarchyFormat#NESTED}
+     * @throws IllegalArgumentException
+     *             if any index in the path except the target points to an item
+     *             without children
+     * @throws IndexOutOfBoundsException
+     *             if any index in the path exceeds the size of its respective
+     *             level
      */
     protected int resolveIndexPath(int... path) {
+        if (!getHierarchyFormat().equals(HierarchyFormat.NESTED)) {
+            throw new UnsupportedOperationException(
+                    "Hierarchical paths are only supported when the data provider uses HierarchyFormat#NESTED");
+        }
+
         ensureRootCache();
         resolveIndexPath(rootCache, path);
         return rootCache.getFlatIndexByPath(path);
@@ -489,11 +506,19 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private void resolveIndexPath(Cache<T> cache, int... path) {
         var restPath = Arrays.copyOfRange(path, 1, path.length);
-
-        var index = Math.min(path[0], cache.getSize() - 1);
+        var index = path[0];
         if (index < 0) {
             // Negative index means counting from the end
-            index = Math.max(cache.getSize() + index, 0);
+            index = cache.getSize() + index;
+        }
+        if (index < 0 || index >= cache.getSize()) {
+            throw new IndexOutOfBoundsException(
+                    """
+                            Index %d at depth %d in the hierarchical path exceeds the level size %d. \
+                            Make sure that all indexes in the path point to existing items.
+                            """
+                            .formatted(path[0], cache.getDepth(),
+                                    cache.getSize()));
         }
 
         if (!cache.hasItem(index)) {
@@ -507,14 +532,22 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         }
 
         var item = cache.getItem(index);
-        if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
-                && isExpanded(item)) {
-            var subCache = cache.ensureSubCache(index, item, () -> {
-                requestFlush().invalidateViewport();
-                return getDataProviderChildCount(item);
-            });
-            resolveIndexPath(subCache, restPath);
+        if (!hasChildren(item)) {
+            throw new IllegalArgumentException(
+                    """
+                            Index %d at depth %d in the hierarchical path refers to an ancestor \
+                            without children, so the path cannot be resolved. Make sure that all \
+                            indexes except the target point to expandable items.
+                            """
+                            .formatted(path[0], cache.getDepth()));
         }
+
+        expand(item);
+        var subCache = cache.ensureSubCache(index, item, () -> {
+            requestFlush().invalidateViewport();
+            return getDataProviderChildCount(item);
+        });
+        resolveIndexPath(subCache, restPath);
     }
 
     private void preloadRange(Cache<T> cache, int start, int length) {
