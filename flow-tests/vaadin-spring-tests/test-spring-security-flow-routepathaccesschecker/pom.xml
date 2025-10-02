@@ -182,6 +182,9 @@
 				<groupId>com.vaadin</groupId>
 				<artifactId>flow-maven-plugin</artifactId>
 				<version>${project.version}</version>
+				<configuration>
+					<frontendHotdeploy>false</frontendHotdeploy>
+				</configuration>
 				<executions>
 					<execution>
 						<goals>
