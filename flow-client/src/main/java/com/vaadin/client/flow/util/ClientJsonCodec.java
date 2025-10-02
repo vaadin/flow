@@ -226,7 +226,8 @@ public class ClientJsonCodec {
         for (String key : jsonObject.keys()) {
             JsonValue orignalValue = jsonObject.get(key);
             Object decoded = decodeWithTypeInfo(tree, orignalValue);
-            jsonObject.put(key, (JsonValue) WidgetUtil.crazyJsCast(decoded));
+            JsonValue newValue = WidgetUtil.crazyJsoCast(decoded);
+            jsonObject.put(key, newValue);
         }
         return jsonObject;
     }
