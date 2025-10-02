@@ -181,12 +181,12 @@ public class ComponentEventBusTest {
         TestComponent c = new TestComponent();
         EventTracker<MappedToDomEvent> eventListener = new EventTracker<>();
         c.addListener(MappedToDomEvent.class, eventListener);
-        
+
         // Missing primitive boolean data should cause event creation to fail
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             fireDomEvent(c, "dom-event", createData("event.someData", 2));
         });
-        
+
         // Event should not have been called due to the failure
         eventListener.assertEventNotCalled();
     }
@@ -395,10 +395,14 @@ public class ComponentEventBusTest {
 
     private JsonNode createCompleteEventData(int someData, String moreData) {
         ObjectNode data = JacksonUtils.createObjectNode();
-        data.set("event.someData", JacksonCodec.encodeWithoutTypeInfo(someData));
-        data.set("event.moreData", JacksonCodec.encodeWithoutTypeInfo(moreData));
-        data.set("event.primitiveBoolean", JacksonCodec.encodeWithoutTypeInfo(false));
-        data.set("event.objectBoolean", JacksonCodec.encodeWithoutTypeInfo(null));
+        data.set("event.someData",
+                JacksonCodec.encodeWithoutTypeInfo(someData));
+        data.set("event.moreData",
+                JacksonCodec.encodeWithoutTypeInfo(moreData));
+        data.set("event.primitiveBoolean",
+                JacksonCodec.encodeWithoutTypeInfo(false));
+        data.set("event.objectBoolean",
+                JacksonCodec.encodeWithoutTypeInfo(null));
         return data;
     }
 

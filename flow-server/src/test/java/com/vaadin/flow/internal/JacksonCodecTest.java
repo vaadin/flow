@@ -171,12 +171,13 @@ public class JacksonCodecTest {
                 JacksonCodec.decodeAs(intJson, Integer.class));
         Assert.assertEquals(Double.valueOf(15.0),
                 JacksonCodec.decodeAs(intJson, Double.class));
-        
+
         // Test double
         JsonNode doubleJson = objectMapper.valueToTree(15.7);
         Assert.assertEquals(Double.valueOf(15.7),
                 JacksonCodec.decodeAs(doubleJson, Double.class));
-        Assert.assertEquals(doubleJson, JacksonCodec.decodeAs(doubleJson, JsonNode.class));
+        Assert.assertEquals(doubleJson,
+                JacksonCodec.decodeAs(doubleJson, JsonNode.class));
     }
 
     @Test

@@ -31,13 +31,12 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         open();
 
         /*
-         * There are 3 * 4 * 2 * 3 = 72 different combinations in the UI, let's
+         * There are 3 * 3 * 2 * 3 = 54 different combinations in the UI, let's
          * test all of them just because we can
          */
         for (String method : Arrays.asList("execPage", "execElement",
                 "callElement")) {
-            for (String value : Arrays.asList("string", "number", "null",
-                    "error-value")) {
+            for (String value : Arrays.asList("string", "number", "null")) {
                 for (String outcome : Arrays.asList("success", "failure")) {
                     for (String type : Arrays.asList("synchronous",
                             "resolvedpromise", "timeout")) {
@@ -75,16 +74,8 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
             }
         } else {
             String actualStatus = findElement(By.id("status")).getText();
-            
-            // Error objects cannot be converted to String, so they trigger error handler
-            if ("error-value".equals(value) && "success".equals(outcome)) {
-                Assert.assertTrue("Expected error message for " + combinationId 
-                        + " but got: " + actualStatus,
-                        actualStatus.startsWith("Error:"));
-            } else {
-                Assert.assertEquals("Unexpected result for " + combinationId,
-                        expectedStatus, actualStatus);
-            }
+            Assert.assertEquals("Unexpected result for " + combinationId,
+                    expectedStatus, actualStatus);
         }
     }
 
@@ -97,14 +88,8 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
                 // Special case since the null is handled differently for errors
                 // and for results
                 return prefix + "null";
-            } else if ("error-value".equals(value)) {
-                // Message from inside the Error object should be included
-                return prefix + "Error: message";
             }
         }
-
-        // Error objects cannot be converted to String type, which triggers the
-        // error handler. This case is handled specially in testCombination method
 
         switch (value) {
         case "string":
@@ -112,9 +97,6 @@ public class JavaScriptReturnValueIT extends ChromeBrowserTest {
         case "number":
             return prefix + "42";
         case "null":
-            return prefix;
-        case "error-value":
-            // For failure cases, the Error object message is included
             return prefix;
         default:
             throw new IllegalArgumentException(

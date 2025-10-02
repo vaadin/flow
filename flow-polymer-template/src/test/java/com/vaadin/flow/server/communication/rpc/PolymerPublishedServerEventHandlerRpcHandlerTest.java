@@ -37,7 +37,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
 @NotThreadSafe
-public class PublishedServerEventHandlerRpcHandlerTest {
+public class PolymerPublishedServerEventHandlerRpcHandlerTest {
 
     private VaadinService service;
 
@@ -458,7 +458,7 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         MethodWithParameters component = new MethodWithParameters();
         component.intArg = -1;
         component.booleanArg = true;
-        
+
         // Passing null to a primitive parameter should throw an exception
         Assert.assertThrows(IllegalArgumentException.class, () -> {
             PublishedServerEventHandlerRpcHandler.invokeMethod(component,
