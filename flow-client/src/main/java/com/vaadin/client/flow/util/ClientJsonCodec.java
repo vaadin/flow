@@ -205,41 +205,21 @@ public class ClientJsonCodec {
      * Helper method to get a string property from a JSON object.
      */
     private static String getStringProperty(JsonValue json, String key) {
-        if (GWT.isScript()) {
-            return getStringPropertyNative(json, key);
-        } else {
-            // JVM implementation
-            if (json.getType() == JsonType.OBJECT) {
-                return ((JsonObject) json).getString(key);
-            }
-            return null;
+        if (json.getType() == JsonType.OBJECT) {
+            return ((JsonObject) json).getString(key);
         }
+        return null;
     }
-
-    private static native String getStringPropertyNative(JsonValue json,
-            String key) /*-{
-        return json[key];
-    }-*/;
 
     /**
      * Helper method to get a number property from a JSON object.
      */
     private static double getNumberProperty(JsonValue json, String key) {
-        if (GWT.isScript()) {
-            return getNumberPropertyNative(json, key);
-        } else {
-            // JVM implementation
-            if (json.getType() == JsonType.OBJECT) {
-                return ((JsonObject) json).getNumber(key);
-            }
-            return 0;
+        if (json.getType() == JsonType.OBJECT) {
+            return ((JsonObject) json).getNumber(key);
         }
+        return 0;
     }
-
-    private static native double getNumberPropertyNative(JsonValue json,
-            String key) /*-{
-        return json[key];
-    }-*/;
 
     /**
      * Recursively decodes a JSON object, processing any nested @v references.
