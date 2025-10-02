@@ -91,9 +91,10 @@ public class JsonCodec {
     private static JsonValue encodeReturnChannel(
             ReturnChannelRegistration value) {
         elemental.json.JsonObject obj = Json.createObject();
-        obj.put("@v", "return");
-        obj.put("nodeId", value.getStateNodeId());
-        obj.put("channelId", value.getChannelId());
+        JsonArray channelArray = Json.createArray();
+        channelArray.set(0, value.getStateNodeId());
+        channelArray.set(1, value.getChannelId());
+        obj.put("@v-return", channelArray);
         return obj;
     }
 
@@ -101,8 +102,7 @@ public class JsonCodec {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
             elemental.json.JsonObject obj = Json.createObject();
-            obj.put("@v", "node");
-            obj.put("id", stateNode.getId());
+            obj.put("@v-node", stateNode.getId());
             return obj;
         } else {
             return Json.createNull();

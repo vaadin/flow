@@ -122,10 +122,9 @@ public class JacksonCodecTest {
 
         JsonNode json = JacksonCodec.encodeWithTypeInfo(element);
 
-        // Should now use @v object format
+        // Should now use compact @v-node format
         ObjectNode expected = objectMapper.createObjectNode();
-        expected.put("@v", "node");
-        expected.put("id", element.getNode().getId());
+        expected.put("@v-node", element.getNode().getId());
 
         assertJsonEquals(expected, json);
     }

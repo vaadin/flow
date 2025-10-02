@@ -91,10 +91,9 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        // Create @v object format for node
+        // Create compact @v-node format
         elemental.json.JsonObject jsonObject = Json.createObject();
-        jsonObject.put("@v", "node");
-        jsonObject.put("id", node.getId());
+        jsonObject.put("@v-node", node.getId());
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonObject);
 
@@ -117,10 +116,9 @@ public class ClientJsonCodecTest {
         };
         node.setDomNode(element);
 
-        // Create @v object format for node
+        // Create compact @v-node format
         elemental.json.JsonObject jsonObject = Json.createObject();
-        jsonObject.put("@v", "node");
-        jsonObject.put("id", node.getId());
+        jsonObject.put("@v-node", node.getId());
 
         StateNode decoded = ClientJsonCodec.decodeStateNode(tree, jsonObject);
 

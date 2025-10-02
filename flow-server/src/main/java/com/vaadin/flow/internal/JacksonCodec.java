@@ -95,9 +95,10 @@ public class JacksonCodec {
             ReturnChannelRegistration value) {
         ObjectMapper mapper = JacksonUtils.getMapper();
         ObjectNode obj = mapper.createObjectNode();
-        obj.put("@v", "return");
-        obj.put("nodeId", value.getStateNodeId());
-        obj.put("channelId", value.getChannelId());
+        ArrayNode channelArray = mapper.createArrayNode();
+        channelArray.add(value.getStateNodeId());
+        channelArray.add(value.getChannelId());
+        obj.set("@v-return", channelArray);
         return obj;
     }
 
@@ -106,8 +107,7 @@ public class JacksonCodec {
         if (stateNode.isAttached()) {
             ObjectMapper mapper = JacksonUtils.getMapper();
             ObjectNode obj = mapper.createObjectNode();
-            obj.put("@v", "node");
-            obj.put("id", stateNode.getId());
+            obj.put("@v-node", stateNode.getId());
             return obj;
         } else {
             return JacksonUtils.getMapper().nullNode();

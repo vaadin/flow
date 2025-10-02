@@ -61,10 +61,10 @@ public class ClientJsonCodec {
      */
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
-            // Check for @v object format
-            String type = getStringProperty(json, "@v");
-            if ("node".equals(type)) {
-                int nodeId = (int) getNumberProperty(json, "id");
+            // Check for compact @v-node format
+            JsonValue nodeIdValue = getProperty(json, "@v-node");
+            if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
+                int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
             }
             return null;
@@ -85,18 +85,26 @@ public class ClientJsonCodec {
      */
     public static Object decodeWithTypeInfo(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
-            // Check for @v object format
-            String type = getStringProperty(json, "@v");
-            if ("node".equals(type)) {
-                int nodeId = (int) getNumberProperty(json, "id");
+            // Check for compact @v-node format
+            JsonValue nodeIdValue = getProperty(json, "@v-node");
+            if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
+                int nodeId = (int) nodeIdValue.asNumber();
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
-            } else if ("return".equals(type)) {
-                int nodeId = (int) getNumberProperty(json, "nodeId");
-                int channelId = (int) getNumberProperty(json, "channelId");
-                return createReturnChannelCallback(nodeId, channelId,
-                        tree.getRegistry().getServerConnector());
             }
+            
+            // Check for compact @v-return format
+            JsonValue returnArray = getProperty(json, "@v-return");
+            if (returnArray != null && returnArray.getType() == JsonType.ARRAY) {
+                JsonArray array = (JsonArray) returnArray;
+                if (array.length() >= 2) {
+                    int returnNodeId = (int) array.getNumber(0);
+                    int channelId = (int) array.getNumber(1);
+                    return createReturnChannelCallback(returnNodeId, channelId,
+                            tree.getRegistry().getServerConnector());
+                }
+            }
+            
             // Regular JSON object - decode recursively to handle nested @v
             // references
             return decodeObjectWithTypeInfo(tree, json);
@@ -222,6 +230,16 @@ public class ClientJsonCodec {
     }
 
     /**
+     * Helper method to get any property from a JSON object.
+     */
+    private static JsonValue getProperty(JsonValue json, String key) {
+        if (json.getType() == JsonType.OBJECT) {
+            return ((JsonObject) json).get(key);
+        }
+        return null;
+    }
+
+    /**
      * Recursively decodes a JSON object, processing any nested @v references.
      */
     private static Object decodeObjectWithTypeInfo(StateTree tree,
@@ -248,7 +266,7 @@ public class ClientJsonCodec {
         for (var key in json) {
             if (json.hasOwnProperty(key)) {
                 var value = json[key];
-                result[key] = @ClientJsonCodec::decodeWithTypeInfo(*)(tree, value);
+                result[key] = @ClientJsonCodec::decodeWithTypeInfo(Lcom/vaadin/client/flow/StateTree;Lelemental/json/JsonValue;)(tree, value);
             }
         }
         return result;
