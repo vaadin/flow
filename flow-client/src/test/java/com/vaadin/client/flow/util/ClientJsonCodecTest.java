@@ -158,4 +158,34 @@ public class ClientJsonCodecTest {
                 JsonUtils.jsonEquals(expected, actual));
     }
 
+    @Test
+    public void decodeWithTypeInfo_unknownVType_throwsException() {
+        // Test that unknown @v- prefixed types are rejected for forward compatibility
+        elemental.json.JsonObject unknownType = Json.createObject();
+        unknownType.put("@v-unknown", "someValue");
+        
+        try {
+            ClientJsonCodec.decodeWithTypeInfo(null, unknownType);
+            Assert.fail("Expected IllegalArgumentException for unknown @v- type");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue("Exception message should mention the unknown key",
+                    e.getMessage().contains("@v-unknown"));
+        }
+    }
+
+    @Test
+    public void decodeStateNode_unknownVType_throwsException() {
+        // Test that unknown @v- prefixed types are rejected in decodeStateNode too
+        elemental.json.JsonObject unknownType = Json.createObject();
+        unknownType.put("@v-future", 42);
+        
+        try {
+            ClientJsonCodec.decodeStateNode(null, unknownType);
+            Assert.fail("Expected IllegalArgumentException for unknown @v- type");
+        } catch (IllegalArgumentException e) {
+            Assert.assertTrue("Exception message should mention the unknown key",
+                    e.getMessage().contains("@v-future"));
+        }
+    }
+
 }

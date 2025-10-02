@@ -67,6 +67,16 @@ public class ClientJsonCodec {
                 int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
             }
+            
+            // Check for unknown @v- prefixed types to maintain forward compatibility
+            JsonObject obj = (JsonObject) json;
+            for (String key : obj.keys()) {
+                if (key.startsWith("@v-") && !key.equals("@v-node")) {
+                    throw new IllegalArgumentException(
+                            "Unsupported complex type with key '" + key + "' in " + json.toJson());
+                }
+            }
+            
             return null;
         } else {
             return null;
@@ -102,6 +112,17 @@ public class ClientJsonCodec {
                     int channelId = (int) array.getNumber(1);
                     return createReturnChannelCallback(returnNodeId, channelId,
                             tree.getRegistry().getServerConnector());
+                }
+            }
+            
+            // Check for unknown @v- prefixed types to maintain forward compatibility
+            if (json.getType() == JsonType.OBJECT) {
+                JsonObject obj = (JsonObject) json;
+                for (String key : obj.keys()) {
+                    if (key.startsWith("@v-") && !key.equals("@v-node") && !key.equals("@v-return")) {
+                        throw new IllegalArgumentException(
+                                "Unsupported complex type with key '" + key + "' in " + json.toJson());
+                    }
                 }
             }
             
