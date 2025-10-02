@@ -63,8 +63,13 @@ public class ClientJsonCodec {
         if (json.getType() == JsonType.OBJECT) {
             // Check for @v-node format
             JsonValue nodeIdValue = ((JsonObject) json).get("@v-node");
-            if (nodeIdValue != null
-                    && nodeIdValue.getType() == JsonType.NUMBER) {
+            if (nodeIdValue != null) {
+                if (nodeIdValue.getType() != JsonType.NUMBER) {
+                    throw new IllegalArgumentException(
+                            "@v-node value must be a number, got "
+                                    + nodeIdValue.getType() + " in "
+                                    + json.toJson());
+                }
                 int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
             }
@@ -90,8 +95,13 @@ public class ClientJsonCodec {
             JsonObject jsonObject = (JsonObject) json;
             // Check for @v-node format
             JsonValue nodeIdValue = jsonObject.get("@v-node");
-            if (nodeIdValue != null
-                    && nodeIdValue.getType() == JsonType.NUMBER) {
+            if (nodeIdValue != null) {
+                if (nodeIdValue.getType() != JsonType.NUMBER) {
+                    throw new IllegalArgumentException(
+                            "@v-node value must be a number, got "
+                                    + nodeIdValue.getType() + " in "
+                                    + json.toJson());
+                }
                 int nodeId = (int) nodeIdValue.asNumber();
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
@@ -99,15 +109,23 @@ public class ClientJsonCodec {
 
             // Check for @v-return format
             JsonValue returnArray = jsonObject.get("@v-return");
-            if (returnArray != null
-                    && returnArray.getType() == JsonType.ARRAY) {
-                JsonArray array = (JsonArray) returnArray;
-                if (array.length() >= 2) {
-                    int returnNodeId = (int) array.getNumber(0);
-                    int channelId = (int) array.getNumber(1);
-                    return createReturnChannelCallback(returnNodeId, channelId,
-                            tree.getRegistry().getServerConnector());
+            if (returnArray != null) {
+                if (returnArray.getType() != JsonType.ARRAY) {
+                    throw new IllegalArgumentException(
+                            "@v-return value must be an array, got "
+                                    + returnArray.getType() + " in "
+                                    + json.toJson());
                 }
+                JsonArray array = (JsonArray) returnArray;
+                if (array.length() < 2) {
+                    throw new IllegalArgumentException(
+                            "@v-return array must have at least 2 elements, got "
+                                    + array.length() + " in " + json.toJson());
+                }
+                int returnNodeId = (int) array.getNumber(0);
+                int channelId = (int) array.getNumber(1);
+                return createReturnChannelCallback(returnNodeId, channelId,
+                        tree.getRegistry().getServerConnector());
             }
 
             // Check for unknown @v- types
