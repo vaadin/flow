@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
