@@ -88,6 +88,7 @@ mvn checkstyle:check
 - Use triple quotes (`"""`) for multi-line string blocks in Java text blocks
 - **When tests fail, code doesn't compile, or similar issues occur: Always analyze why first, do not start rewriting code**
 - **When writing code, names and comments should describe how the code works and why, not what has changed from previous versions. Commit messages capture change information, not the code itself.**
+- **Always create proper tests for what should work first. If the tests expose problems in the implementation, fix the implementation after the tests have been created.**
 
 ### Frontend Development
 
