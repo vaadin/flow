@@ -162,29 +162,17 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         final ArrayList<HasElement> chain = new ArrayList<>();
-
+        
         final boolean preserveOnRefreshTarget = isPreserveOnRefreshTarget(
                 routeTargetType, routeLayoutTypes);
 
         if (populateChain(chain, preserveOnRefreshTarget, event)) {
             return HttpStatusCode.OK.getCode();
         }
+        
+        NavigationEvent updatedEvent = adjustNavigationEventIfNeeded(event, preserveOnRefreshTarget, chain, ui);
 
-        // Set navigationTrigger to RELOAD if this is a refresh of a preserve
-        // view.
-        if (preserveOnRefreshTarget && !chain.isEmpty()) {
-            event = new NavigationEvent(event.getSource(), event.getLocation(),
-                    event.getUI(), NavigationTrigger.REFRESH);
-        }
-
-        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
-        // pushing history state shouldn't be done. So, it's done here to make
-        // sure that when history state is pushed the navigation is not
-        // postponed.
-        // See https://github.com/vaadin/flow/issues/3619 for more info.
-        pushHistoryStateIfNeeded(event, ui);
-
-        Optional<Integer> result = handleBeforeNavigationEvents(event, routeTargetType,
+        Optional<Integer> result = handleBeforeNavigationEvents(updatedEvent, routeTargetType,
                 parameters, chain);
         if (result.isPresent()) {
             return result.get();
@@ -269,6 +257,36 @@ public abstract class AbstractNavigationStateRenderer
         }
 
         return Optional.empty();
+    }
+
+    /**
+     * Adjust the navigation event if needed for preserve-on-refresh and handle history state.
+     * 
+     * @param event the original navigation event
+     * @param preserveOnRefreshTarget whether this is a preserve-on-refresh target
+     * @param chain the populated navigation chain
+     * @param ui the UI instance
+     * @return the potentially updated navigation event
+     */
+    private NavigationEvent adjustNavigationEventIfNeeded(NavigationEvent event,
+            boolean preserveOnRefreshTarget, ArrayList<HasElement> chain, UI ui) {
+        
+        NavigationEvent resultEvent = event;
+        
+        // Set navigationTrigger to RELOAD if this is a refresh of a preserve view.
+        if (preserveOnRefreshTarget && !chain.isEmpty()) {
+            resultEvent = new NavigationEvent(event.getSource(), event.getLocation(),
+                    event.getUI(), NavigationTrigger.REFRESH);
+        }
+
+        // If the navigation is postponed, using BeforeLeaveEvent#postpone,
+        // pushing history state shouldn't be done. So, it's done here to make
+        // sure that when history state is pushed the navigation is not
+        // postponed.
+        // See https://github.com/vaadin/flow/issues/3619 for more info.
+        pushHistoryStateIfNeeded(resultEvent, ui);
+
+        return resultEvent;
     }
 
     /**
