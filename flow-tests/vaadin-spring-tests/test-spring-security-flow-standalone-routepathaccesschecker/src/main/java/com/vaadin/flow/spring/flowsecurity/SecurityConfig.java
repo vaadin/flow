@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -52,13 +51,11 @@ import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
 @EnableWebSecurity
 @Configuration
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public class SecurityConfig {
 
     @Autowired
@@ -98,7 +95,6 @@ public class SecurityConfig {
         // Setup
         http.csrf(AbstractHttpConfigurer::disable); // simple for testing
         // purpose
-
         // Homemade security for Vaadin application, not fully functional as the
         // configuration provided by VaadinSecurityConfigurer
         // @formatter:off
@@ -155,6 +151,7 @@ public class SecurityConfig {
                                 request)));
             });
         });
+
         // Custom login page with form authentication
         http.formLogin(cfg -> cfg.loginPage("/my/login/page").permitAll());
         DefaultSecurityFilterChain filterChain = http.build();
