@@ -178,34 +178,7 @@ public abstract class AbstractNavigationStateRenderer
             return result.get();
         }
 
-        final Component componentInstance = (Component) chain.get(0);
-
-        // Preserve the navigation chain if all went well and it's being shown
-        // on the UI.
-        if (preserveOnRefreshTarget) {
-            setPreservedChain(chain, event);
-        }
-
-        @SuppressWarnings("unchecked")
-        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
-                .subList(1, chain.size());
-
-        cleanModalComponents(event);
-
-        // Change the UI according to the navigation Component chain.
-        ui.getInternals().showRouteTarget(event.getLocation(),
-                componentInstance, routerLayouts);
-
-        int statusCode = locationChangeEvent.getStatusCode();
-        validateStatusCode(statusCode, routeTargetType);
-
-        // After navigation event
-        handleAfterNavigationEvents(ui, parameters);
-
-        String route = getFormattedRoute(event);
-        updatePageTitle(event, componentInstance, route);
-
-        return statusCode;
+        return finalizeNavigation(updatedEvent, routeTargetType, parameters, chain, preserveOnRefreshTarget, ui);
     }
 
     /**
@@ -287,6 +260,49 @@ public abstract class AbstractNavigationStateRenderer
         pushHistoryStateIfNeeded(resultEvent, ui);
 
         return resultEvent;
+    }
+
+    /**
+     * Finalize the navigation by setting up components, handling UI updates, and completing the navigation process.
+     * 
+     * @param event the navigation event
+     * @param routeTargetType the route target type
+     * @param parameters the route parameters
+     * @param chain the populated navigation chain
+     * @param preserveOnRefreshTarget whether this is a preserve-on-refresh target
+     * @param ui the UI instance
+     * @return the final navigation status code
+     */
+    private int finalizeNavigation(NavigationEvent event, Class<? extends Component> routeTargetType,
+            RouteParameters parameters, ArrayList<HasElement> chain, boolean preserveOnRefreshTarget, UI ui) {
+        
+        final Component componentInstance = (Component) chain.get(0);
+
+        // Preserve the navigation chain if all went well and it's being shown on the UI.
+        if (preserveOnRefreshTarget) {
+            setPreservedChain(chain, event);
+        }
+
+        @SuppressWarnings("unchecked")
+        List<RouterLayout> routerLayouts = (List<RouterLayout>) (List<?>) chain
+                .subList(1, chain.size());
+
+        cleanModalComponents(event);
+
+        // Change the UI according to the navigation Component chain.
+        ui.getInternals().showRouteTarget(event.getLocation(),
+                componentInstance, routerLayouts);
+
+        int statusCode = locationChangeEvent.getStatusCode();
+        validateStatusCode(statusCode, routeTargetType);
+
+        // After navigation event
+        handleAfterNavigationEvents(ui, parameters);
+
+        String route = getFormattedRoute(event);
+        updatePageTitle(event, componentInstance, route);
+
+        return statusCode;
     }
 
     /**
