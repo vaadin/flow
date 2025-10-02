@@ -348,70 +348,117 @@ public abstract class AbstractNavigationStateRenderer
     private boolean populateChain(ArrayList<HasElement> chain,
             boolean preserveOnRefreshTarget, NavigationEvent event) {
         if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
-            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
-                    event);
-            if (maybeChain.isEmpty()) {
-                // We're returning because the preserved chain is not ready to
-                // be used as is, and requires client data requested within
-                // `getPreservedChain`. Once the data is retrieved from the
-                // client, `handle` method will be invoked with the same
-                // `NavigationEvent` argument.
-                return true;
-            }
-            chain.addAll(maybeChain.get());
-
-            // If partialMatch is set to true check if the cache contains a
-            // chain and possibly request extended details to get window name
-            // to select cached chain.
-            if (chain.isEmpty() && isPreservePartialTarget(
-                    navigationState.getNavigationTarget(), routeLayoutTypes)) {
-                UI ui = event.getUI();
-                if (ui.getInternals().getExtendedClientDetails() == null) {
-                    PreservedComponentCache cache = ui.getSession()
-                            .getAttribute(PreservedComponentCache.class);
-                    if (cache != null && !cache.isEmpty()) {
-                        // As there is a cached chain we get the client details
-                        // to get the window name so we can determine if the
-                        // cache contains a chain for us to use.
-                        ui.getPage().retrieveExtendedClientDetails(
-                                details -> handle(event));
-                        return true;
-                    }
-                } else {
-                    Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(),
-                            ui.getInternals().getExtendedClientDetails()
-                                    .getWindowName());
-                    if (partialChain.isPresent()) {
-                        List<HasElement> oldChain = partialChain.get();
-                        disconnectElements(oldChain, ui);
-
-                        List<RouterLayout> routerLayouts = new ArrayList<>();
-
-                        for (HasElement hasElement : oldChain) {
-                            if (hasElement instanceof RouterLayout) {
-                                routerLayouts.add((RouterLayout) hasElement);
-                            } else {
-                                // Remove any non element from their parent to
-                                // not get old or duplicate route content
-                                hasElement.getElement().removeFromParent();
-                            }
-                        }
-                        ui.getInternals().setRouterTargetChain(routerLayouts);
-                    }
-                }
-            }
+            return handlePreserveOnRefreshChain(chain, event);
         } else {
-            // Create an empty chain which gets populated later in
-            // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
-            chain.clear();
+            handleNonPreservedChain(chain, event);
+            return false;
+        }
+    }
 
-            // Has any preserved components already been created here? If so,
-            // we don't want to navigate back to them ever so clear cache for
-            // window.
-            clearAllPreservedChains(event.getUI());
+    /**
+     * Handle chain population when preserve-on-refresh is enabled.
+     *
+     * @param chain the chain to populate
+     * @param event the navigation event
+     * @return true if client data is needed, false otherwise
+     */
+    private boolean handlePreserveOnRefreshChain(ArrayList<HasElement> chain, NavigationEvent event) {
+        final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(event);
+        if (maybeChain.isEmpty()) {
+            // We're returning because the preserved chain is not ready to
+            // be used as is, and requires client data requested within
+            // `getPreservedChain`. Once the data is retrieved from the
+            // client, `handle` method will be invoked with the same
+            // `NavigationEvent` argument.
+            return true;
+        }
+        chain.addAll(maybeChain.get());
+
+        // Handle partial match preserve target
+        if (chain.isEmpty() && isPreservePartialTarget(
+                navigationState.getNavigationTarget(), routeLayoutTypes)) {
+            return handlePartialMatchPreservation(event);
+        }
+        
+        return false;
+    }
+
+    /**
+     * Handle chain population when preserve-on-refresh is not enabled.
+     */
+    private void handleNonPreservedChain(ArrayList<HasElement> chain, NavigationEvent event) {
+        // Create an empty chain which gets populated later in
+        // `createChainIfEmptyAndExecuteBeforeEnterNavigation`.
+        chain.clear();
+
+        // Has any preserved components already been created here? If so,
+        // we don't want to navigate back to them ever so clear cache for
+        // window.
+        clearAllPreservedChains(event.getUI());
+    }
+
+    /**
+     * Handle partial match preservation when extended client details are needed.
+     *
+     * @param event the navigation event
+     * @return true if client data is needed, false otherwise
+     */
+    private boolean handlePartialMatchPreservation(NavigationEvent event) {
+        UI ui = event.getUI();
+        if (ui.getInternals().getExtendedClientDetails() == null) {
+            return requestClientDetailsIfCacheExists(event, ui);
+        } else {
+            processWindowPreservedChain(ui);
+            return false;
+        }
+    }
+
+    /**
+     * Request client details if preserved cache exists.
+     */
+    private boolean requestClientDetailsIfCacheExists(NavigationEvent event, UI ui) {
+        PreservedComponentCache cache = ui.getSession()
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && !cache.isEmpty()) {
+            // As there is a cached chain we get the client details
+            // to get the window name so we can determine if the
+            // cache contains a chain for us to use.
+            ui.getPage().retrieveExtendedClientDetails(details -> handle(event));
+            return true;
         }
         return false;
+    }
+
+    /**
+     * Process window preserved chain using extended client details.
+     */
+    private void processWindowPreservedChain(UI ui) {
+        Optional<List<HasElement>> partialChain = getWindowPreservedChain(
+                ui.getSession(),
+                ui.getInternals().getExtendedClientDetails().getWindowName());
+        if (partialChain.isPresent()) {
+            List<HasElement> oldChain = partialChain.get();
+            disconnectElements(oldChain, ui);
+            setupRouterLayoutsFromChain(oldChain, ui);
+        }
+    }
+
+    /**
+     * Setup router layouts from the preserved chain.
+     */
+    private void setupRouterLayoutsFromChain(List<HasElement> oldChain, UI ui) {
+        List<RouterLayout> routerLayouts = new ArrayList<>();
+
+        for (HasElement hasElement : oldChain) {
+            if (hasElement instanceof RouterLayout) {
+                routerLayouts.add((RouterLayout) hasElement);
+            } else {
+                // Remove any non element from their parent to
+                // not get old or duplicate route content
+                hasElement.getElement().removeFromParent();
+            }
+        }
+        ui.getInternals().setRouterTargetChain(routerLayouts);
     }
 
     /**
