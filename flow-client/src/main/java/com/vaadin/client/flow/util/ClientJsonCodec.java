@@ -63,20 +63,23 @@ public class ClientJsonCodec {
         if (json.getType() == JsonType.OBJECT) {
             // Check for @v-node format
             JsonValue nodeIdValue = getProperty(json, "@v-node");
-            if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
+            if (nodeIdValue != null
+                    && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
             }
-            
-            // Check for unknown @v- prefixed types to maintain forward compatibility
+
+            // Check for unknown @v- prefixed types to maintain forward
+            // compatibility
             JsonObject obj = (JsonObject) json;
             for (String key : obj.keys()) {
                 if (key.startsWith("@v-") && !key.equals("@v-node")) {
                     throw new IllegalArgumentException(
-                            "Unsupported complex type with key '" + key + "' in " + json.toJson());
+                            "Unsupported complex type with key '" + key
+                                    + "' in " + json.toJson());
                 }
             }
-            
+
             return null;
         } else {
             return null;
@@ -97,15 +100,17 @@ public class ClientJsonCodec {
         if (json.getType() == JsonType.OBJECT) {
             // Check for @v-node format
             JsonValue nodeIdValue = getProperty(json, "@v-node");
-            if (nodeIdValue != null && nodeIdValue.getType() == JsonType.NUMBER) {
+            if (nodeIdValue != null
+                    && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
             }
-            
+
             // Check for @v-return format
             JsonValue returnArray = getProperty(json, "@v-return");
-            if (returnArray != null && returnArray.getType() == JsonType.ARRAY) {
+            if (returnArray != null
+                    && returnArray.getType() == JsonType.ARRAY) {
                 JsonArray array = (JsonArray) returnArray;
                 if (array.length() >= 2) {
                     int returnNodeId = (int) array.getNumber(0);
@@ -114,18 +119,21 @@ public class ClientJsonCodec {
                             tree.getRegistry().getServerConnector());
                 }
             }
-            
-            // Check for unknown @v- prefixed types to maintain forward compatibility
+
+            // Check for unknown @v- prefixed types to maintain forward
+            // compatibility
             if (json.getType() == JsonType.OBJECT) {
                 JsonObject obj = (JsonObject) json;
                 for (String key : obj.keys()) {
-                    if (key.startsWith("@v-") && !key.equals("@v-node") && !key.equals("@v-return")) {
+                    if (key.startsWith("@v-") && !key.equals("@v-node")
+                            && !key.equals("@v-return")) {
                         throw new IllegalArgumentException(
-                                "Unsupported complex type with key '" + key + "' in " + json.toJson());
+                                "Unsupported complex type with key '" + key
+                                        + "' in " + json.toJson());
                     }
                 }
             }
-            
+
             // Regular JSON object - decode recursively to handle nested @v
             // references
             return decodeObjectWithTypeInfo(tree, json);
