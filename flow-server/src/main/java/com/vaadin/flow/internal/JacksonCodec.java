@@ -86,7 +86,6 @@ public class JacksonCodec {
         } else {
             // All other types (including arrays and beans) use standard Jackson
             // serialization
-            // Component references within will be handled by custom serializers
             return JacksonUtils.getMapper().valueToTree(value);
         }
     }
