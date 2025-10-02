@@ -20,12 +20,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * I18N provider interface for internationalization usage.
@@ -150,12 +153,19 @@ public interface I18NProvider extends Serializable {
      * @return translation for key if found
      */
     static String translate(Locale locale, String key, Object... params) {
+        VaadinService vaadinService = VaadinService.getCurrent();
+        if (vaadinService == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as VaadinService is null");
+        }
+        Instantiator instantiator = vaadinService.getInstantiator();
+        if (instantiator == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as Instantiator is null");
+        }
+
         return LocaleUtil.getI18NProvider()
                 .map(i18n -> i18n.getTranslation(key, locale, params))
-                .orElseGet(() -> {
-                    LoggerFactory.getLogger(I18NProvider.class).debug(
-                            "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null.");
-                    return "!{" + key + "}!";
-                });
+                .orElseGet(() -> "!{" + key + "}!");
     }
 }

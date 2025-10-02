@@ -209,9 +209,13 @@ public class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translate_withoutInstantiator_returnsKey() {
+    public void translate_withoutProvider_returnsKey() {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
+
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
+                service);
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
 
         Assert.assertEquals(
                 "Should return the key with !{}! to show no translation available",
