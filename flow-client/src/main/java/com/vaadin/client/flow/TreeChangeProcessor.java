@@ -266,7 +266,10 @@ public class TreeChangeProcessor {
         } else {
             jsArray = JsCollections.array();
             for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(jsonArray.get(i));
+                // Decode the value to unwrap JsonString to primitive string
+                Object decoded = ClientJsonCodec
+                        .decodeWithoutTypeInfo(jsonArray.get(i));
+                jsArray.push(decoded);
             }
         }
         return jsArray;
