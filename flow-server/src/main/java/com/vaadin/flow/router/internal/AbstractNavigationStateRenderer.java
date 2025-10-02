@@ -259,7 +259,15 @@ public abstract class AbstractNavigationStateRenderer
      */
     private int finalizeNavigation(NavigationEvent event, ArrayList<HasElement> chain, 
             boolean preserveOnRefreshTarget) {
-        final Component componentInstance = (Component) chain.get(0);
+        if (chain.isEmpty()) {
+            throw new IllegalStateException("Navigation chain cannot be empty");
+        }
+        
+        HasElement firstElement = chain.get(0);
+        if (!(firstElement instanceof Component)) {
+            throw new IllegalStateException("First element in navigation chain must be a Component, but was: " + firstElement.getClass());
+        }
+        final Component componentInstance = (Component) firstElement;
 
         if (preserveOnRefreshTarget) {
             setPreservedChain(chain, event);
@@ -904,7 +912,7 @@ public abstract class AbstractNavigationStateRenderer
      * Prepare the component context for event handling.
      */
     private ComponentContext prepareComponentContext(NavigationEvent event, ArrayList<HasElement> chain) {
-        if (chain == null) {
+        if (chain == null || chain.isEmpty()) {
             return new ComponentContext(null, false);
         }
 
@@ -914,13 +922,17 @@ public abstract class AbstractNavigationStateRenderer
         List<HasElement> reversedChain = new ArrayList<>(chain);
         Collections.reverse(reversedChain);
 
-        Component componentInstance = (Component) reversedChain.get(0);
+        HasElement firstElement = reversedChain.get(0);
+        Component componentInstance = null;
+        if (firstElement instanceof Component) {
+            componentInstance = (Component) firstElement;
+        }
 
         locationChangeEvent = new LocationChangeEvent(event.getSource(),
                 event.getUI(), event.getTrigger(), event.getLocation(),
                 reversedChain);
 
-        return new ComponentContext(componentInstance, true);
+        return new ComponentContext(componentInstance, componentInstance != null);
     }
 
     /**
