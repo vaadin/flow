@@ -216,27 +216,6 @@ public class ClientJsonCodec {
     }
 
     /**
-     * Converts a JSON array to a JS array. This is a no-op in compiled
-     * JavaScript, but needs special handling for tests running in the JVM.
-     *
-     * @param jsonArray
-     *            the JSON array to convert
-     * @return the converted JS array
-     */
-    public static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
-        JsArray<Object> jsArray;
-        if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
-            jsArray = JsCollections.array();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(decodeWithoutTypeInfo(jsonArray.get(i)));
-            }
-        }
-        return jsArray;
-    }
-
-    /**
      * Recursively decodes a JSON object, processing any nested @v references.
      * Returns a native JS object that can store decoded values including DOM
      * elements.
