@@ -62,22 +62,11 @@ public class ClientJsonCodec {
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
             // Check for @v-node format
-            JsonValue nodeIdValue = getProperty(json, "@v-node");
+            JsonValue nodeIdValue = ((JsonObject) json).get("@v-node");
             if (nodeIdValue != null
                     && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
-            }
-
-            // Check for unknown @v- prefixed types to maintain forward
-            // compatibility
-            JsonObject obj = (JsonObject) json;
-            for (String key : obj.keys()) {
-                if (key.startsWith("@v-") && !key.equals("@v-node")) {
-                    throw new IllegalArgumentException(
-                            "Unsupported complex type with key '" + key
-                                    + "' in " + json.toJson());
-                }
             }
 
             return null;
@@ -98,8 +87,9 @@ public class ClientJsonCodec {
      */
     public static Object decodeWithTypeInfo(StateTree tree, JsonValue json) {
         if (json.getType() == JsonType.OBJECT) {
+            JsonObject jsonObject = (JsonObject) json;
             // Check for @v-node format
-            JsonValue nodeIdValue = getProperty(json, "@v-node");
+            JsonValue nodeIdValue = jsonObject.get("@v-node");
             if (nodeIdValue != null
                     && nodeIdValue.getType() == JsonType.NUMBER) {
                 int nodeId = (int) nodeIdValue.asNumber();
@@ -108,7 +98,7 @@ public class ClientJsonCodec {
             }
 
             // Check for @v-return format
-            JsonValue returnArray = getProperty(json, "@v-return");
+            JsonValue returnArray = jsonObject.get("@v-return");
             if (returnArray != null
                     && returnArray.getType() == JsonType.ARRAY) {
                 JsonArray array = (JsonArray) returnArray;
@@ -120,26 +110,16 @@ public class ClientJsonCodec {
                 }
             }
 
-            // Check for unknown @v- prefixed types to maintain forward
-            // compatibility
-            if (json.getType() == JsonType.OBJECT) {
-                JsonObject obj = (JsonObject) json;
-                for (String key : obj.keys()) {
-                    if (key.startsWith("@v-") && !key.equals("@v-node")
-                            && !key.equals("@v-return")) {
-                        throw new IllegalArgumentException(
-                                "Unsupported complex type with key '" + key
-                                        + "' in " + json.toJson());
-                    }
+            // Check for unknown @v- types
+            for (String key : jsonObject.keys()) {
+                if (key.startsWith("@v-")) {
+                    throw new IllegalArgumentException("Unsupported @v type '"
+                            + key + "' in " + json.toJson());
                 }
             }
 
-            // Regular JSON object - decode recursively to handle nested @v
-            // references
-            return decodeObjectWithTypeInfo(tree, json);
+            return decodeObjectWithTypeInfo(tree, jsonObject);
         } else if (json.getType() == JsonType.ARRAY) {
-            // Regular JSON array - decode recursively to handle nested @v
-            // references
             return decodeArrayWithTypeInfo(tree, (JsonArray) json);
         } else {
             return decodeWithoutTypeInfo(json);
@@ -239,78 +219,32 @@ public class ClientJsonCodec {
     }
 
     /**
-     * Helper method to get a string property from a JSON object.
-     */
-    private static String getStringProperty(JsonValue json, String key) {
-        if (json.getType() == JsonType.OBJECT) {
-            return ((JsonObject) json).getString(key);
-        }
-        return null;
-    }
-
-    /**
-     * Helper method to get a number property from a JSON object.
-     */
-    private static double getNumberProperty(JsonValue json, String key) {
-        if (json.getType() == JsonType.OBJECT) {
-            return ((JsonObject) json).getNumber(key);
-        }
-        return 0;
-    }
-
-    /**
-     * Helper method to get any property from a JSON object.
-     */
-    private static JsonValue getProperty(JsonValue json, String key) {
-        if (json.getType() == JsonType.OBJECT) {
-            return ((JsonObject) json).get(key);
-        }
-        return null;
-    }
-
-    /**
      * Recursively decodes a JSON object, processing any nested @v references.
+     * Returns a native JS object that can store decoded values including DOM
+     * elements.
      */
-    private static Object decodeObjectWithTypeInfo(StateTree tree,
-            JsonValue json) {
-        if (GWT.isScript()) {
-            // Need to recursively process the object to decode any nested @v
-            // references
-            return decodeObjectWithTypeInfoNative(tree, json);
-        } else {
-            // JVM implementation - recursively decode properties
-            JsonObject obj = (JsonObject) json;
-            JsonObject result = Json.createObject();
-            for (String key : obj.keys()) {
-                JsonValue value = obj.get(key);
-                result.put(key, (JsonValue) decodeWithTypeInfo(tree, value));
-            }
-            return result;
-        }
-    }
+    private static JsonObject decodeObjectWithTypeInfo(StateTree tree,
+            JsonObject jsonObject) {
 
-    private static native Object decodeObjectWithTypeInfoNative(StateTree tree,
-            JsonValue json) /*-{
-        var result = {};
-        for (var key in json) {
-            if (json.hasOwnProperty(key)) {
-                var value = json[key];
-                result[key] = @ClientJsonCodec::decodeWithTypeInfo(Lcom/vaadin/client/flow/StateTree;Lelemental/json/JsonValue;)(tree, value);
-            }
+        for (String key : jsonObject.keys()) {
+            JsonValue orignalValue = jsonObject.get(key);
+            Object decoded = decodeWithTypeInfo(tree, orignalValue);
+            jsonObject.put(key, (JsonValue) WidgetUtil.crazyJsCast(decoded));
         }
-        return result;
-    }-*/;
+        return jsonObject;
+    }
 
     /**
      * Recursively decodes a JSON array, processing any nested @v references.
      */
     private static JsArray<Object> decodeArrayWithTypeInfo(StateTree tree,
             JsonArray jsonArray) {
-        JsArray<Object> jsArray = JsCollections.array();
         for (int i = 0; i < jsonArray.length(); i++) {
-            jsArray.push(decodeWithTypeInfo(tree, jsonArray.get(i)));
+            JsonValue originalValue = jsonArray.get(i);
+            Object decoded = decodeWithTypeInfo(tree, originalValue);
+            jsonArray.set(i, (JsonValue) WidgetUtil.crazyJsCast(decoded));
         }
-        return jsArray;
+        return jsonArrayAsJsArray(jsonArray);
     }
 
 }
