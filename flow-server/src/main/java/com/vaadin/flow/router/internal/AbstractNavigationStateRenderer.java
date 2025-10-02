@@ -765,38 +765,9 @@ public abstract class AbstractNavigationStateRenderer
         List<HasElement> oldChain = event.getUI().getInternals()
                 .getActiveRouterTargetsChain();
 
-        // Create the chain components if missing.
-        List<Class<? extends HasElement>> typesChain = getTypesChain();
-
         try {
-            for (int i = 0; i < typesChain.size(); i++) {
-                HasElement element = getRouteTarget(typesChain.get(i), event,
-                        i == typesChain.size() - 1);
-
-                if (!beforeNavigation.isErrorEvent()) {
-                    UsageStatistics.markAsUsed(Constants.STATISTICS_FLOW_ROUTER,
-                            null);
-                }
-
-                chain.add(element);
-
-                List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
-                        EventUtil.collectBeforeEnterObserversFromChainElement(
-                                element, oldChain));
-
-                final boolean lastElement = chain.size() == typesChain.size();
-                Optional<Integer> result = sendBeforeEnterEvent(
-                        chainEnterHandlers, event, beforeNavigation,
-                        lastElement ? chain : null);
-                if (result.isPresent()) {
-                    return result;
-                }
-            }
-
-            return Optional.empty();
-
+            return createAndPopulateChainWithEventHandling(beforeNavigation, event, chain, oldChain);
         } finally {
-
             // Reverse the chain to preserve backwards compatibility.
             // The events were sent starting from parent layout and ending with
             // the navigation target component.
@@ -804,6 +775,62 @@ public abstract class AbstractNavigationStateRenderer
             // component as the first element.
             Collections.reverse(chain);
         }
+    }
+
+    /**
+     * Create chain elements and handle before enter events for each element.
+     *
+     * @param beforeNavigation the before navigation event
+     * @param event the navigation event
+     * @param chain the chain to populate
+     * @param oldChain the existing chain for comparison
+     * @return optional status code if navigation should exit early
+     */
+    private Optional<Integer> createAndPopulateChainWithEventHandling(
+            BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            List<HasElement> chain, List<HasElement> oldChain) {
+        
+        List<Class<? extends HasElement>> typesChain = getTypesChain();
+
+        for (int i = 0; i < typesChain.size(); i++) {
+            HasElement element = getRouteTarget(typesChain.get(i), event,
+                    i == typesChain.size() - 1);
+
+            markUsageStatisticsIfNeeded(beforeNavigation);
+            chain.add(element);
+
+            Optional<Integer> result = handleBeforeEnterEventForChainElement(
+                    element, beforeNavigation, event, chain, oldChain, typesChain.size());
+            if (result.isPresent()) {
+                return result;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    /**
+     * Mark usage statistics if this is not an error event.
+     */
+    private void markUsageStatisticsIfNeeded(BeforeEnterEvent beforeNavigation) {
+        if (!beforeNavigation.isErrorEvent()) {
+            UsageStatistics.markAsUsed(Constants.STATISTICS_FLOW_ROUTER, null);
+        }
+    }
+
+    /**
+     * Handle before enter event for a single chain element.
+     */
+    private Optional<Integer> handleBeforeEnterEventForChainElement(
+            HasElement element, BeforeEnterEvent beforeNavigation, NavigationEvent event,
+            List<HasElement> chain, List<HasElement> oldChain, int totalChainSize) {
+        
+        List<BeforeEnterHandler> chainEnterHandlers = new ArrayList<>(
+                EventUtil.collectBeforeEnterObserversFromChainElement(element, oldChain));
+
+        final boolean lastElement = chain.size() == totalChainSize;
+        return sendBeforeEnterEvent(chainEnterHandlers, event, beforeNavigation,
+                lastElement ? chain : null);
     }
 
     private Optional<Integer> sendBeforeEnterEventToExistingChain(
