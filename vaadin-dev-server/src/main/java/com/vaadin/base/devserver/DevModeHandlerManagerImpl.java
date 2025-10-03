@@ -114,7 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
-            startWatchingPublicResourcesCss(context);
+            startWatchingPublicResourcesCss(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -246,20 +246,35 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
 
-    private void startWatchingPublicResourcesCss(VaadinContext context) {
-        try {
-            File resourcesFolder = new File(
-                    "src/main/resources/META-INF/resources");
-            if (!resourcesFolder.isDirectory()) {
-                getLogger().debug("No public resources folder found at {}",
-                        resourcesFolder);
-                return;
-            }
-            registerWatcherShutdownCommand(new PublicResourcesCssLiveUpdater(
-                    resourcesFolder, context));
-        } catch (Exception e) {
-            getLogger().error(
-                    "Failed to start live-reload for public CSS resources", e);
-        }
+    // package-private for testing
+    void startWatchingPublicResourcesCss(VaadinContext context,
+            ApplicationConfiguration config) {
+        final File projectFolder = config.getProjectFolder();
+        List.of("src/main/resources/META-INF/resources",
+                "src/main/resources/resources", "src/main/resources/static",
+                "src/main/resources/public").stream().map(path -> {
+                    File resourcesFolder = new File(projectFolder, path);
+                    if (resourcesFolder.exists()) {
+                        return resourcesFolder.getAbsolutePath();
+                    }
+                    return null;
+                }).filter(path -> path != null).forEach(path -> {
+                    try {
+                        File resourcesFolder = new File(path);
+                        if (!resourcesFolder.isDirectory()) {
+                            getLogger().debug(
+                                    "No public resources folder found at {}",
+                                    resourcesFolder);
+                            return;
+                        }
+                        registerWatcherShutdownCommand(
+                                new PublicResourcesCssLiveUpdater(
+                                        resourcesFolder, context));
+                    } catch (Exception e) {
+                        getLogger().error(
+                                "Failed to start live-reload for public CSS resources",
+                                e);
+                    }
+                });
     }
 }
