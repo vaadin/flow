@@ -16,15 +16,16 @@
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.SerializableSupplier;
 
 /**
@@ -103,6 +104,25 @@ class Cache<T> implements Serializable {
      */
     public int getSize() {
         return size;
+    }
+
+    /**
+     * Normalizes the given index by resolving negative values as offsets from
+     * the end of the cache. For example, {@code -1} refers to the last element.
+     * If the resulting index does not fall within the valid range, an exception
+     * is thrown.
+     *
+     * @param index
+     *            the index to normalize
+     * @return the normalized index
+     * @throws IndexOutOfBoundsException
+     *             if the index is out of bounds
+     */
+    public int normalizeIndex(int index) {
+        if (index < 0) {
+            index = size + index;
+        }
+        return Objects.checkIndex(index, size);
     }
 
     /**

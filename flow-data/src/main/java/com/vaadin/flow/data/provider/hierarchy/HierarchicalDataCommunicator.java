@@ -25,7 +25,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
@@ -471,29 +470,38 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     /**
-     * Ensures that all items along the specified path are preloaded into the
-     * cache, starting from the root level, and returns the flat index of the
-     * target item.
+     * Resolves the flat index of an item by traversing its hierarchical path
+     * and resolving each level Traversal starts from the root cache and
+     * continues down until reaching the target item or a collapsed item in
+     * which case its flat index is returned.
+     * <p>
+     * The hierarchical path is an array of indexes, each selecting a child of
+     * the item at the previous index, starting from the root cache. Negative
+     * indexes count from the end of the respective level. For example,
+     * {@code -2} refers to the second item from the end.
      *
      * @since 25.0
      * @param path
-     *            the hierarchical path to the item, where each element
-     *            represents the index within its respective level
+     *            the hierarchical path to the item
      * @return the flat index of the target item after resolving all ancestors
+     * @throws IndexOutOfBoundsException
+     *             if any index in the path is out of bounds for its respective
+     *             level
      */
     protected int resolveIndexPath(int... path) {
         ensureRootCache();
-        resolveIndexPath(rootCache, path);
+        resolveIndexPath(rootCache, path, 0);
         return rootCache.getFlatIndexByPath(path);
     }
 
-    private void resolveIndexPath(Cache<T> cache, int... path) {
-        var restPath = Arrays.copyOfRange(path, 1, path.length);
-
-        var index = Math.min(path[0], cache.getSize() - 1);
-        if (index < 0) {
-            // Negative index means counting from the end
-            index = Math.max(cache.getSize() + index, 0);
+    private void resolveIndexPath(Cache<T> cache, int[] path, int depth) {
+        int index;
+        try {
+            index = cache.normalizeIndex(path[depth]);
+        } catch (IndexOutOfBoundsException e) {
+            throw new IndexOutOfBoundsException(
+                    "Index %d is out of bounds (path %s, depth %d)"
+                            .formatted(path[depth], Arrays.toString(path), depth));
         }
 
         if (!cache.hasItem(index)) {
@@ -501,7 +509,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             preloadRange(cache, index, 1);
         }
 
-        if (restPath.length == 0) {
+        if (depth + 1 >= path.length) {
             // If there is no rest path, we are at the target item
             return;
         }
@@ -513,7 +521,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 requestFlush().invalidateViewport();
                 return getDataProviderChildCount(item);
             });
-            resolveIndexPath(subCache, restPath);
+            resolveIndexPath(subCache, path, depth + 1);
         }
     }
 

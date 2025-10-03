@@ -18,6 +18,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -110,33 +111,32 @@ class RootCache<T> extends Cache<T> {
     }
 
     /**
-     * Retrieves the position of an item in the flattened view of the entire
-     * hierarchy by following its hierarchical path.
+     * Calculates the flat index of an item by traversing its hierarchical path.
+     * Traversal starts from the root cache and continues down until reaching
+     * the target item or a collapsed item in which case its flat index is
+     * returned.
      * <p>
-     * The path is an array of integers, where each integer represents the index
-     * of a child item within its parent's sub-cache. Traversal starts at the
-     * root cache, using the first integer to select an item. The next integer
-     * is then used to select a child of that item, and so on — each step going
-     * one level deeper in the hierarchy.
+     * The hierarchical path is a list of indexes, each selecting a child of the
+     * item at the previous index, starting from the root cache. Negative
+     * indexes count from the end of the respective level. For example,
+     * {@code -2} refers to the second item from the end.
      *
      * @param path
      *            the path to the item
-     * @return the flat index of the item, or -1 if not found
+     * @return the flat index of the item
+     * @throws IndexOutOfBoundsException
+     *             if any index in the path is out of bounds for its respective
+     *             level
      */
     public int getFlatIndexByPath(int... path) {
         return getFlatIndexByPath(this, path);
     }
 
-    private int getFlatIndexByPath(Cache<T> cache, int... path) {
+    private int getFlatIndexByPath(Cache<T> cache, int[] path) {
         var restPath = Arrays.copyOfRange(path, 1, path.length);
-
-        var index = Math.min(path[0], cache.getSize() - 1);
-        if (index < 0) {
-            // Negative index means counting from the end
-            index = Math.max(cache.getSize() + index, 0);
-        }
-
+        var index = cache.normalizeIndex(path[0]);
         var flatIndex = flattenIndex(cache, index);
+
         var subCache = cache.getSubCache(index);
         if (subCache != null && getFlatSize(subCache) > 0
                 && restPath.length > 0) {
@@ -231,7 +231,7 @@ class RootCache<T> extends Cache<T> {
      * @param <T>
      *            the type of items in the cache
      */
-    static record ItemContext<T>(Cache<T> cache,
-            int index) implements Serializable {
+    static record ItemContext<T>(Cache<T> cache, int index)
+            implements Serializable {
     }
 }
