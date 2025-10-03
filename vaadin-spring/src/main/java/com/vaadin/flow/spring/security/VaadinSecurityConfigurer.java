@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.spring.security;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
-
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import jakarta.servlet.ServletContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,13 +61,11 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatchers;
 import org.springframework.web.context.WebApplicationContext;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.AnnotationReader;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.internal.RouteUtil;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.auth.NavigationAccessControl;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultHttpSecurityPermitMatcher;
 import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSecurityIgnoreMatcher;
@@ -482,13 +482,23 @@ public final class VaadinSecurityConfigurer
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
         if (EndpointRequestUtil.isHillaAvailable()) {
-            return RequestMatchers.anyOf(baseMatcher,
-                    // Matchers for known Hilla views
-                    getRequestUtil()::isAllowedHillaView,
-                    // Matcher for public Hilla endpoints
-                    getRequestUtil()::isAnonymousEndpoint);
+            return toRequestPrincipalAwareMatcher(
+                    RequestMatchers.anyOf(baseMatcher,
+                            // Matchers for known Hilla views
+                            getRequestUtil()::isAllowedHillaView,
+                            // Matcher for public Hilla endpoints
+                            getRequestUtil()::isAnonymousEndpoint));
         }
-        return baseMatcher;
+        return toRequestPrincipalAwareMatcher(baseMatcher);
+    }
+
+    private RequestMatcher toRequestPrincipalAwareMatcher(
+            RequestMatcher matcher) {
+        if (enableNavigationAccessControl && getNavigationAccessControl()
+                .hasAccessChecker(RoutePathAccessChecker.class)) {
+            return RequestUtil.principalAwareRequestMatcher(matcher);
+        }
+        return matcher;
     }
 
     @Override
@@ -519,11 +529,13 @@ public final class VaadinSecurityConfigurer
         if (enableAuthorizedRequestsConfiguration && !alreadyInitializedOnce) {
             http.authorizeHttpRequests(this::customizeAuthorizeHttpRequests);
         }
+
         // The init method might be called multiple times if the configurer is
         // added during initialization of another configurer. This flag allows
         // tracking whether initialization has already happened once to avoid
         // redundant configuration (e.g., adding request matchers twice).
         alreadyInitializedOnce = true;
+
     }
 
     @Override
@@ -733,28 +745,23 @@ public final class VaadinSecurityConfigurer
         var exceptionHandlers = new LinkedHashMap<Class<? extends AccessDeniedException>, AccessDeniedHandler>();
         exceptionHandlers.put(CsrfException.class, (req, res, exc) -> res
                 .setStatus(HttpStatus.UNAUTHORIZED.value()));
-        exceptionHandlers.put(AccessDeniedException.class, (req, res,
-                exc) -> res.setStatus(HttpStatus.UNAUTHORIZED.value()));
         var requestHandlers = new LinkedHashMap<RequestMatcher, AccessDeniedHandler>();
-        AccessDeniedHandlerImpl defaultHandler = new AccessDeniedHandlerImpl();
-        if (formLoginPage != null) {
-            defaultHandler.setErrorPage(formLoginPage);
-        }
         requestHandlers.put(getRequestUtil()::isEndpointRequest,
                 new DelegatingAccessDeniedHandler(exceptionHandlers,
-                        defaultHandler));
+                        new AccessDeniedHandlerImpl()));
         return new RequestMatcherDelegatingAccessDeniedHandler(requestHandlers,
-                defaultHandler);
+                new AccessDeniedHandlerImpl());
     }
 
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
         registry.requestMatchers(defaultPermitMatcher()).permitAll()
-                .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
+                .requestMatchers(toRequestPrincipalAwareMatcher(
+                        getRequestUtil()::isSecuredFlowRoute))
                 .authenticated();
         if (EndpointRequestUtil.isHillaAvailable()) {
-            registry.requestMatchers(getRequestUtil()::isEndpointRequest)
-                    .authenticated();
+            registry.requestMatchers(toRequestPrincipalAwareMatcher(
+                    getRequestUtil()::isEndpointRequest)).authenticated();
         }
     }
 

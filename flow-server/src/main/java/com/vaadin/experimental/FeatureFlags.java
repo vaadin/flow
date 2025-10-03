@@ -24,9 +24,12 @@ import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.function.Function;
 
 import org.apache.commons.io.FileUtils;
@@ -51,51 +54,17 @@ public class FeatureFlags implements Serializable {
 
     public static final String SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL = "vaadin.experimental.";
 
-    public static final Feature EXAMPLE = new Feature(
-            "Example feature. Internally used for testing purposes. Does not have any effect on production applications.",
-            "exampleFeatureFlag", "https://github.com/vaadin/flow/pull/12004",
-            false,
-            "com.vaadin.flow.server.frontend.NodeTestComponents$ExampleExperimentalComponent");
-    public static final Feature COLLABORATION_ENGINE_BACKEND = new Feature(
-            "Collaboration Kit backend for clustering support",
-            "collaborationEngineBackend",
-            "https://github.com/vaadin/platform/issues/1988", true, null);
-
-    public static final Feature COPILOT_EXPERIMENTAL = new Feature(
-            "Copilot experimental features", "copilotExperimentalFeatures",
-            "https://vaadin.com/docs/latest/tools/copilot", false, null);
-
-    public static final Feature HILLA_FULLSTACK_SIGNALS = new Feature(
-            "Hilla Full-stack Signals", "fullstackSignals",
-            "https://github.com/vaadin/hilla/discussions/1902", true, null);
-
-    public static final Feature FLOW_FULLSTACK_SIGNALS = new Feature(
-            "Flow Full-stack Signals", "flowFullstackSignals",
-            "https://github.com/vaadin/platform/issues/7373", true, null);
-
-    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = new Feature(
-            "Master Detail Layout component", "masterDetailLayoutComponent",
-            "https://github.com/vaadin/platform/issues/7173", true,
-            "com.vaadin.flow.component.masterdetaillayout.MasterDetailLayout");
-
-    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = new Feature(
-            "Accessible disabled buttons", "accessibleDisabledButtons",
-            "https://github.com/vaadin/web-components/issues/4585", true, null);
-
-    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = new Feature(
-            "HorizontalLayout and VerticalLayout improvements",
-            "layoutComponentImprovements",
-            "https://github.com/vaadin/flow-components/issues/6998", true,
-            null);
-
-    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = new Feature(
-            "Form Layout auto-responsive mode enabled by default",
-            "defaultAutoResponsiveFormLayout",
-            "https://github.com/vaadin/platform/issues/7172", true, null);
-
-    public static final Feature COMPONENT_STYLE_INJECTION = new Feature(
-            "Enable theme component style injection", "themeComponentStyles",
-            "https://github.com/vaadin/flow/issues/21608", true, null);
+    // Feature constants pointing to provider definitions for backward
+    // compatibility
+    public static final Feature COLLABORATION_ENGINE_BACKEND = CoreFeatureFlagProvider.COLLABORATION_ENGINE_BACKEND;
+    public static final Feature FLOW_FULLSTACK_SIGNALS = CoreFeatureFlagProvider.FLOW_FULLSTACK_SIGNALS;
+    public static final Feature ACCESSIBLE_DISABLED_BUTTONS = CoreFeatureFlagProvider.ACCESSIBLE_DISABLED_BUTTONS;
+    public static final Feature COMPONENT_STYLE_INJECTION = CoreFeatureFlagProvider.COMPONENT_STYLE_INJECTION;
+    public static final Feature COPILOT_EXPERIMENTAL = CoreFeatureFlagProvider.COPILOT_EXPERIMENTAL;
+    public static final Feature HILLA_FULLSTACK_SIGNALS = HillaFeatureFlagProvider.HILLA_FULLSTACK_SIGNALS;
+    public static final Feature MASTER_DETAIL_LAYOUT_COMPONENT = FlowComponentsFeatureFlagProvider.MASTER_DETAIL_LAYOUT_COMPONENT;
+    public static final Feature LAYOUT_COMPONENT_IMPROVEMENTS = FlowComponentsFeatureFlagProvider.LAYOUT_COMPONENT_IMPROVEMENTS;
+    public static final Feature DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT = FlowComponentsFeatureFlagProvider.DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT;
 
     private List<Feature> features = new ArrayList<>();
 
@@ -117,16 +86,7 @@ public class FeatureFlags implements Serializable {
      */
     public FeatureFlags(Lookup lookup) {
         this.lookup = lookup;
-        features.add(new Feature(EXAMPLE));
-        features.add(new Feature(COLLABORATION_ENGINE_BACKEND));
-        features.add(new Feature(HILLA_FULLSTACK_SIGNALS));
-        features.add(new Feature(FLOW_FULLSTACK_SIGNALS));
-        features.add(new Feature(COPILOT_EXPERIMENTAL));
-        features.add(new Feature(MASTER_DETAIL_LAYOUT_COMPONENT));
-        features.add(new Feature(ACCESSIBLE_DISABLED_BUTTONS));
-        features.add(new Feature(LAYOUT_COMPONENT_IMPROVEMENTS));
-        features.add(new Feature(DEFAULT_AUTO_RESPONSIVE_FORM_LAYOUT));
-        features.add(new Feature(COMPONENT_STYLE_INJECTION));
+        loadFeaturesFromProviders();
         loadProperties();
     }
 
@@ -423,6 +383,54 @@ public class FeatureFlags implements Serializable {
                 getLogger().warn("Unsupported feature flag is present: {}",
                         property);
             }
+        }
+    }
+
+    /**
+     * Loads feature flags from all available FeatureFlagProvider
+     * implementations using the ServiceLoader mechanism.
+     */
+    private void loadFeaturesFromProviders() {
+        try {
+            ServiceLoader<FeatureFlagProvider> loader = ServiceLoader.load(
+                    FeatureFlagProvider.class,
+                    this.getClass().getClassLoader());
+
+            Map<String, String> featureIdToProvider = new HashMap<>();
+
+            for (FeatureFlagProvider provider : loader) {
+                List<Feature> providerFeatures = provider.getFeatures();
+                if (providerFeatures != null) {
+                    String providerName = provider.getClass().getName();
+                    for (Feature feature : providerFeatures) {
+                        // Check for feature ID conflicts
+                        String existingProvider = featureIdToProvider
+                                .get(feature.getId());
+                        if (existingProvider != null) {
+                            getLogger().warn(
+                                    "Feature flag conflict: Feature ID '{}' is defined by both '{}' and '{}'. "
+                                            + "Using the first definition from '{}'. "
+                                            + "Each feature flag should have a unique ID across all providers.",
+                                    feature.getId(), existingProvider,
+                                    providerName, existingProvider);
+                            // Skip this duplicate feature
+                            continue;
+                        }
+
+                        featureIdToProvider.put(feature.getId(), providerName);
+                        // Create new Feature instances to ensure proper
+                        // isolation
+                        features.add(new Feature(feature));
+                    }
+                }
+            }
+
+            if (!features.isEmpty()) {
+                getLogger().debug("Loaded {} feature flags from providers",
+                        features.size());
+            }
+        } catch (Exception e) {
+            getLogger().warn("Failed to load feature flags from providers", e);
         }
     }
 }

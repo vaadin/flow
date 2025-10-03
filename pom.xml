@@ -70,13 +70,13 @@
             https://maven.vaadin.com/vaadin-addons
         </flow.addons.repo.url>
 
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jsinterop.version>1.0.2</jsinterop.version>
-        <sonar.java.source>17</sonar.java.source>
+        <sonar.java.source>21</sonar.java.source>
         <sonar.analysis.mode>preview</sonar.analysis.mode>
         <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
