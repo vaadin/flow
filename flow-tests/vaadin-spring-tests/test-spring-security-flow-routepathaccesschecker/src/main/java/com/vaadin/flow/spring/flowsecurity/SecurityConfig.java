@@ -100,21 +100,14 @@ public class SecurityConfig {
             throws Exception {
         http.authorizeHttpRequests(cfg -> cfg
                 .requestMatchers("/admin-only/**", "/admin")
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/private")
+                .hasAnyRole(ROLE_ADMIN).requestMatchers("/private")
                 .authenticated()
                 .requestMatchers("/", "/public/**", "/another", "/menu-list")
-                .permitAll()
-                .requestMatchers("/error")
-                .permitAll()
+                .permitAll().requestMatchers("/error").permitAll()
                 // routes aliases
-                .requestMatchers("/alias-for-admin")
-                .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers("/home", "/hey/**")
-                .permitAll()
-                .requestMatchers("/all-logged-in/**")
-                .authenticated()
-        );
+                .requestMatchers("/alias-for-admin").hasAnyRole(ROLE_ADMIN)
+                .requestMatchers("/home", "/hey/**").permitAll()
+                .requestMatchers("/all-logged-in/**").authenticated());
         // @formatter:on
         http.with(vaadin(), vaadin -> {
             if (getLogoutSuccessUrl().equals("/")) {
