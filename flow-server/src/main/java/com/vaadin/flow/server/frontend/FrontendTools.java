@@ -64,7 +64,7 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.5.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.9.0";
     /**
      * This is the version shipped with the default Node version.
      */
@@ -115,10 +115,10 @@ public class FrontendTools {
     private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
             7, 0);
 
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 20;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 9;
-    private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
+    private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
     static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
