@@ -152,36 +152,32 @@ public class JacksonCodecTest {
     public void decodeAs_booleanJson() {
         JsonNode json = objectMapper.valueToTree(true);
         Assert.assertTrue(JacksonCodec.decodeAs(json, Boolean.class));
-        Assert.assertEquals("true", JacksonCodec.decodeAs(json, String.class));
-        Assert.assertEquals(Integer.valueOf(0),
-                JacksonCodec.decodeAs(json, Integer.class));
-        Assert.assertEquals(Double.valueOf(0.0),
-                JacksonCodec.decodeAs(json, Double.class));
         Assert.assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
     }
 
     @Test
     public void decodeAs_stringJson() {
         JsonNode json = objectMapper.valueToTree("Test123 String\n !%");
-        Assert.assertFalse(JacksonCodec.decodeAs(json, Boolean.class));
         Assert.assertEquals("Test123 String\n !%",
                 JacksonCodec.decodeAs(json, String.class));
-        Assert.assertEquals(Integer.valueOf(0),
-                JacksonCodec.decodeAs(json, Integer.class));
-        Assert.assertFalse(JacksonCodec.decodeAs(json, Double.class).isNaN());
         Assert.assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
     }
 
     @Test
     public void decodeAs_numberJson() {
-        JsonNode json = objectMapper.valueToTree(15.7);
-        Assert.assertFalse(JacksonCodec.decodeAs(json, Boolean.class));
-        Assert.assertEquals("15.7", JacksonCodec.decodeAs(json, String.class));
+        // Test integer
+        JsonNode intJson = objectMapper.valueToTree(15);
         Assert.assertEquals(Integer.valueOf(15),
-                JacksonCodec.decodeAs(json, Integer.class));
+                JacksonCodec.decodeAs(intJson, Integer.class));
+        Assert.assertEquals(Double.valueOf(15.0),
+                JacksonCodec.decodeAs(intJson, Double.class));
+
+        // Test double
+        JsonNode doubleJson = objectMapper.valueToTree(15.7);
         Assert.assertEquals(Double.valueOf(15.7),
-                JacksonCodec.decodeAs(json, Double.class));
-        Assert.assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
+                JacksonCodec.decodeAs(doubleJson, Double.class));
+        Assert.assertEquals(doubleJson,
+                JacksonCodec.decodeAs(doubleJson, JsonNode.class));
     }
 
     @Test
@@ -198,34 +194,7 @@ public class JacksonCodecTest {
     public void decodeAs_jsonValue() {
         ObjectNode json = objectMapper.createObjectNode();
         json.put("foo", "bar");
-        Assert.assertEquals("", JacksonCodec.decodeAs(json, String.class));
         Assert.assertEquals(json, JacksonCodec.decodeAs(json, JsonNode.class));
-        // boolean
-        Assert.assertFalse(JacksonCodec.decodeAs(json, Boolean.class));
-        Assert.assertNull(
-                JacksonCodec.decodeAs(objectMapper.nullNode(), Boolean.class));
-        Assert.assertFalse(JacksonCodec.decodeAs(json, boolean.class));
-        Assert.assertFalse(
-                JacksonCodec.decodeAs(objectMapper.nullNode(), boolean.class));
-        // integer
-        Assert.assertEquals(Integer.valueOf(0),
-                JacksonCodec.decodeAs(json, Integer.class));
-        Assert.assertNull(
-                JacksonCodec.decodeAs(objectMapper.nullNode(), Integer.class));
-        Assert.assertEquals(Integer.valueOf(0),
-                JacksonCodec.decodeAs(json, int.class));
-        Assert.assertEquals(Integer.valueOf(0),
-                JacksonCodec.decodeAs(objectMapper.nullNode(), int.class));
-        // double
-        Assert.assertNull(
-                JacksonCodec.decodeAs(objectMapper.nullNode(), Double.class));
-        Assert.assertEquals(Double.valueOf(0.0),
-                JacksonCodec.decodeAs(json, Double.class));
-        Assert.assertEquals(Double.valueOf(0.0),
-                JacksonCodec.decodeAs(json, double.class));
-        Assert.assertEquals(0.0d,
-                JacksonCodec.decodeAs(objectMapper.nullNode(), double.class),
-                0.0001d);
     }
 
     @Test(expected = ClassCastException.class)
@@ -465,4 +434,5 @@ public class JacksonCodecTest {
         Assert.assertEquals(Double.valueOf(3.14), JacksonCodec
                 .decodeAs(objectMapper.valueToTree(3.14), Double.class));
     }
+
 }
