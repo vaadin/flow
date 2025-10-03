@@ -471,7 +471,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     /**
      * Resolves the flat index of an item by traversing its hierarchical path
-     * and resolving each level Traversal starts from the root cache and
+     * and resolving each level. Traversal starts from the root cache and
      * continues down until reaching the target item or a collapsed item in
      * which case its flat index is returned.
      * <p>
