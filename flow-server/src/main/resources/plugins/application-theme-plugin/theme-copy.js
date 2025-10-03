@@ -18,9 +18,8 @@
  * This contains functions and features used to copy theme files.
  */
 
-import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
+import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync, globSync } from 'fs';
 import { resolve, basename, relative, extname } from 'path';
-import { globSync } from 'glob';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
