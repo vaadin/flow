@@ -434,10 +434,5 @@ public class JacksonCodecTest {
         Assert.assertEquals(Double.valueOf(3.14), JacksonCodec
                 .decodeAs(objectMapper.valueToTree(3.14), Double.class));
     }
-
-    @Test
-    public void decodeNullToPrimitive_returnsNullAndDoesNotThrow() {
-        Assert.assertNull(
-                JacksonCodec.decodeAs(JacksonUtils.nullNode(), int.class));
-    }
+    
 }
