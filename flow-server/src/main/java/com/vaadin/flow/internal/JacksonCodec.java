@@ -28,7 +28,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
 
 /**
@@ -63,8 +62,9 @@ public class JacksonCodec {
      * JSON. Such types are encoded as an JSON array starting with an id
      * defining the actual type and followed by the actual data. Supported value
      * types are any native JSON type supported by
-     * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
-     * {@link Component} (encoded as its root element).
+     * {@link #encodeWithoutTypeInfo(Object)}, and all other types are handled
+     * by Jackson serialization with custom serializers for {@link Component}
+     * and Node types.
      *
      * @param value
      *            the value to encode
@@ -74,18 +74,15 @@ public class JacksonCodec {
 
         if (value == null) {
             return encodeWithoutTypeInfo(value);
-        } else if (value instanceof Component) {
-            return encodeNode(((Component) value).getElement());
-        } else if (value instanceof Node<?>) {
-            return encodeNode((Node<?>) value);
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
             // Native JSON types - no wrapping needed
             return encodeWithoutTypeInfo(value);
         } else {
-            // All other types (including arrays and beans) use standard Jackson
-            // serialization
+            // All other types (including Components, Nodes, arrays and beans)
+            // use standard Jackson
+            // serialization with custom serializers for Components and Nodes
             return JacksonUtils.getMapper().valueToTree(value);
         }
     }
@@ -99,18 +96,6 @@ public class JacksonCodec {
         channelArray.add(value.getChannelId());
         obj.set("@v-return", channelArray);
         return obj;
-    }
-
-    private static JsonNode encodeNode(Node<?> node) {
-        StateNode stateNode = node.getNode();
-        if (stateNode.isAttached()) {
-            ObjectMapper mapper = JacksonUtils.getMapper();
-            ObjectNode obj = mapper.createObjectNode();
-            obj.put("@v-node", stateNode.getId());
-            return obj;
-        } else {
-            return JacksonUtils.getMapper().nullNode();
-        }
     }
 
     /**

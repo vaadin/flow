@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -29,6 +30,7 @@ import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
@@ -431,4 +433,263 @@ public class JacksonCodecTest {
                 .decodeAs(objectMapper.valueToTree(3.14), Double.class));
     }
 
+    @Test
+    public void testListOfBeansSerialization() {
+        List<SimpleBean> beanList = Arrays.asList(new SimpleBean("First", 1),
+                new SimpleBean("Second", 2), new SimpleBean("Third", 3));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanList);
+
+        // Should be direct array
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 3 beans", 3, encoded.size());
+
+        Assert.assertEquals("First", encoded.get(0).get("text").asText());
+        Assert.assertEquals(1, encoded.get(0).get("value").asInt());
+        Assert.assertEquals("Second", encoded.get(1).get("text").asText());
+        Assert.assertEquals(2, encoded.get(1).get("value").asInt());
+        Assert.assertEquals("Third", encoded.get(2).get("text").asText());
+        Assert.assertEquals(3, encoded.get(2).get("value").asInt());
+    }
+
+    @Test
+    public void testListOfBeansDeserialization() {
+        // Create JSON array manually
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "FirstBean");
+        bean1.put("value", 100);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "SecondBean");
+        bean2.put("value", 200);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(bean1)
+                .add(bean2);
+
+        // Test that Jackson can handle List<SimpleBean> deserialization
+        List<SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                arrayJson, JacksonUtils.getMapper().getTypeFactory()
+                        .constructCollectionType(List.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 elements", 2, decoded.size());
+        Assert.assertEquals("FirstBean", decoded.get(0).text);
+        Assert.assertEquals(100, decoded.get(0).value);
+        Assert.assertEquals("SecondBean", decoded.get(1).text);
+        Assert.assertEquals(200, decoded.get(1).value);
+    }
+
+    @Test
+    public void testSetOfBeansSerialization() {
+        Set<SimpleBean> beanSet = new HashSet<>(Arrays.asList(
+                new SimpleBean("Alpha", 10), new SimpleBean("Beta", 20)));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanSet);
+
+        // Should be direct array
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 2 elements", 2, encoded.size());
+
+        // Since Set order is not guaranteed, collect all texts and values
+        Set<String> texts = new HashSet<>();
+        Set<Integer> values = new HashSet<>();
+        for (JsonNode node : encoded) {
+            texts.add(node.get("text").asText());
+            values.add(node.get("value").asInt());
+        }
+
+        Assert.assertTrue("Should contain Alpha", texts.contains("Alpha"));
+        Assert.assertTrue("Should contain Beta", texts.contains("Beta"));
+        Assert.assertTrue("Should contain value 10", values.contains(10));
+        Assert.assertTrue("Should contain value 20", values.contains(20));
+    }
+
+    @Test
+    public void testSetOfBeansDeserialization() {
+        // Create JSON array manually
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "Gamma");
+        bean1.put("value", 300);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "Delta");
+        bean2.put("value", 400);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(bean1)
+                .add(bean2);
+
+        // Test that Jackson can handle Set<SimpleBean> deserialization
+        Set<SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                arrayJson, JacksonUtils.getMapper().getTypeFactory()
+                        .constructCollectionType(Set.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 elements", 2, decoded.size());
+
+        // Since Set order is not guaranteed, collect all texts and values
+        Set<String> texts = decoded.stream().map(b -> b.text)
+                .collect(java.util.stream.Collectors.toSet());
+        Set<Integer> values = decoded.stream().map(b -> b.value)
+                .collect(java.util.stream.Collectors.toSet());
+
+        Assert.assertTrue("Should contain Gamma", texts.contains("Gamma"));
+        Assert.assertTrue("Should contain Delta", texts.contains("Delta"));
+        Assert.assertTrue("Should contain value 300", values.contains(300));
+        Assert.assertTrue("Should contain value 400", values.contains(400));
+    }
+
+    @Test
+    public void testListOfIntegersSerialization() {
+        List<Integer> integerList = List.of(1, 2, 3);
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(integerList);
+
+        // Should be direct array
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 3 integers", 3, encoded.size());
+        Assert.assertEquals(1, encoded.get(0).asInt());
+        Assert.assertEquals(2, encoded.get(1).asInt());
+        Assert.assertEquals(3, encoded.get(2).asInt());
+    }
+
+    @Test
+    public void testListOfComponentElementsSerialization() {
+        // Create elements directly instead of through components to avoid
+        // attachment issues
+        Element element1 = ElementFactory.createDiv();
+        Element element2 = ElementFactory.createDiv();
+
+        StateTree tree = new StateTree(new UI().getInternals(),
+                ElementChildrenList.class);
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(0,
+                element1.getNode());
+        tree.getRootNode().getFeature(ElementChildrenList.class).add(1,
+                element2.getNode());
+
+        // Test list of elements (the proper way)
+        List<Element> elementList = Arrays.asList(element1, element2);
+        JsonNode listEncoded = JacksonCodec.encodeWithTypeInfo(elementList);
+        Assert.assertTrue("Should be array", listEncoded.isArray());
+        Assert.assertEquals("Should have 2 elements", 2, listEncoded.size());
+
+        // Elements should serialize as @v-node references
+        JsonNode element1Json = listEncoded.get(0);
+        Assert.assertTrue("First element should be object",
+                element1Json.isObject());
+        Assert.assertTrue("First element should have @v-node",
+                element1Json.has("@v-node"));
+        Assert.assertEquals(element1.getNode().getId(),
+                element1Json.get("@v-node").asInt());
+
+        JsonNode element2Json = listEncoded.get(1);
+        Assert.assertTrue("Second element should be object",
+                element2Json.isObject());
+        Assert.assertTrue("Second element should have @v-node",
+                element2Json.has("@v-node"));
+        Assert.assertEquals(element2.getNode().getId(),
+                element2Json.get("@v-node").asInt());
+    }
+
+    @Test
+    public void testBeanWithComponentSerialization() {
+        TestComponent component = new TestComponent();
+        BeanWithComponent bean = new BeanWithComponent("TestComponent",
+                component, 42);
+
+        // Test bean list containing detached components
+        List<BeanWithComponent> beanList = Arrays.asList(bean);
+        JsonNode listEncoded = JacksonCodec.encodeWithTypeInfo(beanList);
+        Assert.assertTrue("Should be array", listEncoded.isArray());
+        Assert.assertEquals("Should have 1 bean", 1, listEncoded.size());
+
+        JsonNode beanJson = listEncoded.get(0);
+        Assert.assertTrue("Bean should serialize as object",
+                beanJson.isObject());
+        Assert.assertEquals("TestComponent", beanJson.get("name").asText());
+        Assert.assertEquals(42, beanJson.get("value").asInt());
+        Assert.assertTrue("Bean should have component field",
+                beanJson.has("component"));
+
+        JsonNode componentJson = beanJson.get("component");
+        Assert.assertTrue("Detached component should serialize as null",
+                componentJson.isNull());
+    }
+
+    @Test
+    public void testArrayWithComponentsSerialization() {
+        TestComponent component1 = new TestComponent();
+        TestComponent component2 = new TestComponent();
+
+        TestComponent[] componentArray = new TestComponent[] { component1,
+                component2 };
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(componentArray);
+
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 2 components", 2, encoded.size());
+
+        // Detached components should serialize as null
+        JsonNode first = encoded.get(0);
+        Assert.assertTrue("First detached component should be null",
+                first.isNull());
+
+        JsonNode second = encoded.get(1);
+        Assert.assertTrue("Second detached component should be null",
+                second.isNull());
+    }
+
+    @Test
+    public void testListOfBeansWithComponentsSerialization() {
+        TestComponent component1 = new TestComponent();
+        TestComponent component2 = new TestComponent();
+
+        List<BeanWithComponent> beanList = Arrays.asList(
+                new BeanWithComponent("First", component1, 10),
+                new BeanWithComponent("Second", component2, 20));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanList);
+
+        Assert.assertTrue("Should be array", encoded.isArray());
+        Assert.assertEquals("Should have 2 beans", 2, encoded.size());
+
+        // First bean
+        JsonNode firstBean = encoded.get(0);
+        Assert.assertEquals("First", firstBean.get("name").asText());
+        Assert.assertEquals(10, firstBean.get("value").asInt());
+        Assert.assertTrue("First bean should have component",
+                firstBean.has("component"));
+        JsonNode firstComponent = firstBean.get("component");
+        Assert.assertTrue("First detached component should be null",
+                firstComponent.isNull());
+
+        // Second bean
+        JsonNode secondBean = encoded.get(1);
+        Assert.assertEquals("Second", secondBean.get("name").asText());
+        Assert.assertEquals(20, secondBean.get("value").asInt());
+        Assert.assertTrue("Second bean should have component",
+                secondBean.has("component"));
+        JsonNode secondComponent = secondBean.get("component");
+        Assert.assertTrue("Second detached component should be null",
+                secondComponent.isNull());
+    }
+
+    public static class TestComponent extends Component {
+        public TestComponent() {
+            super(ElementFactory.createDiv());
+        }
+    }
+
+    public static class BeanWithComponent {
+        public String name;
+        public TestComponent component;
+        public int value;
+
+        public BeanWithComponent() {
+        }
+
+        public BeanWithComponent(String name, TestComponent component,
+                int value) {
+            this.name = name;
+            this.component = component;
+            this.value = value;
+        }
+    }
 }
