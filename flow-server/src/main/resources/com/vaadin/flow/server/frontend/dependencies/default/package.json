@@ -2,7 +2,6 @@
   "private": true,
   "description": "A list of default Flow dependencies",
   "dependencies": {
-    "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "lit": "3.3.1"
   },
