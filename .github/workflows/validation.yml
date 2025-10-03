@@ -256,7 +256,7 @@ jobs:
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
-          junit_files: "**/target/*-reports/TEST*.xml"
+          junit_files: '**/target/*-reports/TEST*.xml'
           check_run_annotations: all tests, skipped tests
       - uses: geekyeggo/delete-artifact@v4
         with:
@@ -268,5 +268,113 @@ jobs:
       - name: Set Failure Status
         if: ${{ always() && (needs.unit-tests.result != 'success' || needs.it-tests.result != 'success') }}
         run: |
-            echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
-            exit 1
+          echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
+          exit 1
+  api-diff-labeling:
+    if: github.event_name == 'pull_request_target'
+    timeout-minutes: 90
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{env.HEAD_SHA}}
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.2
+      - uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Use temporary flow version
+        run: |
+          mvn org.codehaus.mojo:versions-maven-plugin:2.13.0:set -DnewVersion=1111.3.2-SNAPSHOT -B
+      - name: Determine base version
+        id: base-version
+        run: |
+          baseBranch="${{ github.event.pull_request.base.ref }}"
+          echo "Base branch: ${baseBranch}"
+
+          # Handle special case for main branch
+          if [[ "${baseBranch}" == "main" ]]; then
+              baseVersion="25.0-SNAPSHOT"
+          else
+              # For all other branches, use pattern: {branch}-SNAPSHOT
+              baseVersion="${baseBranch}-SNAPSHOT"
+          fi
+
+          echo "Base API Version: ${baseVersion}"
+          echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
+      - name: Calculate API version difference
+        run: |
+          mvn clean install -B -ntp -e -V -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+      - name: Move API diff results
+        run: |
+          #!/bin/bash
+          mkdir -p apidiff
+          mv flow-server/target/japicmp apidiff/flow-server
+          mv flow-data/target/japicmp apidiff/flow-data
+          mv flow-html-components/target/japicmp apidiff/flow-html-components
+          if [ -d vaadin-spring ]; then
+              mv vaadin-spring/target/japicmp apidiff/vaadin-spring
+          fi
+      - name: Upload API diff artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apidiff-reports
+          path: apidiff/
+      - name: Report API DIFF to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          #!/bin/bash
+
+          echo "Running API version verification"
+          diff_files=$( find apidiff -name "*.html")
+
+          version_change="0.0.0"
+
+          for file in ${diff_files}
+          do
+              echo "  Verifying file '${file}'..."
+              temp_version_change=$( grep -A 2 "id=\"semver-version\"" ${file} | grep -o [0-9]\.[0-9]\.[0-9] || echo "0.0.0")
+
+              if [[ "${version_change}" < "${temp_version_change}" ]]; then
+                  version_change=${temp_version_change}
+              fi
+          done
+
+          echo "Discovered version change: ${version_change}"
+
+          # Get current labels
+          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels --jq '.[].name')
+
+          # Check if version change label already exists
+          if echo "${current_labels}" | grep -q "+${version_change}"; then
+              echo "Discovered version change '${version_change}' is already labeled, no need to update"
+          else
+              echo "Updating version change label to +${version_change}"
+
+              # Remove existing version labels
+              for tlabel in '+0.0.1' '+0.1.0' '+1.0.0'; do
+                  if echo "${current_labels}" | grep -q "${tlabel}" && [[ "${version_change}" != "${tlabel##+}" ]]; then
+                      echo "Removing label ${tlabel}"
+                      gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels/"${tlabel}" -X DELETE || true
+                  fi
+              done
+
+              # Add new version label
+              gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels \
+                -f labels[]="+${version_change}" \
+                --method POST
+          fi
