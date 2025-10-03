@@ -38,6 +38,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.core.util.DefaultPrettyPrinter;
 import tools.jackson.core.util.Separators;
 import tools.jackson.core.util.Separators.Spacing;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
@@ -71,7 +72,9 @@ public final class JacksonUtils {
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
     private static final ObjectMapper objectMapper = JsonMapper.builder()
-            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).build();
+            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
+            .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+            .build();
 
     public static ObjectMapper getMapper() {
         return objectMapper;
