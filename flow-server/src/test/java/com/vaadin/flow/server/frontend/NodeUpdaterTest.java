@@ -227,12 +227,13 @@ public class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("typescript",
-                "1.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
+                .put("typescript", "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertNotEquals("1.0.0", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("typescript").stringValue());
+        Assert.assertNotEquals("1.0.0",
+                packageJson.get(NodeUpdater.DEV_DEPENDENCIES).get("typescript")
+                        .stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
