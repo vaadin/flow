@@ -89,8 +89,10 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create array format [NODE_TYPE, nodeId]
+        JsonArray json = Json.createArray();
+        json.set(0, 0); // NODE_TYPE = 0
+        json.set(1, node.getId());
 
         Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
 
@@ -153,9 +155,9 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
     }
 
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
-        assertTrue(
+        assertEquals(
                 actual.toJson() + " does not equal " + expected.toJson(),
-                JsonUtils.jsonEquals(expected, actual));
+                expected.toJson(), actual.toJson());
     }
 
 }
