@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, globSync } from 'fs';
+import { existsSync, readFileSync, globSync, statSync } from 'fs';
 import { resolve, basename } from 'path';
 
 // Collect groups [url(] ['|"]optional './|../', other '../' segments optional, file part and end of url
@@ -27,7 +27,9 @@ function assetsContains(fileUrl, themeFolder, logger) {
       // if file starts with copyRule target check if file with path after copy target can be found
       if (fileUrl.startsWith(copyRules[copyRule])) {
         const targetFile = fileUrl.replace(copyRules[copyRule], '');
-        const files = globSync(resolve('node_modules/', module, copyRule), { nodir: true });
+        const files = globSync(resolve('node_modules/', module, copyRule), {
+          exclude: (name) => statSync(name).isDirectory()
+        });
 
         for (let file of files) {
           if (file.endsWith(targetFile)) return true;

@@ -143,7 +143,7 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     Object.keys(copyRules).forEach((copyRule) => {
       // Glob doesn't work with windows path separator so replacing it here.
       const nodeSources = resolve('node_modules/', module, copyRule).replace(/\\/g, '/');
-      const files = globSync(nodeSources, { nodir: true });
+      const files = globSync(nodeSources, { exclude: (name) => statSync(name).isDirectory() });
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
       mkdirSync(targetFolder, {
