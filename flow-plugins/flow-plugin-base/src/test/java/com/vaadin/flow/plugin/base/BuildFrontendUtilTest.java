@@ -708,9 +708,9 @@ public class BuildFrontendUtilTest {
                 .readString(generatedFeatureFlagsFile.toPath())
                 .replace("\r\n", "\n");
 
-        Assert.assertTrue("Example feature should not be set at build time",
+        Assert.assertFalse("Example feature should not be set at build time",
                 featureFlagsJs.contains(
-                        "window.Vaadin.featureFlags.exampleFeatureFlag = false;\n"));
+                        "window.Vaadin.featureFlags.exampleFeatureFlag"));
     }
 
     private void fillAdapter() throws URISyntaxException {

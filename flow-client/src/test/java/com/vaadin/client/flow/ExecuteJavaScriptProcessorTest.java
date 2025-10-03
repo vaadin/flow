@@ -153,8 +153,9 @@ public class ExecuteJavaScriptProcessorTest {
         };
         node.setDomNode(element);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v-node format
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v-node", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -188,8 +189,9 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v-node format
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v-node", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -228,8 +230,9 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v-node format
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v-node", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());
@@ -267,8 +270,9 @@ public class ExecuteJavaScriptProcessorTest {
 
         registry.getStateTree().registerNode(node);
 
-        JsonArray json = JsonUtils.createArray(Json.create(JsonCodec.NODE_TYPE),
-                Json.create(node.getId()));
+        // Create @v-node format
+        elemental.json.JsonObject json = Json.createObject();
+        json.put("@v-node", node.getId());
 
         JsonArray invocation = Stream.of(json, Json.create("$0"))
                 .collect(JsonUtils.asArray());

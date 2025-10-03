@@ -18,6 +18,8 @@ package com.vaadin.flow.internal;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
@@ -50,21 +52,6 @@ import elemental.json.JsonValue;
  * @since 1.0
  */
 public class JsonCodec {
-    /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
-     * Type id for a complex type array containing a {@link JsonArray}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
 
     private JsonCodec() {
         // Don't create instances
@@ -72,9 +59,8 @@ public class JsonCodec {
 
     /**
      * Helper for encoding values that might not have a native representation in
-     * JSON. Such types are encoded as an JSON array starting with an id
-     * defining the actual type and followed by the actual data. Supported value
-     * types are any native JSON type supported by
+     * JSON. Such types are encoded as JSON objects with @v type indicator.
+     * Supported value types are any native JSON type supported by
      * {@link #encodeWithoutTypeInfo(Object)}, {@link Element} and
      * {@link Component} (encoded as its root element).
      *
@@ -93,12 +79,8 @@ public class JsonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
-            JsonValue encoded = encodeWithoutTypeInfo(value);
-            if (encoded.getType() == JsonType.ARRAY) {
-                // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
-            }
-            return encoded;
+            // Native JSON types - no wrapping needed
+            return encodeWithoutTypeInfo(value);
         } else {
             // Encode as bean using Jackson via JsonValue conversion - send
             // directly as JSON
@@ -108,23 +90,23 @@ public class JsonCodec {
 
     private static JsonValue encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                Json.create(value.getStateNodeId()),
-                Json.create(value.getChannelId()));
+        elemental.json.JsonObject obj = Json.createObject();
+        JsonArray channelArray = Json.createArray();
+        channelArray.set(0, value.getStateNodeId());
+        channelArray.set(1, value.getChannelId());
+        obj.put("@v-return", channelArray);
+        return obj;
     }
 
     private static JsonValue encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE, Json.create(stateNode.getId()));
+            elemental.json.JsonObject obj = Json.createObject();
+            obj.put("@v-node", stateNode.getId());
+            return obj;
         } else {
             return Json.createNull();
         }
-    }
-
-    private static JsonArray wrapComplexValue(int typeId, JsonValue... values) {
-        return Stream.concat(Stream.of(Json.create(typeId)), Stream.of(values))
-                .collect(JsonUtils.asArray());
     }
 
     /**
@@ -225,7 +207,8 @@ public class JsonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * {@link Double}, primitives boolean, int, double, {@link JsonValue}, and
+     * any bean object that can be deserialized from JSON.
      *
      * @param <T>
      *            the decoded type
@@ -235,28 +218,29 @@ public class JsonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported
+     *             if the type was unsupported or deserialization failed
      */
     public static <T> T decodeAs(JsonValue json, Class<T> type) {
         assert json != null;
         if (json.getType() == JsonType.NULL && !type.isPrimitive()) {
             return null;
         }
-        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-        if (type == String.class) {
-            return type.cast(json.asString());
-        } else if (convertedType == Boolean.class) {
-            return (T) convertedType.cast(Boolean.valueOf(json.asBoolean()));
-        } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.asNumber()));
-        } else if (convertedType == Integer.class) {
-            return (T) convertedType
-                    .cast(Integer.valueOf((int) json.asNumber()));
-        } else if (JsonValue.class.isAssignableFrom(type)) {
+        if (JsonValue.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            // Use Jackson for all deserialization via JsonValue conversion -
+            // it handles primitives, strings, and complex objects uniformly
+            try {
+                // Convert JsonValue to JsonNode for Jackson deserialization
+                JsonNode jsonNode = JacksonUtils.getMapper()
+                        .readTree(json.toJson());
+                return JacksonUtils.getMapper().treeToValue(jsonNode, type);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot deserialize JSON to type " + type.getName()
+                                + ": " + e.getMessage(),
+                        e);
+            }
         }
 
     }

@@ -19,9 +19,12 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -50,21 +53,6 @@ import com.vaadin.flow.internal.nodefeature.ReturnChannelRegistration;
  * @since 24.7
  */
 public class JacksonCodec {
-    /**
-     * Type id for a complex type array containing an {@link Element}.
-     */
-    public static final int NODE_TYPE = 0;
-
-    /**
-     * Type id for a complex type array containing a {@link ArrayNode}.
-     */
-    public static final int ARRAY_TYPE = 1;
-
-    /**
-     * Type id for a complex type array identifying a
-     * {@link ReturnChannelRegistration} reference.
-     */
-    public static final int RETURN_CHANNEL_TYPE = 2;
 
     private JacksonCodec() {
         // Don't create instances
@@ -93,41 +81,36 @@ public class JacksonCodec {
         } else if (value instanceof ReturnChannelRegistration) {
             return encodeReturnChannel((ReturnChannelRegistration) value);
         } else if (canEncodeWithoutTypeInfo(value.getClass())) {
-            JsonNode encoded = encodeWithoutTypeInfo(value);
-            if (encoded.getNodeType() == JsonNodeType.ARRAY) {
-                // Must "escape" arrays
-                encoded = wrapComplexValue(ARRAY_TYPE, encoded);
-            }
-            return encoded;
+            // Native JSON types - no wrapping needed
+            return encodeWithoutTypeInfo(value);
         } else {
-            // Encode as bean using Jackson serialization - send directly as
-            // JSON
+            // All other types (including arrays and beans) use standard Jackson
+            // serialization
             return JacksonUtils.getMapper().valueToTree(value);
         }
     }
 
-    private static ArrayNode encodeReturnChannel(
+    private static JsonNode encodeReturnChannel(
             ReturnChannelRegistration value) {
-        return wrapComplexValue(RETURN_CHANNEL_TYPE,
-                JacksonUtils.getMapper().valueToTree(value.getStateNodeId()),
-                JacksonUtils.getMapper().valueToTree(value.getChannelId()));
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        ObjectNode obj = mapper.createObjectNode();
+        ArrayNode channelArray = mapper.createArrayNode();
+        channelArray.add(value.getStateNodeId());
+        channelArray.add(value.getChannelId());
+        obj.set("@v-return", channelArray);
+        return obj;
     }
 
     private static JsonNode encodeNode(Node<?> node) {
         StateNode stateNode = node.getNode();
         if (stateNode.isAttached()) {
-            return wrapComplexValue(NODE_TYPE,
-                    JacksonUtils.getMapper().valueToTree(stateNode.getId()));
+            ObjectMapper mapper = JacksonUtils.getMapper();
+            ObjectNode obj = mapper.createObjectNode();
+            obj.put("@v-node", stateNode.getId());
+            return obj;
         } else {
             return JacksonUtils.getMapper().nullNode();
         }
-    }
-
-    private static ArrayNode wrapComplexValue(int typeId, JsonNode... values) {
-        return Stream
-                .concat(Stream.of(JacksonUtils.getMapper().valueToTree(typeId)),
-                        Stream.of(values))
-                .collect(JacksonUtils.asArray());
     }
 
     /**
@@ -208,8 +191,7 @@ public class JacksonCodec {
     /**
      * Helper for decoding any "primitive" value that is directly supported in
      * JSON. Supported values types are {@link String}, {@link Number},
-     * {@link Boolean}, {@link JsonNode}.
-     * {@link tools.jackson.databind.node.NullNode} is also supported.
+     * {@link Boolean}, {@link JsonNode}. {@link NullNode} is also supported.
      *
      * @param json
      *            the JSON value to decode
@@ -236,7 +218,8 @@ public class JacksonCodec {
      * Decodes the given JSON value as the given type.
      * <p>
      * Supported types are {@link String}, {@link Boolean}, {@link Integer},
-     * {@link Double} and primitives boolean, int, double
+     * {@link Double}, primitives boolean, int, double, {@link JsonNode}, and
+     * any bean object that can be deserialized from JSON.
      *
      * @param <T>
      *            the decoded type
@@ -246,28 +229,26 @@ public class JacksonCodec {
      *            the type to decode as
      * @return the value decoded as the given type
      * @throws IllegalArgumentException
-     *             if the type was unsupported
+     *             if the type was unsupported or deserialization failed
      */
     public static <T> T decodeAs(JsonNode json, Class<T> type) {
         assert json != null;
         if (json.getNodeType() == JsonNodeType.NULL && !type.isPrimitive()) {
             return null;
         }
-        Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
-        if (type == String.class) {
-            return type.cast(json.asText(""));
-        } else if (convertedType == Boolean.class) {
-            return (T) convertedType
-                    .cast(Boolean.valueOf(json.asBoolean(false)));
-        } else if (convertedType == Double.class) {
-            return (T) convertedType.cast(Double.valueOf(json.asDouble(0.0)));
-        } else if (convertedType == Integer.class) {
-            return (T) convertedType.cast(Integer.valueOf(json.asInt(0)));
-        } else if (JsonNode.class.isAssignableFrom(type)) {
+        if (JsonNode.class.isAssignableFrom(type)) {
             return type.cast(json);
         } else {
-            throw new IllegalArgumentException(
-                    "Unknown type " + type.getName());
+            // Use Jackson for all deserialization - it handles primitives,
+            // strings, and complex objects uniformly
+            try {
+                return JacksonUtils.getMapper().treeToValue(json, type);
+            } catch (Exception e) {
+                throw new IllegalArgumentException(
+                        "Cannot deserialize JSON to type " + type.getName()
+                                + ": " + e.getMessage(),
+                        e);
+            }
         }
 
     }

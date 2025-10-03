@@ -641,24 +641,36 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
+            }
+        }
+        return frontendDir;
+    }
 
-        if (legacyDir.exists()) {
+    /**
+     * Check for existence of legacy frontend folder and log a warning if it is
+     * present.
+     *
+     * @param projectRoot
+     *            project's root directory
+     */
+    public static void checkLegacyFrontendFolder(Path projectRoot) {
+        if (new File(projectRoot.toString(), LEGACY_FRONTEND_DIR).exists()) {
             getLogger().warn(
                     "This project has a legacy frontend directory ({}) "
-                            + "present and it will be used as a fallback."
-                            + "\n\nSupport for the legacy directory will be removed "
+                            + "present and it will be used as a fallback. "
+                            + "Support for the legacy directory will be removed "
                             + "in a future release. Please move its contents to "
                             + "the default frontend directory ({}), or delete it "
                             + "if its contents are not needed in the project. "
                             + "Also remove 'frontendDirectory' parameter that "
                             + "points to the legacy directory, if present.",
                     LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
-            return legacyDir;
         }
-
-        // Legacy dir does not exist. Use default or custom-set dir.
-        return frontendDir;
     }
 
     /**
