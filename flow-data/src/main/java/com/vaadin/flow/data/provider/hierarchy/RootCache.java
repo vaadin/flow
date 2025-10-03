@@ -18,7 +18,6 @@ package com.vaadin.flow.data.provider.hierarchy;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -116,8 +115,8 @@ class RootCache<T> extends Cache<T> {
      * the target item or a collapsed item in which case its flat index is
      * returned.
      * <p>
-     * The hierarchical path is a list of indexes, each selecting a child of the
-     * item at the previous index, starting from the root cache. Negative
+     * The hierarchical path is an array of indexes, each selecting a child of
+     * the item at the previous index, starting from the root cache. Negative
      * indexes count from the end of the respective level. For example,
      * {@code -2} refers to the second item from the end.
      *
@@ -132,11 +131,10 @@ class RootCache<T> extends Cache<T> {
         return getFlatIndexByPath(this, path);
     }
 
-    private int getFlatIndexByPath(Cache<T> cache, int[] path) {
+    private int getFlatIndexByPath(Cache<T> cache, int... path) {
         var restPath = Arrays.copyOfRange(path, 1, path.length);
         var index = cache.normalizeIndex(path[0]);
         var flatIndex = flattenIndex(cache, index);
-
         var subCache = cache.getSubCache(index);
         if (subCache != null && getFlatSize(subCache) > 0
                 && restPath.length > 0) {
@@ -231,7 +229,7 @@ class RootCache<T> extends Cache<T> {
      * @param <T>
      *            the type of items in the cache
      */
-    static record ItemContext<T>(Cache<T> cache, int index)
-            implements Serializable {
+    static record ItemContext<T>(Cache<T> cache,
+            int index) implements Serializable {
     }
 }

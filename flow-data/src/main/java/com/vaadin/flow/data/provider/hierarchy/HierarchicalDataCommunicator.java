@@ -490,18 +490,20 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
      */
     protected int resolveIndexPath(int... path) {
         ensureRootCache();
-        resolveIndexPath(rootCache, path, 0);
+        resolveIndexPath(rootCache, path);
         return rootCache.getFlatIndexByPath(path);
     }
 
-    private void resolveIndexPath(Cache<T> cache, int[] path, int depth) {
+    private void resolveIndexPath(Cache<T> cache, int... path) {
+        var depth = cache.getDepth();
         int index;
         try {
             index = cache.normalizeIndex(path[depth]);
         } catch (IndexOutOfBoundsException e) {
             throw new IndexOutOfBoundsException(
-                    "Index %d is out of bounds (path %s, depth %d)"
-                            .formatted(path[depth], Arrays.toString(path), depth));
+                    "Index %d is out of range for hierarchicalpath %s (depth %d, size %d)."
+                            .formatted(path[depth], Arrays.toString(path),
+                                    depth, cache.getSize()));
         }
 
         if (!cache.hasItem(index)) {
@@ -509,7 +511,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             preloadRange(cache, index, 1);
         }
 
-        if (depth + 1 >= path.length) {
+        if (depth >= path.length - 1) {
             // If there is no rest path, we are at the target item
             return;
         }
@@ -521,7 +523,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 requestFlush().invalidateViewport();
                 return getDataProviderChildCount(item);
             });
-            resolveIndexPath(subCache, path, depth + 1);
+            resolveIndexPath(subCache, path);
         }
     }
 
