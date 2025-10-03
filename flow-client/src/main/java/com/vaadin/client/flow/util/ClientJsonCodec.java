@@ -241,7 +241,7 @@ public class ClientJsonCodec {
         for (int i = 0; i < jsonArray.length(); i++) {
             JsonValue originalValue = jsonArray.get(i);
             Object decoded = decodeWithTypeInfo(tree, originalValue);
-            jsArray.push(i, decoded);
+            jsArray.push(decoded);
         }
         return jsArray;
     }
