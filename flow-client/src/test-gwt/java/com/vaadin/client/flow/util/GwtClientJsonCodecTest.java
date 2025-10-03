@@ -30,6 +30,16 @@ import elemental.json.JsonArray;
 import elemental.json.JsonValue;
 
 public class GwtClientJsonCodecTest extends ClientEngineTestBase {
+
+    /**
+     * Helper method to get property from a decoded object. The decoded object
+     * is a native JS object, so we need to use native access.
+     */
+    private static native Object getObjectProperty(Object obj, String key)
+    /*-{
+        return obj[key];
+    }-*/;
+
     @Test
     public void decodeWithoutTypeInfo() {
         decodePrimitiveValues(ClientJsonCodec::decodeWithoutTypeInfo);
@@ -89,12 +99,9 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
         JsElement element = createTestElement();
         node.setDomNode(element);
 
-        // Create array format [NODE_TYPE, nodeId]
-        JsonArray json = Json.createArray();
-        json.set(0, 0); // NODE_TYPE = 0
-        json.set(1, node.getId());
-
-        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, json);
+        // Parse @v-node format from JSON string
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree,
+                Json.parse("{\"@v-node\": 42}"));
 
         assertSame(element, decoded);
     }
@@ -156,8 +163,107 @@ public class GwtClientJsonCodecTest extends ClientEngineTestBase {
 
     private static void assertJsonEquals(JsonValue expected, JsonValue actual) {
         assertEquals(
-                actual.toJson() + " does not equal " + expected.toJson(),
+                "JSON values do not match",
                 expected.toJson(), actual.toJson());
+    }
+
+    @Test
+    public void decodeWithTypeInfo_unknownVType_throwsException() {
+        // Test that unknown @v- prefixed types are rejected for forward
+        // compatibility
+        elemental.json.JsonObject unknownType = Json.createObject();
+        unknownType.put("@v-unknown", "someValue");
+
+        try {
+            ClientJsonCodec.decodeWithTypeInfo(null, unknownType);
+            fail(
+                    "Expected IllegalArgumentException for unknown @v- type");
+        } catch (IllegalArgumentException e) {
+            assertTrue(
+                    "Exception message should mention the unknown key",
+                    e.getMessage().contains("@v-unknown"));
+        }
+    }
+
+    @Test
+    public void decodeStateNode_unknownVType_throwsException() {
+        // Test that unknown @v- prefixed types are rejected in decodeStateNode
+        // too
+        elemental.json.JsonObject unknownType = Json.createObject();
+        unknownType.put("@v-future", 42);
+
+        try {
+            ClientJsonCodec.decodeStateNode(null, unknownType);
+            fail(
+                    "Expected IllegalArgumentException for unknown @v- type");
+        } catch (IllegalArgumentException e) {
+            assertTrue(
+                    "Exception message should mention the unknown key",
+                    e.getMessage().contains("@v-future"));
+        }
+    }
+
+    @Test
+    public void decodeWithTypeInfo_deeplyNestedRecursiveDecoding() {
+        StateTree tree = new StateTree(null);
+        StateNode node = new StateNode(400, tree);
+        tree.registerNode(node);
+
+        JsElement element = createTestElement();
+        node.setDomNode(element);
+
+        // Parse deeply nested structure from JSON string: object -> array -> object ->
+        // array -> @v-node
+        String json = "" //
+                + "{" //
+                + "    \"level\": 1," //
+                + "    \"nested\": [" //
+                + "        \"top\"," //
+                + "        {" //
+                + "            \"level\": 2," //
+                + "            \"data\": [" //
+                + "                {" //
+                + "                    \"level\": 3," //
+                + "                    \"content\": [" //
+                + "                        \"deep\"," //
+                + "                        {\"@v-node\": 400}" //
+                + "                    ]" //
+                + "                }," //
+                + "                true" //
+                + "            ]" //
+                + "        }" //
+                + "    ]" //
+                + "}";
+        JsonValue jsonValue = Json.parse(json);
+
+        Object decoded = ClientJsonCodec.decodeWithTypeInfo(tree, jsonValue);
+
+        // Should return a native JS object with recursively decoded nested
+        // structures
+        assertEquals(Double.valueOf(1.0),
+                getObjectProperty(decoded, "level"));
+
+        JsArray<?> nestedArray = (JsArray<?>) getObjectProperty(decoded,
+                "nested");
+        assertEquals("top", nestedArray.get(0));
+
+        Object midResult = nestedArray.get(1);
+        assertEquals(Double.valueOf(2.0),
+                getObjectProperty(midResult, "level"));
+
+        JsArray<?> dataArray = (JsArray<?>) getObjectProperty(midResult,
+                "data");
+        assertEquals(Boolean.TRUE, dataArray.get(1));
+
+        Object deepResult = dataArray.get(0);
+        assertEquals(3.0,
+                getObjectProperty(deepResult, "level"));
+
+        JsArray<?> contentArray = (JsArray<?>) getObjectProperty(deepResult,
+                "content");
+        assertEquals("deep", contentArray.get(0));
+        assertSame("Deeply nested element should be decoded to DOM node",
+                element, contentArray.get(1));
     }
 
 }
