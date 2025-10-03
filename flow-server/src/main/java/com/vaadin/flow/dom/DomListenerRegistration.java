@@ -363,6 +363,10 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Stops propagation of the event to upper level DOM elements.
+     * <p>
+     * When used with {@link #setFilter(String)}, stopPropagation will only be
+     * called when the filter condition is met. For example, if you set a filter
+     * for specific keys, stopPropagation will only apply to those keys.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation">MDN

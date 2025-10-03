@@ -574,6 +574,88 @@ public class ElementListenersTest
                 expressions.contains("event.preventDefault()"));
     }
 
+    @Test
+    public void testStopPropagationWithFilter() {
+        // Test that stopPropagation only applies to filtered events
+
+        // Create a listener with filter for space and enter keys
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
+        registration.stopPropagation();
+
+        // Check that the event data includes stopPropagation
+        Set<String> expressions = getExpressions("keydown");
+
+        // The expressions should include:
+        // 1. The filter expression for debouncing
+        // 2. The conditional stopPropagation expression
+        Assert.assertTrue("Should have the filter expression", expressions
+                .contains("event.key === ' ' || event.key === 'Enter'"));
+
+        // After the fix, stopPropagation should be conditional on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === ' ' || event.key === 'Enter') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testStopPropagationWithoutFilter() {
+        // Test stopPropagation without filter - should apply to all events
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Without a filter, stopPropagation should apply to all events
+        Assert.assertTrue("Should have stopPropagation expression",
+                expressions.contains("event.stopPropagation()"));
+        Assert.assertEquals("Should only have stopPropagation expression", 1,
+                expressions.size());
+    }
+
+    @Test
+    public void testStopPropagationThenSetFilter() {
+        // Test that stopPropagation becomes conditional even when filter is
+        // set after
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+        registration.setFilter("event.key === 'Escape'");
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Escape') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testSetFilterThenStopPropagation() {
+        // Test that stopPropagation is conditional when filter is set before
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === 'Delete'");
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Delete') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {
