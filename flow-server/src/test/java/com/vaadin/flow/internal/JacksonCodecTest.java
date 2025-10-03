@@ -434,5 +434,5 @@ public class JacksonCodecTest {
         Assert.assertEquals(Double.valueOf(3.14), JacksonCodec
                 .decodeAs(objectMapper.valueToTree(3.14), Double.class));
     }
-    
+
 }
