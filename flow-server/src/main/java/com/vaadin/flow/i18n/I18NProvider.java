@@ -143,6 +143,9 @@ public interface I18NProvider extends Serializable {
     /**
      * Get the translation for key with given locale via {@link I18NProvider}
      * instance retrieved from the current VaadinService.
+     * <p>
+     * If there is no {@link I18NProvider} available or no translation for the
+     * {@code key} it returns an exception string e.g. '!{key}!'.
      *
      * @param locale
      *            locale to use
