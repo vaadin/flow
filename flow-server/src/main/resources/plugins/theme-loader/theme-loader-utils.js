@@ -1,6 +1,5 @@
-import { existsSync, readFileSync } from 'fs';
+import { existsSync, readFileSync, globSync } from 'fs';
 import { resolve, basename } from 'path';
-import { globSync } from 'glob';
 
 // Collect groups [url(] ['|"]optional './|../', other '../' segments optional, file part and end of url
 // The additional dot segments could be URL referencing assets in nested imported CSS

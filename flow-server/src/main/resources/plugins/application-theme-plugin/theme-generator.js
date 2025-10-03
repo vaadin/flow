@@ -18,7 +18,7 @@
  * This file handles the generation of the '[theme-name].js' to
  * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
-import { globSync } from 'glob';
+import { globSync } from 'node:fs';
 import { resolve, basename } from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { checkModules } from './theme-copy.js';
