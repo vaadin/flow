@@ -17,7 +17,9 @@ package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.UI;
@@ -141,6 +143,27 @@ public class ExecJavaScriptView extends AbstractDivView {
                             });
                 });
 
+        NativeButton mapButton = createButton("Map Serialization", "mapButton",
+                e -> testMapSerialization());
+
+        NativeButton returnMapButton = createButton("Return Map",
+                "returnMapButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return {alpha: {name: 'AlphaBean', value: 111, active: true}, beta: {name: 'BetaBean', value: 222, active: false}}")
+                            .then(Map.class, map -> {
+                                Div result = new Div();
+                                result.setId("returnMapResult");
+                                result.setText("Returned map with " + map.size()
+                                        + " entries");
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnMapStatus");
+                                status.setText("Map returned");
+                                add(status);
+                            });
+                });
+
         NativeButton componentArrayButton = createButton("Component Array",
                 "componentArrayButton", e -> testComponentArraySerialization());
 
@@ -182,8 +205,8 @@ public class ExecJavaScriptView extends AbstractDivView {
 
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
-                returnBeanButton, listButton, returnListButton,
-                componentArrayButton, beanWithComponentButton,
+                returnBeanButton, listButton, returnListButton, mapButton,
+                returnMapButton, componentArrayButton, beanWithComponentButton,
                 clientCallableBeanButton, clientCallableListButton,
                 clientCallableNestedButton);
     }
@@ -241,6 +264,37 @@ public class ExecJavaScriptView extends AbstractDivView {
                         document.body.appendChild(statusDiv);
                         """,
                 beanList);
+    }
+
+    private void testMapSerialization() {
+        Map<String, SimpleBean> beanMap = new HashMap<>();
+        beanMap.put("first", new SimpleBean("FirstKey", 100, true));
+        beanMap.put("second", new SimpleBean("SecondKey", 200, false));
+        beanMap.put("third", new SimpleBean("ThirdKey", 300, true));
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const beanMap = $0;
+                        let result = 'Map: ';
+                        const keys = Object.keys(beanMap);
+                        for (let i = 0; i < keys.length; i++) {
+                            const key = keys[i];
+                            const bean = beanMap[key];
+                            result += `${key}: name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+                            if (i < keys.length - 1) result += ' | ';
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'mapResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'mapStatus';
+                        statusDiv.textContent = 'Map serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                beanMap);
     }
 
     private void testComponentArraySerialization() {
