@@ -22,7 +22,7 @@ import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
 
 import elemental.dom.Node;
 import elemental.json.Json;
@@ -44,8 +44,8 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value as a {@link StateNode} encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)} if it's possible. Otherwise
-     * returns {@code null}.
+     * {@link JacksonCodec#encodeWithTypeInfo(Object)} if it's possible.
+     * Otherwise returns {@code null}.
      * <p>
      * It does the same as {@link #decodeWithTypeInfo(StateTree, JsonValue)} for
      * the encoded json value if the encoded object is a {@link StateNode}
@@ -82,7 +82,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)}.
+     * {@link JacksonCodec#encodeWithTypeInfo(Object)}.
      *
      * @param tree
      *            the state tree to use for resolving nodes and elements
@@ -155,7 +155,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
+     * {@link JacksonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
      * compiled JavaScript since the JSON representation can be used as-is, but
      * some special handling is needed for tests running in the JVM.
      *
