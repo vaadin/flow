@@ -21,7 +21,7 @@ import com.google.gwt.core.client.JavaScriptObject;
  * Bridge to TypeScript URIResolver implementation.
  *
  * This class delegates all calls to the TypeScript implementation at
- * window.Vaadin.TypeScript.URIResolver.
+ * window.Vaadin.GWT.URIResolver.
  *
  * @author Vaadin Ltd
  * @since 1.0
@@ -42,10 +42,10 @@ public class URIResolver {
     private static native JavaScriptObject createTypeScriptInstance(
             Registry registry)
     /*-{
-        if (!$wnd.Vaadin || !$wnd.Vaadin.TypeScript || !$wnd.Vaadin.TypeScript.URIResolver) {
+        if (!$wnd.Vaadin || !$wnd.Vaadin.GWT || !$wnd.Vaadin.GWT.URIResolver) {
             throw new Error("TypeScript URIResolver not loaded. Make sure Flow.ts imports core/URIResolver before GWT.");
         }
-        return new $wnd.Vaadin.TypeScript.URIResolver(registry);
+        return new $wnd.Vaadin.GWT.URIResolver(registry);
     }-*/;
 
     /**
@@ -78,7 +78,7 @@ public class URIResolver {
 
     private static native String getCurrentLocationRelativeToBaseUriNative()
     /*-{
-        return $wnd.Vaadin.TypeScript.URIResolver.getCurrentLocationRelativeToBaseUri();
+        return $wnd.Vaadin.GWT.URIResolver.getCurrentLocationRelativeToBaseUri();
     }-*/;
 
     /**
@@ -98,6 +98,6 @@ public class URIResolver {
     private static native String getBaseRelativeUriNative(String baseURI,
             String uri)
     /*-{
-        return $wnd.Vaadin.TypeScript.URIResolver.getBaseRelativeUri(baseURI, uri);
+        return $wnd.Vaadin.GWT.URIResolver.getBaseRelativeUri(baseURI, uri);
     }-*/;
 }

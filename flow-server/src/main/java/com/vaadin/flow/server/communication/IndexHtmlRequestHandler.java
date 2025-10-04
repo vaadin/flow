@@ -519,7 +519,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Element elm = new Element(SCRIPT);
         elm.attr(SCRIPT_INITIAL, "");
         elm.appendChild(new DataNode("window.Vaadin = window.Vaadin || {};" + //
-                "window.Vaadin.TypeScript= " + initialJson.toString() + ";"));
+                "window.Vaadin.GWT= " + initialJson.toString() + ";"));
         indexDocument.head().insertChildren(0, elm);
     }
 

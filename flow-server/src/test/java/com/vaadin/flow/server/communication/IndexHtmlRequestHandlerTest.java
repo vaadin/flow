@@ -90,7 +90,7 @@ import static org.mockito.Mockito.when;
 public class IndexHtmlRequestHandlerTest {
     private static final String SPRING_CSRF_ATTRIBUTE_IN_SESSION = "org.springframework.security.web.csrf.CsrfToken";
     private static final String SPRING_CSRF_ATTRIBUTE = "_csrf";
-    private static final String INITIAL_UIDL_SEARCH_STRING = "window.Vaadin.TypeScript= ";
+    private static final String INITIAL_UIDL_SEARCH_STRING = "window.Vaadin.GWT= ";
     private MockServletServiceSessionSetup mocks;
     private MockServletServiceSessionSetup.TestVaadinServletService service;
     private VaadinSession session;
@@ -380,7 +380,7 @@ public class IndexHtmlRequestHandlerTest {
                 INITIAL_UIDL_SEARCH_STRING);
 
         Assert.assertEquals(
-                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.GWT= {};",
                 initialUidlScript.childNode(0).toString());
         Assert.assertEquals("", initialUidlScript.attr("initial"));
     }
@@ -430,7 +430,7 @@ public class IndexHtmlRequestHandlerTest {
         Element initialUidlScript = findScript(scripts,
                 INITIAL_UIDL_SEARCH_STRING);
         Assert.assertEquals(
-                "window.Vaadin = window.Vaadin || {};window.Vaadin.TypeScript= {};",
+                "window.Vaadin = window.Vaadin || {};window.Vaadin.GWT= {};",
                 initialUidlScript.childNode(0).toString());
         Assert.assertEquals("", initialUidlScript.attr("initial"));
         Assert.assertNull(UI.getCurrent());

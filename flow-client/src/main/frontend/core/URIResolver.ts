@@ -127,13 +127,13 @@ export class URIResolver {
   }
 }
 
-// Expose URIResolver to window.Vaadin.TypeScript so GWT can call it
+// Expose URIResolver to window.Vaadin.GWT so GWT can call it
 declare global {
   interface Window {
     Vaadin?: {
       Flow?: any;
       connectionState?: any;
-      TypeScript?: {
+      GWT?: {
         URIResolver?: typeof URIResolver;
       };
     };
@@ -142,6 +142,6 @@ declare global {
 
 if (typeof window !== 'undefined') {
   window.Vaadin = window.Vaadin || {};
-  window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
-  window.Vaadin.TypeScript.URIResolver = URIResolver;
+  window.Vaadin.GWT = window.Vaadin.GWT || {};
+  window.Vaadin.GWT.URIResolver = URIResolver;
 }

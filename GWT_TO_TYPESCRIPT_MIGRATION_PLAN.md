@@ -39,7 +39,7 @@ The migration will **directly replace GWT code with TypeScript** in each phase:
 
 ### GWT-TypeScript Interoperability (PROVEN WORKING)
 
-**Communication Bridge**: TypeScript code is exposed on `window.Vaadin.TypeScript` for GWT to call
+**Communication Bridge**: TypeScript code is exposed on `window.Vaadin.GWT` for GWT to call
 
 **Loading Order**:
 1. `Flow.ts` imports TypeScript utilities first
@@ -60,8 +60,8 @@ The migration will **directly replace GWT code with TypeScript** in each phase:
    // Expose on window
    if (typeof window !== 'undefined') {
      window.Vaadin = window.Vaadin || {};
-     window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
-     window.Vaadin.TypeScript.URIResolver = URIResolver;
+     window.Vaadin.GWT = window.Vaadin.GWT || {};
+     window.Vaadin.GWT.URIResolver = URIResolver;
    }
    ```
 
@@ -75,7 +75,7 @@ The migration will **directly replace GWT code with TypeScript** in each phase:
      }
 
      private static native JavaScriptObject createTypeScriptInstance(Registry registry) /*-{
-       return new $wnd.Vaadin.TypeScript.URIResolver(registry);
+       return new $wnd.Vaadin.GWT.URIResolver(registry);
      }-*/;
 
      public String resolveVaadinUri(String uri) {
