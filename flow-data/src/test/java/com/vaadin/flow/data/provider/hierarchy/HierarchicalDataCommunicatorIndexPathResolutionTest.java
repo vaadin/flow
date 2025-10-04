@@ -86,43 +86,29 @@ public class HierarchicalDataCommunicatorIndexPathResolutionTest
     }
 
     @Test
-    public void exceedingPositiveIndexes_resolveIndexPath_indexesClamped() {
-        dataCommunicator.expand(
-                Arrays.asList(new Item("Item 2"), new Item("Item 2-1")));
-
-        Assert.assertEquals(2, dataCommunicator.resolveIndexPath(100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(4, dataCommunicator.resolveIndexPath(100, 100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(5,
-                dataCommunicator.resolveIndexPath(100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(5,
-                dataCommunicator.resolveIndexPath(100, 100, 100, 100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
-    }
-
-    @Test
-    public void exceedingNegativeIndexes_resolveIndexPath_indexesClamped() {
+    public void exceedingPositiveIndexes_resolveIndexPath_throws() {
         dataCommunicator.expand(
                 Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-100));
-        Assert.assertEquals(3, dataCommunicator.rootCache.getFlatSize());
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(100));
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(0, 100));
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(0, 0, 100));
+    }
 
-        Assert.assertEquals(1, dataCommunicator.resolveIndexPath(-100, -100));
-        Assert.assertEquals(5, dataCommunicator.rootCache.getFlatSize());
+    @Test
+    public void exceedingNegativeIndexes_resolveIndexPath_throws() {
+        dataCommunicator.expand(
+                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
 
-        Assert.assertEquals(2,
-                dataCommunicator.resolveIndexPath(-100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(2,
-                dataCommunicator.resolveIndexPath(-100, -100, -100, -100));
-        Assert.assertEquals(6, dataCommunicator.rootCache.getFlatSize());
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(-100));
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(0, -100));
+        Assert.assertThrows(IndexOutOfBoundsException.class,
+                () -> dataCommunicator.resolveIndexPath(0, 0, -100));
     }
 
     @Test
