@@ -15,19 +15,19 @@
  */
 package com.vaadin.client;
 
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.VaadinUriResolver;
-
-import elemental.client.Browser;
+import com.google.gwt.core.client.JavaScriptObject;
 
 /**
- * Client side URL resolver for vaadin protocols.
+ * Bridge to TypeScript URIResolver implementation.
+ *
+ * This class delegates all calls to the TypeScript implementation at
+ * window.Vaadin.TypeScript.URIResolver.
  *
  * @author Vaadin Ltd
  * @since 1.0
  */
-public class URIResolver extends VaadinUriResolver {
-    private transient Registry registry;
+public class URIResolver {
+    private final JavaScriptObject tsInstance;
 
     /**
      * Creates a new instance connected to the given registry.
@@ -36,35 +36,34 @@ public class URIResolver extends VaadinUriResolver {
      *            the global registry
      */
     public URIResolver(Registry registry) {
-        this.registry = registry;
+        this.tsInstance = createTypeScriptInstance(registry);
     }
 
+    private static native JavaScriptObject createTypeScriptInstance(
+            Registry registry)
+    /*-{
+        if (!$wnd.Vaadin || !$wnd.Vaadin.TypeScript || !$wnd.Vaadin.TypeScript.URIResolver) {
+            throw new Error("TypeScript URIResolver not loaded. Make sure Flow.ts imports core/URIResolver before GWT.");
+        }
+        return new $wnd.Vaadin.TypeScript.URIResolver(registry);
+    }-*/;
+
     /**
-     * Translates a Vaadin URI to a URL that can be loaded by the browser. The
-     * following URI schemes are supported:
-     * <ul>
-     * <li><code>{@value ApplicationConstants#CONTEXT_PROTOCOL_PREFIX}</code> -
-     * resolves to the application context root</li>
-     * <li><code>{@value ApplicationConstants#BASE_PROTOCOL_PREFIX}</code> -
-     * resolves to the base URI of the page</li>
-     * </ul>
-     * Any other URI protocols, such as <code>http://</code> or
-     * <code>https://</code> are passed through this method unmodified.
+     * Translates a Vaadin URI to a URL that can be loaded by the browser.
      *
      * @param uri
      *            the URI to resolve
      * @return the resolved URI
      */
     public String resolveVaadinUri(String uri) {
-        return super.resolveVaadinUri(uri, getContextRootUrl());
+        return resolveVaadinUriNative(tsInstance, uri);
     }
 
-    protected String getContextRootUrl() {
-        String root = registry.getApplicationConfiguration()
-                .getContextRootUrl();
-        assert root.endsWith("/");
-        return root;
-    }
+    private static native String resolveVaadinUriNative(
+            JavaScriptObject tsInstance, String uri)
+    /*-{
+        return tsInstance.resolveVaadinUri(uri);
+    }-*/;
 
     /**
      * Returns the current document location as relative to the base uri of the
@@ -74,9 +73,13 @@ public class URIResolver extends VaadinUriResolver {
      *         uri
      */
     public static String getCurrentLocationRelativeToBaseUri() {
-        return getBaseRelativeUri(Browser.getDocument().getBaseURI(),
-                Browser.getDocument().getLocation().getHref());
+        return getCurrentLocationRelativeToBaseUriNative();
     }
+
+    private static native String getCurrentLocationRelativeToBaseUriNative()
+    /*-{
+        return $wnd.Vaadin.TypeScript.URIResolver.getCurrentLocationRelativeToBaseUri();
+    }-*/;
 
     /**
      * Returns the given uri as relative to the given base uri.
@@ -89,9 +92,12 @@ public class URIResolver extends VaadinUriResolver {
      *         unmodified if it is for different context.
      */
     public static String getBaseRelativeUri(String baseURI, String uri) {
-        if (uri.startsWith(baseURI)) {
-            return uri.substring(baseURI.length());
-        }
-        return uri;
+        return getBaseRelativeUriNative(baseURI, uri);
     }
+
+    private static native String getBaseRelativeUriNative(String baseURI,
+            String uri)
+    /*-{
+        return $wnd.Vaadin.TypeScript.URIResolver.getBaseRelativeUri(baseURI, uri);
+    }-*/;
 }

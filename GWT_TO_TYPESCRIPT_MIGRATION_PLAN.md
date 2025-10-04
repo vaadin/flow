@@ -47,20 +47,61 @@ The migration will **directly replace GWT code with TypeScript** in each phase:
 3. Finally loads `FlowClient.js` (GWT compiled code)
 4. This ensures TypeScript is available when GWT initializes
 
-**GWT → TypeScript**:
-- GWT uses JSNI to call TypeScript functions
-- Example: `$wnd.Vaadin.TypeScript.ArrayUtil.isEmpty(array)`
-- Created `TypeScriptInterop.java` class with helper methods
+**Migration Pattern (URIResolver example)**:
 
-**TypeScript → Window**:
-```typescript
-// Carefully preserve existing window.Vaadin properties
-window.Vaadin = window.Vaadin || {};
-window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
-window.Vaadin.TypeScript.ClassName = ClassName;
-```
+1. **TypeScript Implementation** (`core/URIResolver.ts`):
+   ```typescript
+   export class URIResolver {
+     constructor(registry: any) { /* ... */ }
+     resolveVaadinUri(uri: string): string { /* full logic here */ }
+     static getCurrentLocationRelativeToBaseUri(): string { /* ... */ }
+   }
 
-**IMPORTANT**: Never overwrite `window.Vaadin` - it contains `Flow`, `connectionState`, and other existing properties used by the system.
+   // Expose on window
+   if (typeof window !== 'undefined') {
+     window.Vaadin = window.Vaadin || {};
+     window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
+     window.Vaadin.TypeScript.URIResolver = URIResolver;
+   }
+   ```
+
+2. **GWT Bridge** (`URIResolver.java` - thin wrapper):
+   ```java
+   public class URIResolver {
+     private final JavaScriptObject tsInstance;
+
+     public URIResolver(Registry registry) {
+       this.tsInstance = createTypeScriptInstance(registry);
+     }
+
+     private static native JavaScriptObject createTypeScriptInstance(Registry registry) /*-{
+       return new $wnd.Vaadin.TypeScript.URIResolver(registry);
+     }-*/;
+
+     public String resolveVaadinUri(String uri) {
+       return resolveVaadinUriNative(tsInstance, uri);
+     }
+
+     private static native String resolveVaadinUriNative(JavaScriptObject tsInstance, String uri) /*-{
+       return tsInstance.resolveVaadinUri(uri);
+     }-*/;
+   }
+   ```
+
+3. **Flow.ts imports TypeScript before GWT**:
+   ```typescript
+   // Load TypeScript utilities BEFORE GWT so GWT can call them
+   await import('./core/URIResolver');
+
+   // Load flow-client module (GWT code)
+   const clientMod = await import('./FlowClient');
+   ```
+
+**IMPORTANT**:
+- Never overwrite `window.Vaadin` - it contains `Flow`, `connectionState`, and other existing properties
+- Always use `window.Vaadin = window.Vaadin || {}` pattern
+- GWT bridge should be thin - all logic in TypeScript
+- Import TypeScript in Flow.ts before loading GWT client
 
 ---
 
