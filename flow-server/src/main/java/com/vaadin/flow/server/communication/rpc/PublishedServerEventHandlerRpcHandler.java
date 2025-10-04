@@ -23,10 +23,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 import org.slf4j.Logger;
@@ -305,6 +307,8 @@ public class PublishedServerEventHandlerRpcHandler
             return JacksonCodec.decodeAs(argValue, type);
         } else if (type.isArray()) {
             return decodeArray(method, type, index, argValue);
+        } else if (isGenericCollection(type, argValue)) {
+            return decodeGenericCollection(method, type, index, argValue);
         } else {
             Class<?> convertedType = ReflectTools.convertPrimitiveType(type);
 
@@ -376,6 +380,36 @@ public class PublishedServerEventHandlerRpcHandler
         decoders.add(new StringToEnumDecoder());
         decoders.add(new DefaultRpcDecoder());
         return decoders;
+    }
+
+    private static boolean isGenericCollection(Class<?> type,
+            JsonNode argValue) {
+        // Check if it's a collection type and the JSON value is an array
+        return Collection.class.isAssignableFrom(type)
+                && argValue.getNodeType() == JsonNodeType.ARRAY;
+    }
+
+    private static Object decodeGenericCollection(Method method, Class<?> type,
+            int index, JsonNode argValue) {
+        try {
+            // Get the generic type information
+            java.lang.reflect.Type genericType = method
+                    .getGenericParameterTypes()[index];
+
+            // Use Jackson's advanced type system to handle generic collections
+            tools.jackson.databind.ObjectMapper mapper = JacksonUtils
+                    .getMapper();
+            tools.jackson.databind.JavaType javaType = mapper.getTypeFactory()
+                    .constructType(genericType);
+
+            return mapper.treeToValue(argValue, javaType);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Failed to deserialize generic collection for parameter "
+                            + index + " of method " + method.getName() + ": "
+                            + e.getMessage(),
+                    e);
+        }
     }
 
     private static Logger getLogger() {
