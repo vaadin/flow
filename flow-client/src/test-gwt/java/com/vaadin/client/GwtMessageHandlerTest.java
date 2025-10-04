@@ -73,17 +73,6 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
         }
     }
 
-    private static class TestUriResolver extends URIResolver {
-        public TestUriResolver(Registry registry) {
-            super(registry);
-        }
-
-        @Override
-        public String resolveVaadinUri(String uri) {
-            return uri;
-        }
-    }
-
     private static class TestResourceLoader extends ResourceLoader {
 
         private Set<String> scriptUrls = new HashSet<>();
@@ -184,7 +173,6 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                         new TestRequestResponseTracker(this));
                 set(DependencyLoader.class, new DependencyLoader(this));
                 set(ResourceLoader.class, new TestResourceLoader(this));
-                set(URIResolver.class, new TestUriResolver(this));
                 set(StateTree.class, new TestStateTree(this));
                 set(ApplicationConfiguration.class,
                         new TestApplicationConfiguration());
@@ -196,8 +184,20 @@ public class GwtMessageHandlerTest extends ClientEngineTestBase {
                 set(UILifecycle.class, new TestUILifecycle());
             }
         };
+        setupMockURIResolver();
         handler = new TestMessageHandler(registry);
     }
+
+    private native void setupMockURIResolver() /*-{
+        // Mock URIResolver that just returns the URI unchanged (same as TestUriResolver did)
+        $wnd.Vaadin = $wnd.Vaadin || {};
+        $wnd.Vaadin.GWT = $wnd.Vaadin.GWT || {};
+        $wnd.Vaadin.GWT.URIResolver = function(registry) {
+            this.resolveVaadinUri = function(uri) {
+                return uri;
+            };
+        };
+    }-*/;
 
     public void testMessageProcessing_moduleDependencyIsHandledBeforeApplyingChangesToTree() {
         resetInternalEvents();

@@ -222,8 +222,8 @@ public class DependencyLoader {
     }
 
     private String getDependencyUrl(JsonObject dependencyJson) {
-        return registry.getURIResolver()
-                .resolveVaadinUri(dependencyJson.getString(Dependency.KEY_URL));
+        TypeScriptBridge tsBridge = registry.getTypeScriptBridge();
+        return tsBridge.resolveVaadinUri(dependencyJson.getString(Dependency.KEY_URL));
     }
 
     private BiConsumer<String, ResourceLoadListener> getResourceLoader(

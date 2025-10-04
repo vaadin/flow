@@ -134,7 +134,6 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         registry = new Registry() {
             {
                 set(ResourceLoader.class, mockResourceLoader);
-                set(URIResolver.class, new URIResolver(this));
                 ApplicationConfiguration appConf = new ApplicationConfiguration();
                 appConf.setContextRootUrl("../");
                 set(ApplicationConfiguration.class, appConf);

@@ -208,8 +208,9 @@ public class ApplicationConnection {
         });
         }
         client.resolveUri = $entry(function(uriToResolve) {
-            var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
-            return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
+            // Call TypeScript URIResolver directly without going through GWT
+            var tsResolver = new $wnd.Vaadin.GWT.URIResolver(ap.@ApplicationConnection::registry);
+            return tsResolver.resolveVaadinUri(uriToResolve);
         });
 
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {

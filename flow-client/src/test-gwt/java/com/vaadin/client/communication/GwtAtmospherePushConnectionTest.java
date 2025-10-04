@@ -23,7 +23,6 @@ import com.vaadin.client.ClientEngineTestBase;
 import com.vaadin.client.CustomScheduler;
 import com.vaadin.client.Registry;
 import com.vaadin.client.UILifecycle;
-import com.vaadin.client.URIResolver;
 import com.vaadin.client.communication.AtmospherePushConnection.AtmosphereResponse;
 import com.vaadin.client.flow.ConstantPool;
 import com.vaadin.client.flow.StateTree;
@@ -48,7 +47,6 @@ public class GwtAtmospherePushConnectionTest extends ClientEngineTestBase {
             {
                 set(ConstantPool.class, new ConstantPool());
                 set(StateTree.class, new StateTree(this));
-                set(URIResolver.class, new URIResolver(this));
                 set(UILifecycle.class, new UILifecycle());
                 set(RequestResponseTracker.class, new RequestResponseTracker(this));
                 set(ApplicationConfiguration.class,

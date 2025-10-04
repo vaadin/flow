@@ -60,8 +60,8 @@ public class DefaultRegistry extends Registry {
         set(ApplicationConfiguration.class, applicationConfiguration);
 
         // Classes with no constructor dependencies
+        set(TypeScriptBridge.class, new TypeScriptBridge(this));
         set(ResourceLoader.class, new ResourceLoader(this, true));
-        set(URIResolver.class, new URIResolver(this));
         set(DependencyLoader.class, new DependencyLoader(this));
         set(SystemErrorHandler.class, new SystemErrorHandler(this));
         set(UILifecycle.class, (Supplier<UILifecycle>) UILifecycle::new);

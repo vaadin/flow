@@ -21,6 +21,7 @@ import com.google.gwt.core.client.Scheduler;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
+import com.vaadin.client.TypeScriptBridge;
 import com.vaadin.client.ResourceLoader;
 import com.vaadin.client.ResourceLoader.ResourceLoadEvent;
 import com.vaadin.client.ResourceLoader.ResourceLoadListener;
@@ -230,7 +231,8 @@ public class AtmospherePushConnection implements PushConnection {
     }
 
     private void connect() {
-        String pushUrl = registry.getURIResolver().resolveVaadinUri(url);
+        TypeScriptBridge tsBridge = registry.getTypeScriptBridge();
+        String pushUrl = tsBridge.resolveVaadinUri(url);
         pushUrl = SharedUtil.addGetParameter(pushUrl,
                 ApplicationConstants.REQUEST_TYPE_PARAMETER,
                 ApplicationConstants.REQUEST_TYPE_PUSH);

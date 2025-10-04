@@ -202,12 +202,12 @@ public class Registry {
     }
 
     /**
-     * Gets the {@link URIResolver} singleton.
+     * Gets the {@link TypeScriptBridge} singleton.
      *
-     * @return the {@link URIResolver} singleton
+     * @return the {@link TypeScriptBridge} singleton
      */
-    public URIResolver getURIResolver() {
-        return get(URIResolver.class);
+    public TypeScriptBridge getTypeScriptBridge() {
+        return get(TypeScriptBridge.class);
     }
 
     /**
