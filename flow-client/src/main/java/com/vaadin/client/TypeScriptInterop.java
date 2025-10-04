@@ -31,8 +31,8 @@ public class TypeScriptInterop {
      */
     public static native boolean isArrayEmpty(JavaScriptObject array)
     /*-{
-        if ($wnd.VaadinTypeScript && $wnd.VaadinTypeScript.ArrayUtil) {
-            return $wnd.VaadinTypeScript.ArrayUtil.isEmpty(array);
+        if ($wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.ArrayUtil) {
+            return $wnd.Vaadin.TypeScript.ArrayUtil.isEmpty(array);
         }
         // Fallback if TypeScript not loaded
         return !array || array.length === 0;
@@ -45,8 +45,8 @@ public class TypeScriptInterop {
      */
     public static native void clearArray(JavaScriptObject array)
     /*-{
-        if ($wnd.VaadinTypeScript && $wnd.VaadinTypeScript.ArrayUtil) {
-            $wnd.VaadinTypeScript.ArrayUtil.clear(array);
+        if ($wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.ArrayUtil) {
+            $wnd.Vaadin.TypeScript.ArrayUtil.clear(array);
         } else {
             // Fallback if TypeScript not loaded
             array.length = 0;
@@ -60,6 +60,6 @@ public class TypeScriptInterop {
      */
     public static native boolean isTypeScriptAvailable()
     /*-{
-        return !!($wnd.VaadinTypeScript && $wnd.VaadinTypeScript.ArrayUtil);
+        return !!($wnd.Vaadin && $wnd.Vaadin.TypeScript && $wnd.Vaadin.TypeScript.ArrayUtil);
     }-*/;
 }

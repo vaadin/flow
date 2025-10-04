@@ -37,6 +37,31 @@ The migration will **directly replace GWT code with TypeScript** in each phase:
 - No feature flags, no parallel implementations
 - Simple and straightforward approach
 
+### GWT-TypeScript Interoperability (PROVEN WORKING)
+
+**Communication Bridge**: TypeScript code is exposed on `window.Vaadin.TypeScript` for GWT to call
+
+**Loading Order**:
+1. `Flow.ts` imports TypeScript utilities first
+2. Then loads `FlowBootstrap.js` (GWT bootstrap)
+3. Finally loads `FlowClient.js` (GWT compiled code)
+4. This ensures TypeScript is available when GWT initializes
+
+**GWT → TypeScript**:
+- GWT uses JSNI to call TypeScript functions
+- Example: `$wnd.Vaadin.TypeScript.ArrayUtil.isEmpty(array)`
+- Created `TypeScriptInterop.java` class with helper methods
+
+**TypeScript → Window**:
+```typescript
+// Carefully preserve existing window.Vaadin properties
+window.Vaadin = window.Vaadin || {};
+window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
+window.Vaadin.TypeScript.ClassName = ClassName;
+```
+
+**IMPORTANT**: Never overwrite `window.Vaadin` - it contains `Flow`, `connectionState`, and other existing properties used by the system.
+
 ---
 
 ## Phase-by-Phase Migration Plan

@@ -25,8 +25,12 @@
 // Expose to window for GWT to call
 declare global {
   interface Window {
-    VaadinTypeScript?: {
-      ArrayUtil?: typeof ArrayUtil;
+    Vaadin?: {
+      Flow?: any;
+      connectionState?: any;
+      TypeScript?: {
+        ArrayUtil?: typeof ArrayUtil;
+      };
     };
   }
 }
@@ -78,8 +82,10 @@ export class ArrayUtil {
   }
 }
 
-// Expose ArrayUtil to window so GWT can call it
+// Expose ArrayUtil to window.Vaadin.TypeScript so GWT can call it
+// Carefully preserve existing window.Vaadin properties (Flow, connectionState, etc.)
 if (typeof window !== 'undefined') {
-  window.VaadinTypeScript = window.VaadinTypeScript || {};
-  window.VaadinTypeScript.ArrayUtil = ArrayUtil;
+  window.Vaadin = window.Vaadin || {};
+  window.Vaadin.TypeScript = window.Vaadin.TypeScript || {};
+  window.Vaadin.TypeScript.ArrayUtil = ArrayUtil;
 }

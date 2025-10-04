@@ -19,23 +19,23 @@
         const isEmpty = ArrayUtil.isEmpty(testArray);
         output.innerHTML += '<p>✓ TypeScript ArrayUtil.isEmpty([1,2,3]) = ' + isEmpty + '</p>';
 
-        // Test 2: TypeScript is exposed on window
-        if (window.VaadinTypeScript && window.VaadinTypeScript.ArrayUtil) {
-            output.innerHTML += '<p>✓ window.VaadinTypeScript.ArrayUtil is available</p>';
+        // Test 2: TypeScript is exposed on window.Vaadin.TypeScript
+        if (window.Vaadin && window.Vaadin.TypeScript && window.Vaadin.TypeScript.ArrayUtil) {
+            output.innerHTML += '<p>✓ window.Vaadin.TypeScript.ArrayUtil is available</p>';
 
             // Test 3: Can call via window (like GWT would)
             const emptyArray = [];
-            const isEmptyViaWindow = window.VaadinTypeScript.ArrayUtil.isEmpty(emptyArray);
-            output.innerHTML += '<p>✓ window.VaadinTypeScript.ArrayUtil.isEmpty([]) = ' + isEmptyViaWindow + '</p>';
+            const isEmptyViaWindow = window.Vaadin.TypeScript.ArrayUtil.isEmpty(emptyArray);
+            output.innerHTML += '<p>✓ window.Vaadin.TypeScript.ArrayUtil.isEmpty([]) = ' + isEmptyViaWindow + '</p>';
 
             // Test 4: Clear array works
             const clearTest = [1, 2, 3];
-            window.VaadinTypeScript.ArrayUtil.clear(clearTest);
+            window.Vaadin.TypeScript.ArrayUtil.clear(clearTest);
             output.innerHTML += '<p>✓ ArrayUtil.clear() works, length = ' + clearTest.length + '</p>';
 
             output.innerHTML += '<h2 style="color: green">✓ All tests passed! GWT can call TypeScript code.</h2>';
         } else {
-            output.innerHTML += '<p style="color: red">✗ window.VaadinTypeScript not available</p>';
+            output.innerHTML += '<p style="color: red">✗ window.Vaadin.TypeScript not available</p>';
         }
 
         // Test 5: Load GWT client code
