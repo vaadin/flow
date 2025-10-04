@@ -323,6 +323,9 @@ export class Flow {
       }
       flowRoot.$[appId] = this.container;
 
+      // Load TypeScript utilities BEFORE GWT so GWT can call them
+      await import('./collections/JsArrayUtil');
+
       // Load bootstrap script with server side parameters
       const bootstrapMod = await import('./FlowBootstrap');
       bootstrapMod.init(this.response);
@@ -333,7 +336,7 @@ export class Flow {
         await this.config.imports();
       }
 
-      // Load flow-client module
+      // Load flow-client module (GWT code)
       const clientMod = await import('./FlowClient');
       await this.flowInitClient(clientMod);
 

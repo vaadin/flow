@@ -22,6 +22,7 @@ import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.ApplicationConnection;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;
+import com.vaadin.client.TypeScriptInterop;
 import com.vaadin.client.ValueMap;
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.flow.collection.JsArray;
@@ -62,6 +63,13 @@ public class Bootstrapper implements EntryPoint {
         moduleLoaded = true;
 
         Profiler.initialize();
+
+        // Test GWT -> TypeScript interaction
+        if (TypeScriptInterop.isTypeScriptAvailable()) {
+            Console.log("✓ GWT-TypeScript bridge active: TypeScript code is loaded");
+        } else {
+            Console.log("✗ TypeScript code not yet available (will load later)");
+        }
 
         registerCallback(GWT.getModuleName());
     }

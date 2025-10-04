@@ -22,6 +22,15 @@
  * TypeScript code without depending on GWT collections.
  */
 
+// Expose to window for GWT to call
+declare global {
+  interface Window {
+    VaadinTypeScript?: {
+      ArrayUtil?: typeof ArrayUtil;
+    };
+  }
+}
+
 export class ArrayUtil {
   /**
    * Checks if an array is empty.
@@ -67,4 +76,10 @@ export class ArrayUtil {
   static clear<T>(array: T[]): void {
     array.length = 0;
   }
+}
+
+// Expose ArrayUtil to window so GWT can call it
+if (typeof window !== 'undefined') {
+  window.VaadinTypeScript = window.VaadinTypeScript || {};
+  window.VaadinTypeScript.ArrayUtil = ArrayUtil;
 }
