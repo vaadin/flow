@@ -20,10 +20,15 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * I18N provider interface for internationalization usage.
@@ -31,6 +36,7 @@ import com.vaadin.flow.internal.LocaleUtil;
  * @since 1.0
  */
 public interface I18NProvider extends Serializable {
+
     /**
      * Get the locales that we have translations for. The first locale should be
      * the default locale.
@@ -137,6 +143,9 @@ public interface I18NProvider extends Serializable {
     /**
      * Get the translation for key with given locale via {@link I18NProvider}
      * instance retrieved from the current VaadinService.
+     * <p>
+     * If there is no {@link I18NProvider} available or no translation for the
+     * {@code key} it returns an exception string e.g. '!{key}!'.
      *
      * @param locale
      *            locale to use
@@ -145,13 +154,21 @@ public interface I18NProvider extends Serializable {
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
-     * @throws IllegalStateException
-     *             thrown if no I18NProvider found from the VaadinService
      */
     static String translate(Locale locale, String key, Object... params) {
+        VaadinService vaadinService = VaadinService.getCurrent();
+        if (vaadinService == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as VaadinService is null");
+        }
+        Instantiator instantiator = vaadinService.getInstantiator();
+        if (instantiator == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as Instantiator is null");
+        }
+
         return LocaleUtil.getI18NProvider()
-                .orElseThrow(() -> new IllegalStateException(
-                        "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
-                .getTranslation(key, locale, params);
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 }
