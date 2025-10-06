@@ -1772,24 +1772,4 @@ public class ComponentTest {
         ui.getInternals().setSession(session);
         return ui;
     }
-
-    @Test
-    public void cannotMoveComponentsToOtherUI() {
-        // tests https://github.com/vaadin/flow/issues/22282
-        final UI otherUI = createMockedUI();
-        final TestButton button = new TestButton();
-        otherUI.add(button);
-
-        IllegalStateException ex = Assert.assertThrows(
-                IllegalStateException.class, () -> ui.add(button));
-        Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
-                "Can't move a node from one state tree to another. If this is "
-                        + "intentional, first remove the node from its current "
-                        + "state tree by calling removeFromTree. This usually "
-                        + "happens when a component is moved from one UI to another, "
-                        + "which is not recommended. This may be caused by "
-                        + "assigning components to static members or spring "
-                        + "singleton scoped beans and referencing them from "
-                        + "multiple UIs. Offending component: "));
-    }
 }

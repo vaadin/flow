@@ -24,8 +24,10 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentTest;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ComponentTracker;
 
 /**
@@ -69,7 +71,7 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 69;
+        int c1Line = 71;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
@@ -83,7 +85,7 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 80;
+        int c1Line = 82;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 
@@ -145,5 +147,28 @@ public class ComponentTrackerTest {
         ComponentTracker.Location location = ComponentTracker.findAttach(c);
         Assert.assertEquals(lineNumber, location.lineNumber());
         Assert.assertEquals(name, location.className());
+    }
+
+    @Test
+    public void cannotMoveComponentsToOtherUI() {
+        // tests https://github.com/vaadin/flow/issues/22282
+        final UI firstUI = new UI();
+        final UI secondUI = new UI();
+        final ComponentTest.TestButton button = new ComponentTest.TestButton();
+        firstUI.add(button);
+
+        IllegalStateException ex = Assert.assertThrows(
+                IllegalStateException.class, () -> secondUI.add(button));
+        System.err.println(ex.getMessage());
+        Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
+                "Can't move a node from one state tree to another. If this is "
+                        + "intentional, first remove the node from its current "
+                        + "state tree by calling removeFromTree. This usually "
+                        + "happens when a component is moved from one UI to another, "
+                        + "which is not recommended. This may be caused by "
+                        + "assigning components to static members or spring "
+                        + "singleton scoped beans and referencing them from "
+                        + "multiple UIs. Offending component: "
+                        + "com.vaadin.flow.component.ComponentTest$TestButton"));
     }
 }

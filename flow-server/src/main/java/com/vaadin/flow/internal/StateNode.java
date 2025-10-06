@@ -769,8 +769,8 @@ public class StateNode implements Serializable {
                 .findAttach(component);
         if (createLocation != null || attachLocation != null) {
             // the location.toString() includes the component class as well
-            return "created: " + createLocation + ", attached: "
-                    + attachLocation;
+            return component.getClass().getName() + ", created: "
+                    + createLocation + ", attached: " + attachLocation;
         }
         // createLocation is null in production mode. Just return the
         // component's toString() which should provide enough information to the
