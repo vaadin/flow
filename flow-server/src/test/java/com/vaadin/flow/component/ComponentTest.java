@@ -1790,7 +1790,6 @@ public class ComponentTest {
                         + "which is not recommended. This may be caused by "
                         + "assigning components to static members or spring "
                         + "singleton scoped beans and referencing them from "
-                        + "multiple UIs. Offending component: "
-                        + "com.vaadin.flow.component.ComponentTest$TestButton@"));
+                        + "multiple UIs. Offending component: "));
     }
 }
