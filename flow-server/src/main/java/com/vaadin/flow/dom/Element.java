@@ -47,7 +47,6 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -1452,6 +1451,10 @@ public class Element extends Node<Element> {
      * expression, <code>PendingJavaScriptResult</code> will report the resolved
      * value once it becomes available. If no return value handler is
      * registered, the return value will be ignored.
+     * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
      * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named

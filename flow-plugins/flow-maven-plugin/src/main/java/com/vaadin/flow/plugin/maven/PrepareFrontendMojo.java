@@ -24,6 +24,7 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates
@@ -51,6 +52,8 @@ public class PrepareFrontendMojo extends FlowModeAbstractMojo {
         // Inform m2eclipse that the directory containing the token file has
         // been updated in order to trigger server re-deployment (#6103)
         triggerRefresh(tokenFile.getParentFile());
+
+        FrontendUtils.checkLegacyFrontendFolder(projectBaseDirectory());
 
         try {
             BuildFrontendUtil.prepareFrontend(this);
