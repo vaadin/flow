@@ -29,8 +29,8 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Watches given resourcesFolder for CSS file changes and
- * performs hot CSS updates via BrowserLiveReload.
+ * Watches given resourcesFolder for CSS file changes and performs hot CSS
+ * updates via BrowserLiveReload.
  */
 class PublicResourcesCssLiveUpdater implements Closeable {
 
