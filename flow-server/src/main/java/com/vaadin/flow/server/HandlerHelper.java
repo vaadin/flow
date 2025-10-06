@@ -263,8 +263,7 @@ public class HandlerHelper implements Serializable {
         // Check if the request is for any dynamic resource, including
         // ElementRequestHandler requests without a specific postfix
         // Reject paths with directory traversal attempts
-        if (requestedPathWithoutServletMapping.contains("../")
-                || requestedPathWithoutServletMapping.contains("..\\")) {
+        if (HandlerHelper.isPathUnsafe(requestedPathWithoutServletMapping)) {
             return false;
         }
         return requestedPathWithoutServletMapping
