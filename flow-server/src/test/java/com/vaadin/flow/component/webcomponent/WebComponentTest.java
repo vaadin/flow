@@ -18,9 +18,9 @@ package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ValueNode;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,9 +33,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -138,8 +135,6 @@ public class WebComponentTest {
         PropertyConfigurationImpl<Component, BaseJsonNode> jsonNodeConfiguration = new PropertyConfigurationImpl<>(
                 Component.class, "jsonNode", BaseJsonNode.class,
                 JacksonUtils.nullNode());
-        PropertyConfigurationImpl<Component, JsonValue> jsonConfiguration = new PropertyConfigurationImpl<>(
-                Component.class, "json", JsonValue.class, Json.createNull());
 
         // binding
         WebComponentBinding<Component> binding = new WebComponentBinding<>(
@@ -149,7 +144,6 @@ public class WebComponentTest {
         binding.bindProperty(stringConfiguration, false);
         binding.bindProperty(booleanConfiguration, false);
         binding.bindProperty(jsonNodeConfiguration, false);
-        binding.bindProperty(jsonConfiguration, false);
 
         // test
         WebComponent<Component> webComponent = new WebComponent<>(binding,
@@ -173,10 +167,8 @@ public class WebComponentTest {
                 ArgumentMatchers.any());
         webComponent.setProperty(jsonNodeConfiguration,
                 (ValueNode) JacksonUtils.createNode(true));
-        // JsonValue has a different number of arguments
-        webComponent.setProperty(jsonConfiguration, Json.create(true));
-        verify(element, Mockito.times(6)).executeJs(
+        verify(element, Mockito.times(5)).executeJs(
                 ArgumentMatchers.anyString(),
-                ArgumentMatchers.any(Serializable[].class));
+                ArgumentMatchers.any(Object[].class));
     }
 }

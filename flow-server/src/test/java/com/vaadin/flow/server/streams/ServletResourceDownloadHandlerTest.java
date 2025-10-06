@@ -143,6 +143,7 @@ public class ServletResourceDownloadHandlerTest {
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
+        Assert.assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -194,6 +195,8 @@ public class ServletResourceDownloadHandlerTest {
         } catch (Exception e) {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Mockito.verify(downloadEvent)
+                .setException(Mockito.any(IOException.class));
     }
 
     @Test

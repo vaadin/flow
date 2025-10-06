@@ -115,6 +115,7 @@ public class ClassDownloadHandler
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            downloadEvent.setException(ioe);
             notifyError(downloadEvent, ioe);
             throw ioe;
         }

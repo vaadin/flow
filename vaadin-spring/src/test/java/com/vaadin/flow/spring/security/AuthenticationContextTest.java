@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import tools.jackson.databind.JsonNode;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.Assert;
@@ -42,6 +43,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -61,8 +63,6 @@ import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.spring.security.AuthenticationContext.CompositeLogoutHandler;
 
-import elemental.json.JsonValue;
-
 @RunWith(SpringRunner.class)
 @ContextConfiguration(classes = { ObjectPostProcessorConfiguration.class,
         VaadinSecurityConfigurerTest.TestConfig.class })
@@ -70,6 +70,9 @@ public class AuthenticationContextTest {
 
     @Autowired
     ObjectPostProcessor<Object> postProcessor;
+
+    @Autowired
+    private PathPatternRequestMatcher.Builder requestMatcherBuilder;
 
     @Autowired
     ApplicationContext appCtx;
@@ -486,7 +489,7 @@ public class AuthenticationContextTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         resultHandler.accept(null);
                     }
@@ -550,7 +553,9 @@ public class AuthenticationContextTest {
 
         HttpSecurity httpSecurity = new HttpSecurity(postProcessor,
                 new AuthenticationManagerBuilder(postProcessor),
-                Map.of(ApplicationContext.class, appCtx));
+                Map.of(ApplicationContext.class, appCtx,
+                        PathPatternRequestMatcher.Builder.class,
+                        requestMatcherBuilder));
         httpSecurity
                 .logout(cfg -> cfg.logoutSuccessHandler(logoutSuccessHandler)
                         .addLogoutHandler(handler1).addLogoutHandler(handler2));

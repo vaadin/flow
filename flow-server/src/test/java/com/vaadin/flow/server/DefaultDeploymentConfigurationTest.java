@@ -297,7 +297,7 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
+    public void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
             throws IOException {
         File projectRoot = tempFolder.getRoot();
         File legacyFrontend = tempFolder

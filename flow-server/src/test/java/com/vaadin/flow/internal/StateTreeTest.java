@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -53,11 +54,8 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
-import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
-
-import elemental.json.JsonObject;
 
 public class StateTreeTest {
 
@@ -97,7 +95,7 @@ public class StateTreeTest {
         public void collectChanges(Consumer<NodeChange> collector) {
             collector.accept(new NodeChange(this) {
                 @Override
-                protected void populateJson(JsonObject json,
+                protected void populateJson(ObjectNode json,
                         ConstantPool constantPool) {
                 }
             });

@@ -18,6 +18,7 @@ package com.vaadin.flow.server.communication;
 import java.io.IOException;
 import java.util.regex.Pattern;
 
+import tools.jackson.databind.JsonNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.dom.NodeVisitor.ElementType;
 import com.vaadin.flow.dom.TestNodeVisitor;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletResponse;
@@ -40,9 +42,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.communication.PushMode;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 @NotThreadSafe
 public class JavaScriptBootstrapHandlerTest {
@@ -100,27 +99,25 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertEquals("application/json", response.getContentType());
 
-        JsonObject json = Json.parse(response.getPayload());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
 
-        Assert.assertTrue(json.hasKey("stats"));
-        Assert.assertTrue(json.hasKey("errors"));
-        Assert.assertTrue(json.hasKey("appConfig"));
-        Assert.assertTrue(json.getObject("appConfig").hasKey("appId"));
-        Assert.assertTrue(json.getObject("appConfig").getObject("uidl")
-                .hasKey("changes"));
-        Assert.assertTrue(json.getObject("appConfig").getBoolean("debug"));
-        Assert.assertFalse(
-                json.getObject("appConfig").hasKey("webComponentMode"));
+        Assert.assertTrue(json.has("stats"));
+        Assert.assertTrue(json.has("errors"));
+        Assert.assertTrue(json.has("appConfig"));
+        Assert.assertTrue(json.get("appConfig").has("appId"));
+        Assert.assertTrue(json.get("appConfig").get("uidl").has("changes"));
+        Assert.assertTrue(json.get("appConfig").get("debug").booleanValue());
+        Assert.assertFalse(json.get("appConfig").has("webComponentMode"));
 
         Assert.assertEquals("./",
-                json.getObject("appConfig").getString("contextRootUrl"));
+                json.get("appConfig").get("contextRootUrl").asText());
         Assert.assertNull(
                 "ServiceUrl should not be set. It will be computed by flow-client",
-                json.getObject("appConfig").get("serviceUrl"));
+                json.get("appConfig").get("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/",
-                json.getObject("appConfig").getString("requestURL"));
+                json.get("appConfig").get("requestURL").asText());
 
-        Assert.assertFalse(json.hasKey("pushScript"));
+        Assert.assertFalse(json.has("pushScript"));
     }
 
     @Test
@@ -169,10 +166,10 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertEquals(200, response.getErrorCode());
         Assert.assertEquals("application/json", response.getContentType());
-        JsonObject json = Json.parse(response.getPayload());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.getString("pushScript").matches(
+        Assert.assertTrue(json.get("pushScript").asText().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
@@ -187,10 +184,10 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertEquals(200, response.getErrorCode());
         Assert.assertEquals("application/json", response.getContentType());
-        JsonObject json = Json.parse(response.getPayload());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.getString("pushScript").matches(
+        Assert.assertTrue(json.get("pushScript").asText().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
@@ -222,10 +219,10 @@ public class JavaScriptBootstrapHandlerTest {
 
         Assert.assertEquals(200, response.getErrorCode());
         Assert.assertEquals("application/json", response.getContentType());
-        JsonObject json = Json.parse(response.getPayload());
+        JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.getString("pushScript").matches(
+        Assert.assertTrue(json.get("pushScript").asText().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 

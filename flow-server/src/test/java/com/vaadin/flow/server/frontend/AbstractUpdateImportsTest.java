@@ -204,6 +204,25 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void generatedResources_relativeImport_dotSlash_notStripped()
+            throws IOException {
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/foo.js");
+        var resource = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/ExampleConnector.js");
+        Files.writeString(resource.toPath(), "import \"./foo.js\";");
+        updater.run();
+
+        String output = logger.getLogs();
+        MatcherAssert.assertThat(output, CoreMatchers.not(CoreMatchers.allOf(
+                CoreMatchers.containsString(
+                        "Use the './' prefix for files in the '"),
+                CoreMatchers.containsString(
+                        "folder: 'generated/jar-resources/foo.js', please update your annotations."))));
+
+    }
+
+    @Test
     public void getModuleLines_npmPackagesDontExist_logExplanation() {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
@@ -322,32 +341,35 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add("import 'unresolved/component';");
 
         expectedLines.add(
-                "import $cssFromFile_0 from '@vaadin/vaadin-mixed-component/bar.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_1 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_2 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_3 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_4 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_5 from 'Frontend/foo.css?inline';");
-        expectedLines
-                .add("import $cssFromFile_6 from 'Frontend/foo.css?inline';");
+                "import \\$cssFromFile_\\d from '@vaadin/vaadin-mixed-component/bar.css\\?inline';");
         expectedLines.add(
-                "injectGlobalCss($cssFromFile_0.toString(), 'CSSImport end', document);");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "injectGlobalCss($cssFromFile_1.toString(), 'CSSImport end', document);");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "addCssBlock(`<style include=\"bar\">${$css_2}</style>`);");
-        expectedLines.add("registerStyles('', $css_3, {moduleId: 'baz'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('', $css_4, {include: 'bar', moduleId: 'baz'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_5, {moduleId: 'flow_css_mod_5'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "registerStyles('foo-bar', $css_6, {include: 'bar', moduleId: 'flow_css_mod_6'});");
+                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
+        expectedLines.add(
+                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';");
+        expectedLines.add(
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+        expectedLines.add(
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+        expectedLines.add(
+                "addCssBlock\\(`<style include=\"bar\">\\$\\{\\$css_\\d\\}</style>`\\);");
+        expectedLines.add(
+                "registerStyles\\('', \\$css_\\d, \\{moduleId: 'baz'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('', \\$css_\\d, \\{include: 'bar', moduleId: 'baz'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('foo-bar', \\$css_\\d, \\{moduleId: 'flow_css_mod_\\d'\\}\\);");
+        expectedLines.add(
+                "registerStyles\\('foo-bar', \\$css_\\d, \\{include: 'bar', moduleId: 'flow_css_mod_\\d'\\}\\);");
 
         expectedLines
                 .add("import 'Frontend/generated/flow/generated-modules-foo';");
@@ -356,17 +378,18 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
 
         updater.run();
 
+        List<String> mergedOutput = updater.getMergedOutput();
+        String outputString = String.join("\n", mergedOutput);
         for (String line : expectedLines) {
             Assert.assertTrue(
-                    "\n" + line + " IS NOT FOUND IN: \n"
-                            + updater.getMergedOutput(),
-                    updater.getMergedOutput().contains(line));
+                    "\n" + line + " IS NOT FOUND IN: \n" + mergedOutput,
+                    Pattern.compile(line).matcher(outputString).find());
         }
 
         // All generated module ids are distinct
         Pattern moduleIdPattern = Pattern
                 .compile(".*moduleId: '(flow_css_mod_[^']*)'.*");
-        List<String> moduleIds = updater.getMergedOutput().stream()
+        List<String> moduleIds = mergedOutput.stream()
                 .map(moduleIdPattern::matcher).filter(Matcher::matches)
                 .map(m -> m.group(1)).collect(Collectors.toList());
         long uniqueModuleIds = moduleIds.stream().distinct().count();

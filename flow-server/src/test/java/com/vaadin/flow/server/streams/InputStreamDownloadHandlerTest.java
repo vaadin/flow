@@ -169,7 +169,7 @@ public class InputStreamDownloadHandlerTest {
         Assert.assertFalse(
                 "Expected whenComplete to be invoked with false result, but got true",
                 whenCompleteResult.get());
-
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
     @Test
@@ -201,6 +201,7 @@ public class InputStreamDownloadHandlerTest {
         Assert.assertFalse(
                 "Expected whenComplete to be invoked with false result, but got true",
                 whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
     }
 
     @Test
@@ -232,6 +233,7 @@ public class InputStreamDownloadHandlerTest {
         Assert.assertFalse(
                 "Expected whenComplete to be invoked with false result, but got true",
                 whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(RuntimeException.class));
     }
 
     @Test
@@ -260,6 +262,46 @@ public class InputStreamDownloadHandlerTest {
         Assert.assertFalse(
                 "Expected whenComplete to be invoked with false result, but got true",
                 whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackResponseException_errorListenerInvoked()
+            throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        RuntimeException responseException = new RuntimeException(
+                "runtime exception");
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener() {
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                invocations.add("onError");
+                Assert.assertEquals("Runtime exception", reason.getMessage());
+            }
+        };
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(req -> DownloadResponse.error(500,
+                        "Runtime exception", responseException),
+                        transferListener)
+                .whenComplete((context, success) -> {
+                    whenCompleteResult.set(success);
+                });
+
+        handler.handleDownloadRequest(event);
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(responseException);
     }
 
     @Test
@@ -407,7 +449,7 @@ public class InputStreamDownloadHandlerTest {
 
     private static class InvocationTrackingTransferProgressListener
             implements TransferProgressListener {
-        private final List<String> invocations = new ArrayList<>();
+        final List<String> invocations = new ArrayList<>();
 
         @Override
         public void onStart(TransferContext context) {

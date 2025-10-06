@@ -450,8 +450,8 @@ public class JavaScriptBootstrapUITest {
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
@@ -466,7 +466,7 @@ public class JavaScriptBootstrapUITest {
             boolean reactEnabled = ui.getSession().getConfiguration()
                     .isReactEnabled();
 
-            final Serializable[] execValues = execArg.getValue();
+            final Object[] execValues = execArg.getValue();
             if (reactEnabled) {
                 assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
                 assertEquals(1, execValues.length);
@@ -509,8 +509,8 @@ public class JavaScriptBootstrapUITest {
         Page page = mockPage();
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
@@ -521,7 +521,7 @@ public class JavaScriptBootstrapUITest {
         boolean reactEnabled = ui.getSession().getConfiguration()
                 .isReactEnabled();
 
-        final Serializable[] execValues = execArg.getValue();
+        final Object[] execValues = execArg.getValue();
         if (reactEnabled) {
             assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
         } else {

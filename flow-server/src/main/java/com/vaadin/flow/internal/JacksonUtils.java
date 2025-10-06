@@ -32,20 +32,30 @@ import java.util.stream.Collector;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
-import com.fasterxml.jackson.core.util.Separators;
-import com.fasterxml.jackson.core.util.Separators.Spacing;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.json.JsonReadFeature;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.core.util.DefaultPrettyPrinter;
+import tools.jackson.core.util.Separators;
+import tools.jackson.core.util.Separators.Spacing;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ValueNode;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -69,10 +79,16 @@ public final class JacksonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+    private static final ObjectMapper objectMapper = createConfiguredMapper();
 
-    static {
-        objectMapper.registerModule(new JavaTimeModule());
+    private static ObjectMapper createConfiguredMapper() {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Component.class, new ComponentSerializer());
+        module.addSerializer(Node.class, new NodeSerializer());
+
+        return JsonMapper.builder().enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .addModule(module).build();
     }
 
     public static ObjectMapper getMapper() {
@@ -120,7 +136,7 @@ public final class JacksonUtils {
         }
         try {
             return (ArrayNode) objectMapper.readTree(jsonArray.toJson());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -139,7 +155,7 @@ public final class JacksonUtils {
         }
         try {
             return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }
@@ -217,7 +233,7 @@ public final class JacksonUtils {
     public static ObjectNode readTree(String json) {
         try {
             return (ObjectNode) objectMapper.readTree(json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Could not parse json content", e);
         }
     }
@@ -253,7 +269,7 @@ public final class JacksonUtils {
         public BinaryOperator<ArrayNode> combiner() {
             return (left, right) -> {
                 for (int i = 0; i < right.size(); i++) {
-                    left.set(left.size(), right.get(i));
+                    left.add(right.get(i));
                 }
                 return left;
             };
@@ -391,7 +407,7 @@ public final class JacksonUtils {
 
     public static List<String> getKeys(JsonNode node) {
         List<String> keys = new ArrayList<>();
-        node.fieldNames().forEachRemaining(keys::add);
+        node.propertyNames().forEach(keys::add);
         return keys;
     }
 
@@ -504,7 +520,7 @@ public final class JacksonUtils {
             Function<T, JsonNode> itemToJson) {
         ObjectNode object = objectMapper.createObjectNode();
 
-        map.forEach((key, value) -> object.put(key, itemToJson.apply(value)));
+        map.forEach((key, value) -> object.set(key, itemToJson.apply(value)));
 
         return object;
     }
@@ -561,7 +577,7 @@ public final class JacksonUtils {
         Objects.requireNonNull(jsonObject, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.treeToValue(jsonObject, tClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException(
                     "Error converting JsonObject to " + tClass.getName(), e);
         }
@@ -598,7 +614,7 @@ public final class JacksonUtils {
         Objects.requireNonNull(jsonValue, CANNOT_CONVERT_NULL_TO_OBJECT);
         try {
             return objectMapper.treeToValue(jsonValue, typeReference);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Error converting ObjectNode to "
                     + typeReference.getType().getTypeName(), e);
         }
@@ -622,14 +638,72 @@ public final class JacksonUtils {
      * @param node
      *            the node to convert
      * @return the JSON string
-     * @throws JsonProcessingException
+     * @throws JacksonException
      *             if the node cannot be converted
      */
-    public static String toFileJson(JsonNode node)
-            throws JsonProcessingException {
+    public static String toFileJson(JsonNode node) throws JacksonException {
         DefaultPrettyPrinter filePrinter = new DefaultPrettyPrinter(
                 Separators.createDefaultInstance()
-                        .withObjectFieldValueSpacing(Spacing.AFTER));
+                        .withObjectNameValueSpacing(Spacing.AFTER));
         return objectMapper.writer().with(filePrinter).writeValueAsString(node);
+    }
+
+    /**
+     * Custom Jackson serializer for Component that delegates to NodeSerializer.
+     */
+    public static class ComponentSerializer extends ValueSerializer<Component> {
+        private final NodeSerializer nodeSerializer = new NodeSerializer();
+
+        @Override
+        public void serialize(Component component, JsonGenerator gen,
+                SerializationContext serializers) {
+            try {
+                if (component != null) {
+                    // Delegate to NodeSerializer using the component's element
+                    nodeSerializer.serialize(component.getElement(), gen,
+                            serializers);
+                } else {
+                    gen.writeNull();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize Component", e);
+            }
+        }
+    }
+
+    /**
+     * Custom Jackson serializer for Node types (Element, ShadowRoot) that
+     * serializes attached nodes as @v-node references for client-side DOM
+     * manipulation.
+     */
+    @SuppressWarnings("rawtypes")
+    public static class NodeSerializer extends ValueSerializer<Node> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public void serialize(Node node, JsonGenerator gen,
+                SerializationContext serializers) {
+            try {
+                if (node != null) {
+                    // Serialize attached nodes as @v-node references containing
+                    // the StateNode ID
+                    // This allows the client to identify and manipulate the
+                    // corresponding DOM element
+                    if (node.getNode().isAttached()) {
+                        gen.writeStartObject();
+                        gen.writeNumberProperty("@v-node",
+                                node.getNode().getId());
+                        gen.writeEndObject();
+                    } else {
+                        // Detached nodes cannot be referenced on the client, so
+                        // serialize as null
+                        gen.writeNull();
+                    }
+                } else {
+                    gen.writeNull();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize Node", e);
+            }
+        }
     }
 }

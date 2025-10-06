@@ -46,11 +46,11 @@ jobs:
           ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
-      - name: Set up JDK 17
+          node-version: '24.9.0'
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -92,10 +92,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{env.HEAD_SHA}}
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -160,17 +160,17 @@ jobs:
           ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '24.9.0'
       - uses: pnpm/action-setup@v3
         with:
           version: '8.6.11'
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5

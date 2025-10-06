@@ -37,8 +37,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -738,6 +738,12 @@ public class BuildFrontendMojoTest {
             String... packages) {
         Arrays.asList(packages).forEach(dep -> Assert
                 .assertTrue("Missing " + dep, dependencies.has(dep)));
+    }
+
+    static void assertNotContainingPackages(JsonNode dependencies,
+            String... packages) {
+        Arrays.asList(packages).forEach(dep -> Assert
+                .assertFalse("Not expecting " + dep, dependencies.has(dep)));
     }
 
     private void assertContainsImports(boolean contains, String... imports)

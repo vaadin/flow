@@ -45,9 +45,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -1240,7 +1240,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 if (atmosphereVersion != null) {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
-                appConfig.put("versionInfo", versionInfo);
+                appConfig.set("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
                         deploymentConfiguration.isDevToolsEnabled());
             }
@@ -1259,7 +1259,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 putValueOrNull(sessExpMsg, URL,
                         systemMessages.getSessionExpiredURL());
 
-                appConfig.put("sessExpMsg", sessExpMsg);
+                appConfig.set("sessExpMsg", sessExpMsg);
             }
 
             String contextRoot = contextCallback.apply(request);

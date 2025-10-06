@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -27,13 +28,10 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
 import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
@@ -47,21 +45,16 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
-import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * Represents an element in the DOM.
@@ -696,35 +689,6 @@ public class Element extends Node<Element> {
      * Sets the given property to the given JSON value.
      * <p>
      * Please note that this method does not accept <code>null</code> as a
-     * value, since {@link Json#createNull()} should be used instead for JSON
-     * values.
-     * <p>
-     * Note that properties changed on the server are updated on the client but
-     * changes made on the client side are not reflected back to the server
-     * unless configured using
-     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
-     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
-     *
-     * @param name
-     *            the property name, not <code>null</code>
-     * @param value
-     *            the property value, not <code>null</code>
-     * @return this element
-     */
-    // Distinct name so setProperty("foo", null) is not ambiguous
-    public Element setPropertyJson(String name, JsonValue value) {
-        if (value == null) {
-            throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
-        }
-
-        setRawProperty(name, value);
-        return this;
-    }
-
-    /**
-     * Sets the given property to the given JSON value.
-     * <p>
-     * Please note that this method does not accept <code>null</code> as a
      * value, since {@link com.vaadin.flow.internal.JacksonUtils#nullNode()}
      * should be used instead for JSON values.
      * <p>
@@ -771,7 +735,7 @@ public class Element extends Node<Element> {
         if (value == null) {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
-        return setPropertyJson(name, JsonUtils.beanToJson(value));
+        return setPropertyJson(name, JacksonUtils.beanToJson(value));
     }
 
     /**
@@ -797,7 +761,7 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
-        return setPropertyJson(name, JsonUtils.listToJson(value));
+        return setPropertyJson(name, JacksonUtils.listToJson(value));
     }
 
     /**
@@ -821,7 +785,7 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(USE_SET_PROPERTY_WITH_JSON_NULL);
         }
 
-        return setPropertyJson(name, JsonUtils.mapToJson(value));
+        return setPropertyJson(name, JacksonUtils.mapToJson(value));
     }
 
     /**
@@ -921,10 +885,10 @@ public class Element extends Node<Element> {
      */
     public String getProperty(String name, String defaultValue) {
         Object value = getPropertyRaw(name);
-        if (value == null) {
+        if (value == null || value instanceof NullNode) {
             return defaultValue;
-        } else if (value instanceof JsonValue) {
-            return ((JsonValue) value).toJson();
+        } else if (value instanceof JsonNode) {
+            return ((JsonNode) value).toString();
         } else if (value instanceof NullNode) {
             return defaultValue;
         } else if (value instanceof Number) {
@@ -1010,8 +974,6 @@ public class Element extends Node<Element> {
         } else if (value instanceof Number) {
             Number number = (Number) value;
             return number.doubleValue();
-        } else if (value instanceof JsonValue) {
-            return ((JsonValue) value).asNumber();
         } else if (value instanceof Boolean) {
             return ((Boolean) value).booleanValue() ? 1 : 0;
         } else if (value instanceof String) {
@@ -1057,8 +1019,8 @@ public class Element extends Node<Element> {
     /**
      * Gets the raw property value without any value conversion. The type of the
      * value is {@link String}, {@link Double}, {@link Boolean} or
-     * {@link JsonValue}. <code>null</code> is returned if there is no property
-     * with the given name or if the value is set to <code>null</code>.
+     * {@link BaseJsonNode}. <code>null</code> is returned if there is no
+     * property with the given name or if the value is set to <code>null</code>.
      *
      * @param name
      *            the property name, not null
@@ -1417,26 +1379,26 @@ public class Element extends Node<Element> {
      * registered, the return value will be ignored.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
-     * calls are invoked.
+     * at the same time that {@link Page#executeJs(String, Object...)} calls are
+     * invoked.
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
-     *
-     * @see JsonCodec JsonCodec for supported argument types
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
      *            a function on a property.
      * @param arguments
-     *            the arguments to pass to the function. Must be of a type
-     *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
+     *            the arguments to pass to the function. All types supported by
+     *            Jackson for JSON serialization are supported. Special cases:
+     *            {@link Element} instances (will be sent as DOM element
+     *            references to the browser if attached when invoked, or as
+     *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable... arguments) {
+            Object... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
@@ -1445,11 +1407,36 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Stream<Serializable> jsParameters = Stream.concat(Stream.of(this),
-                Stream.of(arguments));
+        Serializable[] jsParameters;
+        if (arguments.length == 0) {
+            jsParameters = new Serializable[] { this };
+        } else {
+            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters[0] = this;
+            System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
+        }
 
         return scheduleJavaScriptInvocation("return $0." + functionName + "("
                 + paramPlaceholderString + ")", jsParameters);
+    }
+
+    /**
+     * Calls the given JavaScript function with this element as
+     * <code>this</code> and the given arguments.
+     *
+     * @deprecated Use {@link #callJsFunction(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param functionName
+     *            the name of the function to call
+     * @param arguments
+     *            the arguments to pass to the function
+     * @return a pending result that can be used to get a return value from the
+     *         execution
+     */
+    @Deprecated
+    public PendingJavaScriptResult callJsFunction(String functionName,
+            Serializable[] arguments) {
+        return callJsFunction(functionName, (Object[]) arguments);
     }
 
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
@@ -1465,19 +1452,21 @@ public class Element extends Node<Element> {
      * value once it becomes available. If no return value handler is
      * registered, the return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
+     * <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link JsonValue}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1496,11 +1485,17 @@ public class Element extends Node<Element> {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
 
         // Add "this" as the last parameter
-        Stream<Serializable> wrappedParameters = Stream
-                .concat(Stream.of(parameters), Stream.of(this));
+        Object[] wrappedParameters;
+        if (parameters.length == 0) {
+            wrappedParameters = new Object[] { this };
+        } else {
+            wrappedParameters = Arrays.copyOf(parameters,
+                    parameters.length + 1);
+            wrappedParameters[parameters.length] = this;
+        }
 
         // Wrap in a function that is applied with last parameter as "this"
         String wrappedExpression = "return (async function() { " + expression
@@ -1510,12 +1505,31 @@ public class Element extends Node<Element> {
                 wrappedParameters);
     }
 
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
+    }
+
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Stream<Serializable> parameters) {
+            String expression, Object[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
-                parameters.toArray(Serializable[]::new));
+                parameters);
 
         PendingJavaScriptInvocation pending = new PendingJavaScriptInvocation(
                 node, invocation);

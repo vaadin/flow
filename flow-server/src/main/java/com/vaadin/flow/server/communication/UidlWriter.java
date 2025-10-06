@@ -33,9 +33,10 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,6 @@ import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.change.NodeAttachChange;
@@ -66,10 +66,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
-
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Serializes pending server-side changes to UI state to JSON. This includes
@@ -89,19 +85,15 @@ public class UidlWriter implements Serializable {
      */
     public static class ResolveContext implements Serializable {
         private VaadinService service;
-        private WebBrowser browser;
 
         /**
          * Creates a new context.
          *
          * @param service
          *            the service which is resolving
-         * @param browser
-         *            the browser
          */
-        public ResolveContext(VaadinService service, WebBrowser browser) {
+        public ResolveContext(VaadinService service) {
             this.service = Objects.requireNonNull(service);
-            this.browser = Objects.requireNonNull(browser);
         }
 
         /**
@@ -111,15 +103,6 @@ public class UidlWriter implements Serializable {
          */
         public VaadinService getService() {
             return service;
-        }
-
-        /**
-         * Gets the browser info used for resolving.
-         *
-         * @return the browser
-         */
-        public WebBrowser getBrowser() {
-            return browser;
         }
 
     }
@@ -173,7 +156,17 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, uiInternals.getDependencyList(),
-                new ResolveContext(service, session.getBrowser()));
+                new ResolveContext(service));
+
+        // Add stylesheet removals to response
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
+        if (!stylesheetRemovals.isEmpty()) {
+            ArrayNode removals = JacksonUtils.createArrayNode();
+            stylesheetRemovals.forEach(removals::add);
+            response.set("stylesheetRemovals", removals);
+            uiInternals.clearPendingStyleSheetRemovals();
+        }
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.set("constants",
@@ -186,11 +179,11 @@ public class UidlWriter implements Serializable {
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
-            response.put(JsonConstants.UIDL_KEY_EXECUTE,
+            response.set(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList));
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
-            response.put("timings", createPerformanceData(ui));
+            response.set("timings", createPerformanceData(ui));
         }
 
         // Get serverSyncId after all changes has been computed, as push may
@@ -235,8 +228,8 @@ public class UidlWriter implements Serializable {
                         try {
                             response.set(loadMode.name(),
                                     JacksonUtils.getMapper()
-                                            .readTree(dependencies.toJson()));
-                        } catch (JsonProcessingException e) {
+                                            .readTree(dependencies.toString()));
+                        } catch (JacksonException e) {
                             throw new RuntimeException(e);
                         }
                     });
@@ -244,20 +237,21 @@ public class UidlWriter implements Serializable {
         dependencyList.clearPendingSendToClient();
     }
 
-    private static Map<LoadMode, JsonArray> groupDependenciesByLoadMode(
+    private static Map<LoadMode, ArrayNode> groupDependenciesByLoadMode(
             Collection<Dependency> dependencies, ResolveContext context) {
-        Map<LoadMode, JsonArray> result = new EnumMap<>(LoadMode.class);
+        Map<LoadMode, ArrayNode> result = new EnumMap<>(LoadMode.class);
         dependencies
                 .forEach(dependency -> result.merge(dependency.getLoadMode(),
-                        JsonUtils.createArray(
+                        JacksonUtils.createArray(
                                 dependencyToJson(dependency, context)),
-                        JsonUtils.asArray().combiner()));
+                        JacksonUtils.asArray().combiner()));
         return result;
     }
 
-    private static JsonObject dependencyToJson(Dependency dependency,
+    private static ObjectNode dependencyToJson(Dependency dependency,
             ResolveContext context) {
-        JsonObject dependencyJson = dependency.toJson();
+        ObjectNode dependencyJson = JacksonUtils
+                .mapElemental(dependency.toJson());
         if (dependency.getLoadMode() == LoadMode.INLINE) {
             dependencyJson.put(Dependency.KEY_CONTENTS,
                     getDependencyContents(dependency.getUrl(), context));
@@ -321,7 +315,7 @@ public class UidlWriter implements Serializable {
 
     private static ReturnChannelRegistration createReturnValueChannel(
             StateNode owner, List<ReturnChannelRegistration> registrations,
-            SerializableConsumer<JsonValue> action) {
+            SerializableConsumer<JsonNode> action) {
         ReturnChannelRegistration channel = owner
                 .getFeature(ReturnChannelMap.class)
                 .registerChannel(arguments -> {
@@ -339,17 +333,6 @@ public class UidlWriter implements Serializable {
             PendingJavaScriptInvocation invocation) {
         List<Object> parametersList = invocation.getInvocation()
                 .getParameters();
-        // TODO: remove when execJs takes Jackson instead of elemental
-        parametersList = parametersList.stream().map(param -> {
-            if (param instanceof JsonArray) {
-                return JacksonUtils.mapElemental((JsonArray) param);
-            } else if (param instanceof JsonObject) {
-                return JacksonUtils.mapElemental((JsonObject) param);
-            } else if (param instanceof JsonValue) {
-                return JacksonUtils.mapElemental((JsonValue) param);
-            }
-            return param;
-        }).toList();
 
         Stream<Object> parameters = parametersList.stream();
         String expression = invocation.getInvocation().getExpression();

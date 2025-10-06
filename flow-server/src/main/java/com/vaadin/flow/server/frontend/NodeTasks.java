@@ -80,6 +80,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskCopyNpmAssetsFiles.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -247,6 +248,11 @@ public class NodeTasks implements FallibleCommand {
         if (options.getLocalResourcesFolder() != null
                 && options.getJarFrontendResourcesFolder() != null) {
             commands.add(new TaskCopyLocalFrontendFiles(options));
+        }
+
+        if (commands.stream()
+                .noneMatch(TaskRunDevBundleBuild.class::isInstance)) {
+            commands.add(new TaskCopyNpmAssetsFiles(options));
         }
 
         String themeName = "";

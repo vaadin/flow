@@ -39,17 +39,23 @@
             <artifactId>flow-test-lumo</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>test-aura</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <defaultGoal>jetty:run</defaultGoal>
         <plugins>
             <plugin>
                 <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
+                <artifactId>flow-dev-bundle-plugin</artifactId>
+                <version>${project.version}</version>
                 <executions>
                     <execution>
                         <goals>
-                            <goal>prepare-frontend</goal>
+                            <goal>build-dev-bundle</goal>
                         </goals>
                     </execution>
                 </executions>

@@ -1333,7 +1333,7 @@ public class HotswapperTest {
                 }
                 return null;
             }).when(pageSpy).executeJs(Mockito.anyString(),
-                    Mockito.any(Serializable[].class));
+                    Mockito.any(Object[].class));
         }
 
         @Override

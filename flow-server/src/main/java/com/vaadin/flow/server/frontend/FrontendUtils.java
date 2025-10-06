@@ -42,7 +42,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -85,7 +85,7 @@ public class FrontendUtils {
     /**
      * Default folder for the node related content. It's the base directory for
      * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
-     *
+     * <p>
      * By default it's the project root folder.
      */
     public static final String DEFAULT_NODE_DIR = "./";
@@ -111,7 +111,7 @@ public class FrontendUtils {
     /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
@@ -120,7 +120,7 @@ public class FrontendUtils {
     /**
      * Path of the old folder containing application frontend source files, it
      * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default the old folder is <code>/frontend</code> in the project
      * folder.
      */
@@ -260,8 +260,10 @@ public class FrontendUtils {
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
      * folder.
+     * <p>
+     * NOTE: For internal use only.
      */
-    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.frontend.folder";
+    public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.folder";
 
     /**
      * Set to {@code true} to ignore node/npm tool version checks.
@@ -482,7 +484,6 @@ public class FrontendUtils {
      *         found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
@@ -505,7 +506,6 @@ public class FrontendUtils {
      *         not found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getWebComponentHtmlContent(VaadinService service)
             throws IOException {
@@ -630,16 +630,17 @@ public class FrontendUtils {
     }
 
     /**
-     * Get the legacy frontend folder if available and new folder doesn't exist.
+     * Returns frontend folder to use. Also checks possible legacy frontend
+     * folder configuration.
      *
      * @param projectRoot
      *            project's root directory
      * @param frontendDir
-     *            the frontend directory location from project's configuration
-     * @return correct folder or legacy folder if not user defined
+     *            the frontend directory from project's configuration or default
+     *            if not set
+     * @return frontend directory to use
      */
-    public static File getLegacyFrontendFolderIfExists(File projectRoot,
-            File frontendDir) {
+    public static File getFrontendFolder(File projectRoot, File frontendDir) {
         if (!frontendDir.exists() && frontendDir.toPath()
                 .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
             File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
@@ -648,6 +649,28 @@ public class FrontendUtils {
             }
         }
         return frontendDir;
+    }
+
+    /**
+     * Check for existence of legacy frontend folder and log a warning if it is
+     * present.
+     *
+     * @param projectRoot
+     *            project's root directory
+     */
+    public static void checkLegacyFrontendFolder(Path projectRoot) {
+        if (new File(projectRoot.toString(), LEGACY_FRONTEND_DIR).exists()) {
+            getLogger().warn(
+                    "This project has a legacy frontend directory ({}) "
+                            + "present and it will be used as a fallback. "
+                            + "Support for the legacy directory will be removed "
+                            + "in a future release. Please move its contents to "
+                            + "the default frontend directory ({}), or delete it "
+                            + "if its contents are not needed in the project. "
+                            + "Also remove 'frontendDirectory' parameter that "
+                            + "points to the legacy directory, if present.",
+                    LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        }
     }
 
     /**
@@ -730,7 +753,6 @@ public class FrontendUtils {
      *
      * @param configuration
      *            the current deployment configuration
-     *
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
@@ -931,14 +953,14 @@ public class FrontendUtils {
 
     /**
      * Reads input and error stream from the give process asynchronously.
-     *
+     * <p>
      * The method returns a {@link CompletableFuture} that is completed when
      * both the streams are consumed.
-     *
+     * <p>
      * Streams are converted into strings and wrapped into a {@link Pair},
      * mapping input stream into {@link Pair#getFirst()} and error stream into
      * {@link Pair#getSecond()}.
-     *
+     * <p>
      * This method should be mainly used to avoid that {@link Process#waitFor()}
      * hangs indefinitely on some operating systems because process streams are
      * not consumed. See https://github.com/vaadin/flow/issues/15339 for an

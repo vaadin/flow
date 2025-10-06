@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import tools.jackson.databind.JsonNode;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
@@ -34,12 +35,10 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 public class PageTest {
 
@@ -56,7 +55,7 @@ public class PageTest {
 
         private String expression;
 
-        private Serializable firstParam;
+        private Object firstParam;
 
         public TestPage(UI ui) {
             super(ui);
@@ -64,7 +63,7 @@ public class PageTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
@@ -93,7 +92,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -110,7 +109,7 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -127,8 +126,9 @@ public class PageTest {
                         } else {
                             params.put("v-wn", "foo");
                         }
-                        invocations.add(() -> resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create)));
+                        invocations.add(() -> resultHandler
+                                .accept(JacksonUtils.createObject(params,
+                                        JacksonUtils::createNode)));
                     }
                 };
             }
@@ -158,7 +158,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -175,7 +175,7 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -188,8 +188,8 @@ public class PageTest {
                         params.put("v-curdate", "1555000000000");
                         params.put("v-td", "false");
                         params.put("v-wn", "ROOT-1234567-0.1234567");
-                        resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create));
+                        resultHandler.accept(JacksonUtils.createObject(params,
+                                JacksonUtils::createNode));
                     }
                 };
             }
@@ -217,7 +217,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
                 Assert.assertEquals(
                         "Expected javascript for fetching location is wrong.",
@@ -237,10 +237,10 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(
-                                Json.create("http://localhost:8080/home"));
+                        resultHandler.accept(JacksonUtils
+                                .createNode("http://localhost:8080/home"));
                     }
                 };
             }
@@ -318,17 +318,17 @@ public class PageTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -348,11 +348,11 @@ public class PageTest {
     @Test
     public void open_openInSameWindow_closeTheClientApplication() {
         AtomicReference<String> capture = new AtomicReference<>();
-        List<Serializable> params = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable[] parameters) {
+                    Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
                 return Mockito.mock(PendingJavaScriptResult.class);

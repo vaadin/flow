@@ -18,9 +18,11 @@ package com.vaadin.flow.uitest.ui;
 import java.io.Serializable;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -41,8 +43,9 @@ public class ExecJavaScriptView extends AbstractDivView {
                 "(function() {var t = $0.textContent; $0.textContent = $1.textContent; $1.textContent = t;})()",
                 alertButton, focusButton);
         NativeButton logButton = createJsButton("Log", "logButton",
-                "console.log($0)", JsonUtils.createArray(
-                        Json.create("Hello world"), Json.create(true)));
+                "console.log($0)",
+                JacksonUtils.createArray(JacksonUtils.createNode("Hello world"),
+                        JacksonUtils.createNode(true)));
 
         NativeButton elementAwaitButton = createButton("Element await button",
                 "elementAwaitButton",
@@ -90,8 +93,87 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
+        NativeButton beanButton = createButton("Bean Serialization",
+                "beanButton", e -> testBeanSerialization());
+
+        NativeButton returnBeanButton = createButton("Return Bean",
+                "returnBeanButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return {title: 'ReturnedNested', simple: {name: 'InnerReturned', value: 777, active: true}}")
+                            .then(NestedBean.class, bean -> {
+                                Div result = new Div();
+                                result.setId("returnBeanResult");
+                                result.setText("Returned: title=" + bean.title
+                                        + ", simple.name=" + bean.simple.name
+                                        + ", simple.value=" + bean.simple.value
+                                        + ", simple.active="
+                                        + bean.simple.active);
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnBeanStatus");
+                                status.setText("Bean returned");
+                                add(status);
+                            });
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+                elementAwaitButton, pageAwaitButton, beanButton,
+                returnBeanButton);
+    }
+
+    private void testBeanSerialization() {
+        SimpleBean simple = new SimpleBean("TestBean", 42, true);
+        SimpleBean inner = new SimpleBean("Inner", 100, false);
+        NestedBean nested = new NestedBean("Outer", inner);
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const simpleBean = $0;
+                        const nestedBean = $1;
+
+                        const simpleResult = `simple: name=${simpleBean.name}, value=${simpleBean.value}, active=${simpleBean.active}`;
+                        const nestedResult = `nested: title=${nestedBean.title}, inner.name=${nestedBean.simple.name}, inner.value=${nestedBean.simple.value}`;
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'beanResult';
+                        resultDiv.textContent = simpleResult + ' | ' + nestedResult;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'beanStatus';
+                        statusDiv.textContent = 'Bean serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                simple, nested);
+    }
+
+    public static class SimpleBean {
+        public String name;
+        public int value;
+        public boolean active;
+
+        public SimpleBean() {
+        }
+
+        public SimpleBean(String name, int value, boolean active) {
+            this.name = name;
+            this.value = value;
+            this.active = active;
+        }
+    }
+
+    public static class NestedBean {
+        public String title;
+        public SimpleBean simple;
+
+        public NestedBean() {
+        }
+
+        public NestedBean(String title, SimpleBean simple) {
+            this.title = title;
+            this.simple = simple;
+        }
     }
 
     private NativeButton createJsButton(String text, String id, String script,

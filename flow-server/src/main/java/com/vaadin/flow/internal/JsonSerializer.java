@@ -75,7 +75,7 @@ public final class JsonSerializer {
             return toJsonArray(bean);
         }
         if (bean instanceof JsonSerializable) {
-            return ((JsonSerializable) bean).toJson();
+            return Json.parse(((JsonSerializable) bean).toString());
         }
 
         Optional<JsonValue> simpleType = tryToConvertToSimpleType(bean);
@@ -219,7 +219,7 @@ public final class JsonSerializer {
             if (instance instanceof JsonSerializable
                     && json instanceof JsonObject) {
                 return type.cast(JsonSerializable.class.cast(instance)
-                        .readJson((JsonObject) json));
+                        .readJson(JacksonUtils.readTree(json.toJson())));
             }
 
             JsonObject jsonObject = (JsonObject) json;

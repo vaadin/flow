@@ -18,8 +18,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
@@ -214,7 +214,7 @@ public class SynchronousSignalTreeTest {
 
         PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
                 List.of(new SignalCommand.SetCommand(a, Id.ZERO,
-                        new TextNode("text")),
+                        new StringNode("text")),
                         new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
                 Map.of(a, aResult::set, b, bResult::set)));
 
@@ -263,7 +263,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -284,7 +284,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return true;
         });
@@ -304,7 +304,8 @@ public class SynchronousSignalTreeTest {
     void observe_cancelled_notInvoked() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Runnable canceler = tree.observeNextChange(Id.ZERO, Assertions::fail);
+        Runnable canceler = tree.observeNextChange(Id.ZERO,
+                immediate -> Assertions.fail());
         canceler.run();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
@@ -319,10 +320,10 @@ public class SynchronousSignalTreeTest {
         tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
                 null, null, ListPosition.first()));
 
-        tree.observeNextChange(Id.ZERO, Assertions::fail);
+        tree.observeNextChange(Id.ZERO, immediate -> Assertions.fail());
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
-                child, new TextNode("value")));
+                child, new StringNode("value")));
     }
 
     @Test
@@ -331,8 +332,8 @@ public class SynchronousSignalTreeTest {
 
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(Id.ZERO, immediage -> {
                 count.incrementAndGet();
                 return false;
             });
@@ -356,8 +357,8 @@ public class SynchronousSignalTreeTest {
 
         Id childId = Id.random();
         AtomicInteger count = new AtomicInteger();
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(childId, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(childId, immediate2 -> {
                 count.incrementAndGet();
                 return false;
             });

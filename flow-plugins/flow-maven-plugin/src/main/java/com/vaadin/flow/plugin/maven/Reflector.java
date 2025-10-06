@@ -28,6 +28,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +39,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
@@ -473,15 +474,33 @@ public final class Reflector {
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
+            List<URL> allResources = new ArrayList<>();
+
+            // Collect resources from all classloaders
             Enumeration<URL> resources = super.getResources(name);
-            if (!resources.hasMoreElements() && delegate != null) {
+            while (resources.hasMoreElements()) {
+                allResources.add(resources.nextElement());
+            }
+
+            if (delegate != null) {
                 resources = delegate.getResources(name);
+                while (resources.hasMoreElements()) {
+                    URL url = resources.nextElement();
+                    if (!allResources.contains(url)) {
+                        allResources.add(url);
+                    }
+                }
             }
-            if (!resources.hasMoreElements()) {
-                resources = ClassLoader.getPlatformClassLoader()
-                        .getResources(name);
+
+            resources = ClassLoader.getPlatformClassLoader().getResources(name);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                if (!allResources.contains(url)) {
+                    allResources.add(url);
+                }
             }
-            return resources;
+
+            return Collections.enumeration(allResources);
         }
 
         /**
@@ -599,13 +618,13 @@ public final class Reflector {
         String json;
         try {
             json = mapper.writeValueAsString(source);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonEncodingException("Cannot encode "
                     + targetClass.getName() + " object to JSON", e);
         }
         try {
             return mapper.readValue(json, targetClass);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new JsonDecodingException("Cannot decode JSON to "
                     + targetClass.getName() + " object", e);
         }

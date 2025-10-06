@@ -20,10 +20,8 @@ import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import elemental.json.JsonObject;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wraps a JSON value that should be stored in the {@link ConstantPool} shared
@@ -67,20 +65,6 @@ public class ConstantPoolKey implements Serializable {
             id = calculateHash(json);
         }
         return id;
-    }
-
-    /**
-     * Exports this key into a JSON object to send to the client. This method
-     * should be called only by the {@link ConstantPool} instance that manages
-     * this value. It may be called multiple times.
-     *
-     * @param clientConstantPoolUpdate
-     *            the constant pool update that is to be sent to the client, not
-     *            <code>null</code>
-     */
-    @Deprecated
-    public void export(JsonObject clientConstantPoolUpdate) {
-        export(JacksonUtils.mapElemental((JsonObject) json));
     }
 
     /**

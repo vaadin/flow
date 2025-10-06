@@ -36,8 +36,8 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -175,7 +175,8 @@ public class BuildFrontendUtil {
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
                 .withFrontendIgnoreVersionChecks(
-                        adapter.isFrontendIgnoreVersionChecks());
+                        adapter.isFrontendIgnoreVersionChecks())
+                .setCopyAssets(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -466,8 +467,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        return FrontendUtils.getLegacyFrontendFolderIfExists(
-                adapter.npmFolder(), adapter.frontendDirectory());
+        return FrontendUtils.getFrontendFolder(adapter.npmFolder(),
+                adapter.frontendDirectory());
     }
 
     /**

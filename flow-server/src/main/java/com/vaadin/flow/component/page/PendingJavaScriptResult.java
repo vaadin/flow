@@ -18,12 +18,12 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 /**
  * A pending result from a JavaScript snippet sent to the browser for
@@ -86,6 +86,10 @@ public interface PendingJavaScriptResult extends Serializable {
      * be invoked asynchronously when the result of the execution is sent back
      * to the server.
      * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
+     * <p>
      * Handlers can only be added before the execution has been sent to the
      * browser.
      *
@@ -109,8 +113,8 @@ public interface PendingJavaScriptResult extends Serializable {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonValue> convertingResultHandler = value -> resultHandler
-                .accept(JsonCodec.decodeAs(value, targetType));
+        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
+                .accept(JacksonCodec.decodeAs(value, targetType));
 
         then(convertingResultHandler, errorHandler);
     }
@@ -119,6 +123,10 @@ public interface PendingJavaScriptResult extends Serializable {
      * Adds a typed handler that will be run for a successful execution. The
      * handler will be invoked asynchronously if the execution was successful.
      * In case of a failure, no handler will be run.
+     * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
      * <p>
      * A handler can only be added before the execution has been sent to the
      * browser.
@@ -142,6 +150,10 @@ public interface PendingJavaScriptResult extends Serializable {
      * synchronously wait for the result of the execution while holding the
      * session lock since the request handling thread that makes the result
      * available will also need to lock the session.
+     * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
      * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
@@ -173,7 +185,7 @@ public interface PendingJavaScriptResult extends Serializable {
                 session);
 
         then(value -> {
-            T convertedValue = JsonCodec.decodeAs(value, targetType);
+            T convertedValue = JacksonCodec.decodeAs(value, targetType);
             completableFuture.complete(convertedValue);
         }, errorValue -> {
             JavaScriptException exception = new JavaScriptException(errorValue);
@@ -202,7 +214,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for an error message in case the execution failed,
      *            or <code>null</code> to ignore errors
      */
-    void then(SerializableConsumer<JsonValue> resultHandler,
+    void then(SerializableConsumer<JsonNode> resultHandler,
             SerializableConsumer<String> errorHandler);
 
     /**
@@ -217,7 +229,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for the JSON representation of the return value from
      *            a successful execution, not <code>null</code>
      */
-    default void then(SerializableConsumer<JsonValue> resultHandler) {
+    default void then(SerializableConsumer<JsonNode> resultHandler) {
         then(resultHandler, null);
     }
 
@@ -232,7 +244,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @return a completable future that will be completed based on the
      *         execution results, not <code>null</code>
      */
-    default CompletableFuture<JsonValue> toCompletableFuture() {
-        return toCompletableFuture(JsonValue.class);
+    default CompletableFuture<JsonNode> toCompletableFuture() {
+        return toCompletableFuture(JsonNode.class);
     }
 }

@@ -28,8 +28,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -88,9 +88,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
@@ -367,7 +364,7 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... params) {
+                        Object... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
                 }
@@ -914,7 +911,8 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 final History history = new History(getUI().get()) {
                     @Override
-                    public void pushState(JsonValue state, Location location) {
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
                         pushStateCalled.set(true);
                         pushStateLocations.add(location);
                     }

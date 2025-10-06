@@ -8,7 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -87,6 +87,8 @@ public class Options implements Serializable {
     private List<String> frontendExtraFileExtensions = null;
 
     private FrontendDependenciesScanner frontendDependenciesScanner;
+
+    private boolean copyAssets = true;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -1060,5 +1062,31 @@ public class Options implements Serializable {
                             getFeatureFlags(), reactEnabled);
         }
         return frontendDependenciesScanner;
+    }
+
+    /**
+     * Sets whether to copy npm assets or not. True by default.
+     *
+     * @param copyAssets
+     *            boolean value indicating if npm assets should be copied.
+     * @return this builder
+     */
+    public Options setCopyAssets(boolean copyAssets) {
+        this.copyAssets = copyAssets;
+        return this;
+    }
+
+    /**
+     * Get if npm assets should be copied for this Options execution.
+     * <p>
+     * NOTE! For a devBundleBuild copy assets will always be true!
+     *
+     * @return {@code false} to skip copying except for devBundleBuild.
+     */
+    public boolean copyAssets() {
+        if (isDevBundleBuild()) {
+            return true;
+        }
+        return copyAssets;
     }
 }

@@ -51,14 +51,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,7 +322,19 @@ public abstract class VaadinService implements Serializable {
                             + " providing a custom Executor instance.");
         }
 
-        initSignalsEnvironment();
+        try {
+            initSignalsEnvironment();
+        } catch (Exception e) {
+            if (FeatureFlags.get(getContext())
+                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
+                throw e;
+            } else {
+                getLogger().info(
+                        "Error initializing signals. This is non-fatal since signals are "
+                                + "a preview feature and the feature flag is not enabled.",
+                        e);
+            }
+        }
 
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
@@ -357,17 +367,31 @@ public abstract class VaadinService implements Serializable {
     }
 
     private void initSignalsEnvironment() {
-        Executor signalsExecutor;
-        Supplier<Executor> flowDispatcherOverride;
-        FeatureFlags featureFlags = FeatureFlags.get(getContext());
-        if (featureFlags
-                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
-            // Use getter method to trigger a multiple TaskExecutor check
-            signalsExecutor = getExecutor();
-            flowDispatcherOverride = () -> {
+        boolean enabled = FeatureFlags.get(getContext())
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
+        if (enabled) {
+            // Trigger check for multiple TaskExecutor candidates
+            getExecutor();
+        }
+
+        class VaadinServiceEnvironment extends SignalEnvironment
+                implements Serializable {
+            @Override
+            public boolean isActive() {
+                if (VaadinService.getCurrent() != VaadinService.this) {
+                    return false;
+                } else if (!enabled) {
+                    throw new DisabledFeatureException(
+                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+                } else {
+                    return true;
+                }
+            }
+
+            private Executor createCurrentUiDispatcher() {
                 UI owner = UI.getCurrent();
                 if (owner == null) {
-                    return null;
+                    return getExecutor();
                 }
 
                 return task -> {
@@ -375,33 +399,29 @@ public abstract class VaadinService implements Serializable {
                         task.run();
                     } else {
                         try {
-                            SignalEnvironment.defaultDispatcher()
+                            getExecutor()
                                     .execute(() -> owner.access(task::run));
                         } catch (Exception e) {
-                            // a task is submitted when executor is shut down,
-                            // ignore
+                            // submitted when executor is shut down, ignore
                         }
                     }
                 };
-            };
-        } else {
-            signalsExecutor = task -> {
-                throw new DisabledFeatureException(
-                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-            };
-            flowDispatcherOverride = () -> {
-                throw new DisabledFeatureException(
-                        FeatureFlags.FLOW_FULLSTACK_SIGNALS);
-            };
+            }
+
+            @Override
+            public Executor getResultNotifier() {
+                return createCurrentUiDispatcher();
+            }
+
+            @Override
+            public Executor getEffectDispatcher() {
+                return getExecutor();
+            }
         }
-        if (!SignalEnvironment.tryInitialize(createDefaultObjectMapper(),
-                signalsExecutor)) {
-            getLogger().warn("Signals environment is already initialized. "
-                    + "It is recommended to let Vaadin setup Signals environment to prevent unexpected behavior. "
-                    + "Please, avoid calling SignalEnvironment.tryInitialize() in application code.");
-        }
+
         Runnable unregister = SignalEnvironment
-                .addDispatcherOverride(flowDispatcherOverride);
+                .register(new VaadinServiceEnvironment());
+
         addServiceDestroyListener(event -> unregister.run());
     }
 
@@ -683,16 +703,13 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Creates and configures a default instance of {@link ObjectMapper}. The
-     * configured {@link ObjectMapper} includes the registration of the
-     * {@link JavaTimeModule} to handle serialization and deserialization of
-     * Java time API objects.
+     * configured {@link ObjectMapper} handle serialization and deserialization
+     * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
      */
     protected ObjectMapper createDefaultObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        return JacksonUtils.getMapper();
     }
 
     /**
@@ -1230,17 +1247,17 @@ public abstract class VaadinService implements Serializable {
             Optional<Locale> foundLocale = LocaleUtil
                     .getExactLocaleMatch(request, providedLocales);
 
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isEmpty()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
 
-            // Set locale by match found in I18N provider, first provided locale
-            // or else leave as default locale
+            // Set locale by match found in I18N provider, locale provided by
+            // I18nProvider.getDefaultLocale or else leave as default locale
             if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
-                session.setLocale(providedLocales.get(0));
+                session.setLocale(provider.getDefaultLocale());
             }
         }
     }

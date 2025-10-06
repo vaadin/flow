@@ -33,6 +33,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +49,7 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
@@ -55,15 +58,10 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * DataProvider base class. This class is the base for all DataProvider
  * communication implementations. It uses data generators ({@link BiFunction}s)
- * to write {@link JsonObject}s representing each data object to be sent to the
+ * to write {@link ObjectNode}s representing each data object to be sent to the
  * client-side.
  *
  * @param <T>
@@ -79,7 +77,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
-    private final SerializableConsumer<JsonArray> dataUpdater;
+    private final SerializableConsumer<ArrayNode> dataUpdater;
     private final StateNode stateNode;
 
     // Keys that can be discarded once some specific update id gets confirmed
@@ -281,7 +279,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
+            SerializableConsumer<ArrayNode> dataUpdater, StateNode stateNode) {
         this(dataGenerator, arrayUpdater, dataUpdater, stateNode, true);
     }
 
@@ -309,7 +307,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            SerializableConsumer<ArrayNode> dataUpdater, StateNode stateNode,
             boolean fetchEnabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
@@ -1353,7 +1351,7 @@ public class DataCommunicator<T> implements Serializable {
             return;
         }
         dataUpdater.accept(updatedData.stream().map(this::generateJson)
-                .collect(JsonUtils.asArray()));
+                .collect(JacksonUtils.asArray()));
         updatedData.clear();
     }
 
@@ -1495,7 +1493,7 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private List<JsonValue> getJsonItems(Range range) {
+    private List<JsonNode> getJsonItems(Range range) {
         return range.stream()
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
                 .map(keyMapper::get).map(this::generateJson)
@@ -1541,8 +1539,8 @@ public class DataCommunicator<T> implements Serializable {
         return new Activation(activeKeys, needsSizeRecheck);
     }
 
-    private JsonValue generateJson(T item) {
-        JsonObject json = Json.createObject();
+    private JsonNode generateJson(T item) {
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;
