@@ -29,7 +29,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 
 /**
- * Watches src/main/resources/META-INF/resources for CSS file changes and
+ * Watches given resourcesFolder for CSS file changes and
  * performs hot CSS updates via BrowserLiveReload.
  */
 class PublicResourcesCssLiveUpdater implements Closeable {
