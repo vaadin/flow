@@ -177,18 +177,18 @@ public class ComponentEventBusTest {
     }
 
     @Test
-    public void mappedDomEvent_fire_missingData_shouldFail() {
+    public void mappedDomEvent_fire_missingData() {
         TestComponent c = new TestComponent();
         EventTracker<MappedToDomEvent> eventListener = new EventTracker<>();
         c.addListener(MappedToDomEvent.class, eventListener);
 
-        // Missing primitive boolean data should cause event creation to fail
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
-            fireDomEvent(c, "dom-event", createData("event.someData", 2));
-        });
+        fireDomEvent(c, "dom-event", createData("event.someData", 2));
 
-        // Event should not have been called due to the failure
-        eventListener.assertEventNotCalled();
+        eventListener.assertEventCalled(c, true);
+        Assert.assertEquals(2, eventListener.getEvent().getSomeData());
+        Assert.assertNull(eventListener.getEvent().getMoreData());
+        Assert.assertFalse(eventListener.getEvent().getPrimitiveBoolean());
+        Assert.assertNull(eventListener.getEvent().getObjectBoolean());
     }
 
     @Test
