@@ -491,6 +491,171 @@ public class ElementListenersTest
         Assert.assertEquals(1, eventCount.get());
     }
 
+    @Test
+    public void testPreventDefaultWithFilter() {
+        // Test that preventDefault only applies to filtered events (see issue
+        // #22294)
+
+        // Create a listener with filter for space and enter keys
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
+        registration.preventDefault();
+
+        // Check that the event data includes preventDefault
+        Set<String> expressions = getExpressions("keydown");
+
+        // The expressions should include:
+        // 1. The filter expression for debouncing
+        // 2. The conditional preventDefault expression
+        Assert.assertTrue("Should have the filter expression", expressions
+                .contains("event.key === ' ' || event.key === 'Enter'"));
+
+        // After the fix, preventDefault should be conditional on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === ' ' || event.key === 'Enter') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testPreventDefaultWithoutFilter() {
+        // Test preventDefault without filter - should apply to all events
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.preventDefault();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Without a filter, preventDefault should apply to all events
+        Assert.assertTrue("Should have preventDefault expression",
+                expressions.contains("event.preventDefault()"));
+        Assert.assertEquals("Should only have preventDefault expression", 1,
+                expressions.size());
+    }
+
+    @Test
+    public void testPreventDefaultThenSetFilter() {
+        // Test that preventDefault becomes conditional even when filter is set
+        // after
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.preventDefault();
+        registration.setFilter("event.key === 'Escape'");
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional preventDefault based on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === 'Escape') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testSetFilterThenPreventDefault() {
+        // Test that preventDefault is conditional when filter is set before
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === 'Delete'");
+        registration.preventDefault();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional preventDefault based on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === 'Delete') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testStopPropagationWithFilter() {
+        // Test that stopPropagation only applies to filtered events
+
+        // Create a listener with filter for space and enter keys
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
+        registration.stopPropagation();
+
+        // Check that the event data includes stopPropagation
+        Set<String> expressions = getExpressions("keydown");
+
+        // The expressions should include:
+        // 1. The filter expression for debouncing
+        // 2. The conditional stopPropagation expression
+        Assert.assertTrue("Should have the filter expression", expressions
+                .contains("event.key === ' ' || event.key === 'Enter'"));
+
+        // After the fix, stopPropagation should be conditional on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === ' ' || event.key === 'Enter') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testStopPropagationWithoutFilter() {
+        // Test stopPropagation without filter - should apply to all events
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Without a filter, stopPropagation should apply to all events
+        Assert.assertTrue("Should have stopPropagation expression",
+                expressions.contains("event.stopPropagation()"));
+        Assert.assertEquals("Should only have stopPropagation expression", 1,
+                expressions.size());
+    }
+
+    @Test
+    public void testStopPropagationThenSetFilter() {
+        // Test that stopPropagation becomes conditional even when filter is
+        // set after
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+        registration.setFilter("event.key === 'Escape'");
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Escape') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testSetFilterThenStopPropagation() {
+        // Test that stopPropagation is conditional when filter is set before
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === 'Delete'");
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Delete') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {
