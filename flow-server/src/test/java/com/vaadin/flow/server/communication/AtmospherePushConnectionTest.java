@@ -158,7 +158,7 @@ public class AtmospherePushConnectionTest {
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
             }
-        }).exceptionally(error -> {
+        }, executor).exceptionally(error -> {
             error.printStackTrace();
             return null;
         });
