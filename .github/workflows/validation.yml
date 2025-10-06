@@ -46,7 +46,7 @@ jobs:
           ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '24.9.0'
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -160,7 +160,7 @@ jobs:
           ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
-          node-version: '22.14.0'
+          node-version: '24.9.0'
       - uses: pnpm/action-setup@v3
         with:
           version: '8.6.11'
