@@ -16,13 +16,10 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.lang.reflect.Method;
-import java.util.Locale;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.internal.JsonCodec;
-import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 
 /**
