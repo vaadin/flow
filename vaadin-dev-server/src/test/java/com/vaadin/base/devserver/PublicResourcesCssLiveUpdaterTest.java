@@ -188,4 +188,57 @@ public class PublicResourcesCssLiveUpdaterTest {
                 anyString());
         verify(liveReload, never()).reload();
     }
+
+    @Test
+    public void devModeHandler_watchesNestedCssFilesUnderStaticRoot()
+            throws Exception {
+        // Project with only the 'static' resource root
+        File project = tmp.newFolder("project-nested");
+        File staticRoot = new File(project, "src/main/resources/static");
+        // nested path under css
+        File nestedDir = new File(staticRoot, "css/nested/inner");
+        nestedDir.mkdirs();
+        File nestedCss = new File(nestedDir, "site1.css");
+        Files.writeString(nestedCss.toPath(), ".a{color:red}",
+                StandardCharsets.UTF_8);
+
+        // Context and app config
+        VaadinContext context = new MockVaadinContext();
+        ApplicationConfiguration appConfig = mock(
+                ApplicationConfiguration.class);
+        when(appConfig.getProjectFolder()).thenReturn(project);
+        when(appConfig.isProductionMode()).thenReturn(false);
+        context.setAttribute(ApplicationConfiguration.class, appConfig);
+
+        // Live reload mock with latch for a single update
+        BrowserLiveReload liveReload = mock(BrowserLiveReload.class);
+        CountDownLatch latch = new CountDownLatch(1);
+        doAnswer(inv -> {
+            latch.countDown();
+            return null;
+        }).when(liveReload).update(eq("/css/nested/inner/site1.css"),
+                anyString());
+
+        // Lookup accessor
+        Lookup lookup = mock(Lookup.class);
+        BrowserLiveReloadAccessor accessor = ctx -> liveReload;
+        when(lookup.lookup(BrowserLiveReloadAccessor.class))
+                .thenReturn(accessor);
+        context.setAttribute(Lookup.class, lookup);
+
+        DevModeHandlerManagerImpl manager = new DevModeHandlerManagerImpl();
+        try {
+            manager.startWatchingPublicResourcesCss(context, appConfig);
+            // Touch nested css to trigger watcher
+            Files.writeString(nestedCss.toPath(), ".a{color:blue}",
+                    StandardCharsets.UTF_8);
+            latch.await(3, TimeUnit.SECONDS);
+        } finally {
+            manager.stopDevModeHandler();
+        }
+
+        verify(liveReload, atLeastOnce())
+                .update(eq("/css/nested/inner/site1.css"), anyString());
+        verify(liveReload, never()).reload();
+    }
 }
