@@ -15,6 +15,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
 
+import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.polymertemplate.Id;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
 import com.vaadin.flow.dom.Element;
@@ -87,6 +88,7 @@ public abstract class Component
      * instead of creating a new element.
      */
     protected Component() {
+        ComponentTracker.trackCreate(this);
         Optional<String> tagNameAnnotation = AnnotationReader
                 .getAnnotationFor(getClass(), Tag.class).map(Tag::value);
         if (!tagNameAnnotation.isPresent()) {
@@ -125,6 +127,7 @@ public abstract class Component
      *            the root element for the component
      */
     protected Component(Element element) {
+        ComponentTracker.trackCreate(this);
         if (elementToMapTo.get() != null) {
             mapToElement(element == null ? null : element.getTag());
             templateMapped = this.element != null

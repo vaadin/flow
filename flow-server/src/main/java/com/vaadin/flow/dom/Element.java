@@ -135,14 +135,9 @@ public class Element extends Node<Element> {
     public static Element get(StateNode node) {
         assert node != null;
 
-        if (node.hasFeature(TextNodeMap.class)) {
-            return get(node, BasicTextElementStateProvider.get());
-        } else if (node.hasFeature(ElementData.class)) {
-            return get(node, BasicElementStateProvider.get());
-        } else {
-            throw new IllegalArgumentException(
-                    "Node is not valid as an element");
-        }
+        return ElementUtil.from(node)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Node is not valid as an element"));
     }
 
     /**
