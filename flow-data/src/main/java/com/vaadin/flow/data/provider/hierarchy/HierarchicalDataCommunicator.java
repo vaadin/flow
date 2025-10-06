@@ -501,7 +501,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             index = cache.normalizeIndex(path[depth]);
         } catch (IndexOutOfBoundsException e) {
             throw new IndexOutOfBoundsException(
-                    "Index %d is out of range for hierarchicalpath %s (depth %d, size %d)."
+                    "Index %d is out of range for path %s (depth %d, size %d)."
                             .formatted(path[depth], Arrays.toString(path),
                                     depth, cache.getSize()));
         }

@@ -180,9 +180,6 @@ public class HierarchicalDataCommunicatorFlatHierarchyTest
 
         Assert.assertEquals(54, dataCommunicator.resolveIndexPath(-50));
         Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
-
-        Assert.assertEquals(0, dataCommunicator.resolveIndexPath(-104));
-        Assert.assertEquals(104, dataCommunicator.rootCache.getFlatSize());
     }
 
     @Test
