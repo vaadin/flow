@@ -182,7 +182,8 @@ public class MockVaadinServletService extends VaadinServletService {
     protected Executor createDefaultExecutor() {
         Executor executor = super.createDefaultExecutor();
         if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
-            threadPoolExecutor.setCorePoolSize(2);
+            threadPoolExecutor.setCorePoolSize(0);
+            threadPoolExecutor.setMaximumPoolSize(4);
             threadPoolExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
             ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
             threadPoolExecutor.setThreadFactory(r -> {
