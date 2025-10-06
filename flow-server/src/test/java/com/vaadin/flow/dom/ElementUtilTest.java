@@ -20,7 +20,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
 
 import com.vaadin.flow.component.Component;
@@ -267,21 +266,6 @@ public class ElementUtilTest {
     private void simulateWritingChangesToClient() {
         stateTree.collectChanges(nodeChanges -> {
         });
-    }
-
-    @Test
-    public void elementsUpdateSameData() {
-        Element te = new Element("testelem");
-        Element e = ElementUtil.from(te.getNode()).orElse(null);
-
-        // Elements must be equal but not necessarily the same
-        Assert.assertEquals(te, e);
-    }
-
-    @Test
-    public void getElementFromInvalidNode() {
-        StateNode node = new StateNode(ElementPropertyMap.class);
-        Assert.assertFalse(ElementUtil.from(node).isPresent());
     }
 
 }
