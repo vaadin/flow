@@ -33,20 +33,29 @@ import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.json.JsonReadFeature;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.core.util.DefaultPrettyPrinter;
 import tools.jackson.core.util.Separators;
 import tools.jackson.core.util.Separators.Spacing;
+import tools.jackson.databind.DeserializationFeature;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.module.SimpleModule;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Node;
 
 import elemental.json.Json;
 import elemental.json.JsonArray;
@@ -70,8 +79,17 @@ public final class JacksonUtils {
 
     private static final String CANNOT_CONVERT_NULL_TO_OBJECT = "Cannot convert null to Java object";
 
-    private static final ObjectMapper objectMapper = JsonMapper.builder()
-            .enable(JsonReadFeature.ALLOW_SINGLE_QUOTES).build();
+    private static final ObjectMapper objectMapper = createConfiguredMapper();
+
+    private static ObjectMapper createConfiguredMapper() {
+        SimpleModule module = new SimpleModule();
+        module.addSerializer(Component.class, new ComponentSerializer());
+        module.addSerializer(Node.class, new NodeSerializer());
+
+        return JsonMapper.builder().enable(JsonReadFeature.ALLOW_SINGLE_QUOTES)
+                .disable(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES)
+                .addModule(module).build();
+    }
 
     public static ObjectMapper getMapper() {
         return objectMapper;
@@ -628,5 +646,64 @@ public final class JacksonUtils {
                 Separators.createDefaultInstance()
                         .withObjectNameValueSpacing(Spacing.AFTER));
         return objectMapper.writer().with(filePrinter).writeValueAsString(node);
+    }
+
+    /**
+     * Custom Jackson serializer for Component that delegates to NodeSerializer.
+     */
+    public static class ComponentSerializer extends ValueSerializer<Component> {
+        private final NodeSerializer nodeSerializer = new NodeSerializer();
+
+        @Override
+        public void serialize(Component component, JsonGenerator gen,
+                SerializationContext serializers) {
+            try {
+                if (component != null) {
+                    // Delegate to NodeSerializer using the component's element
+                    nodeSerializer.serialize(component.getElement(), gen,
+                            serializers);
+                } else {
+                    gen.writeNull();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize Component", e);
+            }
+        }
+    }
+
+    /**
+     * Custom Jackson serializer for Node types (Element, ShadowRoot) that
+     * serializes attached nodes as @v-node references for client-side DOM
+     * manipulation.
+     */
+    @SuppressWarnings("rawtypes")
+    public static class NodeSerializer extends ValueSerializer<Node> {
+        @Override
+        @SuppressWarnings("unchecked")
+        public void serialize(Node node, JsonGenerator gen,
+                SerializationContext serializers) {
+            try {
+                if (node != null) {
+                    // Serialize attached nodes as @v-node references containing
+                    // the StateNode ID
+                    // This allows the client to identify and manipulate the
+                    // corresponding DOM element
+                    if (node.getNode().isAttached()) {
+                        gen.writeStartObject();
+                        gen.writeNumberProperty("@v-node",
+                                node.getNode().getId());
+                        gen.writeEndObject();
+                    } else {
+                        // Detached nodes cannot be referenced on the client, so
+                        // serialize as null
+                        gen.writeNull();
+                    }
+                } else {
+                    gen.writeNull();
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to serialize Node", e);
+            }
+        }
     }
 }

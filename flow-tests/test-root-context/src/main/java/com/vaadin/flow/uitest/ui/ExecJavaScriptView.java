@@ -16,8 +16,11 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
@@ -92,8 +95,237 @@ public class ExecJavaScriptView extends AbstractDivView {
                     add(input);
                 });
 
+        NativeButton beanButton = createButton("Bean Serialization",
+                "beanButton", e -> testBeanSerialization());
+
+        NativeButton returnBeanButton = createButton("Return Bean",
+                "returnBeanButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return {title: 'ReturnedNested', simple: {name: 'InnerReturned', value: 777, active: true}}")
+                            .then(NestedBean.class, bean -> {
+                                Div result = new Div();
+                                result.setId("returnBeanResult");
+                                result.setText("Returned: title=" + bean.title
+                                        + ", simple.name=" + bean.simple.name
+                                        + ", simple.value=" + bean.simple.value
+                                        + ", simple.active="
+                                        + bean.simple.active);
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnBeanStatus");
+                                status.setText("Bean returned");
+                                add(status);
+                            });
+                });
+
+        NativeButton listButton = createButton("List Serialization",
+                "listButton", e -> testListSerialization());
+
+        NativeButton returnListButton = createButton("Return List",
+                "returnListButton", e -> {
+                    UI.getCurrent().getPage().executeJs(
+                            "return [{name: 'First', value: 1, active: true}, {name: 'Second', value: 2, active: false}]")
+                            .then(List.class, list -> {
+                                Div result = new Div();
+                                result.setId("returnListResult");
+                                result.setText("Returned list with "
+                                        + list.size() + " items");
+                                add(result);
+
+                                Div status = new Div();
+                                status.setId("returnListStatus");
+                                status.setText("List returned");
+                                add(status);
+                            });
+                });
+
+        NativeButton componentArrayButton = createButton("Component Array",
+                "componentArrayButton", e -> testComponentArraySerialization());
+
+        NativeButton beanWithComponentButton = createButton(
+                "Bean With Component", "beanWithComponentButton",
+                e -> testBeanWithComponentSerialization());
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
-                elementAwaitButton, pageAwaitButton);
+                elementAwaitButton, pageAwaitButton, beanButton,
+                returnBeanButton, listButton, returnListButton,
+                componentArrayButton, beanWithComponentButton);
+    }
+
+    private void testBeanSerialization() {
+        SimpleBean simple = new SimpleBean("TestBean", 42, true);
+        SimpleBean inner = new SimpleBean("Inner", 100, false);
+        NestedBean nested = new NestedBean("Outer", inner);
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const simpleBean = $0;
+                        const nestedBean = $1;
+
+                        const simpleResult = `simple: name=${simpleBean.name}, value=${simpleBean.value}, active=${simpleBean.active}`;
+                        const nestedResult = `nested: title=${nestedBean.title}, inner.name=${nestedBean.simple.name}, inner.value=${nestedBean.simple.value}`;
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'beanResult';
+                        resultDiv.textContent = simpleResult + ' | ' + nestedResult;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'beanStatus';
+                        statusDiv.textContent = 'Bean serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                simple, nested);
+    }
+
+    private void testListSerialization() {
+        List<SimpleBean> beanList = Arrays.asList(
+                new SimpleBean("FirstItem", 10, true),
+                new SimpleBean("SecondItem", 20, false),
+                new SimpleBean("ThirdItem", 30, true));
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const beanArray = $0;
+                        let result = 'List: ';
+                        for (let i = 0; i < beanArray.length; i++) {
+                            const bean = beanArray[i];
+                            result += `[${i}]: name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+                            if (i < beanArray.length - 1) result += ' | ';
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'listResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'listStatus';
+                        statusDiv.textContent = 'List serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                beanList);
+    }
+
+    private void testComponentArraySerialization() {
+        TestComponent component1 = new TestComponent("Component 1");
+        TestComponent component2 = new TestComponent("Component 2");
+
+        // Add components to the page so they are attached
+        add(component1, component2);
+
+        TestComponent[] componentArray = new TestComponent[] { component1,
+                component2 };
+
+        Object[] parameter = new Object[] { componentArray };
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const componentArray = $0;
+                        let result = 'Component Array: ';
+                        for (let i = 0; i < componentArray.length; i++) {
+                            const comp = componentArray[i];
+                            if (comp && typeof comp === 'object') {
+                                result += `[${i}]: component object`;
+                            } else {
+                                result += `[${i}]: ${comp}`;
+                            }
+                            if (i < componentArray.length - 1) result += ' | ';
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'componentArrayResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'componentArrayStatus';
+                        statusDiv.textContent = 'Component array serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                parameter);
+    }
+
+    private void testBeanWithComponentSerialization() {
+        TestComponent component = new TestComponent("Bean Component");
+
+        // Add component to the page so it is attached
+        add(component);
+
+        BeanWithComponent bean = new BeanWithComponent("TestBeanComponent",
+                component, 123);
+
+        UI.getCurrent().getPage().executeJs(
+                """
+                        const bean = $0;
+                        let result = `Bean: name=${bean.name}, value=${bean.value}`;
+                        if (bean.component && typeof bean.component === 'object') {
+                            result += ', component=object';
+                        } else {
+                            result += `, component=${bean.component}`;
+                        }
+
+                        const resultDiv = document.createElement('div');
+                        resultDiv.id = 'beanWithComponentResult';
+                        resultDiv.textContent = result;
+                        document.body.appendChild(resultDiv);
+
+                        const statusDiv = document.createElement('div');
+                        statusDiv.id = 'beanWithComponentStatus';
+                        statusDiv.textContent = 'Bean with component serialization completed';
+                        document.body.appendChild(statusDiv);
+                        """,
+                bean);
+    }
+
+    public static class TestComponent extends Div {
+        public TestComponent(String text) {
+            setText(text);
+        }
+    }
+
+    public static class BeanWithComponent {
+        public String name;
+        public TestComponent component;
+        public int value;
+
+        public BeanWithComponent() {
+        }
+
+        public BeanWithComponent(String name, TestComponent component,
+                int value) {
+            this.name = name;
+            this.component = component;
+            this.value = value;
+        }
+    }
+
+    public static class SimpleBean {
+        public String name;
+        public int value;
+        public boolean active;
+
+        public SimpleBean() {
+        }
+
+        public SimpleBean(String name, int value, boolean active) {
+            this.name = name;
+            this.value = value;
+            this.active = active;
+        }
+    }
+
+    public static class NestedBean {
+        public String title;
+        public SimpleBean simple;
+
+        public NestedBean() {
+        }
+
+        public NestedBean(String title, SimpleBean simple) {
+            this.title = title;
+            this.simple = simple;
+        }
     }
 
     private NativeButton createJsButton(String text, String id, String script,

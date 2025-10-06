@@ -2585,17 +2585,17 @@ public class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2612,17 +2612,17 @@ public class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void callFunction_delegatesToCallJsFunction() {
         AtomicReference<String> invokedFuction = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult callJsFunction(String functionName,
-                    Serializable... arguments) {
+                    Object... arguments) {
                 String oldExpression = invokedFuction.getAndSet(functionName);
                 Assert.assertNull("There should be no old function name",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Object[] oldParams = invokedParams.getAndSet(arguments);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2647,7 +2647,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         Assert.assertEquals(child, parent.getChild(index));
     }
 
-    private void assertPendingJs(UI ui, String js, Serializable... arguments) {
+    private void assertPendingJs(UI ui, String js, Object... arguments) {
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);
