@@ -54,7 +54,6 @@ import org.springframework.security.config.annotation.web.configurers.RequestCac
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
@@ -135,7 +134,8 @@ class VaadinSecurityConfigurerTest {
                 Map.of(ApplicationContext.class, applicationContext,
                         PathPatternRequestMatcher.Builder.class,
                         requestMatcherBuilder,
-                        SecurityContextHolderStrategy.class, securityContextHolderStrategy));
+                        SecurityContextHolderStrategy.class,
+                        securityContextHolderStrategy));
         configurer = VaadinSecurityConfigurer.vaadin();
     }
 
@@ -320,7 +320,7 @@ class VaadinSecurityConfigurerTest {
 
             var auth = new AnonymousAuthenticationToken("key", "user",
                     List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            securityContextHolderStrategy.getContext().setAuthentication(auth);
             var path = "/connect/HillaEndpoint/anonymous";
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
@@ -350,7 +350,7 @@ class VaadinSecurityConfigurerTest {
 
             var auth = new TestingAuthenticationToken("user", "password",
                     List.of(new SimpleGrantedAuthority("ROLE_USER")));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            securityContextHolderStrategy.getContext().setAuthentication(auth);
             var path = "/connect/HillaEndpoint/authenticated";
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
@@ -380,7 +380,7 @@ class VaadinSecurityConfigurerTest {
 
             var auth = new TestingAuthenticationToken("user", "password",
                     List.of(new SimpleGrantedAuthority("ROLE_USER")));
-            SecurityContextHolder.getContext().setAuthentication(auth);
+            securityContextHolderStrategy.getContext().setAuthentication(auth);
             var path = "/hilla-view";
             var request = new MockHttpServletRequest("POST", path);
             request.setPathInfo(path);
