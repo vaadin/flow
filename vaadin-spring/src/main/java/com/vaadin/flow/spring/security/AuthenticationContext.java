@@ -104,7 +104,7 @@ public class AuthenticationContext {
      * @deprecated Use
      *             {@link #AuthenticationContext(SecurityContextHolderStrategy)}
      */
-    @Deprecated(since = "24.8", forRemoval = true)
+    @Deprecated(since = "25.0", forRemoval = true)
     public AuthenticationContext() {
         this(SecurityContextHolder.getContextHolderStrategy());
     }
