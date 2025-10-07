@@ -18,6 +18,7 @@ package com.vaadin.flow.spring;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -205,6 +206,16 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
         return new VaadinAwareSecurityContextHolderStrategy();
+    }
+
+    // Ensure AuthenticationUtil is wired to whichever
+    // SecurityContextHolderStrategy bean is in use,
+    // even if a custom one is provided by the application.
+    @Bean
+    SmartInitializingSingleton securityContextHolderStrategyInitializer(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return () -> AuthenticationUtil.setSecurityContextSupplier(
+                securityContextHolderStrategy::getContext);
     }
 
     @Bean

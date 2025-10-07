@@ -17,11 +17,13 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -51,7 +53,9 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.ExceptionHandlingConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -62,6 +66,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.savedrequest.RequestCacheAwareFilter;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
@@ -75,7 +80,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WrappedHttpSession;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.spring.AuthenticationUtil;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
@@ -84,6 +92,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @WebAppConfiguration
 @ContextConfiguration(classes = { SpringBootAutoConfiguration.class,
@@ -115,6 +124,7 @@ class VaadinSecurityConfigurerTest {
 
     private HttpSecurity http;
 
+    @Autowired
     private SecurityContextHolderStrategy securityContextHolderStrategy;
 
     private VaadinSecurityConfigurer configurer;
@@ -127,9 +137,12 @@ class VaadinSecurityConfigurerTest {
 
     @BeforeEach
     void setUp() {
+        SecurityContextHolder.clearContext();
+        Assertions.assertInstanceOf(
+                VaadinAwareSecurityContextHolderStrategy.class,
+                securityContextHolderStrategy);
         var authManagerBuilder = new AuthenticationManagerBuilder(postProcessor)
                 .authenticationProvider(new TestingAuthenticationProvider());
-        securityContextHolderStrategy = new VaadinAwareSecurityContextHolderStrategy();
         http = new HttpSecurity(postProcessor, authManagerBuilder,
                 Map.of(ApplicationContext.class, applicationContext,
                         PathPatternRequestMatcher.Builder.class,
@@ -141,7 +154,31 @@ class VaadinSecurityConfigurerTest {
 
     @AfterEach
     void tearDown() {
+        securityContextHolderStrategy.clearContext();
         SecurityContextHolder.clearContext();
+    }
+
+    @Test
+    void authenticationUtil_securityContextHolderInjected() {
+        Authentication authentication = new TestingAuthenticationToken("user",
+                new Object(), "ROLE_USER");
+        SecurityContext securityContext = Mockito.mock(SecurityContext.class);
+        when(securityContext.getAuthentication()).thenReturn(authentication);
+        HttpSession httpSession = Mockito.mock(HttpSession.class);
+        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
+        Mockito.when(vaadinSession.getSession())
+                .thenReturn(new WrappedHttpSession(httpSession));
+        when(httpSession.getAttribute(
+                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY))
+                .thenReturn(securityContext);
+
+        VaadinSession.setCurrent(vaadinSession);
+        try {
+            Assertions.assertSame(authentication,
+                    AuthenticationUtil.getSecurityHolderAuthentication());
+        } finally {
+            VaadinSession.setCurrent(null);
+        }
     }
 
     @Test

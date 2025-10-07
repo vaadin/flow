@@ -29,6 +29,7 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.Customizer;
@@ -37,6 +38,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
@@ -187,8 +189,10 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
                 trustResolver = new AuthenticationTrustResolverImpl();
             }
             jwtSecurityContextRepository.setTrustResolver(trustResolver);
+
             http.addFilterBefore(
-                    new UpdateJwtCookiesFilter(jwtSecurityContextRepository),
+                    new UpdateJwtCookiesFilter(jwtSecurityContextRepository,
+                            getSecurityContextHolderStrategy(http)),
                     HeaderWriterFilter.class);
         }
 
@@ -197,7 +201,22 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             ((VaadinDefaultRequestCache) requestCache)
                     .setDelegateRequestCache(new CookieRequestCache());
         }
+    }
 
+    private SecurityContextHolderStrategy getSecurityContextHolderStrategy(
+            H http) {
+        SecurityContextHolderStrategy securityContextHolderStrategy = http
+                .getSharedObject(SecurityContextHolderStrategy.class);
+        if (securityContextHolderStrategy == null) {
+            var provider = http.getSharedObject(ApplicationContext.class)
+                    .getBeanProvider(SecurityContextHolderStrategy.class);
+            securityContextHolderStrategy = provider.getIfAvailable();
+        }
+        if (securityContextHolderStrategy == null) {
+            securityContextHolderStrategy = SecurityContextHolder
+                    .getContextHolderStrategy();
+        }
+        return securityContextHolderStrategy;
     }
 
     /**
@@ -324,10 +343,13 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             extends OncePerRequestFilter {
 
         private final JwtSecurityContextRepository jwtSecurityContextRepository;
+        private final SecurityContextHolderStrategy securityContextHolderStrategy;
 
         private UpdateJwtCookiesFilter(
-                JwtSecurityContextRepository jwtSecurityContextRepository) {
+                JwtSecurityContextRepository jwtSecurityContextRepository,
+                SecurityContextHolderStrategy securityContextHolderStrategy) {
             this.jwtSecurityContextRepository = jwtSecurityContextRepository;
+            this.securityContextHolderStrategy = securityContextHolderStrategy;
         }
 
         @Override
@@ -335,7 +357,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
                 HttpServletResponse response, FilterChain filterChain)
                 throws ServletException, IOException {
             UpdateJWTCookieOnCommitResponseWrapper responseWrapper = new UpdateJWTCookieOnCommitResponseWrapper(
-                    request, response, jwtSecurityContextRepository);
+                    request, response, jwtSecurityContextRepository,
+                    securityContextHolderStrategy);
             try {
                 filterChain.doFilter(request, responseWrapper);
             } finally {
@@ -352,12 +375,16 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
         private final HttpServletRequest request;
 
+        private final SecurityContextHolderStrategy securityContextHolderStrategy;
+
         UpdateJWTCookieOnCommitResponseWrapper(HttpServletRequest request,
                 HttpServletResponse response,
-                JwtSecurityContextRepository jwtSecurityContextRepository) {
+                JwtSecurityContextRepository jwtSecurityContextRepository,
+                SecurityContextHolderStrategy securityContextHolderStrategy) {
             super(response);
             this.request = request;
             this.jwtSecurityContextRepository = jwtSecurityContextRepository;
+            this.securityContextHolderStrategy = securityContextHolderStrategy;
         }
 
         @Override
@@ -370,8 +397,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             if (isDisableOnResponseCommitted()) {
                 return;
             }
-            org.springframework.security.core.context.SecurityContext context = SecurityContextHolder
-                    .getContextHolderStrategy().getContext();
+            org.springframework.security.core.context.SecurityContext context = securityContextHolderStrategy
+                    .getContext();
             if (context != null && !SerializedJwtSplitCookieRepository
                     .containsCookie(this)) {
                 jwtSecurityContextRepository.saveContext(context, request,

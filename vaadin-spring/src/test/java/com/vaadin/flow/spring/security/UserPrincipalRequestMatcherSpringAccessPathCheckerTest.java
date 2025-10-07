@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
@@ -70,14 +71,23 @@ class UserPrincipalRequestMatcherSpringAccessPathCheckerTest {
         return accessPathChecker.hasAccess(path, principal, roleChecker::apply);
     }
 
-    @Configuration
+    @Configuration(proxyBeanMethods = false)
     @EnableWebSecurity
     public static class TestConfig {
 
         @Bean
+        SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+            VaadinAwareSecurityContextHolderStrategy strategy = new VaadinAwareSecurityContextHolderStrategy();
+            AuthenticationUtil.setSecurityContextSupplier(strategy::getContext);
+            return strategy;
+        }
+
+        @Bean
         SpringAccessPathChecker urlMappingPathAccessChecker(
+                SecurityContextHolderStrategy securityContextHolderStrategy,
                 WebInvocationPrivilegeEvaluator evaluator) {
-            return new SpringAccessPathChecker(evaluator);
+            return new SpringAccessPathChecker(securityContextHolderStrategy,
+                    evaluator);
         }
 
         /**
