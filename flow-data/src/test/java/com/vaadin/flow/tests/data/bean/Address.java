@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.tests.data.bean;
 
-import java.io.Serializable;
-
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
+
+import java.io.Serializable;
 
 @SuppressWarnings("serial")
 public class Address implements Serializable {

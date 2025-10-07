@@ -18,11 +18,11 @@ package com.vaadin.base.devserver.stats;
 import java.io.File;
 import java.io.IOException;
 
-import com.vaadin.flow.testutil.TestUtils;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.testutil.TestUtils;
 
 public abstract class AbstractStatisticsTest {
 

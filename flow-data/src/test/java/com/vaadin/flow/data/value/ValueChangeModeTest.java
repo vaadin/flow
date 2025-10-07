@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.data.value;
 
-import com.vaadin.flow.dom.DebouncePhase;
-import com.vaadin.flow.dom.DisabledUpdateMode;
-import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import java.util.EnumSet;
+
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Tag;
-
-import java.util.EnumSet;
+import com.vaadin.flow.dom.DebouncePhase;
+import com.vaadin.flow.dom.DisabledUpdateMode;
+import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 
 public class ValueChangeModeTest {
 

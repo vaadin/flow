@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public abstract class AbstractContextIT extends ChromeBrowserTest {
 

@@ -17,13 +17,13 @@ package com.vaadin.flow.component.html.testbench;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.NativeDetails;
 import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
+import com.vaadin.flow.router.Route;
 
 @Route("Details")
 public class NativeDetailsView extends Div implements AfterNavigationObserver {

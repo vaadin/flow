@@ -18,12 +18,12 @@ package com.vaadin.flow.server.auth;
 import java.lang.reflect.Field;
 import java.util.concurrent.atomic.AtomicReference;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.AdditionalAnswers;
-import org.mockito.Answers;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.DefaultInstantiator;
@@ -32,10 +32,8 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.InvalidMenuAccessControlException;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import org.mockito.invocation.InvocationOnMock;
 
 import static org.junit.Assert.assertThrows;
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DefaultInstantiatorMenuAccessControlTest {

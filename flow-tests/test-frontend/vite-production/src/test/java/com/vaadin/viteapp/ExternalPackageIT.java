@@ -15,12 +15,13 @@
  */
 package com.vaadin.viteapp;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.ParagraphElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.viteapp.views.empty.MainView;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class ExternalPackageIT extends ChromeBrowserTest {
 

@@ -24,7 +24,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
-import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 

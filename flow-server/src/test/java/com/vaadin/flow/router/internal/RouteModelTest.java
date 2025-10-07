@@ -20,14 +20,15 @@ import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.router.RouteParameterData;
 import com.vaadin.flow.router.RouteParameterFormatOption;
 import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class RouteModelTest {
 

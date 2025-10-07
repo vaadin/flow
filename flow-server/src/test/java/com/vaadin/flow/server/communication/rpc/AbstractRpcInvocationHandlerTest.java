@@ -18,6 +18,14 @@ package com.vaadin.flow.server.communication.rpc;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.junit.Assert;
+import org.junit.Test;
+import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
@@ -26,14 +34,6 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.JsonConstants;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
-import org.mockito.MockedStatic;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.anyString;

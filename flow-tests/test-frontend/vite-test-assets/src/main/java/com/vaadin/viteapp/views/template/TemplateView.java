@@ -16,6 +16,7 @@
 package com.vaadin.viteapp.views.template;
 
 import org.vaadin.example.addon.AddonLitComponent;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;

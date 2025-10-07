@@ -18,7 +18,6 @@ package com.vaadin.flow.misc.ui;
 import java.util.List;
 import java.util.logging.Level;
 
-import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.logging.LogEntry;

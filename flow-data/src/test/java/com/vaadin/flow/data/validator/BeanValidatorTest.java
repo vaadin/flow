@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.data.validator;
 
+import jakarta.validation.Validation;
+
 import java.util.Calendar;
 import java.util.Locale;
-
-import jakarta.validation.Validation;
 
 import org.junit.After;
 import org.junit.Test;

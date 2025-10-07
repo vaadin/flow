@@ -16,7 +16,6 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;

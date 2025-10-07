@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.data.converter;
 
+import java.math.BigDecimal;
+
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
-
-import java.math.BigDecimal;
 
 /**
  * A converter that converts from {@link Float} to {@link BigDecimal} and back.

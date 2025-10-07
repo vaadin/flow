@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.servlet;
 
+import jakarta.servlet.annotation.WebServlet;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;

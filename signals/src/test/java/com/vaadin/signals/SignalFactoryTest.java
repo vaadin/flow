@@ -15,12 +15,12 @@
  */
 package com.vaadin.signals;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.NodeSignal.NodeSignalState;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class SignalFactoryTest extends SignalTestBase {
 

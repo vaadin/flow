@@ -17,7 +17,6 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;

@@ -15,14 +15,10 @@
  */
 package com.vaadin.flow.spring;
 
-import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
-import com.vaadin.flow.server.Command;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 
 import java.io.Closeable;
-import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -33,10 +29,12 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
 
+import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.LookupServletContainerInitializer;
 

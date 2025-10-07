@@ -18,8 +18,8 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.PWA;
 
 /**
  * An interface to configure application features and the host page where the

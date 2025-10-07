@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-
 import java.util.Optional;
+
+import org.junit.Assert;
 
 /**
  * Assert utility class.

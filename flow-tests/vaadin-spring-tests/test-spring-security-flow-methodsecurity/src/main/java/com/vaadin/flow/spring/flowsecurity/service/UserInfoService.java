@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.spring.flowsecurity.service;
 
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
 @Service
 public class UserInfoService {

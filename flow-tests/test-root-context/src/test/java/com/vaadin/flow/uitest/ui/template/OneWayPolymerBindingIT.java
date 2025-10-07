@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui.template;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Vaadin Ltd

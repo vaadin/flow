@@ -30,13 +30,13 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
 /**
  * Registers runtime hints for Spring 3 native support.

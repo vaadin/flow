@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.data.converter;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -25,6 +22,9 @@ import java.time.ZoneId;
 import org.junit.Test;
 
 import com.vaadin.flow.data.binder.Result;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 public class LocalDateTimeToInstantConverterTest {
 

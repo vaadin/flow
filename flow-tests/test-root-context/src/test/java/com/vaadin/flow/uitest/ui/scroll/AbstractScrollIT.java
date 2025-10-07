@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
-import static org.junit.Assert.assertThat;
-
 import org.hamcrest.number.IsCloseTo;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static org.junit.Assert.assertThat;
 
 abstract class AbstractScrollIT extends ChromeBrowserTest {
 

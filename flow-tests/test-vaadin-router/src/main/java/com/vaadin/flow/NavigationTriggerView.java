@@ -24,7 +24,6 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
 @Route(value = "com.vaadin.flow.NavigationTriggerView")

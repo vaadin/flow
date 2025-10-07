@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server.auth;
 
-import java.util.Collections;
-import java.util.List;
-
 import jakarta.annotation.security.DenyAll;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
+
+import java.util.Collections;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

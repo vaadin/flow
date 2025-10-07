@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.internal.springcsrf;
 
+import jakarta.servlet.ServletRequest;
+
 import java.util.Optional;
 
-import tools.jackson.databind.JsonNode;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Element;
-
-import jakarta.servlet.ServletRequest;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinRequest;

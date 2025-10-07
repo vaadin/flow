@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import jakarta.servlet.http.HttpServletRequest;
+
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.IFrame;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-
-import jakarta.servlet.http.HttpServletRequest;
-
-import org.slf4j.LoggerFactory;
 
 @Route(value = "com.vaadin.flow.uitest.ui.PageView", layout = ViewTestLayout.class)
 public class PageView extends AbstractDivView {

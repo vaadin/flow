@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;

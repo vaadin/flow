@@ -20,8 +20,8 @@ import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.CustomLumo;
+import com.vaadin.flow.theme.Theme;
 
 /**
  * A container class for all components used in tests.

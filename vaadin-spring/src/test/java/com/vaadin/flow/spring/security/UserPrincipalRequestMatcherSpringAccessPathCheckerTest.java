@@ -15,8 +15,11 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.spring.AuthenticationUtil;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.security.Principal;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -34,8 +37,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
-import java.security.Principal;
-import java.util.function.Function;
+import com.vaadin.flow.spring.AuthenticationUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

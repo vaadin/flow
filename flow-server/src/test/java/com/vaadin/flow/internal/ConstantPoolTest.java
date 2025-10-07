@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
-import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ConstantPoolTest {
     private ConstantPool constantPool = new ConstantPool();

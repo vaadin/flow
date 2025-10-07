@@ -15,14 +15,15 @@
  */
 package com.vaadin.client.flow.collection;
 
-import com.google.gwt.core.client.GWT;
-import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
-import com.vaadin.client.flow.collection.jre.JreJsArray;
-
 import jsinterop.annotations.JsOverlay;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+
+import com.google.gwt.core.client.GWT;
+
+import com.vaadin.client.flow.collection.JsCollections.ForEachCallback;
+import com.vaadin.client.flow.collection.jre.JreJsArray;
 
 /**
  * Native JS Array interface with an alternative implementation for JRE usage.

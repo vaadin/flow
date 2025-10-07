@@ -15,13 +15,9 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import static org.mockito.Mockito.doCallRealMethod;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -32,7 +28,10 @@ import org.springframework.beans.factory.config.Scope;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.mockito.Mockito.doCallRealMethod;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @NotThreadSafe
 public class VaadinSessionScopeTest extends AbstractScopeTest {
