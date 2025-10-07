@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -233,6 +232,51 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(newVersion, newVersion, newVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
+    }
+
+    @Test
+    public void overridesContainPinnedVersion_platformVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
+            throws IOException {
+
+        ObjectNode packageJson = getOrCreatePackageJson();
+        packageJson.set(OVERRIDES, JacksonUtils.createObjectNode());
+        ((ObjectNode) packageJson.get(OVERRIDES)).put("@vaadin/aura", "1.0");
+
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
+        Assert.assertEquals("1.0", overrides.get("@vaadin/aura").textValue());
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        String versionJsonString = """
+                {
+                  "core": {
+                    "vaadin-aura": {
+                      "jsVersion": "2.0",
+                      "npmName": "@vaadin/aura"
+                    }
+                  }
+                }
+                """;
+        try {
+            FileUtils.write(versionJsonFile, versionJsonString,
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final Map<String, String> applicationDependencies = Collections
+                .singletonMap("@vaadin/aura", "2.0");
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        overrides = getOrCreatePackageJson().get(OVERRIDES);
+
+        Assert.assertEquals("$@vaadin/aura",
+                overrides.get("@vaadin/aura").textValue());
     }
 
     @Test
