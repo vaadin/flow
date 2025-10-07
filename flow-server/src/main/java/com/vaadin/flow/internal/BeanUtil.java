@@ -197,8 +197,8 @@ public final class BeanUtil implements Serializable {
      *
      * @param type
      *            the class to introspect
-     * @return a list of property paths (e.g., ["event.button",
-     *         "event.clientX", "type"])
+     * @return a list of property paths (e.g., ["event.button", "event.clientX",
+     *         "type"])
      * @throws IntrospectionException
      *             if bean introspection fails
      */
@@ -240,8 +240,7 @@ public final class BeanUtil implements Serializable {
                 // Leaf node - add path
                 paths.add(fieldPath);
             } else if (propertyType.isArray()
-                    || java.util.Collection.class
-                            .isAssignableFrom(propertyType)
+                    || java.util.Collection.class.isAssignableFrom(propertyType)
                     || java.util.Map.class.isAssignableFrom(propertyType)) {
                 // Collection/array/map - add as-is, don't recurse
                 paths.add(fieldPath);

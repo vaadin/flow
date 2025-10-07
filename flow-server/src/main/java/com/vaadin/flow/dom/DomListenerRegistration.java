@@ -406,8 +406,9 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Automatically adds event data expressions for all properties of the given
-     * class. This method uses Java Bean introspection to discover the properties
-     * of the class and adds event data expressions for each field path.
+     * class. This method uses Java Bean introspection to discover the
+     * properties of the class and adds event data expressions for each field
+     * path.
      * <p>
      * This is particularly useful with Java records that mirror the JavaScript
      * event structure. For example:
@@ -460,8 +461,8 @@ public interface DomListenerRegistration extends Registration {
      * extract the raw class type for introspection.
      *
      * @param typeReference
-     *            the type reference whose properties should be captured from the
-     *            event data, not <code>null</code>
+     *            the type reference whose properties should be captured from
+     *            the event data, not <code>null</code>
      * @return this registration, for chaining
      * @see #addEventData(String)
      */
