@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
