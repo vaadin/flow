@@ -110,6 +110,8 @@
         <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
         <maven.version>3.9.11</maven.version>
         <spotless.plugin.version>2.46.1</spotless.plugin.version>
+        <spotless.license-header>
+            ${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
 
         <!-- Frontend -->
         <flow.dev.dependencies.folder>generatedDeps</flow.dev.dependencies.folder>
@@ -135,7 +137,7 @@
 
         <!-- This property is needed to allow some Win-specific unit tests -->
         <!-- to be disabled via system property in CI until they got fixed -->
-        <exclude.windows.failed.tests/>
+        <exclude.windows.failed.tests />
 
         <testListener>com.vaadin.flow.testutil.CurrentInstanceCleaner</testListener>
 
@@ -337,9 +339,17 @@
                 <configuration>
                     <java>
                         <eclipse>
-                            <file>${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
+                            <file>
+                                ${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
                         </eclipse>
+                        <excludes>
+                            <exclude>**/com/vaadin/client/gwt/**/*.java</exclude>
+                            <exclude>**/com/vaadin/flow/testutil/net/**/*.java</exclude>
+                        </excludes>
                     </java>
+                    <licenseHeader>
+                        <file>${spotless.license-header}</file>
+                    </licenseHeader>
                 </configuration>
             </plugin>
 
