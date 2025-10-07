@@ -3,8 +3,8 @@ import { html, LitElement } from 'lit';
 class LitComponent extends LitElement {
   render() {
     return html`<div>
-        <p>Local Lit component</p>
-        <span id="label">Default</span>
+      <p>Local Lit component</p>
+      <span id="label">Default</span>
     </div>`;
   }
 }

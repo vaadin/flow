@@ -1,6 +1,6 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
-import "@vaadin/vaadin-horizontal-layout";
-import "@vaadin/vaadin-vertical-layout";
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import '@vaadin/vaadin-horizontal-layout';
+import '@vaadin/vaadin-vertical-layout';
 
 class InlineStyles extends PolymerElement {
   static get template() {
@@ -33,7 +33,7 @@ class InlineStyles extends PolymerElement {
   }
 
   static get is() {
-    return "inline-styles";
+    return 'inline-styles';
   }
 }
 

@@ -1,4 +1,4 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class ComputedProperty extends PolymerElement {
   static get template() {
@@ -17,17 +17,17 @@ class ComputedProperty extends PolymerElement {
       last: String,
       fullName: {
         type: String,
-        computed: "computeFullName(first, last)",
-      },
+        computed: 'computeFullName(first, last)'
+      }
     };
   }
 
   computeFullName(first, last) {
-    return first + " " + last;
+    return first + ' ' + last;
   }
 
   static get is() {
-    return "computed-property";
+    return 'computed-property';
   }
 }
 

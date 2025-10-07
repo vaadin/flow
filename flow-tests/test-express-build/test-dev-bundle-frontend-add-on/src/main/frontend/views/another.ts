@@ -1,5 +1,5 @@
 export class Greetings {
-    sayHello(name : string) : string {
-      return "Hello " + name;
-    }
+  sayHello(name: string): string {
+    return 'Hello ' + name;
+  }
 }

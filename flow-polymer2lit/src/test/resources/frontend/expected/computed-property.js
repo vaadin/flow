@@ -1,4 +1,4 @@
-import { html, LitElement, css } from "lit";
+import { html, LitElement, css } from 'lit';
 
 class ComputedProperty extends LitElement {
   render() {
@@ -16,17 +16,17 @@ class ComputedProperty extends LitElement {
       first: String,
       last: String,
       fullName: {
-        type: String,
-      },
+        type: String
+      }
     };
   }
 
   computeFullName(first, last) {
-    return first + " " + last;
+    return first + ' ' + last;
   }
 
   static get is() {
-    return "computed-property";
+    return 'computed-property';
   }
   get fullName() {
     return this.computeFullName(this.first, this.last);
