@@ -255,6 +255,7 @@
         <module>test-lumo</module>
         <module>test-express-build</module>
         <module>test-aura</module>
+        <module>test-lumo-theme</module>
     </modules>
 
     <profiles>

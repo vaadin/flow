@@ -10,6 +10,7 @@ import com.vaadin.flow.theme.Theme;
 @Theme("spring-security-test-app")
 @Push
 @StyleSheet("@vaadin/aura/fake-aura.css")
+@StyleSheet("@vaadin/vaadin-lumo-styles/fake-lumo.css")
 public class Configurator implements AppShellConfigurator {
 
 }
