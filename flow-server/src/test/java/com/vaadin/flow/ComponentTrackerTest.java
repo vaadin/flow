@@ -1,17 +1,10 @@
-/*
- * Copyright 2000-2025 Vaadin Ltd.
+/**
+ * Copyright (C) 2025 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See {@literal <https://vaadin.com/commercial-license-and-service-terms>}  for the full
+ * license.
  */
 package com.vaadin.flow;
 
@@ -71,7 +64,7 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 71;
+        int c1Line = 64;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
@@ -85,7 +78,7 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 82;
+        int c1Line = 75;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 

@@ -33,7 +33,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.ComponentTracker;
-import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableConsumer;

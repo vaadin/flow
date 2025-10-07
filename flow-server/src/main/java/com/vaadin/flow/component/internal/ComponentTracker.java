@@ -1,17 +1,10 @@
-/*
- * Copyright 2000-2022 Vaadin Ltd.
+/**
+ * Copyright (C) 2025 Vaadin Ltd
  *
- * Licensed under the Apache License, Version 2.0 (the "License"); you may not
- * use this file except in compliance with the License. You may obtain a copy of
- * the License at
+ * This program is available under Vaadin Commercial License and Service Terms.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
- * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
- * License for the specific language governing permissions and limitations under
- * the License.
+ * See {@literal <https://vaadin.com/commercial-license-and-service-terms>}  for the full
+ * license.
  */
 package com.vaadin.flow.component.internal;
 
@@ -30,7 +23,6 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 
 /**
@@ -145,7 +137,7 @@ public class ComponentTracker {
         Location[] relevantLocations = findRelevantLocations(stack);
         Location location = findRelevantLocation(component.getClass(),
                 relevantLocations, null);
-        if (isNavigatorCreate(location)) {
+        if (location == null || isNavigatorCreate(location)) {
             location = findRelevantLocation(null, relevantLocations, null);
         }
         createLocation.put(component, location);
@@ -182,7 +174,7 @@ public class ComponentTracker {
         Location[] relevantLocations = findRelevantLocations(stack);
         Location location = findRelevantLocation(component.getClass(),
                 relevantLocations, findCreate(component));
-        if (isNavigatorCreate(location)) {
+        if (location == null || isNavigatorCreate(location)) {
             // For routes, we can just show the init location as we have nothing
             // better
             location = createLocation.get(component);
