@@ -120,6 +120,17 @@ public class TaskUpdatePackages extends NodeUpdater {
         ObjectNode overridesSection = getOverridesSection(packageJson);
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
+        // Clean platform overrides if override version less than new version.
+        for (String key : JacksonUtils.getKeys(fullPlatformDependencies)) {
+            if (overridesSection.has(key)
+                    && !overridesSection.get(key).textValue().startsWith("$")
+                    && new FrontendVersion(
+                            overridesSection.get(key).textValue()).isOlderThan(
+                                    new FrontendVersion(fullPlatformDependencies
+                                            .get(key).textValue()))) {
+                overridesSection.remove(key);
+            }
+        }
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
             if (!overridesSection.has(dependency)
                     && shouldLockDependencyVersion(dependency, dependencies,
