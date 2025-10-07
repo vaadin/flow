@@ -58,6 +58,6 @@ public interface HasLabel extends HasElement {
      */
     default String getLabel() {
         return getElement().getProperty(ElementConstants.LABEL_PROPERTY_NAME,
-                null);
+                (String) null);
     }
 }
