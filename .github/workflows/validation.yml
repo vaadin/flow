@@ -16,6 +16,7 @@ env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  USE_FORMATTED_CODE: false
 jobs:
   check-permissions:
     uses: ./.github/workflows/check-permissions.yml
@@ -28,6 +29,7 @@ jobs:
     timeout-minutes: 120
     outputs:
       changes_committed: ${{ steps.commit-changes.outputs.changes_committed }}
+      new_sha: ${{ steps.commit-changes.outputs.new_sha }}
 
     steps:
       - name: Checkout code
@@ -91,10 +93,14 @@ jobs:
           git add -u
           git commit -m "chore: apply code formatting with spotless"
 
+          # Get the new commit SHA
+          NEW_SHA=$(git rev-parse HEAD)
+          echo "new_sha=$NEW_SHA" >> $GITHUB_OUTPUT
+
           git push
 
           echo "changes_committed=true" >> $GITHUB_OUTPUT
-          echo "✅ Formatting changes committed and pushed" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Formatting changes committed and pushed. Continuing with validation on formatted code." >> $GITHUB_STEP_SUMMARY
 
       - name: Generate diff for artifact
         if: steps.formatter.outputs.modified != '0'
@@ -150,12 +156,6 @@ jobs:
               comment_id: ${{ steps.find-comment.outputs.comment-id }}
             })
 
-      - name: Stop workflow if changes were committed
-        if: steps.commit-changes.outputs.changes_committed == 'true'
-        run: |
-          echo "::notice::Formatting changes were committed. Stopping workflow. Tests will run on next push."
-          exit 1
-
   build:
     needs: [check-permissions, formatter]
     if: always() && needs.check-permissions.result == 'success' && (needs.formatter.result == 'success' || needs.formatter.result == 'skipped')
@@ -173,7 +173,7 @@ jobs:
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
         with:
-          ref: ${{env.HEAD_SHA}}
+          ref: ${{ needs.formatter.outputs.new_sha || env.HEAD_SHA }}
       - uses: actions/setup-node@v4
         with:
           node-version: '24.9.0'
@@ -212,7 +212,7 @@ jobs:
           name: saved-workspace
           path: workspace.tar
   unit-tests:
-    needs: build
+    needs: [build, formatter]
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -221,7 +221,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{env.HEAD_SHA}}
+          ref: ${{ needs.formatter.outputs.new_sha || env.HEAD_SHA }}
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
@@ -278,7 +278,7 @@ jobs:
           name: tests-output-unit-${{ matrix.current }}
           path: tests-report-*.tgz
   it-tests:
-    needs: build
+    needs: [build, formatter]
     timeout-minutes: 30
     strategy:
       fail-fast: false
@@ -287,7 +287,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: ${{env.HEAD_SHA}}
+          ref: ${{ needs.formatter.outputs.new_sha || env.HEAD_SHA }}
       - uses: actions/setup-node@v4
         with:
           node-version: '24.9.0'
@@ -367,7 +367,7 @@ jobs:
       checks: write
       pull-requests: write
     if: ${{ failure() || success() }}
-    needs: [unit-tests, it-tests]
+    needs: [unit-tests, it-tests, formatter]
     runs-on: ubuntu-24.04
     steps:
       - name: Merge Artifacts
@@ -377,7 +377,7 @@ jobs:
           pattern: tests-output-*
       - uses: actions/checkout@v4
         with:
-          ref: ${{env.HEAD_SHA}}
+          ref: ${{ needs.formatter.outputs.new_sha || env.HEAD_SHA }}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
