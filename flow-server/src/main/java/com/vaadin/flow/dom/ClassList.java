@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.dom;
 
-import java.io.Serializable;
+                          import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -24,7 +24,7 @@ import java.util.Set;
  * @author Vaadin Ltd
  * @since 1.0
  */
-public interface ClassList extends Set<String>, Serializable {
+public interface ClassList extends                       Set<String>, Serializable {
 
     /**
      * Sets or removes the given class name, based on the {@code set} parameter.
