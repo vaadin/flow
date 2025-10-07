@@ -159,7 +159,6 @@ public class ComponentTrackerTest {
 
         IllegalStateException ex = Assert.assertThrows(
                 IllegalStateException.class, () -> secondUI.add(button));
-        System.err.println(ex.getMessage());
         Assert.assertTrue(ex.getMessage(), ex.getMessage().startsWith(
                 "Can't move a node from one state tree to another. If this is "
                         + "intentional, first remove the node from its current "
