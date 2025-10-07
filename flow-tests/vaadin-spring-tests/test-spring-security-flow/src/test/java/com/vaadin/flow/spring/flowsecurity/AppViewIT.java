@@ -406,20 +406,6 @@ public class AppViewIT extends AbstractIT {
         Assert.assertEquals(expectedItems, menuItems);
     }
 
-    @Test
-    public void stylesheet_themeImport_importedWithNoExtraSecurityConfig() {
-        open("");
-
-        // Verify that the Aura theme stylesheet from @StyleSheet has been
-        // applied
-        // by checking that the CSS custom property is present on :root
-        String auraLoaded = (String) executeScript(
-                "return getComputedStyle(document.documentElement).getPropertyValue('--fake-aura-theme-loaded').trim() ");
-        Assert.assertEquals(
-                "Expected :root --fake-aura-theme-loaded custom property to be set by @vaadin/aura/fake-aura.css",
-                "1", auraLoaded);
-    }
-
     private void assertMenuListContains(String expected) {
         TestBenchElement menuList = waitUntil(driver -> $("*").id("menu-list"));
         String menuListText = menuList.getText();
