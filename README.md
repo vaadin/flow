@@ -8,7 +8,7 @@ Vaadin Flow
 
 **For issues related to [Hilla](https://hilla.dev/), please refer to the https://github.com/vaadin/hilla repository.**
 
-Ask questions about Vaadin Flow in our [forum](https://vaadin.com/forum/c/flow/8).
+Ask questions about Vaadin Flow inasdf our [forum](https://vaadin.com/forum/c/flow/8).
 
 Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and minor versions are aligned with platform versions:
 
