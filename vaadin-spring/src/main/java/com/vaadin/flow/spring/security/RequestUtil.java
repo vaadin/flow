@@ -376,7 +376,13 @@ public class RequestUtil {
                 .orElse(null);
     }
 
-    String getUrlMapping() {
+    /**
+     * Gets the url mapping for the Vaadin servlet.
+     *
+     * @return the url mapping
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    public String getUrlMapping() {
         return configurationProperties.getUrlMapping();
     }
 
