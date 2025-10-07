@@ -26,10 +26,10 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.CssClass2;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.collection.IsIterableContainingInAnyOrder.containsInAnyOrder;
 import static org.hamcrest.collection.IsIterableContainingInOrder.contains;
 import static org.junit.Assert.assertEquals;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ScannerCssTest {
 

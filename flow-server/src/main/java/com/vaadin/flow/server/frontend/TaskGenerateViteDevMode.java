@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.io.IOUtils;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated

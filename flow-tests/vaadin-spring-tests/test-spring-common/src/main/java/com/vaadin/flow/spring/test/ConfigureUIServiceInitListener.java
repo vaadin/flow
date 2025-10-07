@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.spring.test;
 
+import org.springframework.context.event.EventListener;
+
 import com.vaadin.flow.server.ServiceInitEvent;
 import com.vaadin.flow.server.VaadinServiceInitListener;
 import com.vaadin.flow.spring.annotation.SpringComponent;
-import org.springframework.context.event.EventListener;
 
 @SpringComponent
 public class ConfigureUIServiceInitListener

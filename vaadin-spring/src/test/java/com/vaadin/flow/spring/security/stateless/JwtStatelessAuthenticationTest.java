@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+
 import javax.crypto.spec.SecretKeySpec;
+
 import java.util.Arrays;
 import java.util.Base64;
 
-import jakarta.servlet.http.Cookie;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

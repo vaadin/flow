@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.internal.change;
 
-import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.nodefeature.AbstractNodeFeatureTest;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;

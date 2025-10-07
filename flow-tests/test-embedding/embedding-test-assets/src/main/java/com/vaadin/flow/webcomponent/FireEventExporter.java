@@ -20,8 +20,6 @@ import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.JacksonUtils;
 
-import elemental.json.Json;
-
 public class FireEventExporter
         extends WebComponentExporter<FireEventComponent> {
 

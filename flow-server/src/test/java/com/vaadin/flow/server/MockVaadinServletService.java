@@ -15,17 +15,7 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.router.DefaultRoutePathProvider;
-import com.vaadin.flow.router.RoutePathProvider;
-import com.vaadin.flow.router.Router;
-import com.vaadin.signals.SignalEnvironment;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
 import jakarta.servlet.ServletException;
-import org.mockito.Mockito;
-import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -34,6 +24,18 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+
+import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.router.DefaultRoutePathProvider;
+import com.vaadin.flow.router.RoutePathProvider;
+import com.vaadin.flow.router.Router;
+import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 /**
  *

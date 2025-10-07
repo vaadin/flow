@@ -16,11 +16,9 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+
 import java.time.Instant;
 import java.util.function.Predicate;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;

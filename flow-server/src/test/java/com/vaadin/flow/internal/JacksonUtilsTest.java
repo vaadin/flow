@@ -30,14 +30,14 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
+import org.junit.Assert;
+import org.junit.Test;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class JacksonUtilsTest {
     ObjectMapper mapper = JacksonUtils.getMapper();

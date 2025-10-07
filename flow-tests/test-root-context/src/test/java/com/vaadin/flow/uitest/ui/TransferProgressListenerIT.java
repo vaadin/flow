@@ -16,20 +16,10 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class TransferProgressListenerIT extends AbstractStreamResourceIT {
 

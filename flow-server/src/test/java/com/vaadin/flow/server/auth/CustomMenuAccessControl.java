@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.auth;
 
-import java.util.Optional;
-
 public class CustomMenuAccessControl implements MenuAccessControl {
 
     @Override

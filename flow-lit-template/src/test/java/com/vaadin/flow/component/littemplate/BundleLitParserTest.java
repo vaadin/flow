@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.littemplate;
 
-import java.io.IOException;
-
 import org.jsoup.nodes.Element;
 import org.junit.Assert;
 import org.junit.Test;

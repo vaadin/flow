@@ -17,6 +17,7 @@ package com.vaadin.flow.uitest.ui;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;

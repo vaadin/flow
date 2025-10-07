@@ -15,16 +15,12 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.ReflectTools;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.spring.SpringBootAutoConfiguration;
-import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -74,8 +70,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import java.util.List;
-import java.util.Map;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.spring.SpringBootAutoConfiguration;
+import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;

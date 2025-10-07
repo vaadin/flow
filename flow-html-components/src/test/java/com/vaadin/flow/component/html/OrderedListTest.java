@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.html.OrderedList.NumberingType;
 import org.junit.Test;
+
+import com.vaadin.flow.component.html.OrderedList.NumberingType;
 
 public class OrderedListTest extends ComponentTest {
 

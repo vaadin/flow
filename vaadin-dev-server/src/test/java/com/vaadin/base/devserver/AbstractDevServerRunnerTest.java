@@ -15,6 +15,10 @@
  */
 package com.vaadin.base.devserver;
 
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
@@ -33,20 +37,16 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import org.junit.Assert;
+import org.junit.AssumptionViolatedException;
+import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
-
-import org.junit.Assert;
-import org.junit.AssumptionViolatedException;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class AbstractDevServerRunnerTest extends AbstractDevModeTest {
 

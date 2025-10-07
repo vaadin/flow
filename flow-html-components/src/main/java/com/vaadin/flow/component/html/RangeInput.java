@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Arrays;
+import java.util.Objects;
+
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
@@ -25,9 +28,6 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
-
-import java.util.Arrays;
-import java.util.Objects;
 
 /**
  * Creates a new input element with type "range".

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Paragraph;
-
-import java.io.Serializable;
 
 public abstract class AbstractDebounceSynchronizeView extends AbstractDivView {
 

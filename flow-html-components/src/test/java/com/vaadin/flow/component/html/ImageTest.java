@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.io.ByteArrayInputStream;
 import java.util.Optional;
 
 import org.junit.Assert;

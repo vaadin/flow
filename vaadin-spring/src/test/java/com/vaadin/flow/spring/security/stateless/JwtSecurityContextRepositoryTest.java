@@ -15,10 +15,12 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;

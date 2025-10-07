@@ -17,11 +17,11 @@ package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRegistration;
 
 import java.io.IOException;
 import java.util.Optional;
 
-import jakarta.servlet.ServletRegistration;
 import org.atmosphere.cache.UUIDBroadcasterCache;
 import org.atmosphere.client.TrackMessageSizeInterceptor;
 import org.atmosphere.cpr.ApplicationConfig;

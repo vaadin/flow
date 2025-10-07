@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.component.html.testbench;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class RangeInputElementIT extends ChromeBrowserTest {
 

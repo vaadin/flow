@@ -19,9 +19,10 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import com.vaadin.signals.AbstractSignal;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
+
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal;

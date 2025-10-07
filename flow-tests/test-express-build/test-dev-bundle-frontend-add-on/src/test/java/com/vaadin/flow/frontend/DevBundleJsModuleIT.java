@@ -22,6 +22,7 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
 import elemental.json.JsonObject;
 
 public class DevBundleJsModuleIT extends ChromeBrowserTest {

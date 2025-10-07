@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.spring.flowsecurity.service;
 
-import com.vaadin.flow.spring.flowsecurity.data.Account;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-
-import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import org.springframework.stereotype.Service;
+
+import com.vaadin.flow.spring.flowsecurity.data.Account;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 
 @Service
 public class AccountService {

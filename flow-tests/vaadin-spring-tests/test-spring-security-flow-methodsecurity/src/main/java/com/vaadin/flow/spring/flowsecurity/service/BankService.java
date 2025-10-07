@@ -15,17 +15,18 @@
  */
 package com.vaadin.flow.spring.flowsecurity.service;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import java.math.BigDecimal;
 import java.util.Optional;
 
-import com.vaadin.flow.spring.flowsecurity.data.Account;
-import com.vaadin.flow.spring.security.AuthenticationContext;
-
-import jakarta.annotation.security.RolesAllowed;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+
+import com.vaadin.flow.spring.flowsecurity.data.Account;
+import com.vaadin.flow.spring.security.AuthenticationContext;
 
 @Service
 public class BankService {

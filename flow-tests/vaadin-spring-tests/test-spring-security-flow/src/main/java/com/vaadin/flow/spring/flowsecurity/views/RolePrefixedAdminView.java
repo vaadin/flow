@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import jakarta.annotation.security.RolesAllowed;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
-
-import jakarta.annotation.security.RolesAllowed;
 
 @Route(value = "another_admin", layout = MainView.class)
 @PageTitle("Another Admin View")

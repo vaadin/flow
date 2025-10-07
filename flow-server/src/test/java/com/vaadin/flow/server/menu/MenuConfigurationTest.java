@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.menu;
 
 import jakarta.servlet.ServletContext;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -65,8 +66,8 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 import static com.vaadin.flow.internal.menu.MenuRegistry.FILE_ROUTES_JSON_NAME;
+import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 @NotThreadSafe
 public class MenuConfigurationTest {

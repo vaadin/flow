@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +29,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 
 public class TaskGenerateIndexHtmlTest {
     @Rule

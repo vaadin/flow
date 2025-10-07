@@ -16,7 +16,6 @@
 package com.vaadin.flow.router;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import com.vaadin.flow.component.Component;
 

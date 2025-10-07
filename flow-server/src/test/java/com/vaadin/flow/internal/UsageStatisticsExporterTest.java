@@ -17,12 +17,12 @@ package com.vaadin.flow.internal;
 
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.node.ObjectNode;
 import org.jsoup.internal.StringUtil;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import static org.junit.Assert.assertEquals;
 

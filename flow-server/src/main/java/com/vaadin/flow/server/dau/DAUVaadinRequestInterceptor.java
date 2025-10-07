@@ -16,6 +16,7 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+
 import java.util.Optional;
 
 import com.vaadin.flow.function.DeploymentConfiguration;

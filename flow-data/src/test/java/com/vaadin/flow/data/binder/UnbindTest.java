@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.data.binder;
 
-import com.vaadin.flow.tests.data.bean.BeanToValidate;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.tests.data.bean.BeanToValidate;
 
 public class UnbindTest
         extends BinderTestBase<Binder<BeanToValidate>, BeanToValidate> {

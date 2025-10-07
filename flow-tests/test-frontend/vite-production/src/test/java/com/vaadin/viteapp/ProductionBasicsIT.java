@@ -15,13 +15,13 @@
  */
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
-import com.vaadin.viteapp.views.empty.MainView;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.Dimension;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
+import com.vaadin.viteapp.views.empty.MainView;
 
 public class ProductionBasicsIT extends ChromeBrowserTest {
 

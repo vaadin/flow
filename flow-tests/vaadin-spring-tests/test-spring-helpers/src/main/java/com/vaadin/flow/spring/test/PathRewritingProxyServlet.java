@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.spring.test;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 import org.eclipse.jetty.client.Response;
 import org.eclipse.jetty.ee10.proxy.ProxyServlet;
 

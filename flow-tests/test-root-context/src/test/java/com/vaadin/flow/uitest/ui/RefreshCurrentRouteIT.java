@@ -21,6 +21,7 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 
+import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.AFTERNAVCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ATTACHCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.BEFOREENTERCOUNTER_ID;
@@ -28,10 +29,8 @@ import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.BEFORELEAVECOUNT
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.DETACHCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.NAVIGATE_ID;
-import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.OPEN_MODALS_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_LAYOUTS_ID;
-import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
 
 public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
 

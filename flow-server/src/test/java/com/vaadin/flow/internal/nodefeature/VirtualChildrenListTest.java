@@ -21,11 +21,11 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.internal.StateNode;
-
-import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+
+import com.vaadin.flow.internal.StateNode;
 
 public class VirtualChildrenListTest {
 

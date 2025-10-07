@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -29,6 +27,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  * @author Vaadin Ltd

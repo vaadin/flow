@@ -18,12 +18,12 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.junit.Assert;
+import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;

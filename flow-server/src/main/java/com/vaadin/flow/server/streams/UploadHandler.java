@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.streams;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.dom.Element;

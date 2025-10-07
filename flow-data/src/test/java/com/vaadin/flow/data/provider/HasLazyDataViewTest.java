@@ -17,12 +17,13 @@ package com.vaadin.flow.data.provider;
 
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.Tag;
 
 public class HasLazyDataViewTest {
 

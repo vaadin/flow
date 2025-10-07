@@ -18,6 +18,7 @@ package com.vaadin.flow.server.startup;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.servlet.ServletContext;
+
 import java.security.Principal;
 import java.util.Collections;
 import java.util.List;

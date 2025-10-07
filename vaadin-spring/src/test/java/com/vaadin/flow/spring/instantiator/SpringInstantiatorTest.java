@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.spring.instantiator;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -22,9 +26,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 import org.atmosphere.cpr.AtmosphereFramework;
 import org.junit.Assert;
 import org.junit.Test;

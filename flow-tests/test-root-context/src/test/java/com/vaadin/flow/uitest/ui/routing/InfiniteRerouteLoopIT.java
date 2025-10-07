@@ -21,8 +21,8 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.flow.testcategory.SlowTests;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @Category(SlowTests.class)
 public class InfiniteRerouteLoopIT extends ChromeBrowserTest {

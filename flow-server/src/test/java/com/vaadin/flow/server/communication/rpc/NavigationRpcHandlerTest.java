@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.RouterLink;
 import com.vaadin.flow.shared.JsonConstants;
-
-import tools.jackson.databind.node.ObjectNode;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
 
 public class NavigationRpcHandlerTest {
 
