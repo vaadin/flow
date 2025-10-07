@@ -171,6 +171,58 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 status.getText());
     }
 
+    @Test
+    public void testClientCallableBeanParameter() {
+        open();
+
+        getButton("clientCallableBeanButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableBeanResult")));
+        Assert.assertEquals(
+                "ClientCallable Bean: name=ClientCallableTest, value=99, active=true",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableBeanStatus")));
+        Assert.assertEquals("ClientCallable bean handled", status.getText());
+    }
+
+    @Test
+    public void testClientCallableListParameter() {
+        open();
+
+        getButton("clientCallableListButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableListResult")));
+        Assert.assertEquals(
+                "ClientCallable List: [0]: name=Item1, value=111, active=true | [1]: name=Item2, value=222, active=false",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableListStatus")));
+        Assert.assertEquals("ClientCallable list handled", status.getText());
+    }
+
+    @Test
+    public void testClientCallableNestedBeanParameter() {
+        open();
+
+        getButton("clientCallableNestedButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableNestedResult")));
+        Assert.assertEquals(
+                "ClientCallable Nested: title=ClientCallableNested, simple.name=NestedInner, simple.value=333, simple.active=false",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableNestedStatus")));
+        Assert.assertEquals("ClientCallable nested bean handled",
+                status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }
