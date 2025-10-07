@@ -14,6 +14,8 @@ env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  JAVA_VERSION: '21'
+  BASE_VERSION: '25.0-SNAPSHOT'
 jobs:
   build:
     timeout-minutes: 30
@@ -50,7 +52,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -95,7 +97,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -170,7 +172,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -285,7 +287,7 @@ jobs:
       - name: Set up JDK 21
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -301,13 +303,15 @@ jobs:
           mvn org.codehaus.mojo:versions-maven-plugin:2.13.0:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Determine base version
         id: base-version
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          baseBranch="${{ github.event.pull_request.base.ref }}"
+          baseBranch="${{ env.BASE_REF }}"
           echo "Base branch: ${baseBranch}"
 
           # Handle special case for main branch
           if [[ "${baseBranch}" == "main" ]]; then
-              baseVersion="25.0-SNAPSHOT"
+              baseVersion="${{ env.BASE_VERSION }}"
           else
               # For all other branches, use pattern: {branch}-SNAPSHOT
               baseVersion="${baseBranch}-SNAPSHOT"
@@ -336,6 +340,7 @@ jobs:
       - name: Report API DIFF to GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.number }}
         run: |
           #!/bin/bash
 
@@ -357,7 +362,7 @@ jobs:
           echo "Discovered version change: ${version_change}"
 
           # Get current labels
-          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels --jq '.[].name')
+          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels --jq '.[].name')
 
           # Check if version change label already exists
           if echo "${current_labels}" | grep -q "+${version_change}"; then
@@ -369,12 +374,12 @@ jobs:
               for tlabel in '+0.0.1' '+0.1.0' '+1.0.0'; do
                   if echo "${current_labels}" | grep -q "${tlabel}" && [[ "${version_change}" != "${tlabel##+}" ]]; then
                       echo "Removing label ${tlabel}"
-                      gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels/"${tlabel}" -X DELETE || true
+                      gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels/"${tlabel}" -X DELETE || true
                   fi
               done
 
               # Add new version label
-              gh api repos/${{ github.repository }}/issues/${{ github.event.number }}/labels \
+              gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels \
                 -f labels[]="+${version_change}" \
                 --method POST
           fi
