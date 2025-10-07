@@ -85,11 +85,11 @@ public final class ServerEventObject extends JavaScriptObject {
         Object.defineProperty(this, name, {
             value: function(promiseId, success, value) {
                 var promise = this[name].promises[promiseId];
-
+    
                 // undefined if client-side node was recreated after execution was scheduled
                 if (promise !== undefined) {
                     delete this[name].promises[promiseId];
-
+    
                     if (success) {
                         // Resolve
                         promise[0](value);
@@ -134,23 +134,23 @@ public final class ServerEventObject extends JavaScriptObject {
             if(args === null) {
                 args = Array.prototype.slice.call(arguments);
             }
-
+    
             var returnValue;
             var promiseId = -1;
-
+    
             if (returnPromise) {
                 var promises = this[@ServerEventObject::PROMISE_CALLBACK_NAME].promises;
-
+    
                 promiseId = promises.length;
-
+    
                 returnValue = new Promise(function(resolve, reject) {
                     // Store each callback for later use
                     promises[promiseId] = [resolve, reject];
                 });
             }
-
+    
             tree.@com.vaadin.client.flow.StateTree::sendTemplateEventToServer(*)(node, methodName, args, promiseId);
-
+    
             return returnValue;
         });
     }-*/;

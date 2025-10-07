@@ -493,9 +493,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * Here is the logic flow:
      *
      * <pre>
-
-
-
+    
+    
+    
                              +--------------------------------+
                              |                                |
                              | allowUpdateFromClient  is false|
