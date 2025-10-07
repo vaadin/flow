@@ -884,4 +884,65 @@ public class JacksonCodecTest {
         Assert.assertEquals(Integer.valueOf(20), result.get(1));
         Assert.assertEquals(Integer.valueOf(30), result.get(2));
     }
+
+    @Test
+    public void testNestedRecordDeserialization() {
+        // Test that nested records work for event data pattern
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        // Create JSON matching the structure
+        ObjectNode eventNode = objectMapper.createObjectNode();
+        eventNode.put("button", 0);
+        eventNode.put("clientX", 150);
+        eventNode.put("clientY", 200);
+
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        rootNode.set("event", eventNode);
+        rootNode.put("type", "click");
+
+        // Deserialize using Class
+        MouseEventData result = JacksonCodec.decodeAs(rootNode,
+                MouseEventData.class);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Type should match", "click", result.type());
+        Assert.assertNotNull("Event should not be null", result.event());
+        Assert.assertEquals("Button should be 0", 0, result.event().button());
+        Assert.assertEquals("ClientX should be 150", 150,
+                result.event().clientX());
+        Assert.assertEquals("ClientY should be 200", 200,
+                result.event().clientY());
+    }
+
+    @Test
+    public void testNestedRecordWithTypeReference() {
+        // Test List<Record> deserialization
+        record Point(int x, int y) {
+        }
+
+        ObjectNode point1 = objectMapper.createObjectNode();
+        point1.put("x", 10);
+        point1.put("y", 20);
+
+        ObjectNode point2 = objectMapper.createObjectNode();
+        point2.put("x", 30);
+        point2.put("y", 40);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(point1)
+                .add(point2);
+
+        TypeReference<List<Point>> typeRef = new TypeReference<List<Point>>() {
+        };
+        List<Point> result = JacksonCodec.decodeAs(arrayJson, typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 2 points", 2, result.size());
+        Assert.assertEquals(10, result.get(0).x());
+        Assert.assertEquals(20, result.get(0).y());
+        Assert.assertEquals(30, result.get(1).x());
+        Assert.assertEquals(40, result.get(1).y());
+    }
 }

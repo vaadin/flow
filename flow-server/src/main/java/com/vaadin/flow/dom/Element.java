@@ -916,7 +916,7 @@ public class Element extends Node<Element> {
      * @return the property value, or <code>null</code> if no value is set
      */
     public String getProperty(String name) {
-        return getProperty(name, (String) null);
+        return getProperty(name, null);
     }
 
     /**
@@ -1039,7 +1039,7 @@ public class Element extends Node<Element> {
      * Example usage:
      *
      * <pre>
-     * MyDto dto = element.getProperty("userData", MyDto.class);
+     * MyDto dto = element.getPropertyBean("userData", MyDto.class);
      * </pre>
      * <p>
      * Note that properties changed on the server are updated on the client but
@@ -1058,7 +1058,7 @@ public class Element extends Node<Element> {
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
      */
-    public <T> T getProperty(String name, Class<T> type) {
+    public <T> T getPropertyBean(String name, Class<T> type) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
@@ -1078,7 +1078,7 @@ public class Element extends Node<Element> {
      * <pre>
      * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
      * };
-     * List&lt;MyDto&gt; dtos = element.getProperty("userList", typeRef);
+     * List&lt;MyDto&gt; dtos = element.getPropertyBean("userList", typeRef);
      * </pre>
      * <p>
      * Note that properties changed on the server are updated on the client but
@@ -1097,7 +1097,7 @@ public class Element extends Node<Element> {
      * @return the property value deserialized as the given type, or
      *         <code>null</code> if not set
      */
-    public <T> T getProperty(String name, TypeReference<T> typeReference) {
+    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
         Serializable raw = getPropertyRaw(name);
         if (raw == null || raw instanceof NullNode) {
             return null;
