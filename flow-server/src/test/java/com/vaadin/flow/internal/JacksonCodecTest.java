@@ -21,6 +21,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import tools.jackson.core.type.TypeReference;
@@ -549,6 +550,87 @@ public class JacksonCodecTest {
         Assert.assertEquals(1, encoded.get(0).asInt());
         Assert.assertEquals(2, encoded.get(1).asInt());
         Assert.assertEquals(3, encoded.get(2).asInt());
+    }
+
+    @Test
+    public void testMapOfBeansSerialization() {
+        Map<String, SimpleBean> beanMap = new HashMap<>();
+        beanMap.put("first", new SimpleBean("FirstBean", 100));
+        beanMap.put("second", new SimpleBean("SecondBean", 200));
+        beanMap.put("third", new SimpleBean("ThirdBean", 300));
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(beanMap);
+
+        // Should be JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("Should have 3 entries", 3, encoded.size());
+
+        Assert.assertEquals("FirstBean",
+                encoded.get("first").get("text").asText());
+        Assert.assertEquals(100, encoded.get("first").get("value").asInt());
+        Assert.assertEquals("SecondBean",
+                encoded.get("second").get("text").asText());
+        Assert.assertEquals(200, encoded.get("second").get("value").asInt());
+        Assert.assertEquals("ThirdBean",
+                encoded.get("third").get("text").asText());
+        Assert.assertEquals(300, encoded.get("third").get("value").asInt());
+    }
+
+    @Test
+    public void testMapOfBeansDeserialization() {
+        // Create JSON object manually
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "Alpha");
+        bean1.put("value", 111);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "Beta");
+        bean2.put("value", 222);
+
+        ObjectNode mapJson = objectMapper.createObjectNode();
+        mapJson.set("keyA", bean1);
+        mapJson.set("keyB", bean2);
+
+        // Test that Jackson can handle Map<String, SimpleBean> deserialization
+        Map<String, SimpleBean> decoded = JacksonUtils.getMapper().convertValue(
+                mapJson,
+                JacksonUtils.getMapper().getTypeFactory().constructMapType(
+                        Map.class, String.class, SimpleBean.class));
+
+        Assert.assertEquals("Should have 2 entries", 2, decoded.size());
+        Assert.assertNotNull("Should have keyA", decoded.get("keyA"));
+        Assert.assertEquals("Alpha", decoded.get("keyA").text);
+        Assert.assertEquals(111, decoded.get("keyA").value);
+        Assert.assertNotNull("Should have keyB", decoded.get("keyB"));
+        Assert.assertEquals("Beta", decoded.get("keyB").text);
+        Assert.assertEquals(222, decoded.get("keyB").value);
+    }
+
+    @Test
+    public void testNestedMapSerialization() {
+        Map<String, Object> nestedMap = new HashMap<>();
+        nestedMap.put("bean", new SimpleBean("NestedBean", 999));
+        nestedMap.put("number", 42);
+        nestedMap.put("text", "Hello");
+
+        Map<String, Object> outerMap = new HashMap<>();
+        outerMap.put("nested", nestedMap);
+        outerMap.put("simple", "value");
+
+        JsonNode encoded = JacksonCodec.encodeWithTypeInfo(outerMap);
+
+        // Should be JSON object
+        Assert.assertTrue("Should be object", encoded.isObject());
+        Assert.assertEquals("Should have 2 entries", 2, encoded.size());
+        Assert.assertEquals("value", encoded.get("simple").asText());
+
+        JsonNode nestedJson = encoded.get("nested");
+        Assert.assertTrue("Nested should be object", nestedJson.isObject());
+        Assert.assertEquals(42, nestedJson.get("number").asInt());
+        Assert.assertEquals("Hello", nestedJson.get("text").asText());
+        Assert.assertEquals("NestedBean",
+                nestedJson.get("bean").get("text").asText());
+        Assert.assertEquals(999, nestedJson.get("bean").get("value").asInt());
     }
 
     @Test
