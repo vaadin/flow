@@ -1,7 +1,7 @@
 name: Formatter
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 # Cancel previous runs if a new one is triggered
@@ -9,8 +9,17 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 jobs:
+  check-permissions:
+    uses: ./.github/workflows/check-permissions.yml
+
   formatter:
+    needs: check-permissions
     name: Verify Java code format
     runs-on: ubuntu-latest
     timeout-minutes: 120
