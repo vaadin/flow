@@ -381,7 +381,7 @@ public final class PolymerUtils {
     /*-{
         var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
         var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-
+    
         return (isP2Element || isP3Element);
     }-*/;
 
