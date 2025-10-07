@@ -258,11 +258,6 @@ public class ComponentTracker {
             return true;
         }
 
-        VaadinContext context = service.getContext();
-        if (context == null) {
-            return true;
-        }
-
         DeploymentConfiguration configuration = service
                 .getDeploymentConfiguration();
         if (configuration == null) {
