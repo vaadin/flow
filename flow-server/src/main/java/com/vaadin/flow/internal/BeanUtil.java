@@ -186,6 +186,101 @@ public final class BeanUtil implements Serializable {
     }
 
     /**
+     * Collects all property paths for a given class, including nested
+     * properties. This is useful for generating field paths like "event.button"
+     * or "data.user.name" for a nested bean structure.
+     * <p>
+     * The method recursively traverses bean/record properties and returns dot-
+     * separated paths for all simple types (primitives, wrappers, String).
+     * Complex types like collections, arrays, and maps are returned as-is
+     * without recursion into their elements.
+     *
+     * @param type
+     *            the class to introspect
+     * @return a list of property paths (e.g., ["event.button", "event.clientX",
+     *         "type"])
+     * @throws IntrospectionException
+     *             if bean introspection fails
+     */
+    public static List<String> getBeanPropertyPaths(Class<?> type)
+            throws IntrospectionException {
+        List<String> paths = new ArrayList<>();
+        collectPropertyPaths("", type, paths);
+        return paths;
+    }
+
+    /**
+     * Helper method to recursively collect property paths.
+     *
+     * @param prefix
+     *            the current path prefix (e.g., "event" or "event.detail")
+     * @param type
+     *            the class to inspect
+     * @param paths
+     *            the list to accumulate paths into
+     * @throws IntrospectionException
+     *             if bean introspection fails
+     */
+    private static void collectPropertyPaths(String prefix, Class<?> type,
+            List<String> paths) throws IntrospectionException {
+        List<PropertyDescriptor> properties = getBeanPropertyDescriptors(type);
+
+        for (PropertyDescriptor property : properties) {
+            // Skip "class" property
+            if ("class".equals(property.getName())) {
+                continue;
+            }
+
+            String propertyName = property.getName();
+            String fieldPath = prefix.isEmpty() ? propertyName
+                    : prefix + "." + propertyName;
+            Class<?> propertyType = property.getPropertyType();
+
+            if (isSimpleType(propertyType)) {
+                // Leaf node - add path
+                paths.add(fieldPath);
+            } else if (propertyType.isArray()
+                    || java.util.Collection.class.isAssignableFrom(propertyType)
+                    || java.util.Map.class.isAssignableFrom(propertyType)) {
+                // Collection/array/map - add as-is, don't recurse
+                paths.add(fieldPath);
+            } else {
+                // Complex bean/record type - try to recurse
+                try {
+                    List<PropertyDescriptor> nestedProps = getBeanPropertyDescriptors(
+                            propertyType);
+                    if (!nestedProps.isEmpty()) {
+                        // Has properties, recurse
+                        collectPropertyPaths(fieldPath, propertyType, paths);
+                    } else {
+                        // No properties, add as-is
+                        paths.add(fieldPath);
+                    }
+                } catch (IntrospectionException e) {
+                    // If introspection fails, just add the field as-is
+                    paths.add(fieldPath);
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks if a class is a simple type (primitive, wrapper, or String).
+     *
+     * @param type
+     *            the class to check
+     * @return true if the type is simple
+     */
+    private static boolean isSimpleType(Class<?> type) {
+        return type.isPrimitive() || type == String.class
+                || type == Boolean.class || type == Byte.class
+                || type == Character.class || type == Short.class
+                || type == Integer.class || type == Long.class
+                || type == Float.class || type == Double.class
+                || Number.class.isAssignableFrom(type);
+    }
+
+    /**
      * Returns whether an implementation of JSR-303 version 1.0 or 1.1 is
      * present on the classpath. If this method returns false, trying to create
      * a {@code BeanValidator} instance will throw an

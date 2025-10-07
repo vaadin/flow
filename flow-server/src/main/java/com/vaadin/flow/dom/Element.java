@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.BooleanNode;
@@ -1028,6 +1029,81 @@ public class Element extends Node<Element> {
      */
     public Serializable getPropertyRaw(String name) {
         return getStateProvider().getProperty(getNode(), name);
+    }
+
+    /**
+     * Gets the value of the given property, deserialized as the given type.
+     * This method supports arbitrary bean types through Jackson
+     * deserialization.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * MyDto dto = element.getPropertyBean("userData", MyDto.class);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param type
+     *            the class to deserialize the property value to, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, Class<T> type) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                type);
+    }
+
+    /**
+     * Gets the value of the given property, deserialized as the type specified
+     * by the {@link TypeReference}. This method supports generic types such as
+     * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
+     * TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
+     * };
+     * List&lt;MyDto&gt; dtos = element.getPropertyBean("userList", typeRef);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                typeReference);
     }
 
     /**

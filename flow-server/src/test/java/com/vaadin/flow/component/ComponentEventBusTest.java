@@ -769,4 +769,37 @@ public class ComponentEventBusTest {
         final TestButton button = new TestButton();
         button.addListener(ServerEvent.class, null);
     }
+
+    @Test
+    public void eventWithBeanParameter_beanDeserialized() {
+        // Test that @EventData works with bean types, not just primitives
+        TestComponent c = new TestComponent();
+        EventTracker<EventWithBeanData> eventTracker = new EventTracker<>();
+        c.addListener(EventWithBeanData.class, eventTracker);
+
+        // Create event data with nested structure
+        ObjectNode detailNode = JacksonUtils.createObjectNode();
+        detailNode.put("clientX", 100);
+        detailNode.put("clientY", 200);
+        detailNode.put("button", 0);
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.set("event.detail", detailNode);
+
+        c.getElement().getNode().getFeature(ElementListenerMap.class)
+                .fireEvent(new com.vaadin.flow.dom.DomEvent(c.getElement(),
+                        "bean-event", eventData));
+
+        Assert.assertEquals("Event should have been fired", 1,
+                eventTracker.getCalls());
+        EventWithBeanData event = eventTracker.getEvent();
+        Assert.assertNotNull("Event should not be null", event);
+        Assert.assertNotNull("Details should not be null", event.getDetails());
+        Assert.assertEquals("ClientX should be 100", 100,
+                event.getDetails().getClientX());
+        Assert.assertEquals("ClientY should be 200", 200,
+                event.getDetails().getClientY());
+        Assert.assertEquals("Button should be 0", 0,
+                event.getDetails().getButton());
+    }
 }

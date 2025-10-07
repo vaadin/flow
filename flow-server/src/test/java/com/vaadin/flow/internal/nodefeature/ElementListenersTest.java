@@ -656,6 +656,60 @@ public class ElementListenersTest
                 expressions.contains("event.stopPropagation()"));
     }
 
+    @Test
+    public void testAddEventDataWithRecord() {
+        // Test that addEventData correctly extracts nested record structure
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        DomListenerRegistration registration = ns.add("click", noOp);
+        registration.addEventData(MouseEventData.class);
+
+        Set<String> expressions = getExpressions("click");
+
+        // Should have captured all nested fields
+        Assert.assertTrue("Should capture event.button",
+                expressions.contains("event.button"));
+        Assert.assertTrue("Should capture event.clientX",
+                expressions.contains("event.clientX"));
+        Assert.assertTrue("Should capture event.clientY",
+                expressions.contains("event.clientY"));
+        Assert.assertTrue("Should capture type", expressions.contains("type"));
+
+        // Should have exactly these 4 expressions
+        Assert.assertEquals("Should have 4 expressions", 4, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDataWithSimpleBean() {
+        // Test with a simple bean (non-record)
+        class SimpleEventData {
+            private String message;
+            private int code;
+
+            public String getMessage() {
+                return message;
+            }
+
+            public int getCode() {
+                return code;
+            }
+        }
+
+        DomListenerRegistration registration = ns.add("custom", noOp);
+        registration.addEventData(SimpleEventData.class);
+
+        Set<String> expressions = getExpressions("custom");
+
+        // Should have captured both fields
+        Assert.assertTrue("Should capture message",
+                expressions.contains("message"));
+        Assert.assertTrue("Should capture code", expressions.contains("code"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
+    }
+
     // Helper for accessing package private API from other tests
     public static Set<String> getExpressions(
             ElementListenerMap elementListenerMap, String eventName) {
