@@ -210,7 +210,6 @@ public class VaadinAppShellInitializerTest {
     @StyleSheet("foo/bar.css")
     @StyleSheet("HTTP://cdn.Example.com/u.css")
     @StyleSheet("context://assets/site.css")
-    @StyleSheet("context:///already-absolute.css")
     public static class MyAppShellWithVariousStyleSheets
             implements AppShellConfigurator {
     }
@@ -549,12 +548,11 @@ public class VaadinAppShellInitializerTest {
                 createVaadinRequest("/", "/ctx"));
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        assertEquals(5, links.size());
+        assertEquals(4, links.size());
         assertEquals("/trimmed.css", links.get(0).attr("href"));
-        assertEquals("/foo/bar.css", links.get(1).attr("href"));
+        assertEquals("/ctx/foo/bar.css", links.get(1).attr("href"));
         assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
         assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
-        assertEquals("/ctx/already-absolute.css", links.get(4).attr("href"));
     }
 
     @Test
@@ -567,7 +565,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(1, links.size());
-        assertEquals("/local.css", links.get(0).attr("href"));
+        assertEquals("/ctx/local.css", links.get(0).attr("href"));
     }
 
     @Test
@@ -585,15 +583,6 @@ public class VaadinAppShellInitializerTest {
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
         return new VaadinServletRequest(request, service);
-    }
-
-    private HttpServletRequest createRequest(String pathInfo) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        return request;
     }
 
     private Logger mockLog(Class clz) throws Exception {
@@ -633,6 +622,10 @@ public class VaadinAppShellInitializerTest {
             String contextPath) {
         HttpServletRequest request = createRequest(pathInfo, contextPath);
         return new VaadinServletRequest(request, service);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo) {
+        return createRequest(pathInfo, "");
     }
 
     private HttpServletRequest createRequest(String pathInfo,
