@@ -10,7 +10,7 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  contents: write
   pull-requests: write
   issues: write
 
@@ -20,16 +20,33 @@ jobs:
 
   formatter:
     needs: check-permissions
-    name: Verify Java code format
+    name: Format and auto-commit
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    outputs:
+      changes_committed: ${{ steps.commit-changes.outputs.changes_committed }}
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          fetch-depth: 0
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 2
+
+      - name: Check if last commit was from formatter bot
+        id: check-loop
+        run: |
+          last_commit_author=$(git log -1 --pretty=format:'%an')
+          echo "Last commit author: $last_commit_author"
+
+          if [ "$last_commit_author" = "github-actions[bot]" ]; then
+            echo "::error::Last commit was from formatter bot. Possible infinite loop detected!"
+            echo "loop_detected=true" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+          echo "loop_detected=false" >> $GITHUB_OUTPUT
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -53,11 +70,31 @@ jobs:
           if [ "$modified" -gt 0 ]; then
             echo "Modified files:"
             echo "$files"
-            git diff > formatter-diff.txt
             echo "files<<EOF" >> $GITHUB_OUTPUT
             echo "$files" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
           fi
+
+      - name: Commit and push changes
+        id: commit-changes
+        if: steps.formatter.outputs.modified != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add only the files modified by the formatter
+          git add -u
+          git commit -m "chore: apply code formatting with spotless"
+
+          git push
+
+          echo "changes_committed=true" >> $GITHUB_OUTPUT
+          echo "✅ Formatting changes committed and pushed" >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate diff for artifact
+        if: steps.formatter.outputs.modified != '0'
+        run: |
+          git diff HEAD~1 > formatter-diff.txt
 
       - name: Upload formatter diff
         if: steps.formatter.outputs.modified != '0'
@@ -68,7 +105,6 @@ jobs:
           retention-days: 30
 
       - name: Find existing comment
-        if: steps.formatter.outputs.modified != '0'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
@@ -76,7 +112,7 @@ jobs:
           comment-author: 'github-actions[bot]'
           body-includes: '<!-- tc-formatter -->'
 
-      - name: Create or update comment
+      - name: Create or update comment for committed changes
         if: steps.formatter.outputs.modified != '0'
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -85,25 +121,18 @@ jobs:
           edit-mode: replace
           body: |
             <!-- tc-formatter -->
-            ### Format Checker Report
+            ### ✅ Formatter Auto-Applied
 
-            ![BLOCKER][BLOCKER] There are **${{ steps.formatter.outputs.modified }} files** with format errors
+            Formatting issues were detected and **automatically fixed**. Changes have been committed to this PR.
 
-            [BLOCKER]: https://sonarsource.github.io/sonar-github/severity-blocker.png 'Severity: BLOCKER'
+            The formatting changes affected **${{ steps.formatter.outputs.modified }} files**.
 
-            - To see a complete report of formatting issues, download the [differences artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-
-            - To fix the build, please run `mvn spotless:apply` in your branch and commit the changes.
-
-            - Optionally you might add the following line in your `.git/hooks/pre-commit` file:
-
-                  mvn spotless:apply
-
-            Here is the list of files with format issues in your PR:
-
+            Files modified:
             ```
             ${{ steps.formatter.outputs.files }}
             ```
+
+            Please pull the latest changes before continuing work on this branch.
 
       - name: Delete comment if formatting is correct
         if: steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
@@ -116,8 +145,8 @@ jobs:
               comment_id: ${{ steps.find-comment.outputs.comment-id }}
             })
 
-      - name: Fail if formatting issues exist
-        if: steps.formatter.outputs.modified != '0'
+      - name: Set output for no changes
+        if: steps.formatter.outputs.modified == '0'
         run: |
-          echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
-          exit 1
+          echo "changes_committed=false" >> $GITHUB_OUTPUT
+          echo "✅ Code formatting is correct" >> $GITHUB_STEP_SUMMARY

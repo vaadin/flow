@@ -5,6 +5,9 @@ on:
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
+  workflow_run:
+    workflows: ["Formatter"]
+    types: [completed]
 permissions:
   contents: read
 concurrency:
@@ -13,9 +16,30 @@ concurrency:
 env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
-  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha }}
 jobs:
+  check-formatter-status:
+    if: github.event_name == 'workflow_run'
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+    steps:
+      - name: Check formatter workflow result
+        id: check
+        run: |
+          if [ "${{ github.event.workflow_run.conclusion }}" != "success" ]; then
+            echo "Formatter workflow did not succeed, skipping validation"
+            echo "should_run=false" >> $GITHUB_OUTPUT
+          else
+            echo "should_run=true" >> $GITHUB_OUTPUT
+          fi
+
   check-permissions:
+    if: |
+      always() &&
+      (github.event_name != 'workflow_run' ||
+       (needs.check-formatter-status.result == 'success' && needs.check-formatter-status.outputs.should_run == 'true'))
+    needs: [check-formatter-status]
     uses: ./.github/workflows/check-permissions.yml
 
   build:
