@@ -31,7 +31,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -43,7 +42,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
@@ -207,7 +205,7 @@ public class TaskUpdatePackagesNpmTest {
                 .thenReturn(versionJsonFile.toURI().toURL());
         JsonNode dependencies = getOrCreatePackageJson().get(DEPENDENCIES);
         Assert.assertEquals(PLATFORM_DIALOG_VERSION,
-                dependencies.get(VAADIN_DIALOG).textValue());
+                dependencies.get(VAADIN_DIALOG).asString());
     }
 
     @Test
@@ -230,6 +228,51 @@ public class TaskUpdatePackagesNpmTest {
 
         verifyVersions(newVersion, newVersion, newVersion);
         verifyVersionLockingWithNpmOverrides(true, true, true);
+    }
+
+    @Test
+    public void overridesContainPinnedVersion_platformVersionUpdatedToNewerWhileDependencyAdded_versionGetsReference()
+            throws IOException {
+
+        ObjectNode packageJson = getOrCreatePackageJson();
+        packageJson.set(OVERRIDES, JacksonUtils.createObjectNode());
+        ((ObjectNode) packageJson.get(OVERRIDES)).put("@vaadin/aura", "1.0");
+
+        FileUtils.writeStringToFile(new File(npmFolder, PACKAGE_JSON),
+                packageJson.toPrettyString(), StandardCharsets.UTF_8);
+
+        JsonNode overrides = getOrCreatePackageJson().get(OVERRIDES);
+        Assert.assertEquals("1.0", overrides.get("@vaadin/aura").asString());
+
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+        String versionJsonString = """
+                {
+                  "core": {
+                    "vaadin-aura": {
+                      "jsVersion": "2.0",
+                      "npmName": "@vaadin/aura"
+                    }
+                  }
+                }
+                """;
+        try {
+            FileUtils.write(versionJsonFile, versionJsonString,
+                    StandardCharsets.UTF_8);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        final Map<String, String> applicationDependencies = Collections
+                .singletonMap("@vaadin/aura", "2.0");
+        final TaskUpdatePackages task = createTask(applicationDependencies);
+        task.execute();
+        Assert.assertTrue("Updates not picked", task.modified);
+
+        overrides = getOrCreatePackageJson().get(OVERRIDES);
+
+        Assert.assertEquals("$@vaadin/aura",
+                overrides.get("@vaadin/aura").asString());
     }
 
     @Test
@@ -392,7 +435,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Type should have been addded.",
                 packageJson.has("type"));
         Assert.assertEquals("Type should be module", "module",
-                packageJson.get("type").textValue());
+                packageJson.get("type").asString());
     }
 
     @Test
@@ -415,7 +458,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Type should not have been removed",
                 packageJson.has("type"));
         Assert.assertEquals("Type should have been updated to 'module'",
-                "module", packageJson.get("type").textValue());
+                "module", packageJson.get("type").asString());
     }
 
     @Test
@@ -443,7 +486,7 @@ public class TaskUpdatePackagesNpmTest {
                 .get(DEPENDENCIES);
 
         Assert.assertEquals(PLATFORM_ELEMENT_MIXIN_VERSION,
-                newVaadinDeps.get(VAADIN_ELEMENT_MIXIN).textValue());
+                newVaadinDeps.get(VAADIN_ELEMENT_MIXIN).asString());
     }
 
     // #11025
@@ -778,7 +821,7 @@ public class TaskUpdatePackagesNpmTest {
         Assert.assertTrue("Custom component override was not present",
                 overrides.has(CUSTOM_COMPONENT));
         Assert.assertEquals("1.2.1",
-                overrides.get(CUSTOM_COMPONENT).textValue());
+                overrides.get(CUSTOM_COMPONENT).asString());
     }
 
     @Test
@@ -1169,21 +1212,21 @@ public class TaskUpdatePackagesNpmTest {
                     dependencies.get(VAADIN_DIALOG));
         } else {
             Assert.assertEquals(expectedDialogVersion,
-                    dependencies.get(VAADIN_DIALOG).textValue());
+                    dependencies.get(VAADIN_DIALOG).asString());
         }
         if (expectedElementMixinVersion == null) {
             Assert.assertNull("Dependency added when it should not have been",
                     dependencies.get(VAADIN_ELEMENT_MIXIN));
         } else {
             Assert.assertEquals(expectedElementMixinVersion,
-                    dependencies.get(VAADIN_ELEMENT_MIXIN).textValue());
+                    dependencies.get(VAADIN_ELEMENT_MIXIN).asString());
         }
         if (expectedOverlayVersion == null) {
             Assert.assertNull("Dependency added when it should not have been",
                     dependencies.get(VAADIN_OVERLAY));
         } else {
             Assert.assertEquals(expectedOverlayVersion,
-                    dependencies.get(VAADIN_OVERLAY).textValue());
+                    dependencies.get(VAADIN_OVERLAY).asString());
         }
     }
 
@@ -1197,7 +1240,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Dialog override was not present",
                     overrides.has(VAADIN_DIALOG));
             Assert.assertEquals("$" + VAADIN_DIALOG,
-                    overrides.get(VAADIN_DIALOG).textValue());
+                    overrides.get(VAADIN_DIALOG).asString());
         } else {
             Assert.assertNull("vaadin-dialog dependency should not be present",
                     overrides.get(VAADIN_DIALOG));
@@ -1206,7 +1249,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Element-Mixin override was not present",
                     overrides.has(VAADIN_ELEMENT_MIXIN));
             Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN,
-                    overrides.get(VAADIN_ELEMENT_MIXIN).textValue());
+                    overrides.get(VAADIN_ELEMENT_MIXIN).asString());
         } else {
             Assert.assertNull(
                     "vaadin-element-mixin dependency should not be present",
@@ -1216,7 +1259,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Overlay override was not present",
                     overrides.has(VAADIN_OVERLAY));
             Assert.assertEquals("$" + VAADIN_OVERLAY,
-                    overrides.get(VAADIN_OVERLAY).textValue());
+                    overrides.get(VAADIN_OVERLAY).asString());
         } else {
             Assert.assertNull("vaadin-overlay dependency should not be present",
                     overrides.get(VAADIN_OVERLAY));
@@ -1235,7 +1278,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Dialog override was not present",
                     overrides.has(VAADIN_DIALOG));
             Assert.assertEquals("$" + VAADIN_DIALOG,
-                    overrides.get(VAADIN_DIALOG).textValue());
+                    overrides.get(VAADIN_DIALOG).asString());
         } else {
             Assert.assertNull("vaadin-dialog dependency should not be present",
                     overrides.get(VAADIN_DIALOG));
@@ -1244,7 +1287,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Element-Mixin override was not present",
                     overrides.has(VAADIN_ELEMENT_MIXIN));
             Assert.assertEquals("$" + VAADIN_ELEMENT_MIXIN,
-                    overrides.get(VAADIN_ELEMENT_MIXIN).textValue());
+                    overrides.get(VAADIN_ELEMENT_MIXIN).asString());
         } else {
             Assert.assertNull(
                     "vaadin-element-mixin dependency should not be present",
@@ -1254,7 +1297,7 @@ public class TaskUpdatePackagesNpmTest {
             Assert.assertTrue("Overlay override was not present",
                     overrides.has(VAADIN_OVERLAY));
             Assert.assertEquals("$" + VAADIN_OVERLAY,
-                    overrides.get(VAADIN_OVERLAY).textValue());
+                    overrides.get(VAADIN_OVERLAY).asString());
         } else {
             Assert.assertNull("vaadin-overlay dependency should not be present",
                     overrides.get(VAADIN_OVERLAY));
