@@ -16,12 +16,11 @@
 package com.vaadin.viteapp;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import org.junit.Before;
-
-import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class PushComponentIT extends ChromeDeviceTest {
     @Before

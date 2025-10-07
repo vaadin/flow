@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,9 +77,6 @@ import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
 
 /**
  * Unit tests for RouteRegistryInitializer and RouteRegistry.

@@ -17,7 +17,6 @@ package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)

@@ -15,22 +15,16 @@
  */
 package com.vaadin.flow.server;
 
-import java.io.File;
-import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.Properties;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 public class PropertyDeploymentConfigurationTest {

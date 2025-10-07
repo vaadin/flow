@@ -15,16 +15,16 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
-import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.shared.Registration;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Consumer;
+
+import com.vaadin.flow.data.provider.DataChangeEvent.DataRefreshEvent;
+import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.shared.Registration;
 
 /**
  * Abstract data provider implementation which takes care of refreshing data

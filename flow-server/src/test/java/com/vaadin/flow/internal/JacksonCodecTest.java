@@ -24,12 +24,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.junit.Assert;
+import org.junit.Test;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.NumericNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -773,5 +774,175 @@ public class JacksonCodecTest {
             this.component = component;
             this.value = value;
         }
+    }
+
+    @Test
+    public void testTypeReferenceListDeserialization() {
+        // Create JSON array with bean objects
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "FirstBean");
+        bean1.put("value", 100);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "SecondBean");
+        bean2.put("value", 200);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(bean1)
+                .add(bean2);
+
+        // Deserialize using TypeReference
+        TypeReference<List<SimpleBean>> typeRef = new TypeReference<List<SimpleBean>>() {
+        };
+        List<SimpleBean> result = JacksonCodec.decodeAs(arrayJson, typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 2 elements", 2, result.size());
+        Assert.assertEquals("FirstBean", result.get(0).text);
+        Assert.assertEquals(100, result.get(0).value);
+        Assert.assertEquals("SecondBean", result.get(1).text);
+        Assert.assertEquals(200, result.get(1).value);
+    }
+
+    @Test
+    public void testTypeReferenceMapDeserialization() {
+        // Create JSON object with bean values
+        ObjectNode bean1 = objectMapper.createObjectNode();
+        bean1.put("text", "Alpha");
+        bean1.put("value", 111);
+
+        ObjectNode bean2 = objectMapper.createObjectNode();
+        bean2.put("text", "Beta");
+        bean2.put("value", 222);
+
+        ObjectNode mapJson = objectMapper.createObjectNode();
+        mapJson.set("keyA", bean1);
+        mapJson.set("keyB", bean2);
+
+        // Deserialize using TypeReference
+        TypeReference<Map<String, SimpleBean>> typeRef = new TypeReference<Map<String, SimpleBean>>() {
+        };
+        Map<String, SimpleBean> result = JacksonCodec.decodeAs(mapJson,
+                typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 2 entries", 2, result.size());
+        Assert.assertEquals("Alpha", result.get("keyA").text);
+        Assert.assertEquals(111, result.get("keyA").value);
+        Assert.assertEquals("Beta", result.get("keyB").text);
+        Assert.assertEquals(222, result.get("keyB").value);
+    }
+
+    @Test
+    public void testTypeReferenceNestedList() {
+        // Create nested structure: List<Map<String, SimpleBean>>
+        ObjectNode innerBean = objectMapper.createObjectNode();
+        innerBean.put("text", "Nested");
+        innerBean.put("value", 999);
+
+        ObjectNode innerMap = objectMapper.createObjectNode();
+        innerMap.set("item", innerBean);
+
+        JsonNode outerArray = objectMapper.createArrayNode().add(innerMap);
+
+        // Deserialize using TypeReference
+        TypeReference<List<Map<String, SimpleBean>>> typeRef = new TypeReference<List<Map<String, SimpleBean>>>() {
+        };
+        List<Map<String, SimpleBean>> result = JacksonCodec.decodeAs(outerArray,
+                typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 1 element", 1, result.size());
+        Assert.assertTrue("First element should have 'item' key",
+                result.get(0).containsKey("item"));
+        Assert.assertEquals("Nested", result.get(0).get("item").text);
+        Assert.assertEquals(999, result.get(0).get("item").value);
+    }
+
+    @Test
+    public void testTypeReferenceNullHandling() {
+        JsonNode nullJson = objectMapper.nullNode();
+
+        TypeReference<List<SimpleBean>> typeRef = new TypeReference<List<SimpleBean>>() {
+        };
+        List<SimpleBean> result = JacksonCodec.decodeAs(nullJson, typeRef);
+
+        Assert.assertNull("Null JSON should deserialize to null", result);
+    }
+
+    @Test
+    public void testTypeReferenceListOfPrimitives() {
+        JsonNode arrayJson = objectMapper.createArrayNode().add(10).add(20)
+                .add(30);
+
+        TypeReference<List<Integer>> typeRef = new TypeReference<List<Integer>>() {
+        };
+        List<Integer> result = JacksonCodec.decodeAs(arrayJson, typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 3 elements", 3, result.size());
+        Assert.assertEquals(Integer.valueOf(10), result.get(0));
+        Assert.assertEquals(Integer.valueOf(20), result.get(1));
+        Assert.assertEquals(Integer.valueOf(30), result.get(2));
+    }
+
+    @Test
+    public void testNestedRecordDeserialization() {
+        // Test that nested records work for event data pattern
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        // Create JSON matching the structure
+        ObjectNode eventNode = objectMapper.createObjectNode();
+        eventNode.put("button", 0);
+        eventNode.put("clientX", 150);
+        eventNode.put("clientY", 200);
+
+        ObjectNode rootNode = objectMapper.createObjectNode();
+        rootNode.set("event", eventNode);
+        rootNode.put("type", "click");
+
+        // Deserialize using Class
+        MouseEventData result = JacksonCodec.decodeAs(rootNode,
+                MouseEventData.class);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Type should match", "click", result.type());
+        Assert.assertNotNull("Event should not be null", result.event());
+        Assert.assertEquals("Button should be 0", 0, result.event().button());
+        Assert.assertEquals("ClientX should be 150", 150,
+                result.event().clientX());
+        Assert.assertEquals("ClientY should be 200", 200,
+                result.event().clientY());
+    }
+
+    @Test
+    public void testNestedRecordWithTypeReference() {
+        // Test List<Record> deserialization
+        record Point(int x, int y) {
+        }
+
+        ObjectNode point1 = objectMapper.createObjectNode();
+        point1.put("x", 10);
+        point1.put("y", 20);
+
+        ObjectNode point2 = objectMapper.createObjectNode();
+        point2.put("x", 30);
+        point2.put("y", 40);
+
+        JsonNode arrayJson = objectMapper.createArrayNode().add(point1)
+                .add(point2);
+
+        TypeReference<List<Point>> typeRef = new TypeReference<List<Point>>() {
+        };
+        List<Point> result = JacksonCodec.decodeAs(arrayJson, typeRef);
+
+        Assert.assertNotNull("Result should not be null", result);
+        Assert.assertEquals("Should have 2 points", 2, result.size());
+        Assert.assertEquals(10, result.get(0).x());
+        Assert.assertEquals(20, result.get(0).y());
+        Assert.assertEquals(30, result.get(1).x());
+        Assert.assertEquals(40, result.get(1).y());
     }
 }

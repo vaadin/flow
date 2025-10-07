@@ -13,10 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.dom.Element;

@@ -15,8 +15,6 @@
  */
 package com.vaadin.base.devserver;
 
-import com.vaadin.flow.internal.JacksonUtils;
-
 /**
  * For interfacing with the development tools by plugins.
  */

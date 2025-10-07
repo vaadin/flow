@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.templatemodel;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -18,8 +19,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModel;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyModelTemplate;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TemplateModelProxyHandlerTest extends HasCurrentService {

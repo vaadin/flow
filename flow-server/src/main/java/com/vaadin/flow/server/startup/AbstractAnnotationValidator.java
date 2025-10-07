@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.startup;
 
+import jakarta.servlet.annotation.HandlesTypes;
+
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
@@ -26,8 +28,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.annotation.HandlesTypes;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;

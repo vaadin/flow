@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Optional;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
-import java.util.Optional;
 
 /**
  * Component for a <code>&lt;label&gt;</code> element, which represents a
