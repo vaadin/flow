@@ -28,8 +28,12 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.internal.ComponentTracker;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateTree.BeforeClientResponseEntry;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
@@ -774,7 +778,13 @@ public class StateNode implements Serializable {
                         "Can't move a node from one state tree to another. "
                                 + "If this is intentional, first remove the "
                                 + "node from its current state tree by calling "
-                                + "removeFromTree");
+                                + "removeFromTree. This usually happens when a "
+                                + "component is moved from one UI to another, "
+                                + "which is not recommended. This may be caused "
+                                + "by assigning components to static members or "
+                                + "spring singleton scoped beans and referencing "
+                                + "them from multiple UIs. Offending component: "
+                                + formatOwnerComponentToString());
             } else {
                 id = -1;
             }
@@ -785,6 +795,29 @@ public class StateNode implements Serializable {
             reset(false);
         }
         owner = tree;
+    }
+
+    private String formatOwnerComponentToString() {
+        final Element ownerElement = ElementUtil.from(this).orElse(null);
+        if (ownerElement == null) {
+            return "unknown element";
+        }
+        final Component component = ownerElement.getComponent().orElse(null);
+        if (component == null) {
+            return "element " + ownerElement + ", no component";
+        }
+        final ComponentTracker.Location createLocation = ComponentTracker
+                .findCreate(component);
+        final ComponentTracker.Location attachLocation = ComponentTracker
+                .findAttach(component);
+        if (createLocation != null || attachLocation != null) {
+            return component.getClass().getName() + ", created: "
+                    + createLocation + ", attached: " + attachLocation;
+        }
+        // createLocation is null in production mode. Just return the
+        // component's toString() which should provide enough information to the
+        // programmer.
+        return component.toString();
     }
 
     private boolean handleOnAttach() {
