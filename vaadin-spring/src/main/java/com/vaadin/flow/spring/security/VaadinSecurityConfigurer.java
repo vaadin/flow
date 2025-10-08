@@ -20,8 +20,10 @@ import jakarta.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatchers;
 import org.springframework.web.context.WebApplicationContext;
@@ -65,12 +68,10 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
-
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultHttpSecurityPermitMatcher;
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSecurityIgnoreMatcher;
 
 /**
  * A {@link SecurityConfigurer} specifically designed for Vaadin applications.
@@ -608,7 +609,7 @@ public final class VaadinSecurityConfigurer
      *
      * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
      *
-     * @return default {@link WebSecurity} ignore matcher
+     * @return default matcher for Vaadin static (public) resources.
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
         return getDefaultWebSecurityIgnoreMatcher("/*");
@@ -622,7 +623,7 @@ public final class VaadinSecurityConfigurer
      *
      * @param urlMapping
      *            the url mapping for the Vaadin servlet
-     * @return default {@link WebSecurity} ignore matcher
+     * @return default matcher for Vaadin static (public) resources.
      */
     public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
             String urlMapping) {
