@@ -23,8 +23,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
@@ -38,6 +36,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -233,7 +233,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("11.0.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").asString());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -249,7 +249,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("78.2.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").asString());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class NodeUpdaterTest {
                 formPackage, newVersion);
 
         Assert.assertEquals(newVersion, packageJson
-                .get(NodeUpdater.DEPENDENCIES).get(formPackage).textValue());
+                .get(NodeUpdater.DEPENDENCIES).get(formPackage).asString());
     }
 
     @Test

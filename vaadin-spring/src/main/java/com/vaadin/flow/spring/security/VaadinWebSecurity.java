@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import jakarta.annotation.PostConstruct;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import javax.crypto.SecretKey;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -67,11 +68,13 @@ import org.springframework.web.context.WebApplicationContext;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigurer;
 
 /**
@@ -227,35 +230,43 @@ public abstract class VaadinWebSecurity {
         http.authorizeHttpRequests(urlRegistry -> {
             // Vaadin internal requests must always be allowed to allow public
             // Flow pages and/or login page implemented using Flow.
-            urlRegistry.requestMatchers(requestUtil::isFrameworkInternalRequest)
+            urlRegistry
+                    .requestMatchers(toRequestPrincipalAwareMatcher(
+                            requestUtil::isFrameworkInternalRequest))
                     .permitAll();
             if (EndpointRequestUtil.isHillaAvailable()) {
                 // Public endpoints are OK to access
-                urlRegistry.requestMatchers(requestUtil::isAnonymousEndpoint)
-                        .permitAll();
+                urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                        requestUtil::isAnonymousEndpoint)).permitAll();
                 // Checks for known Hilla views
-                urlRegistry.requestMatchers(requestUtil::isAllowedHillaView)
-                        .permitAll();
+                urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                        requestUtil::isAllowedHillaView)).permitAll();
             }
             // Public routes are OK to access
-            urlRegistry.requestMatchers(requestUtil::isAnonymousRoute)
+            urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                    requestUtil::isAnonymousRoute)).permitAll();
+            urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                    getDefaultHttpSecurityPermitMatcher(
+                            requestUtil.getUrlMapping())))
                     .permitAll();
-            urlRegistry.requestMatchers(getDefaultHttpSecurityPermitMatcher(
-                    requestUtil.getUrlMapping())).permitAll();
             // matcher for Vaadin static (public) resources
-            urlRegistry.requestMatchers(getDefaultWebSecurityIgnoreMatcher(
-                    requestUtil.getUrlMapping())).permitAll();
+            urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                    getDefaultWebSecurityIgnoreMatcher(
+                            requestUtil.getUrlMapping())))
+                    .permitAll();
             // matcher for custom PWA icons and favicon
             urlRegistry.requestMatchers(requestUtil::isCustomWebIcon)
                     .permitAll();
             if (EndpointRequestUtil.isHillaAvailable()) {
                 // Authenticated endpoints
-                urlRegistry.requestMatchers(requestUtil::isEndpointRequest)
+                urlRegistry
+                        .requestMatchers(toRequestPrincipalAwareMatcher(
+                                requestUtil::isEndpointRequest))
                         .authenticated();
             }
             // private routes require authentication
-            urlRegistry.requestMatchers(requestUtil::isSecuredFlowRoute)
-                    .authenticated();
+            urlRegistry.requestMatchers(toRequestPrincipalAwareMatcher(
+                    requestUtil::isSecuredFlowRoute)).authenticated();
 
             // all other requests are denied
         });
@@ -824,4 +835,14 @@ public abstract class VaadinWebSecurity {
             response.setStatus(HttpStatus.UNAUTHORIZED.value());
         }
     }
+
+    private RequestMatcher toRequestPrincipalAwareMatcher(
+            RequestMatcher matcher) {
+        if (enableNavigationAccessControl() && getNavigationAccessControl()
+                .hasAccessChecker(RoutePathAccessChecker.class)) {
+            return RequestUtil.principalAwareRequestMatcher(matcher);
+        }
+        return matcher;
+    }
+
 }

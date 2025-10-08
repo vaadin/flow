@@ -1,8 +1,26 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.security;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequestWrapper;
+
+import java.security.Principal;
 import java.util.stream.Stream;
 
-import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.ObjectProvider;
@@ -29,6 +47,7 @@ import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
+import com.vaadin.flow.spring.AuthenticationUtil;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -136,7 +155,8 @@ public class RequestUtil {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
             ROUTE_PATH_MATCHER_RUNNING.set(Boolean.TRUE);
             try {
-                return isAnonymousRouteInternal(request);
+                return isAnonymousRouteInternal(
+                        PrincipalAwareRequestWrapper.wrap(request));
             } finally {
                 ROUTE_PATH_MATCHER_RUNNING.remove();
             }
@@ -241,6 +261,23 @@ public class RequestUtil {
         return Stream.of(patterns).map(
                 p -> PathPatternRequestMatcher.pathPattern(HttpMethod.GET, p))
                 .toArray(RequestMatcher[]::new);
+    }
+
+    /**
+     * Wraps a given {@link RequestMatcher} to ensure requests are processed
+     * with the principal awareness provided by
+     * {@link RequestUtil.PrincipalAwareRequestWrapper}.
+     *
+     * @param matcher
+     *            the {@link RequestMatcher} to be wrapped
+     * @return a {@link RequestMatcher} that processes requests using a
+     *         {@link RequestUtil.PrincipalAwareRequestWrapper} for principal
+     *         awareness
+     */
+    public static RequestMatcher principalAwareRequestMatcher(
+            RequestMatcher matcher) {
+        return request -> matcher.matches(
+                RequestUtil.PrincipalAwareRequestWrapper.wrap(request));
     }
 
     private boolean isSecuredFlowRouteInternal(HttpServletRequest request) {
@@ -356,7 +393,13 @@ public class RequestUtil {
                 .orElse(null);
     }
 
-    String getUrlMapping() {
+    /**
+     * Gets the url mapping for the Vaadin servlet.
+     *
+     * @return the url mapping
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    public String getUrlMapping() {
         return configurationProperties.getUrlMapping();
     }
 
@@ -396,6 +439,47 @@ public class RequestUtil {
             path = path.substring(1);
         }
         return urlMapping + "/" + path;
+    }
+
+    /**
+     * A wrapper for {@link HttpServletRequest} that provides additional
+     * functionality to handle the user principal retrieval in a safer manner.
+     * <p>
+     * This class extends {@link HttpServletRequestWrapper} and overrides its
+     * {@code getUserPrincipal()} method to handle cases where the operation
+     * might not be supported by the underlying {@link HttpServletRequest}, for
+     * example when called by a Spring request matcher in the context of
+     * {@code WebInvocationPrivilegeEvaluator} permissions evaluation.
+     */
+    static class PrincipalAwareRequestWrapper
+            extends HttpServletRequestWrapper {
+
+        private PrincipalAwareRequestWrapper(HttpServletRequest request) {
+            super(request);
+        }
+
+        @Override
+        public Principal getUserPrincipal() {
+            try {
+                return super.getUserPrincipal();
+            } catch (UnsupportedOperationException e) {
+                return AuthenticationUtil.getSecurityHolderAuthentication();
+            }
+        }
+
+        static HttpServletRequest wrap(HttpServletRequest request) {
+            if (request instanceof PrincipalAwareRequestWrapper) {
+                return request;
+            }
+            HttpServletRequest maybeWrapper = request;
+            while (maybeWrapper instanceof HttpServletRequestWrapper wrapper) {
+                if (wrapper instanceof PrincipalAwareRequestWrapper) {
+                    return request;
+                }
+                maybeWrapper = (HttpServletRequest) wrapper.getRequest();
+            }
+            return new PrincipalAwareRequestWrapper(request);
+        }
     }
 
     private Logger getLogger() {

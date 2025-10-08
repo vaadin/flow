@@ -13,16 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.page;
 
-import java.io.Serializable;
-
-import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -48,7 +45,7 @@ public class HistoryTest {
 
         private String expression;
 
-        private Serializable[] parameters;
+        private Object[] parameters;
 
         public TestPage(UI ui) {
             super(ui);
@@ -56,7 +53,7 @@ public class HistoryTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             this.parameters = parameters;
             return null;

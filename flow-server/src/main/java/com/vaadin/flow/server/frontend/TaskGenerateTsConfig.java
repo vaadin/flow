@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.ExecutionFailedException;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -155,7 +155,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getEsTargetVersion(String tsConfig) {
         JsonNode parsed = parseTsConfig(tsConfig);
-        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).textValue();
+        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).asString();
     }
 
     private ObjectNode parseTsConfig(String tsConfig) {
@@ -243,10 +243,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getConfigVersion(JsonNode projectTsConfigContent) {
         if (projectTsConfigContent.has(VERSION)) {
-            return projectTsConfigContent.get(VERSION).textValue();
+            return projectTsConfigContent.get(VERSION).asString();
         }
         if (projectTsConfigContent.has(OLD_VERSION_KEY)) {
-            return projectTsConfigContent.get(OLD_VERSION_KEY).textValue();
+            return projectTsConfigContent.get(OLD_VERSION_KEY).asString();
         }
         return null;
     }

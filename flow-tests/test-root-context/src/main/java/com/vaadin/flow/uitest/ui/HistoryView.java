@@ -31,11 +31,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JreJsonNull;
-
 @Route("com.vaadin.flow.uitest.ui.HistoryView")
 public class HistoryView extends AbstractDivView {
 

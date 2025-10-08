@@ -17,22 +17,19 @@ class ParentTemplate extends PolymerElement {
 
   static get template() {
     return html`
-           <div>Parent Template</div>
-            <div>
-            <div>Placeholder</div>
-            
-            <child-template id="child"></child-template>
-            
-            </div>
-            <style>
-    
-                parent-template {
-                    width: 100%;
-                }
-            </style>
+      <div>Parent Template</div>
+      <div>
+        <div>Placeholder</div>
+
+        <child-template id="child"></child-template>
+      </div>
+      <style>
+        parent-template {
+          width: 100%;
+        }
+      </style>
     `;
   }
-
 }
 
 customElements.define(ParentTemplate.is, ParentTemplate);

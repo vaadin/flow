@@ -13,26 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.test.filtering;
 
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.spring.test.exclude.ExcludedExternalRoute;
-import com.vaadin.flow.spring.test.exclude.ExcludedRoute;
-import com.vaadin.flow.spring.test.allowed.startup.CustomVaadinServiceInitListener;
-import com.vaadin.flow.spring.test.allowed.startup.vaadin.AllowedRoute;
-import com.vaadin.flow.spring.test.allowed.BlockedRoute;
-import com.vaadin.flow.spring.test.allowed.ScannedAllowedRoute;
-import com.vaadin.flow.spring.test.blocked.startup.BlockedCustomVaadinServiceInitListener;
-import com.vaadin.flow.spring.test.blocked.startup.vaadin.ScannedBlockedRoute;
-import com.vaadin.flow.spring.test.filtering.blocked.BlockedView;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.spring.test.allowed.BlockedRoute;
+import com.vaadin.flow.spring.test.allowed.ScannedAllowedRoute;
+import com.vaadin.flow.spring.test.allowed.startup.CustomVaadinServiceInitListener;
+import com.vaadin.flow.spring.test.allowed.startup.vaadin.AllowedRoute;
+import com.vaadin.flow.spring.test.blocked.startup.BlockedCustomVaadinServiceInitListener;
+import com.vaadin.flow.spring.test.blocked.startup.vaadin.ScannedBlockedRoute;
+import com.vaadin.flow.spring.test.exclude.ExcludedExternalRoute;
+import com.vaadin.flow.spring.test.exclude.ExcludedRoute;
+import com.vaadin.flow.spring.test.filtering.blocked.BlockedView;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * Primary target of this IT is class scanning of DevModeServletContextListener

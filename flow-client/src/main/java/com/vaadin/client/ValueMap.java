@@ -16,6 +16,7 @@
 package com.vaadin.client;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.flow.collection.JsArray;
 
 /**

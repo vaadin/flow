@@ -12,9 +12,7 @@ const require = createRequire(import.meta.url);
  *
  * @private
  */
-export default function vaadinBundlesPlugin({ nodeModulesFolder }: {
-  nodeModulesFolder: string;
-}): Plugin {
+export default function vaadinBundlesPlugin({ nodeModulesFolder }: { nodeModulesFolder: string }): Plugin {
   type ExportInfo =
     | string
     | {

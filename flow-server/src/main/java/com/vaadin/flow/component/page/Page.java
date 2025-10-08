@@ -33,8 +33,8 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -269,18 +269,21 @@ public class Page implements Serializable {
      * it becomes available. If no return value handler is registered, the
      * return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * The given parameters will be available to the expression as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
+     * named <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link tools.jackson.databind.node.BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
+     * additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -296,7 +299,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -306,6 +309,24 @@ public class Page implements Serializable {
         ui.getInternals().addJavaScriptInvocation(execution);
 
         return execution;
+    }
+
+    /**
+     * Executes the given JavaScript expression in the browser.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to execute
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
     }
 
     /**
@@ -512,7 +533,7 @@ public class Page implements Serializable {
             final JsonNode jsValue = jsonObj.get(key);
             if (jsValue != null
                     && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
-                return jsValue.asText();
+                return jsValue.asString();
             } else {
                 return null;
             }
@@ -545,7 +566,7 @@ public class Page implements Serializable {
      * proxy between the client and the server.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return window.location.href}.
      * <p>
      * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
@@ -578,7 +599,7 @@ public class Page implements Serializable {
      * request and passed to the callback.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return document.dir}.
      *
      * @param callback

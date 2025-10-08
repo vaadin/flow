@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.data.binder;
 
+import jakarta.validation.constraints.Size;
+
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
 import java.util.function.Predicate;
-
-import jakarta.validation.constraints.Size;
 
 import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;

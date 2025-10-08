@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Closeable;
 import java.util.Optional;
 import java.util.Set;
 

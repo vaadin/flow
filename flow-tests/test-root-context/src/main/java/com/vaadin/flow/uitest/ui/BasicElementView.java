@@ -45,7 +45,7 @@ public class BasicElementView extends AbstractDivView {
 
         button.addEventListener("click", e -> {
             JsonNode eventData = e.getEventData();
-            String buttonText = eventData.get("element.textContent").asText();
+            String buttonText = eventData.get("element.textContent").asString();
             int clientX = eventData.get("event.clientX").intValue();
             int clientY = eventData.get("event.clientY").intValue();
             Element greeting = ElementFactory.createDiv(

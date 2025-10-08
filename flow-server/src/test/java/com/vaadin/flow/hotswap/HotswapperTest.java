@@ -13,10 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.hotswap;
 
-import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1333,7 +1331,7 @@ public class HotswapperTest {
                 }
                 return null;
             }).when(pageSpy).executeJs(Mockito.anyString(),
-                    Mockito.any(Serializable[].class));
+                    Mockito.any(Object[].class));
         }
 
         @Override

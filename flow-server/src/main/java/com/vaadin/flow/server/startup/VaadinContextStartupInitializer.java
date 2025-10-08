@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.flow.server.VaadinContext;
-
 import jakarta.servlet.ServletContext;
+
 import java.util.Set;
+
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Applies this initializer to the given {@link VaadinContext}.

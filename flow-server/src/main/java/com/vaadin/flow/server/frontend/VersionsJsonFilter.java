@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -74,11 +74,11 @@ class VersionsJsonFilter {
                 if (version.isNewerThan(userManagedVersion)) {
                     LoggerFactory.getLogger("Versions").warn(
                             OLDER_VERSION_WARNING,
-                            userManagedDependencies.get(key).textValue(), key,
-                            versions.get(key).textValue());
+                            userManagedDependencies.get(key).asString(), key,
+                            versions.get(key).asString());
                 }
             }
-            json.put(key, versions.get(key).textValue());
+            json.put(key, versions.get(key).asString());
         }
         return json;
     }
@@ -100,7 +100,7 @@ class VersionsJsonFilter {
 
             for (String key : JacksonUtils.getKeys(dependencies)) {
                 if (isUserChanged(key, vaadinDep, dependencies)) {
-                    json.put(key, dependencies.get(key).textValue());
+                    json.put(key, dependencies.get(key).asString());
                 }
             }
         }
@@ -113,17 +113,17 @@ class VersionsJsonFilter {
         if (vaadinDep.has(key)) {
             try {
                 FrontendVersion vaadin = new FrontendVersion(key,
-                        vaadinDep.get(key).textValue());
+                        vaadinDep.get(key).asString());
                 FrontendVersion dep = new FrontendVersion(key,
-                        dependencies.get(key).textValue());
+                        dependencies.get(key).asString());
                 return !vaadin.isEqualTo(dep);
             } catch (NumberFormatException nfe) {
                 LoggerFactory.getLogger("VersionsFilter").debug(
                         "Received version with non numbers {} and {}",
-                        vaadinDep.get(key).textValue(),
-                        dependencies.get(key).textValue());
-                return !vaadinDep.get(key).textValue()
-                        .equals(dependencies.get(key).textValue());
+                        vaadinDep.get(key).asString(),
+                        dependencies.get(key).asString());
+                return !vaadinDep.get(key).asString()
+                        .equals(dependencies.get(key).asString());
             }
         }
         // User changed if not in vaadin dependency

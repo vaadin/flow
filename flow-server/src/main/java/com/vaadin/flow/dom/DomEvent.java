@@ -21,8 +21,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -76,7 +78,7 @@ public class DomEvent extends EventObject {
         if (jsonValue == null) {
             return DebouncePhase.LEADING;
         } else {
-            return DebouncePhase.forIdentifier(jsonValue.asText());
+            return DebouncePhase.forIdentifier(jsonValue.asString());
         }
     }
 
@@ -155,6 +157,54 @@ public class DomEvent extends EventObject {
      */
     public JsonNode getEventData() {
         return eventData;
+    }
+
+    /**
+     * Gets the event data deserialized as the given type. This method supports
+     * arbitrary bean types through Jackson deserialization.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * MyDto dto = domEvent.getEventData(MyDto.class);
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param type
+     *            the class to deserialize the event data to, not
+     *            <code>null</code>
+     * @return the event data deserialized as the given type
+     * @see DomListenerRegistration#addEventData(String)
+     */
+    public <T> T getEventData(Class<T> type) {
+        return JacksonCodec.decodeAs(eventData, type);
+    }
+
+    /**
+     * Gets the event data deserialized as the type specified by the
+     * {@link TypeReference}. This method supports generic types such as
+     * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
+     * TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
+     * };
+     * List&lt;MyDto&gt; dtos = domEvent.getEventData(typeRef);
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the event data deserialized as the given type
+     * @see DomListenerRegistration#addEventData(String)
+     */
+    public <T> T getEventData(TypeReference<T> typeReference) {
+        return JacksonCodec.decodeAs(eventData, typeReference);
     }
 
     /**

@@ -19,9 +19,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -144,7 +144,7 @@ public abstract class AbstractRpcInvocationHandler
     private boolean isPollEventInvocation(JsonNode invocationJson) {
         return invocationJson.has(JsonConstants.RPC_EVENT_TYPE)
                 && PollEvent.DOM_EVENT_NAME.equalsIgnoreCase(invocationJson
-                        .get(JsonConstants.RPC_EVENT_TYPE).asText());
+                        .get(JsonConstants.RPC_EVENT_TYPE).asString());
     }
 
     private boolean isPollingEnabledForUI(UI ui) {
@@ -192,8 +192,8 @@ public abstract class AbstractRpcInvocationHandler
         if (!invocationJson.has(JsonConstants.RPC_TYPE)) {
             return false;
         }
-        if (!JsonConstants.RPC_TYPE_EVENT
-                .equals(invocationJson.get(JsonConstants.RPC_TYPE).asText())) {
+        if (!JsonConstants.RPC_TYPE_EVENT.equals(
+                invocationJson.get(JsonConstants.RPC_TYPE).asString())) {
             return false;
         }
 

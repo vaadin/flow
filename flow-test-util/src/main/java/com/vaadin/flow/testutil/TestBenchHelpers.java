@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.testutil;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.List;

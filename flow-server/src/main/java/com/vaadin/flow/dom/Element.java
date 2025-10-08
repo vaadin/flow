@@ -28,11 +28,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.jsoup.nodes.Document;
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.BooleanNode;
 import tools.jackson.databind.node.NullNode;
-import org.jsoup.nodes.Document;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -47,7 +48,6 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -1032,6 +1032,81 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Gets the value of the given property, deserialized as the given type.
+     * This method supports arbitrary bean types through Jackson
+     * deserialization.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * MyDto dto = element.getPropertyBean("userData", MyDto.class);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param type
+     *            the class to deserialize the property value to, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, Class<T> type) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                type);
+    }
+
+    /**
+     * Gets the value of the given property, deserialized as the type specified
+     * by the {@link TypeReference}. This method supports generic types such as
+     * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
+     * TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
+     * };
+     * List&lt;MyDto&gt; dtos = element.getPropertyBean("userList", typeRef);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                typeReference);
+    }
+
+    /**
      * Removes the given property.
      * <p>
      * Note that properties changed on the server are updated on the client but
@@ -1380,26 +1455,26 @@ public class Element extends Node<Element> {
      * registered, the return value will be ignored.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
-     * calls are invoked.
+     * at the same time that {@link Page#executeJs(String, Object...)} calls are
+     * invoked.
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
-     *
-     * @see JsonCodec JsonCodec for supported argument types
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
      *            a function on a property.
      * @param arguments
-     *            the arguments to pass to the function. Must be of a type
-     *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
+     *            the arguments to pass to the function. All types supported by
+     *            Jackson for JSON serialization are supported. Special cases:
+     *            {@link Element} instances (will be sent as DOM element
+     *            references to the browser if attached when invoked, or as
+     *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable... arguments) {
+            Object... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
@@ -1421,6 +1496,25 @@ public class Element extends Node<Element> {
                 + paramPlaceholderString + ")", jsParameters);
     }
 
+    /**
+     * Calls the given JavaScript function with this element as
+     * <code>this</code> and the given arguments.
+     *
+     * @deprecated Use {@link #callJsFunction(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param functionName
+     *            the name of the function to call
+     * @param arguments
+     *            the arguments to pass to the function
+     * @return a pending result that can be used to get a return value from the
+     *         execution
+     */
+    @Deprecated
+    public PendingJavaScriptResult callJsFunction(String functionName,
+            Serializable[] arguments) {
+        return callJsFunction(functionName, (Object[]) arguments);
+    }
+
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
     /**
      * Asynchronously runs the given JavaScript expression in the browser in the
@@ -1434,19 +1528,21 @@ public class Element extends Node<Element> {
      * value once it becomes available. If no return value handler is
      * registered, the return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
+     * <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1465,15 +1561,15 @@ public class Element extends Node<Element> {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
 
         // Add "this" as the last parameter
-        Serializable[] wrappedParameters;
+        Object[] wrappedParameters;
         if (parameters.length == 0) {
-            wrappedParameters = new Serializable[] { this };
+            wrappedParameters = new Object[] { this };
         } else {
-            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1,
-                    Serializable[].class);
+            wrappedParameters = Arrays.copyOf(parameters,
+                    parameters.length + 1);
             wrappedParameters[parameters.length] = this;
         }
 
@@ -1485,8 +1581,27 @@ public class Element extends Node<Element> {
                 wrappedParameters);
     }
 
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
+    }
+
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Serializable[] parameters) {
+            String expression, Object[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,

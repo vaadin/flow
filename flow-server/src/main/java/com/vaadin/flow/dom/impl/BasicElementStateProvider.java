@@ -367,7 +367,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         boolean visitDescendants;
         if (payload instanceof JsonNode) {
             JsonNode object = (JsonNode) payload;
-            String type = object.get(NodeProperties.TYPE).asText();
+            String type = object.get(NodeProperties.TYPE).asString();
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);

@@ -1,5 +1,4 @@
-
-import { LitElement, html } from "lit";
+import { LitElement, html } from 'lit';
 
 export class SimpleLitTemplateShadowRoot extends LitElement {
   static get properties() {
@@ -9,11 +8,11 @@ export class SimpleLitTemplateShadowRoot extends LitElement {
   }
   render() {
     return html`
-      <button id="clientButton" @click="${e => this.$server.sayHello()}">${this.text}</button>
+      <button id="clientButton" @click="${(e) => this.$server.sayHello()}">${this.text}</button>
 
       <button id="mappedButton"></button>
       <div id="label"></div>
     `;
   }
 }
-customElements.define("my-lit-element-view", SimpleLitTemplateShadowRoot);
+customElements.define('my-lit-element-view', SimpleLitTemplateShadowRoot);

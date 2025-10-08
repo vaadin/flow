@@ -24,14 +24,15 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_OPEN_API_FILE_TOKEN;
@@ -46,7 +47,6 @@ import static com.vaadin.flow.server.Constants.NPM_TOKEN;
 import static com.vaadin.flow.server.Constants.PREMIUM_FEATURES;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
-import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.BUILD_FOLDER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
@@ -92,7 +92,7 @@ public class AbstractConfigurationFactory implements Serializable {
             params.put(EXTERNAL_STATS_FILE, Boolean.toString(true));
             if (buildInfo.has(EXTERNAL_STATS_URL_TOKEN)) {
                 params.put(EXTERNAL_STATS_URL,
-                        buildInfo.get(EXTERNAL_STATS_URL_TOKEN).textValue());
+                        buildInfo.get(EXTERNAL_STATS_URL_TOKEN).asString());
             }
             // NO OTHER CONFIGURATION:
             return params;
@@ -107,28 +107,28 @@ public class AbstractConfigurationFactory implements Serializable {
         }
 
         if (buildInfo.has(NPM_TOKEN)) {
-            params.put(PROJECT_BASEDIR, buildInfo.get(NPM_TOKEN).textValue());
-            verifyFolderExists(params, buildInfo.get(NPM_TOKEN).textValue());
+            params.put(PROJECT_BASEDIR, buildInfo.get(NPM_TOKEN).asString());
+            verifyFolderExists(params, buildInfo.get(NPM_TOKEN).asString());
         }
 
         if (buildInfo.has(NODE_VERSION)) {
-            params.put(NODE_VERSION, buildInfo.get(NODE_VERSION).textValue());
+            params.put(NODE_VERSION, buildInfo.get(NODE_VERSION).asString());
         }
         if (buildInfo.has(NODE_DOWNLOAD_ROOT)) {
             params.put(NODE_DOWNLOAD_ROOT,
-                    buildInfo.get(NODE_DOWNLOAD_ROOT).textValue());
+                    buildInfo.get(NODE_DOWNLOAD_ROOT).asString());
         }
 
         if (buildInfo.has(FRONTEND_TOKEN)) {
             params.put(FrontendUtils.PARAM_FRONTEND_DIR,
-                    buildInfo.get(FRONTEND_TOKEN).textValue());
+                    buildInfo.get(FRONTEND_TOKEN).asString());
             // Only verify frontend folder if it's not a subfolder of the
             // npm folder.
             if (!buildInfo.has(NPM_TOKEN)
-                    || !buildInfo.get(FRONTEND_TOKEN).textValue()
-                            .startsWith(buildInfo.get(NPM_TOKEN).textValue())) {
+                    || !buildInfo.get(FRONTEND_TOKEN).asString()
+                            .startsWith(buildInfo.get(NPM_TOKEN).asString())) {
                 verifyFolderExists(params,
-                        buildInfo.get(FRONTEND_TOKEN).textValue());
+                        buildInfo.get(FRONTEND_TOKEN).asString());
             }
         }
 
@@ -146,27 +146,27 @@ public class AbstractConfigurationFactory implements Serializable {
                                     .booleanValue()));
         }
         if (buildInfo.has(CONNECT_JAVA_SOURCE_FOLDER_TOKEN)) {
-            params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN, buildInfo
-                    .get(CONNECT_JAVA_SOURCE_FOLDER_TOKEN).textValue());
+            params.put(CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
+                    buildInfo.get(CONNECT_JAVA_SOURCE_FOLDER_TOKEN).asString());
         }
         if (buildInfo.has(Constants.JAVA_RESOURCE_FOLDER_TOKEN)) {
             params.put(Constants.JAVA_RESOURCE_FOLDER_TOKEN, buildInfo
-                    .get(Constants.JAVA_RESOURCE_FOLDER_TOKEN).textValue());
+                    .get(Constants.JAVA_RESOURCE_FOLDER_TOKEN).asString());
         }
         if (buildInfo.has(CONNECT_OPEN_API_FILE_TOKEN)) {
             params.put(CONNECT_OPEN_API_FILE_TOKEN,
-                    buildInfo.get(CONNECT_OPEN_API_FILE_TOKEN).textValue());
+                    buildInfo.get(CONNECT_OPEN_API_FILE_TOKEN).asString());
         }
         if (buildInfo.has(CONNECT_APPLICATION_PROPERTIES_TOKEN)) {
             params.put(CONNECT_APPLICATION_PROPERTIES_TOKEN, buildInfo
-                    .get(CONNECT_APPLICATION_PROPERTIES_TOKEN).textValue());
+                    .get(CONNECT_APPLICATION_PROPERTIES_TOKEN).asString());
         }
         if (buildInfo.has(PROJECT_FRONTEND_GENERATED_DIR_TOKEN)) {
             params.put(PROJECT_FRONTEND_GENERATED_DIR_TOKEN, buildInfo
-                    .get(PROJECT_FRONTEND_GENERATED_DIR_TOKEN).textValue());
+                    .get(PROJECT_FRONTEND_GENERATED_DIR_TOKEN).asString());
         }
         if (buildInfo.has(BUILD_FOLDER)) {
-            params.put(BUILD_FOLDER, buildInfo.get(BUILD_FOLDER).textValue());
+            params.put(BUILD_FOLDER, buildInfo.get(BUILD_FOLDER).asString());
         }
         if (buildInfo.has(DISABLE_PREPARE_FRONTEND_CACHE)) {
             UsageStatistics.markAsUsed("flow/always-execute-prepare-frontend",
@@ -178,7 +178,7 @@ public class AbstractConfigurationFactory implements Serializable {
         }
         if (buildInfo.has(APPLICATION_IDENTIFIER)) {
             params.put(APPLICATION_IDENTIFIER,
-                    buildInfo.get(APPLICATION_IDENTIFIER).textValue());
+                    buildInfo.get(APPLICATION_IDENTIFIER).asString());
         }
         if (buildInfo.has(DAU_TOKEN)) {
             params.put(DAU_TOKEN,
@@ -191,7 +191,7 @@ public class AbstractConfigurationFactory implements Serializable {
 
         if (buildInfo.has(InitParameters.FRONTEND_EXTRA_EXTENSIONS)) {
             params.put(InitParameters.FRONTEND_EXTRA_EXTENSIONS, buildInfo
-                    .get(InitParameters.FRONTEND_EXTRA_EXTENSIONS).textValue());
+                    .get(InitParameters.FRONTEND_EXTRA_EXTENSIONS).asString());
         }
 
         if (buildInfo.has(NPM_EXCLUDE_WEB_COMPONENTS)) {
