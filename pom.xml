@@ -578,6 +578,19 @@
               <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
             </prettier>
           </typescript>
+          <css>
+            <includes>
+              <include>src/**/*.css</include>
+              <include>frontend/**/*.css</include>
+            </includes>
+            <excludes>
+              <exclude>src/main/frontend/generated/**</exclude>
+            </excludes>
+            <prettier>
+              <configFile>${maven.multiModuleProjectDirectory}/.prettierrc</configFile>
+              <npmInstallCache>${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
+            </prettier>
+          </css>
           <pom>
             <sortPom>
               <expandEmptyElements>false</expandEmptyElements>
