@@ -350,10 +350,6 @@
                         <licenseHeader>
                             <file>${spotless.license-header}</file>
                         </licenseHeader>
-                        <excludes>
-                            <exclude>**/com/vaadin/client/gwt/**/*.java</exclude>
-                            <exclude>**/com/vaadin/flow/testutil/net/**/*.java</exclude>
-                        </excludes>
                     </java>
                     <typescript>
                         <includes>
@@ -363,13 +359,6 @@
                             <include>frontend/**/*.ts</include>
                         </includes>
                         <excludes>
-                            <exclude>src/main/resources/vite.generated.ts</exclude>
-                            <exclude>
-                                src/main/resources/com/vaadin/flow/server/webcomponent/webcomponent-*.js</exclude>
-                            <exclude>src/main/resources/com/vaadin/flow/server/BootstrapHandler.js</exclude>
-                            <exclude>src/main/java/com/vaadin/client/gwt</exclude>
-                            <exclude>
-                                src/main/resources/com/vaadin/flow/linker/ClientEngineSingleScriptTemplate.js</exclude>
                             <exclude>src/main/frontend/generated/**</exclude>
                         </excludes>
                         <prettier>
