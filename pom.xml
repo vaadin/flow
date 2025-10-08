@@ -369,6 +369,11 @@
                                 ${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
                         </prettier>
                     </typescript>
+                    <pom>
+                        <sortPom>
+                            <expandEmptyElements>false</expandEmptyElements>
+                        </sortPom>
+                    </pom>
                 </configuration>
             </plugin>
 
