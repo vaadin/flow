@@ -104,19 +104,6 @@ jobs:
           echo "changes_committed=true" >> $GITHUB_OUTPUT
           echo "✅ Formatting changes committed and pushed. Workflow will retrigger automatically." >> $GITHUB_STEP_SUMMARY
 
-      - name: Generate diff for artifact
-        if: steps.formatter.outputs.modified != '0'
-        run: |
-          git diff HEAD~1 > formatter-diff.txt
-
-      - name: Upload formatter diff
-        if: steps.formatter.outputs.modified != '0'
-        uses: actions/upload-artifact@v4
-        with:
-          name: formatter-diff
-          path: formatter-diff.txt
-          retention-days: 30
-
       - name: Find existing comment
         uses: peter-evans/find-comment@v3
         id: find-comment
