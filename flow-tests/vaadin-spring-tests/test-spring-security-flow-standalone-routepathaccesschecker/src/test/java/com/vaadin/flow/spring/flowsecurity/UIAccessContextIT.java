@@ -16,7 +16,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 

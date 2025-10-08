@@ -21,8 +21,8 @@ import java.security.Principal;
 import java.util.function.Predicate;
 
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
+import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
