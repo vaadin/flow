@@ -28,6 +28,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -71,11 +72,12 @@ public class SecurityConfig {
     @Autowired
     private RequestUtil requestUtil;
 
-    private final AuthenticationContext authenticationContext = new AuthenticationContext();
+    @Autowired
+    private SecurityContextHolderStrategy securityContextHolderStrategy;
 
     @Bean
     public AuthenticationContext authenticationContext() {
-        return authenticationContext;
+        return new AuthenticationContext(securityContextHolderStrategy);
     }
 
     @Bean

@@ -75,6 +75,7 @@ public class VaadinWebSecurityTest {
                         PathPatternRequestMatcher.Builder.class,
                         requestMatcherBuilder));
         TestConfig testConfig = new VaadinWebSecurityTest.TestConfig();
+        mockVaadinWebSecurityInjection(testConfig);
         testConfig.filterChain(httpSecurity);
 
         Assert.assertTrue("VaadinWebSecurity HTTP configuration invoked",
@@ -202,8 +203,15 @@ public class VaadinWebSecurityTest {
     private static TestNavigationAccessControl mockVaadinWebSecurityInjection(
             VaadinWebSecurity testConfig) {
         TestNavigationAccessControl accessControl = new TestNavigationAccessControl();
-        ReflectionTestUtils.setField(testConfig, "accessControl",
-                accessControl);
+        ObjectProvider<NavigationAccessControl> accessControlProvider = mock(
+                ObjectProvider.class);
+        Mockito.when(accessControlProvider.getIfAvailable())
+                .thenReturn(accessControl);
+        ReflectionTestUtils.setField(testConfig, "accessControlProvider",
+                accessControlProvider);
+        ReflectionTestUtils.setField(testConfig,
+                "securityContextHolderStrategy",
+                new VaadinAwareSecurityContextHolderStrategy());
         RequestUtil requestUtil = mock(RequestUtil.class);
         Mockito.when(requestUtil.getUrlMapping()).thenReturn("/*");
         Mockito.when(requestUtil.applyUrlMapping(anyString())).then(i -> {
@@ -215,6 +223,7 @@ public class VaadinWebSecurityTest {
         });
         ReflectionTestUtils.setField(testConfig, "requestUtil", requestUtil);
         ReflectionTestUtils.setField(testConfig, "servletContextPath", "");
+        testConfig.afterPropertiesSet();
         return accessControl;
     }
 

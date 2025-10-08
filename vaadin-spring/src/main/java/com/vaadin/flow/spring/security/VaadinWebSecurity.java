@@ -37,7 +37,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
@@ -45,6 +44,8 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfiguration;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -126,7 +127,6 @@ import com.vaadin.flow.spring.security.stateless.VaadinStatelessSecurityConfigur
  *             Configurer documentation.</a>
  */
 @Deprecated(since = "24.9", forRemoval = true)
-@Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
 public abstract class VaadinWebSecurity {
 
     @Autowired
@@ -149,13 +149,20 @@ public abstract class VaadinWebSecurity {
 
     private NavigationAccessControl accessControl;
 
+    @Autowired
+    private SecurityContextHolderStrategy securityContextHolderStrategy;
+
+    private AuthenticationContext authenticationContext;
+
     @PostConstruct
     void afterPropertiesSet() {
         accessControl = accessControlProvider.getIfAvailable();
+        authenticationContext = new AuthenticationContext(
+                securityContextHolderStrategy);
         authenticationContext.setRolePrefixHolder(vaadinRolePrefixHolder);
+        SecurityContextHolder
+                .setContextHolderStrategy(securityContextHolderStrategy);
     }
-
-    private final AuthenticationContext authenticationContext = new AuthenticationContext();
 
     /**
      * Registers default {@link SecurityFilterChain} bean.
