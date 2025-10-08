@@ -719,14 +719,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private Element createDependencyElement(BootstrapContext context,
                 ObjectNode dependencyJson) {
-            String type = dependencyJson.get(Dependency.KEY_TYPE).textValue();
+            String type = dependencyJson.get(Dependency.KEY_TYPE).asString();
             if (Dependency.Type.contains(type)) {
                 Dependency.Type dependencyType = Dependency.Type.valueOf(type);
                 return createDependencyElement(context.getUriResolver(),
                         LoadMode.INLINE, dependencyJson, dependencyType);
             }
             return Jsoup.parse(
-                    dependencyJson.get(Dependency.KEY_CONTENTS).textValue(), "",
+                    dependencyJson.get(Dependency.KEY_CONTENTS).asString(), "",
                     Parser.xmlParser());
         }
 
@@ -847,7 +847,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             for (int i = 0; i < dependencies.size(); i++) {
                 ObjectNode dependencyJson = (ObjectNode) dependencies.get(i);
                 Dependency.Type dependencyType = Dependency.Type.valueOf(
-                        dependencyJson.get(Dependency.KEY_TYPE).textValue());
+                        dependencyJson.get(Dependency.KEY_TYPE).asString());
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
@@ -1093,7 +1093,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             boolean inlineElement = loadMode == LoadMode.INLINE;
             String url = dependency.has(Dependency.KEY_URL)
                     ? resolver.resolveVaadinUri(
-                            dependency.get(Dependency.KEY_URL).textValue())
+                            dependency.get(Dependency.KEY_URL).asString())
                     : null;
 
             final Element dependencyElement;
@@ -1115,7 +1115,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (inlineElement) {
                 dependencyElement.appendChild(new DataNode(
-                        dependency.get(Dependency.KEY_CONTENTS).textValue()));
+                        dependency.get(Dependency.KEY_CONTENTS).asString()));
             }
 
             return dependencyElement;

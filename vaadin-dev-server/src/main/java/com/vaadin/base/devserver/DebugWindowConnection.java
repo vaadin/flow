@@ -301,11 +301,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
             return;
         }
         JsonNode json = JacksonUtils.readTree(message);
-        String command = json.get("command").textValue();
+        String command = json.get("command").asString();
         JsonNode data = json.get("data");
         if ("setFeature".equals(command)) {
             FeatureFlags.get(context).setEnabled(
-                    data.get("featureId").textValue(),
+                    data.get("featureId").asString(),
                     data.get("enabled").booleanValue());
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
@@ -334,8 +334,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleLicenseCheck(AtmosphereResource resource,
             JsonNode data) {
-        String name = data.get("name").textValue();
-        String version = data.get("version").textValue();
+        String name = data.get("name").asString();
+        String version = data.get("version").asString();
         Product product = new Product(name, version);
         PreTrial preTrial = null;
         String command = null;
@@ -366,8 +366,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleLicenseKeyDownload(AtmosphereResource resource,
             JsonNode data) {
-        String name = data.get("name").textValue();
-        String version = data.get("version").textValue();
+        String name = data.get("name").asString();
+        String version = data.get("version").asString();
         Product product = new Product(name, version);
 
         LicenseChecker.checkLicenseAsync(product.getName(),

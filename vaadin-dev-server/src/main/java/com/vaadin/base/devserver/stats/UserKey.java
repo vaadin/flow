@@ -40,7 +40,7 @@ class UserKey {
         String keyFromFile = null;
         try {
             JsonNode value = JsonHelpers.getJsonMapper().readTree(keyFile);
-            keyFromFile = value.get(FIELD_KEY).asText();
+            keyFromFile = value.get(FIELD_KEY).asString();
         } catch (Exception e) {
             getLogger().debug("Unable to read UserKey", e);
         }

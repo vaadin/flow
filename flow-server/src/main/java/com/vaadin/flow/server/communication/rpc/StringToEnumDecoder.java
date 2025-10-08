@@ -42,7 +42,7 @@ public class StringToEnumDecoder implements RpcDecoder {
     @Override
     public <T> T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
-        String stringValue = value.asText();
+        String stringValue = value.asString();
         Enum<?> result = Enum.valueOf((Class<? extends Enum>) type,
                 stringValue);
         return type.cast(result);

@@ -96,9 +96,9 @@ public class CompositeDataGeneratorTest {
         ObjectNode json = JacksonUtils.createObjectNode();
         composite.generateData("item1", json);
 
-        Assert.assertEquals("value1", json.get("mock1").asText());
-        Assert.assertEquals("value2", json.get("mock2").asText());
-        Assert.assertEquals("value3", json.get("mock3").asText());
+        Assert.assertEquals("value1", json.get("mock1").asString());
+        Assert.assertEquals("value2", json.get("mock2").asString());
+        Assert.assertEquals("value3", json.get("mock3").asString());
         Assert.assertThat(mock1.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock2.getProcessed(), CoreMatchers.hasItem("item1"));
         Assert.assertThat(mock3.getProcessed(), CoreMatchers.hasItem("item1"));

@@ -52,7 +52,7 @@ public class StringToNumberDecoder implements RpcDecoder {
     @Override
     public <T> T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
-        String stringValue = value.asText();
+        String stringValue = value.asString();
         try {
             Number number = parseNumber(stringValue);
             if (Number.class.equals(type)) {

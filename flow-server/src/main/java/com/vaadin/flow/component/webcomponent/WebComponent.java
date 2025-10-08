@@ -232,7 +232,7 @@ public final class WebComponent<C extends Component> implements Serializable {
                     ((ValueNode) value).doubleValue());
         } else if (value instanceof ValueNode) {
             componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).asText());
+                    ((ValueNode) value).asString());
         } else if (value instanceof BaseJsonNode) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow

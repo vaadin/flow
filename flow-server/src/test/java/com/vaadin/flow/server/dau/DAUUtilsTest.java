@@ -256,7 +256,7 @@ public class DAUUtilsTest {
             String expectedValue, JsonNode json) {
         if (expectedValue != null) {
             Assert.assertEquals(expectedKey, expectedValue,
-                    json.get(expectedKey).asText());
+                    json.get(expectedKey).asString());
         } else {
             Assert.assertEquals("expected key " + expectedKey + " to be null",
                     JsonNodeType.NULL, json.get(expectedKey).getNodeType());

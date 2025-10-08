@@ -110,12 +110,12 @@ public class JavaScriptBootstrapHandlerTest {
         Assert.assertFalse(json.get("appConfig").has("webComponentMode"));
 
         Assert.assertEquals("./",
-                json.get("appConfig").get("contextRootUrl").asText());
+                json.get("appConfig").get("contextRootUrl").asString());
         Assert.assertNull(
                 "ServiceUrl should not be set. It will be computed by flow-client",
                 json.get("appConfig").get("serviceUrl"));
         Assert.assertEquals("http://localhost:8888/",
-                json.get("appConfig").get("requestURL").asText());
+                json.get("appConfig").get("requestURL").asString());
 
         Assert.assertFalse(json.has("pushScript"));
     }
@@ -169,7 +169,7 @@ public class JavaScriptBootstrapHandlerTest {
         JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.get("pushScript").asText().matches(
+        Assert.assertTrue(json.get("pushScript").asString().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
@@ -187,7 +187,7 @@ public class JavaScriptBootstrapHandlerTest {
         JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.get("pushScript").asText().matches(
+        Assert.assertTrue(json.get("pushScript").asString().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
@@ -222,7 +222,7 @@ public class JavaScriptBootstrapHandlerTest {
         JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
-        Assert.assertTrue(json.get("pushScript").asText().matches(
+        Assert.assertTrue(json.get("pushScript").asString().matches(
                 "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
