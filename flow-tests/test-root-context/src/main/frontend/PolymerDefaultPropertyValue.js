@@ -1,36 +1,38 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 class MyTemplate extends PolymerElement {
-  static get is() { return 'default-property' }
+  static get is() {
+    return 'default-property';
+  }
 
   static get template() {
     return html`
-        <div id="text">[[text]]</div>
-        <div id="name">[[name]]</div>
-        <div id="message">[[message]]</div>
-        <div id="email">[[email]]</div>
-        `;
+      <div id="text">[[text]]</div>
+      <div id="name">[[name]]</div>
+      <div id="message">[[message]]</div>
+      <div id="email">[[email]]</div>
+    `;
   }
 
-  static get properties(){
+  static get properties() {
     return {
       text: {
         type: String,
-        value: ""
+        value: ''
       },
-      name :{
+      name: {
         type: String,
-        value: "bar"
+        value: 'bar'
       },
-      message :{
+      message: {
         type: String,
-        value: "msg",
+        value: 'msg',
         notify: true
       },
-      email :{
+      email: {
         type: String,
-        value: "foo@example.com",
+        value: 'foo@example.com',
         notify: true
       }
     };

@@ -342,19 +342,44 @@
                             <file>
                                 ${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
                         </eclipse>
-                        <endWithNewline/>
-                        <removeUnusedImports/>
+                        <endWithNewline />
+                        <removeUnusedImports />
                         <importOrder>
                             <file>${maven.multiModuleProjectDirectory}/eclipse/flow.importorder</file>
                         </importOrder>
+                        <licenseHeader>
+                            <file>${spotless.license-header}</file>
+                        </licenseHeader>
                         <excludes>
                             <exclude>**/com/vaadin/client/gwt/**/*.java</exclude>
                             <exclude>**/com/vaadin/flow/testutil/net/**/*.java</exclude>
                         </excludes>
                     </java>
-                    <licenseHeader>
-                        <file>${spotless.license-header}</file>
-                    </licenseHeader>
+                    <typescript>
+                        <includes>
+                            <include>src/**/*.js</include>
+                            <include>src/**/*.ts</include>
+                            <include>frontend/**/*.js</include>
+                            <include>frontend/**/*.ts</include>
+                        </includes>
+                        <excludes>
+                            <exclude>src/main/resources/vite.generated.ts</exclude>
+                            <exclude>
+                                src/main/resources/com/vaadin/flow/server/webcomponent/webcomponent-*.js</exclude>
+                            <exclude>src/main/resources/com/vaadin/flow/server/BootstrapHandler.js</exclude>
+                            <exclude>src/main/java/com/vaadin/client/gwt</exclude>
+                            <exclude>
+                                src/main/resources/com/vaadin/flow/linker/ClientEngineSingleScriptTemplate.js</exclude>
+                            <exclude>src/main/frontend/generated/**</exclude>
+                        </excludes>
+                        <prettier>
+                            <configFile>
+                                ${maven.multiModuleProjectDirectory}/.prettierrc
+                            </configFile>
+                            <npmInstallCache>
+                                ${maven.multiModuleProjectDirectory}/target/.spotless-npm-install-cache</npmInstallCache>
+                        </prettier>
+                    </typescript>
                 </configuration>
             </plugin>
 

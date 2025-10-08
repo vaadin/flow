@@ -1,4 +1,4 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 /**
  * Docs docs and more docs
@@ -8,13 +8,11 @@ import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
  */
 class LightDom extends PolymerElement {
   static get template() {
-    return html`
-          <div class="title">Upgrade to Enterprise</div>
-    `;
+    return html` <div class="title">Upgrade to Enterprise</div> `;
   }
 
   static get is() {
-    return "light-dom";
+    return 'light-dom';
   }
 
   // This allows us to keep the view element in the light DOM.

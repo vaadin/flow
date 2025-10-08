@@ -1,15 +1,13 @@
-import { LitElement, html } from "lit";
+import { LitElement, html } from 'lit';
 
 export class InjectedTemplate extends LitElement {
   static get properties() {
     return {
-      value: { type: Number}
+      value: { type: Number }
     };
   }
   render() {
-    return html`
-       <div>Injected Template</div>
-    `;
+    return html` <div>Injected Template</div> `;
   }
 }
-customElements.define("injected-lit-template", InjectedTemplate);
+customElements.define('injected-lit-template', InjectedTemplate);

@@ -190,7 +190,9 @@ class PreTrial extends HTMLElement {
     this.#shadowRoot.innerHTML = `
     ${commonStyles}
     <div class='container'>
-      ${this.#trialExpired ? `
+      ${
+        this.#trialExpired
+          ? `
         <h2>Trial expired</h2>
         <p>
           Vaadin Core is free and open-source. Sign in to keep using 
@@ -236,7 +238,8 @@ class PreTrial extends HTMLElement {
           <span>Extend trial 30 days</span>
           <span>Sign up ⋅ No credit card required</span>
         </button>
-        ` : `
+        `
+          : `
         <h2>Get full access to all features</h2>
         <p>
           Vaadin Core is free and open-source. To use Pro components like <span class="badge">
@@ -262,15 +265,25 @@ class PreTrial extends HTMLElement {
         </button>
         `
       }
-      ${this.#startFailed ? `
+      ${
+        this.#startFailed
+          ? `
         <div class='error'>
           <h3>Trial failed to start</h3>
           <p>Something went wrong while starting your trial. Try again in a moment. If the issue persists, <a href="https://pages.vaadin.com/contact" target="_blank">contact our support team</a>.</p>
         </div>`
-      : ''
+          : ''
       }
-      ${this.#licenseDownloadStatus === 'started' ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>' : ''}
-      ${this.#licenseDownloadStatus === 'failed' ? '<div class="error">Failed to download the license key. Please try again later.</div>' : ''}
+      ${
+        this.#licenseDownloadStatus === 'started'
+          ? '<p><strong>Waiting for the license key to be downloaded...</strong></p>'
+          : ''
+      }
+      ${
+        this.#licenseDownloadStatus === 'failed'
+          ? '<div class="error">Failed to download the license key. Please try again later.</div>'
+          : ''
+      }
       <hr>
       <p>
         By starting your trial, you agree to our <a href='https://vaadin.com/commercial-license-and-service-terms' target='_blank'>terms and conditions</a>.
@@ -280,15 +293,17 @@ class PreTrial extends HTMLElement {
 
     const primaryButton = this.#shadowRoot.querySelector('button.primary')!;
     primaryButton?.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('primary-button-click', {
+      this.dispatchEvent(
+        new CustomEvent('primary-button-click', {
           detail: {
             expired: this.#trialExpired
           }
-        }));
+        })
+      );
     });
     const secondaryButton = this.#shadowRoot.querySelector('button.secondary')!;
     secondaryButton?.addEventListener('click', () => {
-        this.dispatchEvent(new CustomEvent('secondary-button-click'));
+      this.dispatchEvent(new CustomEvent('secondary-button-click'));
     });
   }
 
@@ -407,7 +422,7 @@ class PreTrial extends HTMLElement {
 
   private setupProtection(): void {
     const originalRemove = Element.prototype.remove;
-    this.remove = function(this: PreTrial): void {
+    this.remove = function (this: PreTrial): void {
       console.debug('Attempt to remove vaadin-pretrial detected - restoring');
       const currentParent = this.parentNode;
       // Let the removal happen
@@ -437,7 +452,8 @@ class PreTrial extends HTMLElement {
       });
 
       this.#parentObserver.observe(this.parentNode, {
-        childList: true, subtree: true
+        childList: true,
+        subtree: true
       });
     }
   }
@@ -533,7 +549,10 @@ export const preTrialStartFailed = (expired: boolean, shadowRoot: ShadowRoot | n
     element?.setAttribute('start-failure', expired ? 'expired' : '');
   }
 };
-export const updateLicenseDownloadStatus = (action: 'started' | 'failed' | 'completed', shadowRoot: ShadowRoot | null) => {
+export const updateLicenseDownloadStatus = (
+  action: 'started' | 'failed' | 'completed',
+  shadowRoot: ShadowRoot | null
+) => {
   if (shadowRoot) {
     const element = shadowRoot.querySelector('vaadin-pretrial');
     element?.setAttribute('license-download', action);
