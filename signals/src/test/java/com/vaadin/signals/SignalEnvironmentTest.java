@@ -15,12 +15,12 @@
  */
 package com.vaadin.signals;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SignalEnvironmentTest extends SignalTestBase {
 

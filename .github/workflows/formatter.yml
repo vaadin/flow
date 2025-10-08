@@ -42,7 +42,7 @@ jobs:
         id: formatter
         run: |
           echo "Running formatter..."
-          mvn -B -q formatter:format -Dformatter.html.skip=true -P benchmark 2>&1 | grep -v null || true
+          mvn -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
 
           # Check for modified files
           files=$(git status --porcelain | awk '{print $2}')
@@ -93,11 +93,11 @@ jobs:
 
             - To see a complete report of formatting issues, download the [differences artifact](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
-            - To fix the build, please run `mvn formatter:format` in your branch and commit the changes.
+            - To fix the build, please run `mvn spotless:apply` in your branch and commit the changes.
 
             - Optionally you might add the following line in your `.git/hooks/pre-commit` file:
 
-                  mvn formatter:format
+                  mvn spotless:apply
 
             Here is the list of files with format issues in your PR:
 

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.test.partial;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -26,8 +25,8 @@ import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import static com.vaadin.flow.spring.test.partial.MainLayout.RESET_ID;
 import static com.vaadin.flow.spring.test.partial.MainLayout.EVENT_LOG_ID;
+import static com.vaadin.flow.spring.test.partial.MainLayout.RESET_ID;
 import static com.vaadin.flow.spring.test.partial.RootLayout.ROOT_EVENT_LOG_ID;
 import static com.vaadin.flow.spring.test.partial.SecondView.SECOND_ID;
 

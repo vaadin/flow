@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import tools.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;

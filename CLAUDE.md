@@ -77,7 +77,10 @@ mvn verify -Dit.test=ExecJavaScriptIT
 
 ```bash
 # Format code
-mvn formatter:format
+mvn spotless:apply
+
+# Check code formatting
+mvn spotless:check
 
 # Run checkstyle validation
 mvn checkstyle:check

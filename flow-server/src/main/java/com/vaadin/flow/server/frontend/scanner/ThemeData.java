@@ -18,8 +18,6 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.theme.AbstractTheme;
-
 /**
  * A container for Theme information when scanning the class path. It overrides
  * equals and hashCode in order to use HashSet to eliminate duplicates.

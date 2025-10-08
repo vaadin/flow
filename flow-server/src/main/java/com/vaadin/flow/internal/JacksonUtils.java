@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import java.util.AbstractList;
@@ -54,7 +53,6 @@ import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 
 import elemental.json.Json;

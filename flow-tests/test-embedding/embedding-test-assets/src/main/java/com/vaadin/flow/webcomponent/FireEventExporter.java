@@ -13,15 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.Json;
 
 public class FireEventExporter
         extends WebComponentExporter<FireEventComponent> {

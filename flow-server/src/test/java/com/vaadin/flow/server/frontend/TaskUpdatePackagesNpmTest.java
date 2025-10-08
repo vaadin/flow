@@ -13,19 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
-
-import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
-import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
-import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
-import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
 
 import java.io.File;
 import java.io.IOException;
@@ -41,8 +29,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -53,6 +40,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -60,7 +49,16 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
-import net.jcip.annotations.NotThreadSafe;
+import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.OVERRIDES;
+import static com.vaadin.flow.server.frontend.NodeUpdater.PNPM;
+import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.VersionsJsonConverter.VAADIN_CORE_NPM_PACKAGE;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class TaskUpdatePackagesNpmTest {

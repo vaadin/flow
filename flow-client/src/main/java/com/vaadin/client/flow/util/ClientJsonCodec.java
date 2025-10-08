@@ -16,6 +16,7 @@
 package com.vaadin.client.flow.util;
 
 import com.google.gwt.core.client.GWT;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.StateNode;

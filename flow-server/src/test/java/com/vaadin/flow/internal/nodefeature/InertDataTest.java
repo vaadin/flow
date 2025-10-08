@@ -13,15 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.internal.StateNode;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
 

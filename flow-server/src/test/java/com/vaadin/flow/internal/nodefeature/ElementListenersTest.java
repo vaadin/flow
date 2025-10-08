@@ -22,13 +22,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -654,6 +654,60 @@ public class ElementListenersTest
         // The unconditional stopPropagation should NOT be present
         Assert.assertFalse("Should NOT have unconditional stopPropagation",
                 expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testAddEventDataWithRecord() {
+        // Test that addEventData correctly extracts nested record structure
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        DomListenerRegistration registration = ns.add("click", noOp);
+        registration.addEventData(MouseEventData.class);
+
+        Set<String> expressions = getExpressions("click");
+
+        // Should have captured all nested fields
+        Assert.assertTrue("Should capture event.button",
+                expressions.contains("event.button"));
+        Assert.assertTrue("Should capture event.clientX",
+                expressions.contains("event.clientX"));
+        Assert.assertTrue("Should capture event.clientY",
+                expressions.contains("event.clientY"));
+        Assert.assertTrue("Should capture type", expressions.contains("type"));
+
+        // Should have exactly these 4 expressions
+        Assert.assertEquals("Should have 4 expressions", 4, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDataWithSimpleBean() {
+        // Test with a simple bean (non-record)
+        class SimpleEventData {
+            private String message;
+            private int code;
+
+            public String getMessage() {
+                return message;
+            }
+
+            public int getCode() {
+                return code;
+            }
+        }
+
+        DomListenerRegistration registration = ns.add("custom", noOp);
+        registration.addEventData(SimpleEventData.class);
+
+        Set<String> expressions = getExpressions("custom");
+
+        // Should have captured both fields
+        Assert.assertTrue("Should capture message",
+                expressions.contains("message"));
+        Assert.assertTrue("Should capture code", expressions.contains("code"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
     }
 
     // Helper for accessing package private API from other tests

@@ -17,20 +17,19 @@ package com.vaadin.flow.dom;
 
 import java.util.Optional;
 
-import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-import org.mockito.Mockito;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Node;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.ElementChildrenList;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.InertData;
-
-import com.vaadin.flow.component.Component;
 
 public class ElementUtilTest {
 

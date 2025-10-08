@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -31,7 +28,10 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;;
+import com.vaadin.flow.di.Lookup;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 
 public class TaskGenerateServicWorkerTest {
     @Rule

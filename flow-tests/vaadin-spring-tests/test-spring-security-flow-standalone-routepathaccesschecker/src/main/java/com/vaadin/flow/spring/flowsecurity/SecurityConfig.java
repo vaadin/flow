@@ -1,19 +1,25 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.flowsecurity;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.server.HandlerHelper;
-import com.vaadin.flow.spring.RootMappedCondition;
-import com.vaadin.flow.spring.VaadinConfigurationProperties;
-import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
-import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
-import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.AuthenticationContext;
-import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
-import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.SpringAccessPathChecker;
-import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 import jakarta.servlet.ServletContext;
+
+import java.security.Principal;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.security.autoconfigure.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
@@ -32,8 +38,19 @@ import org.springframework.security.web.access.AuthorizationManagerWebInvocation
 import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
-import java.security.Principal;
-import java.util.stream.Collectors;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.UrlUtil;
+import com.vaadin.flow.server.HandlerHelper;
+import com.vaadin.flow.spring.RootMappedCondition;
+import com.vaadin.flow.spring.VaadinConfigurationProperties;
+import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
+import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
+import com.vaadin.flow.spring.flowsecurity.views.LoginView;
+import com.vaadin.flow.spring.security.AuthenticationContext;
+import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
+import com.vaadin.flow.spring.security.RequestUtil;
+import com.vaadin.flow.spring.security.SpringAccessPathChecker;
+import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 import static com.vaadin.flow.spring.security.RequestUtil.antMatchers;

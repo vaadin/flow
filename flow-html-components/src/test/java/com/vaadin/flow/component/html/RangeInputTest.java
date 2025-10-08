@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.component.html;
 
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.beans.IntrospectionException;
 import java.lang.reflect.InvocationTargetException;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 public class RangeInputTest extends ComponentTest {
 

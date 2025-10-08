@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
+
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
-import jakarta.servlet.http.Cookie;
 
 import com.vaadin.flow.internal.CurrentInstance;
 

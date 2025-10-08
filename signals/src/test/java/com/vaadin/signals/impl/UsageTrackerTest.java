@@ -15,11 +15,6 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +26,11 @@ import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class UsageTrackerTest extends SignalTestBase {
     @Test

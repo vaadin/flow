@@ -13,24 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.TestUtils;
-
 import com.vaadin.pro.licensechecker.MachineId;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {

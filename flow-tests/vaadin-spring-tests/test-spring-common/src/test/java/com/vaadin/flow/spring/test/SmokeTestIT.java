@@ -25,7 +25,6 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.notification.testbench.NotificationElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
  * Test that application is deployed and can be opened in the browser. Works
