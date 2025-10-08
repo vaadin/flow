@@ -1,1 +1,1 @@
-import './a-directory'
+import './a-directory';

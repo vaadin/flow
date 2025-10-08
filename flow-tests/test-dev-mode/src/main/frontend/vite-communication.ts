@@ -1,5 +1,5 @@
 // @ts-expect-error
 if (import.meta.hot) {
-    // @ts-ignore
+  // @ts-ignore
   window.importmetahot = import.meta.hot;
 }

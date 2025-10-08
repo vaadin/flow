@@ -1,4 +1,4 @@
-import { html, LitElement, css } from "lit";
+import { html, LitElement, css } from 'lit';
 
 /**
  * Docs docs and more docs
@@ -12,7 +12,7 @@ class LightDom extends LitElement {
   }
 
   static get is() {
-    return "light-dom";
+    return 'light-dom';
   }
 
   // This allows us to keep the view element in the light DOM.

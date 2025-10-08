@@ -11,7 +11,6 @@ const chunkNameMarker = '__VAADIN_I18n_chunkName__';
 const registerChunkImport = `import { i18n } from '@vaadin/hilla-react-i18n';\n`;
 const registerChunkCall = `await i18n.registerChunk('${chunkNameMarker}');\n`;
 
-
 /**
  * Vaadin Rollup/Vite plugin for automatic splitting of i18n bundles for Hilla
  * apps based on the chunks in the JS bundle output.
@@ -36,15 +35,18 @@ export default function vaadinI18n(options = {}) {
       output: {
         dir: '',
         filename: 'i18n.json'
-      },
-    },
+      }
+    }
   };
 
   const filter = createFilter(options?.include ?? defaultOptions.include, options?.exclude ?? defaultOptions.exclude);
 
   const cwd = options?.cwd ?? defaultOptions.cwd;
   const metaOutputDir = path.resolve(cwd, options?.meta?.output?.dir ?? defaultOptions.meta.output.dir);
-  const metaOutputFilename = path.resolve(metaOutputDir, options?.meta?.output?.filename ?? defaultOptions.meta.output.filename);
+  const metaOutputFilename = path.resolve(
+    metaOutputDir,
+    options?.meta?.output?.filename ?? defaultOptions.meta.output.filename
+  );
 
   const chunkKeySets = new Map();
   const mainChunkKeySet = new Set();
@@ -101,7 +103,7 @@ export default function vaadinI18n(options = {}) {
       if (moduleKeySet.size === 0) {
         // No Hilla i18n keys detected: return the original module
         // return { code, ast, map: null };
-        return {code, map: null};
+        return { code, map: null };
       }
 
       // Prepend the automatic registerChunk call
@@ -112,12 +114,12 @@ export default function vaadinI18n(options = {}) {
 
       return {
         code: magicString.toString(),
-        map: magicString.generateMap({hires: true}),
+        map: magicString.generateMap({ hires: true }),
         meta: {
           vaadinI18n: {
-            keys: Array.from(moduleKeySet),
-          },
-        },
+            keys: Array.from(moduleKeySet)
+          }
+        }
       };
     },
     renderStart() {
@@ -179,7 +181,7 @@ export default function vaadinI18n(options = {}) {
         const keys = Array.from(chunkKeySet);
 
         if (keys.length > 0) {
-          chunks[name] = {keys};
+          chunks[name] = { keys };
         }
       }
       // Write i18n metadata JSON file:
@@ -190,8 +192,12 @@ export default function vaadinI18n(options = {}) {
       //     }
       //   }
       // }
-      await fsPromises.mkdir(metaOutputDir, {recursive: true});
-      await fsPromises.writeFile(path.resolve(metaOutputDir, metaOutputFilename), JSON.stringify({chunks}, undefined, 2), {encoding: 'utf-8'});
-    },
+      await fsPromises.mkdir(metaOutputDir, { recursive: true });
+      await fsPromises.writeFile(
+        path.resolve(metaOutputDir, metaOutputFilename),
+        JSON.stringify({ chunks }, undefined, 2),
+        { encoding: 'utf-8' }
+      );
+    }
   };
-};
+}
