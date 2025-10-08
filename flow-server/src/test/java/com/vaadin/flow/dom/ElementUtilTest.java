@@ -17,6 +17,8 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 
 public class ElementUtilTest {
     @Test
@@ -137,5 +139,20 @@ public class ElementUtilTest {
         Assert.assertFalse(ElementUtil.isValidTagName(".foo"));
         Assert.assertFalse(ElementUtil.isValidTagName("foo>"));
         Assert.assertFalse(ElementUtil.isValidTagName("foo$bar"));
+    }
+
+    @Test
+    public void elementsUpdateSameData() {
+        Element te = new Element("testelem");
+        Element e = ElementUtil.from(te.getNode()).orElse(null);
+
+        // Elements must be equal but not necessarily the same
+        Assert.assertEquals(te, e);
+    }
+
+    @Test
+    public void getElementFromInvalidNode() {
+        StateNode node = new StateNode(ElementPropertyMap.class);
+        Assert.assertFalse(ElementUtil.from(node).isPresent());
     }
 }
