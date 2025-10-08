@@ -13,12 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.flowsecuritycontextpath;
+package com.vaadin.flow.spring.flowthemessecuritycontextpath;
 
-public class AppViewIT extends com.vaadin.flow.spring.flowsecurity.AppViewIT {
+import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.server.PWA;
 
-    @Override
-    protected String getRootURL() {
-        return super.getRootURL() + "/context";
-    }
+@PWA(name = "Spring Security Flow Context Path Test Project", shortName = "SSH Test")
+@StyleSheet("@vaadin/aura/fake-aura.css")
+@StyleSheet("@vaadin/vaadin-lumo-styles/fake-lumo.css")
+public class Configurator implements AppShellConfigurator {
+
 }

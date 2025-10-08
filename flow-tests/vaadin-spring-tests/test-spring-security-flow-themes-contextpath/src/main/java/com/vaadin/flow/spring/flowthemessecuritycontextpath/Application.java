@@ -13,12 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.flowsecuritycontextpath;
+package com.vaadin.flow.spring.flowthemessecuritycontextpath;
 
-public class AppViewIT extends com.vaadin.flow.spring.flowsecurity.AppViewIT {
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-    @Override
-    protected String getRootURL() {
-        return super.getRootURL() + "/context";
+@SpringBootApplication
+public class Application {
+
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
     }
+
 }

@@ -13,12 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.spring.flowsecuritycontextpath;
+package com.vaadin.flow.spring.flowthemessecuritycontextpath;
 
-public class AppViewIT extends com.vaadin.flow.spring.flowsecurity.AppViewIT {
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.auth.AnonymousAllowed;
 
-    @Override
-    protected String getRootURL() {
-        return super.getRootURL() + "/context";
+@Route("")
+@AnonymousAllowed
+public class PublicView extends Div {
+    public PublicView() {
+        setText("This is the public view for testing theme loading using @StyleSheet in secure environment with context path");
     }
 }
