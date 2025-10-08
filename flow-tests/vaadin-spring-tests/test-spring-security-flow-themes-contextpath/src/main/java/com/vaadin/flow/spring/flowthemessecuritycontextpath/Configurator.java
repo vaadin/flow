@@ -17,9 +17,7 @@ package com.vaadin.flow.spring.flowthemessecuritycontextpath;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
 
-@PWA(name = "Spring Security Flow Context Path Test Project", shortName = "SSH Test")
 @StyleSheet("@vaadin/aura/fake-aura.css")
 @StyleSheet("@vaadin/vaadin-lumo-styles/fake-lumo.css")
 public class Configurator implements AppShellConfigurator {
