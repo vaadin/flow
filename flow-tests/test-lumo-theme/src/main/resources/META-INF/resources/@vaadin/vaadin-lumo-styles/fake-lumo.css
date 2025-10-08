@@ -1,0 +1,2 @@
+/* Fake Aura theme css for tests. When this file is served, it proves classpath META-INF resource lookup for @vaadin/vaadin-lumo-styles works. */
+:root { --fake-lumo-theme-loaded: 1; }
