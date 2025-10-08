@@ -20,7 +20,12 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
+import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.InertData;
+import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
 /**
  * Provides utility methods for {@link Element}.
@@ -341,6 +346,28 @@ public class ElementUtil {
         } else { // default when no inert data present
             optionalInertData
                     .ifPresent(inertData -> inertData.setInertSelf(false));
+        }
+    }
+
+    /**
+     * Gets the element mapped to the given state node.
+     *
+     * @param node
+     *            the state node, not <code>null</code>
+     * @return the element for the node, or an empty Optional if the state node
+     *         is not mapped to any particular element.
+     */
+    public static Optional<Element> from(StateNode node) {
+        assert node != null;
+
+        if (node.hasFeature(TextNodeMap.class)) {
+            return Optional
+                    .of(Element.get(node, BasicTextElementStateProvider.get()));
+        } else if (node.hasFeature(ElementData.class)) {
+            return Optional
+                    .of(Element.get(node, BasicElementStateProvider.get()));
+        } else {
+            return Optional.empty();
         }
     }
 
