@@ -9,7 +9,6 @@
 package com.vaadin.flow.dom;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -36,14 +35,11 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementData;
-import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
-
 import elemental.json.Json;
 import elemental.json.JsonValue;
 
@@ -135,14 +131,9 @@ public class Element extends Node<Element> {
     public static Element get(StateNode node) {
         assert node != null;
 
-        if (node.hasFeature(TextNodeMap.class)) {
-            return get(node, BasicTextElementStateProvider.get());
-        } else if (node.hasFeature(ElementData.class)) {
-            return get(node, BasicElementStateProvider.get());
-        } else {
-            throw new IllegalArgumentException(
-                    "Node is not valid as an element");
-        }
+        return ElementUtil.from(node)
+                .orElseThrow(() -> new IllegalArgumentException(
+                        "Node is not valid as an element"));
     }
 
     /**
