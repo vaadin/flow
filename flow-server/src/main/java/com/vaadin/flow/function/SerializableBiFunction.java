@@ -1,3 +1,4 @@
+
 /*
  * Copyright 2000-2025 Vaadin Ltd.
  *
@@ -13,8 +14,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-               package com.vaadin.flow.function;
-
 import java.io.Serializable;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -33,7 +32,7 @@ import java.util.function.Function;
  * @param <R>
  *            the type of the result of the function
  */
-@FunctionalInterface                            
+@FunctionalInterface
 public interface SerializableBiFunction<T, U, R>
         extends BiFunction<T, U, R>, Serializable {
     // Only method inherited from BiFunction abc
