@@ -218,7 +218,7 @@ public class JacksonCodecTest {
 
         // Should be directly encoded as JSON object
         Assert.assertTrue("Should be object", encoded.isObject());
-        Assert.assertEquals("Test", encoded.get("text").asText());
+        Assert.assertEquals("Test", encoded.get("text").asString());
         Assert.assertEquals(42, encoded.get("value").asInt());
     }
 
@@ -231,10 +231,10 @@ public class JacksonCodecTest {
 
         // Should be directly encoded as JSON object
         Assert.assertTrue("Should be object", encoded.isObject());
-        Assert.assertEquals("outer", encoded.get("name").asText());
+        Assert.assertEquals("outer", encoded.get("name").asString());
 
         JsonNode nestedJson = encoded.get("nested");
-        Assert.assertEquals("inner", nestedJson.get("text").asText());
+        Assert.assertEquals("inner", nestedJson.get("text").asString());
         Assert.assertEquals(123, nestedJson.get("number").asInt());
     }
 
@@ -276,9 +276,9 @@ public class JacksonCodecTest {
         Assert.assertEquals("Array should have correct length", 2,
                 arrayEncoded.size());
         Assert.assertEquals("First element should be correct", "hello",
-                arrayEncoded.get(0).asText());
+                arrayEncoded.get(0).asString());
         Assert.assertEquals("Second element should be correct", "world",
-                arrayEncoded.get(1).asText());
+                arrayEncoded.get(1).asString());
 
         // Test ArrayList - should serialize as JSON array
         ArrayList<String> arrayList = new ArrayList<>();
@@ -290,9 +290,9 @@ public class JacksonCodecTest {
         Assert.assertEquals("List should have correct size", 2,
                 listEncoded.size());
         Assert.assertEquals("First list item should be correct", "item1",
-                listEncoded.get(0).asText());
+                listEncoded.get(0).asString());
         Assert.assertEquals("Second list item should be correct", "item2",
-                listEncoded.get(1).asText());
+                listEncoded.get(1).asString());
 
         // Test HashSet - should serialize as JSON array (order may vary)
         HashSet<String> hashSet = new HashSet<>();
@@ -306,7 +306,7 @@ public class JacksonCodecTest {
         // Verify both values are present (order not guaranteed with HashSet)
         boolean hasValue1 = false, hasValue2 = false;
         for (JsonNode node : setEncoded) {
-            String value = node.asText();
+            String value = node.asString();
             if ("value1".equals(value))
                 hasValue1 = true;
             if ("value2".equals(value))
@@ -326,7 +326,7 @@ public class JacksonCodecTest {
         Assert.assertEquals("Map should have correct size", 3,
                 mapEncoded.size());
         Assert.assertEquals("String value should be correct", "stringValue",
-                mapEncoded.get("key1").asText());
+                mapEncoded.get("key1").asString());
         Assert.assertEquals("Integer value should be correct", 42,
                 mapEncoded.get("key2").asInt());
         Assert.assertEquals("Boolean value should be correct", true,
@@ -446,11 +446,11 @@ public class JacksonCodecTest {
         Assert.assertTrue("Should be array", encoded.isArray());
         Assert.assertEquals("Should have 3 beans", 3, encoded.size());
 
-        Assert.assertEquals("First", encoded.get(0).get("text").asText());
+        Assert.assertEquals("First", encoded.get(0).get("text").asString());
         Assert.assertEquals(1, encoded.get(0).get("value").asInt());
-        Assert.assertEquals("Second", encoded.get(1).get("text").asText());
+        Assert.assertEquals("Second", encoded.get(1).get("text").asString());
         Assert.assertEquals(2, encoded.get(1).get("value").asInt());
-        Assert.assertEquals("Third", encoded.get(2).get("text").asText());
+        Assert.assertEquals("Third", encoded.get(2).get("text").asString());
         Assert.assertEquals(3, encoded.get(2).get("value").asInt());
     }
 
@@ -495,7 +495,7 @@ public class JacksonCodecTest {
         Set<String> texts = new HashSet<>();
         Set<Integer> values = new HashSet<>();
         for (JsonNode node : encoded) {
-            texts.add(node.get("text").asText());
+            texts.add(node.get("text").asString());
             values.add(node.get("value").asInt());
         }
 
@@ -566,13 +566,13 @@ public class JacksonCodecTest {
         Assert.assertEquals("Should have 3 entries", 3, encoded.size());
 
         Assert.assertEquals("FirstBean",
-                encoded.get("first").get("text").asText());
+                encoded.get("first").get("text").asString());
         Assert.assertEquals(100, encoded.get("first").get("value").asInt());
         Assert.assertEquals("SecondBean",
-                encoded.get("second").get("text").asText());
+                encoded.get("second").get("text").asString());
         Assert.assertEquals(200, encoded.get("second").get("value").asInt());
         Assert.assertEquals("ThirdBean",
-                encoded.get("third").get("text").asText());
+                encoded.get("third").get("text").asString());
         Assert.assertEquals(300, encoded.get("third").get("value").asInt());
     }
 
@@ -622,14 +622,14 @@ public class JacksonCodecTest {
         // Should be JSON object
         Assert.assertTrue("Should be object", encoded.isObject());
         Assert.assertEquals("Should have 2 entries", 2, encoded.size());
-        Assert.assertEquals("value", encoded.get("simple").asText());
+        Assert.assertEquals("value", encoded.get("simple").asString());
 
         JsonNode nestedJson = encoded.get("nested");
         Assert.assertTrue("Nested should be object", nestedJson.isObject());
         Assert.assertEquals(42, nestedJson.get("number").asInt());
-        Assert.assertEquals("Hello", nestedJson.get("text").asText());
+        Assert.assertEquals("Hello", nestedJson.get("text").asString());
         Assert.assertEquals("NestedBean",
-                nestedJson.get("bean").get("text").asText());
+                nestedJson.get("bean").get("text").asString());
         Assert.assertEquals(999, nestedJson.get("bean").get("value").asInt());
     }
 
@@ -686,7 +686,7 @@ public class JacksonCodecTest {
         JsonNode beanJson = listEncoded.get(0);
         Assert.assertTrue("Bean should serialize as object",
                 beanJson.isObject());
-        Assert.assertEquals("TestComponent", beanJson.get("name").asText());
+        Assert.assertEquals("TestComponent", beanJson.get("name").asString());
         Assert.assertEquals(42, beanJson.get("value").asInt());
         Assert.assertTrue("Bean should have component field",
                 beanJson.has("component"));
@@ -735,7 +735,7 @@ public class JacksonCodecTest {
 
         // First bean
         JsonNode firstBean = encoded.get(0);
-        Assert.assertEquals("First", firstBean.get("name").asText());
+        Assert.assertEquals("First", firstBean.get("name").asString());
         Assert.assertEquals(10, firstBean.get("value").asInt());
         Assert.assertTrue("First bean should have component",
                 firstBean.has("component"));
@@ -745,7 +745,7 @@ public class JacksonCodecTest {
 
         // Second bean
         JsonNode secondBean = encoded.get(1);
-        Assert.assertEquals("Second", secondBean.get("name").asText());
+        Assert.assertEquals("Second", secondBean.get("name").asString());
         Assert.assertEquals(20, secondBean.get("value").asInt());
         Assert.assertTrue("Second bean should have component",
                 secondBean.has("component"));

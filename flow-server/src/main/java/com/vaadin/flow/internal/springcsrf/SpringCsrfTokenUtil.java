@@ -69,11 +69,11 @@ public class SpringCsrfTokenUtil {
                     && springCsrfTokenJson.has(SPRING_CSRF_TOKEN_PROPERTY)
                     && springCsrfTokenJson.has(SPRING_CSRF_HEADER_PROPERTY)) {
                 String token = springCsrfTokenJson
-                        .get(SPRING_CSRF_TOKEN_PROPERTY).textValue();
+                        .get(SPRING_CSRF_TOKEN_PROPERTY).asString();
                 String headerName = springCsrfTokenJson
-                        .get(SPRING_CSRF_HEADER_PROPERTY).textValue();
+                        .get(SPRING_CSRF_HEADER_PROPERTY).asString();
                 String parameterName = springCsrfTokenJson
-                        .get(SPRING_CSRF_PARAMETER_PROPERTY).textValue();
+                        .get(SPRING_CSRF_PARAMETER_PROPERTY).asString();
 
                 return Optional.of(
                         new SpringCsrfToken(headerName, parameterName, token));

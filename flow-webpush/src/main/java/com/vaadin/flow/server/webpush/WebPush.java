@@ -268,7 +268,7 @@ public class WebPush {
             // It may happen that an error is sent as a plain string
             if (json.getNodeType() == JsonNodeType.STRING) {
                 responseJson = JacksonUtils.createObjectNode();
-                responseJson.put("message", json.asText());
+                responseJson.put("message", json.asString());
             } else {
                 responseJson = JacksonUtils.readTree(json.toString());
             }
@@ -283,10 +283,10 @@ public class WebPush {
     private WebPushSubscription generateSubscription(
             ObjectNode subscriptionJson) {
         WebPushKeys keys = new WebPushKeys(
-                subscriptionJson.get("keys").get("p256dh").asText(),
-                subscriptionJson.get("keys").get("auth").asText());
+                subscriptionJson.get("keys").get("p256dh").asString(),
+                subscriptionJson.get("keys").get("auth").asString());
         return new WebPushSubscription(
-                subscriptionJson.get("endpoint").asText(), keys);
+                subscriptionJson.get("endpoint").asString(), keys);
     }
 
     private Logger getLogger() {

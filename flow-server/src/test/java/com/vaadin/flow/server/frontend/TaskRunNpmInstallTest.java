@@ -331,17 +331,17 @@ public class TaskRunNpmInstallTest {
                 UTF_8.name());
         JsonNode localHash = JacksonUtils.readTree(fileContent);
         Assert.assertNotEquals("We should have a non empty hash key", "",
-                localHash.get(HASH_KEY).textValue());
+                localHash.get(HASH_KEY).asString());
 
         // Update package json and hash as if someone had pushed to code repo.
         packageJson = getNodeUpdater().getPackageJson();
         ((ObjectNode) packageJson.get(VAADIN_DEP_KEY).get(DEPENDENCIES))
                 .put("a-avataaar", "^1.2.5");
-        String hash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
+        String hash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).asString();
         updatePackageHash(packageJson);
 
         Assert.assertNotEquals("Hash should have been updated", hash,
-                packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue());
+                packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).asString());
 
         getNodeUpdater().writePackageFile(packageJson);
         logger = Mockito.mock(Logger.class);
@@ -478,7 +478,7 @@ public class TaskRunNpmInstallTest {
         setupEsbuildAndFooInstallation();
 
         String packageJsonHash = getNodeUpdater().getPackageJson()
-                .get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
+                .get(VAADIN_DEP_KEY).get(HASH_KEY).asString();
         ObjectNode vaadinJson = JacksonUtils.createObjectNode();
         vaadinJson.put(HASH_KEY, packageJsonHash);
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath());
@@ -510,13 +510,13 @@ public class TaskRunNpmInstallTest {
                 .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
         ObjectNode dependencies = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(vaadinDep)) {
-            dependencies.put(key, vaadinDep.get(key).textValue());
+            dependencies.put(key, vaadinDep.get(key).asString());
         }
         ObjectNode vaadinDevDep = (ObjectNode) packageJson.get(VAADIN_DEP_KEY)
                 .get(DEV_DEPENDENCIES);
         ObjectNode devDependencies = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(vaadinDevDep)) {
-            devDependencies.put(key, vaadinDevDep.get(key).textValue());
+            devDependencies.put(key, vaadinDevDep.get(key).asString());
         }
         packageJson.set(DEPENDENCIES, dependencies);
         packageJson.set(DEV_DEPENDENCIES, devDependencies);

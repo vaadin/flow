@@ -261,7 +261,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                 if (!arr.get(j).getNodeType().equals(JsonNodeType.STRING)) {
                     continue;
                 }
-                String script = arr.get(j).textValue();
+                String script = arr.get(j).asString();
                 if (script.contains("history.pushState")) {
                     idx = i;
                     continue;
@@ -329,7 +329,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
         if (!location.has(LOCATION)) {
             return null;
         }
-        String url = location.get(LOCATION).textValue();
+        String url = location.get(LOCATION).asString();
         Matcher match = URL_PATTERN.matcher(url);
         if (match.find()) {
             location.put(LOCATION, match.group(1));
@@ -344,13 +344,13 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
                 || !rpc.get(2).getNodeType().equals(JsonNodeType.STRING)
                 || !rpc.get(3).getNodeType().equals(JsonNodeType.ARRAY)
                 || !"com.vaadin.shared.extension.javascriptmanager.ExecuteJavaScriptRpc"
-                        .equals(rpc.get(1).textValue())
-                || !"executeJavaScript".equals(rpc.get(2).textValue())) {
+                        .equals(rpc.get(1).asString())
+                || !"executeJavaScript".equals(rpc.get(2).asString())) {
             return null;
         }
         ArrayNode scripts = (ArrayNode) rpc.get(3);
         for (int j = 0; j < scripts.size(); j++) {
-            String exec = scripts.get(j).textValue();
+            String exec = scripts.get(j).asString();
             Matcher match = HASH_PATTERN.matcher(exec);
             if (match.find()) {
                 // replace JS with a noop
