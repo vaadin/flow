@@ -28,7 +28,7 @@ SOFTWARE.
 import { createFilter } from '@rollup/pluginutils';
 import transformAst from 'transform-ast';
 
-const assetUrlRE = /__VITE_ASSET__([\w$]+)__(?:\$_(.*?)__)?/g
+const assetUrlRE = /__VITE_ASSET__([\w$]+)__(?:\$_(.*?)__)?/g;
 
 const escape = (str) =>
   str
@@ -89,4 +89,4 @@ export default function postcssLit(options = {}) {
       };
     }
   };
-};
+}

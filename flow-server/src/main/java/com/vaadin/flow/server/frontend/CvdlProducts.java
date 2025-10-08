@@ -50,9 +50,8 @@ public class CvdlProducts {
             JsonNode packageJson = JacksonUtils.readTree(FileUtils
                     .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
             if (packageJson.has(CVDL_PACKAGE_KEY)) {
-                return new Product(
-                        packageJson.get(CVDL_PACKAGE_KEY).textValue(),
-                        packageJson.get("version").textValue());
+                return new Product(packageJson.get(CVDL_PACKAGE_KEY).asString(),
+                        packageJson.get("version").asString());
             }
             return null;
         } catch (IOException e) {

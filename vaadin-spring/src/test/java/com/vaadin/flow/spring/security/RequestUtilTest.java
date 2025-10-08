@@ -656,4 +656,25 @@ public class RequestUtilTest {
         return r;
     }
 
+    @Test
+    public void testGetUrlMapping_fooMappedServlet_returnsMappingValue() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/foo/*");
+        Assert.assertEquals("/foo/*", requestUtil.getUrlMapping());
+    }
+
+    @Test
+    public void testGetUrlMapping_rootMappedServlet_returnsMappingValue() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn("/*");
+        Assert.assertEquals("/*", requestUtil.getUrlMapping());
+    }
+
+    @Test
+    public void testGetUrlMapping_nullMapping_returnsNull() {
+        Mockito.when(vaadinConfigurationProperties.getUrlMapping())
+                .thenReturn(null);
+        Assert.assertNull(requestUtil.getUrlMapping());
+    }
+
 }

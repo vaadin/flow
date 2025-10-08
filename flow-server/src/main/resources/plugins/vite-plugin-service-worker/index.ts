@@ -60,7 +60,7 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
         define: {
           ...viteConfig.define,
           'process.env.NODE_ENV': JSON.stringify(viteConfig.mode),
-          'globalThis.document': undefined,
+          'globalThis.document': undefined
         },
         build: {
           write: viteConfig.mode !== 'development',
@@ -72,21 +72,21 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
           modulePreload: false,
           rollupOptions: {
             input: {
-              sw: swSourcePath,
+              sw: swSourcePath
             },
             output: {
               format: 'iife',
               exports: 'none',
               entryFileNames: 'sw.js',
-              inlineDynamicImports: true,
-            },
-          },
-        },
+              inlineDynamicImports: true
+            }
+          }
+        }
       };
     },
     async buildStart() {
       if (buildConfig.mode === 'development') {
-        buildOutput = await build(buildConfig) as RollupOutput;
+        buildOutput = (await build(buildConfig)) as RollupOutput;
       }
     },
     resolveId(id) {
@@ -122,7 +122,7 @@ export default function serviceWorkerPlugin({ srcPath }: { srcPath: string }): P
       }
 
       try {
-        buildOutput = await build(buildConfig) as RollupOutput;
+        buildOutput = (await build(buildConfig)) as RollupOutput;
         const mg = this.environment.moduleGraph;
         if (!mg) {
           return;

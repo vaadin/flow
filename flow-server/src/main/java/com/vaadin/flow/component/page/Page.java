@@ -533,7 +533,7 @@ public class Page implements Serializable {
             final JsonNode jsValue = jsonObj.get(key);
             if (jsValue != null
                     && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
-                return jsValue.asText();
+                return jsValue.asString();
             } else {
                 return null;
             }

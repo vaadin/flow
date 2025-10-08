@@ -1,8 +1,10 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 class InjectScriptTagTemplate extends PolymerElement {
-  static get is() { return 'inject-script-tag-template' }
+  static get is() {
+    return 'inject-script-tag-template';
+  }
 
   onButtonClick() {
     this.$server.changeValue();

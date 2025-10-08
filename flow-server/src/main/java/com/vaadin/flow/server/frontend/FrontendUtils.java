@@ -1106,7 +1106,7 @@ public class FrontendUtils {
             return null;
         }
         try {
-            final String versionString = sourceJson.get(pkg).textValue();
+            final String versionString = sourceJson.get(pkg).asString();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(

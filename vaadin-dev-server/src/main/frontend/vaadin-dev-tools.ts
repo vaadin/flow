@@ -5,15 +5,13 @@ import {
   handleLicenseMessage,
   licenseCheckFailed,
   licenseInit,
-  handlePreTrialMessage, licenseDownloadFailed
+  handlePreTrialMessage,
+  licenseDownloadFailed
 } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
-import {
-  preTrialStartFailed,
-  updateLicenseDownloadStatus
-} from './pre-trial-splash-screen';
+import { preTrialStartFailed, updateLicenseDownloadStatus } from './pre-trial-splash-screen';
 
 /**
  * Plugin API for the dev tools window.
@@ -579,7 +577,7 @@ export class VaadinDevTools extends LitElement {
             background-color: var(--dev-tools-background-color-active-blurred);
           }
         }
-      `,
+      `
     ];
   }
 
@@ -649,11 +647,11 @@ export class VaadinDevTools extends LitElement {
     if (!this.conf.token) {
       console.error('Dev tools functionality denied for this host.');
       this.log(
-          MessageType.LOG,
-          'See Vaadin documentation on how to configure devmode.hostsAllowed property.',
-          undefined,
-          'https://vaadin.com/docs/latest/configuration/properties#properties',
-          undefined
+        MessageType.LOG,
+        'See Vaadin documentation on how to configure devmode.hostsAllowed property.',
+        undefined,
+        'https://vaadin.com/docs/latest/configuration/properties#properties',
+        undefined
       );
       return;
     }
@@ -664,17 +662,17 @@ export class VaadinDevTools extends LitElement {
         // TODO: do it in Flow client. Maybe raise a custom vaadin-refresh-ui event
         //  and handle it in Flow client?
         Object.keys(anyVaadin.Flow.clients)
-            .filter((key) => key !== 'TypeScript')
-            .map((id) => anyVaadin.Flow.clients[id])
-            .forEach((client) => {
-              if (client.sendEventMessage) {
-                client.sendEventMessage(1, "ui-refresh", {
-                  fullRefresh: strategy === 'full-refresh'
-               })
-              } else {
-                console.warn("Ignoring ui-refresh event for application ",id);
-              }
-            });
+          .filter((key) => key !== 'TypeScript')
+          .map((id) => anyVaadin.Flow.clients[id])
+          .forEach((client) => {
+            if (client.sendEventMessage) {
+              client.sendEventMessage(1, 'ui-refresh', {
+                fullRefresh: strategy === 'full-refresh'
+              });
+            } else {
+              console.warn('Ignoring ui-refresh event for application ', id);
+            }
+          });
       } else {
         const lastReload = window.sessionStorage.getItem(VaadinDevTools.TRIGGERED_COUNT_KEY_IN_SESSION_STORAGE);
         const nextReload = lastReload ? parseInt(lastReload, 10) + 1 : 1;
@@ -840,7 +838,7 @@ export class VaadinDevTools extends LitElement {
       this.frontendConnection.send('startPreTrialLicense', {});
     } else {
       console.error('Cannot start pre-trial: no connection');
-      preTrialStartFailed(false, this.bodyShadowRoot)
+      preTrialStartFailed(false, this.bodyShadowRoot);
     }
   }
   downloadLicense(productInfo: Product) {
@@ -859,12 +857,7 @@ export class VaadinDevTools extends LitElement {
 
   /* eslint-disable lit/no-template-map */
   render() {
-    return html` 
-      <div
-        style="display: none"
-        class="dev-tools"
-      >
-      </div>`;
+    return html` <div style="display: none" class="dev-tools"> </div>`;
   }
 
   setJavaLiveReloadActive(active: boolean) {
@@ -875,5 +868,4 @@ export class VaadinDevTools extends LitElement {
       this.frontendConnection?.setActive(active);
     }
   }
-
 }

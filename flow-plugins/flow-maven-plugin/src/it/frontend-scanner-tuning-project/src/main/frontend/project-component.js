@@ -1,1 +1,1 @@
-console.log("A project resource");
+console.log('A project resource');

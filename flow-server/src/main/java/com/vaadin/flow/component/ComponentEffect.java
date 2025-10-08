@@ -177,7 +177,7 @@ public final class ComponentEffect {
      *
      * ComponentEffect.bindChildren(component, taskList, taskValueSignal -> {
      *     var listItem = new ListItem();
-     *     ComponentEffect.bind(listItem, taskValueSignal, HasText::setText);
+     *     ComponentEffect.bind(listItem, taskValueSignal, HasString::setText);
      *     return listItem;
      * });
      * </pre>

@@ -95,7 +95,7 @@ public class TestSelectComponent<T>
             ArrayNode presentation) {
         Set<T> set = new HashSet<>();
         for (int i = 0; i < presentation.size(); i++) {
-            set.add(group.keyMapper.get(presentation.get(i).asText()));
+            set.add(group.keyMapper.get(presentation.get(i).asString()));
         }
         return set;
     }
