@@ -27,6 +27,6 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME, assets = {
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
-@StyleSheet("@vaadin/aura/fake-aura.css")
+@StyleSheet("context://@vaadin/aura/fake-aura.css")
 public class AppShell implements AppShellConfigurator {
 }
