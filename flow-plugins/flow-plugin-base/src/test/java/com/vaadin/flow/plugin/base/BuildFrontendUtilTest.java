@@ -340,9 +340,8 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertEquals("Wrong application identifier in token file",
-                "TEST_APP_ID",
-                buildInfoJsonProd.get(InitParameters.APPLICATION_IDENTIFIER)
-                        .asString());
+                "TEST_APP_ID", buildInfoJsonProd
+                        .get(InitParameters.APPLICATION_IDENTIFIER).asString());
     }
 
     @Test
