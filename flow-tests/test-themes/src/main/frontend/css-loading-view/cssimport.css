@@ -1,9 +1,8 @@
 .cssimport {
-    background-color: orange;
-  }
-  
-  /* This is the same rule that Lumo utilities define */
-  .bg-contrast-20 {
-    background-color: orange;
-  }
-  
+  background-color: orange;
+}
+
+/* This is the same rule that Lumo utilities define */
+.bg-contrast-20 {
+  background-color: orange;
+}
