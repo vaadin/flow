@@ -122,8 +122,8 @@ class ProKey {
         ProKey proKey = new ProKey(null, null);
         try {
             JsonNode json = JsonHelpers.getJsonMapper().readTree(jsonFile);
-            proKey = new ProKey(json.get(FIELD_NAME).asText(),
-                    json.get(FIELD_KEY).asText());
+            proKey = new ProKey(json.get(FIELD_NAME).asString(),
+                    json.get(FIELD_KEY).asString());
             return proKey;
         } catch (JacksonException | NullPointerException e) {
             getLogger().debug("Failed to parse proKey from json file", e);

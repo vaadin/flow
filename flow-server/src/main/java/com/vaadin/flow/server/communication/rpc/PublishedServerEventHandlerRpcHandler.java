@@ -80,7 +80,7 @@ public class PublishedServerEventHandlerRpcHandler
             JsonNode invocationJson) {
         assert invocationJson.has(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME);
         String methodName = invocationJson
-                .get(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME).asText();
+                .get(JsonConstants.RPC_TEMPLATE_EVENT_METHOD_NAME).asString();
         if (methodName == null) {
             throw new IllegalArgumentException(
                     "Event handler method name may not be null");

@@ -233,7 +233,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("11.0.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").asString());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -249,7 +249,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("78.2.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").asString());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class NodeUpdaterTest {
                 formPackage, newVersion);
 
         Assert.assertEquals(newVersion, packageJson
-                .get(NodeUpdater.DEPENDENCIES).get(formPackage).textValue());
+                .get(NodeUpdater.DEPENDENCIES).get(formPackage).asString());
     }
 
     @Test

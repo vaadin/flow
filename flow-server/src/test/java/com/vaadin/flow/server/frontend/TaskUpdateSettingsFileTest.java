@@ -100,7 +100,7 @@ public class TaskUpdateSettingsFileTest {
 
     private void assertPathsMatchProjectFolder(JsonNode json) {
         ABSOLUTE_PATH_ENTRIES.forEach(key -> {
-            String path = json.get(key).asText();
+            String path = json.get(key).asString();
             Assert.assertTrue(
                     "Expected '" + key + "' to have an absolute path matching "
                             + temporaryFolder.getRoot().getPath() + ", but was "

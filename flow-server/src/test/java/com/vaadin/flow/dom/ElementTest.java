@@ -641,7 +641,7 @@ public class ElementTest extends AbstractNodeTest {
 
         element.setPropertyBean("p", new SimpleBean());
         ObjectNode json = (ObjectNode) element.getPropertyRaw("p");
-        Assert.assertEquals("value", json.get("string").asText());
+        Assert.assertEquals("value", json.get("string").asString());
         Assert.assertEquals(1.0, json.get("number").doubleValue(), 0.0);
         Assert.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
         Assert.assertEquals(4.56, json.get("dbl").doubleValue(), 0.0);
@@ -655,8 +655,8 @@ public class ElementTest extends AbstractNodeTest {
         list.add(bean2);
         element.setPropertyList("p", list);
         ArrayNode jsonArray = (ArrayNode) element.getPropertyRaw("p");
-        Assert.assertEquals("bean1", jsonArray.get(0).get("string").asText());
-        Assert.assertEquals("bean2", jsonArray.get(1).get("string").asText());
+        Assert.assertEquals("bean1", jsonArray.get(0).get("string").asString());
+        Assert.assertEquals("bean2", jsonArray.get(1).get("string").asString());
 
         Map<String, SimpleBean> map = new HashMap<>();
         map.put("one", bean1);
@@ -664,9 +664,9 @@ public class ElementTest extends AbstractNodeTest {
         element.setPropertyMap("p", map);
         JsonNode jsonObject = (JsonNode) element.getPropertyRaw("p");
         Assert.assertEquals("bean1",
-                jsonObject.get("one").get("string").asText());
+                jsonObject.get("one").get("string").asString());
         Assert.assertEquals("bean2",
-                jsonObject.get("two").get("string").asText());
+                jsonObject.get("two").get("string").asString());
     }
 
     @Test

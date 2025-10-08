@@ -155,7 +155,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getEsTargetVersion(String tsConfig) {
         JsonNode parsed = parseTsConfig(tsConfig);
-        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).textValue();
+        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).asString();
     }
 
     private ObjectNode parseTsConfig(String tsConfig) {
@@ -243,10 +243,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getConfigVersion(JsonNode projectTsConfigContent) {
         if (projectTsConfigContent.has(VERSION)) {
-            return projectTsConfigContent.get(VERSION).textValue();
+            return projectTsConfigContent.get(VERSION).asString();
         }
         if (projectTsConfigContent.has(OLD_VERSION_KEY)) {
-            return projectTsConfigContent.get(OLD_VERSION_KEY).textValue();
+            return projectTsConfigContent.get(OLD_VERSION_KEY).asString();
         }
         return null;
     }

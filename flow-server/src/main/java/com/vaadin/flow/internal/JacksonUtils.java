@@ -344,7 +344,7 @@ public final class JacksonUtils {
     public static boolean stringEqual(JsonNode a, JsonNode b) {
         assert a.getNodeType() == JsonNodeType.STRING;
         assert b.getNodeType() == JsonNodeType.STRING;
-        return a.asText().equals(b.asText());
+        return a.asString().equals(b.asString());
     }
 
     /**

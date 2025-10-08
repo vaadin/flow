@@ -105,7 +105,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     public void completeExceptionally(JsonNode value) {
         assert isSubscribed();
 
-        String message = value.asText();
+        String message = value.asString();
 
         if (errorHandler != null) {
             errorHandler.accept(message);
