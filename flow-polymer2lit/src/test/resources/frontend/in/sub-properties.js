@@ -1,4 +1,4 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 
 class SubProperties extends PolymerElement {
   static get template() {
@@ -14,7 +14,7 @@ class SubProperties extends PolymerElement {
   }
 
   static get is() {
-    return "sub-properties";
+    return 'sub-properties';
   }
 }
 

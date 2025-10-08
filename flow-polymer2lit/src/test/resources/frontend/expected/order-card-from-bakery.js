@@ -1,17 +1,17 @@
-import { unsafeCSS } from "lit";
-import { html, LitElement, css } from "lit";
+import { unsafeCSS } from 'lit';
+import { html, LitElement, css } from 'lit';
 
-import "../../../styles/shared-styles.js";
-import "./order-status-badge.js";
+import '../../../styles/shared-styles.js';
+import './order-status-badge.js';
 
 class OrderCard extends LitElement {
   static get styles() {
     const includedStyles = {};
-    includedStyles["shared-styles"] =
-      document.querySelector("dom-module[id='shared-styles']")
-        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
+    includedStyles['shared-styles'] =
+      document.querySelector("dom-module[id='shared-styles']")?.firstElementChild?.content?.firstElementChild
+        ?.innerText ?? '';
     return [
-      unsafeCSS(includedStyles["shared-styles"]),
+      unsafeCSS(includedStyles['shared-styles']),
       css`
         :host {
           display: block;
@@ -26,10 +26,7 @@ class OrderCard extends LitElement {
 
         .wrapper {
           background: var(--lumo-base-color);
-          background-image: linear-gradient(
-            var(--lumo-tint-5pct),
-            var(--lumo-tint-5pct)
-          );
+          background-image: linear-gradient(var(--lumo-tint-5pct), var(--lumo-tint-5pct));
           box-shadow: 0 3px 5px var(--lumo-shade-10pct);
           border-bottom: 1px solid var(--lumo-shade-10pct);
           display: flex;
@@ -140,7 +137,7 @@ class OrderCard extends LitElement {
             max-width: 964px;
           }
         }
-      `,
+      `
     ];
   }
   render() {
@@ -152,10 +149,7 @@ class OrderCard extends LitElement {
         </div>
         <div class="wrapper" @click="${this._cardClick}">
           <div class="info-wrapper">
-            <order-status-badge
-              class="badge"
-              .status="${this.orderCard?.state}"
-            ></order-status-badge>
+            <order-status-badge class="badge" .status="${this.orderCard?.state}"></order-status-badge>
             <div class="time-place">
               <h3 class="time">${this.orderCard?.time}</h3>
               <h3 class="short-day">${this.orderCard?.shortDay}</h3>
@@ -184,11 +178,11 @@ class OrderCard extends LitElement {
   }
 
   static get is() {
-    return "order-card";
+    return 'order-card';
   }
 
   _cardClick() {
-    this.dispatchEvent(new CustomEvent("card-click"));
+    this.dispatchEvent(new CustomEvent('card-click'));
   }
 }
 

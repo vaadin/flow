@@ -19,12 +19,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.server.frontend.FrontendVersion;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.server.frontend.FrontendVersion;
 
 import static com.vaadin.flow.server.frontend.installer.NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;

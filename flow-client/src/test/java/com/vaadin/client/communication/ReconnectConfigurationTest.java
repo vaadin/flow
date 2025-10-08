@@ -15,13 +15,6 @@
  */
 package com.vaadin.client.communication;
 
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
-import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
-
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.Assert;
@@ -36,6 +29,13 @@ import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.reactive.Reactive;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
+
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_GAVE_UP_KEY;
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.DIALOG_TEXT_KEY;
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_DEFAULT;
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_ATTEMPTS_KEY;
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_DEFAULT;
+import static com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap.RECONNECT_INTERVAL_KEY;
 
 public class ReconnectConfigurationTest extends AbstractConfigurationTest {
 

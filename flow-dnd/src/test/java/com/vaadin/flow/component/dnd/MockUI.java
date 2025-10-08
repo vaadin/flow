@@ -18,11 +18,12 @@ package com.vaadin.flow.component.dnd;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import org.mockito.Mockito;
 
 public class MockUI extends UI {
 

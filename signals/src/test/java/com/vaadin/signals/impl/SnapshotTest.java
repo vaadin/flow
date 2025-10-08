@@ -15,8 +15,6 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -24,6 +22,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SnapshotTest {
 

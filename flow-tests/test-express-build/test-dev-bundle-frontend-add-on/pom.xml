@@ -77,6 +77,17 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <configuration>
+                    <typescript>
+                        <excludes>
+                            <exclude>src/main/frontend/**</exclude>
+                        </excludes>
+                    </typescript>
+                </configuration>
+            </plugin>
             <!-- This module is mapped to default web context -->
             <plugin>
                 <groupId>org.eclipse.jetty.ee10</groupId>

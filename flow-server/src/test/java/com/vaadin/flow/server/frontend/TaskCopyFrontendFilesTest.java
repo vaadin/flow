@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -24,12 +22,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import tools.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;

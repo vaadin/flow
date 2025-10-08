@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import static org.junit.Assert.assertNull;
-
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.Map;
@@ -26,6 +24,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +36,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.junit.Assert.assertNull;
 
 @NotThreadSafe
 public class CurrentInstanceTest {

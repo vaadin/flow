@@ -1,4 +1,4 @@
-import { html, LitElement, css } from "lit";
+import { html, LitElement, css } from 'lit';
 
 class TwoWayBinding extends LitElement {
   render() {
@@ -30,11 +30,11 @@ class TwoWayBinding extends LitElement {
   }
 
   formUpdated() {
-    console.log("Form updated");
+    console.log('Form updated');
   }
 
   static get is() {
-    return "two-way-binding";
+    return 'two-way-binding';
   }
 }
 

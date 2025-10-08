@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.provider;
 
 import java.util.ArrayList;
@@ -23,11 +22,12 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentUtil;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentUtil;
 
 /**
  * Abstract test class that contains the common tests for all generic data view

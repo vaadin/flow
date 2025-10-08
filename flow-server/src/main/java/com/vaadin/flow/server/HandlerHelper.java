@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -30,8 +32,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -241,6 +241,9 @@ public class HandlerHelper implements Serializable {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
+        } else if (isDynamicResourceRequest(
+                requestedPathWithoutServletMapping.get())) {
+            return true;
         }
 
         return false;
@@ -253,6 +256,18 @@ public class HandlerHelper implements Serializable {
         return requestedPathWithoutServletMapping
                 .matches(StreamRequestHandler.DYN_RES_PREFIX
                         + "(\\d+)/([0-9a-z-]*)/upload");
+    }
+
+    private static boolean isDynamicResourceRequest(
+            String requestedPathWithoutServletMapping) {
+        // Check if the request is for any dynamic resource, including
+        // ElementRequestHandler requests without a specific postfix
+        // Reject paths with directory traversal attempts
+        if (HandlerHelper.isPathUnsafe(requestedPathWithoutServletMapping)) {
+            return false;
+        }
+        return requestedPathWithoutServletMapping
+                .startsWith(StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     private static boolean isHillaPush(

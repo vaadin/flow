@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
@@ -28,6 +27,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -38,8 +38,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
@@ -49,6 +47,8 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
@@ -473,15 +473,33 @@ public final class Reflector {
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
+            List<URL> allResources = new ArrayList<>();
+
+            // Collect resources from all classloaders
             Enumeration<URL> resources = super.getResources(name);
-            if (!resources.hasMoreElements() && delegate != null) {
+            while (resources.hasMoreElements()) {
+                allResources.add(resources.nextElement());
+            }
+
+            if (delegate != null) {
                 resources = delegate.getResources(name);
+                while (resources.hasMoreElements()) {
+                    URL url = resources.nextElement();
+                    if (!allResources.contains(url)) {
+                        allResources.add(url);
+                    }
+                }
             }
-            if (!resources.hasMoreElements()) {
-                resources = ClassLoader.getPlatformClassLoader()
-                        .getResources(name);
+
+            resources = ClassLoader.getPlatformClassLoader().getResources(name);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                if (!allResources.contains(url)) {
+                    allResources.add(url);
+                }
             }
-            return resources;
+
+            return Collections.enumeration(allResources);
         }
 
         /**

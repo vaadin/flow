@@ -19,11 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.pro.licensechecker.Product;
-
-import tools.jackson.databind.JsonNode;
-import org.apache.commons.io.FileUtils;
 
 /** Utilities for commercial product handling. */
 public class CvdlProducts {

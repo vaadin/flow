@@ -13,18 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinResponse;
 
 /**
  * Download handler for serving a class resource.

@@ -1,6 +1,6 @@
-import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
+import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
 import '@polymer/polymer/lib/elements/dom-if.js';
-import "@vaadin/vaadin-vertical-layout";
+import '@vaadin/vaadin-vertical-layout';
 
 class DomIfTest extends PolymerElement {
   static get template() {
@@ -21,7 +21,7 @@ class DomIfTest extends PolymerElement {
   }
 
   static get is() {
-    return "dom-if-test";
+    return 'dom-if-test';
   }
 }
 

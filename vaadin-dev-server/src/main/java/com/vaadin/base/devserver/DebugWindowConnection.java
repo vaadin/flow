@@ -26,14 +26,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
@@ -215,10 +214,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         send(resource, "serverInfo", new ServerInfo());
-        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
-                .get(context).getFeatures().stream()
-                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
-                .collect(Collectors.toList())));
+        send(resource, "featureFlags", new FeatureFlagMessage(
+                FeatureFlags.get(context).getFeatures()));
 
     }
 

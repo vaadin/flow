@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.streams.DownloadResponse;
-import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
+import java.lang.reflect.Field;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
+import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 public class IFrameTest extends ComponentTest {
 

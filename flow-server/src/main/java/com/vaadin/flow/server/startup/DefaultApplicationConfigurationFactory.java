@@ -25,11 +25,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import tools.jackson.databind.JsonNode;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;

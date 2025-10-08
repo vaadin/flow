@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.JacksonUtils;
 

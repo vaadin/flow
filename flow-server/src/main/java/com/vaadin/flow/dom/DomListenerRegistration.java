@@ -15,10 +15,15 @@
  */
 package com.vaadin.flow.dom;
 
+import java.beans.IntrospectionException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import tools.jackson.core.type.TypeReference;
+
 import com.vaadin.flow.function.SerializableRunnable;
+import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 
@@ -363,6 +368,10 @@ public interface DomListenerRegistration extends Registration {
 
     /**
      * Stops propagation of the event to upper level DOM elements.
+     * <p>
+     * When used with {@link #setFilter(String)}, stopPropagation will only be
+     * called when the filter condition is met. For example, if you set a filter
+     * for specific keys, stopPropagation will only apply to those keys.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/stopPropagation">MDN
@@ -379,6 +388,10 @@ public interface DomListenerRegistration extends Registration {
      * Tries to prevent the default behavior of the event in the browser, such
      * as shortcut action on key press or context menu on "right click". This
      * might not be possible for some events.
+     * <p>
+     * When used with {@link #setFilter(String)}, preventDefault will only be
+     * called when the filter condition is met. For example, if you set a filter
+     * for specific keys, preventDefault will only apply to those keys.
      *
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Event/preventDefault">MDN
@@ -389,6 +402,103 @@ public interface DomListenerRegistration extends Registration {
     default public DomListenerRegistration preventDefault() {
         addEventData("event.preventDefault()");
         return this;
+    }
+
+    /**
+     * Automatically adds event data expressions for all properties of the given
+     * class. This method uses Java Bean introspection to discover the
+     * properties of the class and adds event data expressions for each field
+     * path.
+     * <p>
+     * This is particularly useful with Java records that mirror the JavaScript
+     * event structure. For example:
+     *
+     * <pre>
+     * record MouseEventData(EventDetails event) {
+     *     record EventDetails(int button, int clientX, int clientY) {
+     *     }
+     * }
+     *
+     * element.addEventListener("click", e -&gt; {
+     *     MouseEventData data = e.getEventData(MouseEventData.class);
+     *     System.out.println("Button: " + data.event().button());
+     * }).addEventData(MouseEventData.class);
+     * </pre>
+     *
+     * The above will automatically add event data expressions for
+     * {@code event.button}, {@code event.clientX}, {@code event.clientY}, and
+     * {@code type}.
+     *
+     * @param type
+     *            the class whose properties should be captured from the event
+     *            data, not <code>null</code>
+     * @return this registration, for chaining
+     * @see #addEventData(String)
+     */
+    default DomListenerRegistration addEventData(Class<?> type) {
+        if (type == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+        }
+        try {
+            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
+            for (String path : propertyPaths) {
+                addEventData(path);
+            }
+        } catch (IntrospectionException e) {
+            throw new IllegalArgumentException(
+                    "Failed to introspect type: " + type.getName(), e);
+        }
+        return this;
+    }
+
+    /**
+     * Automatically adds event data expressions for all properties of the type
+     * specified by the given type reference. This method uses Java Bean
+     * introspection to discover the properties and adds event data expressions
+     * for each field path.
+     * <p>
+     * For generic types like {@code List<MyBean>}, this method will attempt to
+     * extract the raw class type for introspection.
+     *
+     * @param typeReference
+     *            the type reference whose properties should be captured from
+     *            the event data, not <code>null</code>
+     * @return this registration, for chaining
+     * @see #addEventData(String)
+     */
+    default DomListenerRegistration addEventData(
+            TypeReference<?> typeReference) {
+        if (typeReference == null) {
+            throw new IllegalArgumentException("Type reference cannot be null");
+        }
+        // Extract raw class from TypeReference
+        Class<?> rawType = extractRawType(typeReference);
+
+        if (rawType != null) {
+            addEventData(rawType);
+        }
+        return this;
+    }
+
+    /**
+     * Helper method to extract the raw class from a TypeReference.
+     *
+     * @param typeReference
+     *            the type reference to extract from
+     * @return the raw class, or null if it cannot be extracted
+     */
+    private static Class<?> extractRawType(TypeReference<?> typeReference) {
+        if (typeReference.getType() instanceof Class) {
+            return (Class<?>) typeReference.getType();
+        } else if (typeReference
+                .getType() instanceof java.lang.reflect.ParameterizedType) {
+            java.lang.reflect.ParameterizedType paramType = (java.lang.reflect.ParameterizedType) typeReference
+                    .getType();
+            if (paramType.getRawType() instanceof Class) {
+                return (Class<?>) paramType.getRawType();
+            }
+        }
+        return null;
     }
 
     /**

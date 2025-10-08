@@ -1,1 +1,1 @@
-logMessage("Messagehandler initialized in module 2");
+logMessage('Messagehandler initialized in module 2');

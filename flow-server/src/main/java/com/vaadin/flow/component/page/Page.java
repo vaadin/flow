@@ -33,8 +33,8 @@ import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
-import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -268,6 +268,10 @@ public class Page implements Serializable {
      * <code>PendingJavaScriptResult</code> will report the resolved value once
      * it becomes available. If no return value handler is registered, the
      * return value will be ignored.
+     * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
      * <p>
      * The given parameters will be available to the expression as variables
      * named <code>$0</code>, <code>$1</code>, and so on. All types supported by

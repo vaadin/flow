@@ -24,13 +24,17 @@ import java.io.StringWriter;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.Broadcaster;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
@@ -45,10 +49,21 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
  */
 public class AtmospherePushConnectionTest {
 
+    private static ExecutorService executor;
     private MockVaadinSession vaadinSession;
     private Broadcaster broadcaster;
     private AtmosphereResource resource;
     private AtmospherePushConnection connection;
+
+    @BeforeClass
+    public static void initExecutor() {
+        executor = Executors.newSingleThreadExecutor();
+    }
+
+    @AfterClass
+    public static void stopExecutor() {
+        executor.shutdown();
+    }
 
     @Before
     public void setup() throws Exception {
@@ -109,8 +124,8 @@ public class AtmospherePushConnectionTest {
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
-        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS))
-                .exceptionally(error -> {
+        }, CompletableFuture.delayedExecutor(5, TimeUnit.MILLISECONDS,
+                executor)).exceptionally(error -> {
                     error.printStackTrace();
                     return null;
                 });
@@ -132,7 +147,8 @@ public class AtmospherePushConnectionTest {
                         connection.disconnect();
                         latch.countDown();
                     }, CompletableFuture.delayedExecutor(5,
-                            TimeUnit.MILLISECONDS)).exceptionally(error -> {
+                            TimeUnit.MILLISECONDS, executor))
+                            .exceptionally(error -> {
                                 error.printStackTrace();
                                 return null;
                             });
@@ -143,7 +159,7 @@ public class AtmospherePushConnectionTest {
             } catch (Throwable ex) {
                 throw new RuntimeException(ex);
             }
-        }).exceptionally(error -> {
+        }, executor).exceptionally(error -> {
             error.printStackTrace();
             return null;
         });
@@ -204,7 +220,7 @@ public class AtmospherePushConnectionTest {
                         connection.disconnect();
                         latch.countDown();
                         return null;
-                    }).exceptionally(t -> {
+                    }, executor).exceptionally(t -> {
                         if (t instanceof CompletionException) {
                             return t.getCause();
                         }
@@ -262,7 +278,7 @@ public class AtmospherePushConnectionTest {
                         connection.disconnect();
                         latch.countDown();
                         return null;
-                    }).exceptionally(t -> {
+                    }, executor).exceptionally(t -> {
                         if (t instanceof CompletionException) {
                             return t.getCause();
                         }

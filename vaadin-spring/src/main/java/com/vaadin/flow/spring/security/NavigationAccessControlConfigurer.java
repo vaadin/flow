@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
 import java.util.ArrayList;
@@ -25,10 +24,10 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
 import com.vaadin.flow.server.auth.DefaultAccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.AccessCheckDecisionResolver;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
