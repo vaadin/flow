@@ -17,10 +17,10 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.NullNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;

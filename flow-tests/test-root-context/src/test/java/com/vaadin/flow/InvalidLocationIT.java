@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class InvalidLocationIT extends ChromeBrowserTest {
 

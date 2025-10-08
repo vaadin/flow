@@ -19,8 +19,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.node.ArrayNode;
 import com.googlecode.gentyref.GenericTypeReflector;
+import tools.jackson.databind.node.ArrayNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerTemplate;
 import com.vaadin.flow.internal.JacksonUtils;

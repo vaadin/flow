@@ -19,14 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.testbench.TestBenchElement;
-
 import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.testbench.TestBenchElement;
 
 public class ThemeReloadIT extends ViteDevModeIT {
 

@@ -343,6 +343,10 @@
                                 ${maven.multiModuleProjectDirectory}/eclipse/VaadinJavaConventions.xml</file>
                         </eclipse>
                         <endWithNewline/>
+                        <removeUnusedImports/>
+                        <importOrder>
+                            <file>${maven.multiModuleProjectDirectory}/eclipse/flow.importorder</file>
+                        </importOrder>
                         <excludes>
                             <exclude>**/com/vaadin/client/gwt/**/*.java</exclude>
                             <exclude>**/com/vaadin/flow/testutil/net/**/*.java</exclude>

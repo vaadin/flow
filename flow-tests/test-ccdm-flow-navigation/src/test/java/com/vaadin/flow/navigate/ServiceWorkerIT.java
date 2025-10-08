@@ -28,6 +28,7 @@ import com.vaadin.testbench.TestBenchElement;
 
 import elemental.json.Json;
 import elemental.json.JsonObject;
+
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
 public class ServiceWorkerIT extends ChromeDeviceTest {

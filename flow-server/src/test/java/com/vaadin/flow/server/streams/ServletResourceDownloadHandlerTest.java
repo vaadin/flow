@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.streams;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.servlet.ServletContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

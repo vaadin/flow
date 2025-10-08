@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
-import static org.junit.Assert.assertFalse;
-
 import org.junit.Test;
+
+import static org.junit.Assert.assertFalse;
 
 public class ReflectToolsGetPrimitiveFieldValueTest {
     @Test

@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.Direction;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.JavascriptExecutor;
+
+import com.vaadin.flow.component.Direction;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DirectionChangeIT extends ChromeBrowserTest {
 

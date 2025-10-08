@@ -18,15 +18,15 @@ package com.vaadin.flow.router.internal;
 import java.util.Arrays;
 import java.util.EnumSet;
 
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.router.RouteParam;
-import com.vaadin.flow.router.RouteParameterFormatOption;
-import com.vaadin.flow.router.RouteParameterRegex;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteParam;
+import com.vaadin.flow.router.RouteParameterFormatOption;
+import com.vaadin.flow.router.RouteParameterRegex;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.RouterLayout;
 

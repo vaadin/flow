@@ -23,11 +23,9 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.flow.router.Route;
-
-import elemental.json.JsonValue;
 
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView/:param?", layout = ViewTestLayout.class)
 public class PushStateScrollView extends AbstractDivView {

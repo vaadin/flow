@@ -15,17 +15,17 @@
  */
 package com.vaadin.flow.data.validator;
 
-import java.io.Serializable;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.MessageInterpolator.Context;
 import jakarta.validation.Validation;
 import jakarta.validation.ValidatorFactory;
 import jakarta.validation.metadata.ConstraintDescriptor;
+
+import java.io.Serializable;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;

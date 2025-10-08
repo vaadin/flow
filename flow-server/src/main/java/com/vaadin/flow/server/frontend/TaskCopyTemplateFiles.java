@@ -17,15 +17,13 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;

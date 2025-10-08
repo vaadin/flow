@@ -17,9 +17,9 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Version;

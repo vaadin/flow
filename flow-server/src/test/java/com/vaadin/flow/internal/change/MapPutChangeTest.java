@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.internal.change;
 
+import org.junit.Assert;
+import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.JsonNodeType;
 import tools.jackson.databind.node.ObjectNode;
-import org.junit.Assert;
-import org.junit.Test;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;

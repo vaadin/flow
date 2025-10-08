@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -30,7 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
-import com.vaadin.flow.component.Tag;
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.junit.After;
@@ -48,7 +47,9 @@ import org.slf4j.simple.SimpleLoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
+import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -73,12 +74,11 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.component.dependency.StyleSheet;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletRegistration;
-import jakarta.servlet.http.HttpServletRequest;
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class VaadinAppShellInitializerTest {
@@ -225,7 +225,6 @@ public class VaadinAppShellInitializerTest {
     @StyleSheet("foo/bar.css")
     @StyleSheet("HTTP://cdn.Example.com/u.css")
     @StyleSheet("context://assets/site.css")
-    @StyleSheet("context:///already-absolute.css")
     public static class MyAppShellWithVariousStyleSheets
             implements AppShellConfigurator {
     }
@@ -564,12 +563,11 @@ public class VaadinAppShellInitializerTest {
                 createVaadinRequest("/", "/ctx"));
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        assertEquals(5, links.size());
+        assertEquals(4, links.size());
         assertEquals("/trimmed.css", links.get(0).attr("href"));
-        assertEquals("/foo/bar.css", links.get(1).attr("href"));
+        assertEquals("/ctx/foo/bar.css", links.get(1).attr("href"));
         assertEquals("HTTP://cdn.Example.com/u.css", links.get(2).attr("href"));
         assertEquals("/ctx/assets/site.css", links.get(3).attr("href"));
-        assertEquals("/ctx/already-absolute.css", links.get(4).attr("href"));
     }
 
     @Test
@@ -582,7 +580,7 @@ public class VaadinAppShellInitializerTest {
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
         assertEquals(1, links.size());
-        assertEquals("/local.css", links.get(0).attr("href"));
+        assertEquals("/ctx/local.css", links.get(0).attr("href"));
     }
 
     @Test
@@ -600,15 +598,6 @@ public class VaadinAppShellInitializerTest {
     private VaadinServletRequest createVaadinRequest(String pathInfo) {
         HttpServletRequest request = createRequest(pathInfo);
         return new VaadinServletRequest(request, service);
-    }
-
-    private HttpServletRequest createRequest(String pathInfo) {
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getServletPath()).thenReturn("");
-        Mockito.when(request.getPathInfo()).thenReturn(pathInfo);
-        Mockito.when(request.getRequestURL())
-                .thenReturn(new StringBuffer(pathInfo));
-        return request;
     }
 
     private Logger mockLog(Class clz) throws Exception {
@@ -648,6 +637,10 @@ public class VaadinAppShellInitializerTest {
             String contextPath) {
         HttpServletRequest request = createRequest(pathInfo, contextPath);
         return new VaadinServletRequest(request, service);
+    }
+
+    private HttpServletRequest createRequest(String pathInfo) {
+        return createRequest(pathInfo, "");
     }
 
     private HttpServletRequest createRequest(String pathInfo,

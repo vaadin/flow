@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 

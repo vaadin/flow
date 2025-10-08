@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.spring.i18n;
 
+import jakarta.servlet.ServletException;
+
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-
-import jakarta.servlet.ServletException;
 
 import org.junit.Assert;
 import org.junit.Test;

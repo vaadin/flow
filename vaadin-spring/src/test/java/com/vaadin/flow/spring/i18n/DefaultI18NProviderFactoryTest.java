@@ -15,12 +15,18 @@
  */
 package com.vaadin.flow.spring.i18n;
 
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.i18n.DefaultI18NProvider;
-import com.vaadin.flow.i18n.I18NProvider;
-import com.vaadin.flow.spring.VaadinApplicationConfiguration;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import jakarta.servlet.ServletException;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
+import java.util.Locale;
+import java.util.Properties;
+
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.*;
 import org.junit.rules.TemporaryFolder;
@@ -35,15 +41,11 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
-import java.util.Locale;
-import java.util.Properties;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.i18n.DefaultI18NProvider;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.spring.VaadinApplicationConfiguration;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
 @Import(VaadinApplicationConfiguration.class)

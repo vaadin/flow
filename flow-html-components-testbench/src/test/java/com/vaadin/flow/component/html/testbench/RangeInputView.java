@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html.testbench;
 
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.RangeInput;
 import com.vaadin.flow.router.Route;
 

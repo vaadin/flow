@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.spring.security;
 
+import jakarta.annotation.security.PermitAll;
+import jakarta.annotation.security.RolesAllowed;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import jakarta.annotation.security.PermitAll;
-import jakarta.annotation.security.RolesAllowed;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;

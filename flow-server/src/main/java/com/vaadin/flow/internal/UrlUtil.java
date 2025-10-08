@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.internal;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Internal utility class for URL handling.

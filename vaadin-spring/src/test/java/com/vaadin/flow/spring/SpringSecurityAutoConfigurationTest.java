@@ -15,22 +15,14 @@
  */
 package com.vaadin.flow.spring;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.router.Location;
-import com.vaadin.flow.server.auth.AccessAnnotationChecker;
-import com.vaadin.flow.server.auth.AccessCheckDecision;
-import com.vaadin.flow.server.auth.AccessCheckResult;
-import com.vaadin.flow.server.auth.AccessPathChecker;
-import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
-import com.vaadin.flow.server.auth.NavigationAccessChecker;
-import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.NavigationContext;
-import com.vaadin.flow.server.auth.RoutePathAccessChecker;
-import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
-import com.vaadin.flow.spring.security.SpringAccessPathChecker;
-import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
-import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.lang.reflect.Method;
+import java.security.Principal;
+import java.util.function.Function;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
@@ -47,13 +39,22 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.lang.reflect.Method;
-import java.security.Principal;
-import java.util.function.Function;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.router.Location;
+import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.server.auth.AccessCheckDecision;
+import com.vaadin.flow.server.auth.AccessCheckResult;
+import com.vaadin.flow.server.auth.AccessPathChecker;
+import com.vaadin.flow.server.auth.AnnotatedViewAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessChecker;
+import com.vaadin.flow.server.auth.NavigationAccessControl;
+import com.vaadin.flow.server.auth.NavigationContext;
+import com.vaadin.flow.server.auth.RoutePathAccessChecker;
+import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
+import com.vaadin.flow.spring.security.SpringAccessPathChecker;
+import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

@@ -15,19 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
-import org.atmosphere.cpr.AtmosphereResource;
-import org.atmosphere.cpr.Broadcaster;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.Mockito;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.ObjectInputStream;
@@ -41,6 +28,20 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
+
+import org.atmosphere.cpr.AtmosphereResource;
+import org.atmosphere.cpr.Broadcaster;
+import org.junit.AfterClass;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.server.MockVaadinSession;
+import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
 
 /**
  * @author Vaadin Ltd

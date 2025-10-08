@@ -51,8 +51,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 
-import static org.mockito.Mockito.withSettings;
-
 public class SerializationTest {
 
     Runnable cleaner;

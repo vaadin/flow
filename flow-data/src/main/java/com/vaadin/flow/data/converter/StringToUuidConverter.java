@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.data.converter;
 
+import java.util.UUID;
+
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
-
-import java.util.UUID;
 
 /**
  * A converter that converts from {@link String} to {@link UUID} and back.

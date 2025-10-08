@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebListener;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -47,10 +49,8 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.HandlesTypes;
-import jakarta.servlet.annotation.WebListener;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
 
 /**
  * Servlet initializer visiting {@link AppShellConfigurator} configuration.

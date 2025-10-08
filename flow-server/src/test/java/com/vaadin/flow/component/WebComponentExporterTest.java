@@ -17,12 +17,12 @@ package com.vaadin.flow.component;
 
 import java.util.Set;
 
-import tools.jackson.databind.node.BaseJsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;

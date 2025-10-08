@@ -16,15 +16,13 @@
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
-import com.vaadin.pro.licensechecker.SubscriptionKey;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 
 import static org.junit.Assert.*;

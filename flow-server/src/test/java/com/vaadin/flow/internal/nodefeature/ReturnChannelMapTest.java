@@ -17,9 +17,9 @@ package com.vaadin.flow.internal.nodefeature;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import tools.jackson.databind.node.ArrayNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.internal.JacksonUtils;

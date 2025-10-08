@@ -20,9 +20,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-import tools.jackson.core.JacksonException;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult;

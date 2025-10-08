@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui.faulttolerance;
 
-import java.io.IOException;
-
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -26,6 +24,8 @@ import jakarta.servlet.ServletResponse;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
+
+import java.io.IOException;
 
 import com.vaadin.flow.server.VaadinServletResponse;
 

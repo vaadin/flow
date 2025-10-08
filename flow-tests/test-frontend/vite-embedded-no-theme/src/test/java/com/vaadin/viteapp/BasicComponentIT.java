@@ -16,13 +16,11 @@
 package com.vaadin.viteapp;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
-import org.junit.Before;
-
-import org.openqa.selenium.By;
-import com.vaadin.testbench.TestBenchElement;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class BasicComponentIT extends ChromeDeviceTest {
 

@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.component;
 
-import tools.jackson.databind.JsonNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;

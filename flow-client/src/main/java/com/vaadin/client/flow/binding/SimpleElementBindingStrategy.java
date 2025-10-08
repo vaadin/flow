@@ -23,6 +23,7 @@ import jsinterop.annotations.JsFunction;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.ApplicationConfiguration;
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;

@@ -15,12 +15,14 @@
  */
 package com.vaadin.flow.spring.flowsecurity.views;
 
+import jakarta.annotation.security.PermitAll;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.util.concurrent.Executor;
 
-import jakarta.annotation.security.PermitAll;
+import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.ClickEvent;
@@ -39,8 +41,6 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.spring.flowsecurity.SecurityUtils;
 import com.vaadin.flow.spring.flowsecurity.service.BankService;
-
-import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
 
 @Route(value = "private", layout = MainView.class)
 @PageTitle("Private View")

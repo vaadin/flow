@@ -19,6 +19,8 @@ import java.util.Collection;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import org.junit.Test;
+
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.DataView;
@@ -34,7 +36,6 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.function.ValueProvider;
 import com.vaadin.flow.shared.Registration;
-import org.junit.Test;
 
 public class HasHierarchicalDataProviderTest {
 

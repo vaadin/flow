@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -58,7 +57,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.router.internal.NavigationStateRendererTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;

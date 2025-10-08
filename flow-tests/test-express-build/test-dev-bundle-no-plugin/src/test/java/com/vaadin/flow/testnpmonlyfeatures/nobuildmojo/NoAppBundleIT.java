@@ -17,17 +17,13 @@ package com.vaadin.flow.testnpmonlyfeatures.nobuildmojo;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoSuchElementException;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.BundleValidationUtil;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class NoAppBundleIT extends ChromeBrowserTest {

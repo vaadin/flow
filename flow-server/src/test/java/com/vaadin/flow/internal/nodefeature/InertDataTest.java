@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.internal.StateNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.StateNode;
 
 public class InertDataTest extends AbstractNodeFeatureTest<InertData> {
 

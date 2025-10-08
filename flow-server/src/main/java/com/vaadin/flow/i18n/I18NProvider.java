@@ -20,11 +20,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.LocaleUtil;

@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Implemented by classes that want to modify the bootstrap typescript.

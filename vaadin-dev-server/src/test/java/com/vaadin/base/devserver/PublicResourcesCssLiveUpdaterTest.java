@@ -15,13 +15,9 @@
  */
 package com.vaadin.base.devserver;
 
-import static org.mockito.Mockito.*;
-
 import java.io.File;
-import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,6 +30,8 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static org.mockito.Mockito.*;
 
 public class PublicResourcesCssLiveUpdaterTest {
 

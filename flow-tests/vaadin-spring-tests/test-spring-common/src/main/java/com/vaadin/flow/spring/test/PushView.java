@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring.test;
 
+import java.util.concurrent.locks.Lock;
+
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -23,8 +25,6 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Transport;
-
-import java.util.concurrent.locks.Lock;
 
 @Route("push")
 public class PushView extends Div {

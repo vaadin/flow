@@ -23,8 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;

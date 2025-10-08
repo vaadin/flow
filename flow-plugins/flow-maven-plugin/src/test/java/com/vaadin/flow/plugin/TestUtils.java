@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.plugin;
 
-import static org.junit.Assert.assertNotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
@@ -25,10 +23,11 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Shared code to use in the unit tests.
