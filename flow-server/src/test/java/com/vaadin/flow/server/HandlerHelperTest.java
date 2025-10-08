@@ -435,6 +435,8 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-640x1136.png");
         expected.add("/icons/icon-1136x640.png");
         expected.add("/themes/**");
+        expected.add("/@vaadin/aura/**");
+        expected.add("/@vaadin/vaadin-lumo-styles/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());

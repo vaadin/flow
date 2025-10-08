@@ -315,6 +315,7 @@
         <module>test-spring-security-flow-methodsecurity</module>
         <module>test-spring-security-flow-standalone-routepathaccesschecker</module>
         <module>test-spring-security-flow-routepathaccesschecker</module>
+        <module>test-spring-security-flow-themes-contextpath</module>
 
         <module>test-spring-boot-only-prepare</module>
         <module>test-spring-white-list</module>
