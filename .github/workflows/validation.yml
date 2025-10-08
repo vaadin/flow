@@ -6,7 +6,9 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  issues: write
 concurrency:
   group: ${{ github.head_ref }} || ${{ github.ref_name }}
   cancel-in-progress: true
@@ -14,12 +16,157 @@ env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  USE_FORMATTED_CODE: false
 jobs:
   check-permissions:
     uses: ./.github/workflows/check-permissions.yml
 
-  build:
+  formatter:
     needs: check-permissions
+    if: github.event_name == 'pull_request_target'
+    name: Format and auto-commit
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      changes_committed: ${{ steps.commit-changes.outputs.changes_committed }}
+
+    steps:
+      - name: Check for required token
+        run: |
+          if [ -z "${{ secrets.VAADIN_BOT_TOKEN }}" ]; then
+            echo "::error::VAADIN_BOT_TOKEN secret is required for formatter to trigger workflows after committing changes"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+          fetch-depth: 2
+
+      - name: Check if last commit was from formatter bot
+        id: check-loop
+        run: |
+          last_commit_author=$(git log -1 --pretty=format:'%an')
+          echo "Last commit author: $last_commit_author"
+
+          if [ "$last_commit_author" = "github-actions[bot]" ]; then
+            echo "Last commit was from formatter bot - formatting verification passed"
+            echo "loop_detected=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "loop_detected=false" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK 21
+        if: steps.check-loop.outputs.loop_detected == 'false'
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Run formatter
+        if: steps.check-loop.outputs.loop_detected == 'false'
+        id: formatter
+        run: |
+          echo "Running formatter..."
+          mvn -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
+
+          # Check for modified files
+          files=$(git status --porcelain | awk '{print $2}')
+          modified=$(echo "$files" | wc -w | xargs)
+
+          echo "modified=$modified" >> $GITHUB_OUTPUT
+
+          if [ "$modified" -gt 0 ]; then
+            echo "Modified files:"
+            echo "$files"
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$files" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        id: commit-changes
+        if: steps.check-loop.outputs.loop_detected == 'false' && steps.formatter.outputs.modified != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add only the files modified by the formatter
+          git add -u
+          git commit -m "chore: apply code formatting with spotless"
+
+          git push
+
+          echo "changes_committed=true" >> $GITHUB_OUTPUT
+          echo "✅ Formatting changes committed and pushed. Workflow will retrigger automatically." >> $GITHUB_STEP_SUMMARY
+
+      - name: Generate diff for artifact
+        if: steps.formatter.outputs.modified != '0'
+        run: |
+          git diff HEAD~1 > formatter-diff.txt
+
+      - name: Upload formatter diff
+        if: steps.formatter.outputs.modified != '0'
+        uses: actions/upload-artifact@v4
+        with:
+          name: formatter-diff
+          path: formatter-diff.txt
+          retention-days: 30
+
+      - name: Find existing comment
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- tc-formatter -->'
+
+      - name: Create or update comment for committed changes
+        if: steps.formatter.outputs.modified != '0'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- tc-formatter -->
+            ### ✅ Formatter Auto-Applied
+
+            Formatting issues were detected and **automatically fixed**. Changes have been committed to this PR.
+
+            The formatting changes affected **${{ steps.formatter.outputs.modified }} files**.
+
+            Files modified:
+            ```
+            ${{ steps.formatter.outputs.files }}
+            ```
+
+            Please pull the latest changes before continuing work on this branch.
+
+      - name: Delete comment if formatting is correct
+        if: steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: ${{ steps.find-comment.outputs.comment-id }}
+            })
+
+      - name: Stop workflow if changes were committed
+        if: steps.commit-changes.outputs.changes_committed == 'true'
+        run: |
+          echo "::notice::Formatting changes committed. Stopping this workflow run. A new workflow will be triggered automatically."
+          exit 1
+
+  build:
+    needs: [check-permissions, formatter]
+    if: always() && needs.check-permissions.result == 'success' && needs.formatter.result == 'success'
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     outputs:
