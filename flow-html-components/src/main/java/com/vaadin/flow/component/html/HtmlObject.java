@@ -34,7 +34,6 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Component representing a <code>&lt;object&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Tag(Tag.OBJECT)

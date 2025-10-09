@@ -28,7 +28,6 @@ import com.vaadin.flow.shared.Registration;
  *
  * @param <T>
  *            data type
- * @since
  */
 public interface DataView<T> extends Serializable {
 

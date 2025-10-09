@@ -91,7 +91,6 @@ public interface TemplateParser {
      * <p>
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     class TemplateParserFactory {

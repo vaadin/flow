@@ -67,7 +67,6 @@ import com.vaadin.flow.server.VaadinServlet;
  *
  * @see Instantiator
  * @author Vaadin Ltd
- * @since
  */
 public interface Lookup {
 

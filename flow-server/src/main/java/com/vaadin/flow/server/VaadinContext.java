@@ -69,7 +69,6 @@ public interface VaadinContext extends Serializable {
      * @param value
      *            the attribute value to set, or <code>null</code> to remove the
      *            current value
-     * @since
      */
     <T> void setAttribute(Class<T> clazz, T value);
 

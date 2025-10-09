@@ -28,7 +28,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * {@link ResourceProvider} for use with plugin execution.
  *
  * @author Vaadin Ltd
- * @since
  */
 class ResourceProviderImpl implements ResourceProvider {
 

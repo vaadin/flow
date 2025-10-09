@@ -28,7 +28,6 @@ import com.vaadin.flow.component.Component;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @deprecated Polymer template support is deprecated - we recommend you to use
  *             {@code LitTemplate} instead. Read more details from <a href=
