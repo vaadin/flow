@@ -37,7 +37,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 /**
  * Utility methods to handle application theme CSS content.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class CssBundler {

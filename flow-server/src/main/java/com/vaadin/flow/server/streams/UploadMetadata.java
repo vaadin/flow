@@ -19,6 +19,13 @@ package com.vaadin.flow.server.streams;
  * Metadata for successful upload.
  * <p>
  * The fileName and contentType will only be available for multipart uploads.
+ *
+ * @param fileName
+ *            the name of the file, may be <code>null</code>
+ * @param contentType
+ *            the content type, may be <code>null</code>
+ * @param contentLength
+ *            the content length in bytes
  */
 public record UploadMetadata(String fileName, String contentType,
         long contentLength) {

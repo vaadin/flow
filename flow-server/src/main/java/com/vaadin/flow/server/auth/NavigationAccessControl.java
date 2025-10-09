@@ -44,41 +44,33 @@ import com.vaadin.flow.server.WrappedSession;
  * A {@link BeforeEnterListener} implementation that contains logic to perform
  * access checks before entering a view.
  * <p>
- * </p>
- *
  * Access rules are defined by providing one or more
  * {@link NavigationAccessChecker} instances, that are responsible for deciding
  * if a navigation should be allowed or not. The final navigation grant decision
  * is taken by a pluggable {@link AccessCheckDecisionResolver} component, based
  * on the results of all access checkers.
  * <p>
- * </p>
  * If access is allowed, the navigation continues to the target component.
  * Otherwise, for not authenticated requests, a redirect is performed to the
  * login page (if configured) or to the {@literal not found} error view.
  * <p>
- * </p>
  * In development mode, the access check failure reason is forwarded to the
  * {@literal not found} error view, for debugging purpose. In addition, an
  * exception will be thrown if the decision resolver determines the navigation
  * should be rejected because of misconfigurations.
  * <p>
- * </p>
  * In production mode, for security reasons, the failure message is never
  * exposed and rejection is treated as a normal deny, without any exception
  * being thrown.
  * <p>
- * </p>
  * Before redirecting to the login page, the route path and its absolute URL are
  * stored in the HTTP session, to allow the authentication logic to access the
  * requested resource ( {@link #SESSION_STORED_REDIRECT},
  * {@link #SESSION_STORED_REDIRECT_ABSOLUTE} ).
  * <p>
- * </p>
  * The default constructor create an instance pre-configured with
  * {@link AnnotatedViewAccessChecker}.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NavigationAccessChecker

@@ -61,14 +61,12 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Entry point for application classes hot reloads.
  * <p>
- * </p>
  * This class is meant to be used in combination with class live reloading tools
  * like JRebel, Hotswap agent and Spring Boot Developer Tools, to immediately
  * apply changes on components that should be updated when classes have been
  * added or modified. Currently, class deletion is not supported because of
  * issues with several hotswap agents.
  * <p>
- * </p>
  * Hotswap tools should obtain an instance of this class by calling the
  * {@link #register(VaadinService)} method, providing an active
  * {@link VaadinService} instance. For example, an agent can inject the
@@ -80,18 +78,15 @@ import com.vaadin.flow.server.VaadinSession;
  * }
  * </pre>
  * <p>
- * </p>
  * The component delegates specific hotswap logic to registered implementors of
  * {@link VaadinHotswapper} interface.
  * <p>
- * </p>
  * By default, Hotswapper determines the best browser page refresh strategy, but
  * a full page reload can be forced by setting the
  * {@code vaadin.hotswap.forcePageReload} system property. Hotswap tools can
  * alter the behavior at runtime by calling
  * {@link #forcePageReload(VaadinService, boolean)}
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd

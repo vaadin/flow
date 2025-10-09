@@ -29,6 +29,8 @@ import java.util.Objects;
  *            the message to show in an enforcement notification, not
  *            {@literal null}.
  * @param details
+ *            additional details to show in an enforcement notification, may be
+ *            {@literal null}.
  * @param url
  *            the URL the user will be redirected to after dismissing an
  *            enforcement message.

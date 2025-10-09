@@ -36,6 +36,8 @@ import com.vaadin.flow.server.VaadinSession;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
+ * @param <T>
+ *            the result type
  * @since 2.1.4
  */
 public class DeadlockDetectingCompletableFuture<T>

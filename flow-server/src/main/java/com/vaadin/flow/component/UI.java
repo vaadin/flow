@@ -1784,7 +1784,6 @@ public class UI extends Component
      * Event fired by the client to request a refresh of the user interface, by
      * re-navigating to the current route.
      * <p>
-     * </p>
      * The route target component is re-instantiated, as well as all layouts in
      * the route chain if the {@code fullRefresh} event flag is active.
      *
