@@ -69,6 +69,7 @@
           <typescript>
             <excludes>
               <exclude>src/main/resources/META-INF/frontend/generated/**</exclude>
+              <exclude>src/test/resources/frontend/**</exclude>
             </excludes>
           </typescript>
         </configuration>

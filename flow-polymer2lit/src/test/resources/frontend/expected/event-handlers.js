@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
 class EventHandlers extends LitElement {
   render() {
@@ -28,15 +28,15 @@ class EventHandlers extends LitElement {
   }
 
   static get is() {
-    return 'event-handlers';
+    return "event-handlers";
   }
 
   submit() {
-    console.log('Submit clicked');
+    console.log("Submit clicked");
   }
 
   formUpdated() {
-    console.log('Form updated');
+    console.log("Form updated");
   }
 }
 
