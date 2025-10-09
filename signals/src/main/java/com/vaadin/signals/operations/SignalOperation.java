@@ -48,6 +48,8 @@ public class SignalOperation<T> {
      *
      * @param <T>
      *            the result type
+     * @param value
+     *            the result value
      */
     public static record Result<T>(T value) implements ResultOrError<T> {
         @Override
@@ -61,6 +63,8 @@ public class SignalOperation<T> {
      *
      * @param <T>
      *            the inherited result type which is not used for errors
+     * @param reason
+     *            the error reason message
      */
     public static record Error<T>(String reason) implements ResultOrError<T> {
         @Override
@@ -70,6 +74,12 @@ public class SignalOperation<T> {
     }
 
     private final CompletableFuture<ResultOrError<T>> result = new CompletableFuture<>();
+
+    /**
+     * Creates a new signal operation.
+     */
+    public SignalOperation() {
+    }
 
     /**
      * Gets the eventual operation result.
