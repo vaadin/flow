@@ -85,6 +85,13 @@
               <exclude>src/main/frontend/**</exclude>
             </excludes>
           </typescript>
+          <css>
+            <excludes>
+              <!-- Excluded because tests calculate hashes on these files -->
+              <exclude>src/main/frontend/styles/my-styles.css</exclude>
+              <exclude>src/main/resources/META-INF/resources/frontend/addons-styles/add-on-styles.css</exclude>
+            </excludes>
+          </css>
         </configuration>
       </plugin>
       <!-- This module is mapped to default web context -->

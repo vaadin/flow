@@ -1,11 +1,11 @@
 :host {
-    width: 1200px;
-    height: 600px;
-    display: block;
-    background-image: url("./img/bg.jpg");
-    font-family: "Ostrich";
+  width: 1200px;
+  height: 600px;
+  display: block;
+  background-image: url('./img/bg.jpg');
+  font-family: 'Ostrich';
 }
 
 .internal {
-    color: green;
+  color: green;
 }

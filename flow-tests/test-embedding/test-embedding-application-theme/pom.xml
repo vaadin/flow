@@ -46,6 +46,18 @@
 
   <build>
     <plugins>
+      <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <configuration>
+          <css>
+            <excludes>
+              <!-- Excluded because tests calculate hashes on these files -->
+              <exclude>src/main/frontend/themes/embedded-theme/document.css</exclude>
+            </excludes>
+          </css>
+        </configuration>
+      </plugin>
       <!-- This module is mapped to default web context -->
       <plugin>
         <groupId>org.eclipse.jetty.ee10</groupId>
