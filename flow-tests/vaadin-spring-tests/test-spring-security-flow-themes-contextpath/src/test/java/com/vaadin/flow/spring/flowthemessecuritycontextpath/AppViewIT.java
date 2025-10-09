@@ -42,7 +42,7 @@ public class AppViewIT extends AbstractSpringTest {
         String auraLoaded = (String) executeScript(
                 "return getComputedStyle(document.documentElement).getPropertyValue('--fake-aura-theme-loaded').trim() ");
         Assert.assertEquals(
-                "Expected :root --fake-aura-theme-loaded custom property to be set by @vaadin/aura/fake-aura.css",
+                "Expected :root --fake-aura-theme-loaded custom property to be set by aura/fake-aura.css",
                 "1", auraLoaded);
     }
 
@@ -56,7 +56,7 @@ public class AppViewIT extends AbstractSpringTest {
         String lumoLoaded = (String) executeScript(
                 "return getComputedStyle(document.documentElement).getPropertyValue('--fake-lumo-theme-loaded').trim() ");
         Assert.assertEquals(
-                "Expected :root --fake-lumo-theme-loaded custom property to be set by @vaadin/vaadin-lumo-styles/fake-lumo.css",
+                "Expected :root --fake-lumo-theme-loaded custom property to be set by lumo/fake-lumo.css",
                 "1", lumoLoaded);
     }
 }
