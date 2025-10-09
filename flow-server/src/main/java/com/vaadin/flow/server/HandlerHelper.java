@@ -156,8 +156,8 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
         resources.add("/themes/**");
-        resources.add("/@vaadin/aura/**");
-        resources.add("/@vaadin/vaadin-lumo-styles/**");
+        resources.add("/aura/**");
+        resources.add("/lumo/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 

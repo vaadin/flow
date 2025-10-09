@@ -18,8 +18,8 @@ package com.vaadin.flow.spring.flowthemessecuritycontextpath;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 
-@StyleSheet("@vaadin/aura/fake-aura.css")
-@StyleSheet("@vaadin/vaadin-lumo-styles/fake-lumo.css")
+@StyleSheet("aura/fake-aura.css")
+@StyleSheet("lumo/fake-lumo.css")
 public class Configurator implements AppShellConfigurator {
 
 }
