@@ -157,7 +157,6 @@ public final class Shortcuts {
      * @return a registration for removing the locator, does not affect active
      *         shortcuts or if the locator has changed from what was set for
      *         this registration
-     * @since
      */
     public static Registration setShortcutListenOnElement(
             String elementLocatorJs, Component listenOnComponent) {

@@ -63,7 +63,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
  * A configuration factory base logic which reads the token file.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public class AbstractConfigurationFactory implements Serializable {

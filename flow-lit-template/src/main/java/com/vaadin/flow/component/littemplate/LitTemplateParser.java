@@ -32,7 +32,6 @@ import com.vaadin.flow.server.VaadinService;
  * @see LitTemplateParserImpl
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @FunctionalInterface
@@ -55,7 +54,6 @@ public interface LitTemplateParser {
      *
      * @author Vaadin Ltd
      * @see LitTemplateParser
-     * @since
      *
      */
     class LitTemplateParserFactory {
@@ -77,7 +75,6 @@ public interface LitTemplateParser {
      * as an {@link Element} instance.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     class TemplateData {

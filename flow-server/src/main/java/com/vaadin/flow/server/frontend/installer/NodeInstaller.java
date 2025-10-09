@@ -46,7 +46,6 @@ import com.vaadin.flow.server.frontend.FrontendVersion;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class NodeInstaller {
 

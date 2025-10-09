@@ -55,7 +55,6 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 

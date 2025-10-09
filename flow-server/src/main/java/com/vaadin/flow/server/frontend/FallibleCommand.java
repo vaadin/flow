@@ -26,7 +26,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface FallibleCommand {
 

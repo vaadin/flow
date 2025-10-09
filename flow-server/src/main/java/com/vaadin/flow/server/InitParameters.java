@@ -28,7 +28,6 @@ import com.vaadin.flow.component.UI;
  * parameters here.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class InitParameters implements Serializable {
 
@@ -128,7 +127,6 @@ public class InitParameters implements Serializable {
     /*
      * Configuration parameter name for enabling usage statistics.
      *
-     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
 
@@ -145,7 +143,6 @@ public class InitParameters implements Serializable {
      * ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS} is set to {@code
      * false}), the live reload will be disabled as well.
      *
-     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
@@ -162,7 +159,6 @@ public class InitParameters implements Serializable {
      * {@link com.vaadin.flow.component.UI} instances will be serialized.
      * Otherwise, it won't be serialized.
      *
-     * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
@@ -170,7 +166,6 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for enabling component tracking in
      * development mode. If not set, tracking is enabled by default.
      *
-     * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
@@ -200,7 +195,6 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for requiring node executable installed in
      * home directory.
      *
-     * @since
      */
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
@@ -208,7 +202,6 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for requiring node executable installed in
      * home directory.
      *
-     * @since
      */
     public static final String NODE_AUTO_UPDATE = "node.auto.update";
 
@@ -225,7 +218,6 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the build folder.
      *
-     * @since
      */
     public static final String BUILD_FOLDER = "build.folder";
 
@@ -233,7 +225,6 @@ public class InitParameters implements Serializable {
      * Packages, in addition to the internally used ones, to run postinstall
      * scripts for.
      *
-     * @since
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 

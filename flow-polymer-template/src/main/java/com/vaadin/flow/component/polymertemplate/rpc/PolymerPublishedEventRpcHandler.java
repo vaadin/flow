@@ -30,7 +30,6 @@ import com.vaadin.flow.templatemodel.ModelType;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 // This is OSGi specific annotation for the class which may be used without
 // OSGi. But RetentionPolicy.CLASS used for the annotation makes it safe to use
