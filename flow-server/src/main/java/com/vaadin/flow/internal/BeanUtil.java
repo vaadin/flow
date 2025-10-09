@@ -68,6 +68,9 @@ public final class BeanUtil implements Serializable {
      */
     public static List<PropertyDescriptor> getBeanPropertyDescriptors(
             final Class<?> beanType) throws IntrospectionException {
+        if (beanType == null) {
+            return new ArrayList<>();
+        }
         List<PropertyDescriptor> descriptorsWithDuplicates = internalGetBeanPropertyDescriptors(
                 beanType);
 
