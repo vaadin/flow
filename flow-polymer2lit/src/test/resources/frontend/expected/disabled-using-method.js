@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
 class DisabledUsingMethod extends LitElement {
   render() {
@@ -11,11 +11,19 @@ class DisabledUsingMethod extends LitElement {
           @click="${this.submit}"
           >Sign Up</vaadin-button
         >
-        <vaadin-button id="cancelSignUpBtn" theme="tertiary" @click="${this.cancelButtonClicked}">Cancel</vaadin-button>
+        <vaadin-button
+          id="cancelSignUpBtn"
+          theme="tertiary"
+          @click="${this.cancelButtonClicked}"
+          >Cancel</vaadin-button
+        >
       </vaadin-vertical-layout>
 
       <span class="payment-notes">Month-to-month @ $500 / month</span>
-      <a class="support" .href="${this.contactLink}" @href-changed="${(e) => (this.contactLink = e.target.value)}"
+      <a
+        class="support"
+        .href="${this.contactLink}"
+        @href-changed="${(e) => (this.contactLink = e.target.value)}"
         >Contact Support</a
       >
     `;
@@ -26,17 +34,17 @@ class DisabledUsingMethod extends LitElement {
   }
 
   static get is() {
-    return 'disabled-using-method';
+    return "disabled-using-method";
   }
 
   static get properties() {
     return {
       property1: {
-        type: Boolean
+        type: Boolean,
       },
       property2: {
-        type: Boolean
-      }
+        type: Boolean,
+      },
     };
   }
   constructor() {

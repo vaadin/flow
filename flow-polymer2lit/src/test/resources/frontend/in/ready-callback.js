@@ -1,4 +1,4 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 
 class ReadyCallback extends PolymerElement {
   static get template() {
@@ -14,16 +14,16 @@ class ReadyCallback extends PolymerElement {
   }
 
   static get is() {
-    return 'ready-callback';
+    return "ready-callback";
   }
 
   ready() {
     super.ready();
 
-    div = document.createElement('div');
-    div.innerText = 'Created in ready()';
+    div = document.createElement("div");
+    div.innerText = "Created in ready()";
     this.$.container.appendChild(div);
-    this.property = 'Value set in ready()';
+    this.property = "Value set in ready()";
   }
 }
 
