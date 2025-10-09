@@ -48,7 +48,7 @@ public final class FlowDauIntegration {
      * Generates a new cookie for counting daily active users within 24 hour
      * time interval.
      * <p>
-     * </p>
+     *
      * Cookie value is formatted as {@code  trackingHash$creationTime}, with
      * {@code creationTime} expressed as number of milliseconds from the epoch
      * of 1970-01-01T00:00:00Z. The cookie creation time is required on
@@ -73,12 +73,12 @@ public final class FlowDauIntegration {
     /**
      * Tracks the current user with the given optional identity.
      * <p>
-     * </p>
+     *
      * Tracking the user may raise an enforcement exception, that is stored and
      * applied later by calling
      * {@link #applyEnforcement(VaadinRequest, Predicate)} method.
      * <p>
-     * </p>
+     *
      * Tracking for UIDL requests is postponed until the message is parsed, to
      * prevent UI poll events to be considered as user interaction.
      *
@@ -125,7 +125,7 @@ public final class FlowDauIntegration {
      * Potentially applies enforcement to the current request if DAU limit is
      * exceeded.
      * <p>
-     * </p>
+     *
      * If enforcement has to be applied an {@link EnforcementException} is
      * thrown.
      *

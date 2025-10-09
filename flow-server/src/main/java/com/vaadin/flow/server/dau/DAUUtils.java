@@ -113,7 +113,7 @@ public final class DAUUtils {
     /**
      * Parses DAU cookie value to extract tracking information.
      * <p>
-     * </p>
+     *
      * Cookie value is expected to be in format
      * {@literal trackingHash$creationTime}, with {@literal creationTime}
      * expressed as the number of milliseconds from the epoch of
@@ -175,7 +175,7 @@ public final class DAUUtils {
     /**
      * Gets the enforcement messages for the given request.
      * <p>
-     * </p>
+     *
      * Enforcement messages are get from the registered {@link DAUCustomizer},
      * if available. Otherwise, the default messages are returned.
      *
@@ -249,7 +249,7 @@ public final class DAUUtils {
     /**
      * Gets if a request should be considered for DAU tracking or not.
      * <p>
-     * </p>
+     *
      * Request that should be taken into account for DAU tracking are:
      *
      * <ul>
@@ -354,7 +354,7 @@ public final class DAUUtils {
      * Track DAU and check if enforcement should apply to the given request. If
      * enforcement is needed, the enforcement messages are returned.
      * <p>
-     * </p>
+     *
      * Method checks if the current request should be considered for DAU
      * tracking by using {@link #isDauEnabled(VaadinService)}.
      *

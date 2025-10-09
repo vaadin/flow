@@ -119,7 +119,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
-     * </p>
+     *
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
