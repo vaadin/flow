@@ -416,6 +416,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
     /**
      * Checks if an access checker of the given type is in use.
      *
+     * @param type
+     *            the type of access checker to check for
      * @return {@code true} if a checker is in use, {@code false} otherwise
      */
     public boolean hasAccessChecker(

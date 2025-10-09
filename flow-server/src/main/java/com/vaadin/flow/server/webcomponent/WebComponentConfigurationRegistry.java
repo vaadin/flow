@@ -186,6 +186,7 @@ public class WebComponentConfigurationRegistry implements Serializable {
      * various exporter classes then an exception will be thrown during the
      * servlet initialization (exporter classes discovering).
      *
+     * @param <T> the type of the annotation
      * @param type
      *            the configuration annotation type
      * @return an optional configuration annotation, or an empty optional if

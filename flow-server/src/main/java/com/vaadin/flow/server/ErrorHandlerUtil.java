@@ -66,7 +66,7 @@ public final class ErrorHandlerUtil {
      *            current {@code VaadinContex} instance
      * @param ui
      *            current UI instance
-     * @return
+     * @return {@code true} if error handled, {@code false} if no error handler
      */
     public static boolean handleErrorByRedirectingToErrorView(
             Throwable throwable, VaadinContext context, UI ui) {
@@ -110,7 +110,7 @@ public final class ErrorHandlerUtil {
      *            current {@code VaadinContex} instance
      * @param ui
      *            current UI instance
-     * @return
+     * @return {@code true} if error handled, {@code false} if no error handler
      */
     public static boolean handleErrorByRedirectingToErrorView(
             Exception exception, VaadinContext context, UI ui) {

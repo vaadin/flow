@@ -59,6 +59,8 @@ public class ComponentEventBus implements Serializable {
     /**
      * Pairs a component-level listener for its DOM listener registration, if
      * the event-type is annotated with {@link DomEvent}.
+     *
+     * @param <T> the component event type
      */
     private static class ListenerWrapper<T extends ComponentEvent<?>>
             implements Serializable {

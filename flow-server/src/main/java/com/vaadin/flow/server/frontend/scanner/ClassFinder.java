@@ -212,6 +212,7 @@ public interface ClassFinder extends Serializable {
     /**
      * Load a class in the classloader.
      *
+     * @param <T> the type of the class
      * @param name
      *            the class literal
      * @return the class

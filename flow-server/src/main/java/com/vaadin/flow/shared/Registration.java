@@ -90,6 +90,7 @@ public interface Registration extends Serializable {
      * collection to avoid {@link ConcurrentModificationException} if a listener
      * or other callback may trigger adding or removing registrations.
      *
+     * @param <T> the type of the item in the collection
      * @param collection
      *            the collection to which the item should be added and removed,
      *            not <code>null</code>

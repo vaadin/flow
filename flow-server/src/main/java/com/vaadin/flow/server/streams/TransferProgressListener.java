@@ -122,6 +122,8 @@ public interface TransferProgressListener extends Serializable {
      *
      * @param context
      *            the context of the transfer
+     * @param transferredBytes
+     *            the total number of bytes transferred
      */
     default void onComplete(TransferContext context, long transferredBytes) {
         // Default implementation does nothing

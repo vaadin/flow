@@ -296,6 +296,8 @@ public final class BundleValidationUtil {
      *
      * @param jarPath
      *            JAR path where bunlde to check is located
+     * @param finder
+     *            the class finder to use for locating resources
      * @return {@code true} if bundle stats.json is found
      */
     public static boolean hasJarBundle(String jarPath, ClassFinder finder) {
