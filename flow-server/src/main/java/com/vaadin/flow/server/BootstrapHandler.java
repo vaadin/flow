@@ -1590,7 +1590,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      * <p>
-     * </p>
+     *
      * This method does not verify that the style sheet exists, so it may end up
      * at runtime with broken links. Use
      * {@link #getStylesheetLinks(VaadinContext, String, File)} if you want only
@@ -1612,7 +1612,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      * <p>
-     * </p>
+     *
      * This method return links only for existing style sheet files.
      *
      * @param context

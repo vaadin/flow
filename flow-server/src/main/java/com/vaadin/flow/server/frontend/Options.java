@@ -947,7 +947,7 @@ public class Options implements Serializable {
      * Sets whether generated files from a previous execution that are no more
      * created should be removed.
      * <p>
-     * </p>
+     *
      * By default, the odl generated files are preserved.
      *
      * @param clean

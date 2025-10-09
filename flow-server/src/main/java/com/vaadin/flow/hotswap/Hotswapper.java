@@ -126,7 +126,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * Called by hotswap tools when one or more application classes have been
      * updated.
      * <p>
-     * </p>
+     *
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
      * {@link VaadinHotswapper#onClassLoadEvent(VaadinService, Set, boolean)}
@@ -168,7 +168,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * Called by hotswap tools when one or more application resources have been
      * changed.
      * <p>
-     * </p>
+     *
      *
      * @param createdResources
      *            the list of potentially newly created resources. Never
@@ -553,7 +553,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
      * <p>
-     * </p>
+     *
      * The hotswapper is registered only in development mode.
      *
      * @param vaadinService
