@@ -29,7 +29,6 @@ import org.slf4j.LoggerFactory;
  * Default implementation of {@link AccessCheckDecisionResolver} that allow
  * access only if input results are all ALLOW, or a combination of ALLOW and
  * NEUTRAL. In any other case the access is DENIED.
- * <p>
  *
  * <pre>
  * | Results         | Decision |
