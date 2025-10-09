@@ -1,4 +1,4 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 
 class EventHandlers extends PolymerElement {
   static get template() {
@@ -13,7 +13,12 @@ class EventHandlers extends PolymerElement {
           value="{{name}}"
         ></vaadin-text-field>
         <div class="row">
-          <vaadin-combo-box id="statuses" label="Status" items="[[availableStatuses]]" value="{{status}}">
+          <vaadin-combo-box
+            id="statuses"
+            label="Status"
+            items="[[availableStatuses]]"
+            value="{{status}}"
+          >
           </vaadin-combo-box>
         </div>
       </vaadin-vertical-layout>
@@ -21,15 +26,15 @@ class EventHandlers extends PolymerElement {
   }
 
   static get is() {
-    return 'event-handlers';
+    return "event-handlers";
   }
 
   submit() {
-    console.log('Submit clicked');
+    console.log("Submit clicked");
   }
 
   formUpdated() {
-    console.log('Form updated');
+    console.log("Form updated");
   }
 }
 

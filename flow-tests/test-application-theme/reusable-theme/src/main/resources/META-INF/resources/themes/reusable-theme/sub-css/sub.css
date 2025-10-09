@@ -1,11 +1,11 @@
-@import "nested/sun.css";
+@import 'nested/sun.css';
 #sub-component {
-    background: url('../icons/archive.png') left top;
-    width: 10px;
-    height: 10px;
-    display: block;
+  background: url('../icons/archive.png') left top;
+  width: 10px;
+  height: 10px;
+  display: block;
 }
 
 .icon-keyboard {
-    background-image: url('../fortawesome/icons/keyboard.svg');
+  background-image: url('../fortawesome/icons/keyboard.svg');
 }

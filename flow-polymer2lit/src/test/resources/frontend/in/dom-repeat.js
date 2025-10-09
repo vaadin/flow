@@ -1,6 +1,6 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
-import '@vaadin/vaadin-vertical-layout';
-import '@polymer/polymer/lib/elements/dom-repeat.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
+import "@vaadin/vaadin-vertical-layout";
+import "@polymer/polymer/lib/elements/dom-repeat.js";
 
 class DomRepeatTest extends PolymerElement {
   static get template() {
@@ -28,17 +28,17 @@ class DomRepeatTest extends PolymerElement {
         value() {
           return {
             list: [
-              { given: 'Kamil', family: 'Smith' },
-              { given: 'Sally', family: 'Johnson' }
-            ]
+              { given: "Kamil", family: "Smith" },
+              { given: "Sally", family: "Johnson" },
+            ],
           };
-        }
-      }
+        },
+      },
     };
   }
 
   static get is() {
-    return 'dom-repeat-test';
+    return "dom-repeat-test";
   }
 }
 

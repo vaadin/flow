@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
 class BasicBindings extends LitElement {
   render() {
@@ -12,7 +12,7 @@ class BasicBindings extends LitElement {
   }
 
   static get is() {
-    return 'basic-bindings';
+    return "basic-bindings";
   }
 }
 

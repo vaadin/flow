@@ -1,4 +1,4 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
 class ReadyCallback extends LitElement {
   render() {
@@ -14,16 +14,16 @@ class ReadyCallback extends LitElement {
   }
 
   static get is() {
-    return 'ready-callback';
+    return "ready-callback";
   }
 
   firstUpdated(_changedProperties) {
     super.firstUpdated(_changedProperties);
 
-    div = document.createElement('div');
-    div.innerText = 'Created in ready()';
-    this.renderRoot.querySelector('#container').appendChild(div);
-    this.property = 'Value set in ready()';
+    div = document.createElement("div");
+    div.innerText = "Created in ready()";
+    this.renderRoot.querySelector("#container").appendChild(div);
+    this.property = "Value set in ready()";
   }
 }
 

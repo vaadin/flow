@@ -1,10 +1,12 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
 class SubProperties extends LitElement {
   render() {
     return html`
       <div>${this.prop?.sub?.something}</div>
-      <div> Method: ${this.abc(this.prop?.sub?.something, this.prop?.value)} </div>
+      <div>
+        Method: ${this.abc(this.prop?.sub?.something, this.prop?.value)}
+      </div>
       <div .foo="${this.prop?.sub?.something}">maybe with foo</div>
     `;
   }
@@ -14,7 +16,7 @@ class SubProperties extends LitElement {
   }
 
   static get is() {
-    return 'sub-properties';
+    return "sub-properties";
   }
 }
 
