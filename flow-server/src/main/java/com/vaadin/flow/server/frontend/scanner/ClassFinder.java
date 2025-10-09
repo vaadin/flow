@@ -259,7 +259,7 @@ public interface ClassFinder extends Serializable {
      * Determines whether the specified class should be inspected for
      * Vaadin-related resources.
      * <p>
-     * </p>
+     *
      * The default implementation always returns {@code true}, meaning all
      * classes are considered inspectable. Implementations may override this
      * method to provide custom filtering logic.

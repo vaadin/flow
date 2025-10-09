@@ -40,7 +40,6 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  * application if there is no developer provided factory available.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Configuration

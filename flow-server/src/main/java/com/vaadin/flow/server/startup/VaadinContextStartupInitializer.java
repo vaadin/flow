@@ -31,7 +31,6 @@ import com.vaadin.flow.server.VaadinContext;
  * {@link ClassLoaderAwareServletContainerInitializer#onStartup(Set, ServletContext)})</li>
  * </ul>
  *
- * @since
  *
  * @see ClassLoaderAwareServletContainerInitializer
  * @see VaadinServletContextStartupInitializer

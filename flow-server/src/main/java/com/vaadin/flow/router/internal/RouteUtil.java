@@ -374,7 +374,7 @@ public class RouteUtil {
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
      * <p>
-     * </p>
+     *
      * Registry Update rules:
      * <ul>
      * <li>a route is preserved if the class does not have a {@link Route}

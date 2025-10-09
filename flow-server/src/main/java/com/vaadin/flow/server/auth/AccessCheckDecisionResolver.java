@@ -34,16 +34,16 @@ public interface AccessCheckDecisionResolver extends Serializable {
      * Determines if access is granted for a specific navigation context, based
      * on the decisions provided by {@link NavigationAccessChecker}s.
      * <p>
-     * </p>
+     *
      * The decision resolver should grant access or deny it by returning an
      * appropriate {@link AccessCheckResult} object.
      * <p>
-     * </p>
+     *
      * The expected result of the method should be
      * {@link AccessCheckDecision#ALLOW} or {@link AccessCheckDecision#DENY}, or
      * {@link AccessCheckDecision#REJECT}.
      * <p>
-     * </p>
+     *
      * A {@link AccessCheckDecision#NEUTRAL} result does not make because it
      * does not provide meaningful information to
      * {@link NavigationAccessControl} to complete the access check process. For

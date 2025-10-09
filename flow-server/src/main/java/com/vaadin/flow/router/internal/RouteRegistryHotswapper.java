@@ -49,7 +49,7 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
     /**
      * Updates both application registry, to reflect provided class changes.
      * <p>
-     * </p>
+     *
      * For modified route classes, the following changes are taken into account:
      * <ul>
      * <li>{@link Route} annotation removed: the previous route is removed from

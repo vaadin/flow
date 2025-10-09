@@ -31,7 +31,6 @@ import com.vaadin.flow.component.HasElement;
  * {@link #prependComponents(Object, Component...)}.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @param <T>
  *            the type of the displayed items

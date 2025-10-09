@@ -600,7 +600,7 @@ public abstract class VaadinWebSecurity {
      * Sets up the login page URI of the OAuth2 provider on the specified
      * HttpSecurity instance.
      * <p>
-     * </p>
+     *
      * This method also configures a logout success handler that redirects to
      * the application base URL after logout.
      *
@@ -622,12 +622,12 @@ public abstract class VaadinWebSecurity {
      * Sets up the login page URI of the OAuth2 provider and the post logout URI
      * on the specified HttpSecurity instance.
      * <p>
-     * </p>
+     *
      * The post logout redirect uri can be relative or absolute URI or a
      * template. The supported uri template variables are: {baseScheme},
      * {baseHost}, {basePort} and {basePath}.
      * <p>
-     * </p>
+     *
      * NOTE: "{baseUrl}" is also supported, which is the same as
      * "{baseScheme}://{baseHost}{basePort}{basePath}" handler.
      * setPostLogoutRedirectUri("{baseUrl}");
@@ -666,7 +666,7 @@ public abstract class VaadinWebSecurity {
      * Gets a {@code OidcClientInitiatedLogoutSuccessHandler} instance that
      * redirects to the given URL after logout.
      * <p>
-     * </p>
+     *
      * If a {@code ClientRegistrationRepository} bean is not registered in the
      * application context, the method returns {@literal null}.
      *

@@ -21,7 +21,6 @@ import org.apache.maven.plugins.annotations.Mojo;
 /**
  * This is the hidden `vaadin:dance` to clean up the frontend files.
  *
- * @since
  */
 @Mojo(name = "dance", defaultPhase = LifecyclePhase.PRE_CLEAN)
 public class FrontendDanceMojo extends CleanFrontendMojo {
