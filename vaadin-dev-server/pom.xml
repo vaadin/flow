@@ -110,6 +110,17 @@
   <build>
     <plugins>
       <plugin>
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <configuration>
+          <typescript>
+            <excludes>
+              <exclude>src/main/resources/META-INF/frontend/vaadin-dev-tools//**</exclude>
+            </excludes>
+          </typescript>
+        </configuration>
+      </plugin>
+      <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
