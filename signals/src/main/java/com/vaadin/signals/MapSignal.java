@@ -279,6 +279,18 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
         return super.asNode();
     }
 
+    /**
+     * Helper method to convert a map of child node IDs to a map of signal
+     * instances using the provided factory function.
+     *
+     * @param <T>
+     *            the signal type
+     * @param node
+     *            the node data containing the map of child IDs
+     * @param factory
+     *            the factory function to create signal instances from IDs
+     * @return an unmodifiable map of signal instances, not <code>null</code>
+     */
     static <T extends Signal<?>> Map<String, T> children(Data node,
             Function<Id, T> factory) {
         LinkedHashMap<String, T> children = new LinkedHashMap<String, T>();
