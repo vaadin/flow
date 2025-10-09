@@ -470,7 +470,6 @@ public abstract class Component
      * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
      * component.
-     * </p>
      * Make sure to call <code>super.onAttach</code> when overriding this
      * method.
      *

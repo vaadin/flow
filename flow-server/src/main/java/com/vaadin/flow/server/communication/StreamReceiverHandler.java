@@ -326,7 +326,6 @@ public class StreamReceiverHandler implements Serializable {
      * This method takes care of locking the session as needed and does not
      * assume the caller has locked the session. This allows the session to be
      * locked only when needed and not when handling the upload data.
-     * </p>
      *
      * @param session
      *            The session containing the stream variable

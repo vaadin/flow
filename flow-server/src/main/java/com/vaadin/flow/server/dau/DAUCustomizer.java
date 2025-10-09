@@ -24,7 +24,6 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Interface to be implemented to customize Daily Active Users feature.
  * <p>
- * </p>
  * By implementing this interface it is possible to:
  * <ul>
  * <li>provide an user identity supplier to allow the system to count a user

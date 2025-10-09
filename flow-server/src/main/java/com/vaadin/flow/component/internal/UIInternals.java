@@ -971,7 +971,6 @@ public class UIInternals implements Serializable {
      * <p>
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
-     * </p>
      *
      * @return the VaadinSession to which the related UI is attached
      */

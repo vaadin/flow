@@ -28,7 +28,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * parsing.
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
- * </p>
  *
  * @author Vaadin Ltd
  * @since 1.0

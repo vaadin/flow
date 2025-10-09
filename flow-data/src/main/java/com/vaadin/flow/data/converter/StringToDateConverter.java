@@ -28,10 +28,8 @@ import com.vaadin.flow.data.binder.ValueContext;
  * the given locale and {@link DateFormat} for formatting and parsing.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
- * </p>
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
- * </p>
  *
  * @author Vaadin Ltd
  * @since 1.0
