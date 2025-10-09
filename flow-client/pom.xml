@@ -317,6 +317,7 @@
             <excludes>
               <exclude>src/main/java/com/vaadin/client/gwt</exclude>
               <exclude>src/main/resources/com/vaadin/flow/linker/ClientEngineSingleScriptTemplate.js</exclude>
+              <exclude>src/main/frontend/FlowClient.js</exclude>
             </excludes>
           </typescript>
         </configuration>
