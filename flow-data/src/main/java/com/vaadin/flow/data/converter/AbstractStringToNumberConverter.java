@@ -30,7 +30,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * space.
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
- * </p>
  *
  * @param <T>
  *            the converter number type

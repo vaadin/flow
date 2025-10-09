@@ -44,7 +44,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Generate default files for react-router if missing from the frontend folder.
  * <p>
- * </p>
  * The generated files are <code>Flow.tsx</code> and <code>routes.tsx</code>.
  * Where <code>Flow.tsx</code> is for communication between the Flow and the
  * router and contains the server side route target

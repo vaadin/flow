@@ -22,15 +22,12 @@ import java.util.function.Predicate;
 /**
  * Checks if a user has access to a given route path.
  * <p>
- * </p>
  * The path to check is relative to the Vaadin application and does not contain
  * any container specific details such as context or servlet path.
  * <p>
- * </p>
  * In addition, the path is never {@literal null} and never starts with a "/"
  * character.
  * <p>
- * </p>
  * Implementors of this interface are meant to be used in combination with
  * {@link RoutePathAccessChecker}.
  *

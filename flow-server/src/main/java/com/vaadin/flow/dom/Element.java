@@ -320,7 +320,6 @@ public class Element extends Node<Element> {
      * This is a convenience method to register a {@link StreamResource}
      * instance into the session and use the registered resource URI as an
      * element attribute.
-     * <p>
      *
      * @see #setAttribute(String, String)
      *
@@ -356,7 +355,6 @@ public class Element extends Node<Element> {
      * This is a convenience method to register a {@link ElementRequestHandler}
      * instance into the session and use the registered resource URI as an
      * element attribute.
-     * <p>
      *
      * @see #setAttribute(String, String)
      *
