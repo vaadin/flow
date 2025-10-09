@@ -1,2 +1,4 @@
 /* Fake Aura theme css for tests. When this file is served, it proves classpath META-INF resource lookup for @vaadin/aura works. */
-:root { --fake-aura-theme-loaded: 1; }
+:root {
+  --fake-aura-theme-loaded: 1;
+}
