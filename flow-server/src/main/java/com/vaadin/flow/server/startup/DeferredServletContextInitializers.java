@@ -34,7 +34,6 @@ import com.vaadin.flow.server.VaadinContext;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 class DeferredServletContextInitializers {
@@ -45,7 +44,6 @@ class DeferredServletContextInitializers {
      * is initialized with {@link Lookup}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     interface Initializer {

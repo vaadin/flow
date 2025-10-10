@@ -37,13 +37,12 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * To configure Flow navigation access control, a Spring bean on type
  * {@link NavigationAccessControlConfigurer} should be defined.
  * <p>
- * </p>
+ *
  * In Spring Boot applications, a default
  * {@link NavigationAccessControlConfigurer} bean is provided. It activates
  * {@link AnnotatedViewAccessChecker}, but it disables the
  * {@link NavigationAccessControl}, for backward compatibility.
  * <p>
- * </p>
  *
  * Default settings can be overridden by defining a custom
  * {@link NavigationAccessControlConfigurer} bean.
@@ -59,7 +58,7 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * </pre>
  *
  * <p>
- * </p>
+ *
  * {@link NavigationAccessControl} bean can be configured by:
  *
  * <ul>
@@ -69,7 +68,7 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
  * <li>completely disable access control</li>
  * </ul>
  * <p>
- * </p>
+ *
  * The {@link NavigationAccessControl} will automatically be disabled if no
  * navigation access checkers are provided.
  *

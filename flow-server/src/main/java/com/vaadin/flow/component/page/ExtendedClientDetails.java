@@ -262,13 +262,11 @@ public class ExtendedClientDetails implements Serializable {
      * <p>
      * You can use this to figure out which TimeZones the user could actually be
      * in by calling {@link TimeZone#getAvailableIDs(int)}.
-     * </p>
      * <p>
      * If {@link #getRawTimezoneOffset()} and {@link #getTimezoneOffset()}
      * returns the same value, the browser is either in a zone that does not
      * currently have daylight saving time, or in a zone that never has daylight
      * saving time.
-     * </p>
      *
      * @return timezone offset in milliseconds excluding DST, 0 if not available
      */

@@ -28,11 +28,9 @@ import com.vaadin.flow.data.binder.ValueContext;
  * {@link StringToBooleanConverter#StringToBooleanConverter(String, String, String)}.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
- * </p>
  * <p>
  * For language-dependent representation, subclasses should overwrite
  * {@link #getFalseString(Locale)} and {@link #getTrueString(Locale)}
- * </p>
  *
  * @author Vaadin Ltd
  * @since 1.0

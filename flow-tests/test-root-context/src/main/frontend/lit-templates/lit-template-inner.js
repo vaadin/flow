@@ -1,11 +1,8 @@
-import {html, LitElement} from 'lit';
+import { html, LitElement } from 'lit';
 
 class TemplateInner extends LitElement {
-
   render() {
-    return html`
-        <div>Hello template inner</div>
-    `;
+    return html` <div>Hello template inner</div> `;
   }
 }
 

@@ -1,4 +1,4 @@
-import {Router} from '@vaadin/router';
+import { Router } from '@vaadin/router';
 
 const createNavigationLink = (text, link) => {
   const aLink = document.createElement('a');
@@ -6,7 +6,7 @@ const createNavigationLink = (text, link) => {
   aLink.textContent = text;
   aLink.style.margin = '10px';
   return aLink;
-}
+};
 
 export function loadRouter(flow) {
   //------- Configure Router

@@ -965,7 +965,7 @@ public class PolymerTemplateTest extends HasCurrentService {
         Object[] params = executionParams.get(1);
         ArrayNode properties = (ArrayNode) params[1];
         Assert.assertEquals(1, properties.size());
-        Assert.assertEquals("title", properties.get(0).asText());
+        Assert.assertEquals("title", properties.get(0).asString());
     }
 
     @Test
@@ -986,8 +986,8 @@ public class PolymerTemplateTest extends HasCurrentService {
         Assert.assertEquals(2, properties.size());
 
         Set<String> props = new HashSet<>();
-        props.add(properties.get(0).asText());
-        props.add(properties.get(1).asText());
+        props.add(properties.get(0).asString());
+        props.add(properties.get(1).asString());
         // all model properties except 'list' which has no getter
         Assert.assertTrue(props.contains("message"));
         Assert.assertTrue(props.contains("title"));
@@ -1110,16 +1110,16 @@ public class PolymerTemplateTest extends HasCurrentService {
             String payload) {
         JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
-        Assert.assertEquals(type, object.get(NodeProperties.TYPE).asText());
+        Assert.assertEquals(type, object.get(NodeProperties.TYPE).asString());
         Assert.assertEquals(payload,
-                object.get(NodeProperties.PAYLOAD).asText());
+                object.get(NodeProperties.PAYLOAD).asString());
     }
 
     private void assertTemplateInTempalte(StateNode node) {
         JsonNode object = (JsonNode) node.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertEquals(NodeProperties.TEMPLATE_IN_TEMPLATE,
-                object.get(NodeProperties.TYPE).asText());
+                object.get(NodeProperties.TYPE).asString());
 
         Assert.assertTrue(
                 object.get(NodeProperties.PAYLOAD) instanceof ArrayNode);

@@ -150,6 +150,8 @@ public class PublicResourcesCssLiveUpdaterTest {
         ApplicationConfiguration appConfig = mock(
                 ApplicationConfiguration.class);
         when(appConfig.getProjectFolder()).thenReturn(project);
+        when(appConfig.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
         when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
 
@@ -220,6 +222,8 @@ public class PublicResourcesCssLiveUpdaterTest {
         ApplicationConfiguration appConfig = mock(
                 ApplicationConfiguration.class);
         when(appConfig.getProjectFolder()).thenReturn(project);
+        when(appConfig.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
         when(appConfig.isProductionMode()).thenReturn(false);
         context.setAttribute(ApplicationConfiguration.class, appConfig);
 

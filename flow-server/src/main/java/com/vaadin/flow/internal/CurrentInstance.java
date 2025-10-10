@@ -42,11 +42,9 @@ import com.vaadin.flow.server.VaadinSession;
  * other references to the object.
  * <p>
  * Currently the framework uses the following instances:
- * </p>
  * <p>
  * {@link VaadinRequest}, {@link VaadinResponse}, {@link UI},
  * {@link VaadinService}, {@link VaadinSession}.
- * </p>
  *
  * <p>
  * For internal use only. May be renamed or removed in a future release.

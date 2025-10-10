@@ -1,9 +1,5 @@
 import { ServerMessage } from './vaadin-dev-tools';
-import {
-  preTrialStartFailed,
-  showPreTrialSplashScreen,
-  updateLicenseDownloadStatus
-} from './pre-trial-splash-screen';
+import { preTrialStartFailed, showPreTrialSplashScreen, updateLicenseDownloadStatus } from './pre-trial-splash-screen';
 
 const noLicenseFallbackTimeout = 1000;
 
@@ -66,9 +62,9 @@ const showNoLicenseFallback = (element: Element, productAndMessage: ProductAndMe
   const htmlMessage = productAndMessage.messageHtml
     ? productAndMessage.messageHtml
     : `${productAndMessage.message} <p>Component: ${productAndMessage.product.name} ${productAndMessage.product.version}</p>`.replace(
-      /https:([^ ]*)/g,
-      "<a href='https:$1'>https:$1</a>"
-    );
+        /https:([^ ]*)/g,
+        "<a href='https:$1'>https:$1</a>"
+      );
 
   if (element.isConnected) {
     element.outerHTML = `<no-license style="display:flex;align-items:center;text-align:center;justify-content:center;"><div>${htmlMessage}</div></no-license>`;

@@ -296,6 +296,8 @@ public class RouteUtil {
      * {@link Route} or {@link RouteAlias} annotation. Also handles non route
      * targets with {@link ParentLayout}.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            navigation target to get top most parent for
      * @param path
@@ -374,7 +376,7 @@ public class RouteUtil {
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
      * <p>
-     * </p>
+     *
      * Registry Update rules:
      * <ul>
      * <li>a route is preserved if the class does not have a {@link Route}

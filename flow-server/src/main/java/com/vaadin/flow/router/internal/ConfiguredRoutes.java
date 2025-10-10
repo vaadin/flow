@@ -278,6 +278,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Make a copy of the target and route models mapping.
      *
+     * @param mutable
+     *            whether the copied route models should be mutable
      * @return a copy of the target and route models mapping.
      */
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(

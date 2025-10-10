@@ -53,7 +53,8 @@ public class MessageDigestUtil {
      *
      * @param string
      *            the string to hash
-     *
+     * @param charset
+     *            the charset to use for encoding the string
      * @return 32 bytes making up the hash
      */
     public static byte[] sha256(String string, Charset charset) {
@@ -68,7 +69,8 @@ public class MessageDigestUtil {
      *            the string to hash
      * @param salt
      *            salt to be added into hash calculation
-     *
+     * @param charset
+     *            the charset to use for encoding the string
      * @return 32 bytes making up the hash
      */
     public static byte[] sha256(String string, byte[] salt, Charset charset) {

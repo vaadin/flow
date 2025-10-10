@@ -33,6 +33,8 @@ public interface FileFactory extends Serializable {
      * @param uploadMetadata
      *            metadata for upload that should get a file created
      * @return {@link File} that should be used
+     * @throws IOException
+     *             if an I/O error occurs
      */
     File createFile(UploadMetadata uploadMetadata) throws IOException;
 }

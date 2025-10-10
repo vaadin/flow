@@ -1,8 +1,8 @@
 :host {
-    background: rgb(173, 216, 230);
+  background: rgb(173, 216, 230);
 }
 
 body {
   /* This must not be applied to the document body */
-    background: red !important;
+  background: red !important;
 }

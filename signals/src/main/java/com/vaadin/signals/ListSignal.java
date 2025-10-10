@@ -203,6 +203,18 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
         return insertAt(value, ListPosition.first());
     }
 
+    /**
+     * Helper method to convert a list of child node IDs to a list of signal
+     * instances using the provided factory function.
+     *
+     * @param <T>
+     *            the signal type
+     * @param node
+     *            the node data containing the list of child IDs
+     * @param factory
+     *            the factory function to create signal instances from IDs
+     * @return a list of signal instances, not <code>null</code>
+     */
     static <T extends Signal<?>> List<T> children(Data node,
             Function<Id, T> factory) {
         return node.listChildren().stream().map(factory).toList();

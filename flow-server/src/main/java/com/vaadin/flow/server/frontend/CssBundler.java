@@ -37,7 +37,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 /**
  * Utility methods to handle application theme CSS content.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public class CssBundler {
@@ -83,12 +82,12 @@ public class CssBundler {
     /**
      * Recurse over CSS import and inlines all ot them into a single CSS block.
      * <p>
-     * </p>
+     *
      * Unresolvable imports are put on the top of the resulting code, because
      * {@code @import} statements must come before any other CSS instruction,
      * otherwise the import is ignored by the browser.
      * <p>
-     * </p>
+     *
      * Along with import resolution and code inline, URLs
      * ({@code url('image.png')} referencing theme resources or assets are
      * rewritten to be correctly served by Vaadin at runtime.

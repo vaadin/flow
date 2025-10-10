@@ -23,7 +23,6 @@ import java.io.Serializable;
  * <p>
  * Use {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}
  * to customize.
- * </p>
  * <p>
  * The defaults defined in this class are:
  * <ul>

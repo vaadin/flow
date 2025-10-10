@@ -61,7 +61,6 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see BundleLitParser
  */

@@ -100,7 +100,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
-     * </p>
+     *
      * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
      * or {@link Customizer#withDefaults()} to accept the default values.
      *

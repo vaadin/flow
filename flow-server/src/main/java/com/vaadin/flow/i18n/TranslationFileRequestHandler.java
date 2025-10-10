@@ -205,7 +205,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
                                 String[] keys = new String[keysNode.size()];
 
                                 for (int i = 0; i < keysNode.size(); i++) {
-                                    keys[i] = keysNode.get(i).asText();
+                                    keys[i] = keysNode.get(i).asString();
                                 }
 
                                 chunkData.put(chunkName, keys);

@@ -39,6 +39,6 @@ public class JavaScriptInvocationTest {
         Assert.assertEquals(2, deserialized.getParameters().size());
         Assert.assertEquals("string", deserialized.getParameters().get(0));
         Assert.assertEquals("jsonString",
-                ((JsonNode) deserialized.getParameters().get(1)).asText());
+                ((JsonNode) deserialized.getParameters().get(1)).asString());
     }
 }

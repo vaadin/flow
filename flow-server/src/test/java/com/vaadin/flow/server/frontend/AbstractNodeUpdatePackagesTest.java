@@ -308,9 +308,9 @@ public abstract class AbstractNodeUpdatePackagesTest
         Assert.assertEquals(
                 "Vaadin dependency should be updated to latest DevDependency",
                 version, json.get(VAADIN_DEP_KEY).get(DEV_DEPENDENCIES).get(key)
-                        .textValue());
+                        .asString());
         Assert.assertEquals("DevDependency should stay the same as it was",
-                version, json.get(DEV_DEPENDENCIES).get(key).textValue());
+                version, json.get(DEV_DEPENDENCIES).get(key).asString());
     }
 
     @Test
@@ -467,7 +467,7 @@ public abstract class AbstractNodeUpdatePackagesTest
 
         ObjectNode newDependencies = JacksonUtils.createObjectNode();
         dependencyKeys.forEach(key -> newDependencies.put(key,
-                dependencies.get(key).textValue()));
+                dependencies.get(key).asString()));
 
         json.set(DEPENDENCIES, newDependencies);
 
@@ -615,7 +615,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         JsonNode dependencies = getPackageJson(packageJson).get(DEPENDENCIES);
         Assert.assertTrue(dependencies.has("@custom/timer"));
         Assert.assertEquals("3.3.0",
-                dependencies.get("@custom/timer").textValue());
+                dependencies.get("@custom/timer").asString());
     }
 
     @Test
@@ -671,7 +671,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         for (Map.Entry<String, String> entry : packages.entrySet()) {
             Assert.assertTrue(dependencies.has(entry.getKey()));
             Assert.assertEquals(entry.getValue(),
-                    dependencies.get(entry.getKey()).textValue());
+                    dependencies.get(entry.getKey()).asString());
         }
 
         packages.clear();
@@ -687,7 +687,7 @@ public abstract class AbstractNodeUpdatePackagesTest
         for (Map.Entry<String, String> entry : packages.entrySet()) {
             Assert.assertTrue(dependencies.has(entry.getKey()));
             Assert.assertEquals(entry.getValue(),
-                    dependencies.get(entry.getKey()).textValue());
+                    dependencies.get(entry.getKey()).asString());
         }
     }
 

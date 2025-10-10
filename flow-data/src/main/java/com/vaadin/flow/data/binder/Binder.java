@@ -329,7 +329,6 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * Once set, the value of the field that binding uses will be compared
          * with the initial value for hasChanged.
-         * </p>
          *
          * @return the predicate to use for equality comparison
          */
@@ -1007,7 +1006,6 @@ public class Binder<BEAN> implements Serializable {
          * be compared with its initial value. If the value of the field is set
          * back to its initial value, it will not be considered as having
          * uncommitted changes.
-         * </p>
          *
          * @param equalityPredicate
          *            the predicate to use for equality comparison

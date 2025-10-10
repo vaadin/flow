@@ -14,51 +14,50 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>test-embedding</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-embedding-theme-variant</artifactId>
+  <packaging>war</packaging>
+  <name>Flow Embedding, theme variant</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-lumo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- This module is mapped to default web context -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <version>${jetty.version}</version>
+      </plugin>
+
+      <plugin>
         <groupId>com.vaadin</groupId>
-        <artifactId>test-embedding</artifactId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-test-embedding-theme-variant</artifactId>
-    <name>Flow Embedding, theme variant</name>
-    <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-lumo</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <!-- This module is mapped to default web context -->
-            <plugin>
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-maven-plugin</artifactId>
-                <version>${jetty.version}</version>
-            </plugin>
-
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+              <goal>build-frontend</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>
