@@ -1,2 +1,2 @@
 org.springframework.boot.SpringApplicationRunListener=com.vaadin.flow.spring.DevModeBrowserLauncher
-org.springframework.boot.env.EnvironmentPostProcessor=com.vaadin.flow.spring.SpringDevToolsPortHandler
+org.springframework.boot.EnvironmentPostProcessor=com.vaadin.flow.spring.SpringDevToolsPortHandler
