@@ -271,4 +271,79 @@ public class DomEvent extends EventObject {
                     true));
         }
     }
+
+    /**
+     * Gets the {@code event.detail} property from the event, deserialized as
+     * the given type. This method supports arbitrary bean types and Java
+     * records through Jackson deserialization.
+     * <p>
+     * The {@code event.detail} property must have been included in the event
+     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * record RgbColor(int r, int g, int b) {
+     * }
+     *
+     * element.addEventListener("color-change", e -&gt; {
+     *     RgbColor color = e.getEventDetail(RgbColor.class);
+     *     System.out.println("R: " + color.r() + ", G: " + color.g() + ", B: "
+     *             + color.b());
+     * }).addEventDetail();
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param type
+     *            the class to deserialize the event detail to, not
+     *            <code>null</code>
+     * @return the event detail deserialized as the given type, or
+     *         <code>null</code> if event detail is not present or is null
+     * @see DomListenerRegistration#addEventDetail()
+     */
+    public <T> T getEventDetail(Class<T> type) {
+        JsonNode detailNode = eventData.get("event.detail");
+        if (detailNode == null || detailNode.isNull()) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(detailNode, type);
+    }
+
+    /**
+     * Gets the {@code event.detail} property from the event, deserialized as
+     * the type specified by the {@link TypeReference}. This method supports
+     * generic types such as {@code List<MyBean>} and
+     * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
+     * <p>
+     * The {@code event.detail} property must have been included in the event
+     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * element.addEventListener("list-change", e -&gt; {
+     *     List&lt;String&gt; items = e
+     *             .getEventDetail(new TypeReference&lt;List&lt;String&gt;&gt;() {
+     *             });
+     *     System.out.println("Items: " + items);
+     * }).addEventDetail();
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the event detail deserialized as the given type, or
+     *         <code>null</code> if event detail is not present or is null
+     * @see DomListenerRegistration#addEventDetail()
+     */
+    public <T> T getEventDetail(TypeReference<T> typeReference) {
+        JsonNode detailNode = eventData.get("event.detail");
+        if (detailNode == null || detailNode.isNull()) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(detailNode, typeReference);
+    }
 }
