@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.hotswap;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,6 +34,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +60,7 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * Entry point for application classes hot reloads.
@@ -184,6 +188,49 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.trace(
                     "Created resources: {}, modified resources: {}, deletedResources: {}.",
                     createdResources, modifiedResources, deletedResources);
+        }
+
+        if (anyMatches(".*\\.css", createdResources, modifiedResources,
+                deletedResources)) {
+            if (liveReload == null) {
+                LOGGER.debug(
+                        "A change to one or more CSS resources requires a browser page refresh, but BrowserLiveReload is not available. "
+                                + "Please reload the browser page manually to make changes effective.");
+            } else {
+                LOGGER.debug(
+                        "Triggering browser live reload because of CSS resources changes");
+
+                String buildFolder = vaadinService.getDeploymentConfiguration()
+                        .getBuildFolder();
+                File projectFolder = vaadinService.getDeploymentConfiguration()
+                        .getProjectFolder();
+
+                String pathToClasses = FrontendUtils
+                        .getUnixPath(projectFolder.toPath().resolve(
+                                Paths.get(buildFolder, "classes").normalize()));
+
+                List<File> publicStaticResourcesFolders = Stream
+                        .of("META-INF/resources", "resources", "static",
+                                "public")
+                        .map(path -> new File(pathToClasses, path))
+                        .filter(File::exists).toList();
+
+                Arrays.stream(modifiedResources).forEach(resource -> {
+                    String resourcePath = resource.getPath();
+                    for (File staticResourcesFolder : publicStaticResourcesFolders) {
+                        String staticResourcesPath = FrontendUtils
+                                .getUnixPath(staticResourcesFolder.toPath());
+                        if (resourcePath.startsWith(staticResourcesPath)) {
+                            String path = resourcePath
+                                    .replace(staticResourcesPath, "");
+                            if (path.startsWith("/")) {
+                                path = path.substring(1);
+                            }
+                            liveReload.update(path, null);
+                        }
+                    }
+                });
+            }
         }
 
         if (anyMatches(".*/vaadin-i18n/.*\\.properties", createdResources,

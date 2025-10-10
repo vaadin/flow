@@ -687,7 +687,14 @@ export class VaadinDevTools extends LitElement {
         styleTag.textContent = content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       } else {
-        onReload();
+        let linkTag = document.head.querySelector(`link[data-file-path='${path}']`);
+        if (linkTag) {
+          const href = linkTag.getAttribute('href').split('?')[0];
+          linkTag.setAttribute('href', `${href}?v=${new Date().getTime()}`);
+          document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+        } else {
+          onReload();
+        }
       }
     };
 
