@@ -19,7 +19,7 @@
  */
 
 import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync, globSync } from 'fs';
-import { resolve, basename, relative, extname } from 'path';
+import { resolve, basename, relative, extname, join } from 'path';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
@@ -143,7 +143,9 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     Object.keys(copyRules).forEach((copyRule) => {
       // Glob doesn't work with windows path separator so replacing it here.
       const nodeSources = resolve('node_modules/', module, copyRule).replace(/\\/g, '/');
-      const files = globSync(nodeSources, { exclude: (name) => statSync(name).isDirectory() });
+      const files = globSync(nodeSources, { withFileTypes: true })
+        .filter(dirent => !dirent.isDirectory())
+        .map(dirent => join(dirent.path, dirent.name));
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
       mkdirSync(targetFolder, {
