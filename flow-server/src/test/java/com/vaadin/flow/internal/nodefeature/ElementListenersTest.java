@@ -800,8 +800,7 @@ public class ElementListenersTest
         eventData.put("event.detail.g", 128);
         eventData.put("event.detail.b", 64);
 
-        listenerMap.fireEvent(
-                new DomEvent(element, "color-change", eventData));
+        listenerMap.fireEvent(new DomEvent(element, "color-change", eventData));
 
         // Verify the data was captured correctly
         RgbColor result = capturedColor.get();
