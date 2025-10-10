@@ -39,7 +39,6 @@ public class DevBundleUtils {
 
     /**
      * Finds the given file inside the current development bundle.
-     * <p>
      *
      * @param projectDir
      *            the project root folder

@@ -175,7 +175,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * Sets the Flow login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
-     * <p>
      *
      * @param loginView
      *            the Flow view to use as login view
@@ -202,7 +201,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * Sets the frontend login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
-     * <p>
      *
      * @param loginUrl
      *            the frontend view to use as login view

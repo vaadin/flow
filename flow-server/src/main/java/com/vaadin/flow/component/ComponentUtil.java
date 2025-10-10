@@ -70,7 +70,6 @@ public class ComponentUtil {
      * Registers a component class with a specific HTML tag. This mapping is
      * maintained in a static map and is used primarily during development mode
      * for various component operations like rendering and event handling.
-     * <p>
      *
      * @param tag
      *            The HTML tag associated with the component class.

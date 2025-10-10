@@ -45,7 +45,6 @@ public interface FrontendDependenciesScanner extends Serializable {
         /**
          * Produces scanner implementation based on {@code allDependenciesScan}
          * value.
-         * <p>
          *
          * @param allDependenciesScan
          *            if {@code true} then full classpath scanning strategy is
