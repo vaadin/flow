@@ -200,12 +200,92 @@ public class ExecJavaScriptView extends AbstractDivView {
                             nested);
                 });
 
+        NativeButton returnBeanButton2 = createButton("Return Bean",
+                "returnBeanButton2", e -> {
+                    // Test @ClientCallable returning a bean
+                    getElement().executeJs(
+                            """
+                                    this.$server.returnSimpleBean().then(bean => {
+                                        const result = document.createElement('div');
+                                        result.id = 'returnBeanResult';
+                                        result.textContent = `Returned Bean: name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+                                        document.body.appendChild(result);
+                                        const status = document.createElement('div');
+                                        status.id = 'returnBeanStatus';
+                                        status.textContent = 'Bean returned successfully';
+                                        document.body.appendChild(status);
+                                    });
+                                    """);
+                });
+
+        NativeButton returnListButton2 = createButton("Return List",
+                "returnListButton2", e -> {
+                    // Test @ClientCallable returning a list
+                    getElement().executeJs(
+                            """
+                                    this.$server.returnBeanList().then(beanList => {
+                                        let text = 'Returned List: ';
+                                        for (let i = 0; i < beanList.length; i++) {
+                                            const bean = beanList[i];
+                                            text += `[${i}]: name=${bean.name}, value=${bean.value}, active=${bean.active}`;
+                                            if (i < beanList.length - 1) text += ' | ';
+                                        }
+                                        const result = document.createElement('div');
+                                        result.id = 'returnListResult';
+                                        result.textContent = text;
+                                        document.body.appendChild(result);
+                                        const status = document.createElement('div');
+                                        status.id = 'returnListStatus';
+                                        status.textContent = 'List returned successfully';
+                                        document.body.appendChild(status);
+                                    });
+                                    """);
+                });
+
+        NativeButton returnNestedButton2 = createButton("Return Nested",
+                "returnNestedButton2", e -> {
+                    // Test @ClientCallable returning a nested bean
+                    getElement().executeJs(
+                            """
+                                    this.$server.returnNestedBean().then(nested => {
+                                        const result = document.createElement('div');
+                                        result.id = 'returnNestedResult';
+                                        result.textContent = `Returned Nested: title=${nested.title}, simple.name=${nested.simple.name}, simple.value=${nested.simple.value}, simple.active=${nested.simple.active}`;
+                                        document.body.appendChild(result);
+                                        const status = document.createElement('div');
+                                        status.id = 'returnNestedStatus';
+                                        status.textContent = 'Nested bean returned successfully';
+                                        document.body.appendChild(status);
+                                    });
+                                    """);
+                });
+
+        NativeButton returnIntegerListButton = createButton(
+                "Return Integer List", "returnIntegerListButton", e -> {
+                    // Test @ClientCallable returning an integer list
+                    getElement().executeJs(
+                            """
+                                    this.$server.returnIntegerList().then(intList => {
+                                        const result = document.createElement('div');
+                                        result.id = 'returnIntegerListResult';
+                                        result.textContent = `Returned Integer List: ${intList.join(', ')}`;
+                                        document.body.appendChild(result);
+                                        const status = document.createElement('div');
+                                        status.id = 'returnIntegerListStatus';
+                                        status.textContent = 'Integer list returned successfully';
+                                        document.body.appendChild(status);
+                                    });
+                                    """);
+                });
+
         add(alertButton, focusButton, swapText, logButton, createElementButton,
                 elementAwaitButton, pageAwaitButton, beanButton,
                 returnBeanButton, listButton, returnListButton, mapButton,
                 returnMapButton, componentArrayButton, beanWithComponentButton,
                 clientCallableBeanButton, clientCallableListButton,
-                clientCallableNestedButton);
+                clientCallableNestedButton, returnBeanButton2,
+                returnListButton2, returnNestedButton2,
+                returnIntegerListButton);
     }
 
     private void testBeanSerialization() {
@@ -436,6 +516,29 @@ public class ExecJavaScriptView extends AbstractDivView {
         status.setId("clientCallableNestedStatus");
         status.setText("ClientCallable nested bean handled");
         add(status);
+    }
+
+    @ClientCallable
+    public SimpleBean returnSimpleBean() {
+        return new SimpleBean("ReturnedBean", 777, true);
+    }
+
+    @ClientCallable
+    public List<SimpleBean> returnBeanList() {
+        return Arrays.asList(new SimpleBean("ListItem1", 111, true),
+                new SimpleBean("ListItem2", 222, false),
+                new SimpleBean("ListItem3", 333, true));
+    }
+
+    @ClientCallable
+    public NestedBean returnNestedBean() {
+        return new NestedBean("ReturnedNested",
+                new SimpleBean("ReturnedInner", 999, false));
+    }
+
+    @ClientCallable
+    public List<Integer> returnIntegerList() {
+        return Arrays.asList(100, 200, 300);
     }
 
     public static class SimpleBean {
