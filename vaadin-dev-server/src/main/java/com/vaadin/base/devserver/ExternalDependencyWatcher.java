@@ -36,6 +36,12 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+/**
+ * Watches external dependency folders for changes and copies modified files to
+ * the JAR frontend resources folder.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class ExternalDependencyWatcher implements Closeable {
 
     final private static Set<FileWatcher> watchers = new HashSet<>();

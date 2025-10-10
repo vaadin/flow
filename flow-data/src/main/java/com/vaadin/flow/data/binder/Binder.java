@@ -1882,6 +1882,9 @@ public class Binder<BEAN> implements Serializable {
      * converter to execute its logic until the {@code setIdentity()} method is
      * called. Once the method is called the class changes its behavior to the
      * same as {@link Converter#identity()} behavior.
+     *
+     * @param <FIELDVALUE>
+     *            the field value type
      */
     private static class ConverterDelegate<FIELDVALUE>
             implements Converter<FIELDVALUE, FIELDVALUE> {
@@ -2502,7 +2505,6 @@ public class Binder<BEAN> implements Serializable {
      * If no bean is currently associated with this binder
      * ({@link #setBean(Object)} has not been called before invoking this
      * method), the bound fields will be cleared.
-     * <p>
      *
      * @see #setBean(Object)
      * @see #readBean(Object)
@@ -3137,7 +3139,6 @@ public class Binder<BEAN> implements Serializable {
      * Validates the {@code bean} using validators added using
      * {@link #withValidator(Validator)} and returns the result of the
      * validation as a list of validation results.
-     * <p>
      *
      * @see #withValidator(Validator)
      *

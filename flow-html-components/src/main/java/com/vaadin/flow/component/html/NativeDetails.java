@@ -230,7 +230,7 @@ public class NativeDetails extends HtmlComponent
 
         /**
          * ToggleEvent base constructor.
-         * <p>
+         *
          * Note: This event is always triggered on client side. Resulting in
          * {@code fromClient} to be always {@code true}.
          *

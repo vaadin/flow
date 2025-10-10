@@ -409,6 +409,8 @@ public class RequestUtil {
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
+     * @param path
+     *            the path to prepend the url mapping to
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
      */

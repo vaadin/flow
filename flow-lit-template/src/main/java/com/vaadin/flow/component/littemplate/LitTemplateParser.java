@@ -23,10 +23,10 @@ import com.vaadin.flow.server.VaadinService;
 
 /**
  * Lit template content parser.
- * <p>
+ *
  * It returns a JSOUP element representing the content of template for the given
  * template class.
- * <p>
+ *
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see LitTemplateParserImpl
@@ -39,7 +39,7 @@ public interface LitTemplateParser {
 
     /**
      * Lit template parser factory.
-     * <p>
+     *
      * To be able to create a parser which can be provided as SPI use
      * {@link Instantiator} to create the factory and then get a parser from it:
      *
@@ -50,7 +50,6 @@ public interface LitTemplateParser {
      * LitTemplateParser parser = factory.createParser();
      * </code>
      * </pre>
-     * <p>
      *
      * @author Vaadin Ltd
      * @see LitTemplateParser
@@ -70,7 +69,7 @@ public interface LitTemplateParser {
 
     /**
      * Wrapper for the parsing result.
-     * <p>
+     *
      * The data contains path uri where the template is declared and its content
      * as an {@link Element} instance.
      *

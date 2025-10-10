@@ -166,6 +166,12 @@ public abstract class VaadinWebSecurity {
      * <p>
      * {@link HttpSecurity} configuration can be customized by overriding
      * {@link VaadinWebSecurity#configure(HttpSecurity)}.
+     *
+     * @param http
+     *            the {@link HttpSecurity} to configure
+     * @return the configured security filter chain
+     * @throws Exception
+     *             if an error occurs during configuration
      */
     @Bean(name = "VaadinSecurityFilterChainBean")
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -284,6 +290,8 @@ public abstract class VaadinWebSecurity {
      * {@link VaadinWebSecurity#configure(WebSecurity)}
      * <p>
      * Default no {@link WebSecurity} customization is performed.
+     *
+     * @return the web security customizer
      */
     @Bean(name = "VaadinWebSecurityCustomizerBean")
     public WebSecurityCustomizer webSecurityCustomizer() {
