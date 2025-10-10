@@ -1222,6 +1222,7 @@ public abstract class VaadinService implements Serializable {
                                 .getSessionLockCheckStrategy()
                         : SessionLockCheckStrategy.THROW;
         assert sessionLockCheckStrategy != null;
+        session.applyLockStrategy(sessionLockCheckStrategy);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
