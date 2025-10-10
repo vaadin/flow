@@ -726,8 +726,8 @@ public class ElementListenersTest
     public void testRemoveEventData() {
         // Test that removeEventData removes a specific expression
         DomListenerRegistration registration = ns.add("click", noOp);
-        registration.addEventData("event.clientX")
-                .addEventData("event.clientY").addEventData("event.button");
+        registration.addEventData("event.clientX").addEventData("event.clientY")
+                .addEventData("event.button");
 
         Set<String> expressions = getExpressions("click");
         Assert.assertEquals("Should have 3 expressions", 3, expressions.size());
