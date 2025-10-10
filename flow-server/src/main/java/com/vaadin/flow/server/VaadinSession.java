@@ -147,6 +147,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         resourceRegistry = createStreamResourceRegistry();
     }
 
+    final protected void applyLockStrategy(SessionLockCheckStrategy strategy) {
+        this.sessionLockCheckStrategy = Objects.requireNonNull(strategy);
+    }
+
     /**
      * Creates the StreamResourceRegistry for this session.
      *
