@@ -22,8 +22,10 @@ import java.io.Serializable;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @param <U> the type of the first component
- * @param <V> the type of the second component
+ * @param <U>
+ *            the type of the first component
+ * @param <V>
+ *            the type of the second component
  * @author Vaadin Ltd
  * @since 1.0
  */

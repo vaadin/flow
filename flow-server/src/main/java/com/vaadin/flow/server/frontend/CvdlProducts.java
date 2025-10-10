@@ -38,7 +38,8 @@ public class CvdlProducts {
      *            the node modules folder
      * @param npmModule
      *            the name of the npm module to check
-     * @return product information if the npm module is a commercial component, or {@code null} otherwise
+     * @return product information if the npm module is a commercial component,
+     *         or {@code null} otherwise
      */
     public static Product getProductIfCvdl(File nodeModules, String npmModule) {
         File packageJsonFile = new File(new File(nodeModules, npmModule),

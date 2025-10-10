@@ -38,7 +38,8 @@ public interface VaadinContext extends Serializable {
      * used to get the default value which is set as the attribute value and the
      * value is returned. The operation is executed atomically.
      *
-     * @param <T> the type of the attribute value
+     * @param <T>
+     *            the type of the attribute value
      * @param type
      *            Type of the attribute.
      * @param defaultValueSupplier
@@ -51,7 +52,8 @@ public interface VaadinContext extends Serializable {
     /**
      * Returns value of the specified attribute.
      *
-     * @param <T> the type of the attribute value
+     * @param <T>
+     *            the type of the attribute value
      * @param type
      *            Type of the attribute.
      * @return Value of the specified attribute.
@@ -65,7 +67,8 @@ public interface VaadinContext extends Serializable {
      * existing one. Values are based on exact type, meaning only one attribute
      * of given type is possible at any given time.
      *
-     * @param <T> the type of the attribute value
+     * @param <T>
+     *            the type of the attribute value
      * @param clazz
      *            the type to associate the value with, not <code>null</code>
      *

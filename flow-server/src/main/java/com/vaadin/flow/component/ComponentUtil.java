@@ -457,7 +457,8 @@ public class ComponentUtil {
      * Check if the component has at least one registered listener of the given
      * event type.
      *
-     * @param <T> the component event type
+     * @param <T>
+     *            the component event type
      * @param component
      *            the component to which the listener(s) are registered.
      * @param eventType

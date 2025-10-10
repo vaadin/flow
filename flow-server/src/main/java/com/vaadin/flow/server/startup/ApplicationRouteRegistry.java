@@ -59,7 +59,8 @@ public class ApplicationRouteRegistry extends AbstractRouteRegistry
     /**
      * Creates a new uninitialized route registry.
      *
-     * @param context the Vaadin context
+     * @param context
+     *            the Vaadin context
      */
     protected ApplicationRouteRegistry(VaadinContext context) {
         this.context = context;

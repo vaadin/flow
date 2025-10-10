@@ -626,7 +626,8 @@ public class UI extends Component
      * external notifier that isn't aware of the synchronization needed to
      * update a UI instance.
      *
-     * @param <T> the type of the value consumed by the task
+     * @param <T>
+     *            the type of the value consumed by the task
      * @param accessTask
      *            the task that updates this UI, not <code>null</code>
      * @param detachHandler
@@ -874,7 +875,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
-     * @param <T> the navigation target type
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to
      * @throws IllegalArgumentException
@@ -960,7 +962,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
-     * @param <T> the navigation target type
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to.
      * @param parameters
@@ -997,7 +1000,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
-     * @param <T> the navigation target type
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to.
      * @param parameters
@@ -1722,7 +1726,8 @@ public class UI extends Component
          * @param source
          *            the UI that is the source of the event
          * @param fromClient
-         *            {@code true} if the event originated from the client side, {@code false} otherwise
+         *            {@code true} if the event originated from the client side,
+         *            {@code false} otherwise
          * @param route
          *            the route the user is navigating to.
          * @param query
@@ -1753,7 +1758,8 @@ public class UI extends Component
          * @param source
          *            the UI that is the source of the event
          * @param fromClient
-         *            {@code true} if the event originated from the client side, {@code false} otherwise
+         *            {@code true} if the event originated from the client side,
+         *            {@code false} otherwise
          * @param route
          *            flow route path that should be attached to the client
          *            element

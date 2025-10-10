@@ -302,7 +302,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * The default {@code  serviceImpl} implementation will be set as the
      * service into {@code services} if there is no other services available.
      *
-     * @param <T> the service type
+     * @param <T>
+     *            the service type
      * @param services
      *            map of internal services
      * @param serviceType
