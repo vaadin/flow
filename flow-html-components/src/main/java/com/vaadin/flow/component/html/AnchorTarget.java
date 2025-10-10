@@ -48,6 +48,8 @@ public enum AnchorTarget implements AnchorTargetValue {
     private final String value;
 
     /**
+     * Constructs an AnchorTarget with the given value.
+     *
      * @param value
      *            the text value to use by an {@code <a>} (anchor) tag.
      */
@@ -56,6 +58,8 @@ public enum AnchorTarget implements AnchorTargetValue {
     }
 
     /**
+     * Gets the text value to use by an anchor tag.
+     *
      * @return value the text value to use by an {@code <a>} (anchor) tag.
      */
     @Override

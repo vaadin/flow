@@ -63,6 +63,8 @@ public class ViteWebsocketConnection implements Listener {
      *            a callback to invoke when a message arrives.
      * @param onClose
      *            a callback to invoke if the connection to Vite is closed
+     * @param onConnectionFailure
+     *            a callback to invoke if the connection to Vite fails
      *
      */
     public ViteWebsocketConnection(int port, String path, String subProtocol,

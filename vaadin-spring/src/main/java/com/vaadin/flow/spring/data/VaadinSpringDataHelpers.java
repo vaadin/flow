@@ -73,7 +73,6 @@ public interface VaadinSpringDataHelpers extends Serializable {
      * {@code Grid}. Usage example:
      * <p>
      * {@code grid.setItems(fromPagingRepository(repo));}
-     * <p>
      *
      * @param <T>
      *            the type of items to bind

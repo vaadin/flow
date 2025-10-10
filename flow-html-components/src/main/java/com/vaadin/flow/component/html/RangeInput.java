@@ -31,7 +31,6 @@ import com.vaadin.flow.data.value.ValueChangeMode;
 
 /**
  * Creates a new input element with type "range".
- * <p>
  *
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
@@ -114,7 +113,7 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     /**
      * {@inheritDoc}
-     * <p>
+     *
      * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
      */
     @Override
@@ -168,12 +167,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     /**
      * The step attribute is a number that specifies the granularity that the
      * value must adhere to.
-     * <p>
      *
      * The step attribute can also be set to null. This step value means that no
      * stepping interval is implied and any value is allowed in the specified
      * range
-     * <p>
      *
      * The default stepping value for range inputs is 1, allowing only integers
      * to be entered, unless the stepping base is not an integer; for example,
@@ -191,12 +188,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     /**
      * The step attribute is a number that specifies the granularity that the
      * value must adhere to.
-     * <p>
      *
      * The step attribute can also be set to null. This step value means that no
      * stepping interval is implied and any value is allowed in the specified
      * range
-     * <p>
      *
      * The default stepping value for range inputs is 1, allowing only integers
      * to be entered, unless the stepping base is not an integer; for example,
@@ -213,7 +208,6 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     /**
      * Sets the orientation of the range slider.
-     * <p>
      *
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
@@ -221,7 +215,6 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
      * this feature is not guaranteed to work on every browser. We found this
      * feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari
      * 17.1+.
-     * <p>
      *
      * The orient attribute defines the orientation of the range slider. Values
      * include horizontal, meaning the range is rendered horizontally, and
@@ -255,12 +248,10 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     /**
      * Gets the orientation of the range slider.
-     * <p>
      *
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
      * Attribute</a>.
-     * <p>
      *
      * The orient attribute defines the orientation of the range slider. Values
      * include horizontal, meaning the range is rendered horizontally, and

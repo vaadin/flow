@@ -19,7 +19,7 @@ import java.util.Set;
 
 import com.vaadin.flow.server.VaadinService;
 
-/*
+/**
  * Event fired when hotswap has been completed.
  */
 public class HotswapCompleteEvent {

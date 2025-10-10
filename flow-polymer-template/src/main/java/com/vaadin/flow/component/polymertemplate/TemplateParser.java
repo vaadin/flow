@@ -88,7 +88,6 @@ public interface TemplateParser {
      * TemplateParser parser = factory.createParser();
      * </code>
      * </pre>
-     * <p>
      *
      * @author Vaadin Ltd
      *
