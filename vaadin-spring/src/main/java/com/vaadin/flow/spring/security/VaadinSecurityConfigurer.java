@@ -20,8 +20,10 @@ import jakarta.servlet.ServletContext;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,6 +58,7 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 import org.springframework.security.web.util.matcher.AnyRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatchers;
 import org.springframework.web.context.WebApplicationContext;
@@ -65,12 +68,10 @@ import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.RoutePathAccessChecker;
-
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultHttpSecurityPermitMatcher;
-import static com.vaadin.flow.spring.security.VaadinWebSecurity.getDefaultWebSecurityIgnoreMatcher;
 
 /**
  * A {@link SecurityConfigurer} specifically designed for Vaadin applications.
@@ -570,6 +571,85 @@ public final class VaadinSecurityConfigurer
         }
     }
 
+    /**
+     * Matcher for framework internal requests.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @return default {@link HttpSecurity} bypass matcher
+     */
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher() {
+        return getDefaultHttpSecurityPermitMatcher("/*");
+    }
+
+    /**
+     * Matcher for framework internal requests, with Vaadin servlet mapped on
+     * the given path.
+     *
+     * @param urlMapping
+     *            url mapping for the Vaadin servlet.
+     * @return default {@link HttpSecurity} bypass matcher
+     */
+    public static RequestMatcher getDefaultHttpSecurityPermitMatcher(
+            String urlMapping) {
+        Objects.requireNonNull(urlMapping,
+                "Vaadin servlet url mapping is required");
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+        String[] paths = HandlerHelper
+                .getPublicResourcesRequiringSecurityContext();
+        assert paths.length > 0;
+        return new OrRequestMatcher(Stream.of(paths)
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(builder::matcher).toArray(RequestMatcher[]::new));
+    }
+
+    /**
+     * Matcher for Vaadin static (public) resources.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @return default matcher for Vaadin static (public) resources.
+     */
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher() {
+        return getDefaultWebSecurityIgnoreMatcher("/*");
+    }
+
+    /**
+     * Matcher for Vaadin static (public) resources, with Vaadin servlet mapped
+     * on the given path.
+     *
+     * Assumes Vaadin servlet to be mapped on root path ({@literal /*}).
+     *
+     * @param urlMapping
+     *            the url mapping for the Vaadin servlet
+     * @return default matcher for Vaadin static (public) resources.
+     */
+    public static RequestMatcher getDefaultWebSecurityIgnoreMatcher(
+            String urlMapping) {
+        Objects.requireNonNull(urlMapping,
+                "Vaadin servlet url mapping is required");
+
+        List<RequestMatcher> matchers = new ArrayList<>();
+        PathPatternRequestMatcher.Builder builder = PathPatternRequestMatcher
+                .withDefaults();
+
+        String[] publicResources = HandlerHelper.getPublicResources();
+        assert publicResources.length > 0;
+
+        Stream.of(publicResources)
+                .map(path -> RequestUtil.applyUrlMapping(urlMapping, path))
+                .map(builder::matcher).forEach(matchers::add);
+
+        String[] publicResourcesRoot = HandlerHelper.getPublicResourcesRoot();
+        assert publicResourcesRoot.length > 0;
+
+        Stream.of(publicResourcesRoot).map(builder::matcher)
+                .forEach(matchers::add);
+
+        return new OrRequestMatcher(matchers);
+    }
+
     private String getLoginViewPath(Class<? extends Component> loginView) {
         var route = AnnotationReader.getAnnotationFor(loginView, Route.class);
         if (route.isEmpty()) {
@@ -584,7 +664,7 @@ public final class VaadinSecurityConfigurer
             }
             return loginPath;
         }
-        throw new IllegalStateException("VaadinWebSecurityConfigurer cannot be "
+        throw new IllegalStateException("VaadinSecurityConfigurer cannot be "
                 + "used without WebApplicationContext.");
     }
 
@@ -789,4 +869,5 @@ public final class VaadinSecurityConfigurer
             return bean;
         });
     }
+
 }
