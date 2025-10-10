@@ -282,8 +282,7 @@ public class ElementListenerMap extends NodeMap {
             }
 
             if (eventDataExpressions != null) {
-                // Convert to mutable set if needed (might be
-                // Collections.singleton)
+                // Convert to mutable set if needed (might be Collections.singleton)
                 if (eventDataExpressions.size() == 1) {
                     Set<String> oldExpressions = eventDataExpressions;
                     // Don't use no-args or Collection constructors that
