@@ -303,8 +303,6 @@ public interface DomListenerRegistration extends Registration {
      * Marks that the DOM event of this registration should trigger
      * synchronization for the given property.
      *
-     * @return this registration, for chaining
-     *
      * @param propertyName
      *            the name of the property to synchronize, not <code>null</code>
      *            or <code>""</code>

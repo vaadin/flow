@@ -457,6 +457,8 @@ public class StreamReceiverHandler implements Serializable {
      *
      * @param response
      *            response to write to
+     * @param success
+     *            whether the upload was successful
      * @throws IOException
      *             exception when writing to stream
      */

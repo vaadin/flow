@@ -521,6 +521,8 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      * <p>
      * These paths are relative to a potential Vaadin mapping
+     *
+     * @return array of public resource path patterns
      */
     public static String[] getPublicResources() {
         return publicResources;
@@ -533,6 +535,8 @@ public class HandlerHelper implements Serializable {
      * <p>
      * These URLs are always relative to the root path and independent of any
      * Vaadin mapping
+     *
+     * @return array of public resource root path patterns
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
@@ -554,6 +558,8 @@ public class HandlerHelper implements Serializable {
      * URLs matching these patterns should be publicly available for
      * applications to work but might require a security context, i.e.
      * authentication information.
+     *
+     * @return array of public resource path patterns requiring security context
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //

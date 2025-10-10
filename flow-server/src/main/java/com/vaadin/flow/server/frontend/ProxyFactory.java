@@ -45,6 +45,8 @@ public class ProxyFactory {
      * file in the project root folder, .npmrc file in user root folder and
      * system environment variables.
      *
+     * @param projectDirectory
+     *            the project directory
      * @return list of configured proxies
      */
     public static List<ProxyConfig.Proxy> getProxies(File projectDirectory) {

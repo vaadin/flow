@@ -457,6 +457,8 @@ public class ComponentUtil {
      * Check if the component has at least one registered listener of the given
      * event type.
      *
+     * @param <T>
+     *            the component event type
      * @param component
      *            the component to which the listener(s) are registered.
      * @param eventType
@@ -472,6 +474,8 @@ public class ComponentUtil {
     /**
      * Returns all listeners that match or extend the given event type.
      *
+     * @param component
+     *            the component from which to get the listeners
      * @param eventType
      *            the component event type
      * @return A collection with all registered listeners for a given event

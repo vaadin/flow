@@ -111,6 +111,9 @@ public @interface JavaScript {
      * loaded.
      * <p>
      * By default, scripts are always loaded.
+     *
+     * @return {@code true} to load the script only in development mode,
+     *         {@code false} to always load it
      */
     boolean developmentOnly() default false;
 

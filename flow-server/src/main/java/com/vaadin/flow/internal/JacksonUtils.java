@@ -226,6 +226,8 @@ public final class JacksonUtils {
     /**
      * Read Json string to JsonNode.
      *
+     * @param json
+     *            the JSON string to parse
      * @return JsonNode representation of given json string
      */
     public static ObjectNode readTree(String json) {
@@ -239,6 +241,8 @@ public final class JacksonUtils {
     /**
      * Create a JsonNode from value.
      *
+     * @param value
+     *            the value to convert to a JsonNode
      * @return JsonNode for given value content
      */
     public static JsonNode createNode(Object value) {

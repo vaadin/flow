@@ -542,6 +542,10 @@ public class FrontendTools {
 
     /**
      * Gets the version of the node executable.
+     *
+     * @return the version of the node executable
+     * @throws UnknownVersionException
+     *             if the node version cannot be determined
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();
