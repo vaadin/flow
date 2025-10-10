@@ -743,6 +743,102 @@ public class ElementListenersTest
     }
 
     @Test
+    public void testAddEventDetailWithClass() {
+        // Test that addEventDetail(Class) adds specific properties from
+        // event.detail
+        record RgbColor(int r, int g, int b) {
+        }
+
+        DomListenerRegistration registration = ns.add("color-change", noOp);
+        registration.addEventDetail(RgbColor.class);
+
+        Set<String> expressions = getExpressions("color-change");
+
+        // Should have captured all properties with event.detail prefix
+        Assert.assertTrue("Should capture event.detail.r",
+                expressions.contains("event.detail.r"));
+        Assert.assertTrue("Should capture event.detail.g",
+                expressions.contains("event.detail.g"));
+        Assert.assertTrue("Should capture event.detail.b",
+                expressions.contains("event.detail.b"));
+
+        // Should NOT have the entire event.detail
+        Assert.assertFalse("Should NOT capture entire event.detail",
+                expressions.contains("event.detail"));
+
+        // Should have exactly these 3 expressions
+        Assert.assertEquals("Should have 3 expressions", 3, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDetailWithClassAndGetEventDetail() {
+        // Test full flow: addEventDetail(Class) and getEventDetail(Class)
+        record RgbColor(int r, int g, int b) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<RgbColor> capturedColor = new AtomicReference<>();
+        element.addEventListener("color-change",
+                e -> capturedColor.set(e.getEventDetail(RgbColor.class)))
+                .addEventDetail(RgbColor.class);
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        // Verify the expressions are correct
+        Set<String> expressions = getExpressions(listenerMap, "color-change");
+        Assert.assertTrue("Should capture event.detail.r",
+                expressions.contains("event.detail.r"));
+        Assert.assertTrue("Should capture event.detail.g",
+                expressions.contains("event.detail.g"));
+        Assert.assertTrue("Should capture event.detail.b",
+                expressions.contains("event.detail.b"));
+
+        // Fire event with detail data
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.r", 255);
+        eventData.put("event.detail.g", 128);
+        eventData.put("event.detail.b", 64);
+
+        listenerMap.fireEvent(
+                new DomEvent(element, "color-change", eventData));
+
+        // Verify the data was captured correctly
+        RgbColor result = capturedColor.get();
+        Assert.assertNotNull("Should have captured color", result);
+        Assert.assertEquals("Red should be 255", 255, result.r());
+        Assert.assertEquals("Green should be 128", 128, result.g());
+        Assert.assertEquals("Blue should be 64", 64, result.b());
+    }
+
+    @Test
+    public void testAddEventDetailWithNestedClass() {
+        // Test that nested properties work correctly
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        DomListenerRegistration registration = ns.add("drag", noOp);
+        registration.addEventDetail(DragDetail.class);
+
+        Set<String> expressions = getExpressions("drag");
+
+        // Should have captured all nested properties with event.detail prefix
+        Assert.assertTrue("Should capture event.detail.start.x",
+                expressions.contains("event.detail.start.x"));
+        Assert.assertTrue("Should capture event.detail.start.y",
+                expressions.contains("event.detail.start.y"));
+        Assert.assertTrue("Should capture event.detail.end.x",
+                expressions.contains("event.detail.end.x"));
+        Assert.assertTrue("Should capture event.detail.end.y",
+                expressions.contains("event.detail.end.y"));
+
+        // Should have exactly these 4 expressions
+        Assert.assertEquals("Should have 4 expressions", 4, expressions.size());
+    }
+
+    @Test
     public void testGetEventDetailWithRecord() {
         // Test getEventDetail with a Java record
         record RgbColor(int r, int g, int b) {

@@ -23,8 +23,10 @@ import java.util.function.Consumer;
 
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -303,8 +305,8 @@ public class DomEvent extends EventObject {
      * @see DomListenerRegistration#addEventDetail()
      */
     public <T> T getEventDetail(Class<T> type) {
-        JsonNode detailNode = eventData.get("event.detail");
-        if (detailNode == null || detailNode.isNull()) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null) {
             return null;
         }
         return JacksonCodec.decodeAs(detailNode, type);
@@ -340,10 +342,49 @@ public class DomEvent extends EventObject {
      * @see DomListenerRegistration#addEventDetail()
      */
     public <T> T getEventDetail(TypeReference<T> typeReference) {
-        JsonNode detailNode = eventData.get("event.detail");
-        if (detailNode == null || detailNode.isNull()) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null) {
             return null;
         }
         return JacksonCodec.decodeAs(detailNode, typeReference);
+    }
+
+    /**
+     * Gets or reconstructs the event.detail node from event data. Handles two
+     * cases:
+     * <ul>
+     * <li>Case 1: event.detail sent as a complete object
+     * <li>Case 2: event.detail properties sent individually (e.g.,
+     * event.detail.r, event.detail.g)
+     * </ul>
+     *
+     * @return the detail node, or null if no detail data is present
+     */
+    private JsonNode getDetailNode() {
+        JsonNode detailNode = eventData.get("event.detail");
+        if (detailNode != null && !detailNode.isNull()) {
+            // Case 1: event.detail sent as a complete object
+            return detailNode;
+        }
+
+        // Case 2: event.detail properties sent individually
+        boolean hasDetailProperties = JacksonUtils.getKeys(eventData).stream()
+                .anyMatch(key -> key.startsWith("event.detail."));
+
+        if (!hasDetailProperties) {
+            return null;
+        }
+
+        // Reconstruct the detail object from individual properties by
+        // stripping the "event.detail." prefix
+        ObjectNode detailObject = JacksonUtils.createObjectNode();
+        JacksonUtils.getKeys(eventData).forEach(key -> {
+            if (key.startsWith("event.detail.")) {
+                String propertyName = key.substring("event.detail.".length());
+                detailObject.set(propertyName, eventData.get(key));
+            }
+        });
+
+        return detailObject;
     }
 }
