@@ -271,17 +271,23 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     /**
      * Gets the binary that starts the dev server.
+     *
+     * @return the dev server binary file
      */
     protected abstract File getServerBinary();
 
     /**
      * Gets the main configuration file for the dev server.
+     *
+     * @return the dev server configuration file
      */
     protected abstract File getServerConfig();
 
     /**
      * Gets the name of the dev server for outputting to the user and
      * statistics.
+     *
+     * @return the dev server name
      */
     protected abstract String getServerName();
 
@@ -290,6 +296,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * @param tools
      *            the frontend tools object
+     * @return the list of commands to start the dev server
      */
     protected abstract List<String> getServerStartupCommand(
             FrontendTools tools);
@@ -317,12 +324,16 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     /**
      * Gets a pattern to match with the output to determine that the server has
      * started successfully.
+     *
+     * @return the success pattern
      */
     protected abstract Pattern getServerSuccessPattern();
 
     /**
      * Gets a pattern to match with the output to determine that the server has
      * failed to start.
+     *
+     * @return the failure pattern
      */
     protected abstract Pattern getServerFailurePattern();
 
@@ -335,6 +346,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * Server restart is monitored only if both this method and
      * {@link #getServerRestartedPattern()} provides a pattern.
+     *
+     * @return the restarting pattern, or {@code null} if restart monitoring is
+     *         not used
      */
     protected Pattern getServerRestartingPattern() {
         return null;
@@ -349,6 +363,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      *
      * Server restart is monitored only if both this method and
      * {@link #getServerRestartingPattern()} provides a pattern.
+     *
+     * @return the restarted pattern, or {@code null} if restart monitoring is
+     *         not used
      */
     protected Pattern getServerRestartedPattern() {
         return null;
@@ -433,6 +450,9 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
     /**
      * Called whenever the dev server output matche the success or failure
      * pattern.
+     *
+     * @param result
+     *            the compilation result
      */
     protected void onDevServerCompilation(Result result) {
         if (result.isSuccess()) {

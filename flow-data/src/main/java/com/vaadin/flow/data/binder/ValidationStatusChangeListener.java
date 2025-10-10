@@ -38,6 +38,8 @@ import com.vaadin.flow.function.ValueProvider;
  * subscribe for each other's validation statuses and enable/disable or clear
  * values, etc. respectively.
  *
+ * @param <V>
+ *            the value type
  * @since 23.2
  *
  * @see HasValidator

@@ -33,6 +33,8 @@ public class VaadinAwareSecurityContextHolderStrategyConfiguration {
      * Beans of this type will automatically be used by
      * {@link org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration}
      * to configure the current {@link SecurityContextHolderStrategy}.
+     *
+     * @return the Vaadin aware security context holder strategy
      */
     @Bean(name = "VaadinSecurityContextHolderStrategy")
     @ConditionalOnMissingBean

@@ -68,6 +68,8 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control initializer available for
      * security configuration.
      *
+     * @param accessControl
+     *            the navigation access control
      * @return the default navigation access control initializer
      */
     @Bean
@@ -80,6 +82,10 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control available for security
      * configuration.
      *
+     * @param accessCheckerList
+     *            the list of navigation access checkers
+     * @param configurer
+     *            the navigation access control configurer
      * @return the default navigation access control.
      */
     @Bean

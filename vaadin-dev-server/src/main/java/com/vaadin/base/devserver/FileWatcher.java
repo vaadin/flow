@@ -51,6 +51,7 @@ public class FileWatcher {
      * @param watchDirectory
      *            the directory to watch for changes, cannot be empty
      * @throws IOException
+     *             if an error occurs while setting up the watcher
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
             File watchDirectory) throws IOException {

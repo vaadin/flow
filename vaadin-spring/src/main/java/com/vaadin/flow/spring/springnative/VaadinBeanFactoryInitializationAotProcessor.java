@@ -51,6 +51,14 @@ import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
+/**
+ * Bean factory initialization AOT processor for Vaadin applications.
+ * <p>
+ * This processor handles ahead-of-time compilation requirements for Vaadin Flow
+ * applications, including registering route classes as beans and providing
+ * runtime hints for reflection, resources, and JNI access required by Flow
+ * components.
+ */
 public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
 
