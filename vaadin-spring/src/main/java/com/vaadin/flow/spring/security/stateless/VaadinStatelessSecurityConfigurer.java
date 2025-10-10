@@ -109,6 +109,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @throws Exception
+     *             if an error occurs during configuration
      * @deprecated use
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.

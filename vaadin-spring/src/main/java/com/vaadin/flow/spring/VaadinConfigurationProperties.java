@@ -384,7 +384,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns if a browser should be launched on startup when in development
      * mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -408,7 +407,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns timout after which a browser should be launched again on startup
      * when in development mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -432,7 +430,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns whether class scan caching between reloads when using Spring Boot
      * DevTools should be enabled.
-     * <p>
      *
      * @return if class scan caching should be enabled
      */
