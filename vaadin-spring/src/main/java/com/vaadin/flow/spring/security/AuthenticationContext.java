@@ -458,7 +458,8 @@ public class AuthenticationContext {
      * Augments the given {@link AuthenticationContext} with Spring Security.
      *
      * This method can be used to configure the {@link AuthenticationContext}
-     * when {@link VaadinWebSecurity} is not used to set up Spring Security.
+     * when {@link VaadinSecurityConfigurer} is not used to set up Spring
+     * Security.
      *
      * @param httpSecurity
      *            Spring {@link HttpSecurity} for security configuration
