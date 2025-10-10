@@ -39,6 +39,11 @@ import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
+/**
+ * Utility class for bundle operations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public final class BundleUtils {
 
     private BundleUtils() {

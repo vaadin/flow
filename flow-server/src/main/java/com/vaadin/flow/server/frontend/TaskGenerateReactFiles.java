@@ -214,8 +214,6 @@ public class TaskGenerateReactFiles
 
     /**
      * Writes the `layout.json` file in the frontend generated folder.
-     * <p>
-     *
      *
      * @param options
      *            the task options
