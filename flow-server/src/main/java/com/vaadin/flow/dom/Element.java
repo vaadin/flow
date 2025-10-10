@@ -526,6 +526,30 @@ public class Element extends Node<Element> {
         return getStateProvider().addEventListener(getNode(), eventType,
                 listener);
     }
+    
+    /**
+     * Adds an event listener for the given event type of custom event.
+     * <p>
+     * Event listeners are triggered in the order they are registered.
+     *
+     * @param <T> the mapped type of the payload in the detail of the custom event
+     * @param detailType type of the automatically mapped detail
+     * @see DomListenerRegistration
+     *
+     * @param eventType
+     *            the type of event to listen to, not <code>null</code>
+     * @param listener
+     *            the listener to add, not <code>null</code>
+     * @return a handle that can be used for configuring or removing the
+     *         listener
+     */
+    public <T> DomListenerRegistration addEventListener(String eventType,
+            Class<T> detailType, CustomEventListener<T> listener) {
+        return addEventListener(eventType, (DomEventListener) rawDomEvent -> {
+            CustomEvent<T> customEvent = new CustomEvent<>(rawDomEvent, detailType);
+            listener.handleEvent(customEvent);
+        }).addEventDetail();
+    }
 
     /**
      * Removes this element from its parent.
