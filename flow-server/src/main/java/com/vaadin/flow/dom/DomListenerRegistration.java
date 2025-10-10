@@ -500,32 +500,39 @@ public interface DomListenerRegistration extends Registration {
     }
 
     /**
-     * Adds the {@code event.detail} property to the event data. This is a
-     * convenience method equivalent to {@code addEventData("event.detail")}.
+     * Remove a JavaScript expression from the event data. This removes an
+     * expression that was previously added via {@link #addEventData(String)}.
      * <p>
-     * The {@code event.detail} property is commonly used in custom events to
-     * pass event-specific data. The returned detail object can be retrieved on
-     * the server side using {@link DomEvent#getEventDetail(Class)} or
-     * {@link DomEvent#getEventDetail(TypeReference)}.
+     * This is useful when you want to exclude specific event data that is
+     * included by default or added elsewhere.
+     *
+     * @param eventData
+     *            the event data expression to remove, not <code>null</code>
+     * @return this registration, for chaining
+     * @see #addEventData(String)
+     */
+    DomListenerRegistration removeEventData(String eventData);
+
+    /**
+     * Excludes the {@code event.detail} property from the event data.
+     * <p>
+     * The {@code event.detail} property is automatically included by default
+     * for all DOM event listeners. Call this method to exclude it if you want
+     * to reduce data transfer or because it's not needed for your use case.
      * <p>
      * Example usage:
      *
      * <pre>
-     * record RgbColor(int r, int g, int b) {
-     * }
-     *
-     * element.addEventListener("color-change", e -&gt; {
-     *     RgbColor newValue = e.getEventDetail(RgbColor.class);
-     *     setModelValue(newValue, true);
-     * }).addEventDetail();
+     * element.addEventListener("click", e -&gt; {
+     *     // Handle click without needing event.detail
+     *     System.out.println("Clicked!");
+     * }).excludeEventDetail();
      * </pre>
      *
      * @return this registration, for chaining
-     * @see DomEvent#getEventDetail(Class)
-     * @see DomEvent#getEventDetail(TypeReference)
      */
-    default DomListenerRegistration addEventDetail() {
-        return addEventData("event.detail");
+    default DomListenerRegistration excludeEventDetail() {
+        return removeEventData("event.detail");
     }
 
     /**

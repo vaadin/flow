@@ -524,7 +524,7 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException("Listener must not be null");
         }
         return getStateProvider().addEventListener(getNode(), eventType,
-                listener);
+                listener).addEventData("event.detail");
     }
 
     /**

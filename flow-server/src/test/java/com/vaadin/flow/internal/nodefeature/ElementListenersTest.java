@@ -365,14 +365,18 @@ public class ElementListenersTest
         final ElementListenerMap listenerMap = parent.getNode()
                 .getFeature(ElementListenerMap.class);
         Set<String> expressions = getExpressions(listenerMap, eventType);
-        Assert.assertEquals(0, expressions.size());
+        // event.detail is now included by default
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertTrue(expressions.contains("event.detail"));
 
         registration.mapEventTargetElement();
         expressions = getExpressions(listenerMap, eventType);
 
-        Assert.assertEquals(1, expressions.size());
-        Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
-                expressions.iterator().next());
+        // Should now have both event.detail and MAP_STATE_NODE_EVENT_DATA
+        Assert.assertEquals(2, expressions.size());
+        Assert.assertTrue(expressions.contains("event.detail"));
+        Assert.assertTrue(
+                expressions.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA));
 
         // child
         final ObjectNode eventData = JacksonUtils.createObjectNode();
@@ -419,13 +423,17 @@ public class ElementListenersTest
                 .getFeature(ElementListenerMap.class);
 
         Set<String> expressions = getExpressions(listenerMap, eventType);
-        Assert.assertEquals(0, expressions.size());
+        // event.detail is now included by default
+        Assert.assertEquals(1, expressions.size());
+        Assert.assertTrue(expressions.contains("event.detail"));
 
         registration.addEventDataElement(expression);
         expressions = getExpressions(listenerMap, eventType);
 
-        Assert.assertEquals(1, expressions.size());
-        Assert.assertEquals(key, expressions.iterator().next());
+        // Should now have both event.detail and the added element expression
+        Assert.assertEquals(2, expressions.size());
+        Assert.assertTrue(expressions.contains("event.detail"));
+        Assert.assertTrue(expressions.contains(key));
 
         final ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(key, child.getNode().getId());
@@ -464,9 +472,11 @@ public class ElementListenersTest
         registration.addEventDataElement("event.target");
         Set<String> expressions = getExpressions(listenerMap, eventType);
 
-        Assert.assertEquals(1, expressions.size());
-        Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
-                expressions.iterator().next());
+        // Should have both event.detail and MAP_STATE_NODE_EVENT_DATA
+        Assert.assertEquals(2, expressions.size());
+        Assert.assertTrue(expressions.contains("event.detail"));
+        Assert.assertTrue(
+                expressions.contains(JsonConstants.MAP_STATE_NODE_EVENT_DATA));
 
         final ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
@@ -713,33 +723,45 @@ public class ElementListenersTest
     }
 
     @Test
-    public void testAddEventDetail() {
-        // Test that addEventDetail adds "event.detail" to expressions
-        DomListenerRegistration registration = ns.add("color-change", noOp);
-        registration.addEventDetail();
+    public void testRemoveEventData() {
+        // Test that removeEventData removes a specific expression
+        DomListenerRegistration registration = ns.add("click", noOp);
+        registration.addEventData("event.clientX")
+                .addEventData("event.clientY").addEventData("event.button");
 
-        Set<String> expressions = getExpressions("color-change");
+        Set<String> expressions = getExpressions("click");
+        Assert.assertEquals("Should have 3 expressions", 3, expressions.size());
 
-        // Should have captured event.detail
-        Assert.assertTrue("Should capture event.detail",
-                expressions.contains("event.detail"));
-        Assert.assertEquals("Should have 1 expression", 1, expressions.size());
+        // Remove one expression
+        registration.removeEventData("event.clientY");
+
+        expressions = getExpressions("click");
+        Assert.assertTrue("Should still have event.clientX",
+                expressions.contains("event.clientX"));
+        Assert.assertFalse("Should not have event.clientY",
+                expressions.contains("event.clientY"));
+        Assert.assertTrue("Should still have event.button",
+                expressions.contains("event.button"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
     }
 
     @Test
-    public void testAddEventDetailChaining() {
-        // Test that addEventDetail can be chained with other methods
+    public void testRemoveEventDataChaining() {
+        // Test that removeEventData can be chained
         DomListenerRegistration registration = ns.add("custom-event", noOp);
-        registration.addEventDetail().addEventData("event.timestamp");
+        registration.addEventData("data1").addEventData("data2")
+                .addEventData("data3").removeEventData("data1")
+                .removeEventData("data3");
 
         Set<String> expressions = getExpressions("custom-event");
 
-        // Should have both event.detail and event.timestamp
-        Assert.assertTrue("Should capture event.detail",
-                expressions.contains("event.detail"));
-        Assert.assertTrue("Should capture event.timestamp",
-                expressions.contains("event.timestamp"));
-        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
+        // Should only have data2
+        Assert.assertFalse("Should not have data1",
+                expressions.contains("data1"));
+        Assert.assertTrue("Should have data2", expressions.contains("data2"));
+        Assert.assertFalse("Should not have data3",
+                expressions.contains("data3"));
+        Assert.assertEquals("Should have 1 expression", 1, expressions.size());
     }
 
     @Test
@@ -863,6 +885,100 @@ public class ElementListenersTest
         SomeData data = event.getEventDetail(SomeData.class);
 
         Assert.assertNull("Should return null when event.detail is null", data);
+    }
+
+    @Test
+    public void testEventDetailIncludedByDefault() {
+        // Test that event.detail is automatically included when adding an event
+        // listener
+        Element element = new Element("div");
+        element.addEventListener("custom-event", e -> {
+        });
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+        Set<String> expressions = getExpressions(listenerMap, "custom-event");
+
+        // Should automatically include event.detail
+        Assert.assertTrue("event.detail should be included by default",
+                expressions.contains("event.detail"));
+    }
+
+    @Test
+    public void testEventDetailIncludedByDefaultCanBeUsed() {
+        // Test that the automatically included event.detail can be accessed
+        record CustomData(String message, int value) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<CustomData> capturedData = new AtomicReference<>();
+        element.addEventListener("custom-event",
+                e -> capturedData.set(e.getEventDetail(CustomData.class)));
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        // Verify event.detail is in expressions
+        Set<String> expressions = getExpressions(listenerMap, "custom-event");
+        Assert.assertTrue("event.detail should be included by default",
+                expressions.contains("event.detail"));
+
+        // Fire event with detail data
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        ObjectNode detailData = JacksonUtils.createObjectNode();
+        detailData.put("message", "test message");
+        detailData.put("value", 123);
+        eventData.set("event.detail", detailData);
+
+        listenerMap.fireEvent(new DomEvent(element, "custom-event", eventData));
+
+        // Verify the data was captured correctly
+        CustomData result = capturedData.get();
+        Assert.assertNotNull("Should have captured event detail", result);
+        Assert.assertEquals("Message should match", "test message",
+                result.message());
+        Assert.assertEquals("Value should match", 123, result.value());
+    }
+
+    @Test
+    public void testExcludeEventDetail() {
+        // Test that excludeEventDetail() removes event.detail from expressions
+        Element element = new Element("div");
+        element.addEventListener("click", e -> {
+        }).excludeEventDetail();
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+        Set<String> expressions = getExpressions(listenerMap, "click");
+
+        // Should NOT have event.detail after excluding it
+        Assert.assertFalse("event.detail should be excluded",
+                expressions.contains("event.detail"));
+        Assert.assertEquals("Should have 0 expressions", 0, expressions.size());
+    }
+
+    @Test
+    public void testExcludeEventDetailWithOtherEventData() {
+        // Test that excludeEventDetail() only removes event.detail, not other
+        // event data
+        Element element = new Element("div");
+        element.addEventListener("click", e -> {
+        }).addEventData("event.clientX").addEventData("event.clientY")
+                .excludeEventDetail();
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+        Set<String> expressions = getExpressions(listenerMap, "click");
+
+        // Should NOT have event.detail
+        Assert.assertFalse("event.detail should be excluded",
+                expressions.contains("event.detail"));
+        // But should have the other event data
+        Assert.assertTrue("Should have event.clientX",
+                expressions.contains("event.clientX"));
+        Assert.assertTrue("Should have event.clientY",
+                expressions.contains("event.clientY"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
     }
 
     // Helper for accessing package private API from other tests

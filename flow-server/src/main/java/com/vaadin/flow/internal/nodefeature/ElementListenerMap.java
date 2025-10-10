@@ -273,6 +273,32 @@ public class ElementListenerMap extends NodeMap {
             allowInert = true;
             return this;
         }
+
+        @Override
+        public DomListenerRegistration removeEventData(String eventData) {
+            if (eventData == null) {
+                throw new IllegalArgumentException(
+                        "The event data expression must not be null");
+            }
+
+            if (eventDataExpressions != null) {
+                // Convert to mutable set if needed (might be Collections.singleton)
+                if (eventDataExpressions.size() == 1) {
+                    Set<String> oldExpressions = eventDataExpressions;
+                    // Don't use no-args or Collection constructors that
+                    // allocate for 16 entries
+                    eventDataExpressions = new HashSet<>(4);
+                    eventDataExpressions.addAll(oldExpressions);
+                }
+                eventDataExpressions.remove(eventData);
+                // If the set is now empty, set it to null
+                if (eventDataExpressions.isEmpty()) {
+                    eventDataExpressions = null;
+                }
+                listenerMap.updateEventSettings(type);
+            }
+            return this;
+        }
     }
 
     /**
