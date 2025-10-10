@@ -19,6 +19,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.vaadin.flow.router.internal.ParameterInfo;
 
+/**
+ * Defines the types of route parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public enum RouteParamType {
     // @formatter:off
     @JsonProperty("req") REQUIRED,

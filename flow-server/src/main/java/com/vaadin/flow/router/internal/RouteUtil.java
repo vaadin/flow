@@ -296,6 +296,8 @@ public class RouteUtil {
      * {@link Route} or {@link RouteAlias} annotation. Also handles non route
      * targets with {@link ParentLayout}.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            navigation target to get top most parent for
      * @param path

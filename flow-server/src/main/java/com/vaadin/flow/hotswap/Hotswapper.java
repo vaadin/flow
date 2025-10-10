@@ -162,8 +162,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Called by hotswap tools when one or more application resources have been
      * changed.
-     * <p>
-     *
      *
      * @param createdResources
      *            the list of potentially newly created resources. Never

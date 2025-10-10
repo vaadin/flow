@@ -476,6 +476,10 @@ public class Options implements Serializable {
     /**
      * Setting this to {@code true} will force a build of the production build
      * even if there is a default production bundle that could be used.
+     *
+     * @param forceProductionBuild
+     *            true to force production build
+     * @return the builder, for chaining
      */
     public Options withForceProductionBuild(boolean forceProductionBuild) {
         this.forceProductionBuild = forceProductionBuild;
@@ -567,6 +571,7 @@ public class Options implements Serializable {
      *
      * @param frontendIgnoreVersionChecks
      *            {@code true} to ignore node/npm tool version checks
+     * @return the builder, for chaining
      */
     public Options withFrontendIgnoreVersionChecks(
             boolean frontendIgnoreVersionChecks) {
@@ -788,6 +793,7 @@ public class Options implements Serializable {
     /**
      * @deprecated used internally only for testing, to be removed without a
      *             replacement.
+     * @return true if npm files should be cleaned, false otherwise
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {

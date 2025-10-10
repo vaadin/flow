@@ -240,6 +240,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the total time spent servicing requests in this session.
+     *
      * @return The total time spent servicing requests in this session, in
      *         milliseconds.
      */
@@ -262,6 +264,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the time spent servicing the last request in this session.
+     *
      * @return The time spent servicing the last request in this session, in
      *         milliseconds.
      */

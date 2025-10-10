@@ -939,7 +939,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @param chunks
          *            in the stat file
-         * @return
+         * @return the list of chunk keys to process
          */
         protected List<String> getChunkKeys(ObjectNode chunks) {
             // include all chunks but the one used for exported
@@ -1381,6 +1381,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the response object
      * @param ui
      *            the UI object
+     * @param contextPathCallback
+     *            a callback that is invoked to resolve the context root from
+     *            the request
      * @return a new bootstrap context instance
      */
     protected BootstrapContext createBootstrapContext(VaadinRequest request,

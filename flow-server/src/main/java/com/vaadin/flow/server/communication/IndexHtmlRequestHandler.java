@@ -323,6 +323,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     /**
      * Adds the needed overrides for the license checker to work when in
      * development mode.
+     *
+     * @param indexDocument
+     *            the document to add the license checker to
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
