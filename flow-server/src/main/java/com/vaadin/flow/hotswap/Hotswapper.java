@@ -32,6 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -184,6 +185,24 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.trace(
                     "Created resources: {}, modified resources: {}, deletedResources: {}.",
                     createdResources, modifiedResources, deletedResources);
+        }
+
+        if (anyMatches(".*\\.css", createdResources, modifiedResources,
+                deletedResources)) {
+            if (liveReload == null) {
+                LOGGER.debug(
+                        "A change to one or more CSS/JS resources requires a browser page reload, but BrowserLiveReload is not available. "
+                                + "Please reload the browser page manually to make changes effective.");
+            } else {
+                LOGGER.debug(
+                        "Triggering browser live reload because of CSS/JS resources changes");
+                Stream.of(createdResources, modifiedResources, deletedResources)
+                        .forEach(uris -> Arrays.stream(uris)
+                                .map(uri -> uri.getPath().replace(
+                                        "target/classes", "src/main/resources"))
+                                .forEach(
+                                        path -> liveReload.update(path, null)));
+            }
         }
 
         if (anyMatches(".*/vaadin-i18n/.*\\.properties", createdResources,

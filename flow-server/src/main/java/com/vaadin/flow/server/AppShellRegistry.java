@@ -15,13 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import java.io.File;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 
 import org.jsoup.nodes.Document;
@@ -41,6 +38,7 @@ import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
@@ -223,14 +221,32 @@ public class AppShellRegistry implements Serializable {
         }
         getAnnotations(Inline.class).forEach(settings::addInline);
 
-        Set<String> stylesheets = new LinkedHashSet<>();
+        Map<String, String> stylesheets = new LinkedHashMap<>();
         for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
             String href = resolveStyleSheetHref(sheet.value(), request);
             if (href != null && !href.isBlank()) {
-                stylesheets.add(href);
+                stylesheets.put(href, sheet.value());
             }
         }
-        stylesheets.forEach(href -> settings.addLink("stylesheet", href));
+
+        DeploymentConfiguration config = request.getService()
+                .getDeploymentConfiguration();
+        if (!config.isProductionMode()) {
+            stylesheets.forEach((resolved, source) -> {
+                File resourceFolder = config.getJavaResourceFolder();
+                File metaInfResources = new File(resourceFolder,
+                        Constants.RESOURCES_JAR_DEFAULT);
+                String absolutePath = new File(metaInfResources, source)
+                        .getAbsolutePath();
+                stylesheets.put(resolved, absolutePath);
+            });
+        }
+
+        stylesheets.forEach((key, value) -> {
+            Map<String, String> attributes = Map.of("rel", "stylesheet",
+                    "data-file-path", value);
+            settings.addLink(Position.APPEND, key, attributes);
+        });
 
         return settings;
     }

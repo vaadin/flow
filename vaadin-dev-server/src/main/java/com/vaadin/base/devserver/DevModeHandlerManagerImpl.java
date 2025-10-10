@@ -115,7 +115,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
-            startWatchingPublicResourcesCss(context, config);
+            // startWatchingPublicResourcesCss(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
