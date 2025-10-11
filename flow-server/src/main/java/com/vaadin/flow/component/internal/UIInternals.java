@@ -748,7 +748,7 @@ public class UIInternals implements Serializable {
             // For react-router we should wait for navigation to finish
             // before updating the title.
             setTitleScript = String.format(
-                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s console.trace();}",
+                    "if(window.Vaadin.Flow.navigation) { window.addEventListener('vaadin-navigated', function(event) {%s}, {once:true}); }  else { %1$s }",
                     setTitleScript);
         }
         return setTitleScript;
