@@ -28,8 +28,8 @@ function assetsContains(fileUrl, themeFolder, logger) {
       if (fileUrl.startsWith(copyRules[copyRule])) {
         const targetFile = fileUrl.replace(copyRules[copyRule], '');
         const files = globSync(resolve('node_modules/', module, copyRule), { withFileTypes: true })
-          .filter(dirent => !dirent.isDirectory() && dirent.parentPath)
-          .map(dirent => join(dirent.parentPath, dirent.name));
+          .filter((dirent) => !dirent.isDirectory() && dirent.parentPath)
+          .map((dirent) => join(dirent.parentPath, dirent.name));
 
         for (let file of files) {
           if (file.endsWith(targetFile)) return true;

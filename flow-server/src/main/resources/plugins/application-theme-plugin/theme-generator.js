@@ -63,7 +63,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     componentsFiles = globSync('*.css', {
       cwd: resolve(themeFolder, themeComponentsFolder),
       withFileTypes: true
-    }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name);
+    })
+      .filter((dirent) => !dirent.isDirectory())
+      .map((dirent) => dirent.name);
 
     if (componentsFiles.length > 0) {
       componentsFileContent +=
