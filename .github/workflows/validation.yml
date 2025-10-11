@@ -13,7 +13,9 @@ concurrency:
 env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
+  BASE_REF: ${{ github.event.pull_request.base.ref }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  PR_NUMBER: ${{ github.event.number }}
   JAVA_VERSION: '21'
   BASE_VERSION: '25.0-SNAPSHOT'
 jobs:
@@ -291,11 +293,9 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
       - name: Use temporary flow version
         run: |
-          mvn org.codehaus.mojo:versions-maven-plugin:2.13.0:set -DnewVersion=1111.3.2-SNAPSHOT -B
+          mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Determine base version
         id: base-version
-        env:
-          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
           baseBranch="${{ env.BASE_REF }}"
           echo "Base branch: ${baseBranch}"
@@ -331,7 +331,6 @@ jobs:
       - name: Report API DIFF to GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PR_NUMBER: ${{ github.event.number }}
         run: |
           #!/bin/bash
 
