@@ -426,8 +426,6 @@ function Flow() {
 
     const vaadinNavigateEventHandler = useCallback(
         (event: CustomEvent<{ state: unknown; url: string; replace?: boolean; callback: boolean }>) => {
-            // @ts-ignore
-            window.Vaadin.Flow.navigation = true;
             // clean base uri away if for instance redirected to http://localhost/path/user?id=10
             // else the whole http... will be appended to the url see #19580
             const path = event.detail.url.startsWith(document.baseURI)
@@ -448,13 +446,22 @@ function Flow() {
         [navigate]
     );
 
-    useEffect(() => {
+  const flowNavigation = () => {
+    // @ts-ignore
+    window.Vaadin.Flow.navigation = true;
+  };
+
+  useEffect(() => {
+        // @ts-ignore
+        window.addEventListener("popstate", flowNavigation);
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
         // @ts-ignore
         window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
 
         return () => {
+            // @ts-ignore
+            window.removeEventListener("popstate", flowNavigation);
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
             // @ts-ignore
