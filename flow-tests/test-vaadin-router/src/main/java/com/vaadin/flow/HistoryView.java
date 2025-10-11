@@ -17,7 +17,6 @@ package com.vaadin.flow;
 
 import java.util.function.BiConsumer;
 
-import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ClickEvent;
@@ -30,9 +29,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.HistoryView")
 public class HistoryView extends AbstractDivView {

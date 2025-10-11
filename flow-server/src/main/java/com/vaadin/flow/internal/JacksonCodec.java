@@ -16,8 +16,8 @@
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
-import java.util.stream.Stream;
 
+import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ArrayNode;
@@ -236,6 +236,49 @@ public class JacksonCodec {
             }
         }
 
+    }
+
+    /**
+     * Decodes a JSON value as an instance of the given type reference. This
+     * method supports generic types such as {@code List<MyBean>} and
+     * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyBean&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyBean&gt;&gt;() {
+     * };
+     * List&lt;MyBean&gt; result = JacksonCodec.decodeAs(jsonNode, typeRef);
+     * </pre>
+     *
+     * @param <T>
+     *            the type to decode as
+     * @param json
+     *            the JSON value to decode
+     * @param typeReference
+     *            the type reference describing the target type
+     * @return the value decoded as the given type
+     * @throws IllegalArgumentException
+     *             if deserialization failed
+     */
+    public static <T> T decodeAs(JsonNode json,
+            TypeReference<T> typeReference) {
+        assert json != null;
+        assert typeReference != null;
+
+        if (json.getNodeType() == JsonNodeType.NULL) {
+            return null;
+        }
+
+        try {
+            return JacksonUtils.getMapper().treeToValue(json, typeReference);
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Cannot deserialize JSON to type "
+                            + typeReference.getType().getTypeName() + ": "
+                            + e.getMessage(),
+                    e);
+        }
     }
 
 }

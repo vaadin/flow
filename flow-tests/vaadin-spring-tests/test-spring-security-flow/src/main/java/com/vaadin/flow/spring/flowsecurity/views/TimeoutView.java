@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import com.vaadin.flow.component.html.Paragraph;

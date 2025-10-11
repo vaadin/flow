@@ -20,9 +20,6 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.UsageStatistics;
-import com.vaadin.flow.server.Constants;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +27,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.UsageStatistics;
+import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;

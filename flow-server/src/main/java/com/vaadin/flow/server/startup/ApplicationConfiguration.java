@@ -31,7 +31,6 @@ import com.vaadin.flow.server.VaadinContext;
  * container level configuration (e.g. Servlet).
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface ApplicationConfiguration extends AbstractConfiguration {

@@ -31,7 +31,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XS
  * servlet level,...).
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface AbstractConfiguration extends Serializable {

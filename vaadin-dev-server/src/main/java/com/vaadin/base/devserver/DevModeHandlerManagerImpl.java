@@ -22,11 +22,13 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +51,6 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
@@ -249,16 +250,15 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     // package-private for testing
     void startWatchingPublicResourcesCss(VaadinContext context,
             ApplicationConfiguration config) {
-        final File projectFolder = config.getProjectFolder();
-        List.of("src/main/resources/META-INF/resources",
-                "src/main/resources/resources", "src/main/resources/static",
-                "src/main/resources/public").stream().map(path -> {
-                    File resourcesFolder = new File(projectFolder, path);
+        final File rootResourcesFolder = config.getJavaResourceFolder();
+        Stream.of("META-INF/resources", "resources", "static", "public")
+                .map(path -> {
+                    File resourcesFolder = new File(rootResourcesFolder, path);
                     if (resourcesFolder.exists()) {
                         return resourcesFolder.getAbsolutePath();
                     }
                     return null;
-                }).filter(path -> path != null).forEach(path -> {
+                }).filter(Objects::nonNull).forEach(path -> {
                     try {
                         File resourcesFolder = new File(path);
                         if (!resourcesFolder.isDirectory()) {

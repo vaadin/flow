@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -38,13 +37,11 @@ import com.vaadin.flow.server.ExecutionFailedException;
 /**
  * Deletes old files from frontend generated folder.
  * <p>
- * </p>
  * This task must be performed last, because it will delete all files in
  * frontend generated folder that have not been tracked by the
  * {@link GeneratedFilesSupport} instance provided by the current
  * {@link NodeTasks} execution.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NodeTasks

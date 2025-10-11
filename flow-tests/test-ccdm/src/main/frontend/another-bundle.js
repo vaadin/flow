@@ -1,1 +1,1 @@
-window.anotherBundle = "Content from other bundle";
+window.anotherBundle = 'Content from other bundle';

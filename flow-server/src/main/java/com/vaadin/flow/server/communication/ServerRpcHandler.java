@@ -30,10 +30,10 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ArrayNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.PollEvent;
 import com.vaadin.flow.component.UI;
@@ -104,7 +104,7 @@ public class ServerRpcHandler implements Serializable {
             if (token == null) {
                 csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
             } else {
-                String csrfToken = token.asText();
+                String csrfToken = token.asString();
                 if (csrfToken.isEmpty()) {
                     csrfToken = ApplicationConstants.CSRF_TOKEN_DEFAULT_VALUE;
                 }
@@ -445,8 +445,9 @@ public class ServerRpcHandler implements Serializable {
             // channel events
             for (int i = 0; i < invocations.size(); i++) {
                 JsonNode json = invocations.get(i);
-                String type = json.has("type") ? json.get("type").asText() : "";
-                String event = json.has("event") ? json.get("event").asText()
+                String type = json.has("type") ? json.get("type").asString()
+                        : "";
+                String event = json.has("event") ? json.get("event").asString()
                         : "";
                 if (!JsonConstants.RPC_TYPE_CHANNEL.equals(type)
                         && (!JsonConstants.RPC_TYPE_EVENT.equals(type)
@@ -475,7 +476,7 @@ public class ServerRpcHandler implements Serializable {
 
         for (int i = 0; i < rpcArray.size(); i++) {
             JsonNode json = rpcArray.get(i);
-            String type = json.has("type") ? json.get("type").asText() : "";
+            String type = json.has("type") ? json.get("type").asString() : "";
             Double node = json.has("node") ? json.get("node").doubleValue()
                     : null;
             Double feature = json.has("feature")
@@ -530,7 +531,7 @@ public class ServerRpcHandler implements Serializable {
 
         for (int i = 0; i < invocationsData.size(); i++) {
             JsonNode invocationJson = invocationsData.get(i);
-            String type = invocationJson.get(JsonConstants.RPC_TYPE).asText();
+            String type = invocationJson.get(JsonConstants.RPC_TYPE).asString();
             assert type != null;
             if (JsonConstants.RPC_TYPE_MAP_SYNC.equals(type)) {
                 // Handle these before any RPC invocations.
@@ -560,7 +561,7 @@ public class ServerRpcHandler implements Serializable {
     }
 
     private void handleInvocationData(UI ui, JsonNode invocationJson) {
-        String type = invocationJson.get(JsonConstants.RPC_TYPE).asText();
+        String type = invocationJson.get(JsonConstants.RPC_TYPE).asString();
         RpcInvocationHandler handler = getInvocationHandlers().get(type);
         if (handler == null) {
             throw new IllegalArgumentException(

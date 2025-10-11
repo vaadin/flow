@@ -13,17 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * An internal helper class representing a Vaadin Pro key.
@@ -123,8 +122,8 @@ class ProKey {
         ProKey proKey = new ProKey(null, null);
         try {
             JsonNode json = JsonHelpers.getJsonMapper().readTree(jsonFile);
-            proKey = new ProKey(json.get(FIELD_NAME).asText(),
-                    json.get(FIELD_KEY).asText());
+            proKey = new ProKey(json.get(FIELD_NAME).asString(),
+                    json.get(FIELD_KEY).asString());
             return proKey;
         } catch (JacksonException | NullPointerException e) {
             getLogger().debug("Failed to parse proKey from json file", e);

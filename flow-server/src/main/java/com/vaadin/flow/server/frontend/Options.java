@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -8,8 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -461,6 +476,10 @@ public class Options implements Serializable {
     /**
      * Setting this to {@code true} will force a build of the production build
      * even if there is a default production bundle that could be used.
+     *
+     * @param forceProductionBuild
+     *            true to force production build
+     * @return the builder, for chaining
      */
     public Options withForceProductionBuild(boolean forceProductionBuild) {
         this.forceProductionBuild = forceProductionBuild;
@@ -552,6 +571,7 @@ public class Options implements Serializable {
      *
      * @param frontendIgnoreVersionChecks
      *            {@code true} to ignore node/npm tool version checks
+     * @return the builder, for chaining
      */
     public Options withFrontendIgnoreVersionChecks(
             boolean frontendIgnoreVersionChecks) {
@@ -773,6 +793,7 @@ public class Options implements Serializable {
     /**
      * @deprecated used internally only for testing, to be removed without a
      *             replacement.
+     * @return true if npm files should be cleaned, false otherwise
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
@@ -932,7 +953,7 @@ public class Options implements Serializable {
      * Sets whether generated files from a previous execution that are no more
      * created should be removed.
      * <p>
-     * </p>
+     *
      * By default, the odl generated files are preserved.
      *
      * @param clean

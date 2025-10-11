@@ -15,7 +15,7 @@
  */
 package com.vaadin.base.devserver.startup;
 
-import static org.junit.Assert.assertTrue;
+import jakarta.servlet.annotation.HandlesTypes;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -24,7 +24,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.servlet.annotation.HandlesTypes;
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.base.devserver.startup.DevModeInitializer.DevModeClassFinder;
 import com.vaadin.flow.component.Component;
@@ -49,8 +50,7 @@ import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import org.junit.Assert;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 public class DevModeClassFinderTest {
 

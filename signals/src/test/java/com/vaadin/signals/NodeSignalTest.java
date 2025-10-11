@@ -15,6 +15,20 @@
  */
 package com.vaadin.signals;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.junit.jupiter.api.Test;
+
+import com.vaadin.signals.ListSignal.ListPosition;
+import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.operations.InsertOperation;
+import com.vaadin.signals.operations.SignalOperation;
+
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -23,23 +37,6 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.junit.jupiter.api.Test;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.json.JsonMapper;
-
-import com.vaadin.signals.ListSignal.ListPosition;
-import com.vaadin.signals.NodeSignal.NodeSignalState;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
-import com.vaadin.signals.operations.InsertOperation;
-import com.vaadin.signals.operations.SignalOperation;
 
 public class NodeSignalTest extends SignalTestBase {
 

@@ -15,10 +15,11 @@
  */
 package com.vaadin.client.flow.dom;
 
-import elemental.dom.Node;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
 import jsinterop.annotations.JsType;
+
+import elemental.dom.Node;
 
 /**
  * Implementation of {@link DomApiImpl} that uses the

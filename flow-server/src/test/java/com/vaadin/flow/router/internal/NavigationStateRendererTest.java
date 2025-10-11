@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router.internal;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,8 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -40,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;

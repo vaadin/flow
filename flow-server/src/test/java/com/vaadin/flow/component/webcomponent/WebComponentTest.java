@@ -13,20 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.webcomponent;
 
-import java.io.Serializable;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.BaseJsonNode;
-import tools.jackson.databind.node.ValueNode;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;

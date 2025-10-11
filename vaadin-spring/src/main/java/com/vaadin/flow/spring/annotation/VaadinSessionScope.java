@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.spring.annotation;
 
-import static com.vaadin.flow.spring.scopes.VaadinSessionScope.VAADIN_SESSION_SCOPE_NAME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -24,6 +22,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 import org.springframework.context.annotation.Scope;
+
+import static com.vaadin.flow.spring.scopes.VaadinSessionScope.VAADIN_SESSION_SCOPE_NAME;
 
 /**
  * Stereotype annotation for Spring's {@code @Scope("vaadin-session")}.

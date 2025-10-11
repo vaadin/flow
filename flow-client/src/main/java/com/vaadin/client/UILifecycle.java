@@ -15,10 +15,12 @@
  */
 package com.vaadin.client;
 
-import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
+
+import com.google.gwt.event.shared.EventHandler;
+
 import com.vaadin.client.gwt.com.google.web.bindery.event.shared.SimpleEventBus;
 
 /**

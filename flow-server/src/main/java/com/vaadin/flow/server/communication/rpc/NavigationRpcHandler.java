@@ -55,7 +55,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
             BaseJsonNode state = (BaseJsonNode) invocationJson
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
-                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).asText();
+                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).asString();
             boolean triggeredByLink = invocationJson
                     .has(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink

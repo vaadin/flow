@@ -17,23 +17,22 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Consumer;
 
-import com.vaadin.flow.component.Component;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
 import com.vaadin.flow.component.page.Inline;
@@ -44,9 +43,7 @@ import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.component.dependency.StyleSheet;
 
 import static com.vaadin.flow.server.startup.AbstractAnnotationValidator.getClassAnnotations;
 import static com.vaadin.flow.server.startup.VaadinAppShellInitializer.getValidAnnotations;
@@ -193,7 +190,7 @@ public class AppShellRegistry implements Serializable {
         return error;
     }
 
-    private AppShellSettings createSettings(String contextPath) {
+    private AppShellSettings createSettings(VaadinRequest request) {
         AppShellSettings settings = new AppShellSettings();
 
         getAnnotations(Meta.class).forEach(
@@ -228,7 +225,7 @@ public class AppShellRegistry implements Serializable {
 
         Set<String> stylesheets = new LinkedHashSet<>();
         for (StyleSheet sheet : getAnnotations(StyleSheet.class)) {
-            String href = resolveStyleSheetHref(sheet.value(), contextPath);
+            String href = resolveStyleSheetHref(sheet.value(), request);
             if (href != null && !href.isBlank()) {
                 stylesheets.add(href);
             }
@@ -238,8 +235,15 @@ public class AppShellRegistry implements Serializable {
         return settings;
     }
 
-    private String resolveStyleSheetHref(String href, String contextPath) {
+    private String resolveStyleSheetHref(String href, VaadinRequest request) {
         if (href == null || href.isBlank()) {
+            return null;
+        }
+        if (HandlerHelper
+                .isPathUnsafe(href.startsWith("/") ? href : "/" + href)) {
+            log.warn(
+                    "@StyleSheet href containing traversals ('../') are not allowed, ignored: {}",
+                    href);
             return null;
         }
         href = href.trim();
@@ -248,31 +252,26 @@ public class AppShellRegistry implements Serializable {
         if (lower.startsWith("http://") || lower.startsWith("https://")) {
             return href;
         }
-        // Accept context-relative URLs: context://path -> /path
-        String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
-        if (lower.startsWith(contextProtocol)) {
-            String path = href.substring(contextProtocol.length());
-            if (!path.startsWith("/")) {
-                path = "/" + path;
-            }
-            if (contextPath != null && !contextPath.isEmpty()) {
-                return contextPath + path;
-            }
-            return path;
-        }
         // Treat ./ as relative path to static resources location
         if (href.startsWith("./")) {
             href = href.substring(2);
         }
         // Accept bare paths beginning with '/' as-is
-        href = href.startsWith("/") ? href : "/" + href;
-        if (HandlerHelper.isPathUnsafe(href)) {
-            log.warn(
-                    "@StyleSheet href containing traversals ('../') are not allowed, ignored: "
-                            + href);
-            return null;
+        if (href.startsWith("/")) {
+            return href;
         }
-        return href;
+
+        String contextPath = request.getContextPath();
+        if (!contextPath.isEmpty()) {
+            String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
+            if (!lower.startsWith(contextProtocol)) {
+                // Prepend context protocol so URL is resolved with context path
+                href = contextProtocol + href;
+            }
+        }
+        BootstrapHandler.BootstrapUriResolver resolver = new BootstrapHandler.BootstrapUriResolver(
+                contextPath + "/", null);
+        return resolver.resolveVaadinUri(href);
     }
 
     /**
@@ -286,7 +285,7 @@ public class AppShellRegistry implements Serializable {
      *            The request to handle
      */
     public void modifyIndexHtml(Document document, VaadinRequest request) {
-        AppShellSettings settings = createSettings(request.getContextPath());
+        AppShellSettings settings = createSettings(request);
         if (appShellClass != null) {
             VaadinService.getCurrent().getInstantiator()
                     .getOrCreate(appShellClass).configurePage(settings);

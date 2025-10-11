@@ -16,4 +16,4 @@
 
 // document.body might not yet be accessible, so just leave a message
 window.webResourcesMessages = window.webResourcesMessages || [];
-window.webResourcesMessages.push("inline.js");
+window.webResourcesMessages.push('inline.js');

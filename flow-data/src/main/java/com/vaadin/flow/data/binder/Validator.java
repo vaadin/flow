@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
@@ -83,6 +82,8 @@ public interface Validator<T>
      *
      * @param <T>
      *            the value type
+     * @param errorMessage
+     *            the error message to use for validation failures
      * @return an always-failing validator
      */
     static <T> Validator<T> alwaysFail(String errorMessage) {

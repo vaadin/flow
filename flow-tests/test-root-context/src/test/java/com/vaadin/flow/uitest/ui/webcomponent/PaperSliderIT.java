@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.uitest.ui.webcomponent;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class PaperSliderIT extends ChromeBrowserTest {
 

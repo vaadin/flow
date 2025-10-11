@@ -17,7 +17,11 @@ env:
   JAVA_VERSION: '21'
   BASE_VERSION: '25.0-SNAPSHOT'
 jobs:
+  check-permissions:
+    uses: ./.github/workflows/check-permissions.yml
+
   build:
+    needs: check-permissions
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     outputs:
@@ -25,19 +29,6 @@ jobs:
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
       - run: echo "Concurrency Group = ${HEAD_REF:-$REF_NAME}"
-      - uses: actions-cool/check-user-permission@main
-        id: checkUser
-        with:
-          username: ${{github.triggering_actor}}
-          require: 'write'
-        env:
-          HEAD_REF: ${{ github.head_ref }}
-          REF_NAME: ${{ github.ref_name }}
-      - name: Fail on external workflow triggering
-        if: ${{ steps.checkUser.outputs.require-result != 'true' && github.actor != 'dependabot[bot]' }}
-        run: |
-          echo "🚫 **${{ github.actor }}** is an external contributor, a **${{ github.repository }}** team member has to review this changes and re-run this build" \
-            | tee -a $GITHUB_STEP_SUMMARY && exit 1
       - name: Check secrets
         run: |
           [ -z "${{secrets.TB_LICENSE}}" ] \

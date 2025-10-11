@@ -25,12 +25,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -39,6 +39,11 @@ import com.vaadin.flow.server.Constants;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
+/**
+ * Utility class for bundle operations.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public final class BundleUtils {
 
     private BundleUtils() {

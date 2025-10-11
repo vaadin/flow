@@ -15,9 +15,6 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -34,6 +31,9 @@ import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.ValueSignalTest.AsyncValueSignal;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EffectTest extends SignalTestBase {
 

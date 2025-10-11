@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import java.lang.reflect.AnnotatedElement;
@@ -45,7 +44,6 @@ import com.vaadin.flow.server.WrappedSession;
  * A {@link BeforeEnterListener} implementation that contains logic to perform
  * access checks before entering a view.
  * <p>
- * </p>
  *
  * Access rules are defined by providing one or more
  * {@link NavigationAccessChecker} instances, that are responsible for deciding
@@ -53,33 +51,27 @@ import com.vaadin.flow.server.WrappedSession;
  * is taken by a pluggable {@link AccessCheckDecisionResolver} component, based
  * on the results of all access checkers.
  * <p>
- * </p>
  * If access is allowed, the navigation continues to the target component.
  * Otherwise, for not authenticated requests, a redirect is performed to the
  * login page (if configured) or to the {@literal not found} error view.
  * <p>
- * </p>
  * In development mode, the access check failure reason is forwarded to the
  * {@literal not found} error view, for debugging purpose. In addition, an
  * exception will be thrown if the decision resolver determines the navigation
  * should be rejected because of misconfigurations.
  * <p>
- * </p>
  * In production mode, for security reasons, the failure message is never
  * exposed and rejection is treated as a normal deny, without any exception
  * being thrown.
  * <p>
- * </p>
  * Before redirecting to the login page, the route path and its absolute URL are
  * stored in the HTTP session, to allow the authentication logic to access the
  * requested resource ( {@link #SESSION_STORED_REDIRECT},
  * {@link #SESSION_STORED_REDIRECT_ABSOLUTE} ).
  * <p>
- * </p>
  * The default constructor create an instance pre-configured with
  * {@link AnnotatedViewAccessChecker}.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NavigationAccessChecker
@@ -183,7 +175,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * Sets the Flow login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
-     * <p>
      *
      * @param loginView
      *            the Flow view to use as login view
@@ -210,7 +201,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
      * Sets the frontend login view to use.
      * <p>
      * The login view can only be set once and cannot be changed afterwards.
-     * <p>
      *
      * @param loginUrl
      *            the frontend view to use as login view
@@ -424,6 +414,8 @@ public class NavigationAccessControl implements BeforeEnterListener {
     /**
      * Checks if an access checker of the given type is in use.
      *
+     * @param type
+     *            the type of access checker to check for
      * @return {@code true} if a checker is in use, {@code false} otherwise
      */
     public boolean hasAccessChecker(

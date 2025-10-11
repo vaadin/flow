@@ -9,5 +9,5 @@ router.setRoutes([
     async action() {
       await import('./home-view.js');
     }
-  },
+  }
 ]);

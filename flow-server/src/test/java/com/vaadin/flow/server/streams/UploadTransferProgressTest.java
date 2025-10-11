@@ -15,30 +15,20 @@
  */
 package com.vaadin.flow.server.streams;
 
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.ServletException;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import jakarta.servlet.ReadListener;
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletInputStream;
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.Part;
-import org.apache.commons.io.IOUtils;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,29 +39,17 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableBiConsumer;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
-import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResourceRegistry;
-import com.vaadin.flow.server.streams.TransferProgressListener;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
-import com.vaadin.tests.util.MockUI;
 
-import static com.vaadin.flow.server.communication.StreamRequestHandler.DYN_RES_PREFIX;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class UploadTransferProgressTest {
     private static final int DUMMY_CONTENT_LENGTH = 160000;

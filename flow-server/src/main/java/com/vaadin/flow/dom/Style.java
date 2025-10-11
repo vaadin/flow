@@ -17,6 +17,7 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.stream.Stream;
+
 import static com.vaadin.flow.dom.ElementConstants.*;
 
 /**

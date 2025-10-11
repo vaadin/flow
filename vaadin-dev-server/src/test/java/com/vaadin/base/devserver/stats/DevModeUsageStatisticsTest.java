@@ -13,24 +13,21 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 
+import net.jcip.annotations.NotThreadSafe;
+import org.apache.commons.io.IOUtils;
+import org.junit.Assert;
+import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.TestUtils;
-
 import com.vaadin.pro.licensechecker.MachineId;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
-import org.junit.Test;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
@@ -67,7 +64,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/1",
-                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
     @Test
@@ -78,7 +75,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/2",
-                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
     @Test
@@ -89,7 +86,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/3",
-                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
     @Test
@@ -100,7 +97,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         ObjectNode json = storage.readProject();
         Assert.assertEquals("https://start.vaadin.com/test/4",
-                json.get(StatisticsConstants.FIELD_SOURCE_ID).asText());
+                json.get(StatisticsConstants.FIELD_SOURCE_ID).asString());
     }
 
     @Test
@@ -282,7 +279,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         final ObjectNode project = storage.read();
         Assert.assertEquals(MachineId.get(),
-                project.get(StatisticsConstants.FIELD_MACHINE_ID).asText());
+                project.get(StatisticsConstants.FIELD_MACHINE_ID).asString());
     }
 
     private static JsonNode wrapStats(String data) {

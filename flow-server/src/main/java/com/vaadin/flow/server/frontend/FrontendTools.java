@@ -68,7 +68,7 @@ public class FrontendTools {
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "11.5.1";
+    public static final String DEFAULT_NPM_VERSION = "11.6.0";
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
@@ -542,6 +542,10 @@ public class FrontendTools {
 
     /**
      * Gets the version of the node executable.
+     *
+     * @return the version of the node executable
+     * @throws UnknownVersionException
+     *             if the node version cannot be determined
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();

@@ -18,6 +18,7 @@ package com.vaadin.flow.component;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+
 import org.jsoup.helper.DataUtil;
 
 import com.vaadin.flow.dom.Element;

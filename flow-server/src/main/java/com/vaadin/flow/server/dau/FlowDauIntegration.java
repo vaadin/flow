@@ -1,11 +1,24 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
+
 import java.time.Instant;
 import java.util.function.Predicate;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinRequest;
@@ -35,7 +48,7 @@ public final class FlowDauIntegration {
      * Generates a new cookie for counting daily active users within 24 hour
      * time interval.
      * <p>
-     * </p>
+     *
      * Cookie value is formatted as {@code  trackingHash$creationTime}, with
      * {@code creationTime} expressed as number of milliseconds from the epoch
      * of 1970-01-01T00:00:00Z. The cookie creation time is required on
@@ -60,12 +73,12 @@ public final class FlowDauIntegration {
     /**
      * Tracks the current user with the given optional identity.
      * <p>
-     * </p>
+     *
      * Tracking the user may raise an enforcement exception, that is stored and
      * applied later by calling
      * {@link #applyEnforcement(VaadinRequest, Predicate)} method.
      * <p>
-     * </p>
+     *
      * Tracking for UIDL requests is postponed until the message is parsed, to
      * prevent UI poll events to be considered as user interaction.
      *
@@ -112,7 +125,7 @@ public final class FlowDauIntegration {
      * Potentially applies enforcement to the current request if DAU limit is
      * exceeded.
      * <p>
-     * </p>
+     *
      * If enforcement has to be applied an {@link EnforcementException} is
      * thrown.
      *

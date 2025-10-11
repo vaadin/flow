@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.converter;
 
 import java.util.Locale;
@@ -29,11 +28,9 @@ import com.vaadin.flow.data.binder.ValueContext;
  * {@link StringToBooleanConverter#StringToBooleanConverter(String, String, String)}.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
- * </p>
  * <p>
  * For language-dependent representation, subclasses should overwrite
  * {@link #getFalseString(Locale)} and {@link #getTrueString(Locale)}
- * </p>
  *
  * @author Vaadin Ltd
  * @since 1.0

@@ -1,101 +1,101 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>test-frontend</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>test-frontend</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-pnpm-dev-mode</artifactId>
+
+  <packaging>war</packaging>
+  <name>Flow tests in pnpm and development mode</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-resources</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-polymer-template</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-lit-template</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Auto run clean to remove previous mode compilation -->
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <!-- clean all generated and installed files/folders -->
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}</directory>
+              <includes>
+                <include>package.json</include>
+                <include>webpack.*.js</include>
+                <include>types.d.ts</include>
+                <include>tsconfig.json</include>
+                <include>node_modules/**</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+        <!-- This is because we run multiple modes on the same module -->
+        <executions>
+          <execution>
+            <id>auto-clean</id>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <!-- Clean lib before running jetty -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+      </plugin>
+      <!-- Run flow plugin to build frontend -->
+      <plugin>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-test-pnpm-dev-mode</artifactId>
-    <name>Flow tests in pnpm and development mode</name>
-
-    <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-resources</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-polymer-template</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-lit-template</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dev-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Auto run clean to remove previous mode compilation -->
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <!-- clean all generated and installed files/folders -->
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.basedir}</directory>
-                            <includes>
-                                <include>package.json</include>
-                                <include>webpack.*.js</include>
-                                <include>types.d.ts</include>
-                                <include>tsconfig.json</include>
-                                <include>node_modules/**</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-                <!-- This is because we run multiple modes on the same module -->
-                <executions>
-                    <execution>
-                        <id>auto-clean</id>
-                        <phase>initialize</phase>
-                        <goals>
-                            <goal>clean</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <!-- Clean lib before running jetty -->
-            <plugin>
-                <artifactId>maven-antrun-plugin</artifactId>
-            </plugin>
-            <!-- Run flow plugin to build frontend -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <configuration>
-                    <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
-                    <pnpmEnable>true</pnpmEnable>
-                </configuration>
-            </plugin>
-            <!-- Run jetty before integration tests, and stop after -->
-            <plugin>
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-maven-plugin</artifactId>
-                <configuration>
-                    <webApp>
-                        <!-- We deploy the app with a context in the servlet
+        <artifactId>flow-maven-plugin</artifactId>
+        <configuration>
+          <requireHomeNodeExec>true</requireHomeNodeExec>
+          <nodeAutoUpdate>true</nodeAutoUpdate>
+          <pnpmEnable>true</pnpmEnable>
+        </configuration>
+      </plugin>
+      <!-- Run jetty before integration tests, and stop after -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <configuration>
+          <webApp>
+            <!-- We deploy the app with a context in the servlet
                             container in order to test that bootstrap code resolves correctly the application
                             context and do not render absolute references to the root path -->
-                        <contextPath>/context-path</contextPath>
-                    </webApp>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+            <contextPath>/context-path</contextPath>
+          </webApp>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
@@ -39,8 +38,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.ObjectMapper;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.plugin.Mojo;
@@ -50,6 +47,8 @@ import org.codehaus.plexus.classworlds.realm.ClassRealm;
 import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
@@ -100,7 +99,7 @@ public final class Reflector {
     /**
      * Gets a {@link Reflector} instance usable with the caller class loader.
      * <p>
-     * </p>
+     *
      * Reflector instances are cached in Maven plugin context, but instances
      * might be associated to the plugin class loader, thus not working with
      * classes loaded by the isolated class loader. This method returns the
@@ -214,7 +213,7 @@ public final class Reflector {
     /**
      * Gets a new {@link Reflector} instance for the current Mojo execution.
      * <p>
-     * </p>
+     *
      * An isolated class loader is created based on project and plugin
      * dependencies, with the first ones having precedence over the seconds. The
      * maven.api class realm is used as parent classloader, allowing usage of
@@ -427,7 +426,7 @@ public final class Reflector {
      * A URL class loader implementation with delegation to a provided class
      * loader and Platform class loader.
      * <p>
-     * </p>
+     *
      * If the class or resource cannot be resolved against the given URLs, it
      * tries to load them from a provided class loader and lastly fallbacks to
      * Platform class loader in case of failure.
@@ -633,7 +632,7 @@ public final class Reflector {
     /**
      * Marks a type as cloneable by Reflector into a different classloader.
      * <p>
-     * </p>
+     *
      * Annotated class must be serializable and deserializable into JSON.
      */
     @Retention(RetentionPolicy.RUNTIME)

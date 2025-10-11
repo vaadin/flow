@@ -106,6 +106,8 @@ public @interface Theme {
      * The name of the theme to use.
      *
      * If this is not specified will default to Lumo.
+     *
+     * @return the theme name
      */
     String value() default "";
 }

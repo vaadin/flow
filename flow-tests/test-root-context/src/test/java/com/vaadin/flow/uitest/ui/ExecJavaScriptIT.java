@@ -124,6 +124,44 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
     }
 
     @Test
+    public void testMapSerialization() {
+        open();
+
+        getButton("mapButton").click();
+
+        WebElement result = waitUntil(d -> findElement(By.id("mapResult")));
+        String resultText = result.getText();
+
+        // Verify Map prefix and all entries are present
+        Assert.assertTrue("Should start with 'Map: '",
+                resultText.startsWith("Map: "));
+        Assert.assertTrue("Should contain 'first' key", resultText
+                .contains("first: name=FirstKey, value=100, active=true"));
+        Assert.assertTrue("Should contain 'second' key", resultText
+                .contains("second: name=SecondKey, value=200, active=false"));
+        Assert.assertTrue("Should contain 'third' key", resultText
+                .contains("third: name=ThirdKey, value=300, active=true"));
+
+        WebElement status = waitUntil(d -> findElement(By.id("mapStatus")));
+        Assert.assertEquals("Map serialization completed", status.getText());
+    }
+
+    @Test
+    public void testMapReturnValue() {
+        open();
+
+        getButton("returnMapButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnMapResult")));
+        Assert.assertEquals("Returned map with 2 entries", result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnMapStatus")));
+        Assert.assertEquals("Map returned", status.getText());
+    }
+
+    @Test
     public void testComponentArraySerialization() {
         open();
 
@@ -168,6 +206,58 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
         WebElement status = waitUntil(
                 d -> findElement(By.id("beanWithComponentStatus")));
         Assert.assertEquals("Bean with component serialization completed",
+                status.getText());
+    }
+
+    @Test
+    public void testClientCallableBeanParameter() {
+        open();
+
+        getButton("clientCallableBeanButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableBeanResult")));
+        Assert.assertEquals(
+                "ClientCallable Bean: name=ClientCallableTest, value=99, active=true",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableBeanStatus")));
+        Assert.assertEquals("ClientCallable bean handled", status.getText());
+    }
+
+    @Test
+    public void testClientCallableListParameter() {
+        open();
+
+        getButton("clientCallableListButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableListResult")));
+        Assert.assertEquals(
+                "ClientCallable List: [0]: name=Item1, value=111, active=true | [1]: name=Item2, value=222, active=false",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableListStatus")));
+        Assert.assertEquals("ClientCallable list handled", status.getText());
+    }
+
+    @Test
+    public void testClientCallableNestedBeanParameter() {
+        open();
+
+        getButton("clientCallableNestedButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("clientCallableNestedResult")));
+        Assert.assertEquals(
+                "ClientCallable Nested: title=ClientCallableNested, simple.name=NestedInner, simple.value=333, simple.active=false",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("clientCallableNestedStatus")));
+        Assert.assertEquals("ClientCallable nested bean handled",
                 status.getText());
     }
 

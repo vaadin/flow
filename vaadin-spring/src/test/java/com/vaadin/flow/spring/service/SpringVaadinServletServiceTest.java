@@ -15,16 +15,11 @@
  */
 package com.vaadin.flow.spring.service;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.di.Instantiator;
-import com.vaadin.flow.server.ServiceException;
-import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServiceInitListener;
-import com.vaadin.flow.server.VaadinServletRequest;
-import com.vaadin.flow.server.VaadinServletResponse;
-import com.vaadin.flow.server.VaadinServletService;
-import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 import jakarta.servlet.ServletException;
+
+import java.util.Properties;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -36,8 +31,15 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Properties;
-import java.util.stream.Stream;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.di.Instantiator;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinServiceInitListener;
+import com.vaadin.flow.server.VaadinServletRequest;
+import com.vaadin.flow.server.VaadinServletResponse;
+import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
 @Import(TestServletConfiguration.class)

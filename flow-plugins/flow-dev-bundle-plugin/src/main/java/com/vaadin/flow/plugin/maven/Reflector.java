@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
@@ -86,7 +85,7 @@ public final class Reflector {
     /**
      * Gets a {@link Reflector} instance usable with the caller class loader.
      * <p>
-     * </p>
+     *
      * Reflector instances are cached in Maven plugin context, but instances
      * might be associated to the plugin class loader, thus not working with
      * classes loaded by the isolated class loader. This method returns the
@@ -172,7 +171,7 @@ public final class Reflector {
      * Creates a copy of the given Flow mojo, loading classes the isolated
      * classloader.
      * <p>
-     * </p>
+     *
      * Loads the given mojo class from the isolated class loader and then
      * creates a new instance for it and fills all field copying values from the
      * original mojo. The input mojo must have a public no-args constructor.
@@ -201,7 +200,7 @@ public final class Reflector {
     /**
      * Gets a new {@link Reflector} instance for the current Mojo execution.
      * <p>
-     * </p>
+     *
      * An isolated class loader is created based on project and plugin
      * dependencies, with the first ones having precedence over the seconds. The
      * maven.api class realm is used as parent classloader, allowing usage of
