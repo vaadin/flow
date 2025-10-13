@@ -18,7 +18,6 @@ package com.vaadin.flow.hotswap;
 import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -200,19 +199,13 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 LOGGER.debug(
                         "Triggering browser live reload because of CSS resources changes");
 
-                String buildFolder = vaadinService.getDeploymentConfiguration()
-                        .getBuildFolder();
-                File projectFolder = vaadinService.getDeploymentConfiguration()
-                        .getProjectFolder();
-
-                String pathToClasses = FrontendUtils
-                        .getUnixPath(projectFolder.toPath().resolve(
-                                Paths.get(buildFolder, "classes").normalize()));
+                File buildResourcesFolder = vaadinService
+                        .getDeploymentConfiguration().getBuildResourcesFolder();
 
                 List<File> publicStaticResourcesFolders = Stream
                         .of("META-INF/resources", "resources", "static",
                                 "public")
-                        .map(path -> new File(pathToClasses, path))
+                        .map(path -> new File(buildResourcesFolder, path))
                         .filter(File::exists).toList();
 
                 Arrays.stream(modifiedResources).forEach(resource -> {

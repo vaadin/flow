@@ -185,6 +185,34 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
+     * Returns a folder inside build folder, where the built tool places
+     * project's resources.
+     * <p>
+     * Only available in development mode.
+     * <p>
+     * For Maven this is typically {@code target/classes/} and for Gradle -
+     * {@code build/resources/main/}.
+     *
+     * @return the folder inside build folder where resources are placed, or
+     *         {@code null} if the project folder is unknown.
+     */
+    default File getBuildResourcesFolder() {
+        File projectFolder = getProjectFolder();
+        if (projectFolder == null) {
+            return null;
+        }
+        String buildFolderName = getBuildFolder();
+        File buildFolder = new File(projectFolder, buildFolderName);
+        if (Constants.TARGET.equals(buildFolderName)) {
+            // Maven
+            return new File(buildFolder, "classes/");
+        } else {
+            // Gradle
+            return new File(buildFolder, "/resources/main/");
+        }
+    }
+
+    /**
      * Return the project root folder.
      * <p>
      * Only available in development mode.
