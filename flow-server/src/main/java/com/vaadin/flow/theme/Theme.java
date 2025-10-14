@@ -77,9 +77,12 @@ import java.lang.annotation.Target;
  * @since 1.0
  * @deprecated As of Vaadin 25, this annotation is deprecated. The theming
  *             system has been reworked to use
+ *             {@link com.vaadin.flow.component.dependency.StyleSheet} to load
+ *             one or more stylesheets from public static resources locations or
  *             {@link com.vaadin.flow.component.dependency.CssImport} to load
- *             one or more stylesheets and use mechanisms native to HTML, CSS
- *             and React (e.g. {@code @import url("morestyles.css")} in CSS).
+ *             one or more stylesheets from a {@code src/main/frontend/} folder
+ *             and use mechanisms native to HTML, CSS and React (e.g.
+ *             {@code @import url("morestyles.css")} in CSS).
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

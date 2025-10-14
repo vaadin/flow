@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webpush;
 
 import java.util.List;
@@ -45,11 +44,9 @@ public class WebPushView extends Div {
     WebPush webPush;
 
     private final Div log;
-    private final WebPushAction webPushAction = new WebPushAction(
-            "dashboard",
+    private final WebPushAction webPushAction = new WebPushAction("dashboard",
             "Open Dashboard",
-            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png"
-    );
+            "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png");
 
     private WebPushSubscription subscription;
 
@@ -83,19 +80,11 @@ public class WebPushView extends Div {
                 WebPushOptions webPushOptions = new WebPushOptions(
                         List.of(webPushAction),
                         "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
-                        "Testing notification",
-                        "This is my data!",
-                        "rtl",
+                        "Testing notification", "This is my data!", "rtl",
                         "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
                         "https://upload.wikimedia.org/wikipedia/commons/0/0e/Message-icon-blue-symbol-double.png",
-                        "de-DE",
-                        true,
-                        true,
-                        false,
-                        "My Notification",
-                        System.currentTimeMillis(),
-                        List.of(500, 500, 500)
-                );
+                        "de-DE", true, true, false, "My Notification",
+                        System.currentTimeMillis(), List.of(500, 500, 500));
 
                 webPush.sendNotification(subscription,
                         new WebPushMessage(TEST_TITLE, webPushOptions));
