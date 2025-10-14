@@ -346,6 +346,11 @@ function useQueuedNavigate(
     return enqueueNavigation;
 }
 
+const flowNavigation = () => {
+  // @ts-ignore
+  window.Vaadin.Flow.navigation = true;
+};
+
 function Flow() {
     const ref = useRef<HTMLOutputElement>(null);
     const navigate = useNavigate();
@@ -403,6 +408,8 @@ function Flow() {
             // When navigation is triggered by click on a link, fromAnchor is set to true
             // in order to get a server round-trip even when navigating to the same URL again
             fromAnchor.current = true;
+            // @ts-ignore
+            window.Vaadin.Flow.navigation = true;
             navigate(path);
             // Dispatch close event for overlay drawer on click navigation.
             window.dispatchEvent(new CustomEvent('close-overlay-drawer'));
@@ -426,6 +433,8 @@ function Flow() {
 
     const vaadinNavigateEventHandler = useCallback(
         (event: CustomEvent<{ state: unknown; url: string; replace?: boolean; callback: boolean }>) => {
+            // @ts-ignore
+            window.Vaadin.Flow.navigation = true;
             // clean base uri away if for instance redirected to http://localhost/path/user?id=10
             // else the whole http... will be appended to the url see #19580
             const path = event.detail.url.startsWith(document.baseURI)
@@ -446,22 +455,13 @@ function Flow() {
         [navigate]
     );
 
-  const flowNavigation = () => {
-    // @ts-ignore
-    window.Vaadin.Flow.navigation = true;
-  };
-
   useEffect(() => {
-        // @ts-ignore
-        window.addEventListener("popstate", flowNavigation);
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
         // @ts-ignore
         window.addEventListener('vaadin-navigate', vaadinNavigateEventHandler);
 
         return () => {
-            // @ts-ignore
-            window.removeEventListener("popstate", flowNavigation);
             // @ts-ignore
             window.removeEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
             // @ts-ignore
@@ -470,6 +470,8 @@ function Flow() {
     }, [vaadinRouterGoEventHandler, vaadinNavigateEventHandler]);
 
     useEffect(() => {
+        // @ts-ignore
+        window.addEventListener("popstate", flowNavigation);
         window.addEventListener('click', navigateEventHandler);
         flowReact.active = true;
 
@@ -477,6 +479,8 @@ function Flow() {
             containerRef.current?.parentNode?.removeChild(containerRef.current);
             containerRef.current?.removeEventListener('flow-portal-add', addPortalEventHandler as EventListener);
             containerRef.current = undefined;
+            // @ts-ignore
+            window.removeEventListener("popstate", flowNavigation);
             window.removeEventListener('click', navigateEventHandler);
             flowReact.active = false;
         };
