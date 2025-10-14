@@ -49,7 +49,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * <pre>
  *     // theme selection
  *     &#64;StyleSheet(Aura.STYLESHEET) // or Lumo.STYLESHEET
- *     public class Application extends AppShellConfigurator {
+ *     public class Application implements AppShellConfigurator {
  *         ...
  *     }
  *
