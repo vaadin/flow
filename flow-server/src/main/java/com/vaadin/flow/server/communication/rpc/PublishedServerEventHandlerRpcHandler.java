@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -198,8 +197,7 @@ public class PublishedServerEventHandlerRpcHandler
             invokeMethod(instance, method, args);
         } else {
             try {
-                Serializable returnValue = (Serializable) invokeMethod(instance,
-                        method, args);
+                Object returnValue = invokeMethod(instance, method, args);
 
                 instance.getElement()
                         .executeJs("this.$server['"
