@@ -56,7 +56,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  *     OR
  *
  *     &#64;StyleSheet("styles.css") // from src/main/resources/META-INF/resources/styles.css
- *     public class Application extends AppShellConfigurator {
+ *     public class Application implements AppShellConfigurator {
  *         ...
  *     }
  *     // and using @import in the styles.css:
