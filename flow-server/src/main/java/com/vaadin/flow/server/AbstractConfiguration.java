@@ -203,13 +203,13 @@ public interface AbstractConfiguration extends Serializable {
         }
         String buildFolderName = getBuildFolder();
         File buildFolder = new File(projectFolder, buildFolderName);
-        File mavenOutputResources = new File(buildFolder, "classes/");
-        if (mavenOutputResources.exists()) {
-            // Maven
-            return mavenOutputResources;
-        } else {
+        File gradleOutputResources = new File(buildFolder, "resources/main/");
+        if (gradleOutputResources.exists()) {
             // Gradle
-            return new File(buildFolder, "resources/main/");
+            return gradleOutputResources;
+        } else {
+            // Maven
+            return new File(buildFolder, "classes/");
         }
     }
 

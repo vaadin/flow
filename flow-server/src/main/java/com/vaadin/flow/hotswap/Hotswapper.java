@@ -208,21 +208,25 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                         .map(path -> new File(buildResourcesFolder, path))
                         .filter(File::exists).toList();
 
-                Arrays.stream(modifiedResources).forEach(resource -> {
-                    String resourcePath = resource.getPath();
-                    for (File staticResourcesFolder : publicStaticResourcesFolders) {
-                        String staticResourcesPath = FrontendUtils
-                                .getUnixPath(staticResourcesFolder.toPath());
-                        if (resourcePath.startsWith(staticResourcesPath)) {
-                            String path = resourcePath
-                                    .replace(staticResourcesPath, "");
-                            if (path.startsWith("/")) {
-                                path = path.substring(1);
+                Stream.of(createdResources, modifiedResources, deletedResources)
+                        .flatMap(Arrays::stream).distinct()
+                        .forEach(resource -> {
+                            String resourcePath = resource.getPath();
+                            for (File staticResourcesFolder : publicStaticResourcesFolders) {
+                                String staticResourcesPath = FrontendUtils
+                                        .getUnixPath(
+                                                staticResourcesFolder.toPath());
+                                if (resourcePath
+                                        .startsWith(staticResourcesPath)) {
+                                    String path = resourcePath
+                                            .replace(staticResourcesPath, "");
+                                    if (path.startsWith("/")) {
+                                        path = path.substring(1);
+                                    }
+                                    liveReload.update(path, null);
+                                }
                             }
-                            liveReload.update(path, null);
-                        }
-                    }
-                });
+                        });
             }
         }
 
