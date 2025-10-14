@@ -42,7 +42,7 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * of the html page, thus {@link LoadMode} values are ignored.
  * <p>
  * This annotation is a recommended way to select a Vaadin theme and to import
- * stylesheets. To be put on a class extending
+ * stylesheets. To be put on a class implementing
  * {@link com.vaadin.flow.component.page.AppShellConfigurator} in this case.
  * Example of usage:
  * 
