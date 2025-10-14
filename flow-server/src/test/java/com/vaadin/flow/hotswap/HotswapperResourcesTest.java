@@ -93,7 +93,7 @@ public class HotswapperResourcesTest {
     public void cssResourceChange_triggersLiveReloadUpdateWithRelativePath()
             throws Exception {
         File buildResources = service.getDeploymentConfiguration()
-                .getBuildResourcesFolder();
+                .getOutputResourceFolder();
         // Mimic a static resources folder under build resources
         File publicDir = new File(buildResources, "public");
         File css = new File(publicDir, "styles/app.css");
@@ -129,7 +129,7 @@ public class HotswapperResourcesTest {
         Hotswapper noLR = new Hotswapper(serviceNoLR);
 
         File buildResources = serviceNoLR.getDeploymentConfiguration()
-                .getBuildResourcesFolder();
+                .getOutputResourceFolder();
         File staticDir = new File(buildResources, "static");
         File css = new File(staticDir, "theme.css");
         css.getParentFile().mkdirs();

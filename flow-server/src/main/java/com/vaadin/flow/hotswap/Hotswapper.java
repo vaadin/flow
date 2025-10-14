@@ -200,7 +200,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                         "Triggering browser live reload because of CSS resources changes");
 
                 File buildResourcesFolder = vaadinService
-                        .getDeploymentConfiguration().getBuildResourcesFolder();
+                        .getDeploymentConfiguration().getOutputResourceFolder();
 
                 List<File> publicStaticResourcesFolders = Stream
                         .of("META-INF/resources", "resources", "static",

@@ -196,19 +196,20 @@ public interface AbstractConfiguration extends Serializable {
      * @return the folder inside build folder where resources are placed, or
      *         {@code null} if the project folder is unknown.
      */
-    default File getBuildResourcesFolder() {
+    default File getOutputResourceFolder() {
         File projectFolder = getProjectFolder();
         if (projectFolder == null) {
             return null;
         }
         String buildFolderName = getBuildFolder();
         File buildFolder = new File(projectFolder, buildFolderName);
-        if (Constants.TARGET.equals(buildFolderName)) {
+        File mavenOutputResources = new File(buildFolder, "classes/");
+        if (mavenOutputResources.exists()) {
             // Maven
-            return new File(buildFolder, "classes/");
+            return mavenOutputResources;
         } else {
             // Gradle
-            return new File(buildFolder, "/resources/main/");
+            return new File(buildFolder, "resources/main/");
         }
     }
 

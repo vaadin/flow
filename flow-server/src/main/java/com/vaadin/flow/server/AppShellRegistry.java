@@ -17,7 +17,11 @@ package com.vaadin.flow.server;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import org.jsoup.nodes.Document;
