@@ -27,13 +27,10 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
-import static org.junit.Assert.*;
-
 public class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
-    private VaadinService service;
 
     @Before
     public void setUp() throws IOException {
