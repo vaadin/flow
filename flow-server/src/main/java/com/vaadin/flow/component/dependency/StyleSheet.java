@@ -41,8 +41,10 @@ import com.vaadin.flow.shared.ui.LoadMode;
  * during bootstrap. In this case the style sheet is always inlined in the body
  * of the html page, thus {@link LoadMode} values are ignored.
  * <p>
- * This annotation is a recommended way to select Vaadin theme for use and to
- * import stylesheets. Example of usage:
+ * This annotation is a recommended way to select a Vaadin theme and to import
+ * stylesheets. To be put on a class extending
+ * {@link com.vaadin.flow.component.page.AppShellConfigurator} in this case.
+ * Example of usage:
  * 
  * <pre>
  *     // theme selection
