@@ -455,7 +455,7 @@ function Flow() {
         [navigate]
     );
 
-  useEffect(() => {
+    useEffect(() => {
         // @ts-ignore
         window.addEventListener('vaadin-router-go', vaadinRouterGoEventHandler);
         // @ts-ignore
