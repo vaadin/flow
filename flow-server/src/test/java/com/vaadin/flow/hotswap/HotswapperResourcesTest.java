@@ -20,15 +20,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 
-import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -38,16 +38,16 @@ public class HotswapperResourcesTest {
     private MockVaadinServletService service;
     private BrowserLiveReload liveReload;
     private Hotswapper hotswapper;
-    private File tempProjectDir;
+
+    @Rule
+    public TemporaryFolder tempProjectDir = new TemporaryFolder();
 
     @Before
     public void setUp() throws IOException {
         MockDeploymentConfiguration dc = new MockDeploymentConfiguration();
-        // Create a temporary project directory, required for build resources
-        // folder
-        tempProjectDir = Files.createTempDirectory("vaadin-hotswap-test")
-                .toFile();
-        dc.setProjectFolder(tempProjectDir);
+        // Use TemporaryFolder for the project directory required for build
+        // resources
+        dc.setProjectFolder(tempProjectDir.getRoot());
 
         service = new MockVaadinServletService(dc);
 
@@ -66,13 +66,6 @@ public class HotswapperResourcesTest {
                 .thenReturn(context -> appConfig);
 
         hotswapper = new Hotswapper(service);
-    }
-
-    @After
-    public void tearDown() throws IOException {
-        if (tempProjectDir != null) {
-            FrontendUtils.deleteDirectory(tempProjectDir);
-        }
     }
 
     @Test
@@ -100,7 +93,7 @@ public class HotswapperResourcesTest {
             throws Exception {
         // Create a new service without BrowserLiveReload in Lookup
         MockDeploymentConfiguration dc = new MockDeploymentConfiguration();
-        dc.setProjectFolder(tempProjectDir);
+        dc.setProjectFolder(tempProjectDir.getRoot());
         MockVaadinServletService serviceNoLR = new MockVaadinServletService(dc);
         // Provide ApplicationConfiguration via factory to avoid NPE in
         // BrowserLiveReloadAccessor

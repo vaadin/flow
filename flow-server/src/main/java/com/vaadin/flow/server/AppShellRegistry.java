@@ -375,7 +375,7 @@ public class AppShellRegistry implements Serializable {
         DeploymentConfiguration config = request.getService()
                 .getDeploymentConfiguration();
         if (!config.isProductionMode()) {
-            stylesheets.forEach((resolved, source) -> {
+            stylesheets.replaceAll((resolved, source) -> {
                 if (source.startsWith("/")) {
                     source = source.substring(1);
                 }
@@ -388,7 +388,7 @@ public class AppShellRegistry implements Serializable {
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                                     .length());
                 }
-                stylesheets.put(resolved, source);
+                return source;
             });
         }
 

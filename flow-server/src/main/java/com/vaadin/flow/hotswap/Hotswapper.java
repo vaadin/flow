@@ -202,20 +202,21 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 File buildResourcesFolder = vaadinService
                         .getDeploymentConfiguration().getOutputResourceFolder();
 
-                List<File> publicStaticResourcesFolders = Stream
+                List<String> publicStaticResourcesPaths = Stream
                         .of("META-INF/resources", "resources", "static",
                                 "public")
                         .map(path -> new File(buildResourcesFolder, path))
-                        .filter(File::exists).toList();
+                        .filter(File::exists)
+                        .map(staticResourceFolder -> FrontendUtils
+                                .getUnixPath(staticResourceFolder.toPath()))
+                        .toList();
 
                 Stream.of(createdResources, modifiedResources, deletedResources)
                         .flatMap(Arrays::stream).distinct()
+                        .filter(uri -> !new File(uri.getPath()).isDirectory())
                         .forEach(resource -> {
                             String resourcePath = resource.getPath();
-                            for (File staticResourcesFolder : publicStaticResourcesFolders) {
-                                String staticResourcesPath = FrontendUtils
-                                        .getUnixPath(
-                                                staticResourcesFolder.toPath());
+                            for (String staticResourcesPath : publicStaticResourcesPaths) {
                                 if (resourcePath
                                         .startsWith(staticResourcesPath)) {
                                     String path = resourcePath

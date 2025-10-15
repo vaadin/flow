@@ -689,8 +689,16 @@ export class VaadinDevTools extends LitElement {
       } else {
         let linkTag = document.head.querySelector(`link[data-file-path='${path}']`);
         if (linkTag) {
-          const href = linkTag.getAttribute('href').split('?')[0];
-          linkTag.setAttribute('href', `${href}?v=${new Date().getTime()}`);
+          const originalHref = linkTag.getAttribute('href') || '';
+          // Preserve existing query parameters and hash, and add/update a dedicated cache-busting parameter
+          const [hrefWithoutHash, hash = ''] = originalHref.split('#');
+          const [base, query = ''] = hrefWithoutHash.split('?');
+          const params = new URLSearchParams(query);
+          const cacheParam = 'v-hotreload';
+          params.set(cacheParam, String(new Date().getTime()));
+          const newQuery = params.toString();
+          const newHref = `${base}?${newQuery}${hash ? `#${hash}` : ''}`;
+          linkTag.setAttribute('href', newHref);
           document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
         } else {
           onReload();
