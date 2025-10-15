@@ -190,6 +190,17 @@ public class FrontendUtils {
     public static final String THEME_IMPORTS_NAME = "theme.js";
 
     /**
+     * The name of the file that contains application shell imports, such
+     * as style imports for the theme.
+     */
+    public static final String APP_SHELL_IMPORTS_NAME = "app-shell-imports.js";
+
+    /**
+     * The TypeScript definitions for the {@link FrontendUtils#APP_SHELL_IMPORTS_NAME}
+     */
+    public static final String APP_SHELL_IMPORTS_D_TS_NAME = "app-shell-imports.d.ts";
+
+    /**
      * File name of the bootstrap file that is generated in frontend
      * {@link #GENERATED} folder. The bootstrap file is always executed in a
      * Vaadin app.

@@ -26,12 +26,19 @@ import java.util.Objects;
  * loaded immediately when the JS bundle is loaded while chunks marked as not
  * eager (i.e. lazy) are loaded on demand later.
  * <p>
- * There is one special, global chunk, defined as {@link #GLOBAL} in this class,
+ * There is a special application shell chunk, defined as {@link #APP_SHELL}
+ * in this class, which is used for gathering all data that relates to the
+ * application shell.
+ * <p>
+ * There is a special global chunk, defined as {@link #GLOBAL} in this class,
  * which is used for gathering all data that relates to internal entry points.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  **/
 public class ChunkInfo {
+
+    public static final ChunkInfo APP_SHELL = new ChunkInfo(EntryPointType.INTERNAL, null
+    , null, true);
 
     public static final ChunkInfo GLOBAL = new ChunkInfo(
             EntryPointType.INTERNAL, null, null, false);

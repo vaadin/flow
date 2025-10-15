@@ -118,6 +118,8 @@ abstract class AbstractUpdateImports implements Runnable {
     final File generatedFlowImports;
     final File generatedFlowWebComponentImports;
     private final File generatedFlowDefinitions;
+    private final File appShellImports;
+    private final File appShellDefinitions;
     private File chunkFolder;
 
     private final GeneratedFilesSupport generatedFilesSupport;
@@ -141,6 +143,9 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        var generatedFolder = FrontendUtils.getFrontendGeneratedFolder(options.getFrontendDirectory());
+        appShellImports = new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_NAME);
+        appShellDefinitions = new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
 
         generatedFlowWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(
@@ -284,6 +289,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerJavascript = new ArrayList<>();
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
+        List<CssData> appShellCssData = new ArrayList<>();
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -301,7 +307,11 @@ abstract class AbstractUpdateImports implements Runnable {
                     lazyCss.put(entry.getKey(), cssLines);
                 }
             } else {
-                eagerCssData.addAll(entry.getValue());
+                if (entry.getKey().equals(ChunkInfo.APP_SHELL)) {
+                    appShellCssData.addAll(entry.getValue());
+                } else {
+                    eagerCssData.addAll(entry.getValue());
+                }
             }
         }
 
@@ -371,6 +381,15 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add(
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
+
+        List<String> appShellLines = new ArrayList<>();
+        List<String> appShellCssLines = getCssLines(appShellCssData);
+        if (!appShellCssLines.isEmpty()) {
+            appShellLines.add(IMPORT_INJECT);
+            appShellLines.addAll(appShellCssLines);
+        }
+        files.put(appShellImports, appShellLines);
+        files.put(appShellDefinitions, Collections.singletonList("export {}"));
 
         List<String> mainLines = new ArrayList<>();
 
