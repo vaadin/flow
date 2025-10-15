@@ -28,6 +28,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -70,23 +71,8 @@ public class HotswapperResourcesTest {
     @After
     public void tearDown() throws IOException {
         if (tempProjectDir != null) {
-            deleteRecursively(tempProjectDir);
+            FrontendUtils.deleteDirectory(tempProjectDir);
         }
-    }
-
-    private static void deleteRecursively(File f) throws IOException {
-        if (f == null || !f.exists()) {
-            return;
-        }
-        if (f.isDirectory()) {
-            File[] children = f.listFiles();
-            if (children != null) {
-                for (File c : children) {
-                    deleteRecursively(c);
-                }
-            }
-        }
-        Files.deleteIfExists(f.toPath());
     }
 
     @Test
