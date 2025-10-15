@@ -309,7 +309,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * Allows building a version of the application with a commercial banner
      * when commercial components are used without a license key.
      */
-    @Parameter(property = "vaadin.commercialWithBanner", defaultValue = "false")
+    @Parameter(property = "vaadin."
+            + InitParameters.COMMERCIAL_WITH_BANNER, defaultValue = "false")
     private boolean commercialWithBanner;
 
     /**
