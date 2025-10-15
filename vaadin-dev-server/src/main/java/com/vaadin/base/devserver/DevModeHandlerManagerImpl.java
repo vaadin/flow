@@ -22,13 +22,11 @@ import java.io.File;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +113,6 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
-            startWatchingPublicResourcesCss(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -247,34 +244,4 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
         return LoggerFactory.getLogger(DevModeHandlerManagerImpl.class);
     }
 
-    // package-private for testing
-    void startWatchingPublicResourcesCss(VaadinContext context,
-            ApplicationConfiguration config) {
-        final File rootResourcesFolder = config.getJavaResourceFolder();
-        Stream.of("META-INF/resources", "resources", "static", "public")
-                .map(path -> {
-                    File resourcesFolder = new File(rootResourcesFolder, path);
-                    if (resourcesFolder.exists()) {
-                        return resourcesFolder.getAbsolutePath();
-                    }
-                    return null;
-                }).filter(Objects::nonNull).forEach(path -> {
-                    try {
-                        File resourcesFolder = new File(path);
-                        if (!resourcesFolder.isDirectory()) {
-                            getLogger().debug(
-                                    "No public resources folder found at {}",
-                                    resourcesFolder);
-                            return;
-                        }
-                        registerWatcherShutdownCommand(
-                                new PublicResourcesCssLiveUpdater(
-                                        resourcesFolder, context));
-                    } catch (Exception e) {
-                        getLogger().error(
-                                "Failed to start live-reload for public CSS resources",
-                                e);
-                    }
-                });
-    }
 }
