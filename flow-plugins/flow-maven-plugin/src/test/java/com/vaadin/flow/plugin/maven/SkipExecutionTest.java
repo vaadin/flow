@@ -64,7 +64,7 @@ public class SkipExecutionTest {
         mojo.execute();
 
         // Verify that the skip message was logged
-        verify(mockLog).info("Skipping execution because vaadin.skip=true");
+        verify(mockLog).info("Skipping Vaadin build");
     }
 
     @Test
@@ -80,6 +80,6 @@ public class SkipExecutionTest {
         }
 
         // Verify that the skip message was NOT logged
-        verify(mockLog, never()).info("Skipping execution because vaadin.skip=true");
+        verify(mockLog, never()).info("Skipping Vaadin build");
     }
 }
