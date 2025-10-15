@@ -212,6 +212,11 @@ public class PropertyDeploymentConfiguration
     }
 
     @Override
+    public File getOutputResourceFolder() {
+        return super.getOutputResourceFolder();
+    }
+
+    @Override
     public File getJavaResourceFolder() {
         return super.getJavaResourceFolder();
     }
