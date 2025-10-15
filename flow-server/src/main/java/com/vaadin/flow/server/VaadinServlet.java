@@ -290,6 +290,8 @@ public class VaadinServlet extends HttpServlet {
      * frameworks.
      *
      * @return the created deployment configuration
+     * @throws ServletException
+     *             if creating the deployment configuration fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {

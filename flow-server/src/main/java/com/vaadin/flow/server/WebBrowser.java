@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
@@ -238,7 +237,6 @@ public class WebBrowser implements Serializable {
      * <p>
      * Note that Internet Explorer in IE7 compatibility mode might return 8 in
      * some cases even though it should return 7.
-     * </p>
      *
      * @return The major version of the browser or -1 if not known.
      * @deprecated use a parsing library like ua-parser/uap-java to parse the

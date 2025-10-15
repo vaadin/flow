@@ -36,6 +36,8 @@ public interface InMemoryUploadCallback extends Serializable {
      * @param metadata
      *            the upload metadata containing relevant information about the
      *            upload
+     * @param data
+     *            the byte array containing the uploaded data
      * @throws IOException
      *             if an I/O error occurs in the callback
      */

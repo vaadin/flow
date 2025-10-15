@@ -666,7 +666,6 @@ public class BrowserDetails implements Serializable {
      * <p>
      * Note that Internet Explorer 8 and newer will return the document mode so
      * IE8 rendering as IE7 will return 7.
-     * </p>
      *
      * @return The major version of the browser.
      */

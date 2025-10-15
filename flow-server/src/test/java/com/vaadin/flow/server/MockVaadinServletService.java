@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
@@ -183,6 +184,9 @@ public class MockVaadinServletService extends VaadinServletService {
     protected Executor createDefaultExecutor() {
         Executor executor = super.createDefaultExecutor();
         if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
+            threadPoolExecutor.setCorePoolSize(0);
+            threadPoolExecutor.setMaximumPoolSize(4);
+            threadPoolExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
             ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
             threadPoolExecutor.setThreadFactory(r -> {
                 Thread thread = threadFactory.newThread(r);

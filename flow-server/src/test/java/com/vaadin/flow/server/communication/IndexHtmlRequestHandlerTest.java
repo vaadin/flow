@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.communication;
 
-import tools.jackson.databind.node.ObjectNode;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.ByteArrayOutputStream;
@@ -48,6 +47,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;

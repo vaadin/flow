@@ -13,10 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;

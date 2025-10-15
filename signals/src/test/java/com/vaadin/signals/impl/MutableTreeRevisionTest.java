@@ -15,22 +15,16 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.IntStream;
 
 import org.junit.jupiter.api.Test;
-
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.StringNode;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.ListSignal.ListPosition;
@@ -40,6 +34,12 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class MutableTreeRevisionTest {
     private final MutableTreeRevision revision = new MutableTreeRevision(

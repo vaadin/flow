@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -22,7 +21,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
 import java.util.Set;
 
-import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Before;
@@ -30,6 +28,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
@@ -101,7 +100,7 @@ public class TaskUpdateSettingsFileTest {
 
     private void assertPathsMatchProjectFolder(JsonNode json) {
         ABSOLUTE_PATH_ENTRIES.forEach(key -> {
-            String path = json.get(key).asText();
+            String path = json.get(key).asString();
             Assert.assertTrue(
                     "Expected '" + key + "' to have an absolute path matching "
                             + temporaryFolder.getRoot().getPath() + ", but was "

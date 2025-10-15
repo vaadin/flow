@@ -36,10 +36,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -122,7 +120,7 @@ public class BuildDevBundleMojo extends AbstractMojo
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
-     * </p>
+     *
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)

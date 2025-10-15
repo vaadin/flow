@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import java.util.AbstractList;
@@ -54,7 +53,6 @@ import tools.jackson.databind.node.ObjectNode;
 import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 
 import elemental.json.Json;
@@ -228,6 +226,8 @@ public final class JacksonUtils {
     /**
      * Read Json string to JsonNode.
      *
+     * @param json
+     *            the JSON string to parse
      * @return JsonNode representation of given json string
      */
     public static ObjectNode readTree(String json) {
@@ -241,6 +241,8 @@ public final class JacksonUtils {
     /**
      * Create a JsonNode from value.
      *
+     * @param value
+     *            the value to convert to a JsonNode
      * @return JsonNode for given value content
      */
     public static JsonNode createNode(Object value) {
@@ -346,7 +348,7 @@ public final class JacksonUtils {
     public static boolean stringEqual(JsonNode a, JsonNode b) {
         assert a.getNodeType() == JsonNodeType.STRING;
         assert b.getNodeType() == JsonNodeType.STRING;
-        return a.asText().equals(b.asText());
+        return a.asString().equals(b.asString());
     }
 
     /**

@@ -20,7 +20,6 @@ package com.vaadin.flow.data.provider;
  *
  * @param <T>
  *            data type
- * @since
  */
 public interface LazyDataView<T> extends DataView<T> {
 

@@ -15,13 +15,14 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import com.vaadin.flow.data.provider.*;
-import com.vaadin.flow.shared.Registration;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
+
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import com.vaadin.flow.data.provider.DataProviderListener;
+import com.vaadin.flow.shared.Registration;
 
 public class HierarchicalDataProviderTest {
 

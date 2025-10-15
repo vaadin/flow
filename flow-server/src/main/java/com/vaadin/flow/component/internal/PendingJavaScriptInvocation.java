@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.component.internal;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
@@ -105,7 +105,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     public void completeExceptionally(JsonNode value) {
         assert isSubscribed();
 
-        String message = value.asText();
+        String message = value.asString();
 
         if (errorHandler != null) {
             errorHandler.accept(message);

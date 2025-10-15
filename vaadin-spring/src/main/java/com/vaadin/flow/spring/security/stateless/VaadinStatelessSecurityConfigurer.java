@@ -15,7 +15,13 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import javax.crypto.SecretKey;
+
 import java.io.IOException;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -23,10 +29,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.Customizer;
@@ -34,10 +36,7 @@ import org.springframework.security.config.annotation.web.HttpSecurityBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
-import org.springframework.security.config.annotation.web.configurers.SessionManagementConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.session.SessionCreationEvent;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
@@ -101,7 +100,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
-     * </p>
+     *
      * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
      * or {@link Customizer#withDefaults()} to accept the default values.
      *
@@ -110,6 +109,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @throws Exception
+     *             if an error occurs during configuration
      * @deprecated use
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.

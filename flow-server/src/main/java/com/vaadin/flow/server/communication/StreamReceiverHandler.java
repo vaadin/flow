@@ -15,12 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
-import javax.naming.SizeLimitExceededException;
-
-import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
-import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
-import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
-import static java.nio.charset.StandardCharsets.UTF_8;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -63,8 +59,10 @@ import com.vaadin.flow.server.communication.streaming.StreamingProgressEventImpl
 import com.vaadin.flow.server.communication.streaming.StreamingStartEventImpl;
 import com.vaadin.flow.shared.ApplicationConstants;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.Part;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
+import static com.vaadin.flow.server.Constants.DEFAULT_REQUEST_SIZE_MAX;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Handles {@link StreamReceiver} instances registered in {@link VaadinSession}.
@@ -328,7 +326,6 @@ public class StreamReceiverHandler implements Serializable {
      * This method takes care of locking the session as needed and does not
      * assume the caller has locked the session. This allows the session to be
      * locked only when needed and not when handling the upload data.
-     * </p>
      *
      * @param session
      *            The session containing the stream variable
@@ -460,6 +457,8 @@ public class StreamReceiverHandler implements Serializable {
      *
      * @param response
      *            response to write to
+     * @param success
+     *            whether the upload was successful
      * @throws IOException
      *             exception when writing to stream
      */

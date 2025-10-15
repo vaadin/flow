@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -119,7 +118,7 @@ public class ElementAttributeMap extends NodeMap {
             // The only object which may be set by the current imlp contains
             // "uri" attribute, only this situation is expected here.
             assert node.has(NodeProperties.URI_ATTRIBUTE);
-            return node.get(NodeProperties.URI_ATTRIBUTE).textValue();
+            return node.get(NodeProperties.URI_ATTRIBUTE).asString();
         }
     }
 

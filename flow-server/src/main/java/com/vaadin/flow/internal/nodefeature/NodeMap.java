@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -511,7 +510,8 @@ public abstract class NodeMap extends NodeFeature {
      *            whether the value was already earlier in the map
      * @param newValue
      *            the new value for the {@code key}
-     * @return
+     * @return {@code true} if a change should be produced, {@code false}
+     *         otherwise
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
             Serializable newValue) {

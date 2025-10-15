@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
@@ -22,9 +21,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Instant;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.base.devserver.ServerInfo;
 import com.vaadin.flow.server.Constants;
@@ -40,7 +39,6 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DevModeUsageStatistics {
 

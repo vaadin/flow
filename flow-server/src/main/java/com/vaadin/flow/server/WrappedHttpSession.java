@@ -13,15 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
+
+import jakarta.servlet.http.HttpSession;
 
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
-
-import jakarta.servlet.http.HttpSession;
 
 /**
  * Wrapper for {@link HttpSession}.

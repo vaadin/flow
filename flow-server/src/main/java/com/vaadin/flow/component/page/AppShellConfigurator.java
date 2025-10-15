@@ -18,8 +18,8 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 
 import com.vaadin.flow.router.PageTitle;
-import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.AppShellSettings;
+import com.vaadin.flow.server.PWA;
 
 /**
  * An interface to configure application features and the host page where the
@@ -46,7 +46,6 @@ import com.vaadin.flow.server.AppShellSettings;
  * Application. Also, app shell class is not allowed to extend Vaadin Component,
  * since app shells are only intended for page configuration and are
  * instantiated before the UI is created.
- * </p>
  *
  * <p>
  * NOTE: the application shell class is the only valid target for the page

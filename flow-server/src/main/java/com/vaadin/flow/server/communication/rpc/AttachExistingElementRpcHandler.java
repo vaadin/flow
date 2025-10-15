@@ -63,7 +63,7 @@ public class AttachExistingElementRpcHandler
         int assignedId = invocationJson
                 .get(JsonConstants.RPC_ATTACH_ASSIGNED_ID).intValue();
         String tag = invocationJson.get(JsonConstants.RPC_ATTACH_TAG_NAME)
-                .asText();
+                .asString();
         int index = invocationJson.get(JsonConstants.RPC_ATTACH_INDEX)
                 .intValue();
 

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import org.apache.maven.artifact.Artifact;
@@ -280,7 +279,7 @@ public class ArtifactMatcherTest {
     /**
      * Creates an Artifact instance based on the give coordinates.
      * <p>
-     * </p>
+     *
      *
      * Allowed syntaxes:
      *

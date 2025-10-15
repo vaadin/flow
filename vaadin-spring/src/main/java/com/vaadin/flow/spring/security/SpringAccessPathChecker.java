@@ -13,31 +13,32 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.server.auth.AccessPathChecker;
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.security.Principal;
+import java.util.function.Predicate;
+
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
-import java.security.Principal;
-import java.util.function.Predicate;
+import com.vaadin.flow.server.auth.AccessPathChecker;
 
 /**
  * A Spring specific route path access checker that delegates the check to
  * Spring Security.
  * <p>
- * </p>
+ *
  * It is used in combination with
  * {@link com.vaadin.flow.server.auth.RoutePathAccessChecker} to provide
  * path-based security to Flow
  * {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  *
  * <p>
- * </p>
+ *
  * To enable it, define a {@link NavigationAccessControlConfigurer} bean,
  * configured using
  * {@link NavigationAccessControlConfigurer#withRoutePathAccessChecker()}

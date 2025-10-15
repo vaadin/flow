@@ -13,13 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.menu;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import com.vaadin.flow.router.internal.ParameterInfo;
 
+/**
+ * Defines the types of route parameters.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public enum RouteParamType {
     // @formatter:off
     @JsonProperty("req") REQUIRED,

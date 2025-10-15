@@ -36,14 +36,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -734,8 +734,8 @@ public class BuildFrontendUtil {
                     continue;
                 }
                 final JsonNode cvdlModule = cvdlModules.get(key);
-                components.add(new Product(cvdlModule.get("name").textValue(),
-                        cvdlModule.get("version").textValue()));
+                components.add(new Product(cvdlModule.get("name").asString(),
+                        cvdlModule.get("version").asString()));
             }
         }
         return components;

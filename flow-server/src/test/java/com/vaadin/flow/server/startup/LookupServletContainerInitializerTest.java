@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.startup;
 
-import tools.jackson.databind.JsonNode;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
@@ -32,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;

@@ -34,10 +34,9 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import tools.jackson.databind.node.BaseJsonNode;
-import com.vaadin.flow.function.DeploymentConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -55,6 +54,7 @@ import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -971,7 +971,6 @@ public class UIInternals implements Serializable {
      * <p>
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
-     * </p>
      *
      * @return the VaadinSession to which the related UI is attached
      */
@@ -1180,7 +1179,7 @@ public class UIInternals implements Serializable {
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
      * <p>
-     * </p>
+     *
      * If modal components are currently defined for the UI, the whole route
      * chain will be refreshed regardless the {@code refreshRouteChain}
      * parameter, because otherwise it would not be possible to preserve the

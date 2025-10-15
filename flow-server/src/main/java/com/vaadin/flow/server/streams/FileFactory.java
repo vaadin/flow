@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
@@ -34,6 +33,8 @@ public interface FileFactory extends Serializable {
      * @param uploadMetadata
      *            metadata for upload that should get a file created
      * @return {@link File} that should be used
+     * @throws IOException
+     *             if an I/O error occurs
      */
     File createFile(UploadMetadata uploadMetadata) throws IOException;
 }

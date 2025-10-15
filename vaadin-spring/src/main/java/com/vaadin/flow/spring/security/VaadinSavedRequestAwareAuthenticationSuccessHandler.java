@@ -15,12 +15,11 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.internal.springcsrf.SpringCsrfToken;
-import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
 import java.io.IOException;
 import java.util.Optional;
 
@@ -35,6 +34,8 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.StringUtils;
 
+import com.vaadin.flow.internal.springcsrf.SpringCsrfToken;
+import com.vaadin.flow.internal.springcsrf.SpringCsrfTokenUtil;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 

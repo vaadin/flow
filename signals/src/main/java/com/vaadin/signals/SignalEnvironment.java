@@ -34,6 +34,12 @@ public abstract class SignalEnvironment {
 
     private static final Executor IMMEDIATE_EXECUTOR = Runnable::run;
 
+    /**
+     * Creates a new signal environment.
+     */
+    public SignalEnvironment() {
+    }
+
     private static final Executor EFFECT_DISPATCHER = command -> resolve(
             SignalEnvironment::getEffectDispatcher, IMMEDIATE_EXECUTOR)
             .execute(command);

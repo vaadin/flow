@@ -7,9 +7,9 @@ const customConfig: UserConfigFn = (env) => ({
   // https://vitejs.dev/config/
   plugins: [
     reactSwc({
-      tsDecorators: true,
-    }),
-  ],
+      tsDecorators: true
+    })
+  ]
 });
 
 export default overrideVaadinConfig(customConfig);

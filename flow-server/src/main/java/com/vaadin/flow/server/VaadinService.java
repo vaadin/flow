@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.BufferedWriter;
@@ -55,10 +54,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import tools.jackson.databind.ObjectMapper;
-import tools.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
@@ -789,7 +788,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * By default, the {@link DefaultSystemMessagesProvider} which always
      * provides the built-in default {@link SystemMessages} is used.
-     * </p>
      *
      * @return the system messages provider; not <code>null</code>
      * @see #setSystemMessagesProvider(SystemMessagesProvider)
@@ -950,7 +948,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Handles locking of the session internally to avoid creation of duplicate
      * sessions by two threads simultaneously.
-     * </p>
      *
      * @param request
      *            the request to get a vaadin service session for.
@@ -1013,7 +1010,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * This method uses the wrapped session instead of VaadinSession to be able
      * to lock even before the VaadinSession has been initialized.
-     * </p>
      *
      * @param wrappedSession
      *            The wrapped session
@@ -1226,6 +1222,7 @@ public abstract class VaadinService implements Serializable {
                                 .getSessionLockCheckStrategy()
                         : SessionLockCheckStrategy.THROW;
         assert sessionLockCheckStrategy != null;
+        session.applyLockStrategy(sessionLockCheckStrategy);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1368,7 +1365,6 @@ public abstract class VaadinService implements Serializable {
      * The application developer can also use this method to define the current
      * instances outside the normal request handling, e.g. when initiating
      * custom background threads.
-     * </p>
      *
      * @param request
      *            the Vaadin request to set as the current request, or
@@ -1849,7 +1845,6 @@ public abstract class VaadinService implements Serializable {
      * expiration event if it implements {@link SessionExpiredHandler}. If no
      * request handler handles session expiration a default expiration message
      * will be written.
-     * </p>
      *
      * @param request
      *            The incoming request

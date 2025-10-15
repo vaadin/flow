@@ -24,10 +24,9 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -52,7 +51,7 @@ public class Image extends HtmlContainer
 
     /**
      * Creates an image with the given URL and an alternative text.
-     * <p>
+     *
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
@@ -71,7 +70,7 @@ public class Image extends HtmlContainer
 
     /**
      * Creates an image with the given stream resource and an alternative text.
-     * <p>
+     *
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
      *
@@ -93,10 +92,10 @@ public class Image extends HtmlContainer
     /**
      * Creates an image with the given download handler callback for providing
      * an image data and an alternative text.
-     * <p>
+     *
      * The alternative text given to constructor is always set even if it is the
      * default empty string which is not retained with {@link #setAlt(String)}.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -150,7 +149,7 @@ public class Image extends HtmlContainer
     /**
      * Sets the image URL with the URL of the given {@link DownloadHandler}
      * callback.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other

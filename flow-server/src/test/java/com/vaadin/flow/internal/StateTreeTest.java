@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import java.lang.ref.WeakReference;
@@ -28,13 +27,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;

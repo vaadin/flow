@@ -8,13 +8,13 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import static org.hamcrest.CoreMatchers.is;
-
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ModelList;
+
+import static org.hamcrest.CoreMatchers.is;
 
 public class TemplateModelListProxyTest {
 

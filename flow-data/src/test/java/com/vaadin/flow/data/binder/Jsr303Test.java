@@ -15,15 +15,13 @@
  */
 package com.vaadin.flow.data.binder;
 
-import static org.junit.Assert.assertEquals;
+import jakarta.validation.Validation;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.net.URLClassLoader;
-
-import jakarta.validation.Validation;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -33,6 +31,8 @@ import com.vaadin.flow.data.binder.testcomponents.TestTextField;
 import com.vaadin.flow.internal.BeanUtil;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.tests.data.bean.BeanToValidate;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Vaadin Ltd

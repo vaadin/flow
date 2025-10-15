@@ -26,8 +26,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
@@ -43,6 +41,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -331,17 +331,17 @@ public class TaskRunNpmInstallTest {
                 UTF_8.name());
         JsonNode localHash = JacksonUtils.readTree(fileContent);
         Assert.assertNotEquals("We should have a non empty hash key", "",
-                localHash.get(HASH_KEY).textValue());
+                localHash.get(HASH_KEY).asString());
 
         // Update package json and hash as if someone had pushed to code repo.
         packageJson = getNodeUpdater().getPackageJson();
         ((ObjectNode) packageJson.get(VAADIN_DEP_KEY).get(DEPENDENCIES))
                 .put("a-avataaar", "^1.2.5");
-        String hash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
+        String hash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).asString();
         updatePackageHash(packageJson);
 
         Assert.assertNotEquals("Hash should have been updated", hash,
-                packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).textValue());
+                packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY).asString());
 
         getNodeUpdater().writePackageFile(packageJson);
         logger = Mockito.mock(Logger.class);
@@ -478,7 +478,7 @@ public class TaskRunNpmInstallTest {
         setupEsbuildAndFooInstallation();
 
         String packageJsonHash = getNodeUpdater().getPackageJson()
-                .get(VAADIN_DEP_KEY).get(HASH_KEY).textValue();
+                .get(VAADIN_DEP_KEY).get(HASH_KEY).asString();
         ObjectNode vaadinJson = JacksonUtils.createObjectNode();
         vaadinJson.put(HASH_KEY, packageJsonHash);
         vaadinJson.put(PROJECT_FOLDER, npmFolder.getAbsolutePath());
@@ -510,13 +510,13 @@ public class TaskRunNpmInstallTest {
                 .get(VAADIN_DEP_KEY).get(DEPENDENCIES);
         ObjectNode dependencies = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(vaadinDep)) {
-            dependencies.put(key, vaadinDep.get(key).textValue());
+            dependencies.put(key, vaadinDep.get(key).asString());
         }
         ObjectNode vaadinDevDep = (ObjectNode) packageJson.get(VAADIN_DEP_KEY)
                 .get(DEV_DEPENDENCIES);
         ObjectNode devDependencies = JacksonUtils.createObjectNode();
         for (String key : JacksonUtils.getKeys(vaadinDevDep)) {
-            devDependencies.put(key, vaadinDevDep.get(key).textValue());
+            devDependencies.put(key, vaadinDevDep.get(key).asString());
         }
         packageJson.set(DEPENDENCIES, dependencies);
         packageJson.set(DEV_DEPENDENCIES, devDependencies);

@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -32,6 +30,8 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -156,7 +156,7 @@ public class VersionsJsonFilterTest {
         Assert.assertTrue(filteredJson.has("@polymer/iron-list"));
 
         Assert.assertEquals("1.1.2",
-                filteredJson.get("@vaadin/vaadin-progress-bar").textValue());
+                filteredJson.get("@vaadin/vaadin-progress-bar").asString());
     }
 
     private void assertFilterPlatformVersions_multipleUserChanged_correctlyIgnored(
@@ -202,7 +202,7 @@ public class VersionsJsonFilterTest {
             Assert.assertEquals(
                     String.format("Got wrong version for '%s'", entry.getKey()),
                     entry.getValue(),
-                    filteredJson.get(entry.getKey()).textValue());
+                    filteredJson.get(entry.getKey()).asString());
         }
     }
 
@@ -224,15 +224,15 @@ public class VersionsJsonFilterTest {
         Assert.assertEquals(
                 "'progress-bar' should be the same in package and versions",
                 "1.1.2",
-                filteredJson.get("@vaadin/vaadin-progress-bar").textValue());
+                filteredJson.get("@vaadin/vaadin-progress-bar").asString());
         Assert.assertEquals(
                 "'upload' should be the same in package and versions", "4.2.2",
-                filteredJson.get("@vaadin/vaadin-upload").textValue());
+                filteredJson.get("@vaadin/vaadin-upload").asString());
         Assert.assertEquals(
                 "'enforced' version should come from platform (upgrade)",
-                "1.5.0", filteredJson.get("enforced").textValue());
+                "1.5.0", filteredJson.get("enforced").asString());
         Assert.assertEquals(
                 "'iron-list' version should come from platform (downgrade)",
-                "2.0.19", filteredJson.get("@polymer/iron-list").textValue());
+                "2.0.19", filteredJson.get("@polymer/iron-list").asString());
     }
 }

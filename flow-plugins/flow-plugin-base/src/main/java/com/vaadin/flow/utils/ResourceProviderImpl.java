@@ -18,7 +18,6 @@ package com.vaadin.flow.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.List;
 
@@ -29,7 +28,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * {@link ResourceProvider} for use with plugin execution.
  *
  * @author Vaadin Ltd
- * @since
  */
 class ResourceProviderImpl implements ResourceProvider {
 

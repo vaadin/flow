@@ -24,12 +24,12 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
@@ -44,7 +44,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 /**
  * Generate default files for react-router if missing from the frontend folder.
  * <p>
- * </p>
  * The generated files are <code>Flow.tsx</code> and <code>routes.tsx</code>.
  * Where <code>Flow.tsx</code> is for communication between the Flow and the
  * router and contains the server side route target
@@ -215,8 +214,6 @@ public class TaskGenerateReactFiles
 
     /**
      * Writes the `layout.json` file in the frontend generated folder.
-     * <p>
-     * </p>
      *
      * @param options
      *            the task options

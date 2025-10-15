@@ -17,10 +17,10 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;

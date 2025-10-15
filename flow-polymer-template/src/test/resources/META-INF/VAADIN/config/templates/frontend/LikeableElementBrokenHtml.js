@@ -10,13 +10,14 @@
 import '@polymer/paper-checkbox/paper-checkbox.js';
 
 // Import the PolymerElement base class and html helper
-import {PolymerElement, html} from '@polymer/polymer';
+import { PolymerElement, html } from '@polymer/polymer';
 
 // Define an element class
 class LikeableElement extends PolymerElement {
-
   // Define public API properties
-  static get properties() { return { liked: Boolean }}
+  static get properties() {
+    return { liked: Boolean };
+  }
 
   // Define the element's template
   static get template() {
