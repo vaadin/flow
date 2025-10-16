@@ -323,14 +323,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 var isThemeClass = AbstractTheme.class.isAssignableFrom(clazz);
-                if (isThemeClass && (themeDefinition == null || !clazz.equals(themeDefinition.getTheme()))) {
+                if (isThemeClass && (themeDefinition == null
+                        || !clazz.equals(themeDefinition.getTheme()))) {
                     // Do not add css from all found theme classes,
                     // only defined theme.
                     continue;
                 }
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                imports.stream().forEach(imp -> (isThemeClass ? themeCss : globalCss).add(createCssData(imp)));
+                imports.stream()
+                        .forEach(imp -> (isThemeClass ? themeCss : globalCss)
+                                .add(createCssData(imp)));
             }
             themeCssData.addAll(themeCss);
             cssData.addAll(globalCss);

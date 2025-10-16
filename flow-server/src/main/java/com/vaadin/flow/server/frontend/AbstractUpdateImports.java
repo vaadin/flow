@@ -143,9 +143,12 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
-        var generatedFolder = FrontendUtils.getFrontendGeneratedFolder(options.getFrontendDirectory());
-        appShellImports = new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_NAME);
-        appShellDefinitions = new File(generatedFolder, FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
+        var generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(options.getFrontendDirectory());
+        appShellImports = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_NAME);
+        appShellDefinitions = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
 
         generatedFlowWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(

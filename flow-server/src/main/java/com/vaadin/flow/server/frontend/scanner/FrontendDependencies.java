@@ -366,12 +366,14 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     @Override
     public Map<ChunkInfo, List<CssData>> getCss() {
-        var themeClass = themeDefinition != null ? themeDefinition.getTheme() : null;
+        var themeClass = themeDefinition != null ? themeDefinition.getTheme()
+                : null;
         Map<ChunkInfo, List<CssData>> all = new LinkedHashMap<>();
         for (EntryPointData data : entryPoints.values()) {
             var chunkInfo = getChunkInfo(data);
             // Map theme CSS to the APP_SHELL chunk
-            if (chunkInfo.equals(ChunkInfo.GLOBAL) && themeClass != null && data.getName().equals(themeClass.getName())) {
+            if (chunkInfo.equals(ChunkInfo.GLOBAL) && themeClass != null
+                    && data.getName().equals(themeClass.getName())) {
                 chunkInfo = ChunkInfo.APP_SHELL;
             }
             all.computeIfAbsent(chunkInfo, k -> new ArrayList<>())
