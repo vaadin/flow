@@ -45,12 +45,13 @@ public class SkipExecutionTest {
         projectBase = temporaryFolder.getRoot();
 
         // Set up the mojo with basic configuration
-        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir", projectBase);
+        ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
+                projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "frontendDirectory",
                 new File(projectBase, "src/main/frontend"));
-        
+
         setProject(mojo, projectBase);
-        
+
         // Use reflection to set the mock logger
         ReflectionUtils.setVariableValueInObject(mojo, "log", mockLog);
     }
@@ -73,7 +74,8 @@ public class SkipExecutionTest {
         ReflectionUtils.setVariableValueInObject(mojo, "skip", false);
 
         try {
-            // Execute the mojo - this might fail due to missing dependencies in test env
+            // Execute the mojo - this might fail due to missing dependencies in
+            // test env
             mojo.execute();
         } catch (Exception e) {
             // Expected - we're just testing that skip message is not logged
