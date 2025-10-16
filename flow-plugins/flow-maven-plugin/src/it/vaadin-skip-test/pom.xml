@@ -46,7 +46,7 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <version>${flow.version}</version>
                 <configuration>
-                    <skip>true</true>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
