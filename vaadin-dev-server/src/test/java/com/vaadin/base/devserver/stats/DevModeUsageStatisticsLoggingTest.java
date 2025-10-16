@@ -15,13 +15,6 @@
  */
 package com.vaadin.base.devserver.stats;
 
-import com.vaadin.flow.testutil.TestUtils;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -30,6 +23,14 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.junit.After;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+
+import com.vaadin.flow.testutil.TestUtils;
 
 /**
  * Tests that the telemetry notice is logged on first initialization and
