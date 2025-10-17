@@ -126,7 +126,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
                 if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addInternalEntryPoint(themeClass);
+                    addAppShellEntryPoint(themeClass);
                     visitEntryPoint(entryPoints.get(themeClass.getName()));
                     visitedClasses.get(themeClass.getName()).loadCss = true;
                 }
@@ -322,6 +322,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private ChunkInfo getChunkInfo(EntryPointData data) {
+        if (data.getType() == EntryPointType.APP_SHELL) {
+            return ChunkInfo.APP_SHELL;
+        }
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
         }
@@ -366,17 +369,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
      */
     @Override
     public Map<ChunkInfo, List<CssData>> getCss() {
-        var themeClass = themeDefinition != null ? themeDefinition.getTheme()
-                : null;
         Map<ChunkInfo, List<CssData>> all = new LinkedHashMap<>();
         for (EntryPointData data : entryPoints.values()) {
-            var chunkInfo = getChunkInfo(data);
-            // Map theme CSS to the APP_SHELL chunk
-            if (chunkInfo.equals(ChunkInfo.GLOBAL) && themeClass != null
-                    && data.getName().equals(themeClass.getName())) {
-                chunkInfo = ChunkInfo.APP_SHELL;
-            }
-            all.computeIfAbsent(chunkInfo, k -> new ArrayList<>())
+            all.computeIfAbsent(getChunkInfo(data), k -> new ArrayList<>())
                     .addAll(data.getCss());
         }
         return all;
@@ -466,7 +461,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            addInternalEntryPoint(appShell);
+            addAppShellEntryPoint(appShell);
         }
 
         try {
@@ -553,6 +548,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                     route.getName(), e);
         }
         return null;
+    }
+
+    private void addAppShellEntryPoint(Class<?> entryPointClass) {
+        addEntryPoint(entryPointClass, EntryPointType.APP_SHELL, null, true);
     }
 
     private void addInternalEntryPoint(Class<?> entryPointClass) {

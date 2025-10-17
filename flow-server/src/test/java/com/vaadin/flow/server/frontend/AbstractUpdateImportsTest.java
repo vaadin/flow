@@ -63,6 +63,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -102,6 +103,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @CssImport("./foo.css")
     public static class FooCssImport2 extends Component {
 
+    }
+
+    @Theme(themeClass = LumoTest.class)
+    @CssImport("./foo.css")
+    public static class ThemeCssImport implements AppShellConfigurator {
     }
 
     protected File tmpRoot;

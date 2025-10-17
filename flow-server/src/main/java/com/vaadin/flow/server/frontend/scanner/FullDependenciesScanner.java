@@ -322,6 +322,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
             var globalCss = new LinkedHashSet<CssData>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
+                var isAppShellClass = AppShellConfigurator.class
+                        .isAssignableFrom(clazz);
                 var isThemeClass = AbstractTheme.class.isAssignableFrom(clazz);
                 if (isThemeClass && (themeDefinition == null
                         || !clazz.equals(themeDefinition.getTheme()))) {
@@ -332,8 +334,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
                 imports.stream()
-                        .forEach(imp -> (isThemeClass ? themeCss : globalCss)
-                                .add(createCssData(imp)));
+                        .forEach(imp -> ((isAppShellClass || isThemeClass)
+                                ? themeCss
+                                : globalCss).add(createCssData(imp)));
             }
             themeCssData.addAll(themeCss);
             cssData.addAll(globalCss);
