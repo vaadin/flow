@@ -125,11 +125,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             if (themeDefinition != null && themeDefinition.getTheme() != null) {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
-                if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addAppShellEntryPoint(themeClass);
-                    visitEntryPoint(entryPoints.get(themeClass.getName()));
-                    visitedClasses.get(themeClass.getName()).loadCss = true;
-                }
+                addAppShellEntryPoint(themeClass);
+                visitEntryPoint(entryPoints.get(themeClass.getName()));
             }
             if (reactEnabled) {
                 computeReactClasses(finder);
@@ -186,6 +183,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void aggregateEntryPointInformation() {
+        var activeTheme = themeDefinition != null
+                && themeDefinition.getTheme() != null;
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
@@ -193,7 +192,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                if (classInfo.loadCss) {
+                if (classInfo.loadCss || activeTheme
+                        && entryPoint.getType() == EntryPointType.APP_SHELL) {
                     entryPoint.getCss().addAll(classInfo.css);
                 }
                 entryPoint.getScripts().addAll(classInfo.scripts);
@@ -638,9 +638,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 themeDefinition = new ThemeDefinition(theme, variant,
                         themeName);
                 themeInstance = new ThemeWrapper(theme);
-                classesWithTheme.get(themeData).children.stream()
-                        .map(visitedClasses::get).filter(Objects::nonNull)
-                        .forEach(classInfo -> classInfo.loadCss = true);
             }
         }
 
