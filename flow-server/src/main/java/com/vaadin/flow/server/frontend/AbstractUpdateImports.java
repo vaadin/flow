@@ -118,6 +118,8 @@ abstract class AbstractUpdateImports implements Runnable {
     final File generatedFlowImports;
     final File generatedFlowWebComponentImports;
     private final File generatedFlowDefinitions;
+    final File appShellImports;
+    final File appShellDefinitions;
     private File chunkFolder;
 
     private final GeneratedFilesSupport generatedFilesSupport;
@@ -141,6 +143,12 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        var generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(options.getFrontendDirectory());
+        appShellImports = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_NAME);
+        appShellDefinitions = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
 
         generatedFlowWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(
@@ -284,6 +292,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerJavascript = new ArrayList<>();
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
+        List<CssData> appShellCssData = new ArrayList<>();
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -301,7 +310,11 @@ abstract class AbstractUpdateImports implements Runnable {
                     lazyCss.put(entry.getKey(), cssLines);
                 }
             } else {
-                eagerCssData.addAll(entry.getValue());
+                if (entry.getKey().equals(ChunkInfo.APP_SHELL)) {
+                    appShellCssData.addAll(entry.getValue());
+                } else {
+                    eagerCssData.addAll(entry.getValue());
+                }
             }
         }
 
@@ -371,6 +384,15 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add(
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
+
+        List<String> appShellLines = new ArrayList<>();
+        List<String> appShellCssLines = getCssLines(appShellCssData);
+        if (!appShellCssLines.isEmpty()) {
+            appShellLines.add(IMPORT_INJECT);
+            appShellLines.addAll(appShellCssLines);
+        }
+        files.put(appShellImports, appShellLines);
+        files.put(appShellDefinitions, Collections.singletonList("export {}"));
 
         List<String> mainLines = new ArrayList<>();
 
@@ -561,9 +583,18 @@ abstract class AbstractUpdateImports implements Runnable {
 
     }
 
-    protected <T> List<String> merge(Map<T, List<String>> css) {
+    protected <T> List<String> merge(Map<T, List<String>> outputFiles) {
+        // Ignore app shell imports and definitions for bundle build detection,
+        // as they cover Hilla-specific needs. Hilla apps should trigger the
+        // bundle build regardless of app shell imports.
+        Set<File> appShellImportFiles = Set.of(appShellImports,
+                appShellDefinitions);
         List<String> result = new ArrayList<>();
-        css.forEach((key, value) -> result.addAll(value));
+        outputFiles.forEach((key, value) -> {
+            if (!appShellImportFiles.contains(key)) {
+                result.addAll(value);
+            }
+        });
         return result;
     }
 

@@ -294,6 +294,39 @@ public class UpdateImportsWithByteCodeScannerTest
     }
 
     @Test
+    public void cssImportFromAppShellAndThemeWork() throws Exception {
+        Class<?>[] testClasses = { ThemeCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        Assert.assertNotNull(output);
+        Assert.assertEquals(4, output.size());
+
+        Optional<File> appShellFile = output.keySet().stream()
+                .filter(file -> file.getName().endsWith("app-shell-imports.js"))
+                .findAny();
+        Assert.assertTrue(appShellFile.isPresent());
+        List<String> appShellLines = output.get(appShellFile.get());
+
+        assertOnce(
+                "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';",
+                appShellLines);
+        assertOnce("from 'Frontend/foo.css?inline';", appShellLines);
+        assertOnce("from 'lumo-css-import.css?inline';", appShellLines);
+
+        Optional<File> appShellDTsFile = output.keySet().stream().filter(
+                file -> file.getName().endsWith("app-shell-imports.d.ts"))
+                .findAny();
+        Assert.assertTrue(appShellDTsFile.isPresent());
+        List<String> appShellDTsLines = output.get(appShellDTsFile.get());
+        Assert.assertEquals(1, appShellDTsLines.size());
+        assertOnce("export {}", appShellDTsLines);
+    }
+
+    @Test
     public void cssInLazyChunkWorks() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -303,7 +336,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Map<File, List<String>> output = updater.getOutput();
 
         Assert.assertNotNull(output);
-        Assert.assertEquals(3, output.size());
+        Assert.assertEquals(5, output.size());
 
         Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());

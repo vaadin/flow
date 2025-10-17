@@ -103,7 +103,7 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals("UI, AppShell should be found", 2,
+        Assert.assertEquals("UI, AppShell should be found", 3,
                 dependencies.getEntryPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
