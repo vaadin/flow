@@ -7,7 +7,6 @@
     "lit": "3.3.1"
   },
   "devDependencies": {
-    "glob": "11.0.3",
     "typescript": "5.9.3",
     "strip-css-comments": "5.0.0"
   }
