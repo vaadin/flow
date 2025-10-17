@@ -1,0 +1,13 @@
+import java.nio.file.*;
+
+flowTsx = basedir.toPath().resolve("build.log");
+if ( !Files.exists(flowTsx, new LinkOption[0]) )
+{
+    throw new RuntimeException("build.log not found");
+}
+
+lines = Files.readString(flowTsx);
+if ( !lines.contains("Skipping Vaadin build") ) 
+{
+    throw new RuntimeException("Vaadin build not skipped");
+}
