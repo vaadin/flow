@@ -313,6 +313,12 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
             + InitParameters.COMMERCIAL_WITH_BANNER, defaultValue = "false")
     private boolean commercialWithBanner;
 
+    /**
+     * Skip the execution of this plugin.
+     */
+    @Parameter(property = "vaadin.skip", defaultValue = "false")
+    private boolean skip;
+
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
 
@@ -325,6 +331,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping Vaadin build");
+            return;
+        }
+
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
