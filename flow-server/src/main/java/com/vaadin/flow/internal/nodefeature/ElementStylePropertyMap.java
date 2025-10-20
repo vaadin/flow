@@ -20,7 +20,10 @@ import java.io.Serializable;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.impl.BasicElementStyle;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Map for element style values.
@@ -31,6 +34,10 @@ import com.vaadin.flow.internal.StateNode;
  * @since 1.0
  */
 public class ElementStylePropertyMap extends AbstractPropertyMap {
+
+    private Signal<String> signal;
+
+    private Registration signalRegistration;
 
     /**
      * Creates a new element style map for the given node.
@@ -59,4 +66,37 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
         return new BasicElementStyle(this);
     }
 
+    /**
+     * Binds the given signal to this map. <code>null</code> signal unbinds
+     * existing binding.
+     *
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @param bindAction
+     *            the action to perform the binding, may be <code>null</code>
+     */
+    public void bindSignal(Signal<String> signal,
+            SerializableSupplier<Registration> bindAction) {
+        var previousSignal = this.signal;
+        if (signal != null && previousSignal != null) {
+            throw new IllegalStateException("Binding is already active");
+        }
+        Registration registration = bindAction != null ? bindAction.get()
+                : null;
+        if (registration != null) {
+            signalRegistration = registration;
+        }
+        if (signal == null && signalRegistration != null) {
+            signalRegistration.remove();
+            signalRegistration = null;
+            this.signal = null;
+        } else {
+            this.signal = signal;
+        }
+    }
+
+    public Signal<String> getSignal() {
+        return signal;
+    }
 }
