@@ -20,11 +20,13 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Handles storing and retrieval of the state information for an element using a
@@ -64,7 +66,26 @@ public interface ElementStateProvider extends Serializable {
      * @param value
      *            the attribute value
      */
-    void setAttribute(StateNode node, String attribute, String value);
+    void setAttribute(StateNode node, String attribute, String value,
+            boolean ignoreSignal);
+
+    /**
+     * Binds the given signal to the given attribute. <code>null</code> signal
+     * unbinds existing binding.
+     *
+     * @param node
+     *            the node containing the attribute
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @param bindAction
+     *            the action to perform the binding, may be <code>null</code>
+     */
+    void bindAttributeSignal(StateNode node, String attribute,
+            Signal<String> signal,
+            SerializableSupplier<Registration> bindAction);
 
     /**
      * Sets the given attribute to the given {@link StreamResource} value.

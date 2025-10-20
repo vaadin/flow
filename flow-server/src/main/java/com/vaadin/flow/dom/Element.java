@@ -36,6 +36,7 @@ import tools.jackson.databind.node.BooleanNode;
 import tools.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -46,6 +47,7 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -56,6 +58,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -242,6 +245,45 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds the given {@link Signal} to the given attribute. <code>null</code>
+     * signal unbinds existing binding.
+     *
+     * TODO add more documentation and examples
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     */
+    public void bindAttribute(String attribute, Signal<String> signal) {
+        String validAttribute = validateAttribute(attribute, "");
+        if (!ElementUtil.isValidAttributeName(validAttribute)) {
+            throw new IllegalArgumentException(String.format(
+                    "Attribute \"%s\" is not a valid attribute name",
+                    validAttribute));
+        }
+
+        SerializableSupplier<Registration> bindAction = signal == null ? null
+                : () -> {
+                    return ComponentEffect.bind(getComponent()
+                            .orElseThrow(() -> new IllegalStateException(
+                                    "Element is not attached to a component")),
+                            signal,
+                            (component, value) -> setAttributeValue(attribute,
+                                    value, true));
+                };
+        Optional<CustomAttribute> customAttribute = CustomAttribute
+                .get(validAttribute);
+        if (customAttribute.isPresent()) {
+            customAttribute.get().bindSignal(getNode(), signal, bindAction);
+        } else {
+            getStateProvider().bindAttributeSignal(getNode(), validAttribute,
+                    signal, bindAction);
+        }
+    }
+
+    /**
      * Sets the given attribute to the given value.
      * <p>
      * Attribute names are considered case insensitive and all names will be
@@ -269,15 +311,20 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
+        return setAttributeValue(attribute, value, false);
+    }
+
+    private Element setAttributeValue(String attribute, String value,
+            boolean ignoreSignal) {
         String lowerCaseAttribute = validateAttribute(attribute, value);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
         if (customAttribute.isPresent()) {
-            customAttribute.get().setAttribute(this, value);
+            customAttribute.get().setAttribute(this, value, ignoreSignal);
         } else {
             getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
-                    value);
+                    value, ignoreSignal);
         }
         return this;
     }

@@ -20,6 +20,13 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ElementClassList;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.ValueSignal;
 
 /**
  * Emulates the <code>class</code> attribute by delegating to
@@ -30,6 +37,7 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 public class ClassAttributeHandler extends CustomAttribute {
+
     @Override
     public boolean hasAttribute(Element element) {
         return !element.getClassList().isEmpty();
@@ -37,6 +45,11 @@ public class ClassAttributeHandler extends CustomAttribute {
 
     @Override
     public String getAttribute(Element element) {
+        if (element.getNode().isAttached() && element.getNode()
+                .getFeature(ElementClassList.class).getSignal() != null) {
+            return ((ValueSignal<String>) element.getNode()
+                    .getFeature(ElementClassList.class).getSignal()).peek();
+        }
         Set<String> classList = element.getClassList();
         if (classList.isEmpty()) {
             return null;
@@ -46,22 +59,55 @@ public class ClassAttributeHandler extends CustomAttribute {
     }
 
     @Override
-    public void setAttribute(Element element, String value) {
-        Set<String> classList = element.getClassList();
-        classList.clear();
-
-        String classValue = value.trim();
-
-        if (classValue.isEmpty()) {
-            return;
+    public void setAttribute(Element element, String value,
+            boolean ignoreSignal) {
+        if (!ignoreSignal && element.getNode().isAttached() && element.getNode()
+                .getFeature(ElementClassList.class).getSignal() != null) {
+            throw new BindingActiveException(
+                    "setAttribute is not allowed while binding is active.");
         }
 
-        String[] parts = classValue.split("\\s+");
-        classList.addAll(Arrays.asList(parts));
+        if (!ignoreSignal) {
+            ElementClassList list = element.getNode()
+                    .getFeature(ElementClassList.class);
+            if (list.getSignal() != null) {
+                list.bindSignal(null, null);
+            }
+        }
+
+        element.getNode().getFeature(
+                ElementClassList.class).signalRemovalDisabled = true;
+        try {
+            Set<String> classList = element.getClassList();
+            classList.clear();
+
+            String classValue = value.trim();
+
+            if (classValue.isEmpty()) {
+                return;
+            }
+
+            String[] parts = classValue.split("\\s+");
+            classList.addAll(Arrays.asList(parts));
+        } finally {
+            element.getNode().getFeature(
+                    ElementClassList.class).signalRemovalDisabled = false;
+        }
+    }
+
+    @Override
+    public void bindSignal(StateNode node, Signal<String> signal,
+            SerializableSupplier<Registration> bindAction) {
+        node.getFeature(ElementClassList.class).bindSignal(signal, bindAction);
     }
 
     @Override
     public void removeAttribute(Element element) {
+        if (element.getNode().isAttached() && element.getNode()
+                .getFeature(ElementClassList.class).getSignal() != null) {
+            throw new BindingActiveException(
+                    "removeAttribute is not allowed while binding is active.");
+        }
         element.getClassList().clear();
     }
 }
