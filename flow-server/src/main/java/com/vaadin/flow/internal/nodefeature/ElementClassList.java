@@ -15,8 +15,14 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.util.Collection;
+
 import com.vaadin.flow.dom.ClassList;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Handles CSS class names for an element.
@@ -27,6 +33,11 @@ import com.vaadin.flow.internal.StateNode;
  * @since 1.0
  */
 public class ElementClassList extends SerializableNodeList<String> {
+
+    private Signal<String> signal;
+    private Registration signalRegistration;
+
+    public boolean signalRemovalDisabled = false;
 
     private static class ClassListView extends NodeList.SetView<String>
             implements ClassList {
@@ -69,5 +80,74 @@ public class ElementClassList extends SerializableNodeList<String> {
      */
     public ClassList getClassList() {
         return new ClassListView(this);
+    }
+
+    /**
+     * Binds the given signal to this list. <code>null</code> signal unbinds
+     * existing binding.
+     *
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @param bindAction
+     *            the action to perform the binding, may be <code>null</code>
+     */
+    public void bindSignal(Signal<String> signal,
+            SerializableSupplier<Registration> bindAction) {
+        var previousSignal = this.signal;
+        if (signal != null && previousSignal != null) {
+            throw new BindingActiveException("Binding is already active");
+        }
+        Registration registration = bindAction != null ? bindAction.get()
+                : null;
+        if (registration != null) {
+            signalRegistration = registration;
+        }
+        if (signal == null && signalRegistration != null) {
+            signalRegistration.remove();
+            this.signal = null;
+        } else {
+            this.signal = signal;
+        }
+    }
+
+    public Signal<String> getSignal() {
+        return signal;
+    }
+
+    @Override
+    protected void clear() {
+        removeSignal();
+        super.clear();
+    }
+
+    @Override
+    protected void add(String item) {
+        removeSignal();
+        super.add(item);
+    }
+
+    @Override
+    protected void add(int index, String item) {
+        removeSignal();
+        super.add(index, item);
+    }
+
+    @Override
+    protected void addAll(Collection<? extends String> items) {
+        removeSignal();
+        super.addAll(items);
+    }
+
+    @Override
+    protected String remove(int index) {
+        removeSignal();
+        return super.remove(index);
+    }
+
+    private void removeSignal() {
+        if (!signalRemovalDisabled && getSignal() != null) {
+            bindSignal(null, null);
+        }
     }
 }

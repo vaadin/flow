@@ -35,6 +35,7 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
+import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
@@ -57,6 +58,7 @@ import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -185,12 +187,23 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
-    public void setAttribute(StateNode node, String attribute, String value) {
+    public void setAttribute(StateNode node, String attribute, String value,
+            boolean ignoreSignal) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(node).set(attribute, value);
+        getAttributeFeature(node).set(attribute, value, ignoreSignal);
 
+    }
+
+    @Override
+    public void bindAttributeSignal(StateNode node, String attribute,
+            Signal<String> signal,
+            SerializableSupplier<Registration> bindAction) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
+        getAttributeFeature(node).bindSignal(attribute, signal, bindAction);
     }
 
     @Override
