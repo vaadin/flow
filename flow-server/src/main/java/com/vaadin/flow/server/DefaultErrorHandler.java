@@ -93,7 +93,8 @@ public class DefaultErrorHandler implements ErrorHandler {
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
             if (throwable instanceof InvalidLocationException) {
                 if (getLogger().isWarnEnabled(marker)) {
-                    getLogger().warn(marker, "", throwable);
+                    getLogger().warn(marker, "Invalid location: {}",
+                            throwable.getMessage(), throwable);
                 }
             } else {
                 if (routeConfigurationExceptions
@@ -102,7 +103,8 @@ public class DefaultErrorHandler implements ErrorHandler {
                     getLogger().error(throwable.getMessage());
                 } else {
                     // print the error on console
-                    getLogger().error("", throwable);
+                    getLogger().error("Unexpected error: {}",
+                            throwable.getMessage(), throwable);
                 }
             }
         }
