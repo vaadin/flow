@@ -73,6 +73,7 @@ public class FileDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
