@@ -60,11 +60,11 @@ public class DefaultErrorHandlerTest {
 
         Throwable throwable = new RuntimeException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new IllegalArgumentException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
     }
 
     @Test
@@ -90,7 +90,7 @@ public class DefaultErrorHandlerTest {
 
         Throwable throwable = new MalformedURLException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
     }
 
     @Test
@@ -105,23 +105,24 @@ public class DefaultErrorHandlerTest {
 
         Throwable throwable = new RuntimeException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new IOException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new MalformedURLException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new InnerException();
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}", null, throwable);
 
         throwable = new UncheckedIOException(new IOException());
         errorHandler.error(new ErrorEvent(throwable));
-        Mockito.verify(logger).error("", throwable);
+        Mockito.verify(logger).error("Unexpected error: {}",
+                "java.io.IOException", throwable);
     }
 
     public static class InnerException extends Exception {
