@@ -194,10 +194,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 boolean loadCss = true;
                 try {
                     var cls = getFinder().loadClass(className);
-                    if (AbstractTheme.class.isAssignableFrom(cls)) {
+                    if (activeThemeClass != null
+                            && AbstractTheme.class.isAssignableFrom(cls)) {
                         loadCss = entryPoint
                                 .getType() == EntryPointType.APP_SHELL
-                                && activeThemeClass.equals(cls);
+                                && cls.equals(activeThemeClass);
                     }
                 } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
                     // NO-OP
