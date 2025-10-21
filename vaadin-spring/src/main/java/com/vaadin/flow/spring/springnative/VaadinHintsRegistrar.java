@@ -34,7 +34,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 .forEach(cls -> ref.registerType(cls, MemberCategory.values()));
 
         // Bundles, build info etc
-        hints.resources().registerPattern("META-INF/VAADIN/*");
+        hints.resources().registerPattern("META-INF/VAADIN/**");
         hints.resources().registerPattern("vaadin-i18n/*");
         hints.resources().registerPattern("vaadin-featureflags.properties");
 
@@ -55,8 +55,8 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
 
         // Flow server resources like BootstrapHandler.js and
         // RouteNotFoundError_prod.html
-        hints.resources().registerPattern("com/vaadin/flow/server/*");
-        hints.resources().registerPattern("com/vaadin/flow/router/*");
+        hints.resources().registerPattern("com/vaadin/flow/server/**");
+        hints.resources().registerPattern("com/vaadin/flow/router/**");
     }
 
     private void registerResourceIfPresent(RuntimeHints hints, String path) {
