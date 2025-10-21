@@ -49,8 +49,13 @@ public class StyleAttributeHandler extends CustomAttribute {
     public String getAttribute(Element element) {
         if (element.getNode().isAttached()
                 && element.getNode().getFeature(ElementStylePropertyMap.class)
-                        .getSignal() instanceof AbstractSignal<String> signal) {
-            return signal.peek();
+                        .getSignal() != null) {
+            var signal = element.getNode()
+                    .getFeature(ElementStylePropertyMap.class).getSignal();
+            if (signal instanceof AbstractSignal<String> abstractSignal) {
+                return abstractSignal.peek();
+            }
+            return signal.value();
         }
         if (!hasAttribute(element)) {
             return null;
