@@ -182,8 +182,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
-    private void aggregateEntryPointInformation() throws ClassNotFoundException {
-        var activeThemeClass = themeDefinition != null ? themeDefinition.getTheme() : null;
+    private void aggregateEntryPointInformation()
+            throws ClassNotFoundException {
+        var activeThemeClass = themeDefinition != null
+                ? themeDefinition.getTheme()
+                : null;
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
@@ -192,7 +195,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 try {
                     var cls = getFinder().loadClass(className);
                     if (AbstractTheme.class.isAssignableFrom(cls)) {
-                        loadCss = activeThemeClass.equals(cls);
+                        loadCss = entryPoint
+                                .getType() == EntryPointType.APP_SHELL
+                                && activeThemeClass.equals(cls);
                     }
                 } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
                     // NO-OP
@@ -200,7 +205,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                if ((getFinder().l).getType() == EntryPointType.APP_SHELL) {
+                if (loadCss) {
                     entryPoint.getCss().addAll(classInfo.css);
                 }
                 entryPoint.getScripts().addAll(classInfo.scripts);
