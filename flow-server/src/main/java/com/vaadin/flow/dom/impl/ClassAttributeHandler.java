@@ -47,8 +47,12 @@ public class ClassAttributeHandler extends CustomAttribute {
     public String getAttribute(Element element) {
         if (element.getNode().isAttached() && element.getNode()
                 .getFeature(ElementClassList.class).getSignal() != null) {
-            return ((AbstractSignal<String>) element.getNode()
-                    .getFeature(ElementClassList.class).getSignal()).peek();
+            var signal = element.getNode().getFeature(ElementClassList.class)
+                    .getSignal();
+            if (signal instanceof AbstractSignal<String> abstractSignal) {
+                return abstractSignal.peek();
+            }
+            return signal.value();
         }
         Set<String> classList = element.getClassList();
         if (classList.isEmpty()) {

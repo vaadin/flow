@@ -36,6 +36,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
@@ -468,6 +469,34 @@ public class ElementBindAttributeTest {
         signal.value("color: green;");
 
         assertEquals("color:red", component.getElement().getAttribute("style"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_simpleComputedSignal_bindingActive() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindAttribute("foo",
+                signal.map(v -> "value-" + v));
+
+        assertEquals("value-bar", component.getElement().getAttribute("foo"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_computedSignal_throwException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        Signal<String> signal = Signal.computed(() -> "bar");
+
+        component.getElement().bindAttribute("foo", signal);
+
+        assertThrows(UnsupportedOperationException.class,
+                () -> component.getElement().getAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 
