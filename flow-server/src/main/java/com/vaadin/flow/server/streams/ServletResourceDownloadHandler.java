@@ -75,6 +75,7 @@ public class ServletResourceDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinService service = downloadEvent.getRequest().getService();
         VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
