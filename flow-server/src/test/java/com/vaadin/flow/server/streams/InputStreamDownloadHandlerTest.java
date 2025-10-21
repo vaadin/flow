@@ -49,6 +49,7 @@ public class InputStreamDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -57,7 +58,7 @@ public class InputStreamDownloadHandlerTest {
         session = Mockito.mock(VaadinSession.class);
         service = Mockito.mock(VaadinService.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -140,6 +141,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -178,6 +180,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
 
@@ -209,6 +212,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
 
@@ -241,6 +245,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
 
@@ -281,6 +286,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -307,6 +313,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
