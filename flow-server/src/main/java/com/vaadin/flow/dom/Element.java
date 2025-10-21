@@ -36,7 +36,6 @@ import tools.jackson.databind.node.BooleanNode;
 import tools.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEffect;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
@@ -268,10 +267,7 @@ public class Element extends Node<Element> {
 
         SerializableSupplier<Registration> bindAction = signal == null ? null
                 : () -> {
-                    return ComponentEffect.bind(getComponent()
-                            .orElseThrow(() -> new IllegalStateException(
-                                    "Element is not attached to a component")),
-                            signal,
+                    return ElementEffect.bind(this, signal,
                             (component, value) -> setAttributeValue(attribute,
                                     value, true));
                 };
