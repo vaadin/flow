@@ -33,9 +33,9 @@ import com.vaadin.signals.impl.Effect;
  * context of a given element's life-cycle.
  * <p>
  * It ultimately creates a Signal effect, i.e. a call to
- * {@link Signal#effect(Runnable)}, that is automatically enabled when a element
- * is attached and disabled when the element is detached. Additionally, it
- * provides methods to bind signals to element according to a given value
+ * {@link Signal#effect(Runnable)}, that is automatically enabled when an
+ * element is attached and disabled when the element is detached. Additionally,
+ * it provides methods to bind signals to element according to a given value
  * setting function.
  *
  * @since 25.0
@@ -121,14 +121,14 @@ public final class ElementEffect {
      *
      * @see Signal#effect(Runnable)
      * @param owner
-     *            the owner component for which the effect is applied, must not
-     *            be <code>null</code>
+     *            the owner element for which the effect is applied, must not be
+     *            <code>null</code>
      * @param signal
-     *            the signal whose value is to be bound to the component, must
-     *            not be <code>null</code>
+     *            the signal whose value is to be bound to the element, must not
+     *            be <code>null</code>
      * @param setter
      *            the setter function that defines how the signal value is
-     *            applied to the component, must not be <code>null</code>
+     *            applied to the element, must not be <code>null</code>
      * @return a {@link Registration} that can be used to remove the effect
      *         function
      * @param <T>
