@@ -56,6 +56,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -1172,35 +1174,77 @@ public class Element extends Node<Element> {
      *            the text content to set, <code>null</code> is interpreted as
      *            an empty string
      * @return this element
+     * @throws BindingActiveException
+     *             if there is already an active binding on the text content of
+     *             this element
      */
     public Element setText(String textContent) {
+        if (textSignalRegistration != null) {
+            throw new BindingActiveException();
+        }
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
         }
+        setTextContent(textContent);
 
+        return this;
+    }
+
+    private void setTextContent(String textContent) {
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
             if (textContent.isEmpty()) {
                 removeAllChildren();
             } else {
-                setTextContent(textContent);
+                Element child;
+                if (getChildCount() == 1 && getChild(0).isTextNode()) {
+                    child = getChild(0).setText(textContent);
+                } else {
+                    child = createText(textContent);
+                }
+                removeAllChildren();
+                appendChild(child);
             }
         }
-
-        return this;
     }
 
-    private void setTextContent(String textContent) {
-        Element child;
-        if (getChildCount() == 1 && getChild(0).isTextNode()) {
-            child = getChild(0).setText(textContent);
-        } else {
-            child = createText(textContent);
+    private Registration textSignalRegistration;
+    private Signal<String> textSignal;
+
+    /**
+     * Binds the text content of this element to the given signal. When the
+     * signal produces a new value, the text content of this element is updated
+     * accordingly.
+     *
+     * If there is an active binding on the text content of this element, a
+     * {@link BindingActiveException} is thrown.
+     *
+     * To remove an active binding, call this method with a {@code null}
+     * argument.
+     *
+     * @param signal
+     *            the signal to bind to the text content, or {@code null} to
+     *            remove an active binding
+     * @throws BindingActiveException
+     *             if there is already an active binding on the text content of
+     *             this element
+     */
+    public void bindText(Signal<String> signal) {
+        if (signal != null && textSignalRegistration != null) {
+            throw new BindingActiveException();
         }
-        removeAllChildren();
-        appendChild(child);
+        if (signal == null && textSignalRegistration != null) {
+            textSignalRegistration.remove();
+            textSignalRegistration = null;
+            textSignal = null;
+            return;
+        }
+
+        textSignalRegistration = ElementEffect.bind(this, signal,
+                Element::setTextContent);
+        textSignal = signal;
     }
 
     /**
@@ -1215,7 +1259,11 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        return getTextContent(Element::isTextNode);
+        if (textSignal != null && getNode().isAttached()) {
+            return textSignal.value();
+        } else {
+            return getTextContent(Element::isTextNode);
+        }
     }
 
     /**
