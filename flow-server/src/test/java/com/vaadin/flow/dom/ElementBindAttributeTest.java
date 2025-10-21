@@ -114,14 +114,13 @@ public class ElementBindAttributeTest {
     }
 
     @Test
-    public void bindAttribute_notComponent_throwException() {
+    public void bindAttribute_notComponent_doNotThrowException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
-        assertThrows(IllegalStateException.class,
-                () -> element.bindAttribute("foobar", signal));
+        element.bindAttribute("foobar", signal);
         Assert.assertTrue(events.isEmpty());
     }
 
