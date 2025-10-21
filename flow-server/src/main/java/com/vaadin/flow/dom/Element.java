@@ -246,16 +246,41 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds the given {@link Signal} to the given attribute. <code>null</code>
-     * signal unbinds existing binding.
+     * Binds a {@link Signal}'s value to a given attribute and creates a Signal
+     * effect function executing the setter whenever the signal value changes.
+     * <code>null</code> signal unbinds existing binding.
+     * <p>
+     * Same rules applies for the attribute name and value from the bind Signal
+     * as in {@link #setAttribute(String, String)}.
+     * <p>
+     * The binding is automatically removed when the element is detached.
+     * Signal's value takes precedence over the manually set attribute value.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set attribute
+     * value manually throws {@link com.vaadin.signals.BindingActiveException}.
+     * Same when trying to bind a new Signal.
+     * <p>
+     * Binding to style or class attribute is removed automatically when
+     * modifying them via {@link Style} or {@link ClassList}.
+     * <p>
+     * Example of usage:
      *
-     * TODO add more documentation and examples
+     * <pre>
+     * ValueSignal<String> signal = new ValueSignal<>("");
+     * Element element = new Element("span");
+     * element.bindAttribute("mol", signal);
+     * signal.value("42"); // The element now has attribute mol="42"
+     * </pre>
      *
      * @param attribute
      *            the name of the attribute
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             Thrown when trying to bind a signal on attribute that is
+     *             already bind to signal.
+     * @see #setAttribute(String, String)
      */
     public void bindAttribute(String attribute, Signal<String> signal) {
         String validAttribute = validateAttribute(attribute, "");
