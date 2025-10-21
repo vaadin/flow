@@ -66,6 +66,20 @@ public interface ElementStateProvider extends Serializable {
      * @param value
      *            the attribute value
      */
+    void setAttribute(StateNode node, String attribute, String value);
+
+    /**
+     * Sets the given attribute to the given value.
+     *
+     * @param node
+     *            the node containing the data
+     * @param attribute
+     *            the attribute name, not null
+     * @param value
+     *            the attribute value
+     * @param ignoreSignal
+     *            true to ignore any {@link Signal} bound to the attribute
+     */
     void setAttribute(StateNode node, String attribute, String value,
             boolean ignoreSignal);
 

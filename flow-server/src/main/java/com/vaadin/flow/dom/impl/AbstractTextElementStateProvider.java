@@ -58,6 +58,11 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
+    public void setAttribute(StateNode node, String attribute, String value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setAttribute(StateNode node, String attribute, String value,
             boolean ignoreSignal) {
         throw new UnsupportedOperationException();
