@@ -24,9 +24,9 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
 
 /**
  * Emulates the <code>style</code> attribute by delegating to
@@ -49,7 +49,7 @@ public class StyleAttributeHandler extends CustomAttribute {
     public String getAttribute(Element element) {
         if (element.getNode().isAttached()
                 && element.getNode().getFeature(ElementStylePropertyMap.class)
-                        .getSignal() instanceof ValueSignal<String> signal) {
+                        .getSignal() instanceof AbstractSignal<String> signal) {
             return signal.peek();
         }
         if (!hasAttribute(element)) {

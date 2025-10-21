@@ -37,9 +37,9 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
 
 /**
  * Map for element attribute values.
@@ -164,8 +164,8 @@ public class ElementAttributeMap extends NodeMap {
     @Override
     public String get(String attribute) {
         if (getNode().isAttached() && hasSignal(attribute)) {
-            return ((ValueSignal<String>) attributeToSignalCache.get(attribute))
-                    .peek();
+            return ((AbstractSignal<String>) attributeToSignalCache
+                    .get(attribute)).peek();
         }
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
