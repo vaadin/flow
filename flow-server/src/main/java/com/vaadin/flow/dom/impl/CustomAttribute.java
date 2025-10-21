@@ -100,6 +100,8 @@ public abstract class CustomAttribute implements Serializable {
      *            the element for which to set the value, not <code>null</code>
      * @param value
      *            the new attribute value, not <code>null</code>
+     * @param ignoreSignal
+     *            true to ignore any {@link Signal} bound to the attribute
      */
     public abstract void setAttribute(Element element, String value,
             boolean ignoreSignal);

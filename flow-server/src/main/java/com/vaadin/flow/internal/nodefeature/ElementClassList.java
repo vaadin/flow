@@ -35,9 +35,10 @@ import com.vaadin.signals.Signal;
 public class ElementClassList extends SerializableNodeList<String> {
 
     private Signal<String> signal;
+
     private Registration signalRegistration;
 
-    public boolean signalRemovalDisabled = false;
+    private boolean signalRemovalEnabled = true;
 
     private static class ClassListView extends NodeList.SetView<String>
             implements ClassList {
@@ -145,8 +146,21 @@ public class ElementClassList extends SerializableNodeList<String> {
         return super.remove(index);
     }
 
+    /**
+     * Sets whether signal removal is enabled. When signal removal is enabled,
+     * the signal binding is removed when the list is modified. Enabled by
+     * default.
+     *
+     * @param signalRemovalEnabled
+     *            <code>true</code> to enable signal removal, <code>false</code>
+     *            to disable it
+     */
+    public void setSignalRemovalEnabled(boolean signalRemovalEnabled) {
+        this.signalRemovalEnabled = signalRemovalEnabled;
+    }
+
     private void removeSignal() {
-        if (!signalRemovalDisabled && getSignal() != null) {
+        if (signalRemovalEnabled && getSignal() != null) {
             bindSignal(null, null);
         }
     }
