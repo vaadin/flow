@@ -24,9 +24,9 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
 
 /**
  * Emulates the <code>class</code> attribute by delegating to
@@ -47,7 +47,7 @@ public class ClassAttributeHandler extends CustomAttribute {
     public String getAttribute(Element element) {
         if (element.getNode().isAttached() && element.getNode()
                 .getFeature(ElementClassList.class).getSignal() != null) {
-            return ((ValueSignal<String>) element.getNode()
+            return ((AbstractSignal<String>) element.getNode()
                     .getFeature(ElementClassList.class).getSignal()).peek();
         }
         Set<String> classList = element.getClassList();
