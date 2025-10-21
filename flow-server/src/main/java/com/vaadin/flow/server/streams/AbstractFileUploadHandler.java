@@ -54,6 +54,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
     public void handleUploadRequest(UploadEvent event) throws IOException {
         UploadMetadata metadata = new UploadMetadata(event.getFileName(),
                 event.getContentType(), event.getFileSize());
+        setTransferUI(event.getUI());
         File file;
         try {
             file = fileFactory.createFile(metadata);
