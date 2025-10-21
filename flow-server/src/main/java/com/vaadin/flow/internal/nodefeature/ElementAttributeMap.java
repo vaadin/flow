@@ -55,8 +55,9 @@ public class ElementAttributeMap extends NodeMap {
 
     private Map<String, Registration> pendingRegistrations;
 
-    private HashMap<String, Signal<String>> attributeToSignalCache = new HashMap<>();
-    private HashMap<Signal<String>, Registration> attributeSignalToRegistrationCache = new HashMap<>();
+    private Map<String, Signal<String>> attributeToSignalCache;
+
+    private Map<Signal<String>, Registration> attributeSignalToRegistrationCache;
 
     /**
      * Creates a new element attribute map for the given node.
@@ -76,11 +77,10 @@ public class ElementAttributeMap extends NodeMap {
      * @param value
      *            the value
      * @param ignoreSignal
-     *            ignore bind signal
+     *            true to ignore any Signal bound to the attribute
      */
     public void set(String attribute, String value, boolean ignoreSignal) {
-        if (!ignoreSignal && getNode().isAttached()
-                && attributeToSignalCache.get(attribute) != null) {
+        if (!ignoreSignal && getNode().isAttached() && hasSignal(attribute)) {
             throw new BindingActiveException(
                     "setAttribute is not allowed while binding is active.");
         }
@@ -101,6 +101,7 @@ public class ElementAttributeMap extends NodeMap {
      */
     public void bindSignal(String attribute, Signal<String> signal,
             SerializableSupplier<Registration> bindAction) {
+        ensureSignalCache();
         var previousSignal = attributeToSignalCache.get(attribute);
         if (signal != null && previousSignal != null) {
             throw new BindingActiveException();
@@ -132,7 +133,8 @@ public class ElementAttributeMap extends NodeMap {
     }
 
     private boolean hasSignal(String attribute) {
-        return attributeToSignalCache.containsKey(attribute);
+        return attributeToSignalCache != null
+                && attributeToSignalCache.get(attribute) != null;
     }
 
     /**
@@ -143,8 +145,7 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public Serializable remove(String attribute) {
-        if (getNode().isAttached()
-                && attributeToSignalCache.get(attribute) != null) {
+        if (getNode().isAttached() && hasSignal(attribute)) {
             throw new BindingActiveException(
                     "removeAttribute is not allowed while binding is active.");
         }
@@ -326,4 +327,12 @@ public class ElementAttributeMap extends NodeMap {
         return ((StateTree) owner).getUI().getSession();
     }
 
+    private void ensureSignalCache() {
+        if (attributeToSignalCache == null) {
+            attributeToSignalCache = new HashMap<>();
+        }
+        if (attributeSignalToRegistrationCache == null) {
+            attributeSignalToRegistrationCache = new HashMap<>();
+        }
+    }
 }
