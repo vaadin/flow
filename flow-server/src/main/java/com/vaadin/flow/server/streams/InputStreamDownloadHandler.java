@@ -49,6 +49,7 @@ public class InputStreamDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
+        setTransferUI(downloadEvent.getUI());
         DownloadResponse download;
         try {
             download = callback.complete(downloadEvent);
