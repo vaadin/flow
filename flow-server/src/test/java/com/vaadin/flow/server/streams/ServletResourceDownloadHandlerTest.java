@@ -52,6 +52,7 @@ public class ServletResourceDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException, URISyntaxException {
@@ -72,7 +73,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(servletContext.getResourceAsStream(Mockito.anyString()))
                 .thenReturn(stream);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -154,6 +155,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(downloadEvent.getSession()).thenReturn(session);
         Mockito.when(downloadEvent.getResponse()).thenReturn(response);
         Mockito.when(downloadEvent.getOwningElement()).thenReturn(owner);
+        Mockito.when(downloadEvent.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -210,6 +212,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -232,6 +235,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))

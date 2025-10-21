@@ -63,6 +63,7 @@ public class AbstractDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private ByteArrayOutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -70,7 +71,7 @@ public class AbstractDownloadHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -91,6 +92,7 @@ public class AbstractDownloadHandlerTest {
             public void handleDownloadRequest(DownloadEvent event) {
             }
         };
+        handler.setTransferUI(ui);
         mockContext = Mockito.mock(TransferContext.class);
         Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
@@ -196,6 +198,7 @@ public class AbstractDownloadHandlerTest {
             successAtomic.set(success);
         });
 
+        customHandler.setTransferUI(ui);
         customHandler.handleDownloadRequest(downloadEvent);
 
         Assert.assertTrue(successAtomic.get());
