@@ -186,6 +186,11 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void setAttribute(StateNode node, String attribute, String value) {
+        setAttribute(node, attribute, value, false);
+    }
+
+    @Override
     public void setAttribute(StateNode node, String attribute, String value,
             boolean ignoreSignal) {
         assert attribute != null;
