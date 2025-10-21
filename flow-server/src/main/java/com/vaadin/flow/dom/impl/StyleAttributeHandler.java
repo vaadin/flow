@@ -79,6 +79,7 @@ public class StyleAttributeHandler extends CustomAttribute {
                 ElementStylePropertyMap map = element.getNode()
                         .getFeature(ElementStylePropertyMap.class);
                 if (map.getSignal() != null) {
+                    // remove any existing binding
                     map.bindSignal(null, null);
                 }
             }
