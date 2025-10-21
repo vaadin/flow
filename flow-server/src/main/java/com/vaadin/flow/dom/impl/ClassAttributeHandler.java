@@ -71,12 +71,15 @@ public class ClassAttributeHandler extends CustomAttribute {
             ElementClassList list = element.getNode()
                     .getFeature(ElementClassList.class);
             if (list.getSignal() != null) {
+                // remove any existing binding
                 list.bindSignal(null, null);
             }
         }
 
-        element.getNode().getFeature(
-                ElementClassList.class).signalRemovalDisabled = true;
+        // Disable signal removal temporarily to avoid unintentional removals
+        // via internal modifications in the class list.
+        element.getNode().getFeature(ElementClassList.class)
+                .setSignalRemovalEnabled(false);
         try {
             Set<String> classList = element.getClassList();
             classList.clear();
@@ -90,8 +93,8 @@ public class ClassAttributeHandler extends CustomAttribute {
             String[] parts = classValue.split("\\s+");
             classList.addAll(Arrays.asList(parts));
         } finally {
-            element.getNode().getFeature(
-                    ElementClassList.class).signalRemovalDisabled = false;
+            element.getNode().getFeature(ElementClassList.class)
+                    .setSignalRemovalEnabled(true);
         }
     }
 
