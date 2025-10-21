@@ -27,7 +27,7 @@ import com.vaadin.flow.server.streams.DownloadResponse;
 import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 @Push
-@Route(value = "com.vaadin.flow.uitest.ui.DetatchedTransferProgressListenerView")
+@Route(value = "com.vaadin.flow.uitest.ui.DetachedTransferProgressListenerView")
 public class DetachedTransferProgressListenerView extends Div {
 
     static final String REMOVED_COMPONENT_DONE = "removed-component-resource-uploaded";
