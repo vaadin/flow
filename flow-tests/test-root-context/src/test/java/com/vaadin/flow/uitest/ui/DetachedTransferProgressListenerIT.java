@@ -23,14 +23,14 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebElement;
 
-import static com.vaadin.flow.uitest.ui.DetatchedTransferProgressListenerView.DOWNLOAD_AND_REMOVE;
-import static com.vaadin.flow.uitest.ui.DetatchedTransferProgressListenerView.REMOVED_COMPONENT_DONE;
+import static com.vaadin.flow.uitest.ui.DetachedTransferProgressListenerView.DOWNLOAD_AND_REMOVE;
+import static com.vaadin.flow.uitest.ui.DetachedTransferProgressListenerView.REMOVED_COMPONENT_DONE;
 
-public class DetatchedTransferProgressListenerIT
+public class DetachedTransferProgressListenerIT
         extends AbstractStreamResourceIT {
 
     @Test
-    public void downloadRemovesComponent_successfullyUpdatetsUI()
+    public void downloadRemovesComponent_successfullyUpdatesUI()
             throws IOException {
         open();
 
@@ -44,12 +44,5 @@ public class DetatchedTransferProgressListenerIT
             Assert.fail("Success element never present.");
         }
 
-    }
-
-    private void waitForStatus(String id, String status) {
-        waitUntil(driver -> {
-            WebElement element = findElement(By.id(id));
-            return element.getText().equals(status);
-        });
     }
 }

@@ -28,12 +28,12 @@ import com.vaadin.flow.server.streams.InputStreamDownloadHandler;
 
 @Push
 @Route(value = "com.vaadin.flow.uitest.ui.DetatchedTransferProgressListenerView")
-public class DetatchedTransferProgressListenerView extends Div {
+public class DetachedTransferProgressListenerView extends Div {
 
     static final String REMOVED_COMPONENT_DONE = "removed-component-resource-uploaded";
     static final String DOWNLOAD_AND_REMOVE = "download-and-remove-component";
 
-    public DetatchedTransferProgressListenerView() {
+    public DetachedTransferProgressListenerView() {
         Anchor anchor = new Anchor();
         InputStreamDownloadHandler downloadHandler = DownloadHandler
                 .fromInputStream(event -> {
