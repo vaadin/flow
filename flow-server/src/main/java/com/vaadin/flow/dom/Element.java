@@ -263,8 +263,6 @@ public class Element extends Node<Element> {
      * Binding to style or class attribute is removed automatically when
      * modifying them via {@link Style} or {@link ClassList}.
      * <p>
-     * Computed signals are not supported.
-     * <p>
      * Example of usage:
      *
      * <pre>
