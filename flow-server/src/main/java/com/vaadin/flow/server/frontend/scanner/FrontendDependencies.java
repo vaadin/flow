@@ -182,31 +182,18 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         }
     }
 
-    private void aggregateEntryPointInformation()
-            throws ClassNotFoundException {
-        var activeThemeClass = themeDefinition != null
-                ? themeDefinition.getTheme()
-                : null;
+    private void aggregateEntryPointInformation() {
+        var activeTheme = themeDefinition != null
+                && themeDefinition.getTheme() != null;
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
                 ClassInfo classInfo = visitedClasses.get(className);
-                boolean loadCss = true;
-                try {
-                    var cls = getFinder().loadClass(className);
-                    if (activeThemeClass != null
-                            && AbstractTheme.class.isAssignableFrom(cls)) {
-                        loadCss = entryPoint
-                                .getType() == EntryPointType.APP_SHELL
-                                && cls.equals(activeThemeClass);
-                    }
-                } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
-                    // NO-OP
-                }
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                if (loadCss) {
+                if (classInfo.loadCss || activeTheme
+                        && entryPoint.getType() == EntryPointType.APP_SHELL) {
                     entryPoint.getCss().addAll(classInfo.css);
                 }
                 entryPoint.getScripts().addAll(classInfo.scripts);
@@ -884,6 +871,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return;
         }
         ClassInfo info = new ClassInfo(className);
+        try {
+            if (AbstractTheme.class
+                    .isAssignableFrom(getFinder().loadClass(className))) {
+                info.loadCss = false;
+            }
+        } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
+            // NO-OP
+        }
+
         visitedClasses.put(className, info);
 
         URL url = getUrl(className);
