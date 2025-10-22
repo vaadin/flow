@@ -87,6 +87,7 @@ public class ClassDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
