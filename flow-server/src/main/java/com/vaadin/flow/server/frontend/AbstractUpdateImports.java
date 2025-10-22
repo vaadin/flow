@@ -584,17 +584,8 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     protected <T> List<String> merge(Map<T, List<String>> outputFiles) {
-        // Ignore app shell imports and definitions for bundle build detection,
-        // as they cover Hilla-specific needs. Hilla apps should trigger the
-        // bundle build regardless of app shell imports.
-        Set<File> appShellImportFiles = Set.of(appShellImports,
-                appShellDefinitions);
         List<String> result = new ArrayList<>();
-        outputFiles.forEach((key, value) -> {
-            if (!appShellImportFiles.contains(key)) {
-                result.addAll(value);
-            }
-        });
+        outputFiles.forEach((key, value) -> result.addAll(value));
         return result;
     }
 
