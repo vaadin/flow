@@ -502,6 +502,24 @@ public class ElementBindAttributeTest {
         Assert.assertTrue(events.isEmpty());
     }
 
+    @Test
+    public void bindAttribute_nullAttributeValue_attributeRemoved() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+
+        component.getElement().bindAttribute("foo",
+                signal.map(value -> value ? "" : null));
+
+        assertEquals("", component.getElement().getAttribute("foo"));
+
+        signal.value(false);
+
+        assertNull(component.getElement().getAttribute("foo"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
         VaadinService.setCurrent(service);
 
