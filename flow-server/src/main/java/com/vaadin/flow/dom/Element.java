@@ -263,11 +263,14 @@ public class Element extends Node<Element> {
      * Binding to style or class attribute is removed automatically when
      * modifying them via {@link Style} or {@link ClassList}.
      * <p>
+     * Computed signals are not supported.
+     * <p>
      * Example of usage:
      *
      * <pre>
      * ValueSignal<String> signal = new ValueSignal<>("");
      * Element element = new Element("span");
+     * add(element);
      * element.bindAttribute("mol", signal);
      * signal.value("42"); // The element now has attribute mol="42"
      * </pre>

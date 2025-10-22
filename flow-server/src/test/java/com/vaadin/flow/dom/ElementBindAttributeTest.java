@@ -482,7 +482,8 @@ public class ElementBindAttributeTest {
         component.getElement().bindAttribute("foo",
                 signal.map(v -> "value-" + v));
 
-        assertEquals("value-bar", component.getElement().getAttribute("foo"));
+        assertThrows(UnsupportedOperationException.class,
+                () -> component.getElement().getAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 
