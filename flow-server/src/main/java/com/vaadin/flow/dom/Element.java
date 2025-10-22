@@ -282,7 +282,7 @@ public class Element extends Node<Element> {
      * @see #setAttribute(String, String)
      */
     public void bindAttribute(String attribute, Signal<String> signal) {
-        String validAttribute = validateAttribute(attribute, "");
+        String validAttribute = validateAttribute(attribute);
         if (!ElementUtil.isValidAttributeName(validAttribute)) {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
@@ -333,18 +333,26 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
         return setAttributeValue(attribute, value, false);
     }
 
     private Element setAttributeValue(String attribute, String value,
             boolean ignoreSignal) {
-        String lowerCaseAttribute = validateAttribute(attribute, value);
+        String lowerCaseAttribute = validateAttribute(attribute);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
         if (customAttribute.isPresent()) {
+            if (value == null) {
+                throw new IllegalArgumentException("Value cannot be null");
+            }
             customAttribute.get().setAttribute(this, value, ignoreSignal);
         } else {
+            // null value should be allowed only from signal value changes to
+            // support removal of attribute
             getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
                     value, ignoreSignal);
         }
@@ -400,7 +408,10 @@ public class Element extends Node<Element> {
      */
     public Element setAttribute(String attribute,
             AbstractStreamResource resource) {
-        String lowerCaseAttribute = validateAttribute(attribute, resource);
+        String lowerCaseAttribute = validateAttribute(attribute);
+        if (resource == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -1379,7 +1390,7 @@ public class Element extends Node<Element> {
         return getStateProvider().getComponent(getNode());
     }
 
-    private String validateAttribute(String attribute, Object value) {
+    private String validateAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -1389,10 +1400,6 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
                     lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
         }
         return lowerCaseAttribute;
     }

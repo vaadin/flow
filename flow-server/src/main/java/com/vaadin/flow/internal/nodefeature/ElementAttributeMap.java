@@ -306,7 +306,11 @@ public class ElementAttributeMap extends NodeMap {
 
     private void doSet(String attribute, Serializable value) {
         unregisterResource(attribute);
-        put(attribute, value);
+        if (value == null) {
+            super.remove(attribute);
+        } else {
+            put(attribute, value);
+        }
     }
 
     private void unsetResource(String attribute) {
