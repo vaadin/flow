@@ -168,7 +168,8 @@ public class ElementAttributeMap extends NodeMap {
             if (signal instanceof AbstractSignal<String> abstractSignal) {
                 return abstractSignal.peek();
             }
-            return signal.value();
+            throw new UnsupportedOperationException(
+                    "Computed signals are not supported.");
         }
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
