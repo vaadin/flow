@@ -261,8 +261,8 @@ abstract class AbstractUpdateImports implements Runnable {
     private List<String> mergeWebComponentOutputLines(
             Map<File, List<String>> outputFiles) {
         var lines = new ArrayList<String>();
-        lines.addAll(outputFiles.get(appShellImports));
-        lines.addAll(outputFiles.get(generatedFlowWebComponentImports));
+        lines.addAll(outputFiles.getOrDefault(appShellImports, Collections.emptyList()));
+        lines.addAll(outputFiles.getOrDefault(generatedFlowWebComponentImports, Collections.emptyList()));
         return lines;
     }
 
