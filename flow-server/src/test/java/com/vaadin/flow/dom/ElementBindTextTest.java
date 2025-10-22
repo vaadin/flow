@@ -94,11 +94,12 @@ public class ElementBindTextTest {
     public void bindText_getText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
+        element.setText("text");
 
-        ValueSignal<String> signal = new ValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text2");
         element.bindText(signal);
 
-        assertEquals("text", element.getText());
+        assertEquals("text2", element.getText());
     }
 
     @Test
@@ -129,9 +130,34 @@ public class ElementBindTextTest {
     }
 
     @Test
+    public void bindText_unbindText_hasCorrectValue() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+
+        element.bindText(signal);
+        element.bindText(null);
+
+        assertEquals("text", element.getText());
+    }
+
+    @Test
+    public void bindText_unbindText_allowsSetText() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+
+        element.bindText(signal);
+        element.bindText(null);
+
+        element.setText("text2");
+        assertEquals("text2", element.getText());
+    }
+
+    @Test
     public void bindText_componentNotAttached_bindingIgnored() {
         Element element = new Element("span");
-        ValueSignal<String> signal = new ValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         assertEquals("", element.getText());

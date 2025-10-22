@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -1179,9 +1180,12 @@ public class Element extends Node<Element> {
      *             this element
      */
     public Element setText(String textContent) {
-        if (textSignalRegistration != null) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+        if (feature.hasBinding()) {
             throw new BindingActiveException();
         }
+
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
@@ -1210,12 +1214,9 @@ public class Element extends Node<Element> {
         }
     }
 
-    private Registration textSignalRegistration;
-    private Signal<String> textSignal;
-
     /**
-     * Binds the text content of this element to the given signal. When the
-     * signal produces a new value, the text content of this element is updated
+     * Binds the text content of this element to the given Signal. When the
+     * Signal produces a new value, the text content of this element is updated
      * accordingly.
      *
      * If there is an active binding on the text content of this element, a
@@ -1224,27 +1225,28 @@ public class Element extends Node<Element> {
      * To remove an active binding, call this method with a {@code null}
      * argument.
      *
-     * @param signal
+     * @param textSignal
      *            the signal to bind to the text content, or {@code null} to
      *            remove an active binding
      * @throws BindingActiveException
      *             if there is already an active binding on the text content of
      *             this element
      */
-    public void bindText(Signal<String> signal) {
-        if (signal != null && textSignalRegistration != null) {
-            throw new BindingActiveException();
-        }
-        if (signal == null && textSignalRegistration != null) {
-            textSignalRegistration.remove();
-            textSignalRegistration = null;
-            textSignal = null;
-            return;
-        }
+    public void bindText(Signal<String> textSignal) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
 
-        textSignalRegistration = ElementEffect.bind(this, signal,
-                Element::setTextContent);
-        textSignal = signal;
+        if (feature.hasBinding()) {
+            if (textSignal == null) {
+                feature.removeBinding();
+            } else {
+                throw new BindingActiveException();
+            }
+        } else {
+            Registration registration = ElementEffect.effect(this,
+                    () -> setTextContent(Signal.untracked(textSignal::value)));
+            feature.setBinding(registration, textSignal);
+        }
     }
 
     /**
@@ -1259,8 +1261,10 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        if (textSignal != null && getNode().isAttached()) {
-            return textSignal.value();
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+        if (feature.hasBinding() && getNode().isAttached()) {
+            return feature.getValue();
         } else {
             return getTextContent(Element::isTextNode);
         }
