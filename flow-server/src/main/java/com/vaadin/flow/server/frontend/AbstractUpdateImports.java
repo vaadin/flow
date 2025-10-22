@@ -168,8 +168,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
-        writeWebComponentImports(
-                filterWebComponentImports(output.get(generatedFlowImports)));
+        writeWebComponentImports(filterWebComponentImports(
+                mergeWebComponentOutputLines(output)));
 
         getLogger().debug("Imports and chunks update took {} ms.",
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -256,6 +256,14 @@ abstract class AbstractUpdateImports implements Runnable {
             iterator.remove();
             iterator.add(String.format(INJECT_WC_CSS, matcher.group(1)));
         }
+    }
+
+    private List<String> mergeWebComponentOutputLines(
+            Map<File, List<String>> outputFiles) {
+        var lines = new ArrayList<String>();
+        lines.addAll(outputFiles.get(appShellImports));
+        lines.addAll(outputFiles.get(generatedFlowWebComponentImports));
+        return lines;
     }
 
     private void writeWebComponentImports(List<String> lines) {
