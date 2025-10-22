@@ -24,7 +24,6 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementClassList;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
 
@@ -47,12 +46,8 @@ public class ClassAttributeHandler extends CustomAttribute {
     public String getAttribute(Element element) {
         if (element.getNode().isAttached() && element.getNode()
                 .getFeature(ElementClassList.class).getSignal() != null) {
-            var signal = element.getNode().getFeature(ElementClassList.class)
-                    .getSignal();
-            if (signal instanceof AbstractSignal<String> abstractSignal) {
-                return abstractSignal.peek();
-            }
-            return signal.value();
+            return Signal.untracked(element.getNode()
+                    .getFeature(ElementClassList.class).getSignal()::value);
         }
         Set<String> classList = element.getClassList();
         if (classList.isEmpty()) {
