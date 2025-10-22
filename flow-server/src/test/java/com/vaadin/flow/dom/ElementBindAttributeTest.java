@@ -480,24 +480,25 @@ public class ElementBindAttributeTest {
         ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo",
-                signal.map(v -> "value-" + v));
+                signal.map(v -> "mapped-" + v));
 
-        assertThrows(UnsupportedOperationException.class,
-                () -> component.getElement().getAttribute("foo"));
+        assertEquals("mapped-bar", component.getElement().getAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 
     @Test
-    public void bindAttribute_computedSignal_throwException() {
+    public void bindAttribute_computedSignal_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
         Signal<String> signal = Signal.computed(() -> "bar");
+        Signal<String> computedSignal = Signal
+                .computed(() -> "computed-" + signal.value());
 
-        component.getElement().bindAttribute("foo", signal);
+        component.getElement().bindAttribute("foo", computedSignal);
 
-        assertThrows(UnsupportedOperationException.class,
-                () -> component.getElement().getAttribute("foo"));
+        assertEquals("computed-bar",
+                component.getElement().getAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 

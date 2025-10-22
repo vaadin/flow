@@ -24,7 +24,6 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
 
@@ -50,12 +49,9 @@ public class StyleAttributeHandler extends CustomAttribute {
         if (element.getNode().isAttached()
                 && element.getNode().getFeature(ElementStylePropertyMap.class)
                         .getSignal() != null) {
-            var signal = element.getNode()
-                    .getFeature(ElementStylePropertyMap.class).getSignal();
-            if (signal instanceof AbstractSignal<String> abstractSignal) {
-                return abstractSignal.peek();
-            }
-            return signal.value();
+            return Signal.untracked(
+                    element.getNode().getFeature(ElementStylePropertyMap.class)
+                            .getSignal()::value);
         }
         if (!hasAttribute(element)) {
             return null;
