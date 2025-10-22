@@ -270,7 +270,7 @@ public class Element extends Node<Element> {
      * <pre>
      * ValueSignal<String> signal = new ValueSignal<>("");
      * Element element = new Element("span");
-     * add(element);
+     * getElement().appendChild(element);
      * element.bindAttribute("mol", signal);
      * signal.value("42"); // The element now has attribute mol="42"
      * </pre>
