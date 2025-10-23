@@ -146,7 +146,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.templatemodel\\.PropertyMapBuilder(\\$.*)?",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCache",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
-                "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.TemplateDataAnalyzer",
                 "com\\.vaadin\\.flow\\.component\\.polymertemplate\\.IdCollector",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
