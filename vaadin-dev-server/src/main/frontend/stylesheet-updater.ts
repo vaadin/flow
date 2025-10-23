@@ -31,14 +31,13 @@ export async function updateStylesheetsReferencingResource(resourcePath: string)
   const documentStyleSheets = collectDocumentStyleSheets();
   const visited = new Set<string>();
   const affectedImports: Array<AffectedStyleSheetRule> = [];
-  const rootStyleSheets = new Set<CSSStyleSheet>();
 
   // Scan all document stylesheets
   for (const [href, styleSheet] of documentStyleSheets) {
     if (href && normalizePath(href) === normalizedResourcePath && styleSheet.ownerNode instanceof HTMLLinkElement) {
       // Resource references a linked stylesheet, update it immediately
-      styleSheet.ownerNode.href = cacheKiller(href);
-      rootStyleSheets.add(styleSheet);
+      const newHref = cacheKiller(href);
+      swapStyleSheet(styleSheet, newHref);
     } else {
       await updateAndCollectAffectedImports(
         documentStyleSheets,
@@ -51,34 +50,24 @@ export async function updateStylesheetsReferencingResource(resourcePath: string)
   }
 
   // Update all affected imports
-  for (const { parentSheet, rule, ruleIndex } of affectedImports) {
-    updatedImportedStyleSheet(parentSheet, rule, ruleIndex);
-    rootStyleSheets.add(findRootStyleSheet(parentSheet));
-  }
+  affectedImports.forEach((affected) => {
+    const { parentSheet, rule, ruleIndex } = affected;
+    const baseHref = rule.parentStyleSheet?.href || window.location.href;
+    const newHref = cacheKiller(rule.href);
+    const absoluteHref = resolveUrl(newHref, baseHref);
 
-  if (rootStyleSheets.size == 0) {
-    return;
-  }
-
-  console.log(`Reloading ${rootStyleSheets.size} stylesheet(s) referencing ${resourcePath}`);
-
-  // Ensure all modified stylesheets are refreshed and applied by temporarily change the media type
-  rootStyleSheets.forEach((rootStyleSheet) => {
-    const originalMedia = rootStyleSheet.media.mediaText;
-    rootStyleSheet.media.mediaText += ' vaadin';
-    // The little delay makes sure that the browser has time to apply the updated styles
-    setTimeout(() => {
-      rootStyleSheet.media.mediaText = originalMedia;
-    }, 10);
+    if (parentSheet.ownerNode) {
+      swapStyleSheet(parentSheet, undefined, (newSheet) => {
+        newSheet.deleteRule(ruleIndex);
+        newSheet.insertRule(`@import url('${newHref}');`, ruleIndex);
+      });
+    } else {
+      preloadStyleSheet(absoluteHref, () => {
+        parentSheet.deleteRule(ruleIndex);
+        parentSheet.insertRule(`@import url('${newHref}');`, ruleIndex);
+      });
+    }
   });
-}
-
-function findRootStyleSheet(styleSheet: CSSStyleSheet): CSSStyleSheet {
-  let rootStyleSheet = styleSheet;
-  while (rootStyleSheet.parentStyleSheet) {
-    rootStyleSheet = rootStyleSheet.parentStyleSheet;
-  }
-  return rootStyleSheet;
 }
 
 /**
@@ -194,12 +183,39 @@ function collectDocumentStyleSheets(): Map<string, CSSStyleSheet> {
   return styleSheets;
 }
 
-function updatedImportedStyleSheet(styleSheet: StyleSheetLike, rule: CSSImportRule, ruleIndex: number) {
-  if (styleSheet instanceof CSSStyleSheet && rule.href) {
-    const newHref = cacheKiller(rule.href);
-    styleSheet.deleteRule(ruleIndex);
-    styleSheet.insertRule(`@import url('${newHref}');`, ruleIndex);
+function swapStyleSheet(styleSheet: CSSStyleSheet, newHref?: string, onload: (CSSStyleSheet) => void = () => {}): void {
+  const linkElement = styleSheet.ownerNode as HTMLLinkElement;
+  const shadowLink = linkElement.cloneNode(true) as HTMLLinkElement;
+  shadowLink.media = 'not all';
+  shadowLink.removeAttribute('id');
+  if (newHref) {
+    shadowLink.href = newHref;
   }
+
+  linkElement.parentNode?.insertBefore(shadowLink, linkElement.nextSibling);
+  shadowLink.onload = () => {
+    shadowLink.onload = null;
+
+    setTimeout(() => {
+      onload(shadowLink.sheet);
+      shadowLink.media = linkElement.media;
+      linkElement.remove();
+    }, 200);
+  };
+}
+
+function preloadStyleSheet(href: string, onload: () => void): void {
+  const preload = document.createElement('link');
+  preload.href = href;
+  preload.rel = 'preload';
+  preload.as = 'style';
+  preload.onload = () => {
+    setTimeout(() => {
+      onload();
+      preload.remove();
+    }, 200);
+  };
+  document.head.appendChild(preload);
 }
 
 /**

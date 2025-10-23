@@ -692,9 +692,14 @@ export class VaadinDevTools extends LitElement {
       } else {
         // do not fallback on page reload, as update might be called even for resources that are not used in CSS
         // and we want to avoid reloading the page in that case.
-        updateStylesheetsReferencingResource(path).then(() => {
-          document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-        });
+        updateStylesheetsReferencingResource(path).then(
+          () => {
+            document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+          },
+          (error) => {
+            console.error('Failed to update theme', error);
+          }
+        );
       }
     };
 
