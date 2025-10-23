@@ -260,12 +260,13 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private List<String> mergeWebComponentOutputLines(
             Map<File, List<String>> outputFiles) {
-        var lines = new ArrayList<String>();
-        lines.addAll(outputFiles.getOrDefault(appShellImports,
-                Collections.emptyList()));
-        lines.addAll(outputFiles.getOrDefault(generatedFlowImports,
-                Collections.emptyList()));
-        return lines;
+        return Stream.concat(
+                outputFiles
+                        .getOrDefault(appShellImports, Collections.emptyList())
+                        .stream(),
+                outputFiles.getOrDefault(generatedFlowImports,
+                        Collections.emptyList()).stream())
+                .distinct().toList();
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -294,6 +295,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<File, List<String>> process(Map<ChunkInfo, List<CssData>> css,
             Map<ChunkInfo, List<String>> javascript) {
         getLogger().debug("Start sorting imports to lazy and eager.");
+        int cssLineOffset = 0;
         long start = System.nanoTime();
 
         Map<File, List<String>> files = new HashMap<>();
@@ -315,7 +317,9 @@ abstract class AbstractUpdateImports implements Runnable {
             boolean hasThemeFor = entry.getValue().stream()
                     .anyMatch(cssData -> cssData.getThemefor() != null);
             if (isLazyRoute(entry.getKey()) && !hasThemeFor) {
-                List<String> cssLines = getCssLines(entry.getValue());
+                List<String> cssLines = getCssLines(entry.getValue(),
+                        cssLineOffset);
+                cssLineOffset += cssLines.size();
                 if (!cssLines.isEmpty()) {
                     lazyCss.put(entry.getKey(), cssLines);
                 }
@@ -396,7 +400,9 @@ abstract class AbstractUpdateImports implements Runnable {
         }
 
         List<String> appShellLines = new ArrayList<>();
-        List<String> appShellCssLines = getCssLines(appShellCssData);
+        List<String> appShellCssLines = getCssLines(appShellCssData,
+                cssLineOffset);
+        cssLineOffset += appShellCssLines.size();
         if (!appShellCssLines.isEmpty()) {
             appShellLines.add(IMPORT_INJECT);
             appShellLines.addAll(appShellCssLines);
@@ -407,7 +413,8 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> mainLines = new ArrayList<>();
 
         // Convert eager CSS data to JS and deduplicate it
-        List<String> mainCssLines = getCssLines(eagerCssData);
+        List<String> mainCssLines = getCssLines(eagerCssData, cssLineOffset);
+        cssLineOffset += mainCssLines.size();
         if (!mainCssLines.isEmpty()) {
             mainLines.add(IMPORT_INJECT);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
@@ -502,12 +509,12 @@ abstract class AbstractUpdateImports implements Runnable {
      *            the CSS import data
      * @return the JS statements needed to import and apply the CSS data
      */
-    protected List<String> getCssLines(List<CssData> css) {
+    private List<String> getCssLines(List<CssData> css, int startOffset) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
-        int i = 0;
+        int i = startOffset;
         for (CssData cssData : allCss) {
             if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
