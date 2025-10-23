@@ -57,7 +57,6 @@ import org.mockito.Mockito;
 public class ComponentTest {
 
     private UI ui;
-    private VaadinSession session;
 
     @After
     public void checkThreadLocal() {
@@ -285,8 +284,14 @@ public class ComponentTest {
 
         mocks = new MockServletServiceSessionSetup();
 
-        session = mocks.getSession();
-        ui = createMockedUI();
+        VaadinSession session = mocks.getSession();
+        ui = new UI() {
+            @Override
+            public VaadinSession getSession() {
+                return session;
+            }
+        };
+        ui.getInternals().setSession(session);
 
         UI.setCurrent(ui);
     }
@@ -1760,16 +1765,5 @@ public class ComponentTest {
         Assert.assertTrue("Enable event should have triggered",
                 stateChange.get());
         Assert.assertNull(child.getElement().getAttribute("disabled"));
-    }
-
-    private UI createMockedUI() {
-        UI ui = new UI() {
-            @Override
-            public VaadinSession getSession() {
-                return session;
-            }
-        };
-        ui.getInternals().setSession(session);
-        return ui;
     }
 }

@@ -230,12 +230,4 @@ public class InitParameters implements Serializable {
      * https://github.com/vaadin/platform/issues/3066#issuecomment-1598771284
      */
     public static final String ENFORCE_FIELD_VALIDATION = "enforceFieldValidation";
-
-    /**
-     * Configuration parameter name for enabling component tracking in
-     * development mode. If not set, tracking is enabled by default.
-     *
-     * @since
-     */
-    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 }
