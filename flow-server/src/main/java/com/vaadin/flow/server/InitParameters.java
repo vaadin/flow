@@ -219,13 +219,4 @@ public class InitParameters implements Serializable {
      * Configuration name for enabling ci build for npm/pnpm.
      */
     public static final String CI_BUILD = "ci.build";
-
-    /**
-     * Configuration parameter name for enabling component tracking in
-     * development mode. If not set, tracking is enabled by default.
-     *
-     * @since
-     */
-    public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
-
 }
