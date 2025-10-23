@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.io.ByteArrayInputStream;
+import java.net.URLConnection;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -27,6 +29,7 @@ import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.flow.server.streams.DownloadResponse;
 
 /**
  * Component representing a <code>&lt;img&gt;</code> element.
@@ -113,6 +116,41 @@ public class Image extends HtmlContainer
     public Image(DownloadHandler downloadHandler, String alt) {
         setSrc(downloadHandler);
         setAlt(alt);
+    }
+
+    /**
+     * Creates an image from byte array content with the given image name.
+     *
+     * This convenience constructor simplifies the creation of images from
+     * in-memory byte data by automatically handling the creation of a
+     * {@link DownloadHandler} with a {@link DownloadResponse}.
+     *
+     * The MIME type is automatically determined from the file extension in the
+     * image name using {@link URLConnection#guessContentTypeFromName(String)}.
+     * If the image name does not have a recognizable extension, the content
+     * type will be null and the browser will attempt to determine it.
+     *
+     * The alternative text is set to the provided image name.
+     *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * to ensure the image is displayed in the browser rather than downloaded.
+     *
+     * @param imageContent
+     *            the image data as a byte array, not null
+     * @param imageName
+     *            the image name (including file extension for MIME type
+     *            detection), not null
+     *
+     * @see #setSrc(DownloadHandler)
+     * @see #setAlt(String)
+     */
+    public Image(byte[] imageContent, String imageName) {
+        this(DownloadHandler.fromInputStream(event -> {
+            return new DownloadResponse(new ByteArrayInputStream(imageContent),
+                    imageName,
+                    URLConnection.guessContentTypeFromName(imageName),
+                    imageContent.length);
+        }).inline(), imageName);
     }
 
     /**

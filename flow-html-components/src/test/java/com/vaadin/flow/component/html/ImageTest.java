@@ -71,4 +71,26 @@ public class ImageTest extends ComponentTest {
         new TestImage(handler, "test.png");
         Assert.assertTrue(handler.isInline());
     }
+
+    @Test
+    public void byteArrayConstructor_typicalUseCase() {
+        Element element = Mockito.mock(Element.class);
+        byte[] imageData = new byte[] { 1, 2, 3, 4, 5 };
+
+        class TestImage extends Image {
+            public TestImage(byte[] content, String name) {
+                super(content, name);
+            }
+
+            @Override
+            public Element getElement() {
+                return element;
+            }
+        }
+
+        TestImage image = new TestImage(imageData, "test.png");
+        Mockito.verify(element).setAttribute("alt", "test.png");
+        Mockito.verify(element).setAttribute(Mockito.eq("src"),
+                Mockito.any(DownloadHandler.class));
+    }
 }
