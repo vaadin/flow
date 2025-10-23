@@ -138,12 +138,16 @@ public class DownloadEvent {
      * <p>
      * If the <code>fileName</code> is <code>null</code>, the
      * Content-Disposition header won't be set.
+     * <p>
+     * If the Content-Disposition header has already been set, this method will
+     * not override it.
      *
      * @param fileName
      *            the name to be assigned to the file
      */
     public void setFileName(String fileName) {
-        if (fileName == null) {
+        if (fileName == null
+                || response.containsHeader("Content-Disposition")) {
             return;
         }
         if (fileName.isEmpty()) {
@@ -151,6 +155,62 @@ public class DownloadEvent {
         } else {
             StringBuilder value = new StringBuilder();
             value.append("attachment; ");
+            if (EncodeUtil.isPureUSASCII(fileName)) {
+                value.append("filename=\"").append(fileName).append("\"");
+            } else {
+                value
+                        // fallback legacy support
+                        .append("filename=\"")
+                        .append(EncodeUtil.rfc2047Encode(fileName))
+                        // used primarily
+                        .append("\"; filename*=UTF-8''")
+                        .append(EncodeUtil.rfc5987Encode(fileName));
+            }
+            response.setHeader("Content-Disposition", value.toString());
+        }
+        this.fileName = fileName;
+    }
+
+    /**
+     * Sets the Content-Disposition header to inline, allowing the content to be
+     * displayed directly in the browser instead of being downloaded.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the Content-Disposition header has already been set, this method will
+     * not override it.
+     */
+    public void inline() {
+        if (!response.containsHeader("Content-Disposition")) {
+            response.setHeader("Content-Disposition", "inline");
+        }
+    }
+
+    /**
+     * Sets the Content-Disposition header to inline with a filename, allowing
+     * the content to be displayed directly in the browser with a suggested
+     * filename if the user chooses to save it.
+     * <p>
+     * To be called before the response is committed.
+     * <p>
+     * If the <code>fileName</code> is <code>null</code> or empty, this behaves
+     * the same as calling {@link #inline()}.
+     * <p>
+     * If the Content-Disposition header has already been set, this method will
+     * not override it.
+     *
+     * @param fileName
+     *            the suggested name for the file if saved by the user
+     */
+    public void inline(String fileName) {
+        if (response.containsHeader("Content-Disposition")) {
+            return;
+        }
+        if (fileName == null || fileName.isEmpty()) {
+            response.setHeader("Content-Disposition", "inline");
+        } else {
+            StringBuilder value = new StringBuilder();
+            value.append("inline; ");
             if (EncodeUtil.isPureUSASCII(fileName)) {
                 value.append("filename=\"").append(fileName).append("\"");
             } else {

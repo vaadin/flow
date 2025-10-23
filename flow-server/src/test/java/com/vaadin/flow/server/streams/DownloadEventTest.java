@@ -78,6 +78,85 @@ public class DownloadEventTest {
     }
 
     @Test
+    public void setFileName_headerAlreadySet_doesNotOverrideHeader() {
+        Mockito.when(response.containsHeader("Content-Disposition"))
+                .thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.setFileName("test.txt");
+        Mockito.verify(response, Mockito.times(0)).setHeader(
+                Mockito.eq("Content-Disposition"), Mockito.anyString());
+    }
+
+    @Test
+    public void inline_noFileName_setsContentDispositionInlineToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline();
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
+    @Test
+    public void inline_withASCIIFileName_setsContentDispositionInlineWithFilenameToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        String fileName = "document.pdf";
+        downloadEvent.inline(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"" + fileName + "\"");
+    }
+
+    @Test
+    public void inline_withNonASCIIFileName_setsContentDispositionInlineWithEncodedFilenameToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        String fileName = "dökümänt üñîçødë.pdf";
+        downloadEvent.inline(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline;" + " filename=\"" + EncodeUtil.rfc2047Encode(fileName)
+                        + "\";" + " filename*=UTF-8''"
+                        + EncodeUtil.rfc5987Encode(fileName));
+    }
+
+    @Test
+    public void inline_nullFileName_setsContentDispositionInlineToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline(null);
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
+    @Test
+    public void inline_emptyFileName_setsContentDispositionInlineToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline("");
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
+    @Test
+    public void inline_headerAlreadySet_doesNotOverrideHeader() {
+        Mockito.when(response.containsHeader("Content-Disposition"))
+                .thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline();
+        Mockito.verify(response, Mockito.times(0)).setHeader(
+                Mockito.eq("Content-Disposition"), Mockito.anyString());
+    }
+
+    @Test
+    public void inline_withFileNameHeaderAlreadySet_doesNotOverrideHeader() {
+        Mockito.when(response.containsHeader("Content-Disposition"))
+                .thenReturn(true);
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline("test.pdf");
+        Mockito.verify(response, Mockito.times(0)).setHeader(
+                Mockito.eq("Content-Disposition"), Mockito.anyString());
+    }
+
+    @Test
     public void setContentType_setsContentTypeToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);

@@ -92,8 +92,7 @@ public class InputStreamDownloadHandler
         if (!isInline()) {
             downloadEvent.setFileName(downloadName);
         } else {
-            downloadEvent.getResponse().setHeader("Content-Disposition",
-                    "inline");
+            downloadEvent.inline(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();

@@ -80,8 +80,7 @@ public class FileDownloadHandler
             if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.inline(resourceName);
             }
             downloadEvent
                     .setContentType(getContentType(resourceName, response));

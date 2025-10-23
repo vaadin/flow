@@ -248,7 +248,8 @@ public class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
 
@@ -261,6 +262,7 @@ public class ServletResourceDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"my-download.bin\"");
     }
 }

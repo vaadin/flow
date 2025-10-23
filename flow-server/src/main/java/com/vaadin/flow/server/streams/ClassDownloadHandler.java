@@ -104,8 +104,7 @@ public class ClassDownloadHandler
             if (!isInline()) {
                 downloadEvent.setFileName(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.inline(resourceName);
             }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
