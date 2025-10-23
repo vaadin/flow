@@ -44,11 +44,6 @@ public class ClassAttributeHandler extends CustomAttribute {
 
     @Override
     public String getAttribute(Element element) {
-        if (element.getNode().isAttached() && element.getNode()
-                .getFeature(ElementClassList.class).getSignal() != null) {
-            return Signal.untracked(element.getNode()
-                    .getFeature(ElementClassList.class).getSignal()::value);
-        }
         Set<String> classList = element.getClassList();
         if (classList.isEmpty()) {
             return null;
