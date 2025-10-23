@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -292,26 +291,8 @@ public class Element extends Node<Element> {
         }
 
         SerializableSupplier<Registration> bindAction = signal == null ? null
-                : () -> {
-                    Registration attachRegistration = addAttachListener(
-                            event -> {
-                                String signalValue = Signal
-                                        .untracked(signal::value);
-                                if (!Objects.equals(signalValue,
-                                        getAttribute(attribute))) {
-                                    setAttributeValue(attribute, signalValue,
-                                            true);
-                                }
-                            });
-                    Registration effectRegistration = ElementEffect.bind(this,
-                            signal,
-                            (component, value) -> setAttributeValue(attribute,
-                                    value, true));
-                    return () -> {
-                        attachRegistration.remove();
-                        effectRegistration.remove();
-                    };
-                };
+                : () -> ElementEffect.bind(this, signal, (component,
+                        value) -> setAttributeValue(attribute, value, true));
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);
