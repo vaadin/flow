@@ -51,7 +51,7 @@ public class DevToolsWrapper {
      */
     public void setOfflineEnabled(Boolean isEnabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty()));
@@ -66,7 +66,7 @@ public class DevToolsWrapper {
      */
     public void setCacheDisabled(Boolean isDisabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 
