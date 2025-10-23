@@ -162,10 +162,6 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public String get(String attribute) {
-        if (getNode().isAttached() && hasSignal(attribute)) {
-            return Signal
-                    .untracked(attributeToSignalCache.get(attribute)::value);
-        }
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
             return (String) value;

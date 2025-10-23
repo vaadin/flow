@@ -46,13 +46,6 @@ public class StyleAttributeHandler extends CustomAttribute {
 
     @Override
     public String getAttribute(Element element) {
-        if (element.getNode().isAttached()
-                && element.getNode().getFeature(ElementStylePropertyMap.class)
-                        .getSignal() != null) {
-            return Signal.untracked(
-                    element.getNode().getFeature(ElementStylePropertyMap.class)
-                            .getSignal()::value);
-        }
         if (!hasAttribute(element)) {
             return null;
         }

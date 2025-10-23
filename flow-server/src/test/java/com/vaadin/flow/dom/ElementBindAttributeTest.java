@@ -167,6 +167,28 @@ public class ElementBindAttributeTest {
     }
 
     @Test
+    public void bindAttribute_componentReAttached_bindingSynced() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindAttribute("foo", signal);
+        assertEquals("bar", component.getElement().getAttribute("foo"));
+
+        component.removeFromParent();
+        signal.value("baz");
+
+        assertEquals("baz", signal.peek());
+        assertEquals("bar", component.getElement().getAttribute("foo"));
+
+        UI.getCurrent().add(component);
+        assertEquals("baz", component.getElement().getAttribute("foo"));
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
     public void bindAttribute_setAttributeWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
@@ -378,12 +400,12 @@ public class ElementBindAttributeTest {
 
         component.getElement().bindAttribute("style", signal);
 
-        assertEquals("color: red;",
-                component.getElement().getAttribute("style"));
+        // attribute value is normalized
+        assertEquals("color:red", component.getElement().getAttribute("style"));
 
         signal.value("color: red;border-color: red;");
 
-        assertEquals("color: red;border-color: red;",
+        assertEquals("color:red;border-color:red",
                 component.getElement().getAttribute("style"));
         Assert.assertTrue(events.isEmpty());
     }
@@ -461,8 +483,8 @@ public class ElementBindAttributeTest {
 
         component.getElement().bindAttribute("style", signal);
 
-        assertEquals("color: red;",
-                component.getElement().getAttribute("style"));
+        // attribute value is normalized
+        assertEquals("color:red", component.getElement().getAttribute("style"));
 
         component.getElement().bindAttribute("style", null);
 
