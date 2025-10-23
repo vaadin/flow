@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -251,8 +252,9 @@ public class Element extends Node<Element> {
      * Same rules applies for the attribute name and value from the bind Signal
      * as in {@link #setAttribute(String, String)}.
      * <p>
-     * The binding is automatically removed when the element is detached.
-     * Signal's value takes precedence over the manually set attribute value.
+     * Attribute value is synchronized with the signal value when element is
+     * attached. The binding is automatically removed when the element is
+     * detached.
      * <p>
      * While a Signal is bound to an attribute, any attempt to set attribute
      * value manually throws {@link com.vaadin.signals.BindingActiveException}.
@@ -291,10 +293,26 @@ public class Element extends Node<Element> {
 
         SerializableSupplier<Registration> bindAction = signal == null ? null
                 : () -> {
-                    return ElementEffect.bind(this, signal,
+                    Registration attachRegistration = addAttachListener(
+                            event -> {
+                                String signalValue = Signal
+                                        .untracked(signal::value);
+                                if (!Objects.equals(signalValue,
+                                        getAttribute(attribute))) {
+                                    setAttributeValue(attribute, signalValue,
+                                            true);
+                                }
+                            });
+                    Registration effectRegistration = ElementEffect.bind(this,
+                            signal,
                             (component, value) -> setAttributeValue(attribute,
                                     value, true));
+                    return () -> {
+                        attachRegistration.remove();
+                        effectRegistration.remove();
+                    };
                 };
+
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);
         if (customAttribute.isPresent()) {
