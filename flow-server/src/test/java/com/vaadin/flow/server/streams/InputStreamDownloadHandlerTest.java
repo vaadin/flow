@@ -92,7 +92,7 @@ public class InputStreamDownloadHandlerTest {
         }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(-1, context.contentLength());
+                Assert.assertEquals(165000, context.contentLength());
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onStart");
             }
@@ -101,7 +101,7 @@ public class InputStreamDownloadHandlerTest {
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(-1, totalBytes);
+                Assert.assertEquals(165000, totalBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onProgress");
             }
@@ -109,7 +109,7 @@ public class InputStreamDownloadHandlerTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(-1, context.contentLength());
+                Assert.assertEquals(165000, context.contentLength());
                 Assert.assertEquals(165000, transferredBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onComplete");
@@ -443,6 +443,27 @@ public class InputStreamDownloadHandlerTest {
         handler.handleDownloadRequest(event);
 
         Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
+    @Test
+    public void contentLengthProvided_contentLengthHeaderSet()
+            throws IOException {
+        long expectedContentLength = 12345L;
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+
+        InputStreamDownloadHandler handler = new InputStreamDownloadHandler(
+                event -> new DownloadResponse(stream, "report.pdf",
+                        "application/pdf", expectedContentLength));
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("div"));
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setContentLengthLong(expectedContentLength);
     }
 
     private static byte[] getBytes() {
