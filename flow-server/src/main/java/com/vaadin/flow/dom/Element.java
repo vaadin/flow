@@ -1261,13 +1261,7 @@ public class Element extends Node<Element> {
      * @return the text content of this element
      */
     public String getText() {
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
-        if (feature.hasBinding() && getNode().isAttached()) {
-            return feature.getValue();
-        } else {
-            return getTextContent(Element::isTextNode);
-        }
+        return getTextContent(Element::isTextNode);
     }
 
     /**
