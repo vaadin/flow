@@ -30,6 +30,7 @@ public class HrTest extends ComponentTest {
     @Test
     public void ariaHiddenSetByDefault() {
         Hr hr = new Hr();
-        Assert.assertEquals("true", hr.getElement().getAttribute("aria-hidden"));
+        Assert.assertEquals("true",
+                hr.getElement().getAttribute("aria-hidden"));
     }
 }
