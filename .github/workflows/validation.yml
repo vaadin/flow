@@ -267,7 +267,7 @@ jobs:
           exit 1
   api-diff-labeling:
     if: github.event_name == 'pull_request_target'
-    timeout-minutes: 90
+    timeout-minutes: 10
     runs-on: ubuntu-24.04
     permissions:
       contents: read
