@@ -1183,7 +1183,8 @@ public class Element extends Node<Element> {
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
         if (feature.hasBinding()) {
-            throw new BindingActiveException();
+            throw new BindingActiveException(
+                    "setText is not allowed while a binding is active.");
         }
 
         if (textContent == null) {
