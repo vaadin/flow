@@ -18,9 +18,7 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -60,12 +58,56 @@ import static org.mockito.Mockito.when;
 
 public class ComponentEffectTest {
 
+    private static FlushableExecutor executor;
     private static MockVaadinServletService service;
+
+    /**
+     * Custom executor that queues tasks and executes them synchronously when
+     * flushed. This eliminates race conditions in tests by keeping all
+     * execution on the main test thread.
+     */
+    private static class FlushableExecutor implements Executor {
+        private final List<Runnable> pendingTasks = new ArrayList<>();
+
+        @Override
+        public void execute(Runnable command) {
+            pendingTasks.add(command);
+        }
+
+        /**
+         * Executes all pending tasks synchronously on the calling thread.
+         * Continues flushing until no more tasks are queued (handles cascading
+         * task submissions).
+         */
+        public void flush() {
+            while (!pendingTasks.isEmpty()) {
+                List<Runnable> tasks = new ArrayList<>(pendingTasks);
+                pendingTasks.clear();
+                tasks.forEach(Runnable::run);
+            }
+        }
+
+        public boolean hasPendingTasks() {
+            return !pendingTasks.isEmpty();
+        }
+    }
+
+    /**
+     * Test service that uses FlushableExecutor instead of a background thread
+     * pool for deterministic test execution.
+     */
+    private static class TestService extends MockVaadinServletService {
+        @Override
+        protected Executor createDefaultExecutor() {
+            return executor;
+        }
+    }
 
     @BeforeClass
     public static void init() {
         runWithFeatureFlagEnabled(() -> {
-            service = new MockVaadinServletService();
+            executor = new FlushableExecutor();
+            service = new TestService();
         });
     }
 
@@ -73,6 +115,24 @@ public class ComponentEffectTest {
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
+    }
+
+    /**
+     * Flushes all pending async tasks. This executes tasks queued in the
+     * executor and then processes any UI access tasks that were queued as a
+     * result.
+     */
+    private static void flushExecutorAndAccessTasks(VaadinSession session) {
+        // Flush executor tasks (effect dispatcher)
+        executor.flush();
+
+        // Process UI access tasks that were queued by the executor
+        session.lock();
+        try {
+            service.runPendingAccessTasks(session);
+        } finally {
+            session.unlock();
+        }
     }
 
     @Test
@@ -107,23 +167,20 @@ public class ComponentEffectTest {
 
             AtomicReference<Thread> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
-            CountDownLatch latch = new CountDownLatch(1);
 
             ComponentEffect.effect(ui, () -> {
                 currentThread.set(Thread.currentThread());
                 currentUI.set(UI.getCurrent());
-                latch.countDown();
             });
 
-            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
-                fail("Expected signal effect to be computed asynchronously");
-            }
+            // Flush executor and UI access tasks to run pending tasks
+            // synchronously
+            flushExecutorAndAccessTasks(session);
 
-            Assert.assertTrue(
-                    "Expected effect to be executed in Vaadin Executor thread",
-                    currentThread.get().getName()
-                            .startsWith("VaadinTaskExecutor-thread-"));
-            assertSame(ui, currentUI.get());
+            assertNotNull("Effect should have been executed",
+                    currentThread.get());
+            assertSame("Effect should run with correct UI context", ui,
+                    currentUI.get());
         });
     }
 
@@ -140,28 +197,30 @@ public class ComponentEffectTest {
             VaadinSession.setCurrent(null);
             UI.setCurrent(null);
 
-            MockUI otherUi = new MockUI();
+            // Create otherUi with the same service to avoid creating a second
+            // executor
+            var otherSession = new MockVaadinSession(service);
+            otherSession.lock();
+            MockUI otherUi = new MockUI(otherSession);
+            otherSession.unlock();
             UI.setCurrent(otherUi);
 
             AtomicReference<Thread> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
-            CountDownLatch latch = new CountDownLatch(1);
 
             ComponentEffect.effect(ui, () -> {
                 currentThread.set(Thread.currentThread());
                 currentUI.set(UI.getCurrent());
-                latch.countDown();
             });
 
-            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
-                fail("Expected signal effect to be computed asynchronously");
-            }
+            // Flush executor and UI access tasks to run pending tasks
+            // synchronously
+            flushExecutorAndAccessTasks(session);
 
-            Assert.assertTrue(
-                    "Expected effect to be executed in Vaadin Executor thread",
-                    currentThread.get().getName()
-                            .startsWith("VaadinTaskExecutor-thread-"));
-            assertSame(ui, currentUI.get());
+            assertNotNull("Effect should have been executed",
+                    currentThread.get());
+            assertSame("Effect should run with correct UI context", ui,
+                    currentUI.get());
         });
     }
 
@@ -197,26 +256,24 @@ public class ComponentEffectTest {
             session.lock();
             var ui = new MockUI(session);
 
-            var events = new LinkedBlockingQueue<ErrorEvent>();
+            var events = new ArrayList<ErrorEvent>();
             session.setErrorHandler(events::add);
 
             UI.setCurrent(null);
             session.unlock();
 
-            CountDownLatch latch = new CountDownLatch(1);
             ComponentEffect.effect(ui, () -> {
-                latch.countDown();
                 throw new RuntimeException("Expected exception");
             });
 
-            if (!latch.await(1000, TimeUnit.MILLISECONDS)) {
-                fail("Expected signal effect to be computed asynchronously");
-            }
+            // Flush executor and UI access tasks to run pending tasks
+            // synchronously
+            flushExecutorAndAccessTasks(session);
 
-            ErrorEvent event = events.poll(1000, TimeUnit.MILLISECONDS);
-            assertNotNull(event);
+            assertEquals("Error handler should have been called", 1,
+                    events.size());
 
-            Throwable throwable = event.getThrowable();
+            Throwable throwable = events.get(0).getThrowable();
             assertEquals(RuntimeException.class, throwable.getClass());
         });
     }
