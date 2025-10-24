@@ -106,14 +106,64 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void focus() {
+        focus((FocusOptions) null);
+    }
+
+    /**
+     * Calls the <code>focus</code> function at the client with the specified
+     * focus visibility option.
+     * <p>
+     * This is a convenience method equivalent to calling
+     * {@code focus(new FocusOptions(focusVisible ? FocusVisible.VISIBLE : FocusVisible.NOT_VISIBLE))}.
+     *
+     * @param focusVisible
+     *            if true, forces the focus ring to be visible; if false, forces
+     *            it to not be visible
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
+     *      at MDN</a>
+     */
+    default void focus(boolean focusVisible) {
+        focus(new FocusOptions(focusVisible ? FocusOptions.FocusVisible.VISIBLE
+                : FocusOptions.FocusVisible.NOT_VISIBLE));
+    }
+
+    /**
+     * Calls the <code>focus</code> function at the client with the specified
+     * options.
+     * <p>
+     * The options control whether the browser should scroll the element into
+     * view and whether a visible focus indicator should be shown.
+     * <p>
+     * Note: The {@code focusVisible} option is experimental and may not be
+     * supported in all browsers. When not specified (using
+     * {@link FocusOptions.FocusVisible#DEFAULT}), the browser decides whether
+     * to show the focus ring based on accessibility heuristics (e.g., keyboard
+     * vs mouse interaction).
+     *
+     * @param options
+     *            the focus options, or null to use browser defaults
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
+     *      at MDN</a>
+     */
+    default void focus(FocusOptions options) {
         /*
          * Use setTimeout to call the focus function only after the element is
          * attached, and after the initial rendering cycle, so webcomponents can
          * be ready by the time when the function is called.
          */
         Element element = getElement();
-        // Using $0 since "this" won't work inside the function
-        element.executeJs("setTimeout(function(){$0.focus()},0)", element);
+        Object optionsObject = options != null ? options.toJson() : null;
+
+        if (optionsObject == null) {
+            // No options, call focus() without arguments
+            element.executeJs("setTimeout(function(){$0.focus()},0)", element);
+        } else {
+            // Call focus with options object passed as parameter
+            element.executeJs("setTimeout(function(){$0.focus($1)},0)", element,
+                    optionsObject);
+        }
     }
 
     /**
