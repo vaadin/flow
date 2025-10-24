@@ -58,8 +58,7 @@ import static org.mockito.Mockito.when;
 
 public class ComponentEffectTest {
 
-    private static FlushableExecutor executor;
-    private static MockVaadinServletService service;
+    private static TestService service;
 
     /**
      * Custom executor that queues tasks and executes them synchronously when
@@ -86,10 +85,6 @@ public class ComponentEffectTest {
                 tasks.forEach(Runnable::run);
             }
         }
-
-        public boolean hasPendingTasks() {
-            return !pendingTasks.isEmpty();
-        }
     }
 
     /**
@@ -97,16 +92,36 @@ public class ComponentEffectTest {
      * pool for deterministic test execution.
      */
     private static class TestService extends MockVaadinServletService {
+        private FlushableExecutor executor;
+
         @Override
         protected Executor createDefaultExecutor() {
+            executor = new FlushableExecutor();
             return executor;
+        }
+
+        /**
+         * Flushes all pending async tasks. This executes tasks queued in the
+         * executor and then processes any UI access tasks that were queued as
+         * a result.
+         */
+        public void flushExecutorAndAccessTasks(VaadinSession session) {
+            // Flush executor tasks (effect dispatcher)
+            executor.flush();
+
+            // Process UI access tasks that were queued by the executor
+            session.lock();
+            try {
+                runPendingAccessTasks(session);
+            } finally {
+                session.unlock();
+            }
         }
     }
 
     @BeforeClass
     public static void init() {
         runWithFeatureFlagEnabled(() -> {
-            executor = new FlushableExecutor();
             service = new TestService();
         });
     }
@@ -115,24 +130,6 @@ public class ComponentEffectTest {
     public static void clean() {
         CurrentInstance.clearAll();
         service.destroy();
-    }
-
-    /**
-     * Flushes all pending async tasks. This executes tasks queued in the
-     * executor and then processes any UI access tasks that were queued as a
-     * result.
-     */
-    private static void flushExecutorAndAccessTasks(VaadinSession session) {
-        // Flush executor tasks (effect dispatcher)
-        executor.flush();
-
-        // Process UI access tasks that were queued by the executor
-        session.lock();
-        try {
-            service.runPendingAccessTasks(session);
-        } finally {
-            session.unlock();
-        }
     }
 
     @Test
@@ -165,20 +162,16 @@ public class ComponentEffectTest {
 
             UI.setCurrent(null);
 
-            AtomicReference<Thread> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
 
             ComponentEffect.effect(ui, () -> {
-                currentThread.set(Thread.currentThread());
                 currentUI.set(UI.getCurrent());
             });
 
             // Flush executor and UI access tasks to run pending tasks
             // synchronously
-            flushExecutorAndAccessTasks(session);
+            service.flushExecutorAndAccessTasks(session);
 
-            assertNotNull("Effect should have been executed",
-                    currentThread.get());
             assertSame("Effect should run with correct UI context", ui,
                     currentUI.get());
         });
@@ -205,20 +198,16 @@ public class ComponentEffectTest {
             otherSession.unlock();
             UI.setCurrent(otherUi);
 
-            AtomicReference<Thread> currentThread = new AtomicReference<>();
             AtomicReference<UI> currentUI = new AtomicReference<>();
 
             ComponentEffect.effect(ui, () -> {
-                currentThread.set(Thread.currentThread());
                 currentUI.set(UI.getCurrent());
             });
 
             // Flush executor and UI access tasks to run pending tasks
             // synchronously
-            flushExecutorAndAccessTasks(session);
+            service.flushExecutorAndAccessTasks(session);
 
-            assertNotNull("Effect should have been executed",
-                    currentThread.get());
             assertSame("Effect should run with correct UI context", ui,
                     currentUI.get());
         });
@@ -268,7 +257,7 @@ public class ComponentEffectTest {
 
             // Flush executor and UI access tasks to run pending tasks
             // synchronously
-            flushExecutorAndAccessTasks(session);
+            service.flushExecutorAndAccessTasks(session);
 
             assertEquals("Error handler should have been called", 1,
                     events.size());
