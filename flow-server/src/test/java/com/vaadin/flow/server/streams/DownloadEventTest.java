@@ -24,23 +24,18 @@ import org.mockito.Mockito;
 import com.vaadin.flow.internal.EncodeUtil;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-
-import static org.junit.Assert.*;
 
 public class DownloadEventTest {
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
-    private VaadinService service;
 
     @Before
     public void setUp() throws IOException {
         request = Mockito.mock(VaadinRequest.class);
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
-        service = Mockito.mock(VaadinService.class);
     }
 
     @Test
