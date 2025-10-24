@@ -416,6 +416,7 @@ public class ComponentEffectTest {
         runWithFeatureFlagEnabled(() -> {
             ListSignal<String> taskList = new ListSignal<>(String.class);
             taskList.insertFirst("first");
+            taskList.insertLast("middle");
             taskList.insertLast("last");
             TestLayout parentComponent = new TestLayout();
             new MockUI().add(parentComponent);
@@ -423,7 +424,7 @@ public class ComponentEffectTest {
             ComponentEffect.bindChildren(parentComponent, taskList,
                     valueSignal -> new TestComponent(valueSignal.value()));
 
-            assertEquals("Parent component children count is wrong", 2,
+            assertEquals("Parent component children count is wrong", 3,
                     parentComponent.getComponentCount());
 
             List<TestComponent> children = parentComponent.getChildren()
@@ -431,15 +432,19 @@ public class ComponentEffectTest {
 
             taskList.remove(taskList.value().get(0));
 
-            assertEquals("Parent component children count is wrong", 1,
+            assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
+            assertEquals("middle", ((TestComponent) parentComponent
+                    .getChildren().toList().get(0)).getValue());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
-                    .toList().get(0)).getValue());
+                    .toList().get(1)).getValue());
 
             assertEquals(1, children.get(0).attachCounter);
             assertEquals(1, children.get(0).detachCounter);
             assertEquals(1, children.get(1).attachCounter);
             assertEquals(0, children.get(1).detachCounter);
+            assertEquals(1, children.get(2).attachCounter);
+            assertEquals(0, children.get(2).detachCounter);
         });
     }
 
