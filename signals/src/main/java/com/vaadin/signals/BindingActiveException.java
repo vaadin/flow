@@ -16,13 +16,25 @@
 package com.vaadin.signals;
 
 /**
- * Exception thrown when an operation could not be performed because a binding
- * is active.
+ * Exception indicating that an operation could not be performed because a
+ * binding is active.
  */
 public class BindingActiveException extends IllegalStateException {
 
+    /**
+     * Creates a new exception with a default message.
+     */
     public BindingActiveException() {
         super("Operation could not be performed because a binding is active.");
     }
 
+    /**
+     * Creates a new exception with a custom message.
+     *
+     * @param message
+     *            the custom message
+     */
+    public BindingActiveException(String message) {
+        super(message);
+    }
 }

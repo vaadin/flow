@@ -1215,37 +1215,49 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds the text content of this element to the given Signal. When the
-     * Signal produces a new value, the text content of this element is updated
-     * accordingly.
+     * Binds a {@link Signal}'s value to the text content of this element and
+     * creates a Signal effect function executing the setter whenever the signal
+     * value changes. <code>null</code> signal unbinds the existing binding.
+     * <p>
+     * Text content is synchronized with the signal value whenever the element
+     * is attached. When the element is detached, signal value changes have no
+     * effect.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set the text
+     * content manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
      *
-     * If there is an active binding on the text content of this element, a
-     * {@link BindingActiveException} is thrown.
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindText(signal);
+     * signal.value("text"); // The element text content is set to "text"
+     * </pre>
      *
-     * To remove an active binding, call this method with a {@code null}
-     * argument.
-     *
-     * @param textSignal
-     *            the signal to bind to the text content, or {@code null} to
-     *            remove an active binding
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
      * @throws BindingActiveException
-     *             if there is already an active binding on the text content of
-     *             this element
+     *             Thrown when there is already an existing binding
      */
-    public void bindText(Signal<String> textSignal) {
+    public void bindText(Signal<String> signal) {
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
 
         if (feature.hasBinding()) {
-            if (textSignal == null) {
+            if (signal == null) {
                 feature.removeBinding();
             } else {
                 throw new BindingActiveException();
             }
         } else {
-            Registration registration = ElementEffect.effect(this,
-                    () -> setTextContent(Signal.untracked(textSignal::value)));
-            feature.setBinding(registration, textSignal);
+            Registration registration = ElementEffect.bind(this, signal,
+                    (element, value) -> setTextContent(value));
+            feature.setBinding(registration, signal);
         }
     }
 

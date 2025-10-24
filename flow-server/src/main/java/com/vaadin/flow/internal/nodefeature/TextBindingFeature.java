@@ -19,6 +19,11 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
 
+/**
+ * Node feature for binding a {@link Signal} to the text content of a node.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class TextBindingFeature extends ServerSideFeature {
     /**
      * Creates a TextBindingFeature for the given node.

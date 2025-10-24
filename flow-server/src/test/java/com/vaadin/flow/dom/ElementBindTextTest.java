@@ -30,6 +30,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
@@ -91,15 +92,27 @@ public class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_getText_returnsCorrectValue() {
+    public void bindTextComputedSignal_getText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        element.setText("text");
 
-        ValueSignal<String> signal = new ValueSignal<>("text2");
-        element.bindText(signal);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        Signal<String> computedSignal = Signal
+                .computed(() -> "computed-" + signal.value());
+        element.bindText(computedSignal);
 
-        assertEquals("text2", element.getText());
+        assertEquals("computed-text", element.getText());
+    }
+
+    @Test
+    public void bindTextMappedSignal_getText_returnsCorrectValue() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal.map(text -> "mapped-" + text));
+
+        assertEquals("mapped-text", element.getText());
     }
 
     @Test
