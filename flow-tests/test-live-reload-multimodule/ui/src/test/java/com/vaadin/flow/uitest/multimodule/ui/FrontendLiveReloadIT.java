@@ -15,7 +15,7 @@
  */
 package com.vaadin.flow.uitest.multimodule.ui;
 
-import javax.annotation.concurrent.NotThreadSafe;
+import net.jcip.annotations.NotThreadSafe;
 
 import java.io.File;
 import java.io.IOException;
