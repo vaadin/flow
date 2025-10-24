@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.component.html;
 
+import org.junit.Assert;
+import org.junit.Test;
+
 public class HrTest extends ComponentTest {
 
     // Actual test methods in super class
@@ -22,5 +25,11 @@ public class HrTest extends ComponentTest {
     @Override
     protected void addProperties() {
         // Component defines no new properties
+    }
+
+    @Test
+    public void ariaHiddenSetByDefault() {
+        Hr hr = new Hr();
+        Assert.assertEquals("true", hr.getElement().getAttribute("aria-hidden"));
     }
 }
