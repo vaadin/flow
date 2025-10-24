@@ -145,11 +145,43 @@ public class Image extends HtmlContainer
      * @see #setAlt(String)
      */
     public Image(byte[] imageContent, String imageName) {
+        this(imageContent, imageName,
+                URLConnection.guessContentTypeFromName(imageName));
+    }
+
+    /**
+     * Creates an image from byte array content with the given image name and
+     * MIME type.
+     *
+     * This convenience constructor simplifies the creation of images from
+     * in-memory byte data by automatically handling the creation of a
+     * {@link DownloadHandler} with a {@link DownloadResponse}.
+     *
+     * Use this constructor when you need to explicitly specify the MIME type,
+     * either because {@link URLConnection#guessContentTypeFromName(String)}
+     * does not recognize the file extension or when you want explicit control
+     * over the content type.
+     *
+     * The alternative text is set to the provided image name.
+     *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * to ensure the image is displayed in the browser rather than downloaded.
+     *
+     * @param imageContent
+     *            the image data as a byte array, not null
+     * @param imageName
+     *            the image name, not null
+     * @param mimeType
+     *            the MIME type of the image (e.g., "image/png", "image/webp"),
+     *            or null to let the browser determine it
+     *
+     * @see #setSrc(DownloadHandler)
+     * @see #setAlt(String)
+     */
+    public Image(byte[] imageContent, String imageName, String mimeType) {
         this(DownloadHandler.fromInputStream(event -> {
             return new DownloadResponse(new ByteArrayInputStream(imageContent),
-                    imageName,
-                    URLConnection.guessContentTypeFromName(imageName),
-                    imageContent.length);
+                    imageName, mimeType, imageContent.length);
         }).inline(), imageName);
     }
 
