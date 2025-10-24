@@ -434,8 +434,8 @@ public class ComponentEffectTest {
 
             assertEquals("Parent component children count is wrong", 2,
                     parentComponent.getComponentCount());
-            assertEquals("middle", ((TestComponent) parentComponent.getChildren()
-                    .toList().get(0)).getValue());
+            assertEquals("middle", ((TestComponent) parentComponent
+                    .getChildren().toList().get(0)).getValue());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
                     .toList().get(1)).getValue());
 

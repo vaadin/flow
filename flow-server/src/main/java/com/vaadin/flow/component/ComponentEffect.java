@@ -317,7 +317,8 @@ public final class ComponentEffect {
             // Use LinkedList for order
             Element actualChild = remainingChildren.pollFirst();
             // Skip children that have been removed already
-            while (actualChild != null && !remainingChildrenSet.contains(actualChild)) {
+            while (actualChild != null
+                    && !remainingChildrenSet.contains(actualChild)) {
                 actualChild = remainingChildren.pollFirst();
             }
             if (actualChild == null) {
