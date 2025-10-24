@@ -505,7 +505,7 @@ public final class VaadinSecurityConfigurer
     }
 
     @Override
-    public void init(HttpSecurity http) throws Exception {
+    public void init(HttpSecurity http) {
         if (formLoginPage != null) {
             http.formLogin(configurer -> {
                 configurer.loginPage(formLoginPage).permitAll();
@@ -542,7 +542,7 @@ public final class VaadinSecurityConfigurer
     }
 
     @Override
-    public void configure(HttpSecurity http) throws Exception {
+    public void configure(HttpSecurity http) {
         var rolePrefixHolder = getVaadinRolePrefixHolder();
         if (rolePrefixHolder != null) {
             getAuthenticationContext().setRolePrefixHolder(rolePrefixHolder);
