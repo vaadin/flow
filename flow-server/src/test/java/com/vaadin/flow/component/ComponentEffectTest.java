@@ -23,7 +23,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -102,8 +101,8 @@ public class ComponentEffectTest {
 
         /**
          * Flushes all pending async tasks. This executes tasks queued in the
-         * executor and then processes any UI access tasks that were queued as
-         * a result.
+         * executor and then processes any UI access tasks that were queued as a
+         * result.
          */
         public void flushExecutorAndAccessTasks(VaadinSession session) {
             // Flush executor tasks (effect dispatcher)
