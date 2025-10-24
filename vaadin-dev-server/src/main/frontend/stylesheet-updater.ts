@@ -188,19 +188,19 @@ function swapStyleSheet(styleSheet: CSSStyleSheet, newHref?: string, onload: (CS
   const shadowLink = linkElement.cloneNode(true) as HTMLLinkElement;
   shadowLink.media = 'not all';
   shadowLink.removeAttribute('id');
+  shadowLink.blocking = 'render';
   if (newHref) {
     shadowLink.href = newHref;
   }
 
-  linkElement.parentNode?.insertBefore(shadowLink, linkElement.nextSibling);
+  linkElement.parentNode?.insertBefore(shadowLink, linkElement);
   shadowLink.onload = () => {
     shadowLink.onload = null;
-
+    onload(shadowLink.sheet);
+    shadowLink.media = linkElement.media;
     setTimeout(() => {
-      onload(shadowLink.sheet);
-      shadowLink.media = linkElement.media;
       linkElement.remove();
-    }, 200);
+    }, 100);
   };
 }
 
@@ -210,10 +210,10 @@ function preloadStyleSheet(href: string, onload: () => void): void {
   preload.rel = 'preload';
   preload.as = 'style';
   preload.onload = () => {
+    onload();
     setTimeout(() => {
-      onload();
       preload.remove();
-    }, 200);
+    }, 100);
   };
   document.head.appendChild(preload);
 }
