@@ -291,25 +291,15 @@ jobs:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - name: Use temporary flow version
-        run: |
-          mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Determine base version
         id: base-version
         run: |
-          baseBranch="${{ env.BASE_REF }}"
-          echo "Base branch: ${baseBranch}"
-
-          # Handle special case for main branch
-          if [[ "${baseBranch}" == "main" ]]; then
-              baseVersion="${{ env.BASE_VERSION }}"
-          else
-              # For all other branches, use pattern: {branch}-SNAPSHOT
-              baseVersion="${baseBranch}-SNAPSHOT"
-          fi
-
+          baseVersion=$(mvn -N -q -DforceStdout  help:evaluate -Dexpression='project.version')
           echo "Base API Version: ${baseVersion}"
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
+      - name: Use temporary flow version
+        run: |
+          mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
         run: |
           mvn clean install -B -ntp -e -V -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
