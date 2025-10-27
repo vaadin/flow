@@ -88,6 +88,7 @@ public class InputStreamDownloadHandler
                 ? getContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
+        downloadEvent.setContentLength(download.getContentLength());
 
         if (isInline()) {
             downloadEvent.inline(downloadName);
