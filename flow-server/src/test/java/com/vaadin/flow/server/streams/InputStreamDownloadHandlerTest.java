@@ -423,7 +423,8 @@ public class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         InputStream stream = Mockito.mock(InputStream.class);
         Mockito.when(
                 stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
@@ -442,7 +443,8 @@ public class InputStreamDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"download\"");
     }
 
     private static byte[] getBytes() {
