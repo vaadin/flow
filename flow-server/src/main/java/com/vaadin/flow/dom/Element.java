@@ -1248,6 +1248,7 @@ public class Element extends Node<Element> {
      *            binding
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
+     * @see #setText(String)
      */
     public void bindText(Signal<String> signal) {
         TextBindingFeature feature = getNode()
