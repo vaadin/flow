@@ -20,8 +20,8 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.component.Focusable.FocusVisible;
-import com.vaadin.flow.component.Focusable.PreventScroll;
+import com.vaadin.flow.component.FocusOption.FocusVisible;
+import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.tests.util.MockUI;
 
