@@ -154,6 +154,8 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("attachShadow");
         ignore.add("getShadowRoot");
 
+        ignore.add("bindText");
+
         assertMethodsReturnType(Element.class, ignore);
     }
 
