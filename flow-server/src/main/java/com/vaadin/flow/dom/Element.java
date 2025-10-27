@@ -34,6 +34,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.BaseJsonNode;
 import tools.jackson.databind.node.BooleanNode;
 import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -1777,8 +1778,7 @@ public class Element extends Node<Element> {
             }
         }
 
-        // Build JSON options object
-        tools.jackson.databind.node.ObjectNode json = null;
+        ObjectNode json = null;
         if (behavior != null || block != null || inline != null) {
             json = JacksonUtils.createObjectNode();
 
@@ -1796,7 +1796,6 @@ public class Element extends Node<Element> {
         }
 
         // Use setTimeout to work on newly created elements
-        // Use parameter passing ($0, $1) instead of string concatenation
         if (json == null || json.isEmpty()) {
             executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
         } else {
