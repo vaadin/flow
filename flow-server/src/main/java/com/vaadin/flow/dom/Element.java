@@ -1183,8 +1183,12 @@ public class Element extends Node<Element> {
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
         if (feature.hasBinding()) {
-            throw new BindingActiveException(
-                    "setText is not allowed while a binding is active.");
+            if (getNode().isAttached()) {
+                throw new BindingActiveException(
+                        "setText is not allowed while a binding is active.");
+            } else {
+                feature.removeBinding();
+            }
         }
 
         if (textContent == null) {
@@ -1249,13 +1253,13 @@ public class Element extends Node<Element> {
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
 
-        if (feature.hasBinding()) {
-            if (signal == null) {
-                feature.removeBinding();
-            } else {
+        if (signal == null) {
+            feature.removeBinding();
+        } else {
+            if (feature.hasBinding() && getNode().isAttached()) {
                 throw new BindingActiveException();
             }
-        } else {
+
             Registration registration = ElementEffect.bind(this, signal,
                     (element, value) -> setTextContent(value));
             feature.setBinding(registration, signal);
