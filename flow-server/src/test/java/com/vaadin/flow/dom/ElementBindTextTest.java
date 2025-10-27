@@ -179,7 +179,7 @@ public class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_unbindText_hasCorrectValue() {
+    public void bindText_unbindText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -210,5 +210,18 @@ public class ElementBindTextTest {
         element.bindText(signal);
 
         assertEquals("", element.getText());
+    }
+
+    @Test
+    public void bindText_componentAttached_returnsCorrectValue() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+
+        assertEquals("text", element.getText());
+
+        signal.value("text2");
+        assertEquals("text2", element.getText());
     }
 }
