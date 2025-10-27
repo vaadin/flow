@@ -44,7 +44,16 @@ public interface ScrollIntoViewOption extends Serializable {
         /**
          * Scrolling is animated smoothly.
          */
-        SMOOTH
+        SMOOTH;
+
+        /**
+         * Gets the lowercase string value for this behavior.
+         *
+         * @return the lowercase string representation
+         */
+        public String getValue() {
+            return name().toLowerCase(java.util.Locale.ENGLISH);
+        }
     }
 
     /**

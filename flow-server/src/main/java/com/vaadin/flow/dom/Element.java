@@ -1783,8 +1783,7 @@ public class Element extends Node<Element> {
             json = JacksonUtils.createObjectNode();
 
             if (behavior != null) {
-                json.put("behavior",
-                        behavior.name().toLowerCase(Locale.ENGLISH));
+                json.put("behavior", behavior.getValue());
             }
 
             if (block != null) {
