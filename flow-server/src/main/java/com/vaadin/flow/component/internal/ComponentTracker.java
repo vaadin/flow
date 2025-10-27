@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.File;
 import java.io.Serializable;
+import java.lang.StackWalker.StackFrame;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -43,6 +44,9 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  *
  **/
 public class ComponentTracker {
+
+    private static final StackWalker stackWalker = StackWalker
+            .getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     private static Map<Component, Location> createLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
@@ -206,16 +210,16 @@ public class ComponentTracker {
         if (isDisabled()) {
             return;
         }
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location[] relevantLocations = findRelevantLocations(stack);
+        Location[] allLocations = stackWalker.walk(frames -> frames
+                .map(ComponentTracker::toLocation).toArray(Location[]::new));
+        Location[] relevantLocations = findRelevantLocations(allLocations);
         Location location = findRelevantLocation(component.getClass(),
                 relevantLocations, null);
         if (isNavigatorCreate(location)) {
             location = findRelevantLocation(null, relevantLocations, null);
         }
         createLocation.put(component, location);
-        createLocations.put(component, Stream.of(stack)
-                .map(ComponentTracker::toLocation).toArray(Location[]::new));
+        createLocations.put(component, allLocations);
     }
 
     /**
@@ -254,11 +258,12 @@ public class ComponentTracker {
         if (isDisabled()) {
             return;
         }
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+        Location[] allLocations = stackWalker.walk(frames -> frames
+                .map(ComponentTracker::toLocation).toArray(Location[]::new));
 
         // In most cases the interesting attach call is found in the same class
         // where the component was created and not in a generic layout class
-        Location[] relevantLocations = findRelevantLocations(stack);
+        Location[] relevantLocations = findRelevantLocations(allLocations);
         Location location = findRelevantLocation(component.getClass(),
                 relevantLocations, findCreate(component));
         if (isNavigatorCreate(location)) {
@@ -267,8 +272,7 @@ public class ComponentTracker {
             location = createLocation.get(component);
         }
         attachLocation.put(component, location);
-        attachLocations.put(component, Stream.of(stack)
-                .map(ComponentTracker::toLocation).toArray(Location[]::new));
+        attachLocations.put(component, allLocations);
     }
 
     /**
@@ -332,15 +336,15 @@ public class ComponentTracker {
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
-    private static Location[] findRelevantLocations(StackTraceElement[] stack) {
-        return Stream.of(stack).filter(e -> {
+    private static Location[] findRelevantLocations(Location[] locations) {
+        return Stream.of(locations).filter(location -> {
             for (String prefixToSkip : prefixesToSkip) {
-                if (e.getClassName().startsWith(prefixToSkip)) {
+                if (location.className().startsWith(prefixToSkip)) {
                     return false;
                 }
             }
             return true;
-        }).map(ComponentTracker::toLocation).toArray(Location[]::new);
+        }).toArray(Location[]::new);
     }
 
     private static Location findRelevantLocation(
@@ -412,15 +416,15 @@ public class ComponentTracker {
         return disabled;
     }
 
-    private static Location toLocation(StackTraceElement stackTraceElement) {
-        if (stackTraceElement == null) {
+    private static Location toLocation(StackFrame stackFrame) {
+        if (stackFrame == null) {
             return null;
         }
 
-        String className = stackTraceElement.getClassName();
-        String fileName = stackTraceElement.getFileName();
-        String methodName = stackTraceElement.getMethodName();
-        int lineNumber = stackTraceElement.getLineNumber();
+        String className = stackFrame.getClassName();
+        String fileName = stackFrame.getFileName();
+        String methodName = stackFrame.getMethodName();
+        int lineNumber = stackFrame.getLineNumber();
         return new Location(className, fileName, methodName, lineNumber);
     }
 
