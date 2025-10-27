@@ -42,6 +42,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class InputStreamDownloadHandlerTest {
+    private static final int SIMULATED_DOWNLOAD_SIZE = 165000;
+
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
@@ -93,7 +95,8 @@ public class InputStreamDownloadHandlerTest {
         }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(-1, context.contentLength());
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
+                        context.contentLength());
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onStart");
             }
@@ -102,7 +105,7 @@ public class InputStreamDownloadHandlerTest {
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(-1, totalBytes);
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, totalBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onProgress");
             }
@@ -110,8 +113,9 @@ public class InputStreamDownloadHandlerTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(-1, context.contentLength());
-                Assert.assertEquals(165000, transferredBytes);
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
+                        context.contentLength());
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, transferredBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onComplete");
             }
@@ -150,7 +154,6 @@ public class InputStreamDownloadHandlerTest {
         AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
         InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
         DownloadHandler handler = DownloadHandler.fromInputStream(req -> {
-            // Simulate a download of 165000 bytes
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
@@ -403,9 +406,29 @@ public class InputStreamDownloadHandlerTest {
         Mockito.verify(response).setHeader("Content-Disposition", "inline");
     }
 
+    @Test
+    public void contentLengthProvided_contentLengthHeaderSet()
+            throws IOException {
+        long expectedContentLength = 12345L;
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+
+        InputStreamDownloadHandler handler = new InputStreamDownloadHandler(
+                event -> new DownloadResponse(stream, "report.pdf",
+                        "application/pdf", expectedContentLength));
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("div"));
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setContentLengthLong(expectedContentLength);
+    }
+
     private static byte[] getBytes() {
-        // Simulate a download of 165000 bytes
-        byte[] data = new byte[165000];
+        byte[] data = new byte[SIMULATED_DOWNLOAD_SIZE];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) (i % 256);
         }
