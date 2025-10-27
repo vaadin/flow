@@ -89,10 +89,10 @@ public class InputStreamDownloadHandler
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
 
-        if (!isInline()) {
-            downloadEvent.setFileName(downloadName);
-        } else {
+        if (isInline()) {
             downloadEvent.inline(downloadName);
+        } else {
+            downloadEvent.setFileName(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();

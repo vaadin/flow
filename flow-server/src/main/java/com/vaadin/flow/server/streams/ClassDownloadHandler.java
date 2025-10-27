@@ -101,10 +101,10 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
-            if (!isInline()) {
-                downloadEvent.setFileName(resourceName);
-            } else {
+            if (isInline()) {
                 downloadEvent.inline(resourceName);
+            } else {
+                downloadEvent.setFileName(resourceName);
             }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
