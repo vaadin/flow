@@ -226,7 +226,8 @@ public class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
 
@@ -239,6 +240,7 @@ public class ClassDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"my-download.pdf\"");
     }
 }
