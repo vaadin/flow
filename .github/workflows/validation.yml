@@ -285,6 +285,13 @@ jobs:
         uses: stCarolas/setup-maven@v5
         with:
           maven-version: 3.9.2
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/com/vaadin
+          key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
       - name: Determine base version
         id: base-version
         run: |
