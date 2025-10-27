@@ -294,8 +294,7 @@ jobs:
       - name: Determine base version
         id: base-version
         run: |
-          baseVersion=$(mvn -N -q -DforceStdout  help:evaluate -Dexpression='project.version' | cut -z -d'-' -f1)
-
+          baseVersion=$(mvn -N -q -DforceStdout  help:evaluate -Dexpression='project.version')
           echo "Base API Version: ${baseVersion}"
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
       - name: Use temporary flow version
