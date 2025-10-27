@@ -16,6 +16,8 @@
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -30,6 +32,90 @@ import com.vaadin.flow.dom.Element;
  */
 public interface Focusable<T extends Component>
         extends HasElement, BlurNotifier<T>, FocusNotifier<T>, HasEnabled {
+
+    /**
+     * Marker interface for focus options.
+     * <p>
+     * Used to type-check options passed to {@link #focus(FocusOption...)}.
+     */
+    interface FocusOption {
+    }
+
+    /**
+     * Focus visibility option for focus operations.
+     * <p>
+     * Controls whether the browser should provide visible indication (focus
+     * ring) that an element is focused.
+     * <p>
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">HTMLElement.focus()</a>
+     * for more information.
+     */
+    enum FocusVisible implements FocusOption {
+        /**
+         * Browser decides based on accessibility heuristics (default behavior).
+         * <p>
+         * When this option is used, the focusVisible property is not included
+         * in the options passed to the browser, allowing the browser to
+         * determine whether to show a focus ring based on how the focus was
+         * triggered (e.g., keyboard vs mouse).
+         */
+        DEFAULT,
+
+        /**
+         * Force focus ring to be visible.
+         * <p>
+         * Use this to ensure a visible focus indicator is shown, which can
+         * improve accessibility.
+         */
+        VISIBLE,
+
+        /**
+         * Force focus ring to NOT be visible.
+         * <p>
+         * Use this to prevent the focus ring from being shown. Use with caution
+         * as this may impact accessibility.
+         */
+        NOT_VISIBLE
+    }
+
+    /**
+     * Scroll prevention option for focus operations.
+     * <p>
+     * Controls whether the browser should scroll the document to bring the
+     * newly-focused element into view.
+     * <p>
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">HTMLElement.focus()</a>
+     * for more information.
+     */
+    enum PreventScroll implements FocusOption {
+        /**
+         * Browser decides (default behavior is to scroll the element into
+         * view).
+         * <p>
+         * When this option is used, the preventScroll property is not included
+         * in the options passed to the browser, allowing the browser to use its
+         * default behavior (which is to scroll).
+         */
+        DEFAULT,
+
+        /**
+         * Prevent scrolling when focusing the element.
+         * <p>
+         * Use this when you want to focus an element without changing the
+         * current scroll position.
+         */
+        ENABLED,
+
+        /**
+         * Allow scrolling when focusing the element (browser default).
+         * <p>
+         * This explicitly enables the default browser behavior of scrolling the
+         * element into view when focused.
+         */
+        DISABLED
+    }
 
     /**
      * Sets the <code>tabindex</code> attribute in the component. The tabIndex
@@ -100,69 +186,70 @@ public interface Focusable<T extends Component>
     /**
      * Calls the <code>focus</code> function at the client, making the component
      * keyboard focused.
-     *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
-     *      at MDN</a>
-     */
-    default void focus() {
-        focus((FocusOptions) null);
-    }
-
-    /**
-     * Calls the <code>focus</code> function at the client with the specified
-     * focus visibility option.
      * <p>
-     * This is a convenience method equivalent to calling
-     * {@code focus(new FocusOptions(focusVisible ? FocusVisible.VISIBLE : FocusVisible.NOT_VISIBLE))}.
-     *
-     * @param focusVisible
-     *            if true, forces the focus ring to be visible; if false, forces
-     *            it to not be visible
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
-     *      at MDN</a>
-     */
-    default void focus(boolean focusVisible) {
-        focus(new FocusOptions(focusVisible ? FocusOptions.FocusVisible.VISIBLE
-                : FocusOptions.FocusVisible.NOT_VISIBLE));
-    }
-
-    /**
-     * Calls the <code>focus</code> function at the client with the specified
-     * options.
+     * This method can be called with no arguments for default browser behavior,
+     * or with one or more {@link FocusOption} values to control focus behavior:
+     * <ul>
+     * <li>{@link FocusVisible} - controls whether the focus ring is visible</li>
+     * <li>{@link PreventScroll} - controls whether the browser scrolls to the element</li>
+     * </ul>
      * <p>
-     * The options control whether the browser should scroll the element into
-     * view and whether a visible focus indicator should be shown.
+     * Examples:
+     * <pre>
+     * component.focus(); // Default behavior
+     * component.focus(PreventScroll.ENABLED); // Focus without scrolling
+     * component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED); // Both options
+     * </pre>
      * <p>
      * Note: The {@code focusVisible} option is experimental and may not be
-     * supported in all browsers. When not specified (using
-     * {@link FocusOptions.FocusVisible#DEFAULT}), the browser decides whether
+     * supported in all browsers. When not specified, the browser decides whether
      * to show the focus ring based on accessibility heuristics (e.g., keyboard
      * vs mouse interaction).
      *
      * @param options
-     *            the focus options, or null to use browser defaults
+     *            zero or more focus options
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
      *      at MDN</a>
      */
-    default void focus(FocusOptions options) {
-        /*
-         * Use setTimeout to call the focus function only after the element is
-         * attached, and after the initial rendering cycle, so webcomponents can
-         * be ready by the time when the function is called.
-         */
+    default void focus(FocusOption... options) {
         Element element = getElement();
-        Object optionsObject = options != null ? options.toJson() : null;
 
-        if (optionsObject == null) {
+        // Extract options from varargs
+        FocusVisible focusVisible = FocusVisible.DEFAULT;
+        PreventScroll preventScroll = PreventScroll.DEFAULT;
+
+        for (FocusOption option : options) {
+            if (option instanceof FocusVisible) {
+                focusVisible = (FocusVisible) option;
+            } else if (option instanceof PreventScroll) {
+                preventScroll = (PreventScroll) option;
+            }
+        }
+
+        // Build options object if any non-default values are specified
+        ObjectNode json = null;
+        if (preventScroll != PreventScroll.DEFAULT
+                || focusVisible != FocusVisible.DEFAULT) {
+            json = JacksonUtils.createObjectNode();
+
+            if (preventScroll != PreventScroll.DEFAULT) {
+                json.put("preventScroll",
+                        preventScroll == PreventScroll.ENABLED);
+            }
+
+            if (focusVisible != FocusVisible.DEFAULT) {
+                json.put("focusVisible", focusVisible == FocusVisible.VISIBLE);
+            }
+        }
+
+        if (json == null) {
             // No options, call focus() without arguments
             element.executeJs("setTimeout(function(){$0.focus()},0)", element);
         } else {
             // Call focus with options object passed as parameter
             element.executeJs("setTimeout(function(){$0.focus($1)},0)", element,
-                    optionsObject);
+                    json);
         }
     }
 
