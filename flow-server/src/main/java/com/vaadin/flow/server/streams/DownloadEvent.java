@@ -150,7 +150,7 @@ public class DownloadEvent {
                 || response.containsHeader("Content-Disposition")) {
             return;
         }
-        if (fileName.isEmpty()) {
+        if (fileName.isBlank()) {
             response.setHeader("Content-Disposition", "attachment");
         } else {
             StringBuilder value = new StringBuilder();
@@ -193,7 +193,7 @@ public class DownloadEvent {
      * <p>
      * To be called before the response is committed.
      * <p>
-     * If the <code>fileName</code> is <code>null</code> or empty, this behaves
+     * If the <code>fileName</code> is <code>null</code> or blank, this behaves
      * the same as calling {@link #inline()}.
      * <p>
      * If the Content-Disposition header has already been set, this method will
@@ -206,7 +206,7 @@ public class DownloadEvent {
         if (response.containsHeader("Content-Disposition")) {
             return;
         }
-        if (fileName == null || fileName.isEmpty()) {
+        if (fileName == null || fileName.isBlank()) {
             response.setHeader("Content-Disposition", "inline");
         } else {
             StringBuilder value = new StringBuilder();

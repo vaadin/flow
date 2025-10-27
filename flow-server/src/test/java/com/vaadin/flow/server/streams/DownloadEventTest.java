@@ -69,6 +69,15 @@ public class DownloadEventTest {
     }
 
     @Test
+    public void setFileName_blankFileName_setsContentDispositionToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        String fileName = "   ";
+        downloadEvent.setFileName(fileName);
+        Mockito.verify(response).setHeader("Content-Disposition", "attachment");
+    }
+
+    @Test
     public void setFileName_nullFileName_doesNotSetContentDispositionToResponse() {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
@@ -131,6 +140,14 @@ public class DownloadEventTest {
         DownloadEvent downloadEvent = new DownloadEvent(request, response,
                 session, null);
         downloadEvent.inline("");
+        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+    }
+
+    @Test
+    public void inline_blankFileName_setsContentDispositionInlineToResponse() {
+        DownloadEvent downloadEvent = new DownloadEvent(request, response,
+                session, null);
+        downloadEvent.inline("   ");
         Mockito.verify(response).setHeader("Content-Disposition", "inline");
     }
 
