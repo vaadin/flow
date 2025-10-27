@@ -17,7 +17,6 @@ env:
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
   PR_NUMBER: ${{ github.event.number }}
   JAVA_VERSION: '21'
-  BASE_VERSION: '25.0-SNAPSHOT'
 jobs:
   check-permissions:
     uses: ./.github/workflows/check-permissions.yml
@@ -288,8 +287,10 @@ jobs:
           maven-version: 3.9.2
       - uses: actions/cache@v4
         with:
-          path: ~/.m2/repository
-          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/com/vaadin
+          key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
       - name: Determine base version
         id: base-version
