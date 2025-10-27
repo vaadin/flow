@@ -2041,7 +2041,8 @@ public class ComponentTest {
 
         // Verify parameters contain expected JSON parts
         List<Object> params = inv.getParameters();
-        Assert.assertTrue("Should have at least 2 parameters", params.size() >= 2);
+        Assert.assertTrue("Should have at least 2 parameters",
+                params.size() >= 2);
         String paramJson = params.get(1).toString();
         for (String expectedPart : expectedJsonParts) {
             MatcherAssert.assertThat(paramJson,
@@ -2072,7 +2073,8 @@ public class ComponentTest {
 
         // Verify parameters are passed correctly
         List<Object> params = inv.getParameters();
-        Assert.assertTrue("Should have at least 2 parameters", params.size() >= 2);
+        Assert.assertTrue("Should have at least 2 parameters",
+                params.size() >= 2);
         String paramJson = params.get(1).toString();
         MatcherAssert.assertThat(paramJson,
                 CoreMatchers.containsString("\"behavior\":\"smooth\""));

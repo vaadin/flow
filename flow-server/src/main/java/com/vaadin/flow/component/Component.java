@@ -796,14 +796,6 @@ public abstract class Component
     /**
      * Scrolls the current component into the visible area of the browser
      * window.
-     */
-    public void scrollIntoView() {
-        getElement().scrollIntoView();
-    }
-
-    /**
-     * Scrolls the current component into the visible area of the browser window
-     * with the specified options.
      * <p>
      * This method can be called with no arguments for default browser behavior,
      * or with one or more {@link ScrollIntoViewOption} values to control
@@ -813,8 +805,8 @@ public abstract class Component
      * instant or smooth</li>
      * <li>{@link ScrollIntoViewOption.Block} - controls vertical alignment of
      * the element</li>
-     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment of
-     * the element</li>
+     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment
+     * of the element</li>
      * </ul>
      * <p>
      * Examples:
@@ -822,7 +814,9 @@ public abstract class Component
      * <pre>
      * component.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
      * component.scrollIntoView(ScrollIntoViewOption.Block.END);
-     * component.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH, ScrollIntoViewOption.Block.END, ScrollIntoViewOption.Inline.CENTER);
+     * component.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+     *         ScrollIntoViewOption.Block.END,
+     *         ScrollIntoViewOption.Inline.CENTER);
      * </pre>
      *
      * @param options

@@ -37,8 +37,8 @@ import tools.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
-import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.ScrollIntoViewOption;
+import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -1728,19 +1728,6 @@ public class Element extends Node<Element> {
 
     /**
      * Executes the similarly named DOM method on the client side.
-     *
-     * @see <a href=
-     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
-     *      docs</a>
-     * @return the element
-     */
-    public Element scrollIntoView() {
-        return scrollIntoView(new ScrollIntoViewOption[0]);
-    }
-
-    /**
-     * Executes the similarly named DOM method on the client side with the
-     * specified options.
      * <p>
      * This method can be called with no arguments for default browser behavior,
      * or with one or more {@link ScrollIntoViewOption} values to control
@@ -1750,17 +1737,21 @@ public class Element extends Node<Element> {
      * instant or smooth</li>
      * <li>{@link ScrollIntoViewOption.Block} - controls vertical alignment of
      * the element</li>
-     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment of
-     * the element</li>
+     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment
+     * of the element</li>
      * </ul>
      * <p>
      * Examples:
      *
      * <pre>
      * element.scrollIntoView(); // Default behavior
-     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH); // Smooth scrolling
-     * element.scrollIntoView(ScrollIntoViewOption.Block.END); // Scroll to bottom
-     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH, ScrollIntoViewOption.Block.END, ScrollIntoViewOption.Inline.CENTER); // All options
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH); // Smooth
+     *                                                               // scrolling
+     * element.scrollIntoView(ScrollIntoViewOption.Block.END); // Scroll to
+     *                                                         // bottom
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+     *         ScrollIntoViewOption.Block.END,
+     *         ScrollIntoViewOption.Inline.CENTER); // All options
      * </pre>
      *
      * @param options
@@ -1884,8 +1875,7 @@ public class Element extends Node<Element> {
             }
         }
 
-        return scrollIntoView(
-                optionsList.toArray(new ScrollIntoViewOption[0]));
+        return scrollIntoView(optionsList.toArray(new ScrollIntoViewOption[0]));
     }
 
 }

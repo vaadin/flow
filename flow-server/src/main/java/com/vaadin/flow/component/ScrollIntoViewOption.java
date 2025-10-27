@@ -22,8 +22,7 @@ import java.io.Serializable;
  * <p>
  * Implementations of this interface can be passed to
  * {@link com.vaadin.flow.dom.Element#scrollIntoView(ScrollIntoViewOption...)}
- * and
- * {@link Component#scrollIntoView(ScrollIntoViewOption...)}.
+ * and {@link Component#scrollIntoView(ScrollIntoViewOption...)}.
  * <p>
  * See <a href=
  * "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Element.scrollIntoView()</a>
