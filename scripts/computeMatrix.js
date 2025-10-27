@@ -35,7 +35,7 @@ const globalExclusions = [
 //  Live Reload Multimodule test needs being executed in the same container
 const moduleWeights = {
   'flow-client': { weight: 8 },
-  'flow-server': { weight: 6 },
+  'flow-server': { weight: 10 },
   'vaadin-dev-server': { weight: 3 },
   'flow-data': { weight: 2 },
   'flow-bom': { weight: 2 },
@@ -48,7 +48,7 @@ const moduleWeights = {
   'flow-tests/test-express-build': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-dev-bundle': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-prod-bundle': { pos: 1, weight: 2 },
-  'flow-tests/test-express-build/test-flow-maven-plugin': { pos: 1, weight: 2 },
+  'flow-tests/test-express-build/test-flow-maven-plugin': { pos: 1, weight: 10 },
   'flow-tests/test-express-build/test-dev-bundle-no-plugin': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-dev-bundle-no-plugin/pom-prod.xml': { pos: 1, weight: 2 },
   'flow-tests/test-express-build/test-theme-dev-bundle': { pos: 1, weight: 2 },

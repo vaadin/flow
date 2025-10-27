@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.multimodule.ui;
 
-import javax.annotation.concurrent.NotThreadSafe;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -27,6 +25,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
