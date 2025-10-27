@@ -235,6 +235,8 @@ public abstract class VaadinService implements Serializable {
         doSetClassLoader();
         instantiator = createInstantiator();
 
+        String x = "12321";
+
         // init the router now so that registry will be available for
         // modifications
         router = new Router(getRouteRegistry());
