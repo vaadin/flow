@@ -254,12 +254,12 @@ public class Element extends Node<Element> {
      * as in {@link #setAttribute(String, String)}.
      * <p>
      * Attribute value is synchronized with the signal value when element is
-     * attached. The binding is automatically deactivated when the element is
-     * detached.
+     * attached. When the element is detached, signal value changes have no
+     * effect.
      * <p>
      * While a Signal is bound to an attribute, any attempt to set attribute
      * value manually throws {@link com.vaadin.signals.BindingActiveException}.
-     * Same when trying to bind a new Signal.
+     * Same happens when trying to bind a new Signal while one is already bound.
      * <p>
      * Binding to style or class attribute is removed automatically when
      * modifying them via {@link Style} or {@link ClassList}.
@@ -280,8 +280,7 @@ public class Element extends Node<Element> {
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
      * @throws com.vaadin.signals.BindingActiveException
-     *             Thrown when trying to bind a signal on attribute that is
-     *             already bind to signal.
+     *             thrown when there is already an existing binding
      * @see #setAttribute(String, String)
      */
     public void bindAttribute(String attribute, Signal<String> signal) {
