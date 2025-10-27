@@ -224,6 +224,10 @@ public abstract class VaadinService implements Serializable {
         vaadinContext = null;
     }
 
+    public void aNewMethod() {
+        // empty
+    }
+
     /**
      * Initializes this service. The service should be initialized before it is
      * used.
@@ -234,8 +238,6 @@ public abstract class VaadinService implements Serializable {
     public void init() throws ServiceException {
         doSetClassLoader();
         instantiator = createInstantiator();
-
-        String x = "12321";
 
         // init the router now so that registry will be available for
         // modifications
