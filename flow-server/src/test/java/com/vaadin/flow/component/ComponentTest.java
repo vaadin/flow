@@ -1971,7 +1971,8 @@ public class ComponentTest {
         testUI.add(div);
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH));
 
-        assertPendingJs("scrollIntoView({\"behavior\":\"smooth\"})");
+        // Deprecated API now delegates to new API, so expect parameter passing
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
     }
 
     @Test
@@ -1981,8 +1982,104 @@ public class ComponentTest {
         div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
                 Alignment.CENTER));
 
-        assertPendingJs(
-                "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+        // Deprecated API now delegates to new API, so expect parameter passing
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
+                "\"block\":\"end\"", "\"inline\":\"center\"");
+    }
+
+    @Test
+    public void scrollIntoView_withBehaviorEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
+    }
+
+    @Test
+    public void scrollIntoView_withBlockEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Block.END);
+
+        assertScrollIntoViewWithParams("\"block\":\"end\"");
+    }
+
+    @Test
+    public void scrollIntoView_withInlineEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"inline\":\"center\"");
+    }
+
+    @Test
+    public void scrollIntoView_withMultipleOptions() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+                ScrollIntoViewOption.Block.END,
+                ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
+                "\"block\":\"end\"", "\"inline\":\"center\"");
+    }
+
+    private void assertScrollIntoViewWithParams(String... expectedJsonParts) {
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+
+        // Verify it uses parameter passing
+        String expression = inv.getExpression();
+        MatcherAssert.assertThat(expression,
+                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+
+        // Verify parameters contain expected JSON parts
+        List<Object> params = inv.getParameters();
+        Assert.assertTrue("Should have at least 2 parameters", params.size() >= 2);
+        String paramJson = params.get(1).toString();
+        for (String expectedPart : expectedJsonParts) {
+            MatcherAssert.assertThat(paramJson,
+                    CoreMatchers.containsString(expectedPart));
+        }
+    }
+
+    @Test
+    public void scrollIntoView_deprecatedApiDelegatesToNew() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        // Use deprecated API to verify it still works
+        div.scrollIntoView(new ScrollOptions(Behavior.SMOOTH, Alignment.END,
+                Alignment.CENTER));
+
+        // Should produce same result as new API
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+
+        // Verify it uses parameter passing (not string concatenation)
+        String expression = inv.getExpression();
+        MatcherAssert.assertThat(expression,
+                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+
+        // Verify parameters are passed correctly
+        List<Object> params = inv.getParameters();
+        Assert.assertTrue("Should have at least 2 parameters", params.size() >= 2);
+        String paramJson = params.get(1).toString();
+        MatcherAssert.assertThat(paramJson,
+                CoreMatchers.containsString("\"behavior\":\"smooth\""));
+        MatcherAssert.assertThat(paramJson,
+                CoreMatchers.containsString("\"block\":\"end\""));
+        MatcherAssert.assertThat(paramJson,
+                CoreMatchers.containsString("\"inline\":\"center\""));
     }
 
     @Test

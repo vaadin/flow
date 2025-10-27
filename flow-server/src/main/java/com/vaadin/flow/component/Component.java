@@ -798,16 +798,49 @@ public abstract class Component
      * window.
      */
     public void scrollIntoView() {
-        scrollIntoView(null);
+        getElement().scrollIntoView();
+    }
+
+    /**
+     * Scrolls the current component into the visible area of the browser window
+     * with the specified options.
+     * <p>
+     * This method can be called with no arguments for default browser behavior,
+     * or with one or more {@link ScrollIntoViewOption} values to control
+     * scrolling behavior:
+     * <ul>
+     * <li>{@link ScrollIntoViewOption.Behavior} - controls whether scrolling is
+     * instant or smooth</li>
+     * <li>{@link ScrollIntoViewOption.Block} - controls vertical alignment of
+     * the element</li>
+     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment of
+     * the element</li>
+     * </ul>
+     * <p>
+     * Examples:
+     *
+     * <pre>
+     * component.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
+     * component.scrollIntoView(ScrollIntoViewOption.Block.END);
+     * component.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH, ScrollIntoViewOption.Block.END, ScrollIntoViewOption.Inline.CENTER);
+     * </pre>
+     *
+     * @param options
+     *            zero or more scroll options
+     */
+    public void scrollIntoView(ScrollIntoViewOption... options) {
+        getElement().scrollIntoView(options);
     }
 
     /**
      * Scrolls the current component into the visible area of the browser
      * window.
      *
+     * @deprecated Use {@link #scrollIntoView(ScrollIntoViewOption...)} instead
      * @param scrollOptions
      *            options to define the scrolling behavior
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public void scrollIntoView(ScrollOptions scrollOptions) {
         getElement().scrollIntoView(scrollOptions);
     }

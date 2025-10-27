@@ -38,6 +38,7 @@ import tools.jackson.databind.node.NullNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.ScrollOptions;
+import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.Page;
@@ -1734,12 +1735,92 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element scrollIntoView() {
-        return scrollIntoView(null);
+        return scrollIntoView(new ScrollIntoViewOption[0]);
+    }
+
+    /**
+     * Executes the similarly named DOM method on the client side with the
+     * specified options.
+     * <p>
+     * This method can be called with no arguments for default browser behavior,
+     * or with one or more {@link ScrollIntoViewOption} values to control
+     * scrolling behavior:
+     * <ul>
+     * <li>{@link ScrollIntoViewOption.Behavior} - controls whether scrolling is
+     * instant or smooth</li>
+     * <li>{@link ScrollIntoViewOption.Block} - controls vertical alignment of
+     * the element</li>
+     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment of
+     * the element</li>
+     * </ul>
+     * <p>
+     * Examples:
+     *
+     * <pre>
+     * element.scrollIntoView(); // Default behavior
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH); // Smooth scrolling
+     * element.scrollIntoView(ScrollIntoViewOption.Block.END); // Scroll to bottom
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH, ScrollIntoViewOption.Block.END, ScrollIntoViewOption.Inline.CENTER); // All options
+     * </pre>
+     *
+     * @param options
+     *            zero or more scroll options
+     * @return the element
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
+     *      docs</a>
+     */
+    public Element scrollIntoView(ScrollIntoViewOption... options) {
+        // Extract options from varargs
+        ScrollIntoViewOption.Behavior behavior = null;
+        ScrollIntoViewOption.Block block = null;
+        ScrollIntoViewOption.Inline inline = null;
+
+        for (ScrollIntoViewOption option : options) {
+            if (option instanceof ScrollIntoViewOption.Behavior) {
+                behavior = (ScrollIntoViewOption.Behavior) option;
+            } else if (option instanceof ScrollIntoViewOption.Block) {
+                block = (ScrollIntoViewOption.Block) option;
+            } else if (option instanceof ScrollIntoViewOption.Inline) {
+                inline = (ScrollIntoViewOption.Inline) option;
+            }
+        }
+
+        // Build JSON options object
+        tools.jackson.databind.node.ObjectNode json = null;
+        if (behavior != null || block != null || inline != null) {
+            json = JacksonUtils.createObjectNode();
+
+            if (behavior != null) {
+                json.put("behavior",
+                        behavior.name().toLowerCase(Locale.ENGLISH));
+            }
+
+            if (block != null) {
+                json.put("block", block.getValue());
+            }
+
+            if (inline != null) {
+                json.put("inline", inline.getValue());
+            }
+        }
+
+        // Use setTimeout to work on newly created elements
+        // Use parameter passing ($0, $1) instead of string concatenation
+        if (json == null || json.isEmpty()) {
+            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+        } else {
+            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
+                    json);
+        }
+
+        return getSelf();
     }
 
     /**
      * Executes the similarly named DOM method on the client side.
      *
+     * @deprecated Use {@link #scrollIntoView(ScrollIntoViewOption...)} instead
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
@@ -1747,14 +1828,64 @@ public class Element extends Node<Element> {
      *            the scroll options to pass to the method
      * @return the element
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // for an unknown reason, needs to be called deferred to work on a newly
-        // created element
-        String options = scrollOptions == null ? "" : scrollOptions.toJson();
+        // Delegate to new varargs method
+        if (scrollOptions == null) {
+            return scrollIntoView(new ScrollIntoViewOption[0]);
+        }
 
-        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
-                + options + ");}, 0);");
-        return getSelf();
+        // Convert ScrollOptions to ScrollIntoViewOption instances
+        java.util.List<ScrollIntoViewOption> optionsList = new java.util.ArrayList<>();
+
+        // Convert behavior
+        ScrollOptions.Behavior scrollBehavior = scrollOptions.getBehavior();
+        if (scrollBehavior == ScrollOptions.Behavior.SMOOTH) {
+            optionsList.add(ScrollIntoViewOption.Behavior.SMOOTH);
+        } else if (scrollBehavior == ScrollOptions.Behavior.AUTO) {
+            optionsList.add(ScrollIntoViewOption.Behavior.AUTO);
+        }
+
+        // Convert block alignment
+        ScrollOptions.Alignment blockAlign = scrollOptions.getBlock();
+        if (blockAlign != null) {
+            switch (blockAlign) {
+            case START:
+                optionsList.add(ScrollIntoViewOption.Block.START);
+                break;
+            case CENTER:
+                optionsList.add(ScrollIntoViewOption.Block.CENTER);
+                break;
+            case END:
+                optionsList.add(ScrollIntoViewOption.Block.END);
+                break;
+            case NEAREST:
+                optionsList.add(ScrollIntoViewOption.Block.NEAREST);
+                break;
+            }
+        }
+
+        // Convert inline alignment
+        ScrollOptions.Alignment inlineAlign = scrollOptions.getInline();
+        if (inlineAlign != null) {
+            switch (inlineAlign) {
+            case START:
+                optionsList.add(ScrollIntoViewOption.Inline.START);
+                break;
+            case CENTER:
+                optionsList.add(ScrollIntoViewOption.Inline.CENTER);
+                break;
+            case END:
+                optionsList.add(ScrollIntoViewOption.Inline.END);
+                break;
+            case NEAREST:
+                optionsList.add(ScrollIntoViewOption.Inline.NEAREST);
+                break;
+            }
+        }
+
+        return scrollIntoView(
+                optionsList.toArray(new ScrollIntoViewOption[0]));
     }
 
 }
