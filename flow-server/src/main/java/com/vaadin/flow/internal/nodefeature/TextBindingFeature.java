@@ -55,8 +55,4 @@ public class TextBindingFeature extends ServerSideFeature {
         registration = null;
         textSignal = null;
     }
-
-    public String getValue() {
-        return Signal.untracked(textSignal::value);
-    }
 }
