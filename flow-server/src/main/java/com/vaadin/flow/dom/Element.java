@@ -254,7 +254,7 @@ public class Element extends Node<Element> {
      * as in {@link #setAttribute(String, String)}.
      * <p>
      * Attribute value is synchronized with the signal value when element is
-     * attached. The binding is automatically removed when the element is
+     * attached. The binding is automatically deactivated when the element is
      * detached.
      * <p>
      * While a Signal is bound to an attribute, any attempt to set attribute
