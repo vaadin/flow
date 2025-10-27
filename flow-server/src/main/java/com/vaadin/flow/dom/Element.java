@@ -1176,19 +1176,14 @@ public class Element extends Node<Element> {
      *            an empty string
      * @return this element
      * @throws BindingActiveException
-     *             if there is already an active binding on the text content of
-     *             this element
+     *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
         TextBindingFeature feature = getNode()
                 .getFeature(TextBindingFeature.class);
         if (feature.hasBinding()) {
-            if (getNode().isAttached()) {
-                throw new BindingActiveException(
-                        "setText is not allowed while a binding is active.");
-            } else {
-                feature.removeBinding();
-            }
+            throw new BindingActiveException(
+                    "setText is not allowed while a binding for text exists.");
         }
 
         if (textContent == null) {

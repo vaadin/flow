@@ -132,7 +132,7 @@ public class ElementBindTextTest {
     }
 
     @Test
-    public void bindText_setTextWithActiveBinding_throws() {
+    public void bindText_setTextWithExistingActiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<String> signal = new ValueSignal<>("text");
@@ -140,6 +140,42 @@ public class ElementBindTextTest {
 
         assertThrows(BindingActiveException.class,
                 () -> element.setText("text2"));
+    }
+
+    @Test
+    public void bindText_setTextWithExistingInactiveBinding_throws() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+
+        UI.getCurrent().getElement().removeChild(element);
+        assertThrows(BindingActiveException.class,
+                () -> element.setText("text2"));
+    }
+
+    @Test
+    public void bindText_bindTextWithExistingActiveBinding_throws() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+
+        ValueSignal<String> signal2 = new ValueSignal<>("text2");
+        assertThrows(BindingActiveException.class,
+                () -> element.bindText(signal2));
+    }
+
+    @Test
+    public void bindText_bindTextWithExistingInactiveBinding_returnsCorrectValue() {
+        Element element = new Element("span");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<String> signal = new ValueSignal<>("text");
+        element.bindText(signal);
+
+        UI.getCurrent().getElement().removeChild(element);
+        ValueSignal<String> signal2 = new ValueSignal<>("text2");
+        element.bindText(signal2);
     }
 
     @Test
