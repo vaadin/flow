@@ -226,6 +226,8 @@ public abstract class VaadinService implements Serializable {
         vaadinContext = null;
     }
 
+    public void newMethod() {
+    }
     /**
      * Initializes this service. The service should be initialized before it is
      * used.
