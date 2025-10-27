@@ -1247,7 +1247,7 @@ public class Element extends Node<Element> {
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
      * @throws BindingActiveException
-     *             Thrown when there is already an existing binding
+     *             thrown when there is already an existing binding
      */
     public void bindText(Signal<String> signal) {
         TextBindingFeature feature = getNode()
