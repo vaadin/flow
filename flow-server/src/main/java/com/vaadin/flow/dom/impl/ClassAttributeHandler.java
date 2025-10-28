@@ -55,7 +55,7 @@ public class ClassAttributeHandler extends CustomAttribute {
     @Override
     public void setAttribute(Element element, String value,
             boolean ignoreSignal) {
-        if (!ignoreSignal && element.getNode().isAttached() && element.getNode()
+        if (!ignoreSignal && element.getNode()
                 .getFeature(ElementClassList.class).getSignal() != null) {
             throw new BindingActiveException(
                     "setAttribute is not allowed while binding is active.");
@@ -100,8 +100,8 @@ public class ClassAttributeHandler extends CustomAttribute {
 
     @Override
     public void removeAttribute(Element element) {
-        if (element.getNode().isAttached() && element.getNode()
-                .getFeature(ElementClassList.class).getSignal() != null) {
+        if (element.getNode().getFeature(ElementClassList.class)
+                .getSignal() != null) {
             throw new BindingActiveException(
                     "removeAttribute is not allowed while binding is active.");
         }
