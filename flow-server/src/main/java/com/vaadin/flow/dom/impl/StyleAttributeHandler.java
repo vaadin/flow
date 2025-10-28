@@ -61,7 +61,7 @@ public class StyleAttributeHandler extends CustomAttribute {
     @Override
     public void setAttribute(Element element, String attributeValue,
             boolean ignoreSignal) {
-        if (!ignoreSignal && element.getNode().isAttached()
+        if (!ignoreSignal
                 && element.getNode().getFeature(ElementStylePropertyMap.class)
                         .getSignal() != null) {
             throw new BindingActiveException(
@@ -166,9 +166,8 @@ public class StyleAttributeHandler extends CustomAttribute {
 
     @Override
     public void removeAttribute(Element element) {
-        if (element.getNode().isAttached()
-                && element.getNode().getFeature(ElementStylePropertyMap.class)
-                        .getSignal() != null) {
+        if (element.getNode().getFeature(ElementStylePropertyMap.class)
+                .getSignal() != null) {
             throw new BindingActiveException(
                     "removeAttribute is not allowed while binding is active.");
         }

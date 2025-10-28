@@ -79,7 +79,7 @@ public class ElementAttributeMap extends NodeMap {
      *            true to ignore any Signal bound to the attribute
      */
     public void set(String attribute, String value, boolean ignoreSignal) {
-        if (!ignoreSignal && getNode().isAttached() && hasSignal(attribute)) {
+        if (!ignoreSignal && hasSignal(attribute)) {
             throw new BindingActiveException(
                     "setAttribute is not allowed while binding is active.");
         }
@@ -144,7 +144,7 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public Serializable remove(String attribute) {
-        if (getNode().isAttached() && hasSignal(attribute)) {
+        if (hasSignal(attribute)) {
             throw new BindingActiveException(
                     "removeAttribute is not allowed while binding is active.");
         }
