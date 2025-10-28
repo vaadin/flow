@@ -845,7 +845,9 @@ public class Binder<BEAN> implements Serializable {
          * fails.
          * <p>
          * The validation state of each field is updated whenever the user
-         * modifies the value of that field.
+         * modifies the value of that field. The handler also sets the field's
+         * invalid state to provide visual feedback (e.g., red background) for
+         * fields implementing {@link com.vaadin.flow.component.HasValidation}.
          * <p>
          * This method allows to customize the way a binder displays error
          * messages.
@@ -854,10 +856,7 @@ public class Binder<BEAN> implements Serializable {
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
          * method where the handler instance hides the {@code label} if there is
          * no error and shows it with validation error message if validation
-         * fails. The handler also sets the field's invalid state to provide
-         * visual feedback (e.g., red background) for fields implementing
-         * {@link com.vaadin.flow.component.HasValidation}. It means that it
-         * cannot be called after
+         * fails. It means that it cannot be called after
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
          * method call or
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
