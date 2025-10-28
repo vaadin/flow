@@ -59,6 +59,7 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.impl.Effect;
 
 /**
  * Represents an element in the DOM.
@@ -246,8 +247,8 @@ public class Element extends Node<Element> {
 
     /**
      * Binds a {@link Signal}'s value to a given attribute and creates a Signal
-     * effect function executing the setter whenever the signal value changes.
-     * <code>null</code> signal unbinds existing binding.
+     * {@link Effect} function executing the setter whenever the signal value
+     * changes. <code>null</code> signal unbinds existing binding.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
