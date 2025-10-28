@@ -23,10 +23,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
 
 /**
  * Callback for handling attributes with special semantics. This is used for
@@ -100,26 +96,8 @@ public abstract class CustomAttribute implements Serializable {
      *            the element for which to set the value, not <code>null</code>
      * @param value
      *            the new attribute value, not <code>null</code>
-     * @param ignoreSignal
-     *            true to ignore any {@link Signal} bound to the attribute
      */
-    public abstract void setAttribute(Element element, String value,
-            boolean ignoreSignal);
-
-    /**
-     * Binds the given signal to this {@link CustomAttribute}. <code>null</code>
-     * signal unbinds existing binding.
-     *
-     * @param node
-     *            the node containing the {@link CustomAttribute}
-     * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @param bindAction
-     *            the action to perform the binding, may be <code>null</code>
-     */
-    public abstract void bindSignal(StateNode node, Signal<String> signal,
-            SerializableSupplier<Registration> bindAction);
+    public abstract void setAttribute(Element element, String value);
 
     /**
      * Removes the attribute when {@link Element#removeAttribute(String)} is

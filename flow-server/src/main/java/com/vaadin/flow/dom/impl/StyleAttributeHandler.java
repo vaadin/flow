@@ -19,13 +19,8 @@ import java.util.LinkedHashMap;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
-import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
 
 /**
  * Emulates the <code>style</code> attribute by delegating to
@@ -49,46 +44,19 @@ public class StyleAttributeHandler extends CustomAttribute {
         if (!hasAttribute(element)) {
             return null;
         }
-        if (element.getStyle() instanceof BasicElementStyle style) {
-            return style.getNames().map(styleName -> {
-                return StyleUtil.stylePropertyToAttribute(styleName) + ":"
-                        + style.get(styleName);
-            }).collect(Collectors.joining(";"));
-        }
-        return null;
+        Style style = element.getStyle();
+
+        return style.getNames().map(styleName -> {
+            return StyleUtil.stylePropertyToAttribute(styleName) + ":"
+                    + style.get(styleName);
+        }).collect(Collectors.joining(";"));
     }
 
     @Override
-    public void setAttribute(Element element, String attributeValue,
-            boolean ignoreSignal) {
-        if (!ignoreSignal
-                && element.getNode().getFeature(ElementStylePropertyMap.class)
-                        .getSignal() != null) {
-            throw new BindingActiveException(
-                    "setAttribute is not allowed while binding is active.");
-        }
-
-        if (element.getStyle() instanceof BasicElementStyle style) {
-            if (!ignoreSignal) {
-                ElementStylePropertyMap map = element.getNode()
-                        .getFeature(ElementStylePropertyMap.class);
-                if (map.getSignal() != null) {
-                    // remove any existing binding
-                    map.bindSignal(null, null);
-                }
-            }
-
-            style.clear(false);
-            parseStyles(attributeValue)
-                    .forEach((name, value) -> style.set(name, value, false));
-        }
-    }
-
-    @Override
-    public void bindSignal(StateNode node, Signal<String> signal,
-            SerializableSupplier<Registration> bindAction) {
-        node.getFeature(ElementStylePropertyMap.class).bindSignal(signal,
-                bindAction);
+    public void setAttribute(Element element, String attributeValue) {
+        Style style = element.getStyle();
+        style.clear();
+        parseStyles(attributeValue).forEach(style::set);
     }
 
     private static final char COLON = ':';
@@ -166,13 +134,6 @@ public class StyleAttributeHandler extends CustomAttribute {
 
     @Override
     public void removeAttribute(Element element) {
-        if (element.getNode().getFeature(ElementStylePropertyMap.class)
-                .getSignal() != null) {
-            throw new BindingActiveException(
-                    "removeAttribute is not allowed while binding is active.");
-        }
-        if (element.getStyle() instanceof BasicElementStyle style) {
-            style.clear();
-        }
+        element.getStyle().clear();
     }
 }
