@@ -46,14 +46,6 @@ public class BasicElementStyle implements Style {
 
     @Override
     public Style set(String name, String value) {
-        return set(name, value, true);
-    }
-
-    Style set(String name, String value, boolean removeSignal) {
-        if (removeSignal) {
-            removeSignal();
-        }
-
         ElementUtil.validateStylePropertyName(name);
         if (value == null) {
             return this.remove(name);
@@ -68,14 +60,6 @@ public class BasicElementStyle implements Style {
 
     @Override
     public Style remove(String name) {
-        return remove(name, true);
-    }
-
-    public Style remove(String name, boolean removeSignal) {
-        if (removeSignal) {
-            removeSignal();
-        }
-
         ElementUtil.validateStylePropertyName(name);
 
         propertyMap.removeProperty(StyleUtil.stylePropertyToAttribute(name));
@@ -84,14 +68,6 @@ public class BasicElementStyle implements Style {
 
     @Override
     public Style clear() {
-        return clear(true);
-    }
-
-    Style clear(boolean removeSignal) {
-        if (removeSignal) {
-            removeSignal();
-        }
-
         propertyMap.removeAllProperties();
         return this;
     }
@@ -113,11 +89,5 @@ public class BasicElementStyle implements Style {
     public boolean has(String name) {
         return propertyMap
                 .hasProperty(StyleUtil.stylePropertyToAttribute(name));
-    }
-
-    private void removeSignal() {
-        if (propertyMap.getSignal() != null) {
-            propertyMap.bindSignal(null, null);
-        }
     }
 }

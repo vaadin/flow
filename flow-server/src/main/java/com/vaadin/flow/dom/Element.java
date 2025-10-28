@@ -262,9 +262,6 @@ public class Element extends Node<Element> {
      * {@link com.vaadin.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
-     * Binding to style or class attribute is removed automatically when
-     * modifying them via {@link Style} or {@link ClassList}.
-     * <p>
      * Example of usage:
      *
      * <pre>
@@ -299,7 +296,8 @@ public class Element extends Node<Element> {
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);
         if (customAttribute.isPresent()) {
-            customAttribute.get().bindSignal(getNode(), signal, bindAction);
+            throw new UnsupportedOperationException(
+                    "Binding style or class attribute to a Signal is not supported.");
         } else {
             getStateProvider().bindAttributeSignal(getNode(), validAttribute,
                     signal, bindAction);
@@ -350,7 +348,7 @@ public class Element extends Node<Element> {
             if (value == null) {
                 throw new IllegalArgumentException("Value cannot be null");
             }
-            customAttribute.get().setAttribute(this, value, ignoreSignal);
+            customAttribute.get().setAttribute(this, value);
         } else {
             // null value should be allowed only from signal value changes to
             // support removal of attribute
