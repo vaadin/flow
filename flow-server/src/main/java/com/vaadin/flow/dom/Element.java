@@ -59,7 +59,6 @@ import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.impl.Effect;
 
 /**
  * Represents an element in the DOM.
@@ -246,16 +245,13 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to a given attribute and creates a Signal
-     * {@link Effect} function executing the setter whenever the signal value
-     * changes. <code>null</code> signal unbinds existing binding.
+     * Binds a {@link Signal}'s value to a given attribute and keeps attribute
+     * value synchronized with the signal while element is being attached. When
+     * the element is detached, signal value changes have no effect.
+     * <code>null</code> signal unbinds existing binding.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
-     * <p>
-     * Attribute value is synchronized with the signal value when element is
-     * attached. When the element is detached, signal value changes have no
-     * effect.
      * <p>
      * While a Signal is bound to an attribute, any attempt to set or remove
      * attribute value manually throws
