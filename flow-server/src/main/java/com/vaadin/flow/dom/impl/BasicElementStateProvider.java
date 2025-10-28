@@ -35,7 +35,6 @@ import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.dom.Style;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.internal.nodefeature.ClientCallableHandlers;
@@ -188,27 +187,20 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
-        setAttribute(node, attribute, value, false);
-    }
-
-    @Override
-    public void setAttribute(StateNode node, String attribute, String value,
-            boolean ignoreSignal) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(node).set(attribute, value, ignoreSignal);
-
+        getAttributeFeature(node).set(attribute, value);
     }
 
     @Override
-    public void bindAttributeSignal(StateNode node, String attribute,
-            Signal<String> signal,
-            SerializableSupplier<Registration> bindAction) {
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
         assert attribute != null;
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
-        getAttributeFeature(node).bindSignal(attribute, signal, bindAction);
+        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+                signal);
     }
 
     @Override

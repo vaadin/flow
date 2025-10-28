@@ -25,7 +25,8 @@ import java.util.stream.Stream;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -75,11 +76,9 @@ public class ElementAttributeMap extends NodeMap {
      *            the attribute name
      * @param value
      *            the value
-     * @param ignoreSignal
-     *            true to ignore any Signal bound to the attribute
      */
-    public void set(String attribute, String value, boolean ignoreSignal) {
-        if (!ignoreSignal && hasSignal(attribute)) {
+    public void set(String attribute, String value) {
+        if (hasSignal(attribute)) {
             throw new BindingActiveException(
                     "setAttribute is not allowed while binding is active.");
         }
@@ -89,24 +88,25 @@ public class ElementAttributeMap extends NodeMap {
     /**
      * Binds the given signal to the given attribute. <code>null</code> signal
      * unbinds existing binding.
-     * 
+     *
+     * @param owner
+     *            the element owning the attribute, not <code>null</code>
      * @param attribute
      *            the name of the attribute
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @param bindAction
-     *            the action to perform the binding, may be <code>null</code>
      */
-    public void bindSignal(String attribute, Signal<String> signal,
-            SerializableSupplier<Registration> bindAction) {
+    public void bindSignal(Element owner, String attribute,
+            Signal<String> signal) {
         ensureSignalCache();
         var previousSignal = attributeToSignalCache.get(attribute);
         if (signal != null && previousSignal != null) {
             throw new BindingActiveException();
         }
-        Registration registration = bindAction != null ? bindAction.get()
-                : null;
+
+        Registration registration = signal != null ? ElementEffect.bind(owner,
+                signal, (element, value) -> doSet(attribute, value)) : null;
         if (registration != null) {
             attributeSignalToRegistrationCache.put(signal, registration);
         }

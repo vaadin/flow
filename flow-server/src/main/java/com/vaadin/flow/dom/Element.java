@@ -46,7 +46,6 @@ import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.dom.impl.BasicTextElementStateProvider;
 import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
@@ -289,18 +288,14 @@ public class Element extends Node<Element> {
                     validAttribute));
         }
 
-        SerializableSupplier<Registration> bindAction = signal == null ? null
-                : () -> ElementEffect.bind(this, signal, (component,
-                        value) -> setAttributeValue(attribute, value, true));
-
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);
         if (customAttribute.isPresent()) {
             throw new UnsupportedOperationException(
                     "Binding style or class attribute to a Signal is not supported.");
         } else {
-            getStateProvider().bindAttributeSignal(getNode(), validAttribute,
-                    signal, bindAction);
+            getStateProvider().bindAttributeSignal(this, validAttribute,
+                    signal);
         }
     }
 
@@ -335,25 +330,15 @@ public class Element extends Node<Element> {
         if (value == null) {
             throw new IllegalArgumentException("Value cannot be null");
         }
-        return setAttributeValue(attribute, value, false);
-    }
-
-    private Element setAttributeValue(String attribute, String value,
-            boolean ignoreSignal) {
         String lowerCaseAttribute = validateAttribute(attribute);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
         if (customAttribute.isPresent()) {
-            if (value == null) {
-                throw new IllegalArgumentException("Value cannot be null");
-            }
             customAttribute.get().setAttribute(this, value);
         } else {
-            // null value should be allowed only from signal value changes to
-            // support removal of attribute
             getStateProvider().setAttribute(getNode(), lowerCaseAttribute,
-                    value, ignoreSignal);
+                    value);
         }
         return this;
     }
