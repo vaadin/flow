@@ -20,7 +20,6 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -69,37 +68,20 @@ public interface ElementStateProvider extends Serializable {
     void setAttribute(StateNode node, String attribute, String value);
 
     /**
-     * Sets the given attribute to the given value.
-     *
-     * @param node
-     *            the node containing the data
-     * @param attribute
-     *            the attribute name, not null
-     * @param value
-     *            the attribute value
-     * @param ignoreSignal
-     *            true to ignore any {@link Signal} bound to the attribute
-     */
-    void setAttribute(StateNode node, String attribute, String value,
-            boolean ignoreSignal);
-
-    /**
      * Binds the given signal to the given attribute. <code>null</code> signal
      * unbinds existing binding.
      *
-     * @param node
-     *            the node containing the attribute
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
      * @param attribute
      *            the name of the attribute
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
-     * @param bindAction
-     *            the action to perform the binding, may be <code>null</code>
      */
-    void bindAttributeSignal(StateNode node, String attribute,
-            Signal<String> signal,
-            SerializableSupplier<Registration> bindAction);
+    void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal);
 
     /**
      * Sets the given attribute to the given {@link StreamResource} value.
