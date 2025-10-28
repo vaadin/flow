@@ -186,22 +186,75 @@ function collectDocumentStyleSheets(): Map<string, CSSStyleSheet> {
 function swapStyleSheet(styleSheet: CSSStyleSheet, newHref?: string, onload: (CSSStyleSheet) => void = () => {}): void {
   const linkElement = styleSheet.ownerNode as HTMLLinkElement;
   const shadowLink = linkElement.cloneNode(true) as HTMLLinkElement;
-  shadowLink.media = 'not all';
+  // Do not set media to a non-matching value before load; it may prevent the load event from firing in some browsers.
   shadowLink.removeAttribute('id');
   shadowLink.blocking = 'render';
   if (newHref) {
     shadowLink.href = newHref;
   }
 
-  linkElement.parentNode?.insertBefore(shadowLink, linkElement);
-  shadowLink.onload = () => {
+  // Force a matching media to ensure load event can fire
+  const originalMedia = linkElement.media || '';
+  shadowLink.media = 'all';
+
+  let settled = false;
+  const done = (_reason: string) => {
+    if (settled) return;
+    settled = true;
+    // Clean handlers to avoid multiple calls
     shadowLink.onload = null;
-    onload(shadowLink.sheet);
-    shadowLink.media = linkElement.media;
-    setTimeout(() => {
-      linkElement.remove();
-    }, 100);
+    shadowLink.onerror = null as any;
+    try {
+      // Restore original media (if any)
+      shadowLink.media = originalMedia;
+    } catch (_e) {}
+    // Invoke callback with the new sheet if available
+    const sheet = (shadowLink.sheet || (null as any)) as CSSStyleSheet;
+    try {
+      onload(sheet);
+    } finally {
+      setTimeout(() => {
+        try { linkElement.remove(); } catch (_e) {}
+      }, 100);
+    }
   };
+
+  // Assign handlers before inserting to avoid missing fast events
+  shadowLink.onload = () => done('load');
+  shadowLink.onerror = () => done('error');
+
+  // Insert into DOM
+  linkElement.parentNode?.insertBefore(shadowLink, linkElement);
+
+  // Fallback: some browsers may not fire load for stylesheets; poll for sheet readiness
+  const start = Date.now();
+  const maxWait = 3000; // ms
+  const interval = 50; // ms
+  const poll = () => {
+    if (settled) return;
+    try {
+      const sheet = shadowLink.sheet as CSSStyleSheet | null;
+      if (sheet) {
+        // Accessing cssRules may throw SecurityError for cross-origin; consider it ready in that case
+        // Otherwise, consider it ready when accessible without throwing
+        try {
+          // Touching cssRules indicates it has loaded in most engines
+          const _ = (sheet as any).cssRules; // eslint-disable-line @typescript-eslint/no-unused-vars
+          return done('sheet-ready');
+        } catch (e: any) {
+          if (e && e.name === 'SecurityError') {
+            return done('security');
+          }
+        }
+      }
+    } catch (_e) {}
+    if (Date.now() - start < maxWait) {
+      setTimeout(poll, interval);
+    } else {
+      done('timeout');
+    }
+  };
+  setTimeout(poll, interval);
 }
 
 function preloadStyleSheet(href: string, onload: () => void): void {
