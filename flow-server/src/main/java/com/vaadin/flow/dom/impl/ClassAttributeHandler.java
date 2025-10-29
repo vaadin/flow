@@ -20,6 +20,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.nodefeature.ElementClassList;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Emulates the <code>class</code> attribute by delegating to
@@ -30,6 +33,7 @@ import com.vaadin.flow.dom.Element;
  * @since 1.0
  */
 public class ClassAttributeHandler extends CustomAttribute {
+
     @Override
     public boolean hasAttribute(Element element) {
         return !element.getClassList().isEmpty();
@@ -47,6 +51,19 @@ public class ClassAttributeHandler extends CustomAttribute {
 
     @Override
     public void setAttribute(Element element, String value) {
+        if (element.getNode().getFeature(ElementClassList.class)
+                .getSignal() != null) {
+            throw new BindingActiveException(
+                    "setAttribute is not allowed while binding is active.");
+        }
+
+        ElementClassList list = element.getNode()
+                .getFeature(ElementClassList.class);
+        if (list.getSignal() != null) {
+            // remove any existing binding
+            list.bindSignal(null, null);
+        }
+
         Set<String> classList = element.getClassList();
         classList.clear();
 
@@ -61,7 +78,18 @@ public class ClassAttributeHandler extends CustomAttribute {
     }
 
     @Override
+    public void bindSignal(Element owner, Signal<String> signal) {
+        owner.getNode().getFeature(ElementClassList.class).bindSignal(owner,
+                signal);
+    }
+
+    @Override
     public void removeAttribute(Element element) {
+        if (element.getNode().getFeature(ElementClassList.class)
+                .getSignal() != null) {
+            throw new BindingActiveException(
+                    "removeAttribute is not allowed while binding is active.");
+        }
         element.getClassList().clear();
     }
 }

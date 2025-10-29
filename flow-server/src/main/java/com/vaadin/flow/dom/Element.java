@@ -288,8 +288,7 @@ public class Element extends Node<Element> {
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);
         if (customAttribute.isPresent()) {
-            throw new UnsupportedOperationException(
-                    "Binding style or class attribute to a Signal is not supported.");
+            customAttribute.get().bindSignal(this, signal);
         } else {
             getStateProvider().bindAttributeSignal(this, validAttribute,
                     signal);

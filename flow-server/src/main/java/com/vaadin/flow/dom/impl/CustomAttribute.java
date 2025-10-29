@@ -23,6 +23,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.signals.Signal;
 
 /**
  * Callback for handling attributes with special semantics. This is used for
@@ -98,6 +99,19 @@ public abstract class CustomAttribute implements Serializable {
      *            the new attribute value, not <code>null</code>
      */
     public abstract void setAttribute(Element element, String value);
+
+    /**
+     * Binds the given signal to this {@link CustomAttribute}. <code>null</code>
+     * signal unbinds existing binding.
+     *
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     */
+    public abstract void bindSignal(Element owner, Signal<String> signal);
 
     /**
      * Removes the attribute when {@link Element#removeAttribute(String)} is

@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -287,6 +288,209 @@ public class ElementBindAttributeTest {
 
         assertEquals("foobar", component.getElement().getAttribute("attr1"));
         assertEquals("barfoo", component.getElement().getAttribute("attr2"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_classAttribute_attributesChanged() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+
+        component.getElement().bindAttribute("class", signal);
+
+        assertEquals("foo", component.getElement().getAttribute("class"));
+
+        signal.value("foo bar");
+
+        assertEquals("foo bar", component.getElement().getAttribute("class"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_setClassAttributeWhileBindingIsActive_throwException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindAttribute("class", signal);
+
+        assertThrows(BindingActiveException.class,
+                () -> component.getElement().setAttribute("class", "baz"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    /**
+     * Test that modifying the ClassList object directly clears the binding
+     * established via bindAttribute.
+     */
+    @Test
+    public void bindAttribute_updateClassListWhileBindingIsActive_clearBindings() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        // test that ClassList.clear() removes the binding
+        component.getElement().bindAttribute("class", signal);
+        component.getElement().getClassList().clear();
+
+        assertNull(component.getElement().getAttribute("class"));
+        assertEquals("bar", signal.peek());
+
+        // test that ClassList.remove(String) removes the binding
+        component.getElement().bindAttribute("class", signal);
+        component.getElement().getClassList().remove("bar");
+
+        assertNull(component.getElement().getAttribute("class"));
+        assertEquals("bar", signal.peek());
+
+        // test that ClassList.set(String, boolean) removes the binding
+        component.getElement().bindAttribute("class", signal);
+        component.getElement().getClassList().set("bar", false);
+
+        assertNull(component.getElement().getAttribute("class"));
+        assertEquals("bar", signal.peek());
+
+        // test that ClassList.add(String) removes the binding
+        component.getElement().bindAttribute("class", signal);
+        component.getElement().getClassList().add("foo");
+
+        assertEquals("bar foo", component.getElement().getAttribute("class"));
+        assertEquals("bar", signal.peek());
+
+        // test that ClassList.addAll(Collection) removes the binding
+        component.getElement().bindAttribute("class", signal);
+        component.getElement().getClassList().addAll(List.of("foo", "baz"));
+
+        assertEquals("bar foo baz",
+                component.getElement().getAttribute("class"));
+        assertEquals("bar", signal.peek());
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_classAttributeWithNullBinding_removesBinding() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindAttribute("class", signal);
+
+        assertEquals("bar", component.getElement().getAttribute("class"));
+
+        component.getElement().bindAttribute("class", null);
+
+        signal.value("baz");
+
+        assertEquals("bar", component.getElement().getAttribute("class"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_styleAttribute_attributesChanged() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("color: red;");
+
+        component.getElement().bindAttribute("style", signal);
+
+        // attribute value is normalized
+        assertEquals("color:red", component.getElement().getAttribute("style"));
+
+        signal.value("color: red;border-color: red;");
+
+        assertEquals("color:red;border-color:red",
+                component.getElement().getAttribute("style"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_setStyleAttributeWhileBindingIsActive_throwException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("color: red;");
+
+        component.getElement().bindAttribute("style", signal);
+
+        assertThrows(BindingActiveException.class, () -> component.getElement()
+                .setAttribute("style", "color: green;"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_removeStyleAttributeWhileBindingIsActive_throwException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("color: red;");
+
+        component.getElement().bindAttribute("style", signal);
+
+        assertThrows(IllegalStateException.class,
+                () -> component.getElement().removeAttribute("style"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    /**
+     * Test that modifying the Style object directly clears the binding
+     * established via bindAttribute.
+     */
+    @Test
+    public void bindAttribute_updateStyleWhileBindingIsActive_clearBindings() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("color: red;");
+
+        // test that Style.clear() removes the binding
+        component.getElement().bindAttribute("style", signal);
+        component.getElement().getStyle().clear();
+
+        assertNull(component.getElement().getAttribute("style"));
+        assertEquals("color: red;", signal.peek());
+
+        // test that Style.remove(String) removes the binding
+        component.getElement().bindAttribute("style", signal);
+        component.getElement().getStyle().remove("color");
+
+        assertNull(component.getElement().getAttribute("style"));
+        assertEquals("color: red;", signal.peek());
+
+        // test that Style.set(String, String) removes the binding
+        component.getElement().bindAttribute("style", signal);
+        component.getElement().getStyle().set("color", "green");
+
+        assertEquals("color:green",
+                component.getElement().getAttribute("style"));
+        assertEquals("color: red;", signal.peek());
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindAttribute_styleAttributeWithNullBinding_removesBinding() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("color: red;");
+
+        component.getElement().bindAttribute("style", signal);
+
+        // attribute value is normalized
+        assertEquals("color:red", component.getElement().getAttribute("style"));
+
+        component.getElement().bindAttribute("style", null);
+
+        signal.value("color: green;");
+
+        assertEquals("color:red", component.getElement().getAttribute("style"));
         Assert.assertTrue(events.isEmpty());
     }
 
