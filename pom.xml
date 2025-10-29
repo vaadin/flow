@@ -103,6 +103,7 @@
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
     <maven.version>3.9.11</maven.version>
+    <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <spotless.plugin.version>3.0.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
 

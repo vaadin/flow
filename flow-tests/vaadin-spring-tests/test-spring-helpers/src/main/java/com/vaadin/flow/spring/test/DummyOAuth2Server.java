@@ -65,8 +65,8 @@ public class DummyOAuth2Server {
             // automatic security matcher (see gh-17965)
             http.securityMatcher(authorizationServer.getEndpointsMatcher());
             authorizationServer.oidc(Customizer.withDefaults());
-        }).authorizeHttpRequests((authorize) -> authorize
-                .anyRequest().authenticated());
+        }).authorizeHttpRequests(
+                (authorize) -> authorize.anyRequest().authenticated());
         return http.build();
     }
 
@@ -74,6 +74,7 @@ public class DummyOAuth2Server {
     public AuthorizationServerSettings authorizationServerSettings() {
         return AuthorizationServerSettings.builder().build();
     }
+
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
         RegisteredClient registeredClient = RegisteredClient
