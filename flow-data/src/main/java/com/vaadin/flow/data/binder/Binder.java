@@ -845,10 +845,11 @@ public class Binder<BEAN> implements Serializable {
          * fails.
          * <p>
          * The validation state of each field is updated whenever the user
-         * modifies the value of that field.
-         * <p>
-         * This method allows to customize the way a binder displays error
-         * messages.
+         * modifies the value of that field. With this method, possible
+         * validation error message will be shown in the {@code label} provided.
+         * Additionally, the field's invalid state will be updated to provide
+         * visual feedback (e.g., red background) for fields implementing
+         * {@link com.vaadin.flow.component.HasValidation}.
          * <p>
          * This is just a shorthand for
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
@@ -870,6 +871,17 @@ public class Binder<BEAN> implements Serializable {
                 label.setText(status.getMessage().orElse(""));
                 // Only show the label when validation has failed
                 setVisible(label, status.isError());
+
+                // Update the field's invalid state for consistent visual
+                // feedback. Delegates to the binder's error handler which sets
+                // the field invalid and applies error styling.
+                if (status.getBinding() instanceof BindingImpl) {
+                    @SuppressWarnings("unchecked")
+                    BindingImpl<BEAN, ?, TARGET> binding = (BindingImpl<BEAN, ?, TARGET>) status
+                            .getBinding();
+                    Binder<BEAN> binder = binding.getBinder();
+                    binder.handleValidationStatus(status);
+                }
             });
         }
 
