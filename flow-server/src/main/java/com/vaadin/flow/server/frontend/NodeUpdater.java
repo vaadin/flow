@@ -32,6 +32,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -310,6 +311,9 @@ public abstract class NodeUpdater implements FallibleCommand {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
+        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+            dependencies.putAll(readDependencies("tailwindcss", "dependencies"));
+        }
         putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
     }
@@ -372,6 +376,9 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
+        }
+        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+            defaults.putAll(readDependencies("tailwindcss", "dependencies"));
         }
 
         // Add workbox dependencies only when PWA is enabled
