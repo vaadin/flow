@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '24.8', '24.7', '24.6', '23.6', '23.5']
+    branches: [main, '24.8', '24.7', '24.6', '23.7', '23.6']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
