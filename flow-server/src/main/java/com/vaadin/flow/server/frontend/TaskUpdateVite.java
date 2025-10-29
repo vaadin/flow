@@ -26,6 +26,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -133,6 +134,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#frontendExtraFileExtensions#",
                         getFrontendExtraFileExtensions());
         template = updateFileSystemRouterVitePlugin(template);
+        template = updateTailwindCssVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
@@ -164,6 +166,17 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         }
         return template.replace("//#vitePluginFileSystemRouterImport#", "")
                 .replace("//#vitePluginFileSystemRouter#", "");
+    }
+
+    private String updateTailwindCssVitePlugin(String template) {
+        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+            return template.replace("//#tailwindCssVitePluginImport#",
+                    "import tailwindcss from '@tailwindcss/vite';")
+                    .replace("//#tailwindCssVitePlugin#", "tailwindcss(),");
+        } else {
+            return template.replace("//#tailwindCssVitePluginImport#", "")
+                    .replace("//#tailwindCssVitePlugin#", "");
+        }
     }
 
     private Logger log() {
