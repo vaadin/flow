@@ -202,6 +202,11 @@ function swapStyleSheet(styleSheet: CSSStyleSheet, newHref?: string, onload: (CS
       linkElement.remove();
     }, 100);
   };
+  shadowLink.onerror = (event) => {
+    shadowLink.onerror = null;
+    shadowLink.remove();
+    console.warn(`Failed to load stylesheet ${newHref}. Changes are not applied.`, event);
+  };
 }
 
 function preloadStyleSheet(href: string, onload: () => void): void {
@@ -214,6 +219,11 @@ function preloadStyleSheet(href: string, onload: () => void): void {
     setTimeout(() => {
       preload.remove();
     }, 100);
+  };
+  preload.onerror = (event) => {
+    preload.onerror = null;
+    preload.remove();
+    console.warn(`Failed to preload stylesheet ${href}. Changes are not applied.`, event);
   };
   document.head.appendChild(preload);
 }
