@@ -1216,12 +1216,10 @@ public class Element extends Node<Element> {
 
     /**
      * Binds a {@link Signal}'s value to the text content of this element and
-     * creates a Signal effect function executing the setter whenever the signal
-     * value changes. <code>null</code> signal unbinds the existing binding.
-     * <p>
-     * Text content is synchronized with the signal value whenever the element
-     * is attached. When the element is detached, signal value changes have no
-     * effect.
+     * keeps the text content synchronized with the signal value while the
+     * element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
      * <p>
      * While a Signal is bound to an attribute, any attempt to set the text
      * content manually throws
