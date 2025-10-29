@@ -259,6 +259,8 @@ public class Element extends Node<Element> {
      * {@link com.vaadin.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
      * <p>
+     * Binding style or class attribute to a Signal is not supported.
+     * <p>
      * Example of usage:
      *
      * <pre>
@@ -280,11 +282,6 @@ public class Element extends Node<Element> {
      */
     public void bindAttribute(String attribute, Signal<String> signal) {
         String validAttribute = validateAttribute(attribute);
-        if (!ElementUtil.isValidAttributeName(validAttribute)) {
-            throw new IllegalArgumentException(String.format(
-                    "Attribute \"%s\" is not a valid attribute name",
-                    validAttribute));
-        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(validAttribute);

@@ -80,7 +80,7 @@ public class ElementAttributeMap extends NodeMap {
     public void set(String attribute, String value) {
         if (hasSignal(attribute)) {
             throw new BindingActiveException(
-                    "setAttribute is not allowed while binding is active.");
+                    "setAttribute is not allowed while a binding for the given attribute exists.");
         }
         doSet(attribute, value);
     }
@@ -146,7 +146,7 @@ public class ElementAttributeMap extends NodeMap {
     public Serializable remove(String attribute) {
         if (hasSignal(attribute)) {
             throw new BindingActiveException(
-                    "removeAttribute is not allowed while binding is active.");
+                    "removeAttribute is not allowed while a binding for the given attribute exists.");
         }
         unregisterResource(attribute);
         return super.remove(attribute);
