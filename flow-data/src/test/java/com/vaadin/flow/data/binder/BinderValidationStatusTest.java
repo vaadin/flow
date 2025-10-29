@@ -607,4 +607,56 @@ public class BinderValidationStatusTest
         Assert.assertEquals(lengthError, label.getText());
     }
 
+    @Test
+    public void withValidationStatusHandler_customHandler_fieldInvalidNotSetAutomatically() {
+        AtomicReference<BindingValidationStatus<?>> statusCapture = new AtomicReference<>();
+
+        binder.forField(nameField).withValidator(notEmpty)
+                .withValidationStatusHandler(statusCapture::set)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Custom handler gives full control - field invalid state should NOT
+        // be set automatically
+        Assert.assertFalse(nameField.isInvalid());
+        Assert.assertNull(componentErrors.get(nameField));
+
+        // But the handler should still receive the validation status
+        Assert.assertNotNull(statusCapture.get());
+        Assert.assertEquals(Status.ERROR, statusCapture.get().getStatus());
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE,
+                statusCapture.get().getMessage().get());
+    }
+
+    @Test
+    public void withValidationStatusHandler_customHandler_canManuallySetFieldInvalid() {
+        binder.forField(nameField).withValidator(notEmpty)
+                .withValidationStatusHandler(status -> {
+                    // Custom handler that manually controls field invalid state
+                    if (status.isError()) {
+                        nameField.setInvalid(true);
+                    } else {
+                        nameField.setInvalid(false);
+                    }
+                }).bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Custom handler manually set the invalid state
+        Assert.assertTrue(nameField.isInvalid());
+        // But componentErrors should still be null because we're using custom
+        // handler
+        Assert.assertNull(componentErrors.get(nameField));
+
+        // Clear the error
+        nameField.setValue("Valid");
+        binder.validate();
+
+        // Custom handler should clear the invalid state
+        Assert.assertFalse(nameField.isInvalid());
+    }
+
 }
