@@ -245,10 +245,11 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to a given attribute and keeps attribute
-     * value synchronized with the signal while element is being attached. When
-     * the element is detached, signal value changes have no effect.
-     * <code>null</code> signal unbinds existing binding.
+     * Binds a {@link Signal}'s value to a given attribute and keeps the
+     * attribute value synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
      * <p>
      * Same rules applies for the attribute name and value from the bound Signal
      * as in {@link #setAttribute(String, String)}.
