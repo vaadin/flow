@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>flow-project</artifactId>
-        <version>2.12-SNAPSHOT</version>
+        <version>2.13-SNAPSHOT</version>
     </parent>
     <artifactId>flow-server</artifactId>
     <name>Flow Server</name>

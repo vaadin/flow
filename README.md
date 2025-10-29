@@ -14,14 +14,14 @@ Instructions on how to set up a working environment for developing the Flow proj
 
 The `main` branch is the latest version (24.2) that will at some point be released in the [Vaadin platform](https://github.com/vaadin/platform). See other branches for other framework versions:
 
-| Branch | [Platform Version](https://github.com/vaadin/platform/releases)         | [Flow Version](https://github.com/vaadin/flow/releases) |
-|--------|-------------------------------------------------------------------------|---------------------------------------------------------|
-| 1.0    | 10 (Commercial support)                                                 | 1.0                                                     |
-| 2.12   | 14.13 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.12                                                    |
-| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.5                                                    |
-| 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.6                                                    |
-| 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)              | 24.7                                                    |
-| main   | 24.8 (Vaadin 24.8 preparations)                                         | 24.8                                                    |
+| Branch | [Platform Version](https://github.com/vaadin/platform/releases) | [Flow Version](https://github.com/vaadin/flow/releases) |
+|--------|-----------------------------------------------------------------|---------------------------------------------------------|
+| 1.0    | 10 (Commercial support)                                         | 1.0                                                     |
+| 2.13   | 14.14 (LATEST commercial with Java 8+ support and Servlet 3)    | 2.13                                                    |
+| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)    | 23.5                                                    |
+| 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)   | 24.6                                                    |
+| 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)      | 24.7                                                    |
+| main   | 24.8 (Vaadin 24.8 preparations)                                 | 24.8                                                    |
 
 
 Setting up Eclipse to Develop Flow
