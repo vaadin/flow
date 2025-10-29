@@ -55,10 +55,6 @@ public class ElementAttributeMap extends NodeMap {
 
     private Map<String, Registration> pendingRegistrations;
 
-    private Map<String, Signal<String>> attributeToSignalCache;
-
-    private Map<Signal<String>, Registration> attributeSignalToRegistrationCache;
-
     /**
      * Creates a new element attribute map for the given node.
      *
@@ -99,23 +95,28 @@ public class ElementAttributeMap extends NodeMap {
      */
     public void bindSignal(Element owner, String attribute,
             Signal<String> signal) {
-        ensureSignalCache();
-        var previousSignal = attributeToSignalCache.get(attribute);
-        if (signal != null && previousSignal != null) {
+        SignalBinding previousSignalBinding;
+        if (super.get(attribute) instanceof SignalBinding binding) {
+            previousSignalBinding = binding;
+        } else {
+            previousSignalBinding = null;
+        }
+        if (signal != null && previousSignalBinding != null
+                && previousSignalBinding.signal() != null) {
             throw new BindingActiveException();
         }
 
         Registration registration = signal != null ? ElementEffect.bind(owner,
                 signal, (element, value) -> doSet(attribute, value)) : null;
-        if (registration != null) {
-            attributeSignalToRegistrationCache.put(signal, registration);
-        }
-        if (signal == null && attributeSignalToRegistrationCache
-                .containsKey(previousSignal)) {
-            attributeSignalToRegistrationCache.remove(previousSignal).remove();
-            attributeToSignalCache.remove(attribute);
+        if (signal == null && previousSignalBinding != null) {
+            if (previousSignalBinding.registration() != null) {
+                previousSignalBinding.registration().remove();
+            }
+            put(attribute, get(attribute), false);
         } else {
-            attributeToSignalCache.put(attribute, signal);
+            put(attribute,
+                    new SignalBinding(signal, registration, get(attribute)),
+                    false);
         }
     }
 
@@ -128,12 +129,20 @@ public class ElementAttributeMap extends NodeMap {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
-        return contains(attribute);
+        if (contains(attribute)) {
+            if (hasSignal(attribute)) {
+                SignalBinding binding = (SignalBinding) super.get(attribute);
+                return binding.value() != null;
+            }
+            return true;
+        }
+        return false;
     }
 
     private boolean hasSignal(String attribute) {
-        return attributeToSignalCache != null
-                && attributeToSignalCache.get(attribute) != null;
+        Serializable value = super.get(attribute);
+        return value instanceof SignalBinding binding
+                && binding.signal() != null;
     }
 
     /**
@@ -165,15 +174,16 @@ public class ElementAttributeMap extends NodeMap {
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
             return (String) value;
-        } else {
-            // If the value is not a string then current impl only uses
-            // JsonNode
-            assert value instanceof JsonNode;
-            JsonNode node = (JsonNode) value;
+        } else if (value instanceof JsonNode node) {
             // The only object which may be set by the current imlp contains
             // "uri" attribute, only this situation is expected here.
             assert node.has(NodeProperties.URI_ATTRIBUTE);
             return node.get(NodeProperties.URI_ATTRIBUTE).asString();
+        } else {
+            // If the value is not a string or JsonNode then current impl only
+            // uses SignalBinding
+            assert value instanceof SignalBinding;
+            return ((SignalBinding) value).value();
         }
     }
 
@@ -302,7 +312,11 @@ public class ElementAttributeMap extends NodeMap {
 
     private void doSet(String attribute, Serializable value) {
         unregisterResource(attribute);
-        if (value == null) {
+        if (hasSignal(attribute)) {
+            SignalBinding binding = (SignalBinding) super.get(attribute);
+            put(attribute, new SignalBinding(binding.signal(),
+                    binding.registration(), (String) value));
+        } else if (value == null) {
             super.remove(attribute);
         } else {
             put(attribute, value);
@@ -326,12 +340,4 @@ public class ElementAttributeMap extends NodeMap {
         return ((StateTree) owner).getUI().getSession();
     }
 
-    private void ensureSignalCache() {
-        if (attributeToSignalCache == null) {
-            attributeToSignalCache = new HashMap<>();
-        }
-        if (attributeSignalToRegistrationCache == null) {
-            attributeSignalToRegistrationCache = new HashMap<>();
-        }
-    }
 }
