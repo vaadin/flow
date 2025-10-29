@@ -6,7 +6,7 @@
     <artifactId>flow-project</artifactId>
     <name>Flow</name>
     <packaging>pom</packaging>
-    <version>23.6-SNAPSHOT</version>
+    <version>23.7-SNAPSHOT</version>
 
     <parent>
         <groupId>com.vaadin</groupId>

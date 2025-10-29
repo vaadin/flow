@@ -18,7 +18,7 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 |--------|-------------------------------------------------------------------------|---------------------------------------------------------|
 | 1.0    | 10 (Commercial support)                                                 | 1.0                                                     |
 | 2.11   | 14.12 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.11                                                    |
-| 23.6   | 23.6 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.6                                                    |
+| 23.7   | 23.7 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.7                                                    |
 | 24.5   | 24.5 (maintained minor release, Java 17+, Jakarta EE 10, Spring-boot 3) | 24.5                                                    |
 | 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.6                                                    |
 | 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)              | 24.7                                                    |

@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>23.6-SNAPSHOT</version>
+        <version>23.7-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-live-reload-mode</artifactId>
     <name>Flow tests for live reload in dev mode</name>
