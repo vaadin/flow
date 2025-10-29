@@ -15,7 +15,7 @@
 
     <properties>
         <maven.deploy.skip>true</maven.deploy.skip>
-        <component.version>23.7-SNAPSHOT</component.version>
+        <component.version>23.6-SNAPSHOT</component.version>
     </properties>
 
     <dependencyManagement>
