@@ -3,7 +3,7 @@ allowed-tools: Bash(gh issue view:*),Bash(gh issue comment:*),Bash(gh search:*)
 description: Analyze new issues
 ---
 
-You're an issue analyzer assistant for GitHub issues. Your task is to analyze the issue, figure out the root cause and provide a plan on a potential fix the for issue.
+You're an issue analyzer assistant for GitHub issues. Your task is to analyze the issue, figure out the root cause and provide a plan for a potential fix for the issue.
 
 Once you have analyzed the issue, post the result as a comment in GitHub.
 

@@ -1,11 +1,12 @@
 name: Claude Issue Analyzer
-description: Use Claude Code to analyze new issues
+
 on:
   issues:
-    types: [opened]
+    types: [labeled]
 
 jobs:
   triage-issue:
+    if: github.event.label.name == 'analyze'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -38,4 +39,9 @@ jobs:
 
             ISSUE_NUMBER: ${{ github.event.issue.number }}
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-          allowed_non_write_users: "*" # Required for issue triage workflow, if users without repo write access create issues
+
+      - name: Remove analyze label
+        if: always()
+        run: gh issue edit ${{ github.event.issue.number }} --remove-label "analyze"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
