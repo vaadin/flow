@@ -31,11 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Map for element property values.
@@ -110,6 +113,45 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public void setProperty(String name, Serializable value) {
         setProperty(name, value, true);
+    }
+
+    /**
+     * Binds the given signal to the given property. <code>null</code> signal
+     * unbinds existing binding.
+     *
+     * @param owner
+     *            the element owning the attribute, not <code>null</code>
+     * @param name
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     */
+    public void bindSignal(Element owner, String name,
+            Signal<? extends Serializable> signal) {
+        SignalBinding previousSignalBinding;
+        if (super.getProperty(name) instanceof SignalBinding binding) {
+            previousSignalBinding = binding;
+        } else {
+            previousSignalBinding = null;
+        }
+        if (signal != null && previousSignalBinding != null
+                && previousSignalBinding.signal() != null) {
+            throw new BindingActiveException();
+        }
+        Registration registration = signal != null
+                ? ElementEffect.bind(owner, signal,
+                        (element, value) -> setProperty(name, value, true))
+                : null;
+        if (signal == null && previousSignalBinding != null) {
+            if (previousSignalBinding.registration() != null) {
+                previousSignalBinding.registration().remove();
+            }
+            put(name, get(name), false);
+        } else {
+            put(name, new SignalBinding(signal, registration, get(name)),
+                    false);
+        }
     }
 
     /**
@@ -189,6 +231,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected Serializable remove(String key) {
+        if (super.hasSignal(key)) {
+            throw new BindingActiveException(
+                    "remove is not allowed while a binding for the given property exists.");
+        }
         Serializable oldValue = super.remove(key);
 
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
