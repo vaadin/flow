@@ -32,7 +32,6 @@ import com.vaadin.flow.server.VaadinServlet;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @FunctionalInterface

@@ -28,7 +28,6 @@ import java.util.List;
  * identified by the provided context.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface ResourceProvider {

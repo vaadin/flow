@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -25,13 +24,13 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import tools.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
 import org.atmosphere.cpr.BroadcastFilterAdapter;
 import org.atmosphere.util.Version;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -241,12 +240,10 @@ public class AtmospherePushConnection
      *            The request body reader
      * @param holder
      *            A holder for a previously received partial message
-     * @return A Reader yielding a complete message or null if the message is
-     *         not yet complete.
-     * @throws IOException
-     *             if an IO error occurred
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
+     * @throws IOException
+     *             if an IO error occurred
      */
     protected static Reader receiveMessage(AtmosphereResource resource,
             Reader reader, FragmentedMessageHolder holder) throws IOException {
@@ -304,6 +301,8 @@ public class AtmospherePushConnection
     }
 
     /**
+     * Gets the UI associated with this connection.
+     *
      * @return the UI associated with this connection.
      */
     protected UI getUI() {
@@ -311,6 +310,8 @@ public class AtmospherePushConnection
     }
 
     /**
+     * Gets the AtmosphereResource associated with this connection.
+     *
      * @return The AtmosphereResource associated with this connection or null if
      *         connection not open.
      */

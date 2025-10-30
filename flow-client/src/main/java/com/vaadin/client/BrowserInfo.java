@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client;
 
 import com.vaadin.flow.shared.BrowserDetails;
@@ -290,7 +289,6 @@ public class BrowserInfo {
      * <p>
      * Note that Internet Explorer 8 and newer will return the document mode so
      * IE8 rendering as IE7 will return 7.
-     * </p>
      *
      * @return The major version of the browser.
      * @deprecated use a parsing library like ua-parser-js to parse the user

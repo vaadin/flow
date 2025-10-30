@@ -181,6 +181,10 @@ function statsExtracterPlugin(): PluginOption {
         path.resolve(themeOptions.frontendGeneratedFolder, 'flow', 'generated-flow-imports.js'),
         generatedImportsSet
       );
+      parseImports(
+        path.resolve(themeOptions.frontendGeneratedFolder, 'app-shell-imports.js'),
+        generatedImportsSet
+      );
       const generatedImports = Array.from(generatedImportsSet).sort();
 
       const frontendFiles: Record<string, string> = {};

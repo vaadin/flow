@@ -11,8 +11,7 @@ function createEvent(typeOfEvent, effectAllowed, dropEffect) {
     },
     effectAllowed: effectAllowed,
     dropEffect: dropEffect,
-    setDragImage: function (img) {
-    }
+    setDragImage: function (img) {}
   };
   return event;
 }

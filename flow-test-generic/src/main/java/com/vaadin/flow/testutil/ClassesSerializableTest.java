@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.testutil;
 
 import java.io.ByteArrayInputStream;
@@ -126,7 +125,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandlerManager",
                 "com\\.vaadin\\.flow\\.internal\\.DevModeHandler",
                 "com\\.vaadin\\.flow\\.internal\\.JsonSerializer",
-                "com\\.vaadin\\.flow\\.internal\\.JsonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.JacksonCodec",
                 "com\\.vaadin\\.flow\\.internal\\.JacksonSerializer",
                 "com\\.vaadin\\.flow\\.internal\\.ReflectionCacheHotswapper",
@@ -207,6 +205,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentMetaData(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.ComponentTracker",
                 "com\\.vaadin\\.flow\\.component\\.ComponentEffect",
+                "com\\.vaadin\\.flow\\.dom\\.ElementEffect",
                 "com\\.vaadin\\.flow\\.dom\\.ElementFactory",
                 "com\\.vaadin\\.flow\\.dom\\.NodeVisitor",
                 "com\\.vaadin\\.flow\\.internal\\.nodefeature\\.NodeList(\\$.*)?",

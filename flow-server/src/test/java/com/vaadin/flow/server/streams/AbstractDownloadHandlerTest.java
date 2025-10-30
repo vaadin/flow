@@ -13,14 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +42,6 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 
@@ -63,6 +60,7 @@ public class AbstractDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private ByteArrayOutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -70,7 +68,7 @@ public class AbstractDownloadHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -91,6 +89,7 @@ public class AbstractDownloadHandlerTest {
             public void handleDownloadRequest(DownloadEvent event) {
             }
         };
+        handler.setTransferUI(ui);
         mockContext = Mockito.mock(TransferContext.class);
         Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
@@ -196,6 +195,7 @@ public class AbstractDownloadHandlerTest {
             successAtomic.set(success);
         });
 
+        customHandler.setTransferUI(ui);
         customHandler.handleDownloadRequest(downloadEvent);
 
         Assert.assertTrue(successAtomic.get());

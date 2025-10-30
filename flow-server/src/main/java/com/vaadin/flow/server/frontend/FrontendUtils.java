@@ -42,11 +42,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import tools.jackson.databind.JsonNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
@@ -85,7 +85,7 @@ public class FrontendUtils {
     /**
      * Default folder for the node related content. It's the base directory for
      * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
-     *
+     * <p>
      * By default it's the project root folder.
      */
     public static final String DEFAULT_NODE_DIR = "./";
@@ -111,7 +111,7 @@ public class FrontendUtils {
     /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
@@ -120,7 +120,7 @@ public class FrontendUtils {
     /**
      * Path of the old folder containing application frontend source files, it
      * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default the old folder is <code>/frontend</code> in the project
      * folder.
      */
@@ -188,6 +188,18 @@ public class FrontendUtils {
 
     public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
     public static final String THEME_IMPORTS_NAME = "theme.js";
+
+    /**
+     * The name of the file that contains application shell imports, such as
+     * style imports for the theme.
+     */
+    public static final String APP_SHELL_IMPORTS_NAME = "app-shell-imports.js";
+
+    /**
+     * The TypeScript definitions for the
+     * {@link FrontendUtils#APP_SHELL_IMPORTS_NAME}
+     */
+    public static final String APP_SHELL_IMPORTS_D_TS_NAME = "app-shell-imports.d.ts";
 
     /**
      * File name of the bootstrap file that is generated in frontend
@@ -260,7 +272,7 @@ public class FrontendUtils {
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
      * folder.
-     *
+     * <p>
      * NOTE: For internal use only.
      */
     public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.folder";
@@ -484,7 +496,6 @@ public class FrontendUtils {
      *         found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
@@ -507,7 +518,6 @@ public class FrontendUtils {
      *         not found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getWebComponentHtmlContent(VaadinService service)
             throws IOException {
@@ -643,35 +653,36 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
-
-        if (legacyDir.exists()) {
-            boolean configParamPointsToLegacyDir = legacyDir.toPath().toString()
-                    .replace("./", "").equals(frontendDir.toPath().toString());
-            if (configParamPointsToLegacyDir) {
-                if (new File(projectRoot, DEFAULT_FRONTEND_DIR).exists()) {
-                    getLogger().warn(
-                            "This project has both default ({}) frontend directory"
-                                    + " and legacy ({})- frontend directory present, and "
-                                    + "'frontendDirectory' parameter points to the legacy directory."
-                                    + "\n\nDefault frontend directory will be ignored.",
-                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
-                }
-                return frontendDir;
-            } else {
-                throw new RuntimeException(
-                        "This project has a legacy fronted directory ("
-                                + LEGACY_FRONTEND_DIR
-                                + ") frontend directory present, but no 'frontendDirectory' "
-                                + "configuration parameter set. "
-                                + "Please set the parameter or move the legacy directory contents "
-                                + "to the default frontend folder ("
-                                + DEFAULT_FRONTEND_DIR + ").");
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
             }
         }
-
-        // Legacy dir does not exist. Use default or custom-set dir.
         return frontendDir;
+    }
+
+    /**
+     * Check for existence of legacy frontend folder and log a warning if it is
+     * present.
+     *
+     * @param projectRoot
+     *            project's root directory
+     */
+    public static void checkLegacyFrontendFolder(Path projectRoot) {
+        if (new File(projectRoot.toString(), LEGACY_FRONTEND_DIR).exists()) {
+            getLogger().warn(
+                    "This project has a legacy frontend directory ({}) "
+                            + "present and it will be used as a fallback. "
+                            + "Support for the legacy directory will be removed "
+                            + "in a future release. Please move its contents to "
+                            + "the default frontend directory ({}), or delete it "
+                            + "if its contents are not needed in the project. "
+                            + "Also remove 'frontendDirectory' parameter that "
+                            + "points to the legacy directory, if present.",
+                    LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        }
     }
 
     /**
@@ -705,6 +716,8 @@ public class FrontendUtils {
      *
      * @param jarImport
      *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
      * @return resource as String or {@code null} if not found
      */
     public static String getJarResourceString(String jarImport,
@@ -754,7 +767,6 @@ public class FrontendUtils {
      *
      * @param configuration
      *            the current deployment configuration
-     *
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
@@ -955,14 +967,14 @@ public class FrontendUtils {
 
     /**
      * Reads input and error stream from the give process asynchronously.
-     *
+     * <p>
      * The method returns a {@link CompletableFuture} that is completed when
      * both the streams are consumed.
-     *
+     * <p>
      * Streams are converted into strings and wrapped into a {@link Pair},
      * mapping input stream into {@link Pair#getFirst()} and error stream into
      * {@link Pair#getSecond()}.
-     *
+     * <p>
      * This method should be mainly used to avoid that {@link Process#waitFor()}
      * hangs indefinitely on some operating systems because process streams are
      * not consumed. See https://github.com/vaadin/flow/issues/15339 for an
@@ -1108,7 +1120,7 @@ public class FrontendUtils {
             return null;
         }
         try {
-            final String versionString = sourceJson.get(pkg).textValue();
+            final String versionString = sourceJson.get(pkg).asString();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(
@@ -1259,6 +1271,8 @@ public class FrontendUtils {
      * Gets the servlet path (excluding the context path) for the servlet used
      * for serving the VAADIN frontend bundle.
      *
+     * @param servletContext
+     *            the servlet context
      * @return the path to the servlet used for the frontend bundle. Empty for a
      *         /* mapping, otherwise always starts with a slash but never ends
      *         with a slash
@@ -1422,6 +1436,8 @@ public class FrontendUtils {
      * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
      * used to get the frontend directory.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
@@ -1437,6 +1453,8 @@ public class FrontendUtils {
      * used to get the frontend directory. Given class finder is used to check
      * the presence of Hilla in a classpath.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @param classFinder
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
@@ -1501,6 +1519,8 @@ public class FrontendUtils {
     /**
      * Is the React module available in the classpath.
      *
+     * @param options
+     *            the build options
      * @return true if the React module is available, false otherwise
      */
     public static boolean isReactModuleAvailable(Options options) {

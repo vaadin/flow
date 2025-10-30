@@ -24,7 +24,6 @@ import com.vaadin.flow.data.binder.Binder.Binding;
  * validator, converter, etc. behavior.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see BindingExceptionHandler
  */

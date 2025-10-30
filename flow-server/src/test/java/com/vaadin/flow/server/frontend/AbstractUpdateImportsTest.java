@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -65,6 +63,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -104,6 +103,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @CssImport("./foo.css")
     public static class FooCssImport2 extends Component {
 
+    }
+
+    @Theme(themeClass = LumoTest.class)
+    @CssImport("./foo.css")
+    public static class ThemeCssImport implements AppShellConfigurator {
     }
 
     protected File tmpRoot;
@@ -353,12 +357,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
-        expectedLines.add(
-                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';");
-        expectedLines.add(
-                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
-        expectedLines.add(
                 "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
         expectedLines.add(
                 "addCssBlock\\(`<style include=\"bar\">\\$\\{\\$css_\\d\\}</style>`\\);");
@@ -376,7 +374,22 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines
                 .add("import 'Frontend/generated/flow/generated-modules-bar';");
 
+        // AppShell and @Theme CSS imports are expected to be generated in
+        // the dedicated file.
+        List<String> expectedAppShellImports = List.of(
+                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';",
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+
         updater.run();
+
+        List<String> appShellImports = updater.getOutput()
+                .get(updater.appShellImports);
+        String appShellOutput = String.join("\n", appShellImports);
+        for (String line : expectedAppShellImports) {
+            Assert.assertTrue(
+                    "\n" + line + " IS NOT FOUND IN: \n" + appShellImports,
+                    Pattern.compile(line).matcher(appShellOutput).find());
+        }
 
         List<String> mergedOutput = updater.getMergedOutput();
         String outputString = String.join("\n", mergedOutput);

@@ -36,6 +36,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.NumericNode;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
@@ -46,10 +47,10 @@ import com.vaadin.signals.SignalCommand.AdoptAsCommand;
 import com.vaadin.signals.SignalCommand.AdoptAtCommand;
 import com.vaadin.signals.SignalCommand.ClearCommand;
 import com.vaadin.signals.SignalCommand.ClearOwnerCommand;
+import com.vaadin.signals.SignalCommand.ConditionCommand;
 import com.vaadin.signals.SignalCommand.IncrementCommand;
 import com.vaadin.signals.SignalCommand.InsertCommand;
 import com.vaadin.signals.SignalCommand.KeyCondition;
-import com.vaadin.signals.SignalCommand.ConditionCommand;
 import com.vaadin.signals.SignalCommand.LastUpdateCondition;
 import com.vaadin.signals.SignalCommand.PositionCondition;
 import com.vaadin.signals.SignalCommand.PutCommand;
@@ -62,8 +63,8 @@ import com.vaadin.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.SignalCommand.ValueCondition;
 import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
+import com.vaadin.signals.impl.CommandResult.Reject;
 
 /**
  * A tree revision that can be mutated by applying signal commands.

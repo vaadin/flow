@@ -20,7 +20,6 @@ import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.DataProvider;
 import com.vaadin.flow.data.provider.FilterUtils;
-import com.vaadin.flow.data.provider.InMemoryDataProvider;
 import com.vaadin.flow.data.provider.Query;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.HierarchialConfigurableFilterDataProviderWrapper;
 import com.vaadin.flow.data.provider.hierarchy.HierarchicalFilterUtils.HierarchicalFilterDataProviderWrapper;

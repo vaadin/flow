@@ -120,7 +120,7 @@ public class Input extends AbstractSinglePropertyField<Input, String>
 
     /**
      * {@inheritDoc}
-     * <p>
+     *
      * The default value is {@link HasValueChangeMode#DEFAULT_CHANGE_TIMEOUT}.
      */
     @Override

@@ -15,6 +15,15 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import jakarta.servlet.ServletContext;
+import jakarta.websocket.CloseReason;
+import jakarta.websocket.DeploymentException;
+import jakarta.websocket.Endpoint;
+import jakarta.websocket.EndpointConfig;
+import jakarta.websocket.Session;
+import jakarta.websocket.server.ServerContainer;
+import jakarta.websocket.server.ServerEndpointConfig;
+
 import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,15 +36,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.base.devserver.ViteHandler;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-
-import jakarta.servlet.ServletContext;
-import jakarta.websocket.CloseReason;
-import jakarta.websocket.DeploymentException;
-import jakarta.websocket.Endpoint;
-import jakarta.websocket.EndpointConfig;
-import jakarta.websocket.Session;
-import jakarta.websocket.server.ServerContainer;
-import jakarta.websocket.server.ServerEndpointConfig;
 
 /**
  * The websocket endpoint for Vite.

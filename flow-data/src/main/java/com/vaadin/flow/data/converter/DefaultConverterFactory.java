@@ -34,7 +34,6 @@ import com.vaadin.flow.internal.ReflectTools;
  * converters defined in {@code com.vaadin.flow.data.converters} package.
  *
  * @author Vaadin Ltd
- * @since
  */
 public enum DefaultConverterFactory implements ConverterFactory {
 

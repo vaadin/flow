@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import java.io.Serializable;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.node.ObjectNode;
 import org.jsoup.nodes.Document;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * A class for exporting {@link UsageStatistics} entries.

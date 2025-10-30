@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import tools.jackson.databind.JsonNode;
@@ -57,7 +56,7 @@ class JsonHelpers {
 
         for (final JsonNode p : arrayNode) {
             if (p != null && p.has(idField)
-                    && id.equals(p.get(idField).asText())) {
+                    && id.equals(p.get(idField).asString())) {
                 return (ObjectNode) p;
             }
         }

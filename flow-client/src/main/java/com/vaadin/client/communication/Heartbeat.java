@@ -117,6 +117,8 @@ public class Heartbeat {
     }
 
     /**
+     * Gets the heartbeat interval.
+     *
      * @return the interval at which heartbeat requests are sent.
      */
     public int getInterval() {

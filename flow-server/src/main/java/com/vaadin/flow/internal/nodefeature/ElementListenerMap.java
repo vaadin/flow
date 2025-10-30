@@ -29,9 +29,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DebouncePhase;
@@ -352,11 +352,39 @@ public class ElementListenerMap extends NodeMap {
         Collection<DomEventListenerWrapper> wrappers = getWrappers(eventType);
 
         for (DomEventListenerWrapper wrapper : wrappers) {
-            if (wrapper.eventDataExpressions != null) {
-                wrapper.eventDataExpressions.forEach(ensureExpression::apply);
-            }
-
             String filter = wrapper.getFilter();
+
+            // Process event data expressions, handling preventDefault and
+            // stopPropagation specially
+            if (wrapper.eventDataExpressions != null) {
+                for (String expression : wrapper.eventDataExpressions) {
+                    // Check for preventDefault and stopPropagation
+                    if ("event.preventDefault()".equals(expression)) {
+                        if (filter != null && !filter.isEmpty()) {
+                            // If there's a filter, make preventDefault
+                            // conditional
+                            ensureExpression.apply("(" + filter
+                                    + ") && event.preventDefault()");
+                        } else {
+                            // No filter, keep it as is
+                            ensureExpression.apply(expression);
+                        }
+                    } else if ("event.stopPropagation()".equals(expression)) {
+                        if (filter != null && !filter.isEmpty()) {
+                            // If there's a filter, make stopPropagation
+                            // conditional
+                            ensureExpression.apply("(" + filter
+                                    + ") && event.stopPropagation()");
+                        } else {
+                            // No filter, keep it as is
+                            ensureExpression.apply(expression);
+                        }
+                    } else {
+                        // Other expressions, add as is
+                        ensureExpression.apply(expression);
+                    }
+                }
+            }
 
             int timeout = wrapper.debounceTimeout;
             if (timeout > 0 && filter == null) {

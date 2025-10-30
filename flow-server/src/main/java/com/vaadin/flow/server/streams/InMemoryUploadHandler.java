@@ -13,15 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
-
-import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
  * Upload handler for storing the upload in-memory. Data is returned as a
@@ -40,6 +37,7 @@ public class InMemoryUploadHandler
 
     @Override
     public void handleUploadRequest(UploadEvent event) throws IOException {
+        setTransferUI(event.getUI());
         byte[] data;
         try {
             try (InputStream inputStream = event.getInputStream();

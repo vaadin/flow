@@ -469,10 +469,8 @@ public abstract class Component
      * Called when the component is attached to a UI.
      * <p>
      * This method is invoked before the {@link AttachEvent} is fired for the
-     * component.
-     * </p>
-     * Make sure to call <code>super.onAttach</code> when overriding this
-     * method.
+     * component. Make sure to call <code>super.onAttach</code> when overriding
+     * this method.
      *
      * @param attachEvent
      *            the attach event

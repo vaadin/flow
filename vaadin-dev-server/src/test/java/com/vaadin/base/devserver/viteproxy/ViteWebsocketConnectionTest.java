@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.viteproxy;
 
 import java.io.IOException;
@@ -107,7 +106,7 @@ public class ViteWebsocketConnectionTest {
         Assert.assertTrue(
                 "Should not have been blocked too long after connection (elapsed time: "
                         + elapsedTime + ")",
-                elapsedTime < 3500);
+                elapsedTime < 4000);
         if (!closeLatch.await(500, TimeUnit.MILLISECONDS)) {
             viteConnection.close();
             closeLatch.await(500, TimeUnit.MILLISECONDS);

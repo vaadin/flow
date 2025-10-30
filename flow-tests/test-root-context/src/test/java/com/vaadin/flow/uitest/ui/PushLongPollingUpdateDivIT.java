@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testcategory.PushTests;
-
 import org.junit.experimental.categories.Category;
+
+import com.vaadin.flow.testcategory.PushTests;
 
 /**
  * The tests are in the superclass.

@@ -13,11 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URISyntaxException;
@@ -49,6 +47,7 @@ public class ClassDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -57,7 +56,7 @@ public class ClassDownloadHandlerTest {
         session = Mockito.mock(VaadinSession.class);
         service = Mockito.mock(VaadinService.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -139,6 +138,7 @@ public class ClassDownloadHandlerTest {
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -226,7 +226,8 @@ public class ClassDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         DownloadHandler handler = DownloadHandler.forClassResource(
                 this.getClass(), PATH_TO_FILE, "my-download.pdf").inline();
 
@@ -239,6 +240,7 @@ public class ClassDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"my-download.pdf\"");
     }
 }

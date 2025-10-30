@@ -70,7 +70,6 @@ public class ComponentUtil {
      * Registers a component class with a specific HTML tag. This mapping is
      * maintained in a static map and is used primarily during development mode
      * for various component operations like rendering and event handling.
-     * <p>
      *
      * @param tag
      *            The HTML tag associated with the component class.
@@ -457,6 +456,8 @@ public class ComponentUtil {
      * Check if the component has at least one registered listener of the given
      * event type.
      *
+     * @param <T>
+     *            the component event type
      * @param component
      *            the component to which the listener(s) are registered.
      * @param eventType
@@ -472,6 +473,8 @@ public class ComponentUtil {
     /**
      * Returns all listeners that match or extend the given event type.
      *
+     * @param component
+     *            the component from which to get the listeners
      * @param eventType
      *            the component event type
      * @return A collection with all registered listeners for a given event

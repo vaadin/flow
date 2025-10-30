@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>test-lumo-theme</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow Test Theme: Lumo</name>
+  <description>Note that this is different from flow-test-lumo module: it ships a test lumo stylesheet in public resources, whereas flow-test-lumo provides test Lumo class.</description>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
+</project>

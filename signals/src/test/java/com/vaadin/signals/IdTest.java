@@ -15,16 +15,14 @@
  */
 package com.vaadin.signals;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-
-import java.io.IOException;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
-
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class IdTest {
     @Test

@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,6 +37,9 @@ import org.mockito.Mockito;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.ExecutionFailedException;
+
+import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
 public class TaskGenerateTsConfigTest {

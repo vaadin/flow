@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.dom;
 
 import java.io.ByteArrayInputStream;
@@ -29,14 +44,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.BaseJsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
@@ -46,7 +61,6 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -139,6 +153,10 @@ public class ElementJacksonTest extends AbstractNodeTest {
         // ignore shadow root methods
         ignore.add("attachShadow");
         ignore.add("getShadowRoot");
+
+        // ignore signal binding methods
+        ignore.add("bindAttribute");
+        ignore.add("bindText");
 
         assertMethodsReturnType(Element.class, ignore);
     }
@@ -2585,17 +2603,17 @@ public class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2612,17 +2630,17 @@ public class ElementJacksonTest extends AbstractNodeTest {
     @Test
     public void callFunction_delegatesToCallJsFunction() {
         AtomicReference<String> invokedFuction = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult callJsFunction(String functionName,
-                    Serializable... arguments) {
+                    Object... arguments) {
                 String oldExpression = invokedFuction.getAndSet(functionName);
                 Assert.assertNull("There should be no old function name",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Object[] oldParams = invokedParams.getAndSet(arguments);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2647,7 +2665,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         Assert.assertEquals(child, parent.getChild(index));
     }
 
-    private void assertPendingJs(UI ui, String js, Serializable... arguments) {
+    private void assertPendingJs(UI ui, String js, Object... arguments) {
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);

@@ -20,8 +20,6 @@ import jakarta.servlet.ServletException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
@@ -44,7 +42,6 @@ import com.vaadin.flow.server.VaadinServletContext;
  * Spring aware {@link LookupInitializer} implementation.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public class SpringLookupInitializer extends LookupInitializer {

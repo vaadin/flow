@@ -18,7 +18,7 @@
  * This file handles the generation of the '[theme-name].js' to
  * the themes/[theme-name] folder according to properties from 'theme.json'.
  */
-import { globSync } from 'glob';
+import { globSync } from 'node:fs';
 import { resolve, basename } from 'path';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
 import { checkModules } from './theme-copy.js';
@@ -54,7 +54,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   const componentsFilename = 'theme-' + themeName + '.components.generated.js';
   const themeFilename = 'theme-' + themeName + '.generated.js';
 
-  let themeFileContent = "";
+  let themeFileContent = '';
   let globalImportContent = '// When this file is imported, global styles are automatically applied\n';
   let componentsFileContent = '';
   var componentsFiles;
@@ -62,8 +62,10 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   if (autoInjectComponents) {
     componentsFiles = globSync('*.css', {
       cwd: resolve(themeFolder, themeComponentsFolder),
-      nodir: true
-    });
+      withFileTypes: true
+    })
+      .filter((dirent) => !dirent.isDirectory())
+      .map((dirent) => dirent.name);
 
     if (componentsFiles.length > 0) {
       componentsFileContent +=
@@ -109,7 +111,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
   let filename = basename(styles);
   let variable = camelCase(filename);
 
-  if(themeProperties.lumoImports) {
+  if (themeProperties.lumoImports) {
     imports.push(`import lumoUtil from '@vaadin/vaadin-lumo-styles/utility.css?inline';\n`);
     shadowOnlyCss.push(`removers.push(injectGlobalCss(lumoUtil.toString(), '', target));\n    `);
   }
@@ -196,7 +198,7 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
 
   themeFileContent += imports.join('');
 
-  if(themeProperties.lumoImports) {
+  if (themeProperties.lumoImports) {
     themeFileContent += `if(!document.getElementById("lumoUtil")) {
       const styleTag = document.createElement('style');
       styleTag.type = 'text/css';
@@ -217,7 +219,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
     const removers = [];
     if (target !== document) {
       ${shadowOnlyCss.join('')}
-      ${autoInjectGlobalCssImports ? `
+      ${
+        autoInjectGlobalCssImports
+          ? `
         webcomponentGlobalCssInjector((css) => {
           removers.push(injectGlobalCss(css, '', target));
           if(fontFaceRegex.test(css)) {
@@ -227,7 +231,9 @@ function writeThemeFiles(themeFolder, themeName, themeProperties, options) {
             });
           }
         });
-        ` : ''}
+        `
+          : ''
+      }
     }
     ${parentTheme}
     ${globalCssCode.join('')}

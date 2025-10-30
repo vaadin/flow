@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui.scroll;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ScrollableViewIT extends ChromeBrowserTest {
 

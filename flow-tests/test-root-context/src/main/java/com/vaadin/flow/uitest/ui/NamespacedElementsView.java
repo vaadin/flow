@@ -16,16 +16,9 @@
 package com.vaadin.flow.uitest.ui;
 
 import com.vaadin.flow.component.html.Paragraph;
-import java.util.Set;
-
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementFactory;
-import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-
-import elemental.json.JsonObject;
 
 @Route(value = "com.vaadin.flow.uitest.ui.NamespacedElementsView", layout = ViewTestLayout.class)
 public class NamespacedElementsView extends AbstractDivView {

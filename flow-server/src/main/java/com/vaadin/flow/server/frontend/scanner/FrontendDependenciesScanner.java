@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -33,7 +31,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface FrontendDependenciesScanner extends Serializable {
 
@@ -48,7 +45,6 @@ public interface FrontendDependenciesScanner extends Serializable {
         /**
          * Produces scanner implementation based on {@code allDependenciesScan}
          * value.
-         * <p>
          *
          * @param allDependenciesScan
          *            if {@code true} then full classpath scanning strategy is

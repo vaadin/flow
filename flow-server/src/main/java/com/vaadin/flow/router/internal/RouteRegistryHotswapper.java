@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router.internal;
 
 import java.util.HashSet;
@@ -35,12 +34,10 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * A component that reacts on class changes to update route registries.
  * <p>
- * </p>
  * This class is meant to be used in combination wit Flow
  * {@link com.vaadin.flow.hotswap.Hotswapper} to immediately update routes
  * registries when classes have been added or modified.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 24.5
@@ -50,7 +47,7 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
     /**
      * Updates both application registry, to reflect provided class changes.
      * <p>
-     * </p>
+     *
      * For modified route classes, the following changes are taken into account:
      * <ul>
      * <li>{@link Route} annotation removed: the previous route is removed from

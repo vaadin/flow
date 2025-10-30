@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Internal utility class for URL handling.
@@ -65,6 +64,7 @@ public class UrlUtil {
      *
      * @param uri
      *            the uri to encode
+     * @return the encoded URI
      */
     public static String encodeURI(String uri) {
         try {
@@ -91,6 +91,7 @@ public class UrlUtil {
      *
      * @param path
      *            the path to encode
+     * @return the encoded path
      */
     public static String encodeURIComponent(String path) {
         try {

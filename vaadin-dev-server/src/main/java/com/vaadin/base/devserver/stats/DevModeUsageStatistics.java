@@ -13,16 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.time.Instant;
 
-import tools.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.base.devserver.ServerInfo;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 import com.vaadin.pro.licensechecker.MachineId;
 
@@ -35,7 +39,6 @@ import com.vaadin.pro.licensechecker.MachineId;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DevModeUsageStatistics {
 
@@ -86,6 +89,32 @@ public class DevModeUsageStatistics {
             StatisticsStorage storage, StatisticsSender sender) {
 
         getLogger().debug("Telemetry enabled");
+
+        final Path statisticDirPath = storage.getUsageStatisticsFile()
+                .getParentFile().toPath();
+        final Path firstSeenPath = statisticDirPath
+                .resolve("telemetry-notice-seen.txt");
+        if (!Files.exists(firstSeenPath)) {
+            // Inspired by
+            // https://learn.microsoft.com/en-us/dotnet/core/tools/telemetry#disclosure
+            getLogger().info("Telemetry");
+            getLogger().info("---------");
+            getLogger().info(
+                    "Vaadin collects usage data in order to help us improve your experience. "
+                            + "You can opt-out of telemetry by setting the {} environment variable value to 'false'.",
+                    Constants.VAADIN_USAGE_STATS_ENABLED);
+            getLogger().info(
+                    "Read more about Vaadin telemetry at https://vaadin.com/docs/latest/flow/configuration/development-mode#usage-statistics");
+
+            try {
+                Files.createDirectories(statisticDirPath);
+                Files.writeString(firstSeenPath, Instant.now().toString());
+            } catch (IOException ioe) {
+                getLogger().warn(
+                        "Failed to create telemetry notice first seen file",
+                        ioe);
+            }
+        }
 
         storage.access(() -> {
             instance = new DevModeUsageStatistics(projectFolder, storage);

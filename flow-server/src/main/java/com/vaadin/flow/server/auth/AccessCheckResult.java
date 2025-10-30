@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import java.io.Serializable;
@@ -109,7 +108,7 @@ public class AccessCheckResult implements Serializable {
     /**
      * Create a result instance for the provided decision and reason.
      * <p>
-     * </p>
+     *
      * The {@code reason} cannot be {@literal null} for
      * {@link AccessCheckDecision#DENY} and {@link AccessCheckDecision#REJECT}.
      * For {@link AccessCheckDecision#ALLOW} the reason is ignored.

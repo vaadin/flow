@@ -19,11 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.io.FileUtils;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.pro.licensechecker.Product;
-
-import tools.jackson.databind.JsonNode;
-import org.apache.commons.io.FileUtils;
 
 /** Utilities for commercial product handling. */
 public class CvdlProducts {
@@ -38,6 +38,8 @@ public class CvdlProducts {
      *            the node modules folder
      * @param npmModule
      *            the name of the npm module to check
+     * @return product information if the npm module is a commercial component,
+     *         or {@code null} otherwise
      */
     public static Product getProductIfCvdl(File nodeModules, String npmModule) {
         File packageJsonFile = new File(new File(nodeModules, npmModule),
@@ -50,9 +52,8 @@ public class CvdlProducts {
             JsonNode packageJson = JacksonUtils.readTree(FileUtils
                     .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
             if (packageJson.has(CVDL_PACKAGE_KEY)) {
-                return new Product(
-                        packageJson.get(CVDL_PACKAGE_KEY).textValue(),
-                        packageJson.get("version").textValue());
+                return new Product(packageJson.get(CVDL_PACKAGE_KEY).asString(),
+                        packageJson.get("version").asString());
             }
             return null;
         } catch (IOException e) {

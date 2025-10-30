@@ -1,6 +1,6 @@
 /// <reference lib="webworker" />
 
-self.__WB_DISABLE_DEV_LOGS = true; 
+self.__WB_DISABLE_DEV_LOGS = true;
 
 importScripts('sw-runtime-resources-precache.js');
 import { clientsClaim, cacheNames, WorkboxPlugin } from 'workbox-core';
@@ -23,12 +23,12 @@ declare var OFFLINE_PATH: string; // defined by Webpack/Vite
 declare global {
   interface ImportMeta {
     readonly env: {
-      readonly MODE: string,
-      readonly BASE_URL: string,
-      readonly PROD: boolean,
-      readonly DEV: boolean,
-      readonly SSR: boolean,
-    } & Readonly<Record<string, string>>,
+      readonly MODE: string;
+      readonly BASE_URL: string;
+      readonly PROD: boolean;
+      readonly DEV: boolean;
+      readonly SSR: boolean;
+    } & Readonly<Record<string, string>>;
   }
 }
 
@@ -39,7 +39,7 @@ let manifestEntries: PrecacheEntry[] = self.__WB_MANIFEST || [];
 // may only happen when running in development mode, but after a frontend build
 let hasRootEntry = manifestEntries.findIndex((entry) => entry.url === '.') >= 0;
 if (self.additionalManifestEntries?.length) {
-  manifestEntries.push(...self.additionalManifestEntries.filter( (entry) => entry.url !== '.' || !hasRootEntry));
+  manifestEntries.push(...self.additionalManifestEntries.filter((entry) => entry.url !== '.' || !hasRootEntry));
 }
 
 const offlinePath = OFFLINE_PATH;
@@ -58,7 +58,7 @@ const scope = new URL(self.registration.scope);
 async function rewriteBaseHref(response: Response) {
   const html = await response.text();
   return new Response(html.replace(/<base\s+href=[^>]*>/, `<base href="${self.registration.scope}">`), response);
-};
+}
 
 /**
  * Returns true if the given URL is included in the manifest, otherwise false.
@@ -79,9 +79,9 @@ function checkConnectionPlugin(): WorkboxPlugin {
     },
     async fetchDidSucceed({ response }) {
       connectionLost = false;
-      return response
+      return response;
     }
-  }
+  };
 }
 
 const networkOnly = new NetworkOnly({
@@ -121,7 +121,7 @@ registerRoute(
       }
 
       return serveOfflineFallback();
-    };
+    }
 
     // Try to serve the resource from the cache when offline is detected.
     if (!self.navigator.onLine) {
@@ -176,7 +176,7 @@ async function focusOrOpenWindow() {
   const url = new URL('/', self.location.origin).href;
 
   const allWindows = await self.clients.matchAll({
-    type: 'window',
+    type: 'window'
   });
   const appWindow = allWindows.find((w) => w.url === url);
 

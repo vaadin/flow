@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
@@ -20,8 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
@@ -34,6 +47,8 @@ import org.mockito.InOrder;
 import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -325,9 +340,8 @@ public class BuildFrontendUtilTest {
         JsonNode buildInfoJsonProd = JacksonUtils
                 .readTree(Files.readString(tokenFile.toPath()));
         Assert.assertEquals("Wrong application identifier in token file",
-                "TEST_APP_ID",
-                buildInfoJsonProd.get(InitParameters.APPLICATION_IDENTIFIER)
-                        .textValue());
+                "TEST_APP_ID", buildInfoJsonProd
+                        .get(InitParameters.APPLICATION_IDENTIFIER).asString());
     }
 
     @Test
@@ -708,9 +722,9 @@ public class BuildFrontendUtilTest {
                 .readString(generatedFeatureFlagsFile.toPath())
                 .replace("\r\n", "\n");
 
-        Assert.assertTrue("Example feature should not be set at build time",
+        Assert.assertFalse("Example feature should not be set at build time",
                 featureFlagsJs.contains(
-                        "window.Vaadin.featureFlags.exampleFeatureFlag = false;\n"));
+                        "window.Vaadin.featureFlags.exampleFeatureFlag"));
     }
 
     private void fillAdapter() throws URISyntaxException {

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.provider;
 
 import com.vaadin.flow.function.ValueProvider;
@@ -23,7 +22,6 @@ import com.vaadin.flow.function.ValueProvider;
  *
  * @param <T>
  *            the type of the item
- * @since
  */
 @FunctionalInterface
 public interface IdentifierProvider<T> extends ValueProvider<T, Object> {

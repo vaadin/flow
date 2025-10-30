@@ -12,9 +12,7 @@ const require = createRequire(import.meta.url);
  *
  * @private
  */
-export default function vaadinBundlesPlugin({ nodeModulesFolder }: {
-  nodeModulesFolder: string;
-}): Plugin {
+export default function vaadinBundlesPlugin({ nodeModulesFolder }: { nodeModulesFolder: string }): Plugin {
   type ExportInfo =
     | string
     | {
@@ -99,7 +97,7 @@ export default function vaadinBundlesPlugin({ nodeModulesFolder }: {
       } catch (e: unknown) {
         if (typeof e === 'object' && (e as { code: string }).code === 'MODULE_NOT_FOUND') {
           vaadinBundleJson = { packages: {} };
-          console.info(`@vaadin/bundles npm package is not found, ${disabledMessage}`);
+          console.debug(`@vaadin/bundles npm package is not found, ${disabledMessage}`);
           return false;
         } else {
           throw e;

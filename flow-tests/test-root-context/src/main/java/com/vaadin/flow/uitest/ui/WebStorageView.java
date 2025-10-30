@@ -15,12 +15,13 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.time.LocalDateTime;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.WebStorage;
 import com.vaadin.flow.router.Route;
-import java.time.LocalDateTime;
 
 @Route(value = "com.vaadin.flow.uitest.ui.WebStorageView")
 public class WebStorageView extends Div {

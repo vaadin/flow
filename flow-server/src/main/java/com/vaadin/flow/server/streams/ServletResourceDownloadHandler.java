@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
@@ -76,6 +75,7 @@ public class ServletResourceDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinService service = downloadEvent.getRequest().getService();
         VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
@@ -85,11 +85,10 @@ public class ServletResourceDownloadHandler
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
-                if (!isInline()) {
-                    downloadEvent.setFileName(resourceName);
+                if (isInline()) {
+                    downloadEvent.inline(resourceName);
                 } else {
-                    downloadEvent.getResponse().setHeader("Content-Disposition",
-                            "inline");
+                    downloadEvent.setFileName(resourceName);
                 }
                 TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
