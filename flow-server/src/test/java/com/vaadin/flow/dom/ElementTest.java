@@ -156,6 +156,10 @@ public class ElementTest extends AbstractNodeTest {
         ignore.add("attachShadow");
         ignore.add("getShadowRoot");
 
+        // ignore signal binding methods
+        ignore.add("bindAttribute");
+        ignore.add("bindText");
+
         assertMethodsReturnType(Element.class, ignore);
     }
 

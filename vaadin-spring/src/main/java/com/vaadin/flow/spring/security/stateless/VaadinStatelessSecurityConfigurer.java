@@ -125,7 +125,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(H http) throws Exception {
+    public void init(H http) {
 
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());

@@ -9,6 +9,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
+env:
+  JAVA_VERSION: '21'
+
 permissions:
   contents: read
   pull-requests: write
@@ -31,10 +34,10 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
-      - name: Set up JDK 21
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '21'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
           cache: 'maven'
 
