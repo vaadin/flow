@@ -84,7 +84,7 @@ type DevToolsConf = {
   enable: boolean;
   url: string;
   backend?: string;
-  liveReloadPort: number;
+  liveReloadPort?: number;
   token?: string;
 };
 
@@ -709,7 +709,7 @@ export class VaadinDevTools extends LitElement {
     frontendConnection.onMessage = (message: any) => this.handleFrontendMessage(message);
     this.frontendConnection = frontendConnection;
 
-    if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS) {
+    if (this.conf.backend === VaadinDevTools.SPRING_BOOT_DEVTOOLS && this.conf.liveReloadPort) {
       this.javaConnection = new LiveReloadConnection(this.getSpringBootWebSocketUrl(window.location));
       this.javaConnection.onHandshake = () => {
         if (!VaadinDevTools.isActive) {
