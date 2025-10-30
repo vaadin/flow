@@ -28,11 +28,21 @@ import com.vaadin.flow.internal.NetworkUtil;
 public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
 
     private static final String SPRING_DEVTOOLS_LIVERELOAD_PORT = "spring.devtools.livereload.port";
+    private static final String SPRING_DEVTOOLS_LIVERELOAD_ENABLED = "spring.devtools.livereload.enabled";
     private static final int DEFAULT_PORT = 35729;
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,
             SpringApplication application) {
+        // Only set the port if livereload is enabled (defaults to true when
+        // DevTools is present)
+        boolean liveReloadEnabled = environment.getProperty(
+                SPRING_DEVTOOLS_LIVERELOAD_ENABLED, Boolean.class, true);
+
+        if (!liveReloadEnabled) {
+            return;
+        }
+
         if (environment.getProperty(SPRING_DEVTOOLS_LIVERELOAD_PORT) == null) {
             int reloadPort = DEFAULT_PORT;
             if (!NetworkUtil.isFreePort(reloadPort)) {
