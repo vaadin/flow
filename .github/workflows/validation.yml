@@ -69,12 +69,53 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Run formatter
+      - name: Detect changed files
         if: steps.check-loop.outputs.loop_detected == 'false'
+        id: changed-files
+        run: |
+          # Get the target branch (default to main if not in PR)
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            TARGET_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
+          else
+            TARGET_BRANCH="origin/main"
+          fi
+
+          echo "Fetching target branch: $TARGET_BRANCH"
+          git fetch origin ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.ref || 'main' }} --depth=1
+
+          # Get list of changed Java files
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR $TARGET_BRANCH...HEAD | grep '\.java$' || true)
+          CHANGED_COUNT=$(echo "$CHANGED_FILES" | grep -c '\.java$' || echo "0")
+
+          echo "changed_count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$CHANGED_COUNT" -gt 0 ]; then
+            echo "Changed Java files ($CHANGED_COUNT):"
+            echo "$CHANGED_FILES"
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "No Java files changed, skipping formatter"
+          fi
+
+      - name: Run formatter
+        if: steps.check-loop.outputs.loop_detected == 'false' && steps.changed-files.outputs.changed_count != '0'
         id: formatter
         run: |
-          echo "Running formatter..."
-          mvn -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
+          echo "Running formatter on ${{ steps.changed-files.outputs.changed_count }} changed files..."
+
+          # Get the target branch for ratchetFrom
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            RATCHET_FROM="origin/${{ github.event.pull_request.base.ref }}"
+          else
+            RATCHET_FROM="origin/main"
+          fi
+
+          echo "Using ratchetFrom: $RATCHET_FROM"
+
+          # Run spotless with ratchetFrom to only format changed files
+          mvn -B -q spotless:apply -P benchmark -Dspotless.ratchet.from=$RATCHET_FROM 2>&1 | grep -v null || true
 
           # Check for modified files
           files=$(git status --porcelain | awk '{print $2}')
@@ -92,7 +133,7 @@ jobs:
 
       - name: Commit and push changes
         id: commit-changes
-        if: github.event_name == 'pull_request_target' && steps.check-loop.outputs.loop_detected == 'false' && steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request_target' && steps.check-loop.outputs.loop_detected == 'false' && steps.changed-files.outputs.changed_count != '0' && steps.formatter.outputs.modified != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -155,7 +196,7 @@ jobs:
           exit 1
 
       - name: Fail if formatting issues exist (check-only mode)
-        if: github.event_name != 'pull_request_target' && steps.formatter.outputs.modified != '0'
+        if: github.event_name != 'pull_request_target' && steps.changed-files.outputs.changed_count != '0' && steps.formatter.outputs.modified != '0'
         run: |
           echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
           echo "Please run 'mvn spotless:apply' locally and commit the changes"
