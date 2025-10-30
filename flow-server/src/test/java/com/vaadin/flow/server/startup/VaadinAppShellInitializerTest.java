@@ -208,6 +208,13 @@ public class VaadinAppShellInitializerTest {
     public static class ComponentWithStylesheet extends Component {
     }
 
+    @StyleSheet("./foo1.css")
+    @StyleSheet("./foo2.css")
+    @StyleSheet("./foo3.css")
+    @StyleSheet("./foo4.css")
+    public static class ComponentWithMultipleStylesheet extends Component {
+    }
+
     @StyleSheet("context://my-styles.css")
     @StyleSheet("https://cdn.example.com/ui.css")
     public static class MyAppShellWithStyleSheets
@@ -550,6 +557,13 @@ public class VaadinAppShellInitializerTest {
     @Test
     public void styleSheetOnComponent_notOffending() throws Exception {
         classes.add(ComponentWithStylesheet.class);
+        // Should not throw as @StyleSheet is allowed on Components
+        initializer.process(classes, servletContext);
+    }
+
+    @Test
+    public void multipleStyleSheetOnComponent_notOffending() throws Exception {
+        classes.add(ComponentWithMultipleStylesheet.class);
         // Should not throw as @StyleSheet is allowed on Components
         initializer.process(classes, servletContext);
     }
