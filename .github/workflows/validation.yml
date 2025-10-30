@@ -25,8 +25,7 @@ jobs:
 
   formatter:
     needs: check-permissions
-    if: github.event_name == 'pull_request_target'
-    name: Format and auto-commit
+    name: Format code
     runs-on: ubuntu-latest
     timeout-minutes: 120
     outputs:
@@ -34,6 +33,7 @@ jobs:
 
     steps:
       - name: Check for required token
+        if: github.event_name == 'pull_request_target'
         run: |
           if [ -z "${{ secrets.VAADIN_BOT_TOKEN }}" ]; then
             echo "::error::VAADIN_BOT_TOKEN secret is required for formatter to trigger workflows after committing changes"
@@ -43,9 +43,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          token: ${{ secrets.VAADIN_BOT_TOKEN }}
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ github.event_name == 'pull_request_target' && secrets.VAADIN_BOT_TOKEN || github.token }}
           fetch-depth: 2
 
       - name: Check if last commit was from formatter bot
@@ -92,7 +92,7 @@ jobs:
 
       - name: Commit and push changes
         id: commit-changes
-        if: steps.check-loop.outputs.loop_detected == 'false' && steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request_target' && steps.check-loop.outputs.loop_detected == 'false' && steps.formatter.outputs.modified != '0'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -107,6 +107,7 @@ jobs:
           echo "✅ Formatting changes committed and pushed. Workflow will retrigger automatically." >> $GITHUB_STEP_SUMMARY
 
       - name: Find existing comment
+        if: github.event_name == 'pull_request_target'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:
@@ -115,7 +116,7 @@ jobs:
           body-includes: '<!-- tc-formatter -->'
 
       - name: Create or update comment for committed changes
-        if: steps.formatter.outputs.modified != '0'
+        if: github.event_name == 'pull_request_target' && steps.formatter.outputs.modified != '0'
         uses: peter-evans/create-or-update-comment@v4
         with:
           comment-id: ${{ steps.find-comment.outputs.comment-id }}
@@ -137,7 +138,7 @@ jobs:
             Please pull the latest changes before continuing work on this branch.
 
       - name: Delete comment if formatting is correct
-        if: steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
+        if: github.event_name == 'pull_request_target' && steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -153,9 +154,16 @@ jobs:
           echo "::notice::Formatting changes committed. Stopping this workflow run. A new workflow will be triggered automatically."
           exit 1
 
+      - name: Fail if formatting issues exist (check-only mode)
+        if: github.event_name != 'pull_request_target' && steps.formatter.outputs.modified != '0'
+        run: |
+          echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
+          echo "Please run 'mvn spotless:apply' locally and commit the changes"
+          exit 1
+
   build:
     needs: [check-permissions, formatter]
-    if: always() && needs.check-permissions.result == 'success' && needs.formatter.result == 'success'
+    if: always() && needs.check-permissions.result == 'success' && (needs.formatter.result == 'success' || needs.formatter.result == 'skipped')
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     outputs:
