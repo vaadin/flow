@@ -19,6 +19,7 @@ TASK OVERVIEW:
    - If a PR number was provided as an argument, use that
    - Otherwise, determine the PR number for the current branch using `gh pr view --json number -q .number`
    - Use `gh pr view <number>` to retrieve the PR details
+   - Use `gh pr view <number> --comments` to read existing comments and discussions
    - Use `gh pr diff <number>` to get the code changes
 
 2. Review the pull request and provide feedback on:
@@ -28,6 +29,7 @@ TASK OVERVIEW:
    - Performance considerations
    - Security concerns
    - Test coverage
+   - Address any questions or concerns raised in existing comments
 
 3. Use the repository's CLAUDE.md for guidance on style and conventions
 
