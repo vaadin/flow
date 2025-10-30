@@ -42,8 +42,8 @@ jobs:
 
       - name: Run dependency update script
         run: |
-          chmod +x scripts/update-frontend-depdendencies.sh
-          ./scripts/update-frontend-depdendencies.sh || true
+          chmod +x scripts/update-frontend-dependencies.sh
+          ./scripts/update-frontend-dependencies.sh
 
       - name: Check if there are changes
         id: check_changes

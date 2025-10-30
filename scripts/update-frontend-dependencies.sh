@@ -25,6 +25,39 @@ do
   popd
 done
 
+# Check for deprecated packages after updates
+echo ""
+echo "Checking for deprecated packages..."
+deprecationFound=false
+
+for a in "$depsFolder"/*
+do
+  pushd $a > /dev/null
+  folderName=$(basename "$a")
+
+  # Run npm-check-updates with --no-deprecated to find deprecated packages
+  deprecatedOutput=$(npx npm-check-updates@18.1.1 --no-deprecated 2>&1)
+
+  # Check if there are any deprecated packages (output will contain package names if found)
+  if echo "$deprecatedOutput" | grep -q "deprecated"; then
+    echo "❌ Deprecated packages found in $folderName:"
+    echo "$deprecatedOutput"
+    deprecationFound=true
+  else
+    echo "✓ No deprecated packages in $folderName"
+  fi
+
+  popd > /dev/null
+done
+
+if [ "$deprecationFound" = true ]; then
+  echo ""
+  echo "ERROR: Deprecated packages detected!"
+  echo "On maintenance branches, deprecated packages cannot be auto-updated to major versions."
+  echo "Please review and update these packages manually."
+  exit 1
+fi
+
 git add "$depsFolder"
 git commit -m "$commitMessage"
 
