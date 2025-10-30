@@ -183,7 +183,7 @@ public class ElementAttributeMap extends NodeMap {
             // If the value is not a string or JsonNode then current impl only
             // uses SignalBinding
             assert value instanceof SignalBinding;
-            return ((SignalBinding) value).value();
+            return (String) ((SignalBinding) value).value();
         }
     }
 

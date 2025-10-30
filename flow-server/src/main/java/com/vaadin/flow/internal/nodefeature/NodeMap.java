@@ -148,7 +148,7 @@ public abstract class NodeMap extends NodeFeature {
     }
 
     record SignalBinding(Signal<String> signal, Registration registration,
-            String value) implements Serializable {
+            Serializable value) implements Serializable {
     }
 
     private Values values;
