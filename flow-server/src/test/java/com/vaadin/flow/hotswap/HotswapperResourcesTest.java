@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
+import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public class HotswapperResourcesTest {
@@ -84,7 +85,9 @@ public class HotswapperResourcesTest {
 
         // Expect BrowserLiveReload.update to be called with relative URL path
         // "styles/app.css"
-        Mockito.verify(liveReload).update("styles/app.css", null);
+        Mockito.verify(liveReload).update(
+                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX + "styles/app.css",
+                null);
         Mockito.verifyNoMoreInteractions(liveReload);
     }
 
