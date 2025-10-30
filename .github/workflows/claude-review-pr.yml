@@ -1,12 +1,14 @@
 name: Claude Code Review
 
 on:
-  pull_request:
-    types: [review_requested]
+  issue_comment:
+    types: [created]
 
 jobs:
   claude-review:
-    if: github.event.requested_reviewer.login == 'claude'
+    if: |
+      github.event.issue.pull_request &&
+      contains(github.event.comment.body, 'Claude review')
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -42,5 +44,5 @@ jobs:
           prompt: |
             ${{ steps.read-command.outputs.command }}
 
-            PR_NUMBER: ${{ github.event.pull_request.number }}
+            PR_NUMBER: ${{ github.event.issue.number }}
 
