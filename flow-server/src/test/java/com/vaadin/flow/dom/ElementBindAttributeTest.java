@@ -335,6 +335,8 @@ public class ElementBindAttributeTest {
         signal.value(false);
 
         assertNull(component.getElement().getAttribute("foo"));
+        // expecting whole attribute to be removed
+        Assert.assertFalse(component.getElement().hasAttribute("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 
