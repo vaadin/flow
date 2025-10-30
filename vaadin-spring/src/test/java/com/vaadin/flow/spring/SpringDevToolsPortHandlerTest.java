@@ -50,8 +50,7 @@ public class SpringDevToolsPortHandlerTest {
         // Assert: port should be set via System.setProperty
         String portProperty = System
                 .getProperty("spring.devtools.livereload.port");
-        Assert.assertNotNull(
-                "Port should be set when livereload is enabled",
+        Assert.assertNotNull("Port should be set when livereload is enabled",
                 portProperty);
 
         // Verify it's a valid port number
@@ -81,8 +80,7 @@ public class SpringDevToolsPortHandlerTest {
         // Assert: port should NOT be set
         String portProperty = System
                 .getProperty("spring.devtools.livereload.port");
-        Assert.assertNull(
-                "Port should not be set when livereload is disabled",
+        Assert.assertNull("Port should not be set when livereload is disabled",
                 portProperty);
     }
 }
