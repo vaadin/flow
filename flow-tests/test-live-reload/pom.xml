@@ -58,6 +58,10 @@
           <webApp>
             <!-- use a non-root context -->
             <contextPath>/context</contextPath>
+            <!-- Make sure CSS in target folder are loaded by Jetty -->
+            <resourceBases>
+              <resouceBase>${project.build.outputDirectory}/META-INF/resources</resouceBase>
+            </resourceBases>
           </webApp>
         </configuration>
       </plugin>

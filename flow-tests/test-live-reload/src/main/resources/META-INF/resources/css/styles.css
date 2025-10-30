@@ -12,16 +12,12 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
+ *
  */
-package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.server.PWA;
-import com.vaadin.flow.theme.Theme;
+@import 'imported.css';
 
-@PWA(name = "Live Reload View", shortName = "live-reload-view")
-@Theme("mytheme")
-@StyleSheet("context://css/styles.css")
-public class AppShell implements AppShellConfigurator {
+DIV.appshell-style {
+  background-color: rgb(139, 0, 139); /* limegreen */
+  color: white;
 }

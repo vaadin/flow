@@ -176,6 +176,7 @@ public class AppShellRegistry implements Serializable {
         // StyleSheet is allowed on Components; do not treat it as an
         // AppShell-only annotation
         validOnlyForAppShell.remove(StyleSheet.class);
+        validOnlyForAppShell.remove(StyleSheet.Container.class);
         if (WebComponentExporter.class.isAssignableFrom(clz)) {
             // Webcomponent exporter should have the theme annotation
             // and Push annotation as it is not appShell configured.
