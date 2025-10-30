@@ -37,9 +37,9 @@ public class SpringDevToolsPortHandlerTest {
 
     @Test
     public void liveReloadEnabled_portIsAssigned() {
-        // Arrange: livereload enabled (default), no port set
+        // Arrange: livereload explicitly enabled, no port set
         Mockito.when(environment.getProperty(
-                "spring.devtools.livereload.enabled", Boolean.class, true))
+                "spring.devtools.livereload.enabled", Boolean.class, false))
                 .thenReturn(true);
         Mockito.when(environment.getProperty("spring.devtools.livereload.port"))
                 .thenReturn(null);
@@ -66,7 +66,7 @@ public class SpringDevToolsPortHandlerTest {
     public void liveReloadDisabled_portIsNotAssigned() {
         // Arrange: livereload explicitly disabled, no port set
         Mockito.when(environment.getProperty(
-                "spring.devtools.livereload.enabled", Boolean.class, true))
+                "spring.devtools.livereload.enabled", Boolean.class, false))
                 .thenReturn(false);
         Mockito.when(environment.getProperty("spring.devtools.livereload.port"))
                 .thenReturn(null);
