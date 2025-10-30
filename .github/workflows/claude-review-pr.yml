@@ -8,7 +8,7 @@ jobs:
   claude-review:
     if: |
       github.event.issue.pull_request &&
-      contains(github.event.comment.body, 'Claude review')
+      contains(toLower(github.event.comment.body), 'claude review')
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -39,10 +39,11 @@ jobs:
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           prompt: |
             ${{ steps.read-command.outputs.command }}
 
             PR_NUMBER: ${{ github.event.issue.number }}
-
