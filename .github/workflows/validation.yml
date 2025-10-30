@@ -1,7 +1,7 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '24.8', '24.7', '24.6', '23.6', '23.5']
+    branches: [main, '24.9', '24.8', '24.7', '24.6', '23.6', '23.5']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened, edited]
@@ -14,6 +14,8 @@ env:
   HEAD_REF: ${{ github.head_ref }}
   REF_NAME: ${{ github.ref_name }}
   HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  PR_NUMBER: ${{ github.event.number }}
+  JAVA_VERSION: '11'
 jobs:
   build:
     timeout-minutes: 30
@@ -47,10 +49,10 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -92,10 +94,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{env.HEAD_SHA}}
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '11'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -167,10 +169,10 @@ jobs:
       - uses: oven-sh/setup-bun@v2
         with:
           bun-version: 'latest'
-      - name: Set up JDK 17
+      - name: Set up JDK
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
+          java-version: "${{ env.JAVA_VERSION }}"
           distribution: 'temurin'
       - name: Set up Maven
         uses: stCarolas/setup-maven@v5
@@ -270,3 +272,101 @@ jobs:
         run: |
             echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
+  api-diff-labeling:
+    if: github.event_name == 'pull_request_target'
+    timeout-minutes: 10
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{env.HEAD_SHA}}
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v5
+        with:
+          maven-version: 3.9.2
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.m2/repository
+            !~/.m2/repository/com/vaadin
+          key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
+          restore-keys: ${{ runner.os }}-maven-
+      - name: Determine base version
+        id: base-version
+        run: |
+          baseVersion=$(mvn -N -q -DforceStdout  help:evaluate -Dexpression='project.version')
+          echo "Base API Version: ${baseVersion}"
+          echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
+      - name: Use temporary flow version
+        run: |
+          mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
+      - name: Calculate API version difference
+        run: |
+          mvn clean install -B -ntp -e -V -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+      - name: Move API diff results
+        run: |
+          #!/bin/bash
+          mkdir -p apidiff
+          mv flow-server/target/japicmp apidiff/flow-server
+          mv flow-data/target/japicmp apidiff/flow-data
+          mv flow-html-components/target/japicmp apidiff/flow-html-components
+          mv vaadin-spring/target/japicmp apidiff/vaadin-spring
+      - name: Upload API diff artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apidiff-reports
+          path: apidiff/
+      - name: Report API DIFF to GitHub
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          #!/bin/bash
+
+          echo "Running API version verification"
+          diff_files=$( find apidiff -name "*.html")
+
+          version_change="0.0.0"
+
+          for file in ${diff_files}
+          do
+              echo "  Verifying file '${file}'..."
+              temp_version_change=$( grep -A 2 "id=\"semver-version\"" ${file} | grep -o [0-9]\.[0-9]\.[0-9] || echo "0.0.0")
+
+              if [[ "${version_change}" < "${temp_version_change}" ]]; then
+                  version_change=${temp_version_change}
+              fi
+          done
+
+          echo "Discovered version change: ${version_change}"
+
+          # Get current labels
+          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels --jq '.[].name')
+
+          # Check if version change label already exists
+          if echo "${current_labels}" | grep -q "+${version_change}"; then
+              echo "Discovered version change '${version_change}' is already labeled, no need to update"
+          else
+              echo "Updating version change label to +${version_change}"
+
+              # Remove existing version labels
+              for tlabel in '+0.0.1' '+0.1.0' '+1.0.0'; do
+                  if echo "${current_labels}" | grep -q "${tlabel}" && [[ "${version_change}" != "${tlabel##+}" ]]; then
+                      echo "Removing label ${tlabel}"
+                      gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels/"${tlabel}" -X DELETE || true
+                  fi
+              done
+
+              # Add new version label
+              gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels \
+                -f labels[]="+${version_change}" \
+                --method POST
+          fi
