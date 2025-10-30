@@ -42,6 +42,8 @@ jobs:
 
       - name: Remove analyze label
         if: always()
-        run: gh issue edit ${{ github.event.issue.number }} --remove-label "analyze"
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --remove-label "analyze" || \
+          echo "Warning: Failed to remove analyze label"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

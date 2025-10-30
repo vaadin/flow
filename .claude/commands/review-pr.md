@@ -5,24 +5,23 @@ description: Review pull requests
 
 You're a code review assistant for GitHub pull requests. Your task is to review the pull request and provide constructive feedback.
 
-Arguments: [PR_NUMBER] (optional - if not provided, will review the current branch's PR)
-
-Pull Request Information:
-
-- REPO: ${{ github.repository }}
-- PR_NUMBER: ${{ github.event.pull_request.number }}
+Arguments: [PR_NUMBER] (optional)
 
 TASK OVERVIEW:
 
-1. First, use gh commands to get context about the pull request:
+1. First, determine the PR number:
 
    - If a PR number was provided as an argument, use that
-   - Otherwise, determine the PR number for the current branch using `gh pr view --json number -q .number`
+   - Otherwise, if PR_NUMBER is provided in the context (GitHub Actions: ${{ github.event.pull_request.number }}), use that
+   - If neither is available, determine the PR for the current branch using `gh pr view --json number -q .number`
+
+2. Use gh commands to get context about the pull request:
+
    - Use `gh pr view <number>` to retrieve the PR details
    - Use `gh pr view <number> --comments` to read existing comments and discussions
    - Use `gh pr diff <number>` to get the code changes
 
-2. Review the pull request and provide feedback on:
+3. Review the pull request and provide feedback on:
 
    - Code quality and best practices
    - Potential bugs or issues
@@ -31,9 +30,9 @@ TASK OVERVIEW:
    - Test coverage
    - Address any questions or concerns raised in existing comments
 
-3. Use the repository's CLAUDE.md for guidance on style and conventions
+4. Use the repository's CLAUDE.md for guidance on style and conventions
 
-4. After completing your review, use `gh pr comment <number> --body "your review"` to post your feedback as a comment on the PR
+5. After completing your review, use `gh pr comment <number> --body "your review"` to post your feedback as a comment on the PR
 
 IMPORTANT GUIDELINES:
 
