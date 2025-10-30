@@ -1898,61 +1898,13 @@ public class Element extends Node<Element> {
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
-        // Delegate to new varargs method
-        if (scrollOptions == null) {
-            return scrollIntoView(new ScrollIntoViewOption[0]);
-        }
+        // for an unknown reason, needs to be called deferred to work on a newly
+        // created element
+        String options = scrollOptions == null ? "" : scrollOptions.toJson();
 
-        // Convert ScrollOptions to ScrollIntoViewOption instances
-        java.util.List<ScrollIntoViewOption> optionsList = new java.util.ArrayList<>();
-
-        // Convert behavior
-        ScrollOptions.Behavior scrollBehavior = scrollOptions.getBehavior();
-        if (scrollBehavior == ScrollOptions.Behavior.SMOOTH) {
-            optionsList.add(ScrollIntoViewOption.Behavior.SMOOTH);
-        } else if (scrollBehavior == ScrollOptions.Behavior.AUTO) {
-            optionsList.add(ScrollIntoViewOption.Behavior.AUTO);
-        }
-
-        // Convert block alignment
-        ScrollOptions.Alignment blockAlign = scrollOptions.getBlock();
-        if (blockAlign != null) {
-            switch (blockAlign) {
-            case START:
-                optionsList.add(ScrollIntoViewOption.Block.START);
-                break;
-            case CENTER:
-                optionsList.add(ScrollIntoViewOption.Block.CENTER);
-                break;
-            case END:
-                optionsList.add(ScrollIntoViewOption.Block.END);
-                break;
-            case NEAREST:
-                optionsList.add(ScrollIntoViewOption.Block.NEAREST);
-                break;
-            }
-        }
-
-        // Convert inline alignment
-        ScrollOptions.Alignment inlineAlign = scrollOptions.getInline();
-        if (inlineAlign != null) {
-            switch (inlineAlign) {
-            case START:
-                optionsList.add(ScrollIntoViewOption.Inline.START);
-                break;
-            case CENTER:
-                optionsList.add(ScrollIntoViewOption.Inline.CENTER);
-                break;
-            case END:
-                optionsList.add(ScrollIntoViewOption.Inline.END);
-                break;
-            case NEAREST:
-                optionsList.add(ScrollIntoViewOption.Inline.NEAREST);
-                break;
-            }
-        }
-
-        return scrollIntoView(optionsList.toArray(new ScrollIntoViewOption[0]));
+        executeJs("var el = this; setTimeout(function() {el.scrollIntoView("
+                + options + ");}, 0);");
+        return getSelf();
     }
 
 }
