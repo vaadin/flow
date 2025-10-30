@@ -32,6 +32,7 @@ import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Abstract element state provider for text nodes. Operations that are not
@@ -57,6 +58,12 @@ public abstract class AbstractTextElementStateProvider
 
     @Override
     public void setAttribute(StateNode node, String attribute, String value) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
         throw new UnsupportedOperationException();
     }
 

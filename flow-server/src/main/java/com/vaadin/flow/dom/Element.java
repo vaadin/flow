@@ -245,6 +245,56 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to a given attribute and keeps the
+     * attribute value synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
+     * <p>
+     * Same rules applies for the attribute name and value from the bound Signal
+     * as in {@link #setAttribute(String, String)}.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set or remove
+     * attribute value manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Binding style or class attribute to a Signal is not supported.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindAttribute("mol", signal);
+     * signal.value("42"); // The element now has attribute mol="42"
+     * </pre>
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setAttribute(String, String)
+     */
+    public void bindAttribute(String attribute, Signal<String> signal) {
+        String validAttribute = validateAttribute(attribute);
+
+        Optional<CustomAttribute> customAttribute = CustomAttribute
+                .get(validAttribute);
+        if (customAttribute.isPresent()) {
+            throw new UnsupportedOperationException(
+                    "Binding style or class attribute to a Signal is not supported.");
+        } else {
+            getStateProvider().bindAttributeSignal(this, validAttribute,
+                    signal);
+        }
+    }
+
+    /**
      * Sets the given attribute to the given value.
      * <p>
      * Attribute names are considered case insensitive and all names will be
@@ -272,7 +322,10 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        String lowerCaseAttribute = validateAttribute(attribute, value);
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        String lowerCaseAttribute = validateAttribute(attribute);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -334,7 +387,10 @@ public class Element extends Node<Element> {
      */
     public Element setAttribute(String attribute,
             AbstractStreamResource resource) {
-        String lowerCaseAttribute = validateAttribute(attribute, resource);
+        String lowerCaseAttribute = validateAttribute(attribute);
+        if (resource == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -1367,7 +1423,7 @@ public class Element extends Node<Element> {
         return getStateProvider().getComponent(getNode());
     }
 
-    private String validateAttribute(String attribute, Object value) {
+    private String validateAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -1377,10 +1433,6 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
                     lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
         }
         return lowerCaseAttribute;
     }
