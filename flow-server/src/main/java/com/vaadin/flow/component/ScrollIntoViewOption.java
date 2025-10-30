@@ -17,6 +17,10 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+
 /**
  * Marker interface for scrollIntoView options.
  * <p>
@@ -29,6 +33,58 @@ import java.io.Serializable;
  * for more information.
  */
 public interface ScrollIntoViewOption extends Serializable {
+
+    /**
+     * Builds an ObjectNode containing the scrollIntoView options for use with
+     * the browser's scrollIntoView() method.
+     * <p>
+     * This method extracts Behavior, Block, and Inline options from the varargs
+     * and builds a JSON object compatible with the browser's
+     * Element.scrollIntoView() API. Returns null if no options are provided.
+     *
+     * @param options
+     *            zero or more scrollIntoView options
+     * @return an ObjectNode with the scrollIntoView options, or null if no
+     *         options are provided
+     */
+    static ObjectNode buildOptions(ScrollIntoViewOption... options) {
+        // Extract options from varargs
+        Behavior behavior = null;
+        Block block = null;
+        Inline inline = null;
+
+        for (ScrollIntoViewOption option : options) {
+            if (option instanceof Behavior) {
+                behavior = (Behavior) option;
+            } else if (option instanceof Block) {
+                block = (Block) option;
+            } else if (option instanceof Inline) {
+                inline = (Inline) option;
+            }
+        }
+
+        // Return null if no options provided
+        if (behavior == null && block == null && inline == null) {
+            return null;
+        }
+
+        // Build options object
+        ObjectNode json = JacksonUtils.createObjectNode();
+
+        if (behavior != null) {
+            json.put("behavior", behavior.getValue());
+        }
+
+        if (block != null) {
+            json.put("block", block.getValue());
+        }
+
+        if (inline != null) {
+            json.put("inline", inline.getValue());
+        }
+
+        return json;
+    }
 
     /**
      * Scroll behavior option for scrollIntoView operations.

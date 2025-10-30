@@ -1872,40 +1872,10 @@ public class Element extends Node<Element> {
      *      docs</a>
      */
     public Element scrollIntoView(ScrollIntoViewOption... options) {
-        // Extract options from varargs
-        ScrollIntoViewOption.Behavior behavior = null;
-        ScrollIntoViewOption.Block block = null;
-        ScrollIntoViewOption.Inline inline = null;
-
-        for (ScrollIntoViewOption option : options) {
-            if (option instanceof ScrollIntoViewOption.Behavior) {
-                behavior = (ScrollIntoViewOption.Behavior) option;
-            } else if (option instanceof ScrollIntoViewOption.Block) {
-                block = (ScrollIntoViewOption.Block) option;
-            } else if (option instanceof ScrollIntoViewOption.Inline) {
-                inline = (ScrollIntoViewOption.Inline) option;
-            }
-        }
-
-        ObjectNode json = null;
-        if (behavior != null || block != null || inline != null) {
-            json = JacksonUtils.createObjectNode();
-
-            if (behavior != null) {
-                json.put("behavior", behavior.getValue());
-            }
-
-            if (block != null) {
-                json.put("block", block.getValue());
-            }
-
-            if (inline != null) {
-                json.put("inline", inline.getValue());
-            }
-        }
+        ObjectNode json = ScrollIntoViewOption.buildOptions(options);
 
         // Use setTimeout to work on newly created elements
-        if (json == null || json.isEmpty()) {
+        if (json == null) {
             executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
         } else {
             executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
