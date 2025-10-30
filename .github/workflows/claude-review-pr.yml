@@ -1,0 +1,45 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [review_requested]
+
+jobs:
+  claude-review:
+    if: github.event.requested_reviewer.login == 'claude'
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Read review-pr command
+        id: read-command
+        run: |
+          # Read the command file and export as output
+          COMMAND_CONTENT=$(cat .claude/commands/review-pr.md)
+          # Use heredoc to preserve multiline content
+          {
+            echo 'command<<EOF'
+            echo "$COMMAND_CONTENT"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          prompt: |
+            ${{ steps.read-command.outputs.command }}
+
+            PR_NUMBER: ${{ github.event.pull_request.number }}
+

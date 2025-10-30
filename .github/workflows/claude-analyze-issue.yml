@@ -1,0 +1,42 @@
+name: Claude Issue Analyzer
+description: Use Claude Code to analyze new issues
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  triage-issue:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Read analyze-issue command
+        id: read-command
+        run: |
+          # Read the command file and export as output
+          COMMAND_CONTENT=$(cat .claude/commands/analyze-issue.md)
+          # Use heredoc to preserve multiline content
+          {
+            echo 'command<<EOF'
+            echo "$COMMAND_CONTENT"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code for Issue Triage
+        uses: anthropics/claude-code-action@main
+        with:
+          prompt: |
+            ${{ steps.read-command.outputs.command }}
+
+            ISSUE_NUMBER: ${{ github.event.issue.number }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          allowed_non_write_users: "*" # Required for issue triage workflow, if users without repo write access create issues
+          github_token: ${{ secrets.GITHUB_TOKEN }}
