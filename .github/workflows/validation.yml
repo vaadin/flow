@@ -69,7 +69,7 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Detect changed files
+      - name: Detect changed files and modules
         if: steps.check-loop.outputs.loop_detected == 'false'
         id: changed-files
         run: |
@@ -95,6 +95,15 @@ jobs:
             echo "changed_files<<EOF" >> $GITHUB_OUTPUT
             echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
             echo "EOF" >> $GITHUB_OUTPUT
+
+            # Detect affected Maven modules
+            # Extract unique module paths from changed files
+            MODULES=$(echo "$CHANGED_FILES" | sed 's|/src/.*||' | sort -u | paste -sd "," -)
+            MODULE_COUNT=$(echo "$MODULES" | tr ',' '\n' | wc -l | xargs)
+
+            echo "Affected modules ($MODULE_COUNT): $MODULES"
+            echo "modules=$MODULES" >> $GITHUB_OUTPUT
+            echo "module_count=$MODULE_COUNT" >> $GITHUB_OUTPUT
           else
             echo "No Java files changed, skipping formatter"
           fi
@@ -103,7 +112,7 @@ jobs:
         if: steps.check-loop.outputs.loop_detected == 'false' && steps.changed-files.outputs.changed_count != '0'
         id: formatter
         run: |
-          echo "Running formatter on ${{ steps.changed-files.outputs.changed_count }} changed files..."
+          echo "Running formatter on ${{ steps.changed-files.outputs.changed_count }} changed files in ${{ steps.changed-files.outputs.module_count }} modules..."
 
           # Get the target branch for ratchetFrom
           if [ "${{ github.event_name }}" = "pull_request_target" ]; then
@@ -114,8 +123,12 @@ jobs:
 
           echo "Using ratchetFrom: $RATCHET_FROM"
 
-          # Run spotless with ratchetFrom to only format changed files
-          mvn -B -q spotless:apply -P benchmark -Dspotless.ratchet.from=$RATCHET_FROM 2>&1 | grep -v null || true
+          # Get the list of modules to format
+          MODULES="${{ steps.changed-files.outputs.modules }}"
+          echo "Formatting modules: $MODULES"
+
+          # Run spotless only on affected modules with ratchetFrom
+          mvn -B -q spotless:apply -pl "$MODULES" -P benchmark -Dspotless.ratchet.from=$RATCHET_FROM 2>&1 | grep -v null || true
 
           # Check for modified files
           files=$(git status --porcelain | awk '{print $2}')
