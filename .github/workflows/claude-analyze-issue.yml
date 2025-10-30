@@ -16,7 +16,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0
+          fetch-depth: 1
 
       - name: Read analyze-issue command
         id: read-command
@@ -31,12 +31,11 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Run Claude Code for Issue Triage
-        uses: anthropics/claude-code-action@main
+        uses: anthropics/claude-code-action@v1
         with:
           prompt: |
             ${{ steps.read-command.outputs.command }}
 
             ISSUE_NUMBER: ${{ github.event.issue.number }}
-          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           allowed_non_write_users: "*" # Required for issue triage workflow, if users without repo write access create issues
-          github_token: ${{ secrets.GITHUB_TOKEN }}
