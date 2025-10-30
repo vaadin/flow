@@ -13,8 +13,6 @@ export class AboutView extends LitElement {
   }
 
   render() {
-    return html`
-      <a href="hello" tabindex="-1" id="navigate-hello">Hello Flow</a>
-    `;
+    return html` <a href="hello" tabindex="-1" id="navigate-hello">Hello Flow</a> `;
   }
 }

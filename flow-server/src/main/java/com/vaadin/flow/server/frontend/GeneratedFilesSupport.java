@@ -27,11 +27,9 @@ import java.util.stream.Collectors;
 /**
  * A helper for tasks to handle generated files.
  * <p>
- * </p>
  * Allow to write file on disk only if the content has not changed. Generated
  * files are tracked and can be fetched by post-processing tasks.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public final class GeneratedFilesSupport {

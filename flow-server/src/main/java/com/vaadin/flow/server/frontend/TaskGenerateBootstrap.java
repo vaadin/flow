@@ -116,6 +116,7 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
+        lines.add("import './app-shell-imports.js';");
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         if (themeDef != null && !"".equals(themeDef.getName())) {
             lines.add("import './theme-" + themeDef.getName()

@@ -117,7 +117,11 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("Requires VaadinSavedRequestAwareAuthenticationSuccessHandler usually installed by VaadinWebSecurity#setLoginView ")
+    @Ignore("""
+                Requires VaadinAwareSecurityContextHolderStrategyConfiguration that
+                in a custom Spring Security configuration without Vaadin helpers might not be imported.
+                Leaving the test here just as a template in case of future improvements.
+            """)
     public void redirect_to_private_view_after_navigation_and_login() {
         open("");
         navigateTo("private", false);

@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>flow-test-live-reload-multimodule-hotdeploy</artifactId>
-        <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-test-live-reload-multimodule-theme-hotdeploy</artifactId>
-    <name>The theme module for a live reload multi module project (hotdeploy)</name>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-live-reload-multimodule-hotdeploy</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-live-reload-multimodule-theme-hotdeploy</artifactId>
 
-    <packaging>jar</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
+  <packaging>jar</packaging>
+  <name>The theme module for a live reload multi module project (hotdeploy)</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
 </project>

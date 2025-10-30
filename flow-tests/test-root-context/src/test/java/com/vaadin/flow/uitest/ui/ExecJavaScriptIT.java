@@ -261,6 +261,75 @@ public class ExecJavaScriptIT extends ChromeBrowserTest {
                 status.getText());
     }
 
+    @Test
+    public void testClientCallableReturnBean() {
+        open();
+
+        getButton("returnBeanButton2").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnBeanResult")));
+        Assert.assertEquals(
+                "Returned Bean: name=ReturnedBean, value=777, active=true",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnBeanStatus")));
+        Assert.assertEquals("Bean returned successfully", status.getText());
+    }
+
+    @Test
+    public void testClientCallableReturnBeanList() {
+        open();
+
+        getButton("returnListButton2").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnListResult")));
+        Assert.assertEquals(
+                "Returned List: [0]: name=ListItem1, value=111, active=true | [1]: name=ListItem2, value=222, active=false | [2]: name=ListItem3, value=333, active=true",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnListStatus")));
+        Assert.assertEquals("List returned successfully", status.getText());
+    }
+
+    @Test
+    public void testClientCallableReturnNestedBean() {
+        open();
+
+        getButton("returnNestedButton2").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnNestedResult")));
+        Assert.assertEquals(
+                "Returned Nested: title=ReturnedNested, simple.name=ReturnedInner, simple.value=999, simple.active=false",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnNestedStatus")));
+        Assert.assertEquals("Nested bean returned successfully",
+                status.getText());
+    }
+
+    @Test
+    public void testClientCallableReturnIntegerList() {
+        open();
+
+        getButton("returnIntegerListButton").click();
+
+        WebElement result = waitUntil(
+                d -> findElement(By.id("returnIntegerListResult")));
+        Assert.assertEquals("Returned Integer List: 100, 200, 300",
+                result.getText());
+
+        WebElement status = waitUntil(
+                d -> findElement(By.id("returnIntegerListStatus")));
+        Assert.assertEquals("Integer list returned successfully",
+                status.getText());
+    }
+
     private WebElement getButton(String id) {
         return findElement(By.id(id));
     }

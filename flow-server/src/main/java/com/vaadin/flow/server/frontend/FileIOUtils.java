@@ -37,6 +37,12 @@ import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class for file I/O operations, including conditional file writing,
+ * file searching, and content comparison.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class FileIOUtils {
 
     private FileIOUtils() {

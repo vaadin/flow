@@ -31,7 +31,7 @@ import com.vaadin.flow.server.auth.NavigationAccessControl;
  * mechanisms for user retrieval and role checking, when the generic mechanisms
  * do not work.
  * <p>
- * </p>
+ *
  * In Spring Boot application, a {@link SpringNavigationAccessControl} is
  * provided by default, but its behavior can be configured by defining a
  * {@link NavigationAccessControlConfigurer} bean.

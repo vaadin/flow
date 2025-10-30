@@ -102,14 +102,14 @@ public interface NavigationAccessChecker extends Serializable {
      * {@link NavigationContext#neutral()}.
      *
      * <p>
-     * </p>
+     *
      * The check is performed for both regular navigation and during error
      * handling rerouting. The current phase can be checked with the
      * {@link NavigationContext#isErrorHandling()} flag. The checker
      * implementation can decide to ignore the error handling phase, by
      * returning a {@link NavigationContext#neutral()} result.
      * <p>
-     * </p>
+     *
      * Method implementation is not supposed to throw any kind of exception.
      *
      * @param context

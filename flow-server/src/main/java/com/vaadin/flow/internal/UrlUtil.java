@@ -64,6 +64,7 @@ public class UrlUtil {
      *
      * @param uri
      *            the uri to encode
+     * @return the encoded URI
      */
     public static String encodeURI(String uri) {
         try {
@@ -90,6 +91,7 @@ public class UrlUtil {
      *
      * @param path
      *            the path to encode
+     * @return the encoded path
      */
     public static String encodeURIComponent(String path) {
         try {

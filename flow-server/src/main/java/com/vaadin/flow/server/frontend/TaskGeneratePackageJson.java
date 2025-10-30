@@ -47,7 +47,7 @@ public class TaskGeneratePackageJson extends NodeUpdater {
             modified = updateDefaultDependencies(mainContent);
             if (modified) {
                 if (!mainContent.has("type") || !mainContent.get("type")
-                        .textValue().equals("module")) {
+                        .asString().equals("module")) {
                     mainContent.put("type", "module");
                     log().info(
                             """

@@ -40,9 +40,9 @@ import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
-import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
+import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @Configuration
@@ -107,7 +107,7 @@ public class SecurityConfig {
                 .requestMatchers("/home", "/hey/**").permitAll()
                 .requestMatchers("/all-logged-in/**").authenticated());
         // @formatter:on
-        http.with(VaadinSecurityConfigurer.vaadin(), vaadin -> {
+        http.with(vaadin(), vaadin -> {
             if (getLogoutSuccessUrl().equals("/")) {
                 // Test the default url with empty context path
                 vaadin.loginView(LoginView.class);

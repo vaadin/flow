@@ -24,6 +24,12 @@ import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
 
+/**
+ * Request handler for development mode, providing proxy capabilities to the
+ * development server and access to compilation output.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public interface DevModeHandler extends RequestHandler {
 
     /**

@@ -41,6 +41,9 @@ public class BrowserLauncher {
 
     /**
      * Init a launcher for the given context.
+     *
+     * @param context
+     *            the Vaadin context
      */
     public BrowserLauncher(VaadinContext context) {
         this.context = context;
@@ -48,6 +51,9 @@ public class BrowserLauncher {
 
     /**
      * Open the given URL in the default browser.
+     *
+     * @param url
+     *            the URL to open
      */
     public void launchBrowserInDevelopmentMode(String url) {
         if (isLaunched()) {

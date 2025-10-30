@@ -87,6 +87,7 @@ public class ClassDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
@@ -100,11 +101,10 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
-            if (!isInline()) {
-                downloadEvent.setFileName(resourceName);
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.setFileName(resourceName);
             }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());

@@ -32,14 +32,14 @@ import com.vaadin.flow.server.auth.AccessPathChecker;
  * A Spring specific route path access checker that delegates the check to
  * Spring Security.
  * <p>
- * </p>
+ *
  * It is used in combination with
  * {@link com.vaadin.flow.server.auth.RoutePathAccessChecker} to provide
  * path-based security to Flow
  * {@link com.vaadin.flow.server.auth.NavigationAccessControl}.
  *
  * <p>
- * </p>
+ *
  * To enable it, define a {@link NavigationAccessControlConfigurer} bean,
  * configured using
  * {@link NavigationAccessControlConfigurer#withRoutePathAccessChecker()}

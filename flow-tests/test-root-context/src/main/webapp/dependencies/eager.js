@@ -1,6 +1,6 @@
 function attachTestDiv(textContent) {
-  const div = document.createElement("div");
-  div.className = "dependenciesTestWebRes";
+  const div = document.createElement('div');
+  div.className = 'dependenciesTestWebRes';
   div.textContent = textContent;
   const outlet = document.getElementById('outlet') || document.body;
   outlet.appendChild(div);
@@ -16,4 +16,4 @@ window.webResourcesMessages = {
   push: attachTestDiv
 };
 
-attachTestDiv("eager.js");
+attachTestDiv('eager.js');

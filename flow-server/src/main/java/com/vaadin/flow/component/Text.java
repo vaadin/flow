@@ -84,6 +84,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have IDs
      */
     @Override
     public void setId(String id) {
@@ -96,6 +97,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have visibility changed
      */
     @Override
     public void setVisible(boolean visible) {
@@ -111,6 +113,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public void addClassName(String className) {
@@ -125,6 +128,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public boolean removeClassName(String className) {
@@ -140,6 +144,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public void setClassName(String className) {
@@ -155,6 +160,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public void setClassName(String className, boolean set) {
@@ -170,6 +176,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public void addClassNames(String... classNames) {
@@ -184,6 +191,7 @@ public class Text extends Component implements HasText {
      * Always throws an {@link UnsupportedOperationException}.
      *
      * @throws UnsupportedOperationException
+     *             always, as text nodes cannot have class names
      */
     @Override
     public void removeClassNames(String... classNames) {

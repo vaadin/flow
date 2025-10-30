@@ -23,6 +23,17 @@ import com.vaadin.flow.component.Component;
  * Data class for menu item information.
  * <p>
  * Only for read as data is immutable.
+ *
+ * @param title
+ *            the title of the menu item
+ * @param order
+ *            the order of the menu item
+ * @param exclude
+ *            whether the menu item should be excluded
+ * @param icon
+ *            the icon of the menu item
+ * @param menuClass
+ *            the component class associated with this menu item
  */
 public record MenuData(String title, Double order, boolean exclude, String icon,
         Class<? extends Component> menuClass) implements Serializable {

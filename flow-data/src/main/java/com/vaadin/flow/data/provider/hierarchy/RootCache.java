@@ -230,6 +230,10 @@ class RootCache<T> extends Cache<T> {
      *
      * @param <T>
      *            the type of items in the cache
+     * @param cache
+     *            the cache that contains the item
+     * @param index
+     *            the item's local index within the cache
      */
     static record ItemContext<T>(Cache<T> cache,
             int index) implements Serializable {

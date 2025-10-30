@@ -279,7 +279,7 @@ public class ArtifactMatcherTest {
     /**
      * Creates an Artifact instance based on the give coordinates.
      * <p>
-     * </p>
+     *
      *
      * Allowed syntaxes:
      *

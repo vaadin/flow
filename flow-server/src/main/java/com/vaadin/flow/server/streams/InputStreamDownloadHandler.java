@@ -48,6 +48,7 @@ public class InputStreamDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
+        setTransferUI(downloadEvent.getUI());
         DownloadResponse download;
         try {
             download = callback.complete(downloadEvent);
@@ -87,12 +88,12 @@ public class InputStreamDownloadHandler
                 ? getContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
+        downloadEvent.setContentLength(download.getContentLength());
 
-        if (!isInline()) {
-            downloadEvent.setFileName(downloadName);
+        if (isInline()) {
+            downloadEvent.inline(downloadName);
         } else {
-            downloadEvent.getResponse().setHeader("Content-Disposition",
-                    "inline");
+            downloadEvent.setFileName(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();

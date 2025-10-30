@@ -53,9 +53,11 @@ import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -85,7 +87,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class };
+            ReturnChannelMap.class, InertData.class, TextBindingFeature.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -189,7 +191,16 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
         getAttributeFeature(node).set(attribute, value);
+    }
 
+    @Override
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
+        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+                signal);
     }
 
     @Override
@@ -367,7 +378,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         boolean visitDescendants;
         if (payload instanceof JsonNode) {
             JsonNode object = (JsonNode) payload;
-            String type = object.get(NodeProperties.TYPE).asText();
+            String type = object.get(NodeProperties.TYPE).asString();
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);

@@ -34,6 +34,12 @@ import com.vaadin.signals.operations.TransactionOperation;
  */
 public abstract class Transaction {
     /**
+     * Creates a new transaction.
+     */
+    public Transaction() {
+    }
+
+    /**
      * A transaction that applies commands directly to the underlying tree
      * immediately rather than collecting them for an eventual commit operation.
      * Committing and rolling back are no-ops since all commands have already

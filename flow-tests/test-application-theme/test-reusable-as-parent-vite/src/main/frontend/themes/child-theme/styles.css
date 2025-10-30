@@ -1,30 +1,28 @@
-
 @font-face {
-    font-family: 'IBM Plex Mono';
-    font-style: normal;
-    font-weight: 400;
-    src: url("./font/IBMPlexMono-Regular.otf") format("opentype");
-
+  font-family: 'IBM Plex Mono';
+  font-style: normal;
+  font-weight: 400;
+  src: url('./font/IBMPlexMono-Regular.otf') format('opentype');
 }
 
-html, :host {
-    --lumo-body-text-color: #008000;
+html,
+:host {
+  --lumo-body-text-color: #008000;
 }
 
 body {
-    background-image: url("./bg.jpg");
-    font-family: "IBM Plex Mono";
+  background-image: url('./bg.jpg');
+  font-family: 'IBM Plex Mono';
 }
 
 #butterfly {
-    background-image: url("./img/gobo.png");
-    width: 280px;
-    height: 240px;
+  background-image: url('./img/gobo.png');
+  width: 280px;
+  height: 240px;
 }
 
 #octopuss {
-    background-image: url('./img/viking.png');
-    width: 270px;
-    height: 220px;
+  background-image: url('./img/viking.png');
+  width: 270px;
+  height: 220px;
 }
-

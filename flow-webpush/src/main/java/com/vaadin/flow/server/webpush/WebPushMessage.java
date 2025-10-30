@@ -24,6 +24,10 @@ import tools.jackson.databind.node.ObjectNode;
  * Web Push message object containing an information to be shown in the
  * notification.
  *
+ * @param title
+ *            the notification title
+ * @param options
+ *            the notification options as an ObjectNode
  * @since 24.2
  */
 public record WebPushMessage(String title,

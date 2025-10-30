@@ -393,7 +393,13 @@ public class RequestUtil {
                 .orElse(null);
     }
 
-    String getUrlMapping() {
+    /**
+     * Gets the url mapping for the Vaadin servlet.
+     *
+     * @return the url mapping
+     * @see VaadinConfigurationProperties#getUrlMapping()
+     */
+    public String getUrlMapping() {
         return configurationProperties.getUrlMapping();
     }
 
@@ -403,6 +409,8 @@ public class RequestUtil {
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
+     * @param path
+     *            the path to prepend the url mapping to
      * @return the path with prepended url mapping.
      * @see VaadinConfigurationProperties#getUrlMapping()
      */

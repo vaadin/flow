@@ -161,7 +161,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         ObjectNode vaadinVersionsJson = getFilteredVersionsFromResource(
                 vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
         for (String key : JacksonUtils.getKeys(vaadinVersionsJson)) {
-            versionsJson.put(key, vaadinVersionsJson.get(key).textValue());
+            versionsJson.put(key, vaadinVersionsJson.get(key).asString());
         }
 
         return versionsJson;
@@ -246,7 +246,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Clean previously installed plugins
         for (String depKey : JacksonUtils.getKeys(devDependencies)) {
-            String depVersion = devDependencies.get(depKey).textValue();
+            String depVersion = devDependencies.get(depKey).asString();
             if (depKey.startsWith(atVaadinPrefix)
                     && depVersion.startsWith(pluginTargetPrefix)) {
                 devDependencies.remove(depKey);
@@ -324,7 +324,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 return new HashMap<>();
             }
             for (String key : JacksonUtils.getKeys(dependencies)) {
-                map.put(key, dependencies.get(key).textValue());
+                map.put(key, dependencies.get(key).asString());
             }
 
             return map;
@@ -427,7 +427,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         if (vaadinDeps.has(pkg)) {
             if (version == null) {
-                version = vaadinDeps.get(pkg).textValue();
+                version = vaadinDeps.get(pkg).asString();
             }
             return handleExistingVaadinDep(json, pkg, version, vaadinDeps);
         } else {
@@ -448,7 +448,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
-            if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).textValue()
+            if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).asString()
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
@@ -496,7 +496,7 @@ public abstract class NodeUpdater implements FallibleCommand {
              */
         }
         // always update vaadin version to the latest set version
-        if (!version.equals(vaadinDeps.get(pkg).textValue())) {
+        if (!version.equals(vaadinDeps.get(pkg).asString())) {
             vaadinDeps.put(pkg, version);
             updatedVaadinVersionSection = true;
         }
@@ -512,7 +512,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     private static FrontendVersion toVersion(JsonNode json, String key) {
-        return new FrontendVersion(json.get(key).textValue());
+        return new FrontendVersion(json.get(key).asString());
     }
 
     String writePackageFile(JsonNode packageJson) throws IOException {
@@ -581,7 +581,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             for (String key : JacksonUtils.getKeys(packageJsonVersions)) {
                 if (!versionsJson.has(key)) {
                     versionsJson.put(key,
-                            packageJsonVersions.get(key).textValue());
+                            packageJsonVersions.get(key).asString());
                 }
             }
         }
@@ -600,7 +600,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         if (dependencies != null) {
             for (String key : JacksonUtils.getKeys(dependencies)) {
-                versionsJson.put(key, dependencies.get(key).textValue());
+                versionsJson.put(key, dependencies.get(key).asString());
             }
         }
 

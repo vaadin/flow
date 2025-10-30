@@ -50,7 +50,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
         assert invocationJson.has(JsonConstants.RPC_EVENT_TYPE);
 
         String eventType = invocationJson.get(JsonConstants.RPC_EVENT_TYPE)
-                .asText();
+                .asString();
 
         JsonNode eventData = invocationJson.get(JsonConstants.RPC_EVENT_DATA);
         if (eventData == null) {

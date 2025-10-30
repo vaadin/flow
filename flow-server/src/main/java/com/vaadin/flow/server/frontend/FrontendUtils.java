@@ -190,6 +190,18 @@ public class FrontendUtils {
     public static final String THEME_IMPORTS_NAME = "theme.js";
 
     /**
+     * The name of the file that contains application shell imports, such as
+     * style imports for the theme.
+     */
+    public static final String APP_SHELL_IMPORTS_NAME = "app-shell-imports.js";
+
+    /**
+     * The TypeScript definitions for the
+     * {@link FrontendUtils#APP_SHELL_IMPORTS_NAME}
+     */
+    public static final String APP_SHELL_IMPORTS_D_TS_NAME = "app-shell-imports.d.ts";
+
+    /**
      * File name of the bootstrap file that is generated in frontend
      * {@link #GENERATED} folder. The bootstrap file is always executed in a
      * Vaadin app.
@@ -704,6 +716,8 @@ public class FrontendUtils {
      *
      * @param jarImport
      *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
      * @return resource as String or {@code null} if not found
      */
     public static String getJarResourceString(String jarImport,
@@ -1106,7 +1120,7 @@ public class FrontendUtils {
             return null;
         }
         try {
-            final String versionString = sourceJson.get(pkg).textValue();
+            final String versionString = sourceJson.get(pkg).asString();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(
@@ -1257,6 +1271,8 @@ public class FrontendUtils {
      * Gets the servlet path (excluding the context path) for the servlet used
      * for serving the VAADIN frontend bundle.
      *
+     * @param servletContext
+     *            the servlet context
      * @return the path to the servlet used for the frontend bundle. Empty for a
      *         /* mapping, otherwise always starts with a slash but never ends
      *         with a slash
@@ -1420,6 +1436,8 @@ public class FrontendUtils {
      * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
      * used to get the frontend directory.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
@@ -1435,6 +1453,8 @@ public class FrontendUtils {
      * used to get the frontend directory. Given class finder is used to check
      * the presence of Hilla in a classpath.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @param classFinder
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
@@ -1499,6 +1519,8 @@ public class FrontendUtils {
     /**
      * Is the React module available in the classpath.
      *
+     * @param options
+     *            the build options
      * @return true if the React module is available, false otherwise
      */
     public static boolean isReactModuleAvailable(Options options) {

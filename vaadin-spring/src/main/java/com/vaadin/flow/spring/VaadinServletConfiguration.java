@@ -175,6 +175,10 @@ public class VaadinServletConfiguration {
      * Makes an url handler mapping allowing to forward requests from a
      * {@link DispatcherServlet} to {@link VaadinServlet}.
      *
+     * @param environment
+     *            the application environment
+     * @param resourceHandlerMapping
+     *            the resource handler mapping, if available
      * @return an url handler mapping instance which forwards requests to vaadin
      *         servlet
      */

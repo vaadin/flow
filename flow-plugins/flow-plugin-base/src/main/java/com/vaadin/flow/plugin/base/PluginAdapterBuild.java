@@ -99,7 +99,7 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * Checks if the artifact defined by given coordinates is a dependency of
      * the project, present at runtime.
      * <p>
-     * </p>
+     *
      * If the dependency is missing or in invalid scope, the method produces a
      * message containing the necessary instructions to fix the project and
      * notifies the caller by invoking the provided message consumer, if

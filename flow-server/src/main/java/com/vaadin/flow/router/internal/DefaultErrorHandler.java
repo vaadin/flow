@@ -25,7 +25,6 @@ import java.lang.annotation.Target;
  * Marks an HasErrorParameter view as Framework default handler so it can be
  * disregarded if there is a custom view for the same Exception.
  *
- * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)

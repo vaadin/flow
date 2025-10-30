@@ -56,7 +56,7 @@ class JsonHelpers {
 
         for (final JsonNode p : arrayNode) {
             if (p != null && p.has(idField)
-                    && id.equals(p.get(idField).asText())) {
+                    && id.equals(p.get(idField).asString())) {
                 return (ObjectNode) p;
             }
         }

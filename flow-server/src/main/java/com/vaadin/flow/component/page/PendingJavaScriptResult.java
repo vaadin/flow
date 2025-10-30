@@ -94,6 +94,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * Handlers can only be added before the execution has been sent to the
      * browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>
@@ -132,6 +134,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * A handler can only be added before the execution has been sent to the
      * browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>
@@ -159,6 +163,8 @@ public interface PendingJavaScriptResult extends Serializable {
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>

@@ -971,7 +971,6 @@ public class UIInternals implements Serializable {
      * <p>
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
-     * </p>
      *
      * @return the VaadinSession to which the related UI is attached
      */
@@ -1180,7 +1179,7 @@ public class UIInternals implements Serializable {
      * Re-navigates to the current route. Also re-instantiates the route target
      * component, and optionally all layouts in the route chain.
      * <p>
-     * </p>
+     *
      * If modal components are currently defined for the UI, the whole route
      * chain will be refreshed regardless the {@code refreshRouteChain}
      * parameter, because otherwise it would not be possible to preserve the

@@ -81,7 +81,7 @@ export class WebSocketConnection extends Connection {
       this.onHandshake();
     } else if (json.command === 'reload') {
       if (this.status === ConnectionStatus.ACTIVE) {
-        const strategy = json.strategy || 'reload'
+        const strategy = json.strategy || 'reload';
         this.onReload(strategy);
       }
     } else if (json.command === 'update') {

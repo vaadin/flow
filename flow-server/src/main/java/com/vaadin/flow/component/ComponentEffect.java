@@ -25,13 +25,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.impl.Effect;
 
@@ -48,28 +47,13 @@ import com.vaadin.signals.impl.Effect;
  * @since 24.8
  */
 public final class ComponentEffect {
-    private final Runnable effectFunction;
-    private boolean closed = false;
-    private Effect effect = null;
+
+    private ElementEffect elementEffect;
 
     private <C extends Component> ComponentEffect(C owner,
             Runnable effectFunction) {
-        Objects.requireNonNull(owner, "Owner component cannot be null");
-        Objects.requireNonNull(effectFunction,
-                "Effect function cannot be null");
-        this.effectFunction = effectFunction;
-        owner.addAttachListener(attach -> {
-            enableEffect(attach.getSource());
-
-            owner.addDetachListener(detach -> {
-                disableEffect();
-                detach.unregisterListener();
-            });
-        });
-
-        if (owner.isAttached()) {
-            enableEffect(owner);
-        }
+        this.elementEffect = new ElementEffect(owner.getElement(),
+                effectFunction);
     }
 
     /**
@@ -177,7 +161,7 @@ public final class ComponentEffect {
      *
      * ComponentEffect.bindChildren(component, taskList, taskValueSignal -> {
      *     var listItem = new ListItem();
-     *     ComponentEffect.bind(listItem, taskValueSignal, HasText::setText);
+     *     ComponentEffect.bind(listItem, taskValueSignal, HasString::setText);
      *     return listItem;
      * });
      * </pre>
@@ -259,52 +243,9 @@ public final class ComponentEffect {
         validate(context);
     }
 
-    private void enableEffect(Component owner) {
-        if (closed) {
-            return;
-        }
-
-        UI ui = owner.getUI().get();
-
-        Runnable errorHandlingEffectFunction = () -> {
-            try {
-                effectFunction.run();
-            } catch (Exception e) {
-                ui.getSession().getErrorHandler()
-                        .error(new ErrorEvent(e, owner.getElement().getNode()));
-            }
-        };
-
-        assert effect == null;
-        effect = new Effect(errorHandlingEffectFunction, command -> {
-            if (UI.getCurrent() == ui) {
-                // Run immediately if on the same UI
-                command.run();
-            } else {
-                SignalEnvironment.getDefaultEffectDispatcher().execute(() -> {
-                    try {
-                        // Guard against detach while waiting for lock
-                        if (effect != null) {
-                            ui.access(command::run);
-                        }
-                    } catch (UIDetachedException e) {
-                        // Effect was concurrently disabled -> nothing do to
-                    }
-                });
-            }
-        });
-    }
-
-    private void disableEffect() {
-        if (effect != null) {
-            effect.dispose();
-            effect = null;
-        }
-    }
-
     private void close() {
-        disableEffect();
-        closed = true;
+        elementEffect.close();
+        elementEffect = null;
     }
 
     /**
@@ -375,8 +316,13 @@ public final class ComponentEffect {
 
             // Use LinkedList for order
             Element actualChild = remainingChildren.pollFirst();
-            if (!remainingChildrenSet.contains(actualChild)) {
-                continue; // skip children that have been removed already
+            // Skip children that have been removed already
+            while (actualChild != null
+                    && !remainingChildrenSet.contains(actualChild)) {
+                actualChild = remainingChildren.pollFirst();
+            }
+            if (actualChild == null) {
+                continue;
             }
             if (!Objects.equals(actualChild, expectedChild)) {
                 /*

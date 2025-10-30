@@ -447,7 +447,7 @@ public class PolymerPublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertArrayEquals(new String[] { value.get(0).asText() },
+        Assert.assertArrayEquals(new String[] { value.get(0).asString() },
                 component.varArg);
     }
 

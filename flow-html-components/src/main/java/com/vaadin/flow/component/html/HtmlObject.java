@@ -34,7 +34,6 @@ import com.vaadin.flow.server.streams.DownloadHandler;
  * Component representing a <code>&lt;object&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Tag(Tag.OBJECT)
@@ -142,7 +141,7 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -164,7 +163,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -191,7 +190,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -216,7 +215,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -312,7 +311,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
      * value.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other

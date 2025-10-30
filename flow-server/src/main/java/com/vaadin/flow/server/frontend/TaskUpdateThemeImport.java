@@ -43,7 +43,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskUpdateThemeImport
         extends AbstractFileGeneratorFallibleCommand {
