@@ -17,6 +17,10 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+
 /**
  * Marker interface for focus options.
  * <p>
@@ -28,6 +32,52 @@ import java.io.Serializable;
  * for more information.
  */
 public interface FocusOption extends Serializable {
+
+    /**
+     * Builds an ObjectNode containing the focus options for use with the
+     * browser's focus() method.
+     * <p>
+     * This method extracts FocusVisible and PreventScroll options from the
+     * varargs and builds a JSON object compatible with the browser's
+     * HTMLElement.focus() API. Returns null if all options are at their default
+     * values.
+     *
+     * @param options
+     *            zero or more focus options
+     * @return an ObjectNode with the focus options, or null if all options are
+     *         default
+     */
+    static ObjectNode buildOptions(FocusOption... options) {
+        // Extract options from varargs
+        FocusVisible focusVisible = FocusVisible.DEFAULT;
+        PreventScroll preventScroll = PreventScroll.DEFAULT;
+
+        for (FocusOption option : options) {
+            if (option instanceof FocusVisible) {
+                focusVisible = (FocusVisible) option;
+            } else if (option instanceof PreventScroll) {
+                preventScroll = (PreventScroll) option;
+            }
+        }
+
+        // Build options object if any non-default values are specified
+        if (preventScroll == PreventScroll.DEFAULT
+                && focusVisible == FocusVisible.DEFAULT) {
+            return null;
+        }
+
+        ObjectNode json = JacksonUtils.createObjectNode();
+
+        if (preventScroll != PreventScroll.DEFAULT) {
+            json.put("preventScroll", preventScroll == PreventScroll.ENABLED);
+        }
+
+        if (focusVisible != FocusVisible.DEFAULT) {
+            json.put("focusVisible", focusVisible == FocusVisible.VISIBLE);
+        }
+
+        return json;
+    }
 
     /**
      * Focus visibility option for focus operations.

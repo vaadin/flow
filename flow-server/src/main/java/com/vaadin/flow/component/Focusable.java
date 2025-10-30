@@ -17,10 +17,7 @@ package com.vaadin.flow.component;
 
 import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.flow.component.FocusOption.FocusVisible;
-import com.vaadin.flow.component.FocusOption.PreventScroll;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.JacksonUtils;
 
 /**
  * Represents a component that can gain and lose focus.
@@ -137,34 +134,7 @@ public interface Focusable<T extends Component>
      */
     default void focus(FocusOption... options) {
         Element element = getElement();
-
-        // Extract options from varargs
-        FocusVisible focusVisible = FocusVisible.DEFAULT;
-        PreventScroll preventScroll = PreventScroll.DEFAULT;
-
-        for (FocusOption option : options) {
-            if (option instanceof FocusVisible) {
-                focusVisible = (FocusVisible) option;
-            } else if (option instanceof PreventScroll) {
-                preventScroll = (PreventScroll) option;
-            }
-        }
-
-        // Build options object if any non-default values are specified
-        ObjectNode json = null;
-        if (preventScroll != PreventScroll.DEFAULT
-                || focusVisible != FocusVisible.DEFAULT) {
-            json = JacksonUtils.createObjectNode();
-
-            if (preventScroll != PreventScroll.DEFAULT) {
-                json.put("preventScroll",
-                        preventScroll == PreventScroll.ENABLED);
-            }
-
-            if (focusVisible != FocusVisible.DEFAULT) {
-                json.put("focusVisible", focusVisible == FocusVisible.VISIBLE);
-            }
-        }
+        ObjectNode json = FocusOption.buildOptions(options);
 
         if (json == null) {
             // No options, call focus() without arguments
