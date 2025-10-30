@@ -100,7 +100,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
-     * </p>
+     *
      * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
      * or {@link Customizer#withDefaults()} to accept the default values.
      *
@@ -109,6 +109,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @throws Exception
+     *             if an error occurs during configuration
      * @deprecated use
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.
@@ -123,7 +125,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(H http) throws Exception {
+    public void init(H http) {
 
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());

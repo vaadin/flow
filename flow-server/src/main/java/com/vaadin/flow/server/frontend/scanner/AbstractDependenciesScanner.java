@@ -30,7 +30,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 abstract class AbstractDependenciesScanner
         implements FrontendDependenciesScanner {

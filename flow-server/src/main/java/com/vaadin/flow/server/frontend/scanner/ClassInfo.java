@@ -20,6 +20,11 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Holds information about a class and its frontend dependencies.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class ClassInfo {
     String className;
     final LinkedHashSet<String> modules = new LinkedHashSet<>();

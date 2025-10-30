@@ -14,48 +14,45 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>flow-tests</artifactId>
-        <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+  <artifactId>flow-test-npm-only-features</artifactId>
+  <packaging>pom</packaging>
+  <name>Flow npm-only feature tests</name>
+  <modules>
+    <module>test-npm-general</module>
+    <module>test-npm-no-buildmojo</module>
+    <module>test-npm-custom-frontend-directory</module>
+    <module>test-npm-bytecode-scanning/pom-devmode.xml</module>
+    <module>test-npm-bytecode-scanning/pom-production.xml</module>
+    <module>test-npm-performance-regression</module>
+  </modules>
 
-    <artifactId>flow-test-npm-only-features</artifactId>
-    <name>Flow npm-only feature tests</name>
-    <packaging>pom</packaging>
-    <modules>
-        <module>test-npm-general</module>
-        <module>test-npm-no-buildmojo</module>
-        <module>test-npm-custom-frontend-directory</module>
-        <module>test-npm-bytecode-scanning/pom-devmode.xml</module>
-        <module>test-npm-bytecode-scanning/pom-production.xml</module>
-        <module>test-npm-performance-regression</module>
-    </modules>
-
-    <profiles>
-        <profile>
-            <id>productionMode</id>
-            <activation>
-                <property>
-                    <!-- In BrowserStack tests are run on IE11, and transpilation
+  <profiles>
+    <profile>
+      <id>productionMode</id>
+      <activation>
+        <property>
+          <!-- In BrowserStack tests are run on IE11, and transpilation
                         is needed -->
-                    <name>test.use.browserstack</name>
-                    <value>true</value>
-                </property>
-            </activation>
+          <name>test.use.browserstack</name>
+          <value>true</value>
+        </property>
+      </activation>
 
-            <dependencies>
-                <dependency>
-                    <groupId>com.vaadin</groupId>
-                    <artifactId>flow-server-production-mode</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-            </dependencies>
-        </profile>
-    </profiles>
+      <dependencies>
+        <dependency>
+          <groupId>com.vaadin</groupId>
+          <artifactId>flow-server-production-mode</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+      </dependencies>
+    </profile>
+  </profiles>
 </project>

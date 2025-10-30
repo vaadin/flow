@@ -166,3 +166,5 @@ Components extend `Component` and use:
 - Spring Boot 4 integration available
 - Hot reload available in development mode
 - Extensive CI/CD pipeline with multiple test configurations
+- When sending data to executeJS, always pass it as parameters and use $1,$2 etc and never concatenate strings
+- When creating a commit that will resolve an issue in the same repository, add "Fixes #issuenumber" to the commit message

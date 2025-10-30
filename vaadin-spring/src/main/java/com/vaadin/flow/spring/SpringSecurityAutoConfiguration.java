@@ -68,6 +68,8 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control initializer available for
      * security configuration.
      *
+     * @param accessControl
+     *            the navigation access control
      * @return the default navigation access control initializer
      */
     @Bean
@@ -80,6 +82,10 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control available for security
      * configuration.
      *
+     * @param accessCheckerList
+     *            the list of navigation access checkers
+     * @param configurer
+     *            the navigation access control configurer
      * @return the default navigation access control.
      */
     @Bean
@@ -95,11 +101,11 @@ public class SpringSecurityAutoConfiguration {
      * <p>
      * The default configurer only enables annotated view access checker. It is
      * disabled by default for backward compatibility, and it will be enabled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity}.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer}.
      * <p>
      * A custom bean can be provided to override default configuration or to
      * configure navigation access control instance when used without
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity},
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer},
      *
      * @return the default configurer for navigation access control.
      */

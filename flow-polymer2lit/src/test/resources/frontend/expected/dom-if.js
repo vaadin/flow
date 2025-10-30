@@ -1,6 +1,6 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
-import '@vaadin/vaadin-vertical-layout';
+import "@vaadin/vaadin-vertical-layout";
 
 class DomIfTest extends LitElement {
   render() {
@@ -23,7 +23,7 @@ class DomIfTest extends LitElement {
   }
 
   static get is() {
-    return 'dom-if-test';
+    return "dom-if-test";
   }
 }
 

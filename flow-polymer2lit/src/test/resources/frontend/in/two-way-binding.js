@@ -1,4 +1,4 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 
 class TwoWayBinding extends PolymerElement {
   static get template() {
@@ -13,7 +13,12 @@ class TwoWayBinding extends PolymerElement {
           value="{{name}}"
         ></vaadin-text-field>
         <div class="row">
-          <vaadin-combo-box id="statuses" label="Status" items="[[availableStatuses]]" value="{{status}}">
+          <vaadin-combo-box
+            id="statuses"
+            label="Status"
+            items="[[availableStatuses]]"
+            value="{{status}}"
+          >
           </vaadin-combo-box>
         </div>
         <div>Name: {{name}}</div>
@@ -23,11 +28,11 @@ class TwoWayBinding extends PolymerElement {
   }
 
   formUpdated() {
-    console.log('Form updated');
+    console.log("Form updated");
   }
 
   static get is() {
-    return 'two-way-binding';
+    return "two-way-binding";
   }
 }
 

@@ -70,6 +70,17 @@ public interface VaadinResponse {
     void setHeader(String name, String value);
 
     /**
+     * Checks if a response header with the given name has been set.
+     *
+     * @param name
+     *            the name of the header
+     * @return {@code true} if the header has been set, {@code false} otherwise
+     *
+     * @see jakarta.servlet.http.HttpServletResponse#containsHeader(String)
+     */
+    boolean containsHeader(String name);
+
+    /**
      * Properly formats a timestamp as a date header. If the header had already
      * been set, the new value overwrites the previous one.
      *

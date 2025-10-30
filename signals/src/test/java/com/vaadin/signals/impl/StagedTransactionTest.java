@@ -521,7 +521,7 @@ public class StagedTransactionTest {
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("observer"), null);
 
-            String value = TestUtil.readTransactionRootValue(tree).asText();
+            String value = TestUtil.readTransactionRootValue(tree).asString();
             valueInObserver.set(value);
 
             return false;
@@ -534,7 +534,7 @@ public class StagedTransactionTest {
 
         assertEquals("observer", valueInObserver.get());
         assertEquals("observer",
-                TestUtil.readConfirmedRootValue(tree).asText());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test

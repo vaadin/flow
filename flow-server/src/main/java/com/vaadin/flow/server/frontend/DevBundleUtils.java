@@ -39,7 +39,6 @@ public class DevBundleUtils {
 
     /**
      * Finds the given file inside the current development bundle.
-     * <p>
      *
      * @param projectDir
      *            the project root folder
@@ -49,6 +48,8 @@ public class DevBundleUtils {
      *            the file name inside the bundle
      * @return a URL referring to the file inside the bundle or {@code null} if
      *         the file was not found
+     * @throws IOException
+     *             if an I/O error occurs
      */
     public static URL findBundleFile(File projectDir, String buildFolder,
             String filename) throws IOException {

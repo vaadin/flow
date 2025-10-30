@@ -27,6 +27,12 @@ import com.vaadin.signals.impl.SignalTree;
 public class SignalUtils {
 
     /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
+    private SignalUtils() {
+    }
+
+    /**
      * Returns the underlying <code>SignalTree</code> instance of the given
      * signal.
      *

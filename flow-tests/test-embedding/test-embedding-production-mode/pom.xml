@@ -1,82 +1,80 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>test-embedding</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-embedding-production</artifactId>
+  <packaging>war</packaging>
+  <name>Flow Embedding, production tests</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <vaadin.productionMode>true</vaadin.productionMode>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-embedding-test-assets</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-embedding-test-assets</artifactId>
+      <version>${project.version}</version>
+      <classifier>tests</classifier>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-polymer-template</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <dependenciesToScan>com.vaadin:flow-embedding-test-assets</dependenciesToScan>
+        </configuration>
+      </plugin>
+
+      <!-- Run jetty before ITs -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <configuration>
+          <contextHandlers>
+            <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
+              <contextPath>/pages</contextPath>
+              <resourceBases>${project.parent.basedir}/webapp/npm</resourceBases>
+            </contextHandler>
+          </contextHandlers>
+        </configuration>
+      </plugin>
+
+      <plugin>
         <groupId>com.vaadin</groupId>
-        <artifactId>test-embedding</artifactId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-test-embedding-production</artifactId>
-    <name>Flow Embedding, production tests</name>
-    <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.productionMode>true</vaadin.productionMode>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-embedding-test-assets</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-embedding-test-assets</artifactId>
-            <version>${project.version}</version>
-            <scope>test</scope>
-            <classifier>tests</classifier>
-            <type>test-jar</type>
-        </dependency>
-
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-polymer-template</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <configuration>
-                    <dependenciesToScan>com.vaadin:flow-embedding-test-assets</dependenciesToScan>
-                </configuration>
-            </plugin>
-
-            <!-- Run jetty before ITs -->
-            <plugin>
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-maven-plugin</artifactId>
-                <configuration>
-                    <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
-                            <contextPath>/pages</contextPath>
-                            <resourceBases>
-                                ${project.parent.basedir}/webapp/npm
-                            </resourceBases>
-                        </contextHandler>
-                    </contextHandlers>
-                </configuration>
-            </plugin>
-
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>prepare-frontend</goal>
-                            <goal>build-frontend</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
-    </build>
+        <artifactId>flow-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>prepare-frontend</goal>
+              <goal>build-frontend</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

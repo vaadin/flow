@@ -329,7 +329,6 @@ public class Binder<BEAN> implements Serializable {
          * <p>
          * Once set, the value of the field that binding uses will be compared
          * with the initial value for hasChanged.
-         * </p>
          *
          * @return the predicate to use for equality comparison
          */
@@ -846,10 +845,11 @@ public class Binder<BEAN> implements Serializable {
          * fails.
          * <p>
          * The validation state of each field is updated whenever the user
-         * modifies the value of that field.
-         * <p>
-         * This method allows to customize the way a binder displays error
-         * messages.
+         * modifies the value of that field. With this method, possible
+         * validation error message will be shown in the {@code label} provided.
+         * Additionally, the field's invalid state will be updated to provide
+         * visual feedback (e.g., red background) for fields implementing
+         * {@link com.vaadin.flow.component.HasValidation}.
          * <p>
          * This is just a shorthand for
          * {@link #withValidationStatusHandler(BindingValidationStatusHandler)}
@@ -871,6 +871,17 @@ public class Binder<BEAN> implements Serializable {
                 label.setText(status.getMessage().orElse(""));
                 // Only show the label when validation has failed
                 setVisible(label, status.isError());
+
+                // Update the field's invalid state for consistent visual
+                // feedback. Delegates to the binder's error handler which sets
+                // the field invalid and applies error styling.
+                if (status.getBinding() instanceof BindingImpl) {
+                    @SuppressWarnings("unchecked")
+                    BindingImpl<BEAN, ?, TARGET> binding = (BindingImpl<BEAN, ?, TARGET>) status
+                            .getBinding();
+                    Binder<BEAN> binder = binding.getBinder();
+                    binder.handleValidationStatus(status);
+                }
             });
         }
 
@@ -1007,7 +1018,6 @@ public class Binder<BEAN> implements Serializable {
          * be compared with its initial value. If the value of the field is set
          * back to its initial value, it will not be considered as having
          * uncommitted changes.
-         * </p>
          *
          * @param equalityPredicate
          *            the predicate to use for equality comparison
@@ -1884,6 +1894,9 @@ public class Binder<BEAN> implements Serializable {
      * converter to execute its logic until the {@code setIdentity()} method is
      * called. Once the method is called the class changes its behavior to the
      * same as {@link Converter#identity()} behavior.
+     *
+     * @param <FIELDVALUE>
+     *            the field value type
      */
     private static class ConverterDelegate<FIELDVALUE>
             implements Converter<FIELDVALUE, FIELDVALUE> {
@@ -2504,7 +2517,6 @@ public class Binder<BEAN> implements Serializable {
      * If no bean is currently associated with this binder
      * ({@link #setBean(Object)} has not been called before invoking this
      * method), the bound fields will be cleared.
-     * <p>
      *
      * @see #setBean(Object)
      * @see #readBean(Object)
@@ -3139,7 +3151,6 @@ public class Binder<BEAN> implements Serializable {
      * Validates the {@code bean} using validators added using
      * {@link #withValidator(Validator)} and returns the result of the
      * validation as a list of validation results.
-     * <p>
      *
      * @see #withValidator(Validator)
      *

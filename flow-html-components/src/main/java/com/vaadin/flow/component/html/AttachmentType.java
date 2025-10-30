@@ -17,8 +17,7 @@ package com.vaadin.flow.component.html;
 
 /**
  * Mode settings for anchor.
- * <p>
- * </p>
+ *
  * {@link #DOWNLOAD} will set the download attribute to Anchor, where as
  * {@link #INLINE} will remove it.
  */

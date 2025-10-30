@@ -21,7 +21,7 @@ import java.util.stream.Stream;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.data.provider.*;
+import com.vaadin.flow.data.provider.DataProviderListener;
 import com.vaadin.flow.shared.Registration;
 
 public class HierarchicalDataProviderTest {

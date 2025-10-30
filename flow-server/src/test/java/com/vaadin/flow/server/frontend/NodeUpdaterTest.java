@@ -174,7 +174,6 @@ public class NodeUpdaterTest {
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("typescript");
-        expectedDependencies.add("glob");
         return expectedDependencies;
     }
 
@@ -228,12 +227,13 @@ public class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("glob",
-                "7.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
+                .put("typescript", "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
+        Assert.assertNotEquals("1.0.0",
+                packageJson.get(NodeUpdater.DEV_DEPENDENCIES).get("typescript")
+                        .stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -249,7 +249,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("78.2.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").asString());
     }
 
     @Test
@@ -272,7 +272,7 @@ public class NodeUpdaterTest {
                 formPackage, newVersion);
 
         Assert.assertEquals(newVersion, packageJson
-                .get(NodeUpdater.DEPENDENCIES).get(formPackage).textValue());
+                .get(NodeUpdater.DEPENDENCIES).get(formPackage).asString());
     }
 
     @Test

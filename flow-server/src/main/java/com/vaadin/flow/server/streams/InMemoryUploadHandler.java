@@ -37,6 +37,7 @@ public class InMemoryUploadHandler
 
     @Override
     public void handleUploadRequest(UploadEvent event) throws IOException {
+        setTransferUI(event.getUI());
         byte[] data;
         try {
             try (InputStream inputStream = event.getInputStream();

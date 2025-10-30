@@ -303,8 +303,6 @@ public interface DomListenerRegistration extends Registration {
      * Marks that the DOM event of this registration should trigger
      * synchronization for the given property.
      *
-     * @return this registration, for chaining
-     *
      * @param propertyName
      *            the name of the property to synchronize, not <code>null</code>
      *            or <code>""</code>
@@ -499,6 +497,83 @@ public interface DomListenerRegistration extends Registration {
             }
         }
         return null;
+    }
+
+    /**
+     * Adds the {@code event.detail} property to the event data. This is a
+     * convenience method equivalent to {@code addEventData("event.detail")}.
+     * <p>
+     * The {@code event.detail} property is commonly used in custom events to
+     * pass event-specific data. The returned detail object can be retrieved on
+     * the server side using {@link DomEvent#getEventDetail(Class)} or
+     * {@link DomEvent#getEventDetail(TypeReference)}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * record RgbColor(int r, int g, int b) {
+     * }
+     *
+     * element.addEventListener("color-change", e -&gt; {
+     *     RgbColor newValue = e.getEventDetail(RgbColor.class);
+     *     setModelValue(newValue, true);
+     * }).addEventDetail();
+     * </pre>
+     *
+     * @return this registration, for chaining
+     * @see DomEvent#getEventDetail(Class)
+     * @see DomEvent#getEventDetail(TypeReference)
+     */
+    default DomListenerRegistration addEventDetail() {
+        return addEventData("event.detail");
+    }
+
+    /**
+     * Adds specific properties from the {@code event.detail} object to the
+     * event data based on the given class structure. Only the properties
+     * defined in the class will be included, reducing data transfer.
+     * <p>
+     * This method uses Java Bean introspection to discover the properties of
+     * the class and adds event data expressions for each property path within
+     * {@code event.detail}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * record RgbColor(int r, int g, int b) {
+     * }
+     *
+     * element.addEventListener("color-change", e -&gt; {
+     *     RgbColor color = e.getEventDetail(RgbColor.class);
+     *     setModelValue(color, true);
+     * }).addEventDetail(RgbColor.class);
+     * </pre>
+     *
+     * This will add expressions for {@code event.detail.r},
+     * {@code event.detail.g}, and {@code event.detail.b}, rather than sending
+     * the entire {@code event.detail} object.
+     *
+     * @param type
+     *            the class whose properties should be captured from
+     *            event.detail, not <code>null</code>
+     * @return this registration, for chaining
+     * @see DomEvent#getEventDetail(Class)
+     * @see DomEvent#getEventDetail(TypeReference)
+     */
+    default DomListenerRegistration addEventDetail(Class<?> type) {
+        if (type == null) {
+            throw new IllegalArgumentException("Type cannot be null");
+        }
+        try {
+            List<String> propertyPaths = BeanUtil.getBeanPropertyPaths(type);
+            for (String path : propertyPaths) {
+                addEventData("event.detail." + path);
+            }
+        } catch (IntrospectionException e) {
+            throw new IllegalArgumentException(
+                    "Failed to introspect type: " + type.getName(), e);
+        }
+        return this;
     }
 
     /**

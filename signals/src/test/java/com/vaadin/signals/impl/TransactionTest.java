@@ -305,7 +305,7 @@ public class TransactionTest {
 
         List<String> invocations = new ArrayList<>();
         tree.observeNextChange(Id.ZERO, immediate -> {
-            invocations.add(TestUtil.readTransactionRootValue(tree).asText());
+            invocations.add(TestUtil.readTransactionRootValue(tree).asString());
             return true;
         });
 

@@ -300,6 +300,9 @@ public sealed interface SignalCommand {
      *            the newly created node.
      * @param targetNodeId
      *            id of the parent node to update, not <code>null</code>
+     * @param scopeOwner
+     *            the id of the external owner of the created node, or
+     *            <code>null</code> if the node has no owner
      * @param key
      *            the key to update, not <code>null</code>
      * @param value
@@ -323,6 +326,9 @@ public sealed interface SignalCommand {
      *            the newly created node.
      * @param targetNodeId
      *            id of the parent node to update, not <code>null</code>
+     * @param scopeOwner
+     *            the id of the external owner of the created node, or
+     *            <code>null</code> if the node has no owner
      * @param value
      *            the value to set if a mapping didn't already exist
      * @param position

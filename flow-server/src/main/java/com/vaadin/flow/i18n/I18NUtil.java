@@ -51,6 +51,8 @@ public final class I18NUtil {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
+     * @param classLoader
+     *            the class loader to use for finding the translation file
      * @return {@code true} if default property file found
      */
     public static boolean containsDefaultTranslation(ClassLoader classLoader) {
@@ -70,6 +72,8 @@ public final class I18NUtil {
      * <p>
      * For internal use only. May be renamed or removed in a future release.
      *
+     * @param classLoader
+     *            the class loader to use for finding translation files
      * @return List of locales parsed from property files.
      */
     public static List<Locale> getDefaultTranslationLocales(

@@ -21,6 +21,11 @@ import org.atmosphere.cpr.AtmosphereResource;
 
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 
+/**
+ * Manages fragmented messages during Atmosphere push communication.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public interface FragmentedMessageHolder extends Serializable {
 
     /**

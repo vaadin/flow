@@ -55,7 +55,6 @@ import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 class FullDependenciesScanner extends AbstractDependenciesScanner {
 
@@ -74,6 +73,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private Map<String, String> devPackages;
     private HashMap<String, List<String>> assets = new HashMap<>();
     private HashMap<String, List<String>> devAssets = new HashMap<>();
+    private List<CssData> themeCssData;
     private List<CssData> cssData;
     private List<String> scripts;
     private List<String> scriptsDevelopment;
@@ -151,7 +151,10 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         collectScripts(modulesSet, modulesSetDevelopment, JsModule.class);
         collectScripts(scriptsSet, scriptsSetDevelopment, JavaScript.class);
-        cssData = discoverCss();
+
+        themeCssData = new ArrayList<>();
+        cssData = new ArrayList<>();
+        discoverCss();
 
         if (!reactEnabled) {
             modulesSet.removeIf(
@@ -215,8 +218,9 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
     @Override
     public Map<ChunkInfo, List<CssData>> getCss() {
-        return Collections.singletonMap(ChunkInfo.GLOBAL,
-                new ArrayList<>(cssData));
+        // Map theme CSS to the APP_SHELL chunk
+        return Map.ofEntries(Map.entry(ChunkInfo.APP_SHELL, themeCssData),
+                Map.entry(ChunkInfo.GLOBAL, cssData));
     }
 
     @Override
@@ -308,27 +312,34 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
         }
     }
 
-    private List<CssData> discoverCss() {
+    private void discoverCss() {
         try {
             Class<? extends Annotation> loadedAnnotation = getFinder()
                     .loadClass(CssImport.class.getName());
             Set<Class<?>> annotatedClasses = getFinder()
                     .getAnnotatedClasses(loadedAnnotation);
-            LinkedHashSet<CssData> result = new LinkedHashSet<>();
+            var themeCss = new LinkedHashSet<CssData>();
+            var globalCss = new LinkedHashSet<CssData>();
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
-                if (AbstractTheme.class.isAssignableFrom(clazz)
-                        && (themeDefinition == null
-                                || !clazz.equals(themeDefinition.getTheme()))) {
+                var isAppShellClass = AppShellConfigurator.class
+                        .isAssignableFrom(clazz);
+                var isThemeClass = AbstractTheme.class.isAssignableFrom(clazz);
+                if (isThemeClass && (themeDefinition == null
+                        || !clazz.equals(themeDefinition.getTheme()))) {
                     // Do not add css from all found theme classes,
                     // only defined theme.
                     continue;
                 }
                 List<? extends Annotation> imports = annotationFinder
                         .apply(clazz, loadedAnnotation);
-                imports.stream().forEach(imp -> result.add(createCssData(imp)));
+                imports.stream()
+                        .forEach(imp -> ((isAppShellClass || isThemeClass)
+                                ? themeCss
+                                : globalCss).add(createCssData(imp)));
             }
-            return new ArrayList<>(result);
+            themeCssData.addAll(themeCss);
+            cssData.addAll(globalCss);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),

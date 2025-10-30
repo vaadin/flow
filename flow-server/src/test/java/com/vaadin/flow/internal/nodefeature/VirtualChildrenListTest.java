@@ -45,7 +45,7 @@ public class VirtualChildrenListTest {
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asText());
+        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
 
         StateNode anotherChild = new StateNode(ElementData.class);
         list.add(0, anotherChild, "bar", (String) null);
@@ -56,7 +56,7 @@ public class VirtualChildrenListTest {
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asText());
+        Assert.assertEquals("bar", payload.get(NodeProperties.TYPE).asString());
     }
 
     @Test
@@ -69,9 +69,9 @@ public class VirtualChildrenListTest {
                 .getPayload();
         Assert.assertNotNull(payload);
 
-        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asText());
+        Assert.assertEquals("foo", payload.get(NodeProperties.TYPE).asString());
         Assert.assertEquals("bar",
-                payload.get(NodeProperties.PAYLOAD).asText());
+                payload.get(NodeProperties.PAYLOAD).asString());
     }
 
     @Test

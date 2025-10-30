@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.hotswap;
 
+import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
@@ -32,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,18 +59,17 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * Entry point for application classes hot reloads.
  * <p>
- * </p>
  * This class is meant to be used in combination with class live reloading tools
  * like JRebel, Hotswap agent and Spring Boot Developer Tools, to immediately
  * apply changes on components that should be updated when classes have been
  * added or modified. Currently, class deletion is not supported because of
  * issues with several hotswap agents.
  * <p>
- * </p>
  * Hotswap tools should obtain an instance of this class by calling the
  * {@link #register(VaadinService)} method, providing an active
  * {@link VaadinService} instance. For example, an agent can inject the
@@ -80,18 +81,15 @@ import com.vaadin.flow.server.VaadinSession;
  * }
  * </pre>
  * <p>
- * </p>
  * The component delegates specific hotswap logic to registered implementors of
  * {@link VaadinHotswapper} interface.
  * <p>
- * </p>
  * By default, Hotswapper determines the best browser page refresh strategy, but
  * a full page reload can be forced by setting the
  * {@code vaadin.hotswap.forcePageReload} system property. Hotswap tools can
  * alter the behavior at runtime by calling
  * {@link #forcePageReload(VaadinService, boolean)}
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
@@ -126,7 +124,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * Called by hotswap tools when one or more application classes have been
      * updated.
      * <p>
-     * </p>
+     *
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
      * {@link VaadinHotswapper#onClassLoadEvent(VaadinService, Set, boolean)}
@@ -167,8 +165,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Called by hotswap tools when one or more application resources have been
      * changed.
-     * <p>
-     * </p>
      *
      * @param createdResources
      *            the list of potentially newly created resources. Never
@@ -191,6 +187,48 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             LOGGER.trace(
                     "Created resources: {}, modified resources: {}, deletedResources: {}.",
                     createdResources, modifiedResources, deletedResources);
+        }
+
+        if (anyMatches(".*\\.css", createdResources, modifiedResources,
+                deletedResources)) {
+            if (liveReload == null) {
+                LOGGER.debug(
+                        "A change to one or more CSS resources requires a browser page refresh, but BrowserLiveReload is not available. "
+                                + "Please reload the browser page manually to make changes effective.");
+            } else {
+                LOGGER.debug(
+                        "Triggering browser live reload because of CSS resources changes");
+
+                File buildResourcesFolder = vaadinService
+                        .getDeploymentConfiguration().getOutputResourceFolder();
+
+                List<String> publicStaticResourcesPaths = Stream
+                        .of("META-INF/resources", "resources", "static",
+                                "public")
+                        .map(path -> new File(buildResourcesFolder, path))
+                        .filter(File::exists)
+                        .map(staticResourceFolder -> FrontendUtils
+                                .getUnixPath(staticResourceFolder.toPath()))
+                        .toList();
+
+                Stream.of(createdResources, modifiedResources, deletedResources)
+                        .flatMap(Arrays::stream).distinct()
+                        .filter(uri -> !new File(uri.getPath()).isDirectory())
+                        .forEach(resource -> {
+                            String resourcePath = resource.getPath();
+                            for (String staticResourcesPath : publicStaticResourcesPaths) {
+                                if (resourcePath
+                                        .startsWith(staticResourcesPath)) {
+                                    String path = resourcePath
+                                            .replace(staticResourcesPath, "");
+                                    if (path.startsWith("/")) {
+                                        path = path.substring(1);
+                                    }
+                                    liveReload.update(path, null);
+                                }
+                            }
+                        });
+            }
         }
 
         if (anyMatches(".*/vaadin-i18n/.*\\.properties", createdResources,
@@ -553,7 +591,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
      * <p>
-     * </p>
+     *
      * The hotswapper is registered only in development mode.
      *
      * @param vaadinService

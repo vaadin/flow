@@ -734,8 +734,8 @@ public class BuildFrontendUtil {
                     continue;
                 }
                 final JsonNode cvdlModule = cvdlModules.get(key);
-                components.add(new Product(cvdlModule.get("name").textValue(),
-                        cvdlModule.get("version").textValue()));
+                components.add(new Product(cvdlModule.get("name").asString(),
+                        cvdlModule.get("version").asString()));
             }
         }
         return components;

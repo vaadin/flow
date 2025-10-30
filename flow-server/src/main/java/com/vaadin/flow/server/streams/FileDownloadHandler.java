@@ -72,15 +72,15 @@ public class FileDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             String resourceName = getUrlPostfix();
-            if (!isInline()) {
-                downloadEvent.setFileName(resourceName);
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.setFileName(resourceName);
             }
             downloadEvent
                     .setContentType(getContentType(resourceName, response));

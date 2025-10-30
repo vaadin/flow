@@ -148,7 +148,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 packageUpdater.log().warn("No vaadin object in package.json");
                 return;
             }
-            final String hash = vaadin.get(HASH_KEY).textValue();
+            final String hash = vaadin.get(HASH_KEY).asString();
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
@@ -185,16 +185,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .getVaadinJsonContents();
             if (nodeModulesVaadinJson.has(HASH_KEY)) {
                 final JsonNode packageJson = packageUpdater.getPackageJson();
-                if (!nodeModulesVaadinJson.get(HASH_KEY).textValue()
+                if (!nodeModulesVaadinJson.get(HASH_KEY).asString()
                         .equals(packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
-                                .textValue())) {
+                                .asString())) {
                     return true;
                 }
 
                 if (nodeModulesVaadinJson.has(PROJECT_FOLDER)
                         && !options.getNpmFolder().getAbsolutePath()
                                 .equals(nodeModulesVaadinJson
-                                        .get(PROJECT_FOLDER).textValue())) {
+                                        .get(PROJECT_FOLDER).asString())) {
                     return true;
                 }
 

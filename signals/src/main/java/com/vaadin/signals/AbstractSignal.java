@@ -214,6 +214,17 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
+    /**
+     * Checks if the given command is valid according to this signal's
+     * validator. Condition commands are always considered valid, transaction
+     * commands are valid if all nested commands are valid, and other commands
+     * are validated using the configured validator.
+     *
+     * @param command
+     *            the command to validate, not <code>null</code>
+     * @return <code>true</code> if the command is valid, <code>false</code>
+     *         otherwise
+     */
     boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;

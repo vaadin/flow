@@ -1,21 +1,21 @@
-import { unsafeCSS } from 'lit';
-import { html, LitElement, css } from 'lit';
+import { unsafeCSS } from "lit";
+import { html, LitElement, css } from "lit";
 
-import '@vaadin/vaadin-horizontal-layout';
-import '@vaadin/vaadin-vertical-layout';
+import "@vaadin/vaadin-horizontal-layout";
+import "@vaadin/vaadin-vertical-layout";
 
 class InlineStyles extends LitElement {
   static get styles() {
     const includedStyles = {};
-    includedStyles['shared-styles'] =
-      document.querySelector("dom-module[id='shared-styles']")?.firstElementChild?.content?.firstElementChild
-        ?.innerText ?? '';
-    includedStyles['something-else'] =
-      document.querySelector("dom-module[id='something-else']")?.firstElementChild?.content?.firstElementChild
-        ?.innerText ?? '';
+    includedStyles["shared-styles"] =
+      document.querySelector("dom-module[id='shared-styles']")
+        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
+    includedStyles["something-else"] =
+      document.querySelector("dom-module[id='something-else']")
+        ?.firstElementChild?.content?.firstElementChild?.innerText ?? "";
     return [
-      unsafeCSS(includedStyles['shared-styles']),
-      unsafeCSS(includedStyles['something-else']),
+      unsafeCSS(includedStyles["shared-styles"]),
+      unsafeCSS(includedStyles["something-else"]),
       css`
         :host {
           display: block;
@@ -29,7 +29,7 @@ class InlineStyles extends LitElement {
         .title {
           color: blue;
         }
-      `
+      `,
     ];
   }
   render() {
@@ -48,7 +48,7 @@ class InlineStyles extends LitElement {
   }
 
   static get is() {
-    return 'inline-styles';
+    return "inline-styles";
   }
 }
 

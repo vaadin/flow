@@ -205,7 +205,7 @@ public class StylesheetRemovalTest {
                 .get("stylesheetRemovals");
         Assert.assertEquals("Should have one removal", 1, removalsArray.size());
         Assert.assertEquals("Removal ID should match", depId,
-                removalsArray.get(0).asText());
+                removalsArray.get(0).asString());
 
         // After creating UIDL, removals should be cleared
         Set<String> pendingRemovals = internals.getPendingStyleSheetRemovals();

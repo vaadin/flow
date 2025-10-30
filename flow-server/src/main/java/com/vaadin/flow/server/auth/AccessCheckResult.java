@@ -108,7 +108,7 @@ public class AccessCheckResult implements Serializable {
     /**
      * Create a result instance for the provided decision and reason.
      * <p>
-     * </p>
+     *
      * The {@code reason} cannot be {@literal null} for
      * {@link AccessCheckDecision#DENY} and {@link AccessCheckDecision#REJECT}.
      * For {@link AccessCheckDecision#ALLOW} the reason is ignored.

@@ -29,7 +29,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 

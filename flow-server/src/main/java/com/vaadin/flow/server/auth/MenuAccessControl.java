@@ -73,7 +73,7 @@ public interface MenuAccessControl extends Serializable {
     /**
      * Determines if current user has permissions to access the given view.
      * <p>
-     * </p>
+     *
      * It checks view against authentication state: - If view does not require
      * login -> allow - If not authenticated and login required -> deny. - If
      * user doesn't have correct roles -> deny.

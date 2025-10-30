@@ -240,12 +240,10 @@ public class AtmospherePushConnection
      *            The request body reader
      * @param holder
      *            A holder for a previously received partial message
-     * @return A Reader yielding a complete message or null if the message is
-     *         not yet complete.
-     * @throws IOException
-     *             if an IO error occurred
      * @return a Reader yielding the complete message, or {@code null} if the
      *         received message was a partial message
+     * @throws IOException
+     *             if an IO error occurred
      */
     protected static Reader receiveMessage(AtmosphereResource resource,
             Reader reader, FragmentedMessageHolder holder) throws IOException {
@@ -303,6 +301,8 @@ public class AtmospherePushConnection
     }
 
     /**
+     * Gets the UI associated with this connection.
+     *
      * @return the UI associated with this connection.
      */
     protected UI getUI() {
@@ -310,6 +310,8 @@ public class AtmospherePushConnection
     }
 
     /**
+     * Gets the AtmosphereResource associated with this connection.
+     *
      * @return The AtmosphereResource associated with this connection or null if
      *         connection not open.
      */

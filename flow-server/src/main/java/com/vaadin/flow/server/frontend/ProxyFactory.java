@@ -28,6 +28,12 @@ import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
+/**
+ * Factory for reading proxy configurations from various sources including
+ * system properties, .npmrc files, and environment variables.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class ProxyFactory {
 
     static final String NPMRC_NOPROXY_PROPERTY_KEY = "noproxy";
@@ -45,6 +51,8 @@ public class ProxyFactory {
      * file in the project root folder, .npmrc file in user root folder and
      * system environment variables.
      *
+     * @param projectDirectory
+     *            the project directory
      * @return list of configured proxies
      */
     public static List<ProxyConfig.Proxy> getProxies(File projectDirectory) {

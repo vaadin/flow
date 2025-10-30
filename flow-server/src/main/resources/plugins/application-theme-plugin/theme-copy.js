@@ -18,9 +18,8 @@
  * This contains functions and features used to copy theme files.
  */
 
-import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync } from 'fs';
-import { resolve, basename, relative, extname } from 'path';
-import { globSync } from 'glob';
+import { readdirSync, statSync, mkdirSync, existsSync, copyFileSync, globSync } from 'fs';
+import { resolve, basename, relative, extname, join } from 'path';
 
 const ignoredFileExtensions = ['.css', '.js', '.json'];
 
@@ -144,7 +143,9 @@ function copyStaticAssets(themeName, themeProperties, projectStaticAssetsOutputF
     Object.keys(copyRules).forEach((copyRule) => {
       // Glob doesn't work with windows path separator so replacing it here.
       const nodeSources = resolve('node_modules/', module, copyRule).replace(/\\/g, '/');
-      const files = globSync(nodeSources, { nodir: true });
+      const files = globSync(nodeSources, { withFileTypes: true })
+        .filter((dirent) => !dirent.isDirectory() && dirent.parentPath)
+        .map((dirent) => join(dirent.parentPath, dirent.name));
       const targetFolder = resolve(projectStaticAssetsOutputFolder, 'themes', themeName, copyRules[copyRule]);
 
       mkdirSync(targetFolder, {

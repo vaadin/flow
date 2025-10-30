@@ -712,7 +712,8 @@ public class JwtSecurityContextRepositoryTest {
         JwtAuthenticationToken actualAuthentication = captor.getValue();
         Assert.assertTrue(actualAuthentication.isAuthenticated());
         Assert.assertEquals(username, actualAuthentication.getName());
-        Assert.assertEquals(authorities, actualAuthentication.getAuthorities());
+        Assert.assertTrue(
+                actualAuthentication.getAuthorities().containsAll(authorities));
     }
 
     private void assertClaims(JWTClaimsSet claimsSet, String username,

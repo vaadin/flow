@@ -31,7 +31,6 @@ import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class Platform {
 

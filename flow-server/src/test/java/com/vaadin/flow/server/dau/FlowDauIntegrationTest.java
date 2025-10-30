@@ -25,8 +25,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 
-import static org.junit.Assert.*;
-
 public class FlowDauIntegrationTest {
 
     @Test

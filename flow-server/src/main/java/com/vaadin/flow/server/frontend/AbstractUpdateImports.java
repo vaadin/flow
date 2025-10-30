@@ -118,6 +118,8 @@ abstract class AbstractUpdateImports implements Runnable {
     final File generatedFlowImports;
     final File generatedFlowWebComponentImports;
     private final File generatedFlowDefinitions;
+    final File appShellImports;
+    final File appShellDefinitions;
     private File chunkFolder;
 
     private final GeneratedFilesSupport generatedFilesSupport;
@@ -141,6 +143,12 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        var generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(options.getFrontendDirectory());
+        appShellImports = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_NAME);
+        appShellDefinitions = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
 
         generatedFlowWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(
@@ -160,8 +168,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
-        writeWebComponentImports(
-                filterWebComponentImports(output.get(generatedFlowImports)));
+        writeWebComponentImports(filterWebComponentImports(
+                mergeWebComponentOutputLines(output)));
 
         getLogger().debug("Imports and chunks update took {} ms.",
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -250,6 +258,17 @@ abstract class AbstractUpdateImports implements Runnable {
         }
     }
 
+    private List<String> mergeWebComponentOutputLines(
+            Map<File, List<String>> outputFiles) {
+        return Stream.concat(
+                outputFiles
+                        .getOrDefault(appShellImports, Collections.emptyList())
+                        .stream(),
+                outputFiles.getOrDefault(generatedFlowImports,
+                        Collections.emptyList()).stream())
+                .distinct().toList();
+    }
+
     private void writeWebComponentImports(List<String> lines) {
         if (lines != null) {
             try {
@@ -276,6 +295,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<File, List<String>> process(Map<ChunkInfo, List<CssData>> css,
             Map<ChunkInfo, List<String>> javascript) {
         getLogger().debug("Start sorting imports to lazy and eager.");
+        int cssLineOffset = 0;
         long start = System.nanoTime();
 
         Map<File, List<String>> files = new HashMap<>();
@@ -284,6 +304,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerJavascript = new ArrayList<>();
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
+        List<CssData> appShellCssData = new ArrayList<>();
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -296,12 +317,18 @@ abstract class AbstractUpdateImports implements Runnable {
             boolean hasThemeFor = entry.getValue().stream()
                     .anyMatch(cssData -> cssData.getThemefor() != null);
             if (isLazyRoute(entry.getKey()) && !hasThemeFor) {
-                List<String> cssLines = getCssLines(entry.getValue());
+                List<String> cssLines = getCssLines(entry.getValue(),
+                        cssLineOffset);
+                cssLineOffset += cssLines.size();
                 if (!cssLines.isEmpty()) {
                     lazyCss.put(entry.getKey(), cssLines);
                 }
             } else {
-                eagerCssData.addAll(entry.getValue());
+                if (entry.getKey().equals(ChunkInfo.APP_SHELL)) {
+                    appShellCssData.addAll(entry.getValue());
+                } else {
+                    eagerCssData.addAll(entry.getValue());
+                }
             }
         }
 
@@ -372,10 +399,22 @@ abstract class AbstractUpdateImports implements Runnable {
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
+        List<String> appShellLines = new ArrayList<>();
+        List<String> appShellCssLines = getCssLines(appShellCssData,
+                cssLineOffset);
+        cssLineOffset += appShellCssLines.size();
+        if (!appShellCssLines.isEmpty()) {
+            appShellLines.add(IMPORT_INJECT);
+            appShellLines.addAll(appShellCssLines);
+        }
+        files.put(appShellImports, appShellLines);
+        files.put(appShellDefinitions, Collections.singletonList("export {}"));
+
         List<String> mainLines = new ArrayList<>();
 
         // Convert eager CSS data to JS and deduplicate it
-        List<String> mainCssLines = getCssLines(eagerCssData);
+        List<String> mainCssLines = getCssLines(eagerCssData, cssLineOffset);
+        cssLineOffset += mainCssLines.size();
         if (!mainCssLines.isEmpty()) {
             mainLines.add(IMPORT_INJECT);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
@@ -470,12 +509,12 @@ abstract class AbstractUpdateImports implements Runnable {
      *            the CSS import data
      * @return the JS statements needed to import and apply the CSS data
      */
-    protected List<String> getCssLines(List<CssData> css) {
+    private List<String> getCssLines(List<CssData> css, int startOffset) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
-        int i = 0;
+        int i = startOffset;
         for (CssData cssData : allCss) {
             if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
@@ -561,9 +600,9 @@ abstract class AbstractUpdateImports implements Runnable {
 
     }
 
-    protected <T> List<String> merge(Map<T, List<String>> css) {
+    protected <T> List<String> merge(Map<T, List<String>> outputFiles) {
         List<String> result = new ArrayList<>();
-        css.forEach((key, value) -> result.addAll(value));
+        outputFiles.forEach((key, value) -> result.addAll(value));
         return result;
     }
 

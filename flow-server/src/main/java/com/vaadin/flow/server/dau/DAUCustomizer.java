@@ -24,7 +24,6 @@ import com.vaadin.flow.server.VaadinSession;
 /**
  * Interface to be implemented to customize Daily Active Users feature.
  * <p>
- * </p>
  * By implementing this interface it is possible to:
  * <ul>
  * <li>provide an user identity supplier to allow the system to count a user
@@ -50,7 +49,7 @@ public interface DAUCustomizer extends Serializable {
      * {@link UI#getCurrent()} can also be used to find more information to help
      * the decision.
      * <p>
-     * </p>
+     *
      * The default implementation returns
      * {@link EnforcementNotificationMessages#DEFAULT}.
      *
@@ -67,7 +66,7 @@ public interface DAUCustomizer extends Serializable {
      * Gets the function to be used to determine the user identity for the
      * current request.
      * <p>
-     * </p>
+     *
      * By default, returns {@literal null}, meaning that user identity is not
      * computed.
      *

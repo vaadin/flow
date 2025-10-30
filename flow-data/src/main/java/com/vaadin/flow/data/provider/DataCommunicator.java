@@ -356,7 +356,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the requested range
      * @param length
      *            the end of the requested range
-     * @return
+     * @return the computed requested range
      * @deprecated since 24.9 and will be removed in Vaadin 26. Use
      *             {@link #computeViewportRange(int, int)} instead.
      */
@@ -380,6 +380,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the viewport range
      * @param length
      *            the end of the viewport range
+     * @return the computed viewport range
      */
     protected final Range computeViewportRange(int start, int length) {
         return computeRequestedRange(start, length);
