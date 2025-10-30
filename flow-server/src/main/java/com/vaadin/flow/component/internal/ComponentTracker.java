@@ -44,6 +44,10 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  **/
 public class ComponentTracker {
 
+    private static Map<Component, Throwable> createThrowable = Collections
+            .synchronizedMap(new WeakHashMap<>());
+    private static Map<Component, Throwable> attachThrowable = Collections
+            .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location> createLocation = Collections
             .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location> attachLocation = Collections
@@ -179,7 +183,8 @@ public class ComponentTracker {
      * @return the location where the component was created
      */
     public static Location findCreate(Component component) {
-        return createLocation.get(component);
+        return computeFilteredLocation(component, createLocation,
+                createThrowable, null);
     }
 
     /**
@@ -191,13 +196,17 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findCreateLocations(Component component) {
-        return createLocations.get(component);
+        return computeAllLocations(component, createLocations, createThrowable);
     }
 
     /**
      * Tracks the location where the component was created. This should be
      * called from the Component constructor so that the creation location can
      * be found from the current stacktrace.
+     * <p>
+     * Uses lazy evaluation: only stores a lightweight Throwable. Stack trace
+     * processing is deferred until findCreate() or findCreateLocations() is
+     * called.
      *
      * @param component
      *            the component to track
@@ -206,16 +215,7 @@ public class ComponentTracker {
         if (isDisabled()) {
             return;
         }
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-        Location[] relevantLocations = findRelevantLocations(stack);
-        Location location = findRelevantLocation(component.getClass(),
-                relevantLocations, null);
-        if (isNavigatorCreate(location)) {
-            location = findRelevantLocation(null, relevantLocations, null);
-        }
-        createLocation.put(component, location);
-        createLocations.put(component, Stream.of(stack)
-                .map(ComponentTracker::toLocation).toArray(Location[]::new));
+        createThrowable.put(component, new Throwable());
     }
 
     /**
@@ -227,7 +227,8 @@ public class ComponentTracker {
      * @return the location where the component was attached
      */
     public static Location findAttach(Component component) {
-        return attachLocation.get(component);
+        return computeFilteredLocation(component, attachLocation,
+                attachThrowable, findCreate(component));
     }
 
     /**
@@ -239,13 +240,17 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findAttachLocations(Component component) {
-        return attachLocations.get(component);
+        return computeAllLocations(component, attachLocations, attachThrowable);
     }
 
     /**
      * Tracks the location where the component was attached. This should be
      * called from the Component attach logic so that the creation location can
      * be found from the current stacktrace.
+     * <p>
+     * Uses lazy evaluation: only stores a lightweight Throwable. Stack trace
+     * processing is deferred until findAttach() or findAttachLocations() is
+     * called.
      *
      * @param component
      *            the component to track
@@ -254,27 +259,16 @@ public class ComponentTracker {
         if (isDisabled()) {
             return;
         }
-        StackTraceElement[] stack = Thread.currentThread().getStackTrace();
-
-        // In most cases the interesting attach call is found in the same class
-        // where the component was created and not in a generic layout class
-        Location[] relevantLocations = findRelevantLocations(stack);
-        Location location = findRelevantLocation(component.getClass(),
-                relevantLocations, findCreate(component));
-        if (isNavigatorCreate(location)) {
-            // For routes, we can just show the init location as we have nothing
-            // better
-            location = createLocation.get(component);
-        }
-        attachLocation.put(component, location);
-        attachLocations.put(component, Stream.of(stack)
-                .map(ComponentTracker::toLocation).toArray(Location[]::new));
+        attachThrowable.put(component, new Throwable());
     }
 
     /**
      * Refreshes location of all components that had create or attach location
      * below given reference component by given offset value. Location may
      * change due to dynamic code updates conducted by Vaadin developer tools.
+     * <p>
+     * Note: With lazy evaluation, this method forces evaluation of all tracked
+     * components to ensure their locations are cached before applying offsets.
      *
      * @param location
      *            reference component location
@@ -282,10 +276,26 @@ public class ComponentTracker {
      *            difference in lines to be applied
      */
     public static void refreshLocation(Location location, int offset) {
-        refreshLocation(createLocation, location, offset);
+        // Force lazy evaluation for all components before refreshing
+        forceLazyEvaluation();
+
+        refreshLocationMap(createLocation, location, offset);
         refreshLocations(createLocations, location, offset);
-        refreshLocation(attachLocation, location, offset);
+        refreshLocationMap(attachLocation, location, offset);
         refreshLocations(attachLocations, location, offset);
+    }
+
+    private static void forceLazyEvaluation() {
+        // Force evaluation of all create locations
+        for (Component component : createThrowable.keySet()) {
+            findCreate(component);
+            findCreateLocations(component);
+        }
+        // Force evaluation of all attach locations
+        for (Component component : attachThrowable.keySet()) {
+            findAttach(component);
+            findAttachLocations(component);
+        }
     }
 
     private static boolean needsUpdate(Location l, Location referenceLocation) {
@@ -298,7 +308,7 @@ public class ComponentTracker {
                 l.lineNumber + offset);
     }
 
-    private static void refreshLocation(Map<Component, Location> targetRef,
+    private static void refreshLocationMap(Map<Component, Location> targetRef,
             Location referenceLocation, int offset) {
         Map<Component, Location> updatedLocations = new HashMap<>();
         for (Component c : targetRef.keySet()) {
@@ -332,15 +342,15 @@ public class ComponentTracker {
                 .equals(AbstractNavigationStateRenderer.class.getName());
     }
 
-    private static Location[] findRelevantLocations(StackTraceElement[] stack) {
-        return Stream.of(stack).filter(e -> {
+    private static Location[] findRelevantLocations(Location[] locations) {
+        return Stream.of(locations).filter(location -> {
             for (String prefixToSkip : prefixesToSkip) {
-                if (e.getClassName().startsWith(prefixToSkip)) {
+                if (location.className().startsWith(prefixToSkip)) {
                     return false;
                 }
             }
             return true;
-        }).map(ComponentTracker::toLocation).toArray(Location[]::new);
+        }).toArray(Location[]::new);
     }
 
     private static Location findRelevantLocation(
@@ -410,6 +420,82 @@ public class ComponentTracker {
                         InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER,
                         true);
         return disabled;
+    }
+
+    /**
+     * Computes and caches a filtered location (single best location) for a
+     * component.
+     *
+     * @param component
+     *            the component
+     * @param locationCache
+     *            the cache to use
+     * @param throwableMap
+     *            the map containing Throwables
+     * @param referenceLocation
+     *            reference location for filtering (or null)
+     * @return the computed location or null
+     */
+    private static Location computeFilteredLocation(Component component,
+            Map<Component, Location> locationCache,
+            Map<Component, Throwable> throwableMap,
+            Location referenceLocation) {
+        // Check cache first
+        Location cached = locationCache.get(component);
+        if (cached != null) {
+            return cached;
+        }
+
+        // Compute lazily from Throwable on first access
+        Throwable throwable = throwableMap.get(component);
+        if (throwable == null) {
+            return null;
+        }
+
+        StackTraceElement[] stack = throwable.getStackTrace();
+        Location[] allLocations = Stream.of(stack)
+                .map(ComponentTracker::toLocation).toArray(Location[]::new);
+        Location[] relevantLocations = findRelevantLocations(allLocations);
+        Location location = findRelevantLocation(component.getClass(),
+                relevantLocations, referenceLocation);
+        if (isNavigatorCreate(location)) {
+            location = referenceLocation != null ? referenceLocation
+                    : findRelevantLocation(null, relevantLocations, null);
+        }
+
+        locationCache.put(component, location);
+        return location;
+    }
+
+    /**
+     * Computes and caches all stack trace locations for a component.
+     *
+     * @param component
+     *            the component
+     * @param locationsCache
+     *            the cache to use
+     * @param throwableMap
+     *            the map containing Throwables
+     * @return array of all locations or null
+     */
+    private static Location[] computeAllLocations(Component component,
+            Map<Component, Location[]> locationsCache,
+            Map<Component, Throwable> throwableMap) {
+        // Check cache first
+        Location[] cached = locationsCache.get(component);
+        if (cached != null) {
+            return cached;
+        }
+
+        // Convert lazily from Throwable on first access
+        Throwable throwable = throwableMap.get(component);
+        if (throwable == null) {
+            return null;
+        }
+        Location[] locations = Stream.of(throwable.getStackTrace())
+                .map(ComponentTracker::toLocation).toArray(Location[]::new);
+        locationsCache.put(component, locations);
+        return locations;
     }
 
     private static Location toLocation(StackTraceElement stackTraceElement) {

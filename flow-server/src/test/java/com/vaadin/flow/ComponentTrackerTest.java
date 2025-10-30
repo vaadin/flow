@@ -121,41 +121,25 @@ public class ComponentTrackerTest {
 
     @Test
     public void memoryIsReleased() throws Exception {
-        Field createLocationField = ComponentTracker.class
-                .getDeclaredField("createLocation");
-        Field createLocationsField = ComponentTracker.class
-                .getDeclaredField("createLocations");
-        Field attachLocationField = ComponentTracker.class
-                .getDeclaredField("attachLocation");
-        Field attachLocationsField = ComponentTracker.class
-                .getDeclaredField("attachLocations");
-        createLocationField.setAccessible(true);
-        createLocationsField.setAccessible(true);
-        attachLocationField.setAccessible(true);
-        attachLocationsField.setAccessible(true);
+        Field createThrowableField = ComponentTracker.class
+                .getDeclaredField("createThrowable");
+        Field attachThrowableField = ComponentTracker.class
+                .getDeclaredField("attachThrowable");
+        createThrowableField.setAccessible(true);
+        attachThrowableField.setAccessible(true);
 
-        Map<?, ?> createMap = (Map<?, ?>) createLocationField.get(null);
-        Map<?, ?> attachMap = (Map<?, ?>) attachLocationField.get(null);
-        Map<?, ?> createLocationsMap = (Map<?, ?>) createLocationsField
-                .get(null);
-        Map<?, ?> attachLocationsMap = (Map<?, ?>) attachLocationsField
-                .get(null);
+        Map<?, ?> createMap = (Map<?, ?>) createThrowableField.get(null);
+        Map<?, ?> attachMap = (Map<?, ?>) attachThrowableField.get(null);
         createMap.clear();
-        createLocationsMap.clear();
         attachMap.clear();
-        attachLocationsMap.clear();
 
         new Layout(new Component1());
 
         Assert.assertEquals(2, createMap.size());
-        Assert.assertEquals(2, createLocationsMap.size());
         Assert.assertEquals(1, attachMap.size());
-        Assert.assertEquals(1, attachLocationsMap.size());
 
         Assert.assertTrue(isCleared(createMap));
-        Assert.assertTrue(isCleared(createLocationsMap));
         Assert.assertTrue(isCleared(attachMap));
-        Assert.assertTrue(isCleared(attachLocationsMap));
     }
 
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
