@@ -13,24 +13,28 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.html;
+package com.vaadin.signals;
 
-import org.junit.Assert;
-import org.junit.Test;
+/**
+ * Exception indicating that an operation could not be performed because a
+ * binding is active.
+ */
+public class BindingActiveException extends IllegalStateException {
 
-public class HrTest extends ComponentTest {
-
-    // Actual test methods in super class
-
-    @Override
-    protected void addProperties() {
-        // Component defines no new properties
+    /**
+     * Creates a new exception with a default message.
+     */
+    public BindingActiveException() {
+        super("Operation could not be performed because a binding is active.");
     }
 
-    @Test
-    public void ariaHiddenSetByDefault() {
-        Hr hr = new Hr();
-        Assert.assertEquals("true",
-                hr.getElement().getAttribute("aria-hidden"));
+    /**
+     * Creates a new exception with a custom message.
+     *
+     * @param message
+     *            the custom message
+     */
+    public BindingActiveException(String message) {
+        super(message);
     }
 }

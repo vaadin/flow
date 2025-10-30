@@ -49,6 +49,7 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -56,6 +57,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -1172,35 +1175,89 @@ public class Element extends Node<Element> {
      *            the text content to set, <code>null</code> is interpreted as
      *            an empty string
      * @return this element
+     * @throws BindingActiveException
+     *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+        if (feature.hasBinding()) {
+            throw new BindingActiveException(
+                    "setText is not allowed while a binding for text exists.");
+        }
+
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
         }
+        setTextContent(textContent);
 
+        return this;
+    }
+
+    private void setTextContent(String textContent) {
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
             if (textContent.isEmpty()) {
                 removeAllChildren();
             } else {
-                setTextContent(textContent);
+                Element child;
+                if (getChildCount() == 1 && getChild(0).isTextNode()) {
+                    child = getChild(0).setText(textContent);
+                } else {
+                    child = createText(textContent);
+                }
+                removeAllChildren();
+                appendChild(child);
             }
         }
-
-        return this;
     }
 
-    private void setTextContent(String textContent) {
-        Element child;
-        if (getChildCount() == 1 && getChild(0).isTextNode()) {
-            child = getChild(0).setText(textContent);
+    /**
+     * Binds a {@link Signal}'s value to the text content of this element and
+     * keeps the text content synchronized with the signal value while the
+     * element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set the text
+     * content manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindText(signal);
+     * signal.value("text"); // The element text content is set to "text"
+     * </pre>
+     *
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setText(String)
+     */
+    public void bindText(Signal<String> signal) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+
+        if (signal == null) {
+            feature.removeBinding();
         } else {
-            child = createText(textContent);
+            if (feature.hasBinding() && getNode().isAttached()) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(this, signal,
+                    (element, value) -> setTextContent(value));
+            feature.setBinding(registration, signal);
         }
-        removeAllChildren();
-        appendChild(child);
     }
 
     /**
