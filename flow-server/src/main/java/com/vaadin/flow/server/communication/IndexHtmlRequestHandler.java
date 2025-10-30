@@ -396,7 +396,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Optional<Backend> maybeBackend = liveReload
                 .map(BrowserLiveReload::getBackend);
 
-        int liveReloadPort = Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
+        Integer liveReloadPort = null;
         VaadinContext context = service.getContext();
         if (context instanceof VaadinServletContext vaadinServletContext) {
             String customPort = (String) vaadinServletContext.getContext()
@@ -410,9 +410,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
         devToolsConf.put("url",
                 BootstrapHandlerHelper.getPushURL(session, request));
+        devToolsConf.put("contextRelativePath",
+                service.getContextRootRelativePath(request));
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
-        devToolsConf.put("liveReloadPort", liveReloadPort);
+        if (liveReloadPort != null) {
+            devToolsConf.put("liveReloadPort", liveReloadPort);
+        }
         if (isAllowedDevToolsHost(config, request)) {
             devToolsConf.put("token", DevToolsToken.getToken());
         }
