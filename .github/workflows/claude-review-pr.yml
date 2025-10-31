@@ -8,7 +8,7 @@ jobs:
   claude-review:
     if: |
       github.event.issue.pull_request &&
-      contains(lower(github.event.comment.body), 'claude review')
+      contains(github.event.comment.body, 'claude review')
 
     runs-on: ubuntu-latest
     timeout-minutes: 10
