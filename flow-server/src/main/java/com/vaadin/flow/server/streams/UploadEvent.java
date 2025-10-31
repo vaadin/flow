@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Optional;
 
-import org.apache.commons.fileupload2.core.FileItemInput;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -51,7 +50,6 @@ public class UploadEvent {
 
     private final Element owningElement;
 
-    private final FileItemInput item;
     private final Part part;
 
     /**
@@ -71,17 +69,12 @@ public class UploadEvent {
      *            size of the upload
      * @param owningElement
      *            element owning this upload
-     * @param item
-     *            multipart stream file item, {@code null} for xhr or parts
-     *            multipart stream
      * @param part
-     *            multipart part item, {@code null} for xhr or multipart file
-     *            stream
+     *            multipart part item, {@code null} for xhr upload
      */
     public UploadEvent(VaadinRequest request, VaadinResponse response,
             VaadinSession session, String fileName, long contentLength,
-            String contentType, Element owningElement, FileItemInput item,
-            Part part) {
+            String contentType, Element owningElement, Part part) {
         this.request = request;
         this.response = response;
         this.session = session;
@@ -89,7 +82,6 @@ public class UploadEvent {
         this.fileSize = contentLength;
         this.owningElement = owningElement;
         this.contentType = contentType;
-        this.item = item;
         this.part = part;
     }
 
@@ -101,9 +93,6 @@ public class UploadEvent {
      */
     public InputStream getInputStream() {
         try {
-            if (item != null) {
-                return item.getInputStream();
-            }
             if (part != null) {
                 return part.getInputStream();
             }

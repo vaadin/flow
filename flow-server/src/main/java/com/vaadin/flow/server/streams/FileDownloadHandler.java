@@ -22,6 +22,7 @@ import java.io.OutputStream;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for use with a given File that will be read and written as

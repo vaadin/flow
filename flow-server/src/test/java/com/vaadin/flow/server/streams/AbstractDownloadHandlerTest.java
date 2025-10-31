@@ -43,6 +43,7 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
 public class AbstractDownloadHandlerTest {

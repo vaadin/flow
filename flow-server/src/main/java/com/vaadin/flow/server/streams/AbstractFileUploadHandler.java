@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.communication.TransferUtil;
+
 /**
  * Abstract class for file upload handler.
  *
