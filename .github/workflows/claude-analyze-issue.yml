@@ -1,0 +1,51 @@
+name: Claude Issue Analyzer
+
+on:
+  issues:
+    types: [labeled]
+
+jobs:
+  triage-issue:
+    if: github.event.label.name == 'analyze'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 1
+
+      - name: Read analyze-issue command
+        id: read-command
+        run: |
+          # Read the command file and export as output
+          COMMAND_CONTENT=$(cat .claude/commands/analyze-issue.md)
+          # Use heredoc to preserve multiline content
+          {
+            echo 'command<<EOF'
+            echo "$COMMAND_CONTENT"
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code for Issue Triage
+        uses: anthropics/claude-code-action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          prompt: |
+            ${{ steps.read-command.outputs.command }}
+
+            ISSUE_NUMBER: ${{ github.event.issue.number }}
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: Remove analyze label
+        if: always()
+        run: |
+          gh issue edit ${{ github.event.issue.number }} --remove-label "analyze" || \
+          echo "Warning: Failed to remove analyze label"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
