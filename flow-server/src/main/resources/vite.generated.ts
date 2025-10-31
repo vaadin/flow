@@ -33,6 +33,7 @@ import vaadinBundlesPlugin from '#buildFolder#/plugins/vite-plugin-vaadin-bundle
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
+//#tailwindcssVitePluginImport#
 
 //#vitePluginFileSystemRouterImport#
 
@@ -565,6 +566,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
+      //#tailwindCssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
         meta: {
