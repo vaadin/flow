@@ -30,14 +30,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import org.apache.commons.fileupload2.core.FileItemInput;
-import org.apache.commons.fileupload2.core.FileItemInputIterator;
-import org.apache.commons.fileupload2.core.FileUploadByteCountLimitException;
-import org.apache.commons.fileupload2.core.FileUploadException;
-import org.apache.commons.fileupload2.core.FileUploadFileCountLimitException;
-import org.apache.commons.fileupload2.core.FileUploadSizeException;
-import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.communication.UploadFileCountLimitExceededException;
+import com.vaadin.flow.server.communication.UploadFileSizeLimitExceededException;
+import com.vaadin.flow.server.communication.UploadSizeLimitExceededException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -145,9 +142,7 @@ public final class TransferUtil {
      */
     static void handleUpload(UploadHandler handler, VaadinRequest request,
             VaadinResponse response, VaadinSession session, Element owner) {
-        boolean isMultipartUpload = request instanceof HttpServletRequest
-                && JakartaServletFileUpload
-                        .isMultipartContent((HttpServletRequest) request);
+        boolean isMultipartUpload = isMultipartContent(request);
         try {
             String fileName;
             if (isMultipartUpload) {
@@ -162,68 +157,20 @@ public final class TransferUtil {
                             ioe);
                 }
                 if (!parts.isEmpty()) {
+                    validateUploadLimits(handler, request, parts);
+
                     for (Part part : parts) {
                         UploadEvent event = new UploadEvent(request, response,
                                 session, part.getSubmittedFileName(),
                                 part.getSize(), part.getContentType(), owner,
-                                null, part);
+                                part);
                         handleUploadRequest(handler, event);
                     }
                     handler.responseHandled(true, response);
                 } else {
-                    long contentLength = request.getContentLengthLong();
-                    // Parse the request
-                    FileItemInputIterator iter;
-                    try {
-                        JakartaServletFileUpload upload = new JakartaServletFileUpload();
-                        upload.setSizeMax(handler.getRequestSizeMax());
-                        upload.setFileSizeMax(handler.getFileSizeMax());
-                        upload.setFileCountMax(handler.getFileCountMax());
-                        if (request.getCharacterEncoding() == null) {
-                            // Request body's file upload headers are expected
-                            // to be
-                            // encoded in
-                            // UTF-8 if not explicitly set otherwise in the
-                            // request.
-                            upload.setHeaderCharset(StandardCharsets.UTF_8);
-                        }
-                        iter = upload
-                                .getItemIterator((HttpServletRequest) request);
-                        while (iter.hasNext()) {
-                            FileItemInput item = iter.next();
-
-                            UploadEvent event = new UploadEvent(request,
-                                    response, session, item.getName(),
-                                    contentLength, item.getContentType(), owner,
-                                    item, null);
-                            handleUploadRequest(handler, event);
-                        }
-                        handler.responseHandled(true, response);
-                    } catch (FileUploadException e) {
-                        String limitInfoStr = "{} limit exceeded. To increase the limit "
-                                + "extend StreamRequestHandler, override {} method for "
-                                + "UploadHandler and provide a higher limit.";
-                        if (e instanceof FileUploadByteCountLimitException) {
-                            LoggerFactory.getLogger(UploadHandler.class).warn(
-                                    limitInfoStr, "Request size",
-                                    "getRequestSizeMax");
-                        } else if (e instanceof FileUploadSizeException) {
-                            LoggerFactory.getLogger(UploadHandler.class).warn(
-                                    limitInfoStr, "File size",
-                                    "getFileSizeMax");
-                        } else if (e instanceof FileUploadFileCountLimitException) {
-                            LoggerFactory.getLogger(UploadHandler.class).warn(
-                                    limitInfoStr, "File count",
-                                    "getFileCountMax");
-                        }
-                        LoggerFactory.getLogger(UploadHandler.class)
-                                .warn("File upload failed.", e);
-                        handler.responseHandled(false, response);
-                    } catch (IOException ioe) {
-                        LoggerFactory.getLogger(UploadHandler.class)
-                                .warn("IO Exception during file upload", ioe);
-                        handler.responseHandled(false, response);
-                    }
+                    LoggerFactory.getLogger(UploadHandler.class)
+                            .warn("Multipart request has no parts");
+                    handler.responseHandled(false, response);
                 }
             } else {
                 // These are unknown in filexhr ATM
@@ -232,15 +179,93 @@ public final class TransferUtil {
 
                 UploadEvent event = new UploadEvent(request, response, session,
                         fileName, request.getContentLengthLong(), contentType,
-                        owner, null, null);
+                        owner, null);
 
                 handleUploadRequest(handler, event);
                 handler.responseHandled(true, response);
             }
+        } catch (UploadSizeLimitExceededException
+                | UploadFileSizeLimitExceededException
+                | UploadFileCountLimitExceededException e) {
+            String limitInfoStr = "{} limit exceeded. To increase the limit "
+                    + "extend StreamRequestHandler, override {} method for "
+                    + "UploadHandler and provide a higher limit.";
+            if (e instanceof UploadSizeLimitExceededException) {
+                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
+                        "Request size", "getRequestSizeMax");
+            } else if (e instanceof UploadFileSizeLimitExceededException) {
+                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
+                        "File size", "getFileSizeMax");
+            } else if (e instanceof UploadFileCountLimitExceededException) {
+                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
+                        "File count", "getFileCountMax");
+            }
+            LoggerFactory.getLogger(UploadHandler.class)
+                    .warn("File upload failed.", e);
+            handler.responseHandled(false, response);
         } catch (Exception e) {
             LoggerFactory.getLogger(UploadHandler.class)
                     .error("Exception during upload", e);
             handler.responseHandled(false, response);
+        }
+    }
+
+    /**
+     * Checks if the request is a multipart request by examining the Content-Type header.
+     *
+     * @param request the request to check
+     * @return true if the request is multipart, false otherwise
+     */
+    private static boolean isMultipartContent(VaadinRequest request) {
+        if (!(request instanceof HttpServletRequest)) {
+            return false;
+        }
+        String contentType = request.getContentType();
+        return contentType != null && contentType.toLowerCase()
+                .startsWith("multipart/");
+    }
+
+    /**
+     * Validates upload limits for the given parts.
+     *
+     * @param handler the upload handler containing the limits
+     * @param request the request
+     * @param parts the parts to validate
+     * @throws UploadSizeLimitExceededException if the total size exceeds the limit
+     * @throws UploadFileSizeLimitExceededException if a file size exceeds the limit
+     * @throws UploadFileCountLimitExceededException if the file count exceeds the limit
+     */
+    private static void validateUploadLimits(UploadHandler handler,
+            VaadinRequest request, Collection<Part> parts)
+            throws UploadSizeLimitExceededException,
+            UploadFileSizeLimitExceededException,
+            UploadFileCountLimitExceededException {
+        long requestSizeMax = handler.getRequestSizeMax();
+        long fileSizeMax = handler.getFileSizeMax();
+        long fileCountMax = handler.getFileCountMax();
+
+        // Check file count
+        if (fileCountMax > -1 && parts.size() > fileCountMax) {
+            throw new UploadFileCountLimitExceededException(parts.size(),
+                    fileCountMax);
+        }
+
+        // Check total request size
+        long contentLength = request.getContentLengthLong();
+        if (requestSizeMax > -1 && contentLength > requestSizeMax) {
+            throw new UploadSizeLimitExceededException(contentLength,
+                    requestSizeMax);
+        }
+
+        // Check individual file sizes
+        if (fileSizeMax > -1) {
+            for (Part part : parts) {
+                long size = part.getSize();
+                if (size > fileSizeMax) {
+                    throw new UploadFileSizeLimitExceededException(
+                            part.getSubmittedFileName(), size, fileSizeMax);
+                }
+            }
         }
     }
 
