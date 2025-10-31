@@ -203,7 +203,6 @@ public class StreamReceiverHandler implements Serializable {
         sendUploadResponse(response, success);
     }
 
-
     private boolean handleMultipartFileUploadFromParts(VaadinSession session,
             VaadinRequest request, StreamReceiver streamReceiver,
             StateNode owner) throws IOException {
@@ -265,7 +264,6 @@ public class StreamReceiverHandler implements Serializable {
         }
         return false;
     }
-
 
     /**
      * Used to stream plain file post (aka XHR2.post(File))
@@ -566,8 +564,8 @@ public class StreamReceiverHandler implements Serializable {
             return false;
         }
         String contentType = request.getContentType();
-        return contentType != null && contentType.toLowerCase()
-                .startsWith("multipart/");
+        return contentType != null
+                && contentType.toLowerCase().startsWith("multipart/");
     }
 
     protected Collection<Part> getParts(VaadinRequest request)
@@ -578,11 +576,16 @@ public class StreamReceiverHandler implements Serializable {
     /**
      * Validates upload limits for the given parts.
      *
-     * @param request the request
-     * @param parts the parts to validate
-     * @throws UploadSizeLimitExceededException if the total size exceeds the limit
-     * @throws UploadFileSizeLimitExceededException if a file size exceeds the limit
-     * @throws UploadFileCountLimitExceededException if the file count exceeds the limit
+     * @param request
+     *            the request
+     * @param parts
+     *            the parts to validate
+     * @throws UploadSizeLimitExceededException
+     *             if the total size exceeds the limit
+     * @throws UploadFileSizeLimitExceededException
+     *             if a file size exceeds the limit
+     * @throws UploadFileCountLimitExceededException
+     *             if the file count exceeds the limit
      */
     protected void validateUploadLimits(VaadinRequest request,
             Collection<Part> parts) throws UploadSizeLimitExceededException,

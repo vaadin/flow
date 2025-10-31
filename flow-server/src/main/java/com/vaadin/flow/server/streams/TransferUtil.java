@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,10 +30,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.communication.UploadFileCountLimitExceededException;
-import com.vaadin.flow.server.communication.UploadFileSizeLimitExceededException;
-import com.vaadin.flow.server.communication.UploadSizeLimitExceededException;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -44,6 +39,9 @@ import com.vaadin.flow.internal.streams.UploadStartEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.UploadFileCountLimitExceededException;
+import com.vaadin.flow.server.communication.UploadFileSizeLimitExceededException;
+import com.vaadin.flow.server.communication.UploadSizeLimitExceededException;
 
 /**
  * Utility class with methods for handling transfer of upload and download
@@ -211,9 +209,11 @@ public final class TransferUtil {
     }
 
     /**
-     * Checks if the request is a multipart request by examining the Content-Type header.
+     * Checks if the request is a multipart request by examining the
+     * Content-Type header.
      *
-     * @param request the request to check
+     * @param request
+     *            the request to check
      * @return true if the request is multipart, false otherwise
      */
     private static boolean isMultipartContent(VaadinRequest request) {
@@ -221,19 +221,25 @@ public final class TransferUtil {
             return false;
         }
         String contentType = request.getContentType();
-        return contentType != null && contentType.toLowerCase()
-                .startsWith("multipart/");
+        return contentType != null
+                && contentType.toLowerCase().startsWith("multipart/");
     }
 
     /**
      * Validates upload limits for the given parts.
      *
-     * @param handler the upload handler containing the limits
-     * @param request the request
-     * @param parts the parts to validate
-     * @throws UploadSizeLimitExceededException if the total size exceeds the limit
-     * @throws UploadFileSizeLimitExceededException if a file size exceeds the limit
-     * @throws UploadFileCountLimitExceededException if the file count exceeds the limit
+     * @param handler
+     *            the upload handler containing the limits
+     * @param request
+     *            the request
+     * @param parts
+     *            the parts to validate
+     * @throws UploadSizeLimitExceededException
+     *             if the total size exceeds the limit
+     * @throws UploadFileSizeLimitExceededException
+     *             if a file size exceeds the limit
+     * @throws UploadFileCountLimitExceededException
+     *             if the file count exceeds the limit
      */
     private static void validateUploadLimits(UploadHandler handler,
             VaadinRequest request, Collection<Part> parts)

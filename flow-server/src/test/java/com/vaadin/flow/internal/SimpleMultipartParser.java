@@ -36,9 +36,8 @@ class SimpleMultipartParser {
     private final String boundary;
 
     public SimpleMultipartParser(byte[] data, String boundary) {
-        this.reader = new BufferedReader(
-                new InputStreamReader(new ByteArrayInputStream(data),
-                        StandardCharsets.UTF_8));
+        this.reader = new BufferedReader(new InputStreamReader(
+                new ByteArrayInputStream(data), StandardCharsets.UTF_8));
         this.boundary = "--" + boundary;
     }
 
@@ -49,7 +48,8 @@ class SimpleMultipartParser {
      * Reads the headers of the next part.
      *
      * @return the headers as a string, or null if no more parts
-     * @throws IOException if an I/O error occurs
+     * @throws IOException
+     *             if an I/O error occurs
      */
     public String readHeaders() throws IOException {
         if (lastPartRead) {
@@ -93,8 +93,10 @@ class SimpleMultipartParser {
     /**
      * Reads the body data of the current part.
      *
-     * @param outputStream the output stream to write the body data to
-     * @throws IOException if an I/O error occurs
+     * @param outputStream
+     *            the output stream to write the body data to
+     * @throws IOException
+     *             if an I/O error occurs
      */
     public void readBodyData(ByteArrayOutputStream outputStream)
             throws IOException {
@@ -103,7 +105,8 @@ class SimpleMultipartParser {
 
         while ((line = reader.readLine()) != null) {
             if (line.startsWith(boundary)) {
-                // Found the next boundary, push it back for next readHeaders call
+                // Found the next boundary, push it back for next readHeaders
+                // call
                 pushedBackLine = line;
 
                 // Check if this is the final boundary
