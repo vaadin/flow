@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Vaadin Ltd
  * @since 25.0
  */
-public class UploadFileSizeLimitExceededException extends IOException {
+class UploadFileSizeLimitExceededException extends IOException {
 
     private final String fileName;
     private final long actualSize;

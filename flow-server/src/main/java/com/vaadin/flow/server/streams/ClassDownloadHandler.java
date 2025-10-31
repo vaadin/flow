@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a class resource.

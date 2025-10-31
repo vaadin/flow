@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.streams;
+package com.vaadin.flow.server.communication;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,9 +39,10 @@ import com.vaadin.flow.internal.streams.UploadStartEvent;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.communication.UploadFileCountLimitExceededException;
-import com.vaadin.flow.server.communication.UploadFileSizeLimitExceededException;
-import com.vaadin.flow.server.communication.UploadSizeLimitExceededException;
+import com.vaadin.flow.server.streams.TransferContext;
+import com.vaadin.flow.server.streams.TransferProgressListener;
+import com.vaadin.flow.server.streams.UploadEvent;
+import com.vaadin.flow.server.streams.UploadHandler;
 
 /**
  * Utility class with methods for handling transfer of upload and download
@@ -138,8 +139,9 @@ public final class TransferUtil {
      * @param owner
      *            The element that owns the request handler
      */
-    static void handleUpload(UploadHandler handler, VaadinRequest request,
-            VaadinResponse response, VaadinSession session, Element owner) {
+    public static void handleUpload(UploadHandler handler,
+            VaadinRequest request, VaadinResponse response,
+            VaadinSession session, Element owner) {
         boolean isMultipartUpload = isMultipartContent(request);
         try {
             String fileName;

@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Vaadin Ltd
  * @since 25.0
  */
-public class UploadFileCountLimitExceededException extends IOException {
+class UploadFileCountLimitExceededException extends IOException {
 
     private final long actualCount;
     private final long permittedCount;

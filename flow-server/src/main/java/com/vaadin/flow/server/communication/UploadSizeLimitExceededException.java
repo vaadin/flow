@@ -26,7 +26,7 @@ import java.io.IOException;
  * @author Vaadin Ltd
  * @since 25.0
  */
-public class UploadSizeLimitExceededException extends IOException {
+class UploadSizeLimitExceededException extends IOException {
 
     private final long actualSize;
     private final long permittedSize;
