@@ -18,6 +18,7 @@ package com.vaadin.flow.spring;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.SmartInitializingSingleton;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,6 +27,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -40,6 +42,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
@@ -158,9 +161,10 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     public AccessPathChecker accessPatchChecker(
             VaadinConfigurationProperties vaadinProperties,
-            @Lazy WebInvocationPrivilegeEvaluator evaluator) {
-        return new SpringAccessPathChecker(evaluator,
-                vaadinProperties.getUrlMapping());
+            @Lazy WebInvocationPrivilegeEvaluator evaluator,
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return new SpringAccessPathChecker(securityContextHolderStrategy,
+                evaluator, vaadinProperties.getUrlMapping());
     }
 
     /**
@@ -206,7 +210,24 @@ public class SpringSecurityAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
-    AuthenticationContext authenticationContext() {
-        return new AuthenticationContext();
+    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+        return new VaadinAwareSecurityContextHolderStrategy();
+    }
+
+    // Ensure AuthenticationUtil is wired to whichever
+    // SecurityContextHolderStrategy bean is in use,
+    // even if a custom one is provided by the application.
+    @Bean
+    SmartInitializingSingleton securityContextHolderStrategyInitializer(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return () -> AuthenticationUtil.setSecurityContextSupplier(
+                securityContextHolderStrategy::getContext);
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    AuthenticationContext authenticationContext(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
+        return new AuthenticationContext(securityContextHolderStrategy);
     }
 }

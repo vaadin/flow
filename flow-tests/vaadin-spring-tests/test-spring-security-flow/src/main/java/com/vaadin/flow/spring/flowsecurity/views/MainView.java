@@ -20,7 +20,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.security.concurrent.DelegatingSecurityContextExecutor;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.switchuser.SwitchUserFilter;
 
 import com.vaadin.flow.component.Component;
@@ -125,10 +124,9 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
                                 .setLocation("impersonate?username=john")));
                 impersonate.setId("impersonate");
                 layout.add(impersonate);
-            } else if (SecurityContextHolder.getContext().getAuthentication()
-                    .getAuthorities().stream().anyMatch(
-                            auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
-                                    .equals(auth.getAuthority()))) {
+            } else if (securityUtils.getAuthorities().stream().anyMatch(
+                    auth -> SwitchUserFilter.ROLE_PREVIOUS_ADMINISTRATOR
+                            .equals(auth.getAuthority()))) {
                 Button impersonate = new Button("Exit impersonation",
                         e -> getUI().ifPresent(ui -> ui.getPage()
                                 .setLocation("impersonate/exit")));

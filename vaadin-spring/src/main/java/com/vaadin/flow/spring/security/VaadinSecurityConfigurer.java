@@ -42,12 +42,14 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -749,6 +751,12 @@ public final class VaadinSecurityConfigurer
                     getAuthenticationContext().setLogoutHandlers(
                             configurer.getLogoutSuccessHandler(),
                             configurer.getLogoutHandlers());
+                    var securityContextHolderStrategy = getSharedObjectOrBean(
+                            SecurityContextHolderStrategy.class);
+                    if (securityContextHolderStrategy != null) {
+                        filter.setSecurityContextHolderStrategy(
+                                securityContextHolderStrategy);
+                    }
                     return filter;
                 }
             };
@@ -845,6 +853,21 @@ public final class VaadinSecurityConfigurer
             registry.requestMatchers(toRequestPrincipalAwareMatcher(
                     getRequestUtil()::isEndpointRequest)).authenticated();
         }
+        registry.requestMatchers(defaultPermitMatcher()).permitAll();
+        registry.withObjectPostProcessor(
+                new ObjectPostProcessor<AuthorizationFilter>() {
+                    @Override
+                    public <O extends AuthorizationFilter> O postProcess(
+                            O filter) {
+                        var securityContextHolderStrategy = getSharedObjectOrBean(
+                                SecurityContextHolderStrategy.class);
+                        if (securityContextHolderStrategy != null) {
+                            filter.setSecurityContextHolderStrategy(
+                                    securityContextHolderStrategy);
+                        }
+                        return filter;
+                    }
+                });
     }
 
     private ApplicationContext getApplicationContext() {

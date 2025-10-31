@@ -15,9 +15,12 @@
  */
 package com.vaadin.flow.spring.flowsecurity;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
@@ -40,6 +43,14 @@ public class SecurityUtils {
             return null;
         }
         return userInfoService.findByUsername(userDetails.get().getUsername());
+    }
+
+    public SecurityContext getSecurityContext() {
+        return authenticationContext.getSecurityContext();
+    }
+
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return authenticationContext.getGrantedAuthorities();
     }
 
     public void logout() {

@@ -20,7 +20,6 @@ import jakarta.annotation.security.RolesAllowed;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.security.concurrent.DelegatingSecurityContextRunnable;
-import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -63,7 +62,7 @@ public class AdminView extends VerticalLayout {
                 }
             };
             Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                    doNavigation, SecurityContextHolder.getContext());
+                    doNavigation, securityUtils.getSecurityContext());
             new Thread(wrappedRunnable).start();
         });
         add(accessRolePrefixedAdminPageFromThread);

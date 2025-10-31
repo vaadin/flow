@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.spring;
 
+import java.util.Objects;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 /**
@@ -26,13 +29,27 @@ import org.springframework.security.core.context.SecurityContextHolder;
  */
 public class AuthenticationUtil {
 
+    private static Supplier<SecurityContext> securityContextSupplier = SecurityContextHolder::getContext;
+
+    /**
+     * Sets the supplier for providing a custom SecurityContext.
+     *
+     * @param supplier
+     *            the supplier function used to provide a SecurityContext
+     */
+    public static void setSecurityContextSupplier(
+            Supplier<SecurityContext> supplier) {
+        securityContextSupplier = Objects.requireNonNull(supplier,
+                "SecurityContext supplier cannot be null");
+    }
+
     /**
      * Gets the authenticated user from the Spring SecurityContextHolder.
      *
      * @return the authenticated user or {@code null}
      */
     public static Authentication getSecurityHolderAuthentication() {
-        Authentication authentication = SecurityContextHolder.getContext()
+        Authentication authentication = securityContextSupplier.get()
                 .getAuthentication();
         if (authentication instanceof AnonymousAuthenticationToken) {
             return null;
