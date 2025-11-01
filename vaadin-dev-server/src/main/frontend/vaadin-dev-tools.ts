@@ -644,13 +644,8 @@ export class VaadinDevTools extends LitElement {
     this.frontendStatus = ConnectionStatus.UNAVAILABLE;
     this.javaStatus = ConnectionStatus.UNAVAILABLE;
     if (!this.conf.token) {
-      console.error('Dev tools functionality denied for this host.');
-      this.log(
-        MessageType.LOG,
-        'See Vaadin documentation on how to configure devmode.hostsAllowed property.',
-        undefined,
-        'https://vaadin.com/docs/latest/configuration/properties#properties',
-        undefined
+      console.error(
+        'Dev tools functionality denied for this host. See Vaadin documentation on how to configure devmode.hostsAllowed property: https://vaadin.com/docs/latest/configuration/properties#properties'
       );
       return;
     }
