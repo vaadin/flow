@@ -265,6 +265,7 @@ jobs:
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
   api-diff-labeling:
+    needs: check-permissions
     if: github.event_name == 'pull_request_target'
     timeout-minutes: 10
     runs-on: ubuntu-24.04
