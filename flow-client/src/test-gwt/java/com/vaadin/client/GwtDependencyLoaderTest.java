@@ -41,6 +41,22 @@ import elemental.json.JsonObject;
  */
 public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
+    /**
+     * Helper method to convert Dependency to JsonObject for testing.
+     * Since Dependency no longer has toJson() method, tests need to manually
+     * construct the JSON representation.
+     */
+    private static JsonObject dependencyToJson(Dependency dependency) {
+        JsonObject json = Json.createObject();
+        json.put(Dependency.KEY_URL, dependency.getUrl());
+        json.put(Dependency.KEY_TYPE, dependency.getType().name());
+        json.put(Dependency.KEY_LOAD_MODE, dependency.getLoadMode().name());
+        if (dependency.getId() != null) {
+            json.put(Dependency.KEY_ID, dependency.getId());
+        }
+        return json;
+    }
+
     private static class MockResourceLoader extends ResourceLoader {
         private MockResourceLoader() {
             super(new Registry(), false);
@@ -151,15 +167,15 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String lazyCssUrl = "https://foo.bar/style.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
-                        LoadMode.LAZY).toJson(),
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
+                        LoadMode.LAZY)),
 
-                new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
-                        LoadMode.EAGER).toJson()));
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
+                        LoadMode.EAGER)),
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
+                        LoadMode.EAGER))));
 
         assertEquals(Arrays.asList(eagerJsUrl, lazyJsUrl),
                 mockResourceLoader.loadingScripts);
@@ -176,14 +192,14 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         String cssUrl2 = "/2.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.LAZY).toJson()));
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
+                        LoadMode.LAZY))));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -208,17 +224,17 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
                 createInlineDependency(Dependency.Type.JAVASCRIPT,
                         inlineJsContents),
-                new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
-                        LoadMode.EAGER).toJson(),
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, lazyJsUrl,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.JAVASCRIPT, eagerJsUrl,
+                        LoadMode.EAGER)),
 
                 createInlineDependency(Dependency.Type.STYLESHEET,
                         inlineCssContents),
-                new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
-                        LoadMode.LAZY).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
-                        LoadMode.EAGER).toJson()));
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, lazyCssUrl,
+                        LoadMode.LAZY)),
+                dependencyToJson(new Dependency(Dependency.Type.STYLESHEET, eagerCssUrl,
+                        LoadMode.EAGER))));
 
         // When multiple LoadModes are used, no guarantees on the order can be
         // made except
@@ -264,8 +280,7 @@ public class GwtDependencyLoaderTest extends ClientEngineTestBase {
 
     private JsonObject createInlineDependency(Dependency.Type dependencyType,
             String contents) {
-        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE)
-                .toJson();
+        JsonObject json = dependencyToJson(new Dependency(dependencyType, "", LoadMode.INLINE));
         json.remove(Dependency.KEY_URL);
         json.put(Dependency.KEY_CONTENTS, contents);
         return json;

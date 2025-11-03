@@ -19,10 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.internal.JacksonUtils;
-
-import tools.jackson.databind.node.ObjectNode;
-
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
@@ -33,7 +29,7 @@ public class Dependency implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
-    public static final String KEY_LOAD_MODE = "mode";
+    public static final String KEY_LOAD_MODE = "loadMode";
     public static final String KEY_CONTENTS = "contents";
     public static final String KEY_ID = "id";
 
@@ -168,22 +164,6 @@ public class Dependency implements Serializable {
      */
     public String getId() {
         return id;
-    }
-
-    /**
-     * Converts the object into json representation.
-     *
-     * @return json representation of the object
-     */
-    public ObjectNode toJson() {
-        ObjectNode jsonObject = JacksonUtils.createObjectNode();
-        jsonObject.put(KEY_URL, url);
-        jsonObject.put(KEY_TYPE, type.name());
-        jsonObject.put(KEY_LOAD_MODE, loadMode.name());
-        if (id != null) {
-            jsonObject.put(KEY_ID, id);
-        }
-        return jsonObject;
     }
 
     @Override
