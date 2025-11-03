@@ -19,8 +19,9 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
+
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
@@ -174,8 +175,8 @@ public class Dependency implements Serializable {
      *
      * @return json representation of the object
      */
-    public JsonObject toJson() {
-        JsonObject jsonObject = Json.createObject();
+    public ObjectNode toJson() {
+        ObjectNode jsonObject = JacksonUtils.createObjectNode();
         jsonObject.put(KEY_URL, url);
         jsonObject.put(KEY_TYPE, type.name());
         jsonObject.put(KEY_LOAD_MODE, loadMode.name());
