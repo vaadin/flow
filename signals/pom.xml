@@ -13,7 +13,7 @@
   <description>Full-Stack Signals common library for Flow and Hilla</description>
 
   <properties>
-    <junit.version>6.0.0</junit.version>
+    <junit.version>6.0.1</junit.version>
   </properties>
 
   <dependencies>
