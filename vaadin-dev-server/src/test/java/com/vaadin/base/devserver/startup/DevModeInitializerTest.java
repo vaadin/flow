@@ -36,6 +36,7 @@ import java.util.function.Function;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -612,14 +613,17 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
         List<URL> urls = new ArrayList<>();
         urls.add(jar);
 
-        // Create mock loader with the single jar to be found
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(classLoader.getResources(resourcesFolder))
-                .thenReturn(Collections.enumeration(urls));
+        // Create mock resource provider with the single jar to be found
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        Mockito.when(resourceProvider.getApplicationResources(resourcesFolder))
+                .thenReturn(urls);
 
         // load jars from classloader
         List<File> jarFilesFromClassloader = new ArrayList<>(DevModeInitializer
-                .getFrontendLocationsFromClassloader(classLoader));
+                .getFrontendLocationsFromResourceProvider(resourceProvider));
 
         // Assert that jar was found and accepted
         assertEquals("One jar should have been found and added as a File", 1,
@@ -641,14 +645,18 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     private void loadingFsResources_allFilesExist(Collection<URL> urls,
             String resourcesFolder)
             throws IOException, VaadinInitializerException {
-        // Create mock loader with the single jar to be found
-        ClassLoader classLoader = Mockito.mock(ClassLoader.class);
-        Mockito.when(classLoader.getResources(resourcesFolder))
-                .thenReturn(Collections.enumeration(urls));
+
+        // Create mock resource provider with the single jar to be found
+        ResourceProvider resourceProvider = Mockito
+                .mock(ResourceProvider.class);
+        Mockito.when(lookup.lookup(ResourceProvider.class))
+                .thenReturn(resourceProvider);
+        Mockito.when(resourceProvider.getApplicationResources(resourcesFolder))
+                .thenReturn(List.copyOf(urls));
 
         // load jars from classloader
         List<File> locations = new ArrayList<>(DevModeInitializer
-                .getFrontendLocationsFromClassloader(classLoader));
+                .getFrontendLocationsFromResourceProvider(resourceProvider));
 
         // Assert that resource was found and accepted
         assertEquals("One resource should have been found and added as a File",
