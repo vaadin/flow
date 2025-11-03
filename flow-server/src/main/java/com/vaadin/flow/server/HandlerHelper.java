@@ -158,6 +158,7 @@ public class HandlerHelper implements Serializable {
         resources.add("/themes/**");
         resources.add("/aura/**");
         resources.add("/lumo/**");
+        resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
@@ -563,10 +564,9 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
-                "/VAADIN/**", // This contains static bundle files which
+                "/VAADIN/**" // This contains static bundle files which
                               // typically do not need a security
                               // context but also uploads go here
-                "/assets/**" // Contains copied npm assets
         };
     }
 
