@@ -45,6 +45,7 @@ import com.vaadin.flow.internal.VaadinContextInitializer;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.JsonConstants;
+import jakarta.servlet.annotation.MultipartConfig;
 
 /**
  * The main servlet, which handles all incoming requests to the application.
@@ -60,6 +61,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@MultipartConfig
 public class VaadinServlet extends HttpServlet {
 
     public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
