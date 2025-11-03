@@ -45,9 +45,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
-import com.vaadin.experimental.Feature;
-import com.vaadin.experimental.FeatureFlags;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.StringUtil;
@@ -65,6 +62,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 
 /**
  * Common logic for generate import file JS content.
@@ -97,8 +95,7 @@ abstract class AbstractUpdateImports implements Runnable {
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
 
-    private static final String TAILWIND_THEME_CSS = "tailwindcss/theme.css";
-    private static final String TAILWIND_UTILITIES_CSS = "tailwindcss/utilities.css";
+    private static final String TAILWIND_IMPORT = "./" + TAILWIND_CSS;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -311,9 +308,8 @@ abstract class AbstractUpdateImports implements Runnable {
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
         List<CssData> appShellCssData = new ArrayList<>();
-        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
-            appShellCssData.add(new CssData(TAILWIND_THEME_CSS, null, null, null));
-            appShellCssData.add(new CssData(TAILWIND_UTILITIES_CSS, null, null, null));
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            appShellCssData.add(new CssData(TAILWIND_IMPORT, null, null, null));
         }
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {

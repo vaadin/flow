@@ -566,7 +566,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
-      //#tailwindCssVitePlugin#
+      //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
         meta: {

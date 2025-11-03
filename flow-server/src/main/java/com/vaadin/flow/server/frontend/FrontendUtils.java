@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import jakarta.servlet.ServletContext;
 
 import java.io.File;
@@ -262,6 +264,11 @@ public class FrontendUtils {
     public static final String ROUTES_FLOW_TSX = "routes-flow.tsx";
 
     public static final String ROUTES_JS = "routes.js";
+
+    /**
+     * File name of the Tailwind CSS framework integration entrypoint.
+     */
+    public static final String TAILWIND_CSS = "tailwind.css";
 
     /**
      * Default generated path for generated frontend files.
@@ -1541,6 +1548,17 @@ public class FrontendUtils {
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());
+    }
+
+    /**
+     * Checks if integration with Tailwind CSS framework is enabled.
+     *
+     * @param options
+     *          the build options
+     * @return true if Tailwind CSS integration is enabled, false otherwise
+     */
+    public static boolean isTailwindCssEnabled(Options options) {
+        return options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
     }
 
 }

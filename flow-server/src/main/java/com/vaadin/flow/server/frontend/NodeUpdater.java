@@ -311,7 +311,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
             dependencies.putAll(readDependencies("tailwindcss", "dependencies"));
         }
         putHillaComponentsDependencies(dependencies, "dependencies");
@@ -377,8 +377,8 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
-        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
-            defaults.putAll(readDependencies("tailwindcss", "dependencies"));
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            defaults.putAll(readDependencies("tailwindcss", "devDependencies"));
         }
 
         // Add workbox dependencies only when PWA is enabled

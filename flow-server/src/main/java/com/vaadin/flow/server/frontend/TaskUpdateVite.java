@@ -26,7 +26,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -169,13 +168,14 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateTailwindCssVitePlugin(String template) {
-        if (options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS)) {
-            return template.replace("//#tailwindCssVitePluginImport#",
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            return template
+                    .replace("//#tailwindcssVitePluginImport#",
                     "import tailwindcss from '@tailwindcss/vite';")
-                    .replace("//#tailwindCssVitePlugin#", "tailwindcss(),");
+                    .replace("//#tailwindcssVitePlugin#", "tailwindcss(),");
         } else {
-            return template.replace("//#tailwindCssVitePluginImport#", "")
-                    .replace("//#tailwindCssVitePlugin#", "");
+            return template.replace("//#tailwindcssVitePluginImport#", "")
+                    .replace("//#tailwindcssVitePlugin#", "");
         }
     }
 
