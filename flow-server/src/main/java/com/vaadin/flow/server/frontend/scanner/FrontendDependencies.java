@@ -89,7 +89,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
             + "ch\\.quos\\.logback\\b|"
             + "io\\.(fabric8\\.kubernetes)\\b|"
-            + "net\\.(sf|bytebuddy)\\b"
+            + "net\\.(sf|bytebuddy)\\b|"
+            + "tools\\.jackson\\b"
             + ").*|"
             + ".*(Exception)$"
             + ")");
@@ -125,11 +126,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             if (themeDefinition != null && themeDefinition.getTheme() != null) {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
-                if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addInternalEntryPoint(themeClass);
-                    visitEntryPoint(entryPoints.get(themeClass.getName()));
-                    visitedClasses.get(themeClass.getName()).loadCss = true;
-                }
+                addAppShellEntryPoint(themeClass);
+                visitEntryPoint(entryPoints.get(themeClass.getName()));
             }
             if (reactEnabled) {
                 computeReactClasses(finder);
@@ -186,6 +184,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void aggregateEntryPointInformation() {
+        var activeTheme = themeDefinition != null
+                && themeDefinition.getTheme() != null;
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
@@ -193,7 +193,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                if (classInfo.loadCss) {
+                if (classInfo.loadCss || activeTheme
+                        && entryPoint.getType() == EntryPointType.APP_SHELL) {
                     entryPoint.getCss().addAll(classInfo.css);
                 }
                 entryPoint.getScripts().addAll(classInfo.scripts);
@@ -322,6 +323,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private ChunkInfo getChunkInfo(EntryPointData data) {
+        if (data.getType() == EntryPointType.APP_SHELL) {
+            return ChunkInfo.APP_SHELL;
+        }
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
         }
@@ -458,7 +462,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            addInternalEntryPoint(appShell);
+            addAppShellEntryPoint(appShell);
         }
 
         try {
@@ -547,6 +551,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return null;
     }
 
+    private void addAppShellEntryPoint(Class<?> entryPointClass) {
+        addEntryPoint(entryPointClass, EntryPointType.APP_SHELL, null, true);
+    }
+
     private void addInternalEntryPoint(Class<?> entryPointClass) {
         addEntryPoint(entryPointClass, EntryPointType.INTERNAL, null, true);
     }
@@ -631,9 +639,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 themeDefinition = new ThemeDefinition(theme, variant,
                         themeName);
                 themeInstance = new ThemeWrapper(theme);
-                classesWithTheme.get(themeData).children.stream()
-                        .map(visitedClasses::get).filter(Objects::nonNull)
-                        .forEach(classInfo -> classInfo.loadCss = true);
             }
         }
 

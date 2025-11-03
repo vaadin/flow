@@ -32,7 +32,6 @@ import com.vaadin.flow.server.VaadinServletContext;
  * and perform any required programmatic registration of servlets, filters, and
  * listeners in response to it.
  *
- * @since
  *
  * @see ClassLoaderAwareServletContainerInitializer
  */

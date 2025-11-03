@@ -139,7 +139,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Creates a new iframe with download handler callback that provides a
      * resource from server.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -183,7 +183,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Sets the source of the iframe with a source URL with the URL of the given
      * {@link DownloadHandler} callback.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other

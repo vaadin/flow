@@ -1,4 +1,4 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 
 class SimpleObserver extends PolymerElement {
   static get template() {
@@ -12,11 +12,11 @@ class SimpleObserver extends PolymerElement {
 
   static get properties() {
     return {
-      first: { type: String, observer: '_firstChanged' },
-      last: { type: String, observer: '_lastChanged' },
+      first: { type: String, observer: "_firstChanged" },
+      last: { type: String, observer: "_lastChanged" },
       previousFirst: String,
       previousLast: String,
-      example: { type: String, observer: 'userListChanged(users.*, filter)' }
+      example: { type: String, observer: "userListChanged(users.*, filter)" },
     };
   }
 
@@ -29,7 +29,7 @@ class SimpleObserver extends PolymerElement {
   }
 
   static get is() {
-    return 'simple-observer';
+    return "simple-observer";
   }
 }
 

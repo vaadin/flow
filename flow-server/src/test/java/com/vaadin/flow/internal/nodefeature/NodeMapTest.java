@@ -117,6 +117,18 @@ public class NodeMapTest
     }
 
     @Test
+    public void testCollectChange_withSignalBinding() {
+        // Signal and Registration instances are irrelevant in this test.
+        nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value"));
+        List<NodeChange> putChanges = collectChanges(nodeMap);
+
+        Assert.assertEquals(1, putChanges.size());
+        MapPutChange putChange = (MapPutChange) putChanges.get(0);
+        Assert.assertEquals(KEY, putChange.getKey());
+        Assert.assertEquals("value", putChange.getValue());
+    }
+
+    @Test
     public void testNoChangeEvent() {
         nodeMap.put(KEY, "value", false);
         List<NodeChange> changes = collectChanges(nodeMap);

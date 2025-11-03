@@ -24,7 +24,6 @@ import com.vaadin.flow.server.VaadinSession;
  * Implementor ot this interface are responsible for update Vaadin components
  * when application classes change.
  * <p>
- * </p>
  * Listener instances are by default discovered using Flow
  * {@link com.vaadin.flow.di.Lookup} mechanisms. Implementors are usually
  * discovered and instantiated using {@link java.util.ServiceLoader}, meaning
@@ -35,7 +34,6 @@ import com.vaadin.flow.server.VaadinSession;
  * specific runtime environments, such as Spring and CDI, might also provide
  * other ways of discovering implementors.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
@@ -47,7 +45,7 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     * </p>
+     *
      * This method is meant to perform application-wide updates. Operation
      * targeting Vaadin session should be implemented in
      * {@link #onClassLoadEvent(VaadinSession, Set, boolean)} method.
@@ -74,7 +72,7 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     * </p>
+     *
      * This method is meant to perform updates at {@link VaadinSession} level.
      * Operation targeting the entire application should be implemented in
      * {@link #onClassLoadEvent(VaadinService, Set, boolean)} method.

@@ -50,7 +50,6 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,

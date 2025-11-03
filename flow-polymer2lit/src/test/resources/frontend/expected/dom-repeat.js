@@ -1,6 +1,6 @@
-import { html, LitElement, css } from 'lit';
+import { html, LitElement, css } from "lit";
 
-import '@vaadin/vaadin-vertical-layout';
+import "@vaadin/vaadin-vertical-layout";
 
 class DomRepeatTest extends LitElement {
   render() {
@@ -26,21 +26,21 @@ class DomRepeatTest extends LitElement {
   static get properties() {
     return {
       employees: {
-        type: Object
-      }
+        type: Object,
+      },
     };
   }
 
   static get is() {
-    return 'dom-repeat-test';
+    return "dom-repeat-test";
   }
   constructor() {
     super();
     this.employees = {
       list: [
-        { given: 'Kamil', family: 'Smith' },
-        { given: 'Sally', family: 'Johnson' }
-      ]
+        { given: "Kamil", family: "Smith" },
+        { given: "Sally", family: "Johnson" },
+      ],
     };
   }
 }

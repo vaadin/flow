@@ -156,7 +156,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Platform version takes precedence over dev deps
         Assert.assertEquals(PINNED_VERSION,
-                object.get("@vaadin/vaadin-overlay").textValue());
+                object.get("@vaadin/vaadin-overlay").asString());
     }
 
     @Test
@@ -229,10 +229,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
-                generatedVersions.get("@vaadin/vaadin-login").textValue());
+                generatedVersions.get("@vaadin/vaadin-login").asString());
         Assert.assertEquals("Notification version should use platform",
                 versionsNotificationVersion, generatedVersions
-                        .get("@vaadin/vaadin-notification").textValue());
+                        .get("@vaadin/vaadin-notification").asString());
     }
 
     @Test
@@ -331,7 +331,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
-                overlayPackage.get("version").textValue());
+                overlayPackage.get("version").asString());
     }
 
     @Test

@@ -20,21 +20,30 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.core.env.ConfigurableEnvironment;
 
 import com.vaadin.flow.internal.NetworkUtil;
+import com.vaadin.flow.server.Constants;
 
 /**
  * Sets Spring Boot dev tools to run on a free random port if the default port
- * (35729) is in use.
+ * is in use.
  */
 public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
 
     private static final String SPRING_DEVTOOLS_LIVERELOAD_PORT = "spring.devtools.livereload.port";
-    private static final int DEFAULT_PORT = 35729;
+    private static final String SPRING_DEVTOOLS_LIVERELOAD_ENABLED = "spring.devtools.livereload.enabled";
 
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,
             SpringApplication application) {
+        // Only set the port if livereload is enabled
+        boolean liveReloadEnabled = environment.getProperty(
+                SPRING_DEVTOOLS_LIVERELOAD_ENABLED, Boolean.class, false);
+
+        if (!liveReloadEnabled) {
+            return;
+        }
+
         if (environment.getProperty(SPRING_DEVTOOLS_LIVERELOAD_PORT) == null) {
-            int reloadPort = DEFAULT_PORT;
+            int reloadPort = Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
             if (!NetworkUtil.isFreePort(reloadPort)) {
                 reloadPort = NetworkUtil.getFreePort();
             }

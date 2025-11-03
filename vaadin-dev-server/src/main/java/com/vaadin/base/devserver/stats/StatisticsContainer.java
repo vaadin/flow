@@ -134,7 +134,7 @@ public class StatisticsContainer {
      * @return the value of the field as a string
      */
     public String getValue(String name) {
-        return json.get(name).asText();
+        return json.get(name).asString();
     }
 
     /**

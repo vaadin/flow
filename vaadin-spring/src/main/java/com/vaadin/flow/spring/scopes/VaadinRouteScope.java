@@ -54,7 +54,6 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
  * @author Vaadin Ltd
- * @since
  *
  */
 public class VaadinRouteScope extends AbstractScope {

@@ -92,7 +92,6 @@ public final class LocaleUtil {
 
     /**
      * Get the I18nProvider from the current VaadinService.
-     * <p>
      *
      * @return the optional value of I18nProvider
      */

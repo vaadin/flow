@@ -145,6 +145,9 @@ public class FeatureFlags implements Serializable {
     /**
      * Set by the Maven / Gradle plugin when running through that so the feature
      * flags will be correctly detected.
+     *
+     * @param propertiesFolder
+     *            the folder containing the properties file
      */
     public void setPropertiesLocation(File propertiesFolder) {
         this.propertiesFolder = propertiesFolder;

@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * A factory for creating daemon threads with custom naming conventions, used to
  * generate threads with a predefined naming pattern.
  * <p>
- * </p>
+ *
  * This class implements the {@link ThreadFactory} interface to provide a
  * mechanism for instantiating threads that are configured with specific
  * attributes such as name prefix, thread priority, and daemon status.

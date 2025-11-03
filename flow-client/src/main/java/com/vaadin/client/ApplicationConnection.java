@@ -329,7 +329,6 @@ public class ApplicationConnection {
      * if a deferred command is added in another deferred command.
      * <p>
      * Used by the native "client.isActive" function.
-     * </p>
      *
      * @return true if deferred commands are (potentially) being executed, false
      *         otherwise

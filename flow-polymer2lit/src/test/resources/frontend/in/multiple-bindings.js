@@ -1,4 +1,4 @@
-import { html, PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html, PolymerElement } from "@polymer/polymer/polymer-element.js";
 
 class MultipleBindings extends PolymerElement {
   static get template() {
@@ -13,7 +13,7 @@ class MultipleBindings extends PolymerElement {
   }
 
   static get is() {
-    return 'multiple-bindings';
+    return "multiple-bindings";
   }
 }
 

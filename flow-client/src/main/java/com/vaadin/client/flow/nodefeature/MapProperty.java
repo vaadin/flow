@@ -297,6 +297,7 @@ public class MapProperty implements ReactiveValue {
      *
      * @param newValue
      *            the new value to set.
+     * @return a command that synchronizes the value to the server
      * @see #syncToServer(Object)
      */
     public Runnable getSyncToServerCommand(Object newValue) {

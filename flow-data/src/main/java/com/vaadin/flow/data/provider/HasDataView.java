@@ -29,7 +29,6 @@ import java.io.Serializable;
  *            filter type
  * @param <V>
  *            DataView type
- * @since
  */
 public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
 

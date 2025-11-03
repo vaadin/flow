@@ -47,7 +47,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
  * Default implementation of {@link ApplicationConfigurationFactory}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING

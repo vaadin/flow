@@ -66,7 +66,7 @@ public class StatisticsSender {
      */
     String getLastServerMessage(ObjectNode json) {
         return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText()
+                ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asString()
                 : null;
     }
 
@@ -158,7 +158,7 @@ public class StatisticsSender {
      */
     String getLastSendStatus(ObjectNode json) {
         try {
-            return json.get(StatisticsConstants.FIELD_LAST_STATUS).asText();
+            return json.get(StatisticsConstants.FIELD_LAST_STATUS).asString();
         } catch (Exception e) {
             // Use default value in case of any problems
             getLogger().debug(
@@ -221,7 +221,7 @@ public class StatisticsSender {
                 global.setValue(StatisticsConstants.FIELD_LAST_SENT,
                         System.currentTimeMillis());
                 global.setValue(StatisticsConstants.FIELD_LAST_STATUS, response
-                        .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
+                        .get(StatisticsConstants.FIELD_LAST_STATUS).asString());
 
                 // Use different interval, if requested in response or default
                 // to 24H
@@ -244,7 +244,7 @@ public class StatisticsSender {
                                 .isTextual()) {
                     String msg = response
                             .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                            .asText();
+                            .asString();
                     global.setValue(StatisticsConstants.FIELD_SERVER_MESSAGE,
                             msg);
                     message.set(msg);
@@ -253,7 +253,7 @@ public class StatisticsSender {
             });
 
             // If data was sent ok, clear the existing project data
-            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
+            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asString()
                     .startsWith("200:")) {
                 storage.clearAllProjectData();
             }
