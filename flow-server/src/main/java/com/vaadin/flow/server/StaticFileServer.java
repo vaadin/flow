@@ -88,6 +88,11 @@ public class StaticFileServer implements StaticFileHandler {
     public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
+    // Matches paths to theme asset files referenced from CSS as an url() or
+    // from Java (e.g. new Image("themes/my-theme/...")
+    public static final Pattern NPM_ASSETS_PATTERN = Pattern
+            .compile("^\\/assets\\/");
+
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
     static final Set<URI> externalFileSystem = new HashSet<>();
@@ -319,7 +324,8 @@ public class StaticFileServer implements StaticFileHandler {
                     .getThemeResourceFromPrecompiledProductionBundle(
                             filenameWithPath.replace(VAADIN_MAPPING, "")
                                     .replaceFirst("^/", ""));
-        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()
+                || NPM_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
                             + filenameWithPath.replaceFirst("^/", ""));
@@ -581,6 +587,7 @@ public class StaticFileServer implements StaticFileHandler {
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
                 || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo())
                         .find()
+                || NPM_ASSETS_PATTERN.matcher(request.getPathInfo()).find()
                 || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }

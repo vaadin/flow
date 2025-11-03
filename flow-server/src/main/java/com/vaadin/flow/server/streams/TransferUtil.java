@@ -115,6 +115,12 @@ public final class TransferUtil {
                     }
                 }
             }
+            outputStream.flush();
+            try {
+                Thread.sleep(250); // delay 0.5s between chunks
+            } catch (InterruptedException e) {
+                // NOOP
+            }
         }
         long finalTransferred = transferred;
         listeners.forEach(listener -> listener.onComplete(transferContext,

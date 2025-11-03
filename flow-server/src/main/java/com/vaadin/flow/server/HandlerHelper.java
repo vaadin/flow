@@ -566,6 +566,7 @@ public class HandlerHelper implements Serializable {
                 "/VAADIN/**", // This contains static bundle files which
                               // typically do not need a security
                               // context but also uploads go here
+                "/assets/**" // Contains copied npm assets
         };
     }
 
