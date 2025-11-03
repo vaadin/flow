@@ -563,10 +563,9 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
-                "/VAADIN/**", // This contains static bundle files which
+                "/VAADIN/**" // This contains static bundle files which
                               // typically do not need a security
                               // context but also uploads go here
-                "/assets/**" // Contains copied npm assets
         };
     }
 
