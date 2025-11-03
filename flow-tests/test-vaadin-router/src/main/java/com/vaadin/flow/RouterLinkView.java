@@ -23,7 +23,7 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
 
-import elemental.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
 @Route("com.vaadin.flow.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {
@@ -48,10 +48,10 @@ public class RouterLinkView extends AbstractDivView {
             queryParams.setText(
                     e.getLocation().getQueryParameters().getQueryString());
             if (e.getState().isPresent()) {
-                JsonObject state = ((JsonObject) e.getState().get());
-                if (state.hasKey("href")) {
+                ObjectNode state = ((ObjectNode) e.getState().get());
+                if (state.has("href")) {
                     UI.getCurrent().getPage().getHistory().pushState(null,
-                            state.getString("href"));
+                            state.get("href").asText());
                 }
 
             }
