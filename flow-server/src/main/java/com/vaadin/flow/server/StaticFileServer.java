@@ -88,8 +88,7 @@ public class StaticFileServer implements StaticFileHandler {
     public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
 
-    // Matches paths to theme asset files referenced from CSS as an url() or
-    // from Java (e.g. new Image("themes/my-theme/...")
+    // Matches paths to npm asset files copies for NpmPackage(assets)
     public static final Pattern NPM_ASSETS_PATTERN = Pattern
             .compile("^\\/assets\\/");
 
