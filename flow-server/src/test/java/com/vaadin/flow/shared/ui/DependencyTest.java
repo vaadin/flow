@@ -17,10 +17,9 @@ package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
-
-import tools.jackson.databind.node.ObjectNode;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.Is.is;
