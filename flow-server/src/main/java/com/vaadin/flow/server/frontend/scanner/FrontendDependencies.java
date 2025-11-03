@@ -89,7 +89,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
             + "ch\\.quos\\.logback\\b|"
             + "io\\.(fabric8\\.kubernetes)\\b|"
-            + "net\\.(sf|bytebuddy)\\b"
+            + "net\\.(sf|bytebuddy)\\b|"
+            + "tools\\.jackson\\b"
             + ").*|"
             + ".*(Exception)$"
             + ")");
