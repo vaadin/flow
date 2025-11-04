@@ -17,7 +17,7 @@ package com.vaadin.flow.shared.ui;
 
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
-import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -62,8 +62,7 @@ public class DependencyTest {
     }
 
     private void assertDependency(Dependency dependency) {
-        ObjectNode dependencyJson = JacksonUtils.getMapper()
-                .valueToTree(dependency);
+        JsonNode dependencyJson = JacksonUtils.createNode(dependency);
 
         assertThat("No contents should be present in json now",
                 dependencyJson.has(Dependency.KEY_CONTENTS), is(false));
