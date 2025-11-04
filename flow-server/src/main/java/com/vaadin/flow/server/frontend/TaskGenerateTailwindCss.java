@@ -74,6 +74,6 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
     @Override
     protected boolean shouldGenerate() {
-        return !tailwindCss.exists();
+        return true;
     }
 }
