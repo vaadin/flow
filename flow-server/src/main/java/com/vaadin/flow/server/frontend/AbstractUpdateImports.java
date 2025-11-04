@@ -266,7 +266,7 @@ abstract class AbstractUpdateImports implements Runnable {
                         .stream(),
                 outputFiles.getOrDefault(generatedFlowImports,
                         Collections.emptyList()).stream())
-                .distinct().toList();
+                .toList();
     }
 
     private void writeWebComponentImports(List<String> lines) {
