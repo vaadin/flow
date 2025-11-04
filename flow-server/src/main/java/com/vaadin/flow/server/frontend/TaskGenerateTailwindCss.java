@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import org.apache.commons.io.IOUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Path;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import org.apache.commons.io.IOUtils;
+
 import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -48,8 +46,11 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
      *            the task options
      */
     TaskGenerateTailwindCss(Options options) {
-        tailwindCss = new File(options.getFrontendGeneratedFolder(), TAILWIND_CSS);
-        relativeSourcePath = options.getFrontendGeneratedFolder().toPath().relativize(options.getNpmFolder().toPath().resolve("src")).toString();
+        tailwindCss = new File(options.getFrontendGeneratedFolder(),
+                TAILWIND_CSS);
+        relativeSourcePath = options.getFrontendGeneratedFolder().toPath()
+                .relativize(options.getNpmFolder().toPath().resolve("src"))
+                .toString();
         // Use forward slash as a separator
         relativeSourcePath = relativeSourcePath.replace(File.separator, "/");
     }
@@ -59,7 +60,8 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(TAILWIND_CSS)) {
             var template = IOUtils.toString(indexStream, UTF_8);
-            template = template.replace(RELATIVE_SOURCE_PATH_MARKER, relativeSourcePath);
+            template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
+                    relativeSourcePath);
             return template;
         }
     }

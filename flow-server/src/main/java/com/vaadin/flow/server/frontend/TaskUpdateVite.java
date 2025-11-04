@@ -171,7 +171,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         if (FrontendUtils.isTailwindCssEnabled(options)) {
             return template
                     .replace("//#tailwindcssVitePluginImport#",
-                    "import tailwindcss from '@tailwindcss/vite';")
+                            "import tailwindcss from '@tailwindcss/vite';")
                     .replace("//#tailwindcssVitePlugin#", "tailwindcss(),");
         } else {
             return template.replace("//#tailwindcssVitePluginImport#", "")

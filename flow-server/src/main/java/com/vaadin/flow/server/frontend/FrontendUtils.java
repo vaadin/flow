@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
-import com.vaadin.experimental.FeatureFlags;
 import jakarta.servlet.ServletContext;
 
 import java.io.File;
@@ -50,6 +48,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -1554,11 +1553,12 @@ public class FrontendUtils {
      * Checks if integration with Tailwind CSS framework is enabled.
      *
      * @param options
-     *          the build options
+     *            the build options
      * @return true if Tailwind CSS integration is enabled, false otherwise
      */
     public static boolean isTailwindCssEnabled(Options options) {
-        return options.getFeatureFlags().isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+        return options.getFeatureFlags()
+                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
     }
 
 }

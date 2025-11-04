@@ -32,7 +32,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
@@ -312,7 +311,8 @@ public abstract class NodeUpdater implements FallibleCommand {
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
         if (FrontendUtils.isTailwindCssEnabled(options)) {
-            dependencies.putAll(readDependencies("tailwindcss", "dependencies"));
+            dependencies
+                    .putAll(readDependencies("tailwindcss", "dependencies"));
         }
         putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
