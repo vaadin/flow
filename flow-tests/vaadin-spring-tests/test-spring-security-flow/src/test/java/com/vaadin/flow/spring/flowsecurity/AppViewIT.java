@@ -117,7 +117,9 @@ public class AppViewIT extends AbstractIT {
         checkLogsForErrors();
 
         ImageElement status = $(ImageElement.class).id("status-icon");
-        Assert.assertEquals(getRootURL() + "/assets/icons/circle.svg",
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/circle.svg",
                 status.getAttribute("src"));
         openResource("assets/icons/circle.svg");
     }
@@ -131,7 +133,9 @@ public class AppViewIT extends AbstractIT {
         checkLogsForErrors();
 
         ImageElement status = $(ImageElement.class).id("status-icon");
-        Assert.assertEquals(getRootURL() + "/assets/icons/user-circle.svg",
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/user-circle.svg",
                 status.getAttribute("src"));
         openResource("assets/icons/user-circle.svg");
     }
