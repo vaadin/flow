@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Image;
@@ -22,8 +24,6 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-
-import tools.jackson.databind.node.ObjectNode;
 
 @Route("com.vaadin.flow.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {
