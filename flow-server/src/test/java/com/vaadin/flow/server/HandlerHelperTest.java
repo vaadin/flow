@@ -437,6 +437,7 @@ public class HandlerHelperTest {
         expected.add("/themes/**");
         expected.add("/aura/**");
         expected.add("/lumo/**");
+        expected.add("/assets/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
