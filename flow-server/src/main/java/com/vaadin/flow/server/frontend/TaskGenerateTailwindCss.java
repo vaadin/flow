@@ -25,11 +25,12 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
- * Generate <code>index.html</code> if it is missing in frontend folder.
+ * Generate <code>tailwind.css</code> if it is missing in the generated frontend
+ * folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since 3.0
+ * @since 25.0
  */
 public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
@@ -40,7 +41,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
     private File tailwindCss;
 
     /**
-     * Create a task to generate <code>index.html</code> if necessary.
+     * Create a task to generate <code>tailwind.css</code> integration file.
      *
      * @param options
      *            the task options
