@@ -149,7 +149,6 @@ public final class TransferUtil {
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
         try {
-            String fileName;
             if (isMultipartUpload) {
                 Collection<Part> parts = Collections.EMPTY_LIST;
                 try {
@@ -226,9 +225,8 @@ public final class TransferUtil {
                     }
                 }
             } else {
-                // These are unknown in filexhr ATM
-                fileName = "unknown";
-                String contentType = "unknown";
+                String fileName = request.getHeader("X-Filename");
+                String contentType = request.getHeader("Content-Type");
 
                 UploadEvent event = new UploadEvent(request, response, session,
                         fileName, request.getContentLengthLong(), contentType,
