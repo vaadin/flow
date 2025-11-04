@@ -121,7 +121,7 @@ public class AppViewIT extends AbstractIT {
                 getRootURL() + getUrlMappingBasePath()
                         + "/assets/icons/circle.svg",
                 status.getAttribute("src"));
-        openResource("assets/icons/circle.svg");
+        openResource(getUrlMappingBasePath() + "assets/icons/circle.svg");
     }
 
     @Test
@@ -137,7 +137,7 @@ public class AppViewIT extends AbstractIT {
                 getRootURL() + getUrlMappingBasePath()
                         + "/assets/icons/user-circle.svg",
                 status.getAttribute("src"));
-        openResource("assets/icons/user-circle.svg");
+        openResource(getUrlMappingBasePath() + "assets/icons/user-circle.svg");
     }
 
     @Test
