@@ -343,7 +343,7 @@ abstract class AbstractUpdateImports implements Runnable {
 
             chunkLoader.add("");
             chunkLoader.add("const loadOnDemand = (key) => {" + "\n"
-                    + "const pending = [];");
+                    + "  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
                     lazyCss.keySet());
             Set<String> processedChunkHashes = new HashSet<>(
