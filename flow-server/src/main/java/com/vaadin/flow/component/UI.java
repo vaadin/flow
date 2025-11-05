@@ -339,7 +339,7 @@ public class UI extends Component
      * @see #getCurrent()
      * @see #access(Command)
      */
-    public static UI ensureCurrent() {
+    public static UI requireCurrent() {
         UI ui = getCurrent();
         if (ui == null) {
             throw new IllegalStateException(

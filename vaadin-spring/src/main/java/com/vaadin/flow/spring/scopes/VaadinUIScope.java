@@ -121,6 +121,6 @@ public class VaadinUIScope extends AbstractScope {
     }
 
     private UI getUI() {
-        return UI.ensureCurrent();
+        return UI.requireCurrent();
     }
 }

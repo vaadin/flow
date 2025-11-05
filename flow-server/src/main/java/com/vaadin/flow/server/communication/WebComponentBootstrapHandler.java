@@ -441,7 +441,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             BootstrapHandler
                     .getStylesheetLinks(context, "document.css",
                             frontendDirectory)
-                    .forEach(link -> UI.ensureCurrent().getPage().executeJs(
+                    .forEach(link -> UI.requireCurrent().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             modifyPath(serviceUrl, link)));
         }
