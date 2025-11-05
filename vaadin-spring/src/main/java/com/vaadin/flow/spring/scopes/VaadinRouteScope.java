@@ -455,12 +455,7 @@ public class VaadinRouteScope extends AbstractScope {
     }
 
     private static UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The route scope is not active");
-        }
-        return ui;
+        return UI.ensureCurrent();
     }
 
     private static UI findPreservingUI(UI ui) {

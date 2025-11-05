@@ -134,8 +134,8 @@ public class VaadinServletContextInitializer
 
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
-            "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb",
+            "com/nimbusds", "elemental/util", "org/reflections",
+            "org/aopalliance", "org/objectweb",
 
             "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());
