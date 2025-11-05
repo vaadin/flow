@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -26,7 +27,7 @@ import java.nio.charset.StandardCharsets;
  *
  * @since 25.0
  */
-public final class ContentDispositionParser {
+public final class ContentDispositionParser implements Serializable {
 
     private ContentDispositionParser() {
         // Utility class, prevent instantiation

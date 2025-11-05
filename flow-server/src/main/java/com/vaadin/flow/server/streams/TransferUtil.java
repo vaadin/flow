@@ -231,7 +231,13 @@ public final class TransferUtil {
                     fileName = ContentDispositionParser.extractFilename(
                             request.getHeader("Content-Disposition"));
                 }
+                if (fileName == null || fileName.isEmpty()) {
+                    fileName = "unknown";
+                }
                 String contentType = request.getHeader("Content-Type");
+                if (contentType == null || contentType.isEmpty()) {
+                    contentType = "unknown";
+                }
 
                 UploadEvent event = new UploadEvent(request, response, session,
                         fileName, request.getContentLengthLong(), contentType,
