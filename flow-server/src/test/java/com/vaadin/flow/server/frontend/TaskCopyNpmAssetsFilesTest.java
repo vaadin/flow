@@ -39,7 +39,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_ASSETS_PATH;
 
 public class TaskCopyNpmAssetsFilesTest {
 
@@ -105,10 +105,10 @@ public class TaskCopyNpmAssetsFilesTest {
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
         Assert.assertEquals(2, filesInDirectory.size());
-        Assert.assertTrue(
-                filesInDirectory.contains("VAADIN/static/button/image.jpg"));
-        Assert.assertTrue(
-                filesInDirectory.contains("VAADIN/static/button/image.gif"));
+        Assert.assertTrue(filesInDirectory
+                .contains("VAADIN/static/assets/button/image.jpg"));
+        Assert.assertTrue(filesInDirectory
+                .contains("VAADIN/static/assets/button/image.gif"));
     }
 
     @Test
@@ -123,7 +123,7 @@ public class TaskCopyNpmAssetsFilesTest {
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
         Assert.assertEquals(1, filesInDirectory.size());
-        Assert.assertEquals("VAADIN/static/copy/image.jpg",
+        Assert.assertEquals("VAADIN/static/assets/copy/image.jpg",
                 filesInDirectory.iterator().next());
     }
 
@@ -139,12 +139,12 @@ public class TaskCopyNpmAssetsFilesTest {
         Set<String> filesInDirectory = getFilesInDirectory(
                 webappResourcesDirectory);
         Assert.assertEquals(3, filesInDirectory.size());
-        Assert.assertTrue(
-                filesInDirectory.contains("VAADIN/static/button/image.jpg"));
-        Assert.assertTrue(
-                filesInDirectory.contains("VAADIN/static/button/image.gif"));
         Assert.assertTrue(filesInDirectory
-                .contains("VAADIN/static/button/button.template"));
+                .contains("VAADIN/static/assets/button/image.jpg"));
+        Assert.assertTrue(filesInDirectory
+                .contains("VAADIN/static/assets/button/image.gif"));
+        Assert.assertTrue(filesInDirectory
+                .contains("VAADIN/static/assets/button/button.template"));
     }
 
     @Test
@@ -161,7 +161,7 @@ public class TaskCopyNpmAssetsFilesTest {
         File devBundleTarget = new File(
                 DevBundleUtils.getDevBundleFolder(options.getNpmFolder(),
                         options.getBuildDirectoryName()),
-                "webapp/" + VAADIN_STATIC_FILES_PATH);
+                "webapp/" + VAADIN_STATIC_ASSETS_PATH);
 
         Set<String> filesInDirectory = getFilesInDirectory(devBundleTarget);
         Assert.assertEquals(1, filesInDirectory.size());

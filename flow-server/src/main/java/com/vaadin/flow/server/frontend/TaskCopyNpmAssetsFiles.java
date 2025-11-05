@@ -35,7 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
+import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_ASSETS_PATH;
 
 /**
  * Copies JavaScript and CSS files from JAR files into a given folder.
@@ -63,7 +63,7 @@ public class TaskCopyNpmAssetsFiles
             staticOutput = new File(
                     DevBundleUtils.getDevBundleFolder(options.getNpmFolder(),
                             options.getBuildDirectoryName()),
-                    "webapp/" + VAADIN_STATIC_FILES_PATH);
+                    "webapp/" + VAADIN_STATIC_ASSETS_PATH);
         } else {
             String webappResources;
             if (options.getWebappResourcesDirectory() == null) {
@@ -77,7 +77,7 @@ public class TaskCopyNpmAssetsFiles
                         .getPath();
             }
 
-            staticOutput = new File(webappResources, VAADIN_STATIC_FILES_PATH);
+            staticOutput = new File(webappResources, VAADIN_STATIC_ASSETS_PATH);
         }
     }
 
