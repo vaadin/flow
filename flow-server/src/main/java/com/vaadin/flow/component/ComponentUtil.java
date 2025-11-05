@@ -536,11 +536,7 @@ public class ComponentUtil {
 
         try {
             Component.elementToMapTo.set(wrapData);
-            UI ui = UI.getCurrent();
-            if (ui == null) {
-                throw new IllegalStateException("UI instance is not available. "
-                        + "It looks like you are trying to execute UI code outside the UI/Servlet dispatching thread");
-            }
+            UI ui = UI.ensureCurrent();
             Instantiator instantiator = Instantiator.get(ui);
             return instantiator.createComponent(componentType);
         } finally {
