@@ -323,6 +323,33 @@ public class UI extends Component
     }
 
     /**
+     * Gets the currently used UI, throwing an exception if none is available.
+     * Use this method when the code must run within an active UI context.
+     * <p>
+     * This method is useful when code must execute within a UI context and
+     * cannot handle the case where no UI is available. If the code can work
+     * without a UI, use {@link #getCurrent()} instead and check for null.
+     * <p>
+     * The UI is stored using a weak reference to avoid leaking memory in case
+     * it is not explicitly cleared.
+     *
+     * @return the current UI instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no UI is bound to the current thread
+     * @see #getCurrent()
+     * @see #access(Command)
+     */
+    public static UI ensureCurrent() {
+        UI ui = getCurrent();
+        if (ui == null) {
+            throw new IllegalStateException(
+                    "No currently active UI found. This code must be run within a UI context. "
+                            + "If you are running this from a background thread, wrap the call in UI.access().");
+        }
+        return ui;
+    }
+
+    /**
      * Marks this UI to be {@link #onDetach(DetachEvent) detached} from the
      * session at the end of the current request, or the next request if there
      * is no current request (if called from a background thread, for instance.)
