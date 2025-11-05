@@ -315,6 +315,14 @@ public class StaticFileServer implements StaticFileHandler {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
+            } else if (resourceUrl == null
+                    && NPM_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+                String assetInDevBundle = "/webapp/VAADIN/static/"
+                        + filenameWithPath.replaceFirst("^/", "");
+                resourceUrl = DevBundleUtils.findBundleFile(
+                        deploymentConfiguration.getProjectFolder(),
+                        deploymentConfiguration.getBuildFolder(),
+                        assetInDevBundle);
             }
         } else if (deploymentConfiguration
                 .getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
