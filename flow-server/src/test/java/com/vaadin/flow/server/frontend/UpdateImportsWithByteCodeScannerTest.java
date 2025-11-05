@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,6 +45,8 @@ import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class UpdateImportsWithByteCodeScannerTest
         extends AbstractUpdateImportsTest {
@@ -458,4 +464,44 @@ public class UpdateImportsWithByteCodeScannerTest
                 CHUNK_PATTERN.matcher(mainImportContent).results().count());
     }
 
+    // Test for https://github.com/vaadin/flow/issues/22656
+    @Test
+    public void onlyOneChunkForLazyViewsWithSameContent_generatedWebComponentsImports()
+            throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { OtherView.class, CloneView.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        var ifList = output.get(flowGeneratedImports).stream()
+                .filter(line -> line.trim().startsWith("if (key === '")
+                        && line.trim().endsWith("') {"))
+                .toList();
+        var importChunkList = output.get(flowGeneratedImports).stream()
+                .filter(line -> line.trim()
+                        .startsWith("pending.push(import('./chunks/chunk-"))
+                .toList();
+
+        // verify that generated web components file contains expected imports
+        String generatedWebComponentsImports = IOUtils
+                .toString(FrontendUtils.getFlowGeneratedWebComponentsImports(
+                        options.getFrontendDirectory()).toURI(), UTF_8);
+
+        List<Matcher<String>> matchers = new ArrayList<>();
+        for (String ifLine : ifList) {
+            matchers.add(CoreMatchers.containsString(
+                    ifLine + "\n" + importChunkList.get(ifList.indexOf(ifLine))
+                            + "\n" + "  }"));
+        }
+        MatcherAssert.assertThat(generatedWebComponentsImports,
+                CoreMatchers.allOf(matchers.toArray(Matcher[]::new)));
+    }
 }

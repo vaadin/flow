@@ -116,6 +116,7 @@ public final class TransferUtil {
                 }
             }
         }
+        outputStream.flush();
         long finalTransferred = transferred;
         listeners.forEach(listener -> listener.onComplete(transferContext,
                 finalTransferred));
