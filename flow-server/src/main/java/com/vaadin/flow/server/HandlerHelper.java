@@ -155,6 +155,7 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
         resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
         resources.add("/aura/**");
         resources.add("/lumo/**");
