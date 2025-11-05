@@ -83,7 +83,7 @@ const hasExportedWebComponents = existsSync(path.resolve(frontendFolder, 'web-co
 const commercialBannerComponent = path.resolve(frontendFolder, settings.generatedFolder, 'commercial-banner.js');
 const hasCommercialBanner = existsSync(commercialBannerComponent);
 
-const target = ['safari15', 'es2022'];
+const target = ['es2023'];
 
 // Block debug and trace logs.
 console.trace = () => {};
