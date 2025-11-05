@@ -150,6 +150,11 @@ public class FrontendUtils {
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
 
     /**
+     * The styles.css file that is the suggested style sheet for theming.
+     */
+    public static final String DEFAULT_STYLES_CSS = "styles.css";
+
+    /**
      * The folder inside the 'generated' folder where frontend resources from
      * jars are copied.
      */
