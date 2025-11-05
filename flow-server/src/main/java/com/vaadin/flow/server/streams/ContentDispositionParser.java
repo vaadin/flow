@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * Utility class for parsing Content-Disposition HTTP headers.
  * <p>
@@ -33,7 +37,8 @@ public final class ContentDispositionParser {
      * <p>
      * Supports both standard filename parameter (e.g.,
      * {@code filename="file.txt"}) and RFC 5987 extended filename parameter
-     * (e.g., {@code filename*=UTF-8''file.txt}).
+     * (e.g., {@code filename*=UTF-8''file.txt}). The extended format is
+     * percent-decoded automatically.
      *
      * @param contentDisposition
      *            the Content-Disposition header value
@@ -52,7 +57,17 @@ public final class ContentDispositionParser {
             if (firstQuote != -1) {
                 int secondQuote = filename.indexOf('\'', firstQuote + 1);
                 if (secondQuote != -1 && secondQuote < filename.length() - 1) {
-                    return filename.substring(secondQuote + 1);
+                    String encodedFilename = filename
+                            .substring(secondQuote + 1);
+                    // Decode percent-encoded filename
+                    try {
+                        return URLDecoder.decode(encodedFilename,
+                                StandardCharsets.UTF_8.name());
+                    } catch (UnsupportedEncodingException e) {
+                        // UTF-8 is always supported, but URLDecoder.decode
+                        // declares the exception
+                        return encodedFilename;
+                    }
                 }
             }
         }

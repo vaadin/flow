@@ -52,10 +52,11 @@ public class ContentDispositionParserTest {
     }
 
     @Test
-    public void extractFilename_extendedFilename_extracted() {
+    public void extractFilename_extendedFilename_decoded() {
+        // Percent-encoded space should be decoded to actual space
         String result = ContentDispositionParser.extractFilename(
                 "attachment; filename*=UTF-8''test%20file.txt");
-        Assert.assertEquals("test%20file.txt", result);
+        Assert.assertEquals("test file.txt", result);
     }
 
     @Test
@@ -67,6 +68,8 @@ public class ContentDispositionParserTest {
 
     @Test
     public void extractFilename_bothFilenameParameters_extendedPreferred() {
+        // When both filename and filename* are present, filename* should be
+        // preferred and decoded
         String result = ContentDispositionParser.extractFilename(
                 "attachment; filename=\"fallback.txt\"; filename*=UTF-8''preferred.txt");
         Assert.assertEquals("preferred.txt", result);
@@ -103,6 +106,39 @@ public class ContentDispositionParserTest {
         String result = ContentDispositionParser
                 .extractFilename("inline; size=1024; filename=\"end.txt\"");
         Assert.assertEquals("end.txt", result);
+    }
+
+    @Test
+    public void extractFilename_encodedNordicCharacters_decoded() {
+        // åäö.txt encoded as UTF-8 percent-encoded, should be decoded
+        String result = ContentDispositionParser.extractFilename(
+                "attachment; filename*=UTF-8''%C3%A5%C3%A4%C3%B6.txt");
+        Assert.assertEquals("åäö.txt", result);
+    }
+
+    @Test
+    public void extractFilename_encodedGermanUmlaut_decoded() {
+        // über.pdf encoded as UTF-8 percent-encoded, should be decoded
+        String result = ContentDispositionParser
+                .extractFilename("attachment; filename*=UTF-8''%C3%BCber.pdf");
+        Assert.assertEquals("über.pdf", result);
+    }
+
+    @Test
+    public void extractFilename_encodedChineseCharacters_decoded() {
+        // 文件.txt encoded as UTF-8 percent-encoded, should be decoded
+        String result = ContentDispositionParser.extractFilename(
+                "attachment; filename*=UTF-8''%E6%96%87%E4%BB%B6.txt");
+        Assert.assertEquals("文件.txt", result);
+    }
+
+    @Test
+    public void extractFilename_rawUnicodeInStandardFilename_passedThrough() {
+        // Standard filename parameter with raw Unicode (not RFC 5987 compliant
+        // but some clients may send it)
+        String result = ContentDispositionParser
+                .extractFilename("attachment; filename=\"åäö.txt\"");
+        Assert.assertEquals("åäö.txt", result);
     }
 
     @Test
