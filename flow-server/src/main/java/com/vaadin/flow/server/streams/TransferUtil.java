@@ -226,14 +226,14 @@ public final class TransferUtil {
                     }
                 }
             } else {
-                String fileName = request.getHeader("X-Filename");
-                if (fileName == null || fileName.isEmpty()) {
-                    fileName = ContentDispositionParser.extractFilename(
-                            request.getHeader("Content-Disposition"));
-                }
+                // Extract filename from X-Vaadin-Upload-Metadata header
+                String fileName = UploadMetadataParser
+                        .extractFilename(request.getHeader("X-Vaadin-Upload-Metadata"));
+
                 if (fileName == null || fileName.isEmpty()) {
                     fileName = "unknown";
                 }
+
                 String contentType = request.getHeader("Content-Type");
                 if (contentType == null || contentType.isEmpty()) {
                     contentType = "unknown";
