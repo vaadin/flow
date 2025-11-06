@@ -25,7 +25,6 @@ import java.security.MessageDigest;
 import java.util.UUID;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -51,12 +50,11 @@ public class ProjectHelpers {
      * Generates a unique pseudonymised hash string for the project in folder.
      * Uses either pom.xml or settings.gradle.
      *
-     * @param projectFolder
-     *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
+     * @param projectFolder Project root folder. Should contain either pom.xml
+     * or settings.gradle.
      * @return Pseudonymised hash id of project or
-     *         <code>DEFAULT_PROJECT_ID</code> if no valid project was found in
-     *         the folder.
+     * <code>DEFAULT_PROJECT_ID</code> if no valid project was found in the
+     * folder.
      */
     static String generateProjectId(File projectFolder) {
         Document pom = MavenUtils.parsePomFileFromFolder(projectFolder);
@@ -93,8 +91,7 @@ public class ProjectHelpers {
     /**
      * Creates a MD5 hash out from a string for pseudonymisation purposes.
      *
-     * @param string
-     *            String to hash
+     * @param string String to hash
      * @return Hex encoded MD5 version of string or <code>MISSING_DATA</code>.
      */
     static String createHash(String string) {
@@ -129,11 +126,10 @@ public class ProjectHelpers {
      * Looks for comment in either pom.xml or or settings.gradle that points
      * back original source or repository of the project.
      *
-     * @param projectFolder
-     *            Project root folder. Should contain either pom.xml or
-     *            settings.gradle.
+     * @param projectFolder Project root folder. Should contain either pom.xml
+     * or settings.gradle.
      * @return URL of the project source or <code>MISSING_DATA</code>, if no
-     *         valid URL was found.
+     * valid URL was found.
      */
     static String getProjectSource(File projectFolder) {
         try {
@@ -216,7 +212,7 @@ public class ProjectHelpers {
      * Get Vaadin home directory.
      *
      * @return File instance for Vaadin home folder. Does not check if the
-     *         folder exists.
+     * folder exists.
      */
     public static File resolveVaadinHomeDirectory() {
         String userHome = System
@@ -245,7 +241,9 @@ public class ProjectHelpers {
                 vaadinHome = File.createTempFile(
                         StatisticsConstants.VAADIN_FOLDER_NAME,
                         UUID.randomUUID().toString());
-                FileUtils.forceMkdir(vaadinHome);
+                if (!vaadinHome.mkdirs() && !vaadinHome.isDirectory()) {
+                    throw new IOException("Cannot create directory '" + vaadinHome + "'.");
+                }
             } catch (IOException e) {
                 getLogger().debug("Failed to create temp directory ", e);
                 return null;

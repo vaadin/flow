@@ -38,8 +38,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,6 +59,7 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import java.nio.file.Files;
 
 /**
  * Deals with most details of starting a frontend development server or
@@ -514,9 +513,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         File portFile = getDevServerPortFile(npmFolder);
         if (portFile.canRead()) {
             try {
-                String portString = FileUtils
-                        .readFileToString(portFile, StandardCharsets.UTF_8)
-                        .trim();
+                String portString = Files.readString(portFile.toPath());
                 if (!portString.isEmpty()) {
                     port = Integer.parseInt(portString);
                 }
@@ -531,7 +528,13 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     private void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(devServerPortFile);
+        if(devServerPortFile.exists()) {
+            try {
+                devServerPortFile.delete();
+            } catch (Exception e) {
+                // NOP
+            }
+        }
     }
 
     @Override
@@ -551,8 +554,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private void saveRunningDevServerPort() {
         try {
-            FileUtils.writeStringToFile(devServerPortFile, String.valueOf(port),
-                    StandardCharsets.UTF_8);
+            Files.writeString(devServerPortFile.toPath(), String.valueOf(port));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -681,7 +683,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
                 // The initial request while the dev server is starting
                 InputStream inputStream = AbstractDevServerRunner.class
                         .getResourceAsStream("dev-mode-not-ready.html");
-                IOUtils.copy(inputStream, response.getOutputStream());
+                inputStream.transferTo(response.getOutputStream());
             } else {
                 // A polling request while the server is starting
                 response.getWriter().write("Pending");

@@ -28,7 +28,6 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -179,8 +178,7 @@ public final class OpenInCurrentIde {
         Process process = pb.start();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            String output = IOUtils.toString(process.getInputStream(),
-                    StandardCharsets.UTF_8);
+            String output = new String(process.getInputStream().readAllBytes());
             throw new IOException(
                     "Command " + cmd + " terminated with exit code " + exitCode
                             + ".\nOutput:\n" + output);

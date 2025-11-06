@@ -36,7 +36,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -542,13 +541,11 @@ public class FilterableResourceResolver
             return;
         }
         try {
-            String content = IOUtils.toString(url, StandardCharsets.UTF_8);
-            if (content != null) {
-                if (content.isBlank()) {
-                    blockedJarsList = Collections.emptyList();
-                } else {
-                    blockedJarsList = Arrays.asList(content.split("\\R"));
-                }
+            String content = new String(url.openStream().readAllBytes());
+            if (content.isBlank()) {
+                blockedJarsList = Collections.emptyList();
+            } else {
+                blockedJarsList = Arrays.asList(content.split("\\R"));
             }
         } catch (IOException e) {
             getLogger().error(
