@@ -35,12 +35,12 @@
       <groupId>com.vaadin</groupId>
       <artifactId>open</artifactId>
       <version>8.5.0.4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
+    </dependency>
+
+    <!-- TODO get rid of this as well -->    
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
     </dependency>
 
     <dependency>
