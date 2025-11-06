@@ -536,7 +536,7 @@ public class ComponentUtil {
 
         try {
             Component.elementToMapTo.set(wrapData);
-            UI ui = UI.requireCurrent();
+            UI ui = UI.getCurrentOrThrow();
             Instantiator instantiator = Instantiator.get(ui);
             return instantiator.createComponent(componentType);
         } finally {

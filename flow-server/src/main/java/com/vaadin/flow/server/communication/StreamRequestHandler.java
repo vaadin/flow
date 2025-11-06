@@ -244,7 +244,7 @@ public class StreamRequestHandler implements RequestHandler {
      * @return generated URI string
      */
     public static String generateURI(String name, String id) {
-        return DYN_RES_PREFIX + UI.requireCurrent().getUIId() + PATH_SEPARATOR
+        return DYN_RES_PREFIX + UI.getCurrentOrThrow().getUIId() + PATH_SEPARATOR
                 + id + PATH_SEPARATOR + UrlUtil.encodeURIComponent(name);
     }
 

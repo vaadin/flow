@@ -1029,26 +1029,26 @@ public class UITest {
     }
 
     @Test
-    public void requireCurrent_withCurrentUI_returnsUI() {
+    public void getCurrentOrThrow_withCurrentUI_returnsUI() {
         UI ui = createTestUI();
         UI.setCurrent(ui);
 
-        UI result = UI.requireCurrent();
+        UI result = UI.getCurrentOrThrow();
 
-        assertSame("requireCurrent should return the current UI", ui, result);
+        assertSame("getCurrentOrThrow should return the current UI", ui, result);
     }
 
     @Test(expected = IllegalStateException.class)
-    public void requireCurrent_withoutCurrentUI_throws() {
+    public void getCurrentOrThrow_withoutCurrentUI_throws() {
         CurrentInstance.clearAll();
-        UI.requireCurrent();
+        UI.getCurrentOrThrow();
     }
 
     @Test
-    public void requireCurrent_withoutCurrentUI_throwsWithHelpfulMessage() {
+    public void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
         CurrentInstance.clearAll();
         try {
-            UI.requireCurrent();
+            UI.getCurrentOrThrow();
             Assert.fail("Should have thrown IllegalStateException");
         } catch (IllegalStateException e) {
             assertTrue("Exception message should mention UI context",
