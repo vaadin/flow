@@ -137,7 +137,8 @@ public class UrlUtilTest {
 
     @Test
     public void decodeURIComponent_plusSign_notDecodedAsSpace() {
-        // Plus signs should remain as plus signs (RFC 3986, not HTML form encoding)
+        // Plus signs should remain as plus signs (RFC 3986, not HTML form
+        // encoding)
         String result = UrlUtil.decodeURIComponent("test+file.txt");
         Assert.assertEquals("test+file.txt", result);
     }

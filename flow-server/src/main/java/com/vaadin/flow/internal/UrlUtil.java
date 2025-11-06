@@ -118,7 +118,8 @@ public class UrlUtil {
      * <p>
      * Unlike {@link java.net.URLDecoder}, this method does not treat '+' as a
      * space character, making it suitable for decoding strings encoded with
-     * JavaScript's {@code encodeURIComponent()} or {@link #encodeURIComponent(String)}.
+     * JavaScript's {@code encodeURIComponent()} or
+     * {@link #encodeURIComponent(String)}.
      *
      * @param encoded
      *            the percent-encoded string

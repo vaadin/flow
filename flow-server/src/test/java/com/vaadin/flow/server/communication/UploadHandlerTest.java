@@ -175,8 +175,7 @@ public class UploadHandlerTest {
             capturedFilename[0] = event.getFileName();
         };
 
-        Mockito.when(request.getHeader("X-Filename"))
-                .thenReturn("test.txt");
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
 
         handler.handleRequest(request, response, session, element);
 
@@ -210,8 +209,7 @@ public class UploadHandlerTest {
             capturedContentType[0] = event.getContentType();
         };
 
-        Mockito.when(request.getHeader("X-Filename"))
-                .thenReturn("test.txt");
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
         Mockito.when(request.getHeader("Content-Type"))
                 .thenReturn("text/plain");
 
@@ -229,8 +227,7 @@ public class UploadHandlerTest {
             capturedContentType[0] = event.getContentType();
         };
 
-        Mockito.when(request.getHeader("X-Filename"))
-                .thenReturn("test.txt");
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
         Mockito.when(request.getHeader("Content-Type")).thenReturn(null);
 
         handler.handleRequest(request, response, session, element);
