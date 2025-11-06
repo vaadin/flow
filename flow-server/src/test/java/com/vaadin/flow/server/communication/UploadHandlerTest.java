@@ -167,6 +167,75 @@ public class UploadHandlerTest {
     }
 
     @Test
+    public void xhrUpload_filenameFromHeader_extractedCorrectly()
+            throws IOException {
+        final String[] capturedFilename = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedFilename[0] = event.getFileName();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("test.txt", capturedFilename[0]);
+    }
+
+    @Test
+    public void xhrUpload_encodedFilename_decodedCorrectly()
+            throws IOException {
+        final String[] capturedFilename = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedFilename[0] = event.getFileName();
+        };
+
+        // encodeURIComponent("my file åäö.txt") in JavaScript
+        Mockito.when(request.getHeader("X-Filename"))
+                .thenReturn("my%20file%20%C3%A5%C3%A4%C3%B6.txt");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("my file åäö.txt", capturedFilename[0]);
+    }
+
+    @Test
+    public void xhrUpload_contentTypeFromHeader_extractedCorrectly()
+            throws IOException {
+        final String[] capturedContentType = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedContentType[0] = event.getContentType();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        Mockito.when(request.getHeader("Content-Type"))
+                .thenReturn("text/plain");
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("text/plain", capturedContentType[0]);
+    }
+
+    @Test
+    public void xhrUpload_missingContentTypeHeader_defaultsToUnknown()
+            throws IOException {
+        final String[] capturedContentType = new String[1];
+
+        UploadHandler handler = (event) -> {
+            capturedContentType[0] = event.getContentType();
+        };
+
+        Mockito.when(request.getHeader("X-Filename")).thenReturn("test.txt");
+        Mockito.when(request.getHeader("Content-Type")).thenReturn(null);
+
+        handler.handleRequest(request, response, session, element);
+
+        Assert.assertEquals("unknown", capturedContentType[0]);
+    }
+
+    @Test
     public void doUploadHandleXhrFilePost_unhappyPath_responseHandled()
             throws IOException {
         UploadHandler handler = (event) -> {
