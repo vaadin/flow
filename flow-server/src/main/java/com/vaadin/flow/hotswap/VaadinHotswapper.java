@@ -42,6 +42,19 @@ import com.vaadin.flow.server.VaadinSession;
 public interface VaadinHotswapper {
 
     /**
+     * Called during the initialization of the Vaadin {@link Hotswapper}. This
+     * method provides an entry point for executing logic that needs to occur
+     * when the associated VaadinService is initialized and before any hotswap
+     * events are triggered.
+     *
+     * @param vaadinService
+     *            the active {@link VaadinService} instance being initialized
+     */
+    default void onInit(VaadinService vaadinService) {
+        // no-op by default
+    }
+
+    /**
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>

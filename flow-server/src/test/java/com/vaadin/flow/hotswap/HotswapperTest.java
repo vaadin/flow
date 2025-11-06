@@ -105,28 +105,31 @@ public class HotswapperTest {
         Mockito.when(lookup.lookup(BrowserLiveReloadAccessor.class))
                 .thenReturn(context -> liveReload);
 
-        hotswapper = new Hotswapper(service);
-
         flowHotswapper = Mockito.mock(VaadinHotswapper.class);
         hillaHotswapper = Mockito.mock(VaadinHotswapper.class);
         Mockito.when(lookup.lookupAll(VaadinHotswapper.class))
                 .thenReturn(List.of(flowHotswapper, hillaHotswapper));
+
+        hotswapper = new Hotswapper(service);
     }
 
     @Test
     public void onHotswap_nullArguments_hotswappersNotInvoked() {
+        Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(null, true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
     public void onHotswap_emptyArguments_hotswappersNotInvoked() {
+        Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.onHotswap(new String[0], true);
         Mockito.verifyNoInteractions(flowHotswapper, hillaHotswapper);
     }
 
     @Test
     public void onHotswap_serviceDestroyed_hotswappersNotInvoked() {
+        Mockito.reset(flowHotswapper, hillaHotswapper);
         hotswapper.serviceDestroy(new ServiceDestroyEvent(service));
         hotswapper.onHotswap(new String[] { Integer.class.getName(),
                 String.class.getName() }, true);
@@ -1192,6 +1195,24 @@ public class HotswapperTest {
         } finally {
             session.unlock();
         }
+    }
+
+    @Test
+    public void instanceCreation_hotswappersInitialized() {
+        Mockito.reset(flowHotswapper, hillaHotswapper);
+        new Hotswapper(service);
+        Mockito.verify(flowHotswapper).onInit(service);
+        Mockito.verify(hillaHotswapper).onInit(service);
+    }
+
+    @Test
+    public void instanceCreation_throwingHotswapper_instantiationDoesNotFail() {
+        Mockito.reset(flowHotswapper, hillaHotswapper);
+        Mockito.doThrow(new RuntimeException("BOOM")).when(flowHotswapper)
+                .onInit(any());
+        new Hotswapper(service);
+        Mockito.verify(flowHotswapper).onInit(service);
+        Mockito.verify(hillaHotswapper).onInit(service);
     }
 
     private void assertOnHotswapCompleteInvoked(VaadinHotswapper hotswapper,

@@ -112,6 +112,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     private final Set<VaadinSession> sessions = ConcurrentHashMap.newKeySet();
     private final VaadinService vaadinService;
     private final BrowserLiveReload liveReload;
+    private final Collection<VaadinHotswapper> hotSwappers;
     private volatile boolean serviceDestroyed = false;
 
     Hotswapper(VaadinService vaadinService) {
@@ -119,6 +120,28 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 "VaadinService instance is mandatory");
         liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromService(vaadinService).orElse(null);
+        hotSwappers = initializeHotSwappers(vaadinService);
+    }
+
+    private static Collection<VaadinHotswapper> initializeHotSwappers(
+            VaadinService vaadinService) {
+        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
+        if (lookup == null) {
+            throw new IllegalStateException(
+                    "Lookup not found in VaadinContext");
+        }
+        Collection<VaadinHotswapper> hotSwappers = lookup
+                .lookupAll(VaadinHotswapper.class);
+        for (VaadinHotswapper hotSwapper : hotSwappers) {
+            try {
+                hotSwapper.onInit(vaadinService);
+            } catch (Exception ex) {
+                LOGGER.error("Initialization failed for {} {}",
+                        VaadinHotswapper.class.getSimpleName(),
+                        hotSwapper.getClass().getName(), ex);
+            }
+        }
+        return hotSwappers;
     }
 
     /**
@@ -280,15 +303,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return;
         }
 
-        Lookup lookup = vaadinService.getContext().getAttribute(Lookup.class);
-        if (lookup == null) {
-            throw new IllegalStateException(
-                    "Lookup not found in VaadinContext");
-        }
-
         boolean forceBrowserReload = false;
-        Collection<VaadinHotswapper> hotSwappers = lookup
-                .lookupAll(VaadinHotswapper.class);
         for (VaadinHotswapper hotSwapper : hotSwappers) {
             try {
                 forceBrowserReload |= hotSwapper.onClassLoadEvent(vaadinService,
