@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -158,8 +157,12 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
-        String url = FilenameUtils.removeExtension(dependency.getUrl())
-                .toLowerCase(Locale.ENGLISH);
+        String url = dependency.getUrl();
+        int lastIndexOf = url.lastIndexOf(".");
+        if(lastIndexOf != -1) {
+            url = url.substring(0, lastIndexOf);
+        }
+        url = url.toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }
 
