@@ -57,6 +57,7 @@ import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -190,7 +191,16 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
         getAttributeFeature(node).set(attribute, value);
+    }
 
+    @Override
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
+        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+                signal);
     }
 
     @Override

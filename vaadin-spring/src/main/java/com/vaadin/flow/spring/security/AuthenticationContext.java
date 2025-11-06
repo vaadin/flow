@@ -131,7 +131,7 @@ public class AuthenticationContext {
      * {@link org.springframework.security.web.authentication.logout.LogoutHandler}.
      */
     public void logout() {
-        final UI ui = UI.getCurrent();
+        final UI ui = UI.getCurrentOrThrow();
         boolean pushWebsocketConnected = ui.getPushConfiguration()
                 .getTransport() == Transport.WEBSOCKET
                 && ui.getInternals().getPushConnection().isConnected();

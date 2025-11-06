@@ -60,6 +60,7 @@ import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Entry point for application classes hot reloads.
@@ -224,7 +225,10 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                                     if (path.startsWith("/")) {
                                         path = path.substring(1);
                                     }
-                                    liveReload.update(path, null);
+                                    liveReload.update(
+                                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                                                    + path,
+                                            null);
                                 }
                             }
                         });

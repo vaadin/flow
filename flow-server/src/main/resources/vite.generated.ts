@@ -33,6 +33,7 @@ import vaadinBundlesPlugin from '#buildFolder#/plugins/vite-plugin-vaadin-bundle
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
+//#tailwindcssVitePluginImport#
 
 //#vitePluginFileSystemRouterImport#
 
@@ -461,6 +462,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
         allow: allowedFrontendFolders
       }
     },
+    esbuild: {
+        legalComments: 'inline',
+    },
     build: {
       minify: productionMode,
       outDir: buildOutputFolder,
@@ -565,6 +569,7 @@ export const vaadinConfig: UserConfigFn = (env) => {
           ].filter(Boolean)
         }
       }),
+      //#tailwindcssVitePlugin#
       productionMode && vaadinI18n({
         cwd: __dirname,
         meta: {

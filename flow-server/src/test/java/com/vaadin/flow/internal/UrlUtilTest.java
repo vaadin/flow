@@ -128,4 +128,55 @@ public class UrlUtilTest {
         return new VaadinServletRequest(request,
                 Mockito.mock(VaadinServletService.class));
     }
+
+    @Test
+    public void decodeURIComponent_percentEncodedSpace_decoded() {
+        String result = UrlUtil.decodeURIComponent("test%20file.txt");
+        Assert.assertEquals("test file.txt", result);
+    }
+
+    @Test
+    public void decodeURIComponent_plusSign_notDecodedAsSpace() {
+        // Plus signs should remain as plus signs (RFC 3986, not HTML form
+        // encoding)
+        String result = UrlUtil.decodeURIComponent("test+file.txt");
+        Assert.assertEquals("test+file.txt", result);
+    }
+
+    @Test
+    public void decodeURIComponent_encodedPlusSign_decoded() {
+        String result = UrlUtil.decodeURIComponent("test%2Bfile.txt");
+        Assert.assertEquals("test+file.txt", result);
+    }
+
+    @Test
+    public void decodeURIComponent_unicodeCharacters_decoded() {
+        // åäö.txt encoded as UTF-8 percent-encoded
+        String result = UrlUtil.decodeURIComponent("%C3%A5%C3%A4%C3%B6.txt");
+        Assert.assertEquals("åäö.txt", result);
+    }
+
+    @Test
+    public void decodeURIComponent_specialCharacters_decoded() {
+        String result = UrlUtil.decodeURIComponent("special%26%3Dchars.txt");
+        Assert.assertEquals("special&=chars.txt", result);
+    }
+
+    @Test
+    public void decodeURIComponent_nullValue_returnsNull() {
+        String result = UrlUtil.decodeURIComponent(null);
+        Assert.assertNull(result);
+    }
+
+    @Test
+    public void decodeURIComponent_emptyValue_returnsEmpty() {
+        String result = UrlUtil.decodeURIComponent("");
+        Assert.assertEquals("", result);
+    }
+
+    @Test
+    public void decodeURIComponent_noEncodedChars_returnsSame() {
+        String result = UrlUtil.decodeURIComponent("simple.txt");
+        Assert.assertEquals("simple.txt", result);
+    }
 }

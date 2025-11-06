@@ -31,7 +31,9 @@ import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
+import com.vaadin.signals.Signal;
 
 /**
  * A state node feature that structures data as a map.
@@ -143,6 +145,10 @@ public abstract class NodeMap extends NodeFeature {
         public Stream<Serializable> streamValues() {
             return super.values().stream();
         }
+    }
+
+    record SignalBinding(Signal<String> signal, Registration registration,
+            Serializable value) implements Serializable {
     }
 
     private Values values;
@@ -423,6 +429,9 @@ public abstract class NodeMap extends NodeFeature {
             } else if (containsNow
                     && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
+                if (currentValue instanceof SignalBinding binding) {
+                    currentValue = binding.value();
+                }
                 // New or changed value
                 collector.accept(new MapPutChange(this, key, currentValue));
                 hasChanges = true;

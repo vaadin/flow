@@ -63,6 +63,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
             TaskGenerateReactFiles.class,
+            TaskGenerateTailwindCss.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
             TaskGenerateCommercialBanner.class,
@@ -294,6 +295,9 @@ public class NodeTasks implements FallibleCommand {
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             commands.add(new TaskGenerateReactFiles(options));
+            if (FrontendUtils.isTailwindCssEnabled(options)) {
+                commands.add(new TaskGenerateTailwindCss(options));
+            }
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
             }

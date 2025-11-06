@@ -122,17 +122,17 @@ public class DependencyListTest {
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
 
-        elemental.json.JsonObject actualJson = dependency.toJson();
-        ObjectNode actualMapped = JacksonUtils.mapElemental(actualJson);
+        ObjectNode actualJson = JacksonUtils.getMapper()
+                .valueToTree(dependency);
 
         // Remove the ID field from comparison since it's auto-generated for
         // some dependencies
-        actualMapped.remove(Dependency.KEY_ID);
+        actualJson.remove(Dependency.KEY_ID);
 
         assertTrue(String.format(
                 "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toString(), actualMapped.toString()),
-                JacksonUtils.jsonEquals(expectedJson, actualMapped));
+                expectedJson.toString(), actualJson.toString()),
+                JacksonUtils.jsonEquals(expectedJson, actualJson));
     }
 
     @Test
