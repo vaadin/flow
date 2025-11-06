@@ -455,7 +455,7 @@ public class VaadinRouteScope extends AbstractScope {
     }
 
     private static UI getUI() {
-        return UI.ensureCurrent();
+        return UI.getCurrentOrThrow();
     }
 
     private static UI findPreservingUI(UI ui) {
