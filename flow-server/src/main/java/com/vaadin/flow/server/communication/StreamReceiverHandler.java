@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.Part;
 
@@ -237,7 +238,9 @@ public class StreamReceiverHandler implements Serializable {
                 getLogger().warn(limitInfoStr, "Request size",
                         "getRequestSizeMax");
             } else if (e instanceof UploadFileSizeLimitExceededException) {
-                getLogger().warn(limitInfoStr, "File size", "getFileSizeMax");
+                UploadFileSizeLimitExceededException fileSizeException = (UploadFileSizeLimitExceededException) e;
+                getLogger().warn(limitInfoStr + " File: {}", "File size",
+                        "getFileSizeMax", fileSizeException.getFileName());
             } else if (e instanceof UploadFileCountLimitExceededException) {
                 getLogger().warn(limitInfoStr, "File count", "getFileCountMax");
             }
@@ -563,6 +566,10 @@ public class StreamReceiverHandler implements Serializable {
         if (!(request instanceof HttpServletRequest)) {
             return false;
         }
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (!"POST".equalsIgnoreCase(httpRequest.getMethod())) {
+            return false;
+        }
         String contentType = request.getContentType();
         return contentType != null
                 && contentType.toLowerCase().startsWith("multipart/");
@@ -570,7 +577,11 @@ public class StreamReceiverHandler implements Serializable {
 
     protected Collection<Part> getParts(VaadinRequest request)
             throws Exception {
-        return ((HttpServletRequest) request).getParts();
+        try {
+            return ((HttpServletRequest) request).getParts();
+        } catch (IllegalStateException | ServletException e) {
+            throw new MultipartConfigurationException(e);
+        }
     }
 
     /**

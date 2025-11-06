@@ -152,10 +152,8 @@ public final class TransferUtil {
                     parts = ((HttpServletRequest) request).getParts();
                 } catch (IOException ioe) {
                     throw new UncheckedIOException(ioe);
-                } catch (ServletException | IllegalStateException ioe) {
-                    LoggerFactory.getLogger(UploadHandler.class).trace(
-                            "Pretending the request did not contain any parts because of exception",
-                            ioe);
+                } catch (ServletException | IllegalStateException e) {
+                    throw new MultipartConfigurationException(e);
                 }
                 if (!parts.isEmpty()) {
                     validateUploadLimits(handler, request, parts);
@@ -207,8 +205,10 @@ public final class TransferUtil {
                 LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
                         "Request size", "getRequestSizeMax");
             } else if (e instanceof UploadFileSizeLimitExceededException) {
-                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
-                        "File size", "getFileSizeMax");
+                UploadFileSizeLimitExceededException fileSizeException = (UploadFileSizeLimitExceededException) e;
+                LoggerFactory.getLogger(UploadHandler.class).warn(
+                        limitInfoStr + " File: {}", "File size", "getFileSizeMax",
+                        fileSizeException.getFileName());
             } else if (e instanceof UploadFileCountLimitExceededException) {
                 LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
                         "File count", "getFileCountMax");
@@ -224,8 +224,8 @@ public final class TransferUtil {
     }
 
     /**
-     * Checks if the request is a multipart request by examining the
-     * Content-Type header.
+     * Checks if the request is a multipart request by examining the HTTP method
+     * and Content-Type header.
      *
      * @param request
      *            the request to check
@@ -233,6 +233,10 @@ public final class TransferUtil {
      */
     private static boolean isMultipartContent(VaadinRequest request) {
         if (!(request instanceof HttpServletRequest)) {
+            return false;
+        }
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (!"POST".equalsIgnoreCase(httpRequest.getMethod())) {
             return false;
         }
         String contentType = request.getContentType();
