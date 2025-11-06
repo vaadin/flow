@@ -29,10 +29,10 @@ import com.vaadin.flow.component.internal.ComponentTracker.Location;
  * -Dexec.mainClass="com.vaadin.flow.ComponentTrackerPerformanceTest"
  * -Dexec.classpathScope=test
  *
- * Compares performance between:
- * 1. Original: Thread.getStackTrace() with eager processing
- * 2. StackWalker: StackWalker API with eager processing
- * 3. Lazy: Throwable with deferred processing (current implementation)
+ * Compares performance and memory consumption between: 1. Original:
+ * Thread.getStackTrace() with eager processing 2. StackWalker: StackWalker API
+ * with eager processing 3. Lazy: Throwable with deferred processing (current
+ * implementation)
  */
 public class ComponentTrackerPerformanceTest {
 
@@ -48,13 +48,20 @@ public class ComponentTrackerPerformanceTest {
         new ComponentTrackerPerformanceTest().compareRealisticScenario();
     }
 
+    static class BenchmarkResult {
+        Object data; // Keep reference to prevent GC
+        long memoryUsed;
+
+        BenchmarkResult(Object data, long memoryUsed) {
+            this.data = data;
+            this.memoryUsed = memoryUsed;
+        }
+    }
+
     public void compareRealisticScenario() {
-        System.out.println(
-                "=== ComponentTracker Performance Comparison ===\n");
-        System.out.println(
-                "Realistic scenario: Create " + COMPONENT_COUNT
-                        + " components, access location for " + ACCESS_COUNT
-                        + "\n");
+        System.out.println("=== ComponentTracker Performance Comparison ===\n");
+        System.out.println("Realistic scenario: Create " + COMPONENT_COUNT
+                + " components, access location for " + ACCESS_COUNT + "\n");
 
         // Warmup phase to let JIT compiler optimize
         System.out.println("Warming up JIT compiler...");
@@ -71,28 +78,31 @@ public class ComponentTrackerPerformanceTest {
         long originalTime = 0;
         long stackWalkerTime = 0;
         long lazyTime = 0;
+        long originalMemory = 0;
+        long stackWalkerMemory = 0;
+        long lazyMemory = 0;
 
         for (int round = 1; round <= TEST_ROUNDS; round++) {
             // Test original approach
-            System.gc();
-            sleep(100);
+            forceGC();
             long start = System.nanoTime();
-            originalEagerApproach();
+            BenchmarkResult originalResult = originalEagerApproach();
             originalTime += System.nanoTime() - start;
+            originalMemory += originalResult.memoryUsed;
 
             // Test StackWalker approach
-            System.gc();
-            sleep(100);
+            forceGC();
             start = System.nanoTime();
-            stackWalkerEagerApproach();
+            BenchmarkResult stackWalkerResult = stackWalkerEagerApproach();
             stackWalkerTime += System.nanoTime() - start;
+            stackWalkerMemory += stackWalkerResult.memoryUsed;
 
             // Test lazy approach
-            System.gc();
-            sleep(100);
+            forceGC();
             start = System.nanoTime();
-            lazyThrowableApproach();
+            BenchmarkResult lazyResult = lazyThrowableApproach();
             lazyTime += System.nanoTime() - start;
+            lazyMemory += lazyResult.memoryUsed;
 
             System.out.printf("Round %d complete\n", round);
         }
@@ -102,20 +112,47 @@ public class ComponentTrackerPerformanceTest {
                 / 1_000_000.0;
         double avgLazy = lazyTime / (double) TEST_ROUNDS / 1_000_000.0;
 
-        System.out.println("\n=== Results ===");
+        double avgOriginalMemory = originalMemory / (double) TEST_ROUNDS
+                / 1024.0 / 1024.0;
+        double avgStackWalkerMemory = stackWalkerMemory / (double) TEST_ROUNDS
+                / 1024.0 / 1024.0;
+        double avgLazyMemory = lazyMemory / (double) TEST_ROUNDS / 1024.0
+                / 1024.0;
+
+        System.out.println("\n=== Time Results ===");
         System.out.printf(
                 "Original (Thread.getStackTrace + eager): %.2f ms average\n",
                 avgOriginal);
-        System.out.printf("StackWalker (eager processing):         %.2f ms average\n",
+        System.out.printf(
+                "StackWalker (eager processing):         %.2f ms average\n",
                 avgStackWalker);
-        System.out.printf("Lazy (Throwable + deferred):            %.2f ms average\n",
+        System.out.printf(
+                "Lazy (Throwable + deferred):            %.2f ms average\n",
                 avgLazy);
 
-        System.out.println("\n=== Comparison ===");
+        System.out.println("\n=== Memory Results ===");
+        System.out.printf(
+                "Original (Thread.getStackTrace + eager): %.2f MB average\n",
+                avgOriginalMemory);
+        System.out.printf(
+                "StackWalker (eager processing):         %.2f MB average\n",
+                avgStackWalkerMemory);
+        System.out.printf(
+                "Lazy (Throwable + deferred):            %.2f MB average\n",
+                avgLazyMemory);
+
+        System.out.println("\n=== Time Comparison ===");
         printComparison("StackWalker vs Original", originalTime,
                 stackWalkerTime);
         printComparison("Lazy vs Original", originalTime, lazyTime);
         printComparison("Lazy vs StackWalker", stackWalkerTime, lazyTime);
+
+        System.out.println("\n=== Memory Comparison ===");
+        printMemoryComparison("StackWalker vs Original", originalMemory,
+                stackWalkerMemory);
+        printMemoryComparison("Lazy vs Original", originalMemory, lazyMemory);
+        printMemoryComparison("Lazy vs StackWalker", stackWalkerMemory,
+                lazyMemory);
     }
 
     private void sleep(int ms) {
@@ -124,6 +161,16 @@ public class ComponentTrackerPerformanceTest {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
+    }
+
+    private void forceGC() {
+        // Call GC multiple times to increase likelihood it actually runs
+        System.gc();
+        sleep(50);
+        System.gc();
+        sleep(50);
+        System.gc();
+        sleep(100);
     }
 
     private void printComparison(String label, long baselineTime,
@@ -145,16 +192,41 @@ public class ComponentTrackerPerformanceTest {
         }
     }
 
+    private void printMemoryComparison(String label, long baselineMemory,
+            long newMemory) {
+        double ratio = (double) baselineMemory / newMemory;
+        if (ratio >= 1.0) {
+            // New uses less memory
+            double percentLess = ((baselineMemory - newMemory) * 100.0
+                    / baselineMemory);
+            System.out.printf("%s: %.2fx less memory (%.1f%% reduction)\n",
+                    label, ratio, percentLess);
+        } else {
+            // New uses more memory
+            double moreRatio = (double) newMemory / baselineMemory;
+            double percentMore = ((newMemory - baselineMemory) * 100.0
+                    / baselineMemory);
+            System.out.printf("%s: %.2fx MORE memory (%.1f%% increase)\n",
+                    label, moreRatio, percentMore);
+        }
+    }
+
+    private long measureMemory() {
+        Runtime runtime = Runtime.getRuntime();
+        return runtime.totalMemory() - runtime.freeMemory();
+    }
+
     // ===== ORIGINAL IMPLEMENTATION (Thread.getStackTrace with eager
     // processing) =====
 
-    private void originalEagerApproach() {
+    private BenchmarkResult originalEagerApproach() {
         // Simulates original implementation: process stack immediately on
         // trackCreate()
+        long memoryBefore = measureMemory();
+
         List<StackInfo> components = new ArrayList<>();
         for (int i = 0; i < COMPONENT_COUNT; i++) {
-            StackTraceElement[] stack = Thread.currentThread()
-                    .getStackTrace();
+            StackTraceElement[] stack = Thread.currentThread().getStackTrace();
             Location[] allLocations = Stream.of(stack)
                     .map(this::toLocationFromStackTraceElement)
                     .toArray(Location[]::new);
@@ -165,20 +237,26 @@ public class ComponentTrackerPerformanceTest {
 
         // Access only a few locations (simulates rare access in production)
         for (int i = 0; i < ACCESS_COUNT; i++) {
-            Location loc = components.get(i * (COMPONENT_COUNT / ACCESS_COUNT)).location;
+            Location loc = components
+                    .get(i * (COMPONENT_COUNT / ACCESS_COUNT)).location;
         }
+
+        long memoryAfter = measureMemory();
+        return new BenchmarkResult(components, memoryAfter - memoryBefore);
     }
 
     // ===== STACKWALKER IMPLEMENTATION (StackWalker with eager processing)
     // =====
 
-    private void stackWalkerEagerApproach() {
+    private BenchmarkResult stackWalkerEagerApproach() {
         // Simulates StackWalker implementation: process stack immediately on
         // trackCreate()
+        long memoryBefore = measureMemory();
+
         List<StackInfo> components = new ArrayList<>();
         for (int i = 0; i < COMPONENT_COUNT; i++) {
-            Location[] allLocations = stackWalker.walk(
-                    frames -> frames.map(this::toLocationFromStackFrame)
+            Location[] allLocations = stackWalker
+                    .walk(frames -> frames.map(this::toLocationFromStackFrame)
                             .toArray(Location[]::new));
             // Find relevant location immediately
             Location location = findRelevant(allLocations);
@@ -187,15 +265,21 @@ public class ComponentTrackerPerformanceTest {
 
         // Access only a few locations (simulates rare access in production)
         for (int i = 0; i < ACCESS_COUNT; i++) {
-            Location loc = components.get(i * (COMPONENT_COUNT / ACCESS_COUNT)).location;
+            Location loc = components
+                    .get(i * (COMPONENT_COUNT / ACCESS_COUNT)).location;
         }
+
+        long memoryAfter = measureMemory();
+        return new BenchmarkResult(components, memoryAfter - memoryBefore);
     }
 
     // ===== LAZY IMPLEMENTATION (Throwable with deferred processing) =====
 
-    private void lazyThrowableApproach() {
+    private BenchmarkResult lazyThrowableApproach() {
         // Simulates current lazy implementation: store Throwable only on
         // trackCreate()
+        long memoryBefore = measureMemory();
+
         List<Throwable> components = new ArrayList<>();
         for (int i = 0; i < COMPONENT_COUNT; i++) {
             components.add(new Throwable());
@@ -210,6 +294,9 @@ public class ComponentTrackerPerformanceTest {
                     .toArray(Location[]::new);
             Location location = findRelevant(allLocations);
         }
+
+        long memoryAfter = measureMemory();
+        return new BenchmarkResult(components, memoryAfter - memoryBefore);
     }
 
     // ===== HELPER METHODS =====
