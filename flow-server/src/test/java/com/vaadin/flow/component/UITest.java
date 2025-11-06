@@ -1029,6 +1029,37 @@ public class UITest {
     }
 
     @Test
+    public void getCurrentOrThrow_withCurrentUI_returnsUI() {
+        UI ui = createTestUI();
+        UI.setCurrent(ui);
+
+        UI result = UI.getCurrentOrThrow();
+
+        assertSame("getCurrentOrThrow should return the current UI", ui,
+                result);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getCurrentOrThrow_withoutCurrentUI_throws() {
+        CurrentInstance.clearAll();
+        UI.getCurrentOrThrow();
+    }
+
+    @Test
+    public void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
+        CurrentInstance.clearAll();
+        try {
+            UI.getCurrentOrThrow();
+            Assert.fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException e) {
+            assertTrue("Exception message should mention UI context",
+                    e.getMessage().contains("UI context"));
+            assertTrue("Exception message should mention UI.access()",
+                    e.getMessage().contains("UI.access()"));
+        }
+    }
+
+    @Test
     public void csrfToken_differentUIs_shouldBeUnique() {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();

@@ -342,8 +342,8 @@ abstract class AbstractUpdateImports implements Runnable {
             start = System.nanoTime();
 
             chunkLoader.add("");
-            chunkLoader.add("const loadOnDemand = (key) => {");
-            chunkLoader.add("  const pending = [];");
+            chunkLoader.add("const loadOnDemand = (key) => {" + "\n"
+                    + "  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
                     lazyCss.keySet());
             Set<String> processedChunkHashes = new HashSet<>(
@@ -374,11 +374,13 @@ abstract class AbstractUpdateImports implements Runnable {
                         .map(BundleUtils::getChunkId)
                         .map(hash -> String.format("key === '%s'", hash))
                         .collect(Collectors.joining(" || "));
-                chunkLoader.add(String.format("  if (%s) {", ifClauses));
-                chunkLoader.add(String.format(
-                        "    pending.push(import('./chunks/%s'));",
-                        chunkFilename));
-                chunkLoader.add("  }");
+                String codeBlock = String.format("  if (%s) {", ifClauses)
+                        + "\n"
+                        + String.format(
+                                "    pending.push(import('./chunks/%s'));",
+                                chunkFilename)
+                        + "\n" + "  }";
+                chunkLoader.add(codeBlock);
 
                 boolean chunkNotExist = processedChunkHashes
                         .add(chunkContentHash);
@@ -388,8 +390,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
             }
 
-            chunkLoader.add("  return Promise.all(pending);");
-            chunkLoader.add("}");
+            chunkLoader.add("  return Promise.all(pending);" + "\n" + "}");
             chunkLoader.add("");
 
             getLogger().debug("Lazy chunks generation took {} ms.",

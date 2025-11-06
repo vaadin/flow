@@ -121,11 +121,6 @@ public class VaadinUIScope extends AbstractScope {
     }
 
     private UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The UI scope is not active");
-        }
-        return ui;
+        return UI.getCurrentOrThrow();
     }
 }

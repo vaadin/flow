@@ -55,14 +55,6 @@ import tools.jackson.databind.node.ValueNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Node;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonBoolean;
-import elemental.json.JsonNull;
-import elemental.json.JsonNumber;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * Helpers for using <code>jackson</code>.
  * <p>
@@ -118,109 +110,6 @@ public final class JacksonUtils {
      */
     public static ValueNode nullNode() {
         return (ValueNode) objectMapper.nullNode();
-    }
-
-    /**
-     * Map JsonArray to ArrayNode.
-     *
-     * @param jsonArray
-     *            JsonArray to change
-     * @return ArrayNode of elemental json array object or null for null
-     *         jsonArray
-     */
-    public static ArrayNode mapElemental(JsonArray jsonArray) {
-        if (jsonArray == null || jsonArray instanceof JsonNull) {
-            return null;
-        }
-        try {
-            return (ArrayNode) objectMapper.readTree(jsonArray.toJson());
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Map JsonObject to ObjectNode.
-     *
-     * @param jsonObject
-     *            JsonObject to change
-     * @return ObjectNode of elemental json object object or null for null
-     *         jsonObject
-     */
-    public static ObjectNode mapElemental(JsonObject jsonObject) {
-        if (jsonObject == null) {
-            return null;
-        }
-        try {
-            return (ObjectNode) objectMapper.readTree(jsonObject.toJson());
-        } catch (JacksonException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
-     * Map JsonValue to ObjectNode.
-     *
-     * @param jsonValue
-     *            JsonValue to change
-     * @return ObjectNode of elemental json value
-     */
-    public static BaseJsonNode mapElemental(JsonValue jsonValue) {
-        if (jsonValue == null || jsonValue instanceof JsonNull) {
-            return nullNode();
-        }
-        if (jsonValue instanceof JsonObject) {
-            return mapElemental((JsonObject) jsonValue);
-        }
-        if (jsonValue instanceof JsonArray) {
-            return mapElemental((JsonArray) jsonValue);
-        }
-        if (jsonValue instanceof JsonNumber) {
-            return objectMapper.valueToTree(jsonValue.asNumber());
-        }
-        if (jsonValue instanceof JsonBoolean) {
-            return objectMapper.valueToTree(jsonValue.asBoolean());
-        }
-        return objectMapper.valueToTree(jsonValue.asString());
-    }
-
-    /**
-     * Convert the contents of an ArrayNode into a JsonArray. This is mostly
-     * needed for arrays that may contain arrays and values.
-     *
-     * @param jsonNodes
-     *            ArrayNode to convert
-     * @return JsonArray of ArrayNode content
-     */
-    public static JsonArray createElementalArray(ArrayNode jsonNodes) {
-        return (JsonArray) parseNode(jsonNodes);
-    }
-
-    private static JsonValue parseNode(JsonNode node) {
-        if (node instanceof ArrayNode) {
-            JsonArray jsonArray = Json.createArray();
-            node.forEach(arrayNode -> parseArrayNode(arrayNode, jsonArray));
-            return jsonArray;
-        }
-        return Json.parse(node.toString());
-    }
-
-    private static void parseArrayNode(JsonNode node, JsonArray jsonArray) {
-        if (JsonNodeType.NUMBER.equals(node.getNodeType())) {
-            jsonArray.set(jsonArray.length(), Json.create(node.doubleValue()));
-        } else if (JsonNodeType.STRING.equals(node.getNodeType())) {
-            jsonArray.set(jsonArray.length(), Json.create(node.textValue()));
-        } else if (JsonNodeType.ARRAY.equals(node.getNodeType())) {
-            JsonArray array = Json.createArray();
-            node.forEach(arrayNode -> parseArrayNode(arrayNode, array));
-            jsonArray.set(jsonArray.length(), array);
-        } else if (JsonNodeType.BOOLEAN.equals(node.getNodeType())) {
-            jsonArray.set(jsonArray.length(), Json.create(node.booleanValue()));
-        } else if (JsonNodeType.NULL.equals(node.getNodeType())) {
-            jsonArray.set(jsonArray.length(), Json.createNull());
-        } else {
-            jsonArray.set(jsonArray.length(), Json.parse(node.toString()));
-        }
     }
 
     /**

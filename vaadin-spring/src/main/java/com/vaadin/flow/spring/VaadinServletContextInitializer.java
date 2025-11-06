@@ -116,14 +116,14 @@ public class VaadinServletContextInitializer
      */
     private static final List<String> DEFAULT_SCAN_NEVER = Stream.of("antlr",
             "cglib", "ch/quos/logback", "commons-codec", "commons-fileupload",
-            "commons-io", "commons-logging", "com/fasterxml", "com/google",
-            "com/h2database", "com/helger", "com/vaadin/external/atmosphere",
-            "com/vaadin/webjar", "junit", "net/bytebuddy", "org/apache",
-            "org/aspectj", "org/bouncycastle", "org/dom4j", "org/easymock",
-            "org/eclipse/persistence", "org/hamcrest", "org/hibernate",
-            "org/javassist", "org/jboss", "org/jsoup", "org/seleniumhq",
-            "org/slf4j", "org/atmosphere", "org/springframework",
-            "org/webjars/bowergithub", "org/yaml",
+            "commons-io", "commons-logging", "com/fasterxml", "tools/jackson",
+            "com/google", "com/h2database", "com/helger",
+            "com/vaadin/external/atmosphere", "com/vaadin/webjar", "junit",
+            "net/bytebuddy", "org/apache", "org/aspectj", "org/bouncycastle",
+            "org/dom4j", "org/easymock", "org/eclipse/persistence",
+            "org/hamcrest", "org/hibernate", "org/javassist", "org/jboss",
+            "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
+            "org/springframework", "org/webjars/bowergithub", "org/yaml",
 
             "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
             "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
@@ -134,8 +134,8 @@ public class VaadinServletContextInitializer
 
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
-            "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb",
+            "com/nimbusds", "elemental/util", "org/reflections",
+            "org/aopalliance", "org/objectweb",
 
             "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());

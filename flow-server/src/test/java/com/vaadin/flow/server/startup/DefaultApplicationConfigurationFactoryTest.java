@@ -34,7 +34,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
@@ -180,7 +180,7 @@ public class DefaultApplicationConfigurationFactoryTest {
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = JsonUtils.mapToJson(Map.of(attributeName, value))
+        String content = JacksonUtils.mapToJson(Map.of(attributeName, value))
                 .toString();
         mockClassPathTokenFile(resourceProvider, content);
 
