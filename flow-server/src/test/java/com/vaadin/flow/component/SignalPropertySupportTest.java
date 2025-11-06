@@ -82,6 +82,7 @@ public class SignalPropertySupportTest {
 
     @After
     public void after() {
+        Assert.assertTrue(events.isEmpty());
         close(featureFlagStaticMock);
         events = null;
     }
@@ -130,7 +131,6 @@ public class SignalPropertySupportTest {
                 .create(component, value -> {
                 });
         assertNull(signalPropertySupport.get());
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -146,7 +146,6 @@ public class SignalPropertySupportTest {
 
         assertNull(signalPropertySupport.get());
         assertEquals(0, callCount.get());
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -170,7 +169,6 @@ public class SignalPropertySupportTest {
         assertEquals("bar", signalPropertySupport.get());
         assertEquals("bar", lastValue.get());
         assertEquals(2, callCount.get());
-        Assert.assertTrue(events.isEmpty());
 
     }
 
@@ -193,7 +191,6 @@ public class SignalPropertySupportTest {
         assertEquals("bar", signalPropertySupport.get());
         assertEquals("bar", lastValue.get());
         assertEquals(2, callCount.get());
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -209,7 +206,6 @@ public class SignalPropertySupportTest {
         assertThrows(BindingActiveException.class,
                 () -> signalPropertySupport.set("bar"));
         assertEquals(0, callCount.get());
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -224,8 +220,6 @@ public class SignalPropertySupportTest {
                 .bind(Signal.computed(() -> "computed-" + signal.value()));
         assertEquals("computed-foo", signalPropertySupport.get());
         assertEquals("computed-foo", lastValue.get());
-
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -239,8 +233,6 @@ public class SignalPropertySupportTest {
         signalPropertySupport.bind(signal.map(value -> "mapped-" + value));
         assertEquals("mapped-foo", signalPropertySupport.get());
         assertEquals("mapped-foo", lastValue.get());
-
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -254,7 +246,6 @@ public class SignalPropertySupportTest {
         signalPropertySupport.bind(null);
 
         assertNull(signalPropertySupport.get());
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -285,7 +276,6 @@ public class SignalPropertySupportTest {
 
         assertThrows(BindingActiveException.class,
                 () -> signalPropertySupport.bind(new ValueSignal<>("foo")));
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
