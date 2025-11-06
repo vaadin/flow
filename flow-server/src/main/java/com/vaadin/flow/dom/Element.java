@@ -985,8 +985,6 @@ public class Element extends Node<Element> {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
             return defaultValue;
-        } else if (value instanceof JsonNode) {
-            return value.toString();
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
             int intValue = (int) doubleValue;

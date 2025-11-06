@@ -120,9 +120,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * unbinds existing binding.
      *
      * @param owner
-     *            the element owning the attribute, not <code>null</code>
+     *            the element owning the property, not <code>null</code>
      * @param name
-     *            the name of the attribute
+     *            the name of the property
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
