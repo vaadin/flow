@@ -231,10 +231,6 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
     @Override
     protected Serializable remove(String key) {
-        if (super.hasSignal(key)) {
-            throw new BindingActiveException(
-                    "remove is not allowed while a binding for the given property exists.");
-        }
         Serializable oldValue = super.remove(key);
 
         fireEvent(new PropertyChangeEvent(Element.get(getNode()), key, oldValue,
