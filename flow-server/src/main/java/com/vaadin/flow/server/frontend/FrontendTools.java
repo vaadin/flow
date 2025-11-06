@@ -55,7 +55,8 @@ import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
  * renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- *
+ * 
+ * TODO figure out why this is in flow-server?!? flow-server should not need front-end tooling!!
  */
 public class FrontendTools {
 

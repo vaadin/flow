@@ -106,19 +106,14 @@
       <version>1.2.0.vaadin1</version>
     </dependency>
 
-    <!-- Download libraries -->
+    <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.28.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
+      <scope>test</scope>
     </dependency>
-    <!-- TESTING DEPENDENCIES -->
+
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-generic</artifactId>
