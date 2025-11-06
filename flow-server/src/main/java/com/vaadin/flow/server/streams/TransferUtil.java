@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.streams.UploadCompleteEvent;
 import com.vaadin.flow.internal.streams.UploadStartEvent;
 import com.vaadin.flow.server.VaadinRequest;
@@ -150,7 +151,6 @@ public final class TransferUtil {
                 && JakartaServletFileUpload
                         .isMultipartContent((HttpServletRequest) request);
         try {
-            String fileName;
             if (isMultipartUpload) {
                 Collection<Part> parts = Collections.EMPTY_LIST;
                 try {
@@ -227,9 +227,21 @@ public final class TransferUtil {
                     }
                 }
             } else {
-                // These are unknown in filexhr ATM
-                fileName = "unknown";
-                String contentType = "unknown";
+                // Extract filename from X-Filename header
+                // The filename is encoded using JavaScript's encodeURIComponent
+                String fileName = request.getHeader("X-Filename");
+
+                if (fileName == null || fileName.isEmpty()) {
+                    fileName = "unknown";
+                } else {
+                    // Decode the percent-encoded filename
+                    fileName = UrlUtil.decodeURIComponent(fileName);
+                }
+
+                String contentType = request.getHeader("Content-Type");
+                if (contentType == null || contentType.isEmpty()) {
+                    contentType = "unknown";
+                }
 
                 UploadEvent event = new UploadEvent(request, response, session,
                         fileName, request.getContentLengthLong(), contentType,
