@@ -462,6 +462,9 @@ export const vaadinConfig: UserConfigFn = (env) => {
         allow: allowedFrontendFolders
       }
     },
+    esbuild: {
+        legalComments: 'inline',
+    },
     build: {
       minify: productionMode,
       outDir: buildOutputFolder,
