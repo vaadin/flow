@@ -1035,7 +1035,8 @@ public class UITest {
 
         UI result = UI.getCurrentOrThrow();
 
-        assertSame("getCurrentOrThrow should return the current UI", ui, result);
+        assertSame("getCurrentOrThrow should return the current UI", ui,
+                result);
     }
 
     @Test(expected = IllegalStateException.class)
