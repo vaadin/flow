@@ -55,6 +55,21 @@
     <vaadin.frontend.hotdeploy>true</vaadin.frontend.hotdeploy>
     <vaadin.devmode.hostsAllowed>*</vaadin.devmode.hostsAllowed>
   </properties>
+  
+  <dependencyManagement>
+      <dependencies>
+          <dependency>
+              <groupId>commons-io</groupId>
+              <artifactId>commons-io</artifactId>
+              <version>2.20.0</version>
+          </dependency>
+          <dependency>
+              <groupId>org.apache.commons</groupId>
+              <artifactId>commons-lang3</artifactId>
+              <version>3.19.0</version>
+          </dependency>
+      </dependencies>
+  </dependencyManagement>
 
   <dependencies>
     <!-- Project dependencies -->
