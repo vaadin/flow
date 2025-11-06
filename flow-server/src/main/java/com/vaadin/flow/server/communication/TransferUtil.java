@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
@@ -52,6 +53,9 @@ import com.vaadin.flow.server.streams.UploadResult;
  */
 public final class TransferUtil {
 
+    private static final Logger logger = LoggerFactory
+            .getLogger(TransferUtil.class);
+
     /**
      * Default buffer size for reading data from the input stream.
      * <p>
@@ -59,6 +63,10 @@ public final class TransferUtil {
      * {@link InputStream#transferTo(OutputStream)}.
      */
     public static int DEFAULT_BUFFER_SIZE = 16384;
+
+    private static Logger getLogger() {
+        return logger;
+    }
 
     /**
      * Transfers data from the given input stream to the output stream while
@@ -146,6 +154,7 @@ public final class TransferUtil {
             VaadinRequest request, VaadinResponse response,
             VaadinSession session, Element owner) {
         boolean isMultipartUpload = isMultipartContent(request);
+        UploadResult.Builder resultBuilder = new UploadResult.Builder(response);
         try {
             if (isMultipartUpload) {
                 Collection<Part> parts = Collections.EMPTY_LIST;
@@ -164,9 +173,10 @@ public final class TransferUtil {
                                 session, part.getSubmittedFileName(),
                                 part.getSize(), part.getContentType(), owner,
                                 part);
-                        handleUploadRequest(handler, event);
+
+                        handleUploadRequest(handler, event, resultBuilder);
                     }
-                    handler.responseHandled(new UploadResult(true, response));
+                    handler.responseHandled(resultBuilder.build());
                 } else {
                     LoggerFactory.getLogger(UploadHandler.class)
                             .warn("Multipart request has no parts");
@@ -180,8 +190,8 @@ public final class TransferUtil {
                         fileName, request.getContentLengthLong(), contentType,
                         owner, null);
 
-                handleUploadRequest(handler, event);
-                handler.responseHandled(new UploadResult(true, response));
+                handleUploadRequest(handler, event, resultBuilder);
+                handler.responseHandled(resultBuilder.build());
             }
         } catch (UploadSizeLimitExceededException
                 | UploadFileSizeLimitExceededException
@@ -190,23 +200,24 @@ public final class TransferUtil {
                     + "extend StreamRequestHandler, override {} method for "
                     + "UploadHandler and provide a higher limit.";
             if (e instanceof UploadSizeLimitExceededException) {
-                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
-                        "Request size", "getRequestSizeMax");
+                getLogger().warn(limitInfoStr, "Request size",
+                        "getRequestSizeMax");
             } else if (e instanceof UploadFileSizeLimitExceededException fileSizeException) {
-                LoggerFactory.getLogger(UploadHandler.class).warn(
-                        limitInfoStr + " File: {}", "File size",
+                getLogger().warn(limitInfoStr + " File: {}", "File size",
                         "getFileSizeMax", fileSizeException.getFileName());
             } else if (e instanceof UploadFileCountLimitExceededException) {
-                LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
-                        "File count", "getFileCountMax");
+                getLogger().warn(limitInfoStr, "File count",
+                        "getFileCountMax");
             }
             LoggerFactory.getLogger(UploadHandler.class)
                     .warn("File upload failed.", e);
-            handler.responseHandled(new UploadResult(false, response, e));
+            handler.responseHandled(
+                    resultBuilder.withException(e).build());
         } catch (Exception e) {
             LoggerFactory.getLogger(UploadHandler.class)
                     .error("Exception during upload", e);
-            handler.responseHandled(new UploadResult(false, response, e));
+            handler.responseHandled(
+                    resultBuilder.withException(e).build());
         }
     }
 
@@ -324,14 +335,36 @@ public final class TransferUtil {
         }
     }
 
+    /**
+     * Handles an upload request and checks for rejection.
+     *
+     * @param handler
+     *            the upload handler
+     * @param event
+     *            the upload event
+     * @param resultBuilder
+     *            the upload result builder to update with acceptance/rejection
+     * @throws IOException
+     *             if an I/O error occurs
+     */
     private static void handleUploadRequest(UploadHandler handler,
-            UploadEvent event) throws IOException {
+            UploadEvent event, UploadResult.Builder resultBuilder)
+            throws IOException {
         Component owner = event.getOwningComponent();
         try {
             ComponentUtil.fireEvent(owner, new UploadStartEvent(owner));
             handler.handleUploadRequest(event);
         } finally {
             ComponentUtil.fireEvent(owner, new UploadCompleteEvent(owner));
+        }
+
+        if (event.isRejected()) {
+            getLogger().debug("File rejected: {} - {}", event.getFileName(),
+                    event.getRejectionMessage());
+            resultBuilder.addRejected(event.getFileName(),
+                    event.getRejectionMessage());
+        } else {
+            resultBuilder.addAccepted(event.getFileName());
         }
     }
 }

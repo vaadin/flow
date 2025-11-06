@@ -46,4 +46,27 @@ public interface FileUploadCallback extends Serializable {
      *             if an I/O error occurs in the callback
      */
     void complete(UploadMetadata metadata, File file) throws IOException;
+
+    /**
+     * Called when a file upload is rejected.
+     * <p>
+     * This method is invoked when {@link UploadEvent#reject()} or
+     * {@link UploadEvent#reject(String)} is called, allowing the handler to
+     * perform cleanup or logging for rejected uploads.
+     * <p>
+     * The default implementation does nothing. Override this method to handle
+     * rejections.
+     *
+     * @param metadata
+     *            the upload metadata containing relevant information about the
+     *            rejected upload
+     * @param reason
+     *            the reason for rejection
+     * @throws IOException
+     *             if an I/O error occurs in the callback
+     */
+    default void rejected(UploadMetadata metadata, String reason)
+            throws IOException {
+        // Default implementation does nothing
+    }
 }

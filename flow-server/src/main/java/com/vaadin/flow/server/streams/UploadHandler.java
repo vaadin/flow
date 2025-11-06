@@ -16,8 +16,16 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
@@ -111,23 +119,76 @@ public interface UploadHandler extends ElementRequestHandler {
      * {@link UploadHandler#handleUploadRequest(UploadEvent)} methods have been
      * called for all files.
      * <p>
-     * This method sets the http response return codes according to internal
-     * exception handling in the framework.
+     * This method sets the HTTP response return codes and writes JSON responses
+     * for rejected files:
+     * <ul>
+     * <li>200 OK - all files accepted</li>
+     * <li>422 Unprocessable Entity - all files rejected (with JSON body)</li>
+     * <li>207 Multi-Status - some files accepted, some rejected (with JSON
+     * body)</li>
+     * <li>500 Internal Server Error - exception occurred</li>
+     * </ul>
      * <p>
      * If you want custom exception handling and to set the return code,
      * implement this method and overwrite the default functionality.
      *
      * @param result
      *            the result of the upload operation containing success status,
-     *            response object, and any exception that occurred
+     *            response object, any exception that occurred, and lists of
+     *            accepted/rejected files
      */
     default void responseHandled(UploadResult result) {
-        if (result.success()) {
-            result.response().setStatus(HttpStatusCode.OK.getCode());
-        } else {
-            result.response()
-                    .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+        VaadinResponse response = result.response();
+        try {
+            if (result.exception() != null) {
+                response.setStatus(
+                        HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            } else if (result.allRejected()) {
+                response.setStatus(422); // Unprocessable Entity
+                response.setContentType("application/json");
+                writeJsonResponse(response,
+                        new RejectedFilesResponse(result.rejectedFiles()));
+            } else if (result.hasMixed()) {
+                response.setStatus(207); // Multi-Status
+                response.setContentType("application/json");
+                writeJsonResponse(response, new MixedUploadResponse(
+                        result.acceptedFiles(), result.rejectedFiles()));
+            } else {
+                response.setStatus(HttpStatusCode.OK.getCode());
+            }
+        } catch (IOException e) {
+            LoggerFactory.getLogger(UploadHandler.class)
+                    .error("Error writing upload response", e);
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         }
+    }
+
+    private static void writeJsonResponse(VaadinResponse response,
+            Object responseObject) throws IOException {
+        ObjectMapper mapper = JacksonUtils.getMapper();
+        try {
+            String json = mapper.writeValueAsString(responseObject);
+            PrintWriter writer = response.getWriter();
+            writer.write(json);
+        } catch (JacksonException e) {
+            throw new IOException("Failed to serialize response to JSON", e);
+        }
+    }
+
+    /**
+     * JSON response structure for rejected files.
+     */
+    record RejectedFilesResponse(
+            List<UploadResult.RejectedFile> rejected) implements
+            java.io.Serializable {
+    }
+
+    /**
+     * JSON response structure for mixed upload results.
+     */
+    record MixedUploadResponse(List<String> accepted,
+            List<UploadResult.RejectedFile> rejected) implements
+            java.io.Serializable {
     }
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
