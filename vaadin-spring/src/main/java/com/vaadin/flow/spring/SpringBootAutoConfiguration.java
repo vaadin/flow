@@ -78,9 +78,9 @@ public class SpringBootAutoConfiguration {
      * Vaadin servlet.
      *
      * @param multipartConfig
-     *                                multipart configuration, if available
+     *            multipart configuration, if available
      * @param configurationProperties
-     *                                the vaadin configuration properties
+     *            the vaadin configuration properties
      * @return a custom ServletRegistrationBean instance
      */
     @Bean
@@ -130,7 +130,8 @@ public class SpringBootAutoConfiguration {
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
 
-        registration.setMultipartConfig(new MultipartConfigElement((String) null));
+        registration
+                .setMultipartConfig(new MultipartConfigElement((String) null));
         return registration;
     }
 
