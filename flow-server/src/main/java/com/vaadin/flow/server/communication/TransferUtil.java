@@ -204,8 +204,7 @@ public final class TransferUtil {
             if (e instanceof UploadSizeLimitExceededException) {
                 LoggerFactory.getLogger(UploadHandler.class).warn(limitInfoStr,
                         "Request size", "getRequestSizeMax");
-            } else if (e instanceof UploadFileSizeLimitExceededException) {
-                UploadFileSizeLimitExceededException fileSizeException = (UploadFileSizeLimitExceededException) e;
+            } else if (e instanceof UploadFileSizeLimitExceededException fileSizeException) {
                 LoggerFactory.getLogger(UploadHandler.class).warn(
                         limitInfoStr + " File: {}", "File size",
                         "getFileSizeMax", fileSizeException.getFileName());

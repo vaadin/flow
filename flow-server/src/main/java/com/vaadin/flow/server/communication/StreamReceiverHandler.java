@@ -237,8 +237,7 @@ public class StreamReceiverHandler implements Serializable {
             if (e instanceof UploadSizeLimitExceededException) {
                 getLogger().warn(limitInfoStr, "Request size",
                         "getRequestSizeMax");
-            } else if (e instanceof UploadFileSizeLimitExceededException) {
-                UploadFileSizeLimitExceededException fileSizeException = (UploadFileSizeLimitExceededException) e;
+            } else if (e instanceof UploadFileSizeLimitExceededException fileSizeException) {
                 getLogger().warn(limitInfoStr + " File: {}", "File size",
                         "getFileSizeMax", fileSizeException.getFileName());
             } else if (e instanceof UploadFileCountLimitExceededException) {
