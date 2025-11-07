@@ -277,8 +277,7 @@ public interface ElementStateProvider extends Serializable {
      * @throws com.vaadin.signals.BindingActiveException
      *             thrown when there is already an existing binding
      */
-    void bindPropertySignal(Element owner, String name,
-            Signal<? extends Serializable> signal);
+    void bindPropertySignal(Element owner, String name, Signal<?> signal);
 
     /**
      * Checks if the given property has been set.

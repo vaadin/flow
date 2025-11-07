@@ -148,7 +148,7 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void bindPropertySignal(Element owner, String name,
-            Signal<? extends Serializable> signal) {
+            Signal<?> signal) {
         throw new UnsupportedOperationException();
     }
 

@@ -292,7 +292,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
 
     @Override
     public void bindPropertySignal(Element owner, String name,
-            Signal<? extends Serializable> signal) {
+            Signal<?> signal) {
         assert owner != null;
         assert name != null;
 

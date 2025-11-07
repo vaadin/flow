@@ -885,8 +885,7 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public Element bindProperty(String name,
-            Signal<? extends Serializable> signal) {
+    public Element bindProperty(String name, Signal<?> signal) {
         verifySetPropertyName(name);
 
         getStateProvider().bindPropertySignal(this, name, signal);

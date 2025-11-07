@@ -129,8 +129,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
      */
-    public void bindSignal(Element owner, String name,
-            Signal<? extends Serializable> signal) {
+    public void bindSignal(Element owner, String name, Signal<?> signal) {
         SignalBinding previousSignalBinding;
         if (super.getProperty(name) instanceof SignalBinding binding) {
             previousSignalBinding = binding;
@@ -156,8 +155,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public void setPropertyFromSignal(String name, Serializable value) {
+    public void setPropertyFromSignal(String name, Object value) {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;
 
@@ -166,7 +164,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             valueToSet = JacksonUtils.nullNode();
         } else if (value instanceof String || value instanceof Number
                 || value instanceof Boolean || value instanceof BaseJsonNode) {
-            valueToSet = value;
+            valueToSet = (Serializable) value;
         } else {
             // List, Map and Bean types conversion
             valueToSet = JacksonUtils.beanToJson(value);
