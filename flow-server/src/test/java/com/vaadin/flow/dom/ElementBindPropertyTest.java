@@ -440,8 +440,7 @@ public class ElementBindPropertyTest {
         TestComponent component = new TestComponent();
 
         ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(
-                new JacksonUtilsTest.Person("John", 42, true));
-
+                createJohn());
         component.getElement().bindProperty("foo", signal);
 
         assertNull(component.getElement().getProperty("foo", null));
@@ -451,64 +450,80 @@ public class ElementBindPropertyTest {
     public void bindBeanProperty_componentDetached_bindingIgnored() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        JacksonUtilsTest.Person john = new JacksonUtilsTest.Person("John", 42,
-                true);
-        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
 
+        JacksonUtilsTest.Person john = createJohn();
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
         component.getElement().bindProperty("foo", signal);
 
         component.removeFromParent();
 
-        signal.value(new JacksonUtilsTest.Person("Jack", 52, false));
+        signal.value(createPerson("Jack", 52, false));
 
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
         Assert.assertTrue(events.isEmpty());
 
-        JsonNode convertedValue = (JsonNode) component.getElement()
-                .getPropertyRaw("foo");
-        assertEquals("John", convertedValue.get("name").asString());
-        assertEquals(42, convertedValue.get("age").asDouble(), 0);
-        assertTrue(convertedValue.get("canSwim").asBoolean());
     }
 
     @Test
     public void bindBeanProperty_componentAttached_bindingActive() {
-        // TODO
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
+        JacksonUtilsTest.Person john = createJohn();
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
         component.getElement().bindProperty("foo", signal);
 
-        assertEquals("bar",
-                component.getElement().getProperty("foo", "default"));
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
         Assert.assertTrue(events.isEmpty());
     }
 
     @Test
     public void bindBeanProperty_componentReAttached_bindingSynced() {
-        // TODO
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        ValueSignal<String> signal = new ValueSignal<>("bar");
-
+        JacksonUtilsTest.Person john = createJohn();
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
         component.getElement().bindProperty("foo", signal);
-        assertEquals("bar",
-                component.getElement().getProperty("foo", "default"));
+
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
 
         component.removeFromParent();
-        signal.value("baz");
+        JacksonUtilsTest.Person jack = createJack();
+        signal.value(jack);
 
-        assertEquals("baz", signal.peek());
-        assertEquals("bar",
-                component.getElement().getProperty("foo", "default"));
+        assertEquals(jack, signal.peek());
+        assertPersonEquals(john,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
 
         UI.getCurrent().add(component);
-        assertEquals("baz",
-                component.getElement().getProperty("foo", "default"));
 
+        assertPersonEquals(jack,
+                (JsonNode) component.getElement().getPropertyRaw("foo"));
         Assert.assertTrue(events.isEmpty());
+    }
+
+    private void assertPersonEquals(JacksonUtilsTest.Person person,
+            JsonNode jsonNode) {
+        assertEquals(person.name(), jsonNode.get("name").asString());
+        assertEquals(person.age(), jsonNode.get("age").asDouble(), 0);
+        assertEquals(person.canSwim(), jsonNode.get("canSwim").asBoolean());
+    }
+
+    private JacksonUtilsTest.Person createPerson(String name, double age,
+            boolean canSwim) {
+        return new JacksonUtilsTest.Person(name, age, canSwim);
+    }
+
+    private JacksonUtilsTest.Person createJohn() {
+        return createPerson("John", 42, true);
+    }
+
+    private JacksonUtilsTest.Person createJack() {
+        return createPerson("Jack", 52, false);
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
