@@ -62,12 +62,10 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -352,7 +350,7 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm -DnodeVersion=\"v24.10.0\" %n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -730,13 +728,28 @@ public class FrontendUtils {
      * @param finder
      *            the class finder to use for locating the resource
      * @return resource as String or {@code null} if not found
+     * @deprecated Use {@link #getJarResourceString(String)} instead
      */
+    @Deprecated
     public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
-        URL resource = finder
+            Object finder) {
+        return getJarResourceString(jarImport);
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport) {
+        ClassLoader classLoader = Thread.currentThread()
+                .getContextClassLoader();
+        URL resource = classLoader
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
-            resource = finder.getResource(
+            resource = classLoader.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
 
@@ -1470,11 +1483,12 @@ public class FrontendUtils {
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
+     * @deprecated Use {@link #isHillaUsed(File)} instead
      */
+    @Deprecated
     public static boolean isHillaUsed(File frontendDirectory,
-            ClassFinder classFinder) {
-        return EndpointRequestUtil.isHillaAvailable(classFinder)
-                && isHillaViewsUsed(frontendDirectory);
+            Object classFinder) {
+        return isHillaUsed(frontendDirectory);
     }
 
     private static boolean isRoutesContentUsingHillaViews(
@@ -1533,10 +1547,13 @@ public class FrontendUtils {
      * @param options
      *            the build options
      * @return true if the React module is available, false otherwise
+     * @deprecated This method has been moved to flow-frontend-tools. Use the classloader directly or check for the class at build time.
      */
-    public static boolean isReactModuleAvailable(Options options) {
+    @Deprecated
+    public static boolean isReactModuleAvailable(Object options) {
+        // Check using classloader directly
         try {
-            options.getClassFinder().loadClass(
+            Thread.currentThread().getContextClassLoader().loadClass(
                     "com.vaadin.flow.component.react.ReactAdapterComponent");
             return true;
         } catch (ClassNotFoundException e) {
@@ -1560,10 +1577,12 @@ public class FrontendUtils {
      * @param options
      *            the build options
      * @return true if Tailwind CSS integration is enabled, false otherwise
+     * @deprecated This method has been moved to flow-frontend-tools. Check feature flags directly at build time.
      */
-    public static boolean isTailwindCssEnabled(Options options) {
-        return options.getFeatureFlags()
-                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+    @Deprecated
+    public static boolean isTailwindCssEnabled(Object options) {
+        throw new UnsupportedOperationException(
+                "This method requires build-time dependencies and has been moved to flow-frontend-tools");
     }
 
 }

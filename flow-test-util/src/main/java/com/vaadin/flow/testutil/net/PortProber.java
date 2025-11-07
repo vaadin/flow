@@ -26,8 +26,6 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.installer.Platform;
-
 /**
  * Class for determining a free localhost port that is not used by any ipv4 or
  * ipv6 interfaces.
@@ -51,11 +49,27 @@ public class PortProber {
 
     private static final Random random = new Random();
     private static final EphemeralPortRangeDetector ephemeralRangeDetector;
+    
+        enum OS {
+            WINDOWS, MAC, LINUX, SUN_OS;
+
+        /**
+         * Use system property to figure out the operating system.
+         *
+         * @return current operating system
+         */
+        public static OS guess() {
+            final String osName = System.getProperty("os.name");
+            return osName.contains("Windows") ? OS.WINDOWS
+                    : osName.contains("Mac") ? OS.MAC
+                            : osName.contains("SunOS") ? OS.SUN_OS : OS.LINUX;
+        }
+    }
+
 
     static {
-        final Platform current = Platform.guess();
-
-        if (current.isLinux()) {
+        
+        if (OS.guess() == OS.LINUX) {
             ephemeralRangeDetector = LinuxEphemeralPortRangeDetector
                     .getInstance();
         } else {

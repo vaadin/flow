@@ -43,7 +43,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.DependencyTrigger;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static java.nio.charset.StandardCharsets.UTF_8;

@@ -30,6 +30,7 @@
   <modules>
     <module>flow</module>
     <module>flow-server</module>
+    <module>flow-frontend-tools</module>
     <module>flow-react</module>
     <module>flow-polymer-template</module>
     <module>flow-lit-template</module>

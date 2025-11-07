@@ -143,7 +143,7 @@ public class NodeTasks implements FallibleCommand {
                     }
                 } else {
                     commands.add(new TaskGenerateCommercialBanner(options));
-                    BundleUtils.copyPackageLockFromBundle(options);
+                    BuildBundleUtils.copyPackageLockFromBundle(options);
                 }
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
@@ -156,7 +156,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
-                    BundleUtils.copyPackageLockFromBundle(options);
+                    BuildBundleUtils.copyPackageLockFromBundle(options);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
@@ -171,7 +171,7 @@ public class NodeTasks implements FallibleCommand {
                     }
                 }
             } else if (options.isFrontendHotdeploy()) {
-                BundleUtils.copyPackageLockFromBundle(options);
+                BuildBundleUtils.copyPackageLockFromBundle(options);
             }
 
             if (options.isGenerateEmbeddableWebComponents()) {

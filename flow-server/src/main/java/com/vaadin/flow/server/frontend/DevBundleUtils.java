@@ -61,7 +61,7 @@ public class DevBundleUtils {
                 return bundleFile.toURI().toURL();
             }
         }
-        return TaskRunDevBundleBuild.class.getClassLoader()
+        return DevBundleUtils.class.getClassLoader()
                 .getResource(Constants.DEV_BUNDLE_JAR_PATH + filename);
     }
 
