@@ -486,7 +486,8 @@ public class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable).streamingFinished(endEventCaptor.capture());
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
         Assert.assertEquals("test.txt",
                 endEventCaptor.getValue().getFileName());
     }
@@ -503,7 +504,8 @@ public class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable).streamingFinished(endEventCaptor.capture());
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
         Assert.assertEquals("my file åäö.txt",
                 endEventCaptor.getValue().getFileName());
     }
@@ -520,7 +522,8 @@ public class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable).streamingFinished(endEventCaptor.capture());
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
         Assert.assertEquals("text/plain",
                 endEventCaptor.getValue().getMimeType());
     }
@@ -537,7 +540,8 @@ public class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable).streamingFinished(endEventCaptor.capture());
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
         Assert.assertEquals("unknown", endEventCaptor.getValue().getMimeType());
     }
 
@@ -552,7 +556,8 @@ public class StreamReceiverHandlerTest {
 
         ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
                 .forClass(StreamVariable.StreamingEndEvent.class);
-        Mockito.verify(streamVariable).streamingFinished(endEventCaptor.capture());
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
         Assert.assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 

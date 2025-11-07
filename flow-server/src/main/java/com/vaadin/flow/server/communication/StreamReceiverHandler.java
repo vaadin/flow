@@ -296,7 +296,8 @@ public class StreamReceiverHandler implements Serializable {
             throws IOException {
 
         String filename = TransferUtil.extractFilenameFromXhrRequest(request);
-        String mimeType = TransferUtil.extractContentTypeFromXhrRequest(request);
+        String mimeType = TransferUtil
+                .extractContentTypeFromXhrRequest(request);
 
         final InputStream stream = request.getInputStream();
 
