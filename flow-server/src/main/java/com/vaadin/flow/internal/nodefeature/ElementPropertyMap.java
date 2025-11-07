@@ -167,13 +167,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         } else if (value instanceof String || value instanceof Number
                 || value instanceof Boolean || value instanceof BaseJsonNode) {
             valueToSet = value;
-        } else if (value instanceof List) {
-            valueToSet = JacksonUtils.listToJson((List<?>) value);
-        } else if (value instanceof Map) {
-            valueToSet = JacksonUtils.mapToJson((Map<String, ?>) value);
         } else {
-            // Fallback after all other supported types: try to convert the
-            // value as a bean
+            // List, Map and Bean types conversion
             valueToSet = JacksonUtils.beanToJson(value);
         }
         setProperty(name, valueToSet, true);
