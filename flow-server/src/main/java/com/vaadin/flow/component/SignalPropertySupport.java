@@ -87,10 +87,11 @@ public class SignalPropertySupport<T> implements Serializable {
 
     /**
      * Creates a new instance of SignalPropertySupport for the given owner
-     * component and a value change consumer to be called when property value
-     * changes. The property value changes when set manually or when bound to a
-     * {@link Signal} with {@link #bind(Signal)}, and the signal value changes
-     * when the owner component is in the attached state.
+     * component and a value change consumer to be called when property value is
+     * updated. The property value is updated either manually with
+     * {@link #set(Object)}, or automatically via {@link Signal} value change
+     * while the owner component is in the attached state and signal is bound
+     * with {@link #bind(Signal)}.
      *
      * @param owner
      *            the owner component for which the value change consumer is
