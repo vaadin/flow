@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Helpers related to the production bundle.
@@ -61,9 +60,26 @@ public class ProdBundleUtils {
      * @return stats.json content or {@code null} if not found
      * @throws IOException
      *             if an I/O exception occurs.
+     * @deprecated Use {@link #findBundleStatsJson(File)} instead
      */
+    @Deprecated
     public static String findBundleStatsJson(File projectDir,
-            ClassFinder finder) throws IOException {
+            Object finder) throws IOException {
+        return findBundleStatsJson(projectDir);
+    }
+
+    /**
+     * Get the stats.json for the application specific production bundle or from
+     * the default bundle if it exists.
+     *
+     * @param projectDir
+     *            the project base directory
+     * @return stats.json content or {@code null} if not found
+     * @throws IOException
+     *             if an I/O exception occurs.
+     */
+    public static String findBundleStatsJson(File projectDir)
+            throws IOException {
         String statsFile = "config/stats.json";
         File prodBundleFile = getProdBundle(projectDir);
         if (prodBundleFile.exists()) {
@@ -81,7 +97,7 @@ public class ProdBundleUtils {
             }
         }
 
-        URL statsJson = finder
+        URL statsJson = Thread.currentThread().getContextClassLoader()
                 .getResource(Constants.PROD_BUNDLE_JAR_PATH + statsFile);
         if (statsJson == null) {
             getLogger().warn(

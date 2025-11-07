@@ -23,6 +23,11 @@
       <scope>provided</scope>
     </dependency>
     <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-frontend-tools</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
     </dependency>

@@ -19,8 +19,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-
 /**
  * A container for utility methods related with Hilla endpoints.
  * <p>
@@ -77,13 +75,10 @@ public interface EndpointRequestUtil extends Serializable {
      * @param classFinder
      *            class finder to check the presence of Hilla endpoint class
      * @return true if Hilla is available, false otherwise
+     * @deprecated Use {@link #isHillaAvailable()} instead
      */
-    static boolean isHillaAvailable(ClassFinder classFinder) {
-        try {
-            classFinder.loadClass(HILLA_ENDPOINT_CLASS);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
+    @Deprecated
+    static boolean isHillaAvailable(Object classFinder) {
+        return isHillaAvailable();
     }
 }

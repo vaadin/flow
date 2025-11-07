@@ -24,7 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import tools.jackson.databind.ObjectMapper;
 
-import com.vaadin.flow.server.frontend.TaskGenerateTsConfigTest;
 
 public class BrowserDetailsTest extends TestCase {
 
@@ -789,13 +788,9 @@ public class BrowserDetailsTest extends TestCase {
 
     private static UserAgent[] getUserAgentDetails(String agentFile)
             throws IOException {
-        String userAgents = IOUtils.toString(
-                Objects.requireNonNull(TaskGenerateTsConfigTest.class
-                        .getClassLoader().getResourceAsStream(agentFile)),
-                StandardCharsets.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
 
-        return mapper.readValue(userAgents, UserAgent[].class);
+        return mapper.readValue(BrowserDetailsTest.class.getResourceAsStream(agentFile), UserAgent[].class);
     }
 
     private void assertAgentDetails(UserAgent[] agents) {
