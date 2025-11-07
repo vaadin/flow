@@ -24,12 +24,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.MockedStatic;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
@@ -408,6 +410,84 @@ public class ElementBindPropertyTest {
 
     @Test
     public void bindStringProperty_componentReAttached_bindingSynced() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindProperty("foo", signal);
+        assertEquals("bar",
+                component.getElement().getProperty("foo", "default"));
+
+        component.removeFromParent();
+        signal.value("baz");
+
+        assertEquals("baz", signal.peek());
+        assertEquals("bar",
+                component.getElement().getProperty("foo", "default"));
+
+        UI.getCurrent().add(component);
+        assertEquals("baz",
+                component.getElement().getProperty("foo", "default"));
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    // bean property signal binding tests
+
+    @Test
+    public void bindBeanProperty_componentNotAttached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(
+                new JacksonUtilsTest.Person("John", 42, true));
+
+        component.getElement().bindProperty("foo", signal);
+
+        assertNull(component.getElement().getProperty("foo", null));
+    }
+
+    @Test
+    public void bindBeanProperty_componentDetached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        JacksonUtilsTest.Person john = new JacksonUtilsTest.Person("John", 42,
+                true);
+        ValueSignal<JacksonUtilsTest.Person> signal = new ValueSignal<>(john);
+
+        component.getElement().bindProperty("foo", signal);
+
+        component.removeFromParent();
+
+        signal.value(new JacksonUtilsTest.Person("Jack", 52, false));
+
+        Assert.assertTrue(events.isEmpty());
+
+        JsonNode convertedValue = (JsonNode) component.getElement()
+                .getPropertyRaw("foo");
+        assertEquals("John", convertedValue.get("name").asString());
+        assertEquals(42, convertedValue.get("age").asDouble(), 0);
+        assertTrue(convertedValue.get("canSwim").asBoolean());
+    }
+
+    @Test
+    public void bindBeanProperty_componentAttached_bindingActive() {
+        // TODO
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindProperty("foo", signal);
+
+        assertEquals("bar",
+                component.getElement().getProperty("foo", "default"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindBeanProperty_componentReAttached_bindingSynced() {
+        // TODO
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 

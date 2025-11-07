@@ -166,7 +166,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
                 || value instanceof Boolean || value instanceof BaseJsonNode) {
             valueToSet = (Serializable) value;
         } else {
-            // List, Map and Bean types conversion
+            // List, Map and Bean/Object types conversion
             valueToSet = JacksonUtils.beanToJson(value);
         }
         setProperty(name, valueToSet, true);

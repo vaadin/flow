@@ -60,9 +60,9 @@ public abstract class AbstractPropertyMap extends NodeMap {
         assert isValidValueType(value);
 
         if (hasSignal(name)) {
-            SignalBinding binding = (SignalBinding) super.get(name);
-            put(name, new SignalBinding(binding.signal(),
-                    binding.registration(), value), emitChange);
+            SignalBinding b = (SignalBinding) super.get(name);
+            put(name, new SignalBinding(b.signal(), b.registration(), value),
+                    emitChange);
         } else {
             put(name, value, emitChange);
         }
@@ -146,9 +146,19 @@ public abstract class AbstractPropertyMap extends NodeMap {
         }
     }
 
-    public boolean hasSignal(String name) {
-        Serializable value = super.get(name);
-        return value instanceof SignalBinding binding
-                && binding.signal() != null;
+    public boolean hasSignal(String key) {
+        return super.get(key) instanceof SignalBinding binding
+                && binding.signal() != null && binding.registration() != null;
+    }
+
+    @Override
+    public void updateFromClient(String key, Serializable value) {
+        if (hasSignal(key)) {
+            SignalBinding b = (SignalBinding) super.get(key);
+            super.updateFromClient(key,
+                    new SignalBinding(b.signal(), b.registration(), value));
+        } else {
+            super.updateFromClient(key, value);
+        }
     }
 }
