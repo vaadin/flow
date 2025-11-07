@@ -36,6 +36,7 @@ public class DevModeNoClassCacheIT extends ChromeBrowserTest {
     @Test
     public void testDevModeClassCacheNotPopulated() {
         open();
+        waitForDevServer();
 
         waitForElementPresent(By.id("last-span"));
 
