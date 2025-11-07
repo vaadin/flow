@@ -29,12 +29,14 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
@@ -140,8 +142,10 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             throw new BindingActiveException();
         }
         Registration registration = signal != null
-                ? ElementEffect.bind(owner, signal,
-                        (element, value) -> setProperty(name, value, true))
+                ? ElementEffect
+                        .bind(owner, signal,
+                                (element, value) -> setPropertyFromSignal(name,
+                                        value, true))
                 : null;
         if (signal == null && previousSignalBinding != null) {
             if (previousSignalBinding.registration() != null) {
@@ -151,6 +155,34 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         } else {
             put(name, new SignalBinding(signal, registration, get(name)),
                     false);
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public void setPropertyFromSignal(String name, Serializable value,
+            boolean emitChange) {
+        assert !forbiddenProperties.contains(name)
+                : "Forbidden property name: " + name;
+
+        if (value == null) {
+            setProperty(name, JacksonUtils.nullNode(), emitChange);
+        } else {
+            if (value instanceof String || value instanceof Number
+                    || value instanceof Boolean
+                    || value instanceof BaseJsonNode) {
+                setProperty(name, value, emitChange);
+            } else if (value instanceof List) {
+                setProperty(name, JacksonUtils.listToJson((List<?>) value),
+                        emitChange);
+            } else if (value instanceof Map) {
+                setProperty(name,
+                        JacksonUtils.mapToJson((Map<String, ?>) value),
+                        emitChange);
+            } else {
+                // Fallback after all other supported types: try to convert the
+                // value as a bean
+                setProperty(name, JacksonUtils.beanToJson(value), emitChange);
+            }
         }
     }
 

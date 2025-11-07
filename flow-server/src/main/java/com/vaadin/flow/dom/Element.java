@@ -861,6 +861,11 @@ public class Element extends Node<Element> {
      * manually throws {@link BindingActiveException}. Same happens when trying
      * to bind a new Signal while one is already bound.
      * <p>
+     * Supported data types for the signal are the same as for the various
+     * {@code setProperty} methods in this class: {@link String},
+     * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
+     * (bean), {@link List} and {@link Map}.
+     * <p>
      * Example of usage:
      *
      * <pre>
