@@ -410,9 +410,6 @@ abstract class AbstractUpdateImports implements Runnable {
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
-        files.put(generatedFlowWebComponentImports,
-                getCssLines(webComponentCssData, 0));
-
         List<String> appShellLines = new ArrayList<>();
         List<String> appShellCssLines = getCssLines(appShellCssData,
                 cssLineOffset);
@@ -435,6 +432,11 @@ abstract class AbstractUpdateImports implements Runnable {
             mainLines.addAll(mainCssLines);
         }
         mainLines.addAll(getModuleLines(eagerJavascript));
+
+        if (!webComponentCssData.isEmpty()) {
+            files.put(generatedFlowWebComponentImports,
+                    getCssLines(webComponentCssData, cssLineOffset));
+        }
 
         // Move all imports to the top
         List<String> copy = new ArrayList<>(mainLines);
