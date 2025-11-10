@@ -15,11 +15,14 @@
  */
 package com.vaadin.flow.dom;
 
+import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -38,10 +41,13 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.JacksonUtilsTest;
+import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
+import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
 import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
@@ -167,6 +173,60 @@ public class ElementBindPropertyTest {
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeProperty("foo"));
         Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindProperty_addPropertyChangeListenerAttached_listenerReceivesValueChange() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo", signal);
+
+        AtomicReference<Serializable> listenerValue = new AtomicReference<>();
+        component.getElement().addPropertyChangeListener("foo", "event",
+                event -> listenerValue.set(event.getValue()));
+
+        Assert.assertEquals("The property should be synchronized",
+                DisabledUpdateMode.ONLY_WHEN_ENABLED,
+                component.getElement().getNode()
+                        .getFeature(ElementListenerMap.class)
+                        .getPropertySynchronizationMode("foo"));
+
+        ElementListenerMap listenerMap = component.getElement().getNode()
+                .getFeature(ElementListenerMap.class);
+
+        Assert.assertEquals("A DOM event synchronization should be defined",
+                Collections.singleton(
+                        JsonConstants.SYNCHRONIZE_PROPERTY_TOKEN + "foo"),
+                ElementListenersTest.getExpressions(listenerMap, "event"));
+
+        signal.value("changedValue");
+        Assert.assertEquals("changedValue", listenerValue.get());
+    }
+
+    @Test
+    public void bindProperty_addPropertyChangeListenerDetached_listenerReceivesValueChange() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo", signal);
+
+        AtomicReference<Serializable> listenerValue = new AtomicReference<>();
+        component.getElement().addPropertyChangeListener("foo", "event",
+                event -> listenerValue.set(event.getValue()));
+
+        signal.value("changedValue");
+        Assert.assertEquals("changedValue", listenerValue.get());
+
+        // When detached, signal change should not propagate to the property and
+        // the listener should not be triggered
+        component.removeFromParent();
+        signal.value("secondChangedValue");
+        Assert.assertEquals("changedValue", listenerValue.get());
+        Assert.assertEquals("changedValue",
+                component.getElement().getProperty("foo"));
     }
 
     // boolean property signal binding tests
