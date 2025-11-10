@@ -16,6 +16,7 @@
 package com.vaadin.flow.dom;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -602,6 +603,96 @@ public class ElementBindPropertyTest {
         Assert.assertTrue(events.isEmpty());
     }
 
+    // map property signal binding tests
+
+    @Test
+    public void bindMapProperty_componentNotAttached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+
+        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+                createPersonMap(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        assertNull(component.getElement().getProperty("foo", null));
+    }
+
+    @Test
+    public void bindMapProperty_componentDetached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+                createPersonMap(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        component.removeFromParent();
+
+        signal.value(createPersonMap(createJack(), createJohn()));
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindMapProperty_componentAttached_bindingActive() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+                createPersonMap(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindMapProperty_componentReAttached_bindingSynced() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<Map<?, ?>> signal = new ValueSignal<>(
+                createPersonMap(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        // assert initial value
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        component.removeFromParent();
+        signal.value(createPersonMap(createJack(), createJohn()));
+
+        // assert signal value updated
+        assertEquals("Jack", ((Map<?, ?>) signal.peek().get("0")).get("name"));
+        assertEquals("John", ((Map<?, ?>) signal.peek().get("1")).get("name"));
+        // assert property value not updated
+        assertEquals("John",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("Jack",
+                getFromMap(component, "foo", "1").get("name").asString());
+
+        UI.getCurrent().add(component);
+
+        // assert property value updated
+        assertEquals("Jack",
+                getFromMap(component, "foo", "0").get("name").asString());
+        assertEquals("John",
+                getFromMap(component, "foo", "1").get("name").asString());
+        Assert.assertTrue(events.isEmpty());
+    }
+
     private void assertPersonEquals(JacksonUtilsTest.Person person,
             JsonNode jsonNode) {
         assertEquals(person.name(), jsonNode.get("name").asString());
@@ -622,11 +713,26 @@ public class ElementBindPropertyTest {
         return createPerson("Jack", 52, false);
     }
 
+    private Map createPersonMap(JacksonUtilsTest.Person... persons) {
+        Map map = new HashMap<>();
+        for (int i = 0; i < persons.length; i++) {
+            map.put(String.valueOf(i), persons[i]);
+        }
+        return map;
+    }
+
     private ObjectNode getFromList(Component component, String propertyName,
             int index) {
         ArrayNode arrayNode = (ArrayNode) component.getElement()
                 .getPropertyRaw(propertyName);
         return (ObjectNode) arrayNode.get(index);
+    }
+
+    private ObjectNode getFromMap(Component component, String propertyName,
+            String key) {
+        ObjectNode objectNode = (ObjectNode) component.getElement()
+                .getPropertyRaw(propertyName);
+        return (ObjectNode) objectNode.get(key);
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
