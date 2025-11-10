@@ -293,14 +293,25 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
+      - name: Checkout base branch for API comparison
+        run: |
+          echo "Checking out base branch: ${{ env.BASE_REF }}"
+          git clone --depth 1 --branch ${{ env.BASE_REF }} ${{ github.event.repository.clone_url }} ../base-build
       - name: Determine base version
         id: base-version
+        working-directory: ../base-build
         run: |
-          baseVersion=$(mvn -N -q -DforceStdout  help:evaluate -Dexpression='project.version')
+          baseVersion=$(mvn -N -q -DforceStdout help:evaluate -Dexpression='project.version')
           echo "Base API Version: ${baseVersion}"
           echo "BASE_API_VERSION=${baseVersion}" >> $GITHUB_OUTPUT
-      - name: Use temporary flow version
+      - name: Build base version locally
+        working-directory: ../base-build
         run: |
+          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env.BASE_REF }}"
+          mvn clean install -B -ntp -DskipTests -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am
+      - name: Use temporary flow version for PR
+        run: |
+          echo "Switching back to PR branch and setting temporary version"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
         run: |
@@ -318,6 +329,11 @@ jobs:
         with:
           name: apidiff-reports
           path: apidiff/
+      - name: Cleanup base build directory
+        if: always()
+        run: |
+          echo "Cleaning up base build directory"
+          rm -rf ../base-build
       - name: Report API DIFF to GitHub
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
