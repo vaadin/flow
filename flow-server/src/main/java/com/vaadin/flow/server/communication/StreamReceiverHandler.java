@@ -295,10 +295,10 @@ public class StreamReceiverHandler implements Serializable {
             StreamReceiver streamReceiver, StateNode owner, long contentLength)
             throws IOException {
 
-        // These are unknown in filexhr ATM, maybe add to Accept header that
-        // is accessible in portlets
-        final String filename = "unknown";
-        final String mimeType = filename;
+        String filename = TransferUtil.extractFilenameFromXhrRequest(request);
+        String mimeType = TransferUtil
+                .extractContentTypeFromXhrRequest(request);
+
         final InputStream stream = request.getInputStream();
 
         boolean success = false;

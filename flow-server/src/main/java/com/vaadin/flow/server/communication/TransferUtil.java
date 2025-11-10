@@ -172,21 +172,8 @@ public final class TransferUtil {
                     handler.responseHandled(false, response);
                 }
             } else {
-                // Extract filename from X-Filename header
-                // The filename is encoded using JavaScript's encodeURIComponent
-                String fileName = request.getHeader("X-Filename");
-
-                if (fileName == null || fileName.isEmpty()) {
-                    fileName = "unknown";
-                } else {
-                    // Decode the percent-encoded filename
-                    fileName = UrlUtil.decodeURIComponent(fileName);
-                }
-
-                String contentType = request.getHeader("Content-Type");
-                if (contentType == null || contentType.isEmpty()) {
-                    contentType = "unknown";
-                }
+                String fileName = extractFilenameFromXhrRequest(request);
+                String contentType = extractContentTypeFromXhrRequest(request);
 
                 UploadEvent event = new UploadEvent(request, response, session,
                         fileName, request.getContentLengthLong(), contentType,
@@ -241,6 +228,49 @@ public final class TransferUtil {
         String contentType = request.getContentType();
         return contentType != null
                 && contentType.toLowerCase().startsWith("multipart/");
+    }
+
+    /**
+     * Extracts the filename from an XHR upload request.
+     * <p>
+     * The filename is extracted from the X-Filename header, which is set by
+     * vaadin-upload. The filename is encoded using JavaScript's
+     * encodeURIComponent and decoded on the server using
+     * {@link UrlUtil#decodeURIComponent(String)} (RFC 3986).
+     *
+     * @param request
+     *            the request to extract the filename from
+     * @return the decoded filename, or "unknown" if not present
+     */
+    public static String extractFilenameFromXhrRequest(VaadinRequest request) {
+        String fileName = request.getHeader("X-Filename");
+
+        if (fileName == null || fileName.isEmpty()) {
+            return "unknown";
+        }
+
+        // Decode the percent-encoded filename
+        return UrlUtil.decodeURIComponent(fileName);
+    }
+
+    /**
+     * Extracts the content type from an XHR upload request.
+     * <p>
+     * The content type is extracted from the Content-Type header.
+     *
+     * @param request
+     *            the request to extract the content type from
+     * @return the content type, or "unknown" if not present
+     */
+    public static String extractContentTypeFromXhrRequest(
+            VaadinRequest request) {
+        String contentType = request.getHeader("Content-Type");
+
+        if (contentType == null || contentType.isEmpty()) {
+            return "unknown";
+        }
+
+        return contentType;
     }
 
     /**
