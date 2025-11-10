@@ -132,7 +132,7 @@ public class PrepareFrontendMojoTest {
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
-        ObjectNode buildInfo = JacksonUtils.createObjectNode();
+        ObjectNode buildInfo = JacksonUtils.readTree(json);
         Assert.assertNull("Default HotDeploy token should not be available",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
@@ -151,8 +151,10 @@ public class PrepareFrontendMojoTest {
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
         ObjectNode buildInfo = JacksonUtils.readTree(json);
-        Assert.assertNotNull("HotDeploy should be enabled",
+        Assert.assertNotNull("HotDeploy should be written",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
+        Assert.assertTrue("HotDeploy should be enabled",
+                buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue());
     }
 
     @Test
@@ -187,17 +189,31 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         ObjectNode buildInfo = JacksonUtils.readTree(json);
 
-        Assert.assertNull(
+        Assert.assertNotNull(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
                 buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertFalse(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
+                        + "should have been disabled",
+                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
+                        .booleanValue());
+
         Assert.assertNotNull(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
                 buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertTrue(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
+                        + "should have been enabled",
+                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
+                        .booleanValue());
 
-        Assert.assertNull(buildInfo
-                .get(InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+        Assert.assertNull(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                        + "should have not been written",
+                buildInfo.get(
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
