@@ -155,9 +155,11 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
         resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
         resources.add("/aura/**");
         resources.add("/lumo/**");
+        resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
@@ -563,9 +565,9 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
-                "/VAADIN/**", // This contains static bundle files which
-                              // typically do not need a security
-                              // context but also uploads go here
+                "/VAADIN/**" // This contains static bundle files which
+                             // typically do not need a security
+                             // context but also uploads go here
         };
     }
 

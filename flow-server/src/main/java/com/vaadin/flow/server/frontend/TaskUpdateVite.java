@@ -133,6 +133,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 .replace("#frontendExtraFileExtensions#",
                         getFrontendExtraFileExtensions());
         template = updateFileSystemRouterVitePlugin(template);
+        template = updateTailwindCssVitePlugin(template);
 
         FileIOUtils.writeIfChanged(generatedConfigFile, template);
         log().debug("Created vite generated configuration file: '{}'",
@@ -164,6 +165,18 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         }
         return template.replace("//#vitePluginFileSystemRouterImport#", "")
                 .replace("//#vitePluginFileSystemRouter#", "");
+    }
+
+    private String updateTailwindCssVitePlugin(String template) {
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            return template
+                    .replace("//#tailwindcssVitePluginImport#",
+                            "import tailwindcss from '@tailwindcss/vite';")
+                    .replace("//#tailwindcssVitePlugin#", "tailwindcss(),");
+        } else {
+            return template.replace("//#tailwindcssVitePluginImport#", "")
+                    .replace("//#tailwindcssVitePlugin#", "");
+        }
     }
 
     private Logger log() {

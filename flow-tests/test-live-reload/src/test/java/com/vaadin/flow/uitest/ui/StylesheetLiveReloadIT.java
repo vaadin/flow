@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -39,18 +40,16 @@ import org.mockito.ThrowingConsumer;
 
 import com.vaadin.testbench.TestBenchElement;
 
+@NotThreadSafe
 public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
 
     private static final String UPDATED_DIV_BG_COLOR = "rgba(0, 0, 255, 1)";
     private static final String APPSHELL_STYLES_DIV_BG_COLOR = "rgba(139, 0, 139, 1)";
     private static final String APPSHELL_IMPORTED_DIV_BG_COLOR = "rgba(184, 134, 11, 1)";
     private static final String APPSHELL_NESTED_IMPORTED_DIV_BG_COLOR = "rgba(139, 0, 0, 1)";
-    private static final String APPSHELL_STYLESHEET = "/css/styles.css";
     private static final String VIEW_STYLES_DIV_BG_COLOR = "rgba(75, 0, 130, 1)";
     private static final String VIEW_IMPORTED_DIV_BG_COLOR = "rgba(205, 133, 63, 1)";
     private static final String VIEW_NESTED_IMPORTED_DIV_BG_COLOR = "rgba(255, 127, 80, 1)";
-    private static final String VIEW_STYLESHEET = "/css/view/view.css";
-    private static final String STYLE_SHEET_RELOAD_PARAMETER = "v-hotreload=";
     private final Map<Path, byte[]> styleSheetRestore = new HashMap<>();
 
     private Path resourcesPath;
@@ -83,6 +82,10 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     @Test
     public void stylesheetTag_updateReferencedResources_changesApplied()
             throws IOException {
+        // Disables cache to make the test reliable, preventing old content to
+        // be served by the servlet container even if the resource has been
+        // updated
+        getDevTools().setCacheDisabled(true);
         open();
         assertStyleSheetIsReloaded("appshell-style",
                 APPSHELL_STYLES_DIV_BG_COLOR);

@@ -129,6 +129,9 @@ public class SpringBootAutoConfiguration {
         }
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
+
+        registration
+                .setMultipartConfig(new MultipartConfigElement((String) null));
         return registration;
     }
 

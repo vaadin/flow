@@ -13,7 +13,7 @@
   <description>Full-Stack Signals common library for Flow and Hilla</description>
 
   <properties>
-    <junit5.version>5.13.4</junit5.version>
+    <junit.version>6.0.1</junit.version>
   </properties>
 
   <dependencies>
@@ -34,13 +34,13 @@
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-api</artifactId>
-      <version>${junit5.version}</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter</artifactId>
-      <version>${junit5.version}</version>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
