@@ -263,13 +263,14 @@ abstract class AbstractUpdateImports implements Runnable {
 
     private List<String> mergeWebComponentOutputLines(
             Map<File, List<String>> outputFiles) {
-        return Stream.concat(
-                outputFiles
-                        .getOrDefault(appShellImports, Collections.emptyList())
-                        .stream(),
-                outputFiles.getOrDefault(generatedFlowImports,
-                        Collections.emptyList()).stream())
-                .distinct().toList();
+        List<String> merged = new ArrayList<>();
+        merged.addAll(outputFiles.getOrDefault(appShellImports,
+                Collections.emptyList()));
+        merged.addAll(outputFiles.getOrDefault(generatedFlowWebComponentImports,
+                Collections.emptyList()));
+        merged.addAll(outputFiles.getOrDefault(generatedFlowImports,
+                Collections.emptyList()));
+        return merged.stream().distinct().toList();
     }
 
     private void writeWebComponentImports(List<String> lines) {
@@ -308,6 +309,7 @@ abstract class AbstractUpdateImports implements Runnable {
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
         List<CssData> appShellCssData = new ArrayList<>();
+        List<CssData> webComponentCssData = new ArrayList<>();
         if (FrontendUtils.isTailwindCssEnabled(options)) {
             appShellCssData.add(new CssData(TAILWIND_IMPORT, null, null, null));
         }
@@ -332,6 +334,8 @@ abstract class AbstractUpdateImports implements Runnable {
             } else {
                 if (entry.getKey().equals(ChunkInfo.APP_SHELL)) {
                     appShellCssData.addAll(entry.getValue());
+                } else if (entry.getKey().equals(ChunkInfo.WEB_COMPONENT)) {
+                    webComponentCssData.addAll(entry.getValue());
                 } else {
                     eagerCssData.addAll(entry.getValue());
                 }
@@ -405,6 +409,9 @@ abstract class AbstractUpdateImports implements Runnable {
             chunkLoader.add(
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
+
+        files.put(generatedFlowWebComponentImports,
+                getCssLines(webComponentCssData, 0));
 
         List<String> appShellLines = new ArrayList<>();
         List<String> appShellCssLines = getCssLines(appShellCssData,
