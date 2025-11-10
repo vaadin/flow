@@ -58,7 +58,7 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     *
+     * <p>
      * This method is meant to perform application-wide updates. Operation
      * targeting Vaadin session should be implemented in
      * {@link #onClassLoadEvent(VaadinSession, Set, boolean)} method.
@@ -74,7 +74,11 @@ public interface VaadinHotswapper {
      * @return {@literal true} if a browser page reload is required,
      *         {@literal false} otherwise.
      * @see #onClassLoadEvent(VaadinSession, Set, boolean)
+     * @deprecated As of 25.0, replaced by
+     *             {@link #onClassesChange(HotswapClassEvent)}. Please consider
+     *             moving your implementation to that method.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     default boolean onClassLoadEvent(VaadinService vaadinService,
             Set<Class<?>> classes, boolean redefined) {
         // no-op by default
@@ -85,7 +89,33 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
+     * <p>
+     * This method is meant to perform application-wide updates. Operation
+     * targeting Vaadin session should be implemented in
+     * {@link #onClassesChange(HotswapClassSessionEvent)} method.
+     * <p>
+     * Currently, the default implementation delegates to the deprecated
+     * {@link #onClassLoadEvent(VaadinService, Set, boolean)} method for
+     * backward compatibility.
      *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            classes.
+     * @see #onClassesChange(HotswapClassSessionEvent)
+     */
+    default void onClassesChange(HotswapClassEvent event) {
+        boolean reload = onClassLoadEvent(event.getVaadinService(),
+                event.getChangedClasses(), event.isRedefined());
+        if (reload) {
+            event.triggerUpdate(UIUpdateStrategy.RELOAD);
+        }
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application classes
+     * have been updated.
+     * <p>
+     * <p>
      * This method is meant to perform updates at {@link VaadinSession} level.
      * Operation targeting the entire application should be implemented in
      * {@link #onClassLoadEvent(VaadinService, Set, boolean)} method.
@@ -101,11 +131,41 @@ public interface VaadinHotswapper {
      * @return {@literal true} if a browser page reload is required,
      *         {@literal false} otherwise.
      * @see #onClassLoadEvent(VaadinService, Set, boolean)
+     * @deprecated As of 25.0, replaced by
+     *             {@link #onClassesChange(HotswapClassSessionEvent)}. Please
+     *             consider moving your implementation to that method.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     default boolean onClassLoadEvent(VaadinSession vaadinSession,
             Set<Class<?>> classes, boolean redefined) {
         // no-op by default
         return false;
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application classes
+     * have been updated.
+     * <p>
+     * <p>
+     * This method is meant to perform updates at {@link VaadinSession} level.
+     * Operation targeting the entire application should be implemented in
+     * {@link #onClassesChange(HotswapClassEvent)} method.
+     * <p>
+     * Currently, the default implementation delegates to the deprecated
+     * {@link #onClassLoadEvent(VaadinSession, Set, boolean)} method for
+     * backward compatibility.
+     *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            classes.
+     * @see #onClassesChange(HotswapClassEvent)
+     */
+    default void onClassesChange(HotswapClassSessionEvent event) {
+        boolean reload = onClassLoadEvent(event.getVaadinSession(),
+                event.getChangedClasses(), event.isRedefined());
+        if (reload) {
+            event.triggerUpdate(UIUpdateStrategy.RELOAD);
+        }
     }
 
     /**

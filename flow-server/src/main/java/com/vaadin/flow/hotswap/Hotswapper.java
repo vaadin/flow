@@ -148,13 +148,13 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      * Called by hotswap tools when one or more application classes have been
      * updated.
      * <p>
-     *
+     * <p>
      * This method delegates update operations to registered
      * {@link VaadinHotswapper} implementors. invoking first
-     * {@link VaadinHotswapper#onClassLoadEvent(VaadinService, Set, boolean)}
-     * and then invoking
-     * {@link VaadinHotswapper#onClassLoadEvent(VaadinSession, Set, boolean)}
-     * for each active {@link VaadinSession}.
+     * {@link VaadinHotswapper#onClassesChange(HotswapClassEvent)} and then
+     * invoking
+     * {@link VaadinHotswapper#onClassesChange(HotswapClassSessionEvent)} for
+     * each active {@link VaadinSession}.
      *
      * @param redefined
      *            {@literal true} if the classes have been redefined by hotswap
@@ -162,8 +162,8 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
      *            by the ClassLoader.
      * @param classes
      *            the set of affected classes.
-     * @see VaadinHotswapper#onClassLoadEvent(VaadinService, Set, boolean)
-     * @see VaadinHotswapper#onClassLoadEvent(VaadinSession, Set, boolean)
+     * @see VaadinHotswapper#onClassesChange(HotswapClassEvent)
+     * @see VaadinHotswapper#onClassesChange(HotswapClassSessionEvent)
      */
     // Note: 'redefined' parameter is defined as Boolean wrapper class because
     // Hotswap agent will call this method by reflection, and it fails to
@@ -303,24 +303,26 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return;
         }
 
-        boolean forceBrowserReload = false;
+        HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
+                redefined);
         for (VaadinHotswapper hotSwapper : hotSwappers) {
             try {
-                forceBrowserReload |= hotSwapper.onClassLoadEvent(vaadinService,
-                        classes, redefined);
+                hotSwapper.onClassesChange(event);
             } catch (Exception ex) {
                 LOGGER.debug("Global hotswap failed executing {}", hotSwapper,
                         ex);
             }
         }
+
         Set<VaadinSession> vaadinSessions = Set.copyOf(sessions);
         for (VaadinSession vaadinSession : vaadinSessions) {
             try {
                 vaadinSession.getLockInstance().lock();
+                HotswapClassSessionEvent sessionEvent = new HotswapClassSessionEvent(
+                        vaadinService, vaadinSession, classes, redefined);
                 for (VaadinHotswapper hotSwapper : hotSwappers) {
                     try {
-                        forceBrowserReload |= hotSwapper.onClassLoadEvent(
-                                vaadinSession, classes, redefined);
+                        hotSwapper.onClassesChange(sessionEvent);
                     } catch (Exception ex) {
                         LOGGER.debug(
                                 "Hotswap failed executing {} for Vaadin session {}",
@@ -328,10 +330,23 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                                 ex);
                     }
                 }
+                event.merge(sessionEvent);
             } finally {
                 vaadinSession.getLockInstance().unlock();
             }
         }
+
+        try {
+            event.applyClientCommands(liveReload);
+        } catch (Exception ex) {
+            LOGGER.debug("Failed to apply client commands", ex);
+        }
+
+        // BrowseLiveReload currently broadcasts page reload to all active
+        // clients,
+        // so if any UI requires full page reload, we can short-circuit here
+        // and avoid checking single UIs strategies
+        boolean forceBrowserReload = event.anyUIRequiresPageReload();
         forceBrowserReload = forceBrowserReload
                 || (getForceReloadHolder(vaadinService).shouldReloadPage()
                         && redefined);
@@ -342,18 +357,21 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         // When a full page reload is requested it does not make sense to
         // compute refresh strategy
         if (!forceBrowserReload) {
-            refreshActions = computeRefreshStrategies(classes, redefined);
+            refreshActions = computeRefreshStrategies(event);
+            if (refreshActions.containsKey(UIRefreshStrategy.RELOAD)) {
+                forceBrowserReload = true;
+            }
             uiTreeNeedsRefresh = !refreshActions.isEmpty();
         }
         if (forceBrowserReload || uiTreeNeedsRefresh) {
             triggerClientUpdate(refreshActions, forceBrowserReload);
         }
 
-        HotswapCompleteEvent event = new HotswapCompleteEvent(vaadinService,
-                classes, redefined);
+        HotswapCompleteEvent completeEvent = new HotswapCompleteEvent(
+                vaadinService, classes, redefined);
         for (VaadinHotswapper hotSwapper : hotSwappers) {
             try {
-                hotSwapper.onHotswapComplete(event);
+                hotSwapper.onHotswapComplete(completeEvent);
             } catch (Exception ex) {
                 LOGGER.debug("Hotswap complete event handling failed for {}",
                         hotSwapper, ex);
@@ -389,12 +407,13 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     }
 
     private EnumMap<UIRefreshStrategy, List<UI>> computeRefreshStrategies(
-            Set<Class<?>> changedClasses, boolean redefined) {
+            HotswapClassEvent event) {
         EnumMap<UIRefreshStrategy, List<UI>> uisToRefresh = new EnumMap<>(
                 UIRefreshStrategy.class);
-        forEachActiveUI(ui -> uisToRefresh.computeIfAbsent(
-                computeRefreshStrategy(ui, changedClasses, redefined),
-                k -> new ArrayList<>()).add(ui));
+        forEachActiveUI(ui -> uisToRefresh
+                .computeIfAbsent(computeRefreshStrategy(ui, event),
+                        k -> new ArrayList<>())
+                .add(ui));
 
         uisToRefresh.remove(UIRefreshStrategy.SKIP);
         return uisToRefresh;
@@ -413,7 +432,27 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     }
 
     private UIRefreshStrategy computeRefreshStrategy(UI ui,
-            Set<Class<?>> changedClasses, boolean redefined) {
+            HotswapClassEvent event) {
+        boolean pushEnabled = ui.getPushConfiguration().getPushMode()
+                .isEnabled();
+
+        // Check for strategy requested by VaadinHotswappers
+        UIRefreshStrategy refreshStrategy = event.getUIUpdateStrategy(ui)
+                .map(requestedStrategy -> {
+                    if (requestedStrategy == UIUpdateStrategy.RELOAD) {
+                        return UIRefreshStrategy.RELOAD;
+                    }
+                    if (pushEnabled) {
+                        return UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+                    }
+                    return UIRefreshStrategy.REFRESH;
+                }).orElse(null);
+        if (refreshStrategy != null) {
+            return refreshStrategy;
+        }
+
+        Set<Class<?>> changedClasses = event.getChangedClasses();
+        boolean redefined = event.isRedefined();
         List<HasElement> targetsChain = new ArrayList<>(
                 ui.getActiveRouterTargetsChain());
         if (targetsChain.isEmpty()) {
@@ -421,8 +460,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             return UIRefreshStrategy.SKIP;
         }
         HasElement route = targetsChain.get(0);
-        boolean pushEnabled = ui.getPushConfiguration().getPushMode()
-                .isEnabled();
 
         // Detect changed classes affects current route or layouts
         List<HasElement> targetChainChangedItems = changedClasses.stream()
@@ -431,7 +468,6 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                                 .isAssignableFrom(chainItem.getClass())))
                 .distinct().toList();
 
-        UIRefreshStrategy refreshStrategy;
         if (redefined) {
             // A full chain refresh should be triggered if there are modal
             // components, since they could be attached to UI or parent layouts
@@ -610,7 +646,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
     /**
      * Register the hotwsapper entry point for the given {@link VaadinService}.
      * <p>
-     *
+     * <p>
      * The hotswapper is registered only in development mode.
      *
      * @param vaadinService
