@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.dom;
 
+import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -25,6 +28,8 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.Component;
@@ -506,6 +511,97 @@ public class ElementBindPropertyTest {
         Assert.assertTrue(events.isEmpty());
     }
 
+    // list property signal binding tests
+
+    @Test
+    public void bindListProperty_componentNotAttached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+
+        ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
+                Arrays.asList(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        assertNull(component.getElement().getProperty("foo", null));
+    }
+
+    @Test
+    public void bindListProperty_componentDetached_bindingIgnored() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
+                Arrays.asList(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        component.removeFromParent();
+
+        signal.value(Arrays.asList(createJack(), createJohn()));
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindListProperty_componentAttached_bindingActive() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<List<JacksonUtilsTest.Person>> signal = new ValueSignal<>(
+                Arrays.asList(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindListProperty_componentReAttached_bindingSynced() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<List<?>> signal = new ValueSignal<>(
+                Arrays.asList(createJohn(), createJack()));
+        component.getElement().bindProperty("foo", signal);
+
+        // assert initial value
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        component.removeFromParent();
+        signal.value(Arrays.asList(createJack(), createJohn()));
+
+        // assert signal value updated
+        assertEquals("Jack",
+                ((Map<?, ?>) signal.peek().getFirst()).get("name"));
+        assertEquals("John", ((Map<?, ?>) signal.peek().getLast()).get("name"));
+        // assert property value not updated
+        assertEquals("John",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("Jack",
+                getFromList(component, "foo", 1).get("name").asString());
+
+        UI.getCurrent().add(component);
+
+        // assert property value updated
+        assertEquals("Jack",
+                getFromList(component, "foo", 0).get("name").asString());
+        assertEquals("John",
+                getFromList(component, "foo", 1).get("name").asString());
+        Assert.assertTrue(events.isEmpty());
+    }
+
     private void assertPersonEquals(JacksonUtilsTest.Person person,
             JsonNode jsonNode) {
         assertEquals(person.name(), jsonNode.get("name").asString());
@@ -524,6 +620,13 @@ public class ElementBindPropertyTest {
 
     private JacksonUtilsTest.Person createJack() {
         return createPerson("Jack", 52, false);
+    }
+
+    private ObjectNode getFromList(Component component, String propertyName,
+            int index) {
+        ArrayNode arrayNode = (ArrayNode) component.getElement()
+                .getPropertyRaw(propertyName);
+        return (ObjectNode) arrayNode.get(index);
     }
 
     private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
