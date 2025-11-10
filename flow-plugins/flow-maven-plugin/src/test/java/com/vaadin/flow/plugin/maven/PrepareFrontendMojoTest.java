@@ -189,30 +189,30 @@ public class PrepareFrontendMojoTest {
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
         ObjectNode buildInfo = JacksonUtils.readTree(json);
 
-        Assert.assertNotNull(
+        Assert.assertTrue(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
-                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+                buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
         Assert.assertFalse(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been disabled",
                 buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
                         .booleanValue());
 
-        Assert.assertNotNull(
+        Assert.assertTrue(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
-                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+                buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
         Assert.assertTrue(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been enabled",
                 buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
                         .booleanValue());
 
-        Assert.assertNull(
+        Assert.assertFalse(
                 InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
-                        + "should have not been written",
-                buildInfo.get(
+                        + "should not have been written",
+                buildInfo.has(
                         InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
