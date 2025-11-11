@@ -128,6 +128,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given property
      */
     public void bindSignal(Element owner, String name, Signal<?> signal) {
         SignalBinding previousSignalBinding;
@@ -136,8 +139,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         } else {
             previousSignalBinding = null;
         }
-        if (signal != null && previousSignalBinding != null
-                && previousSignalBinding.signal() != null) {
+        if (signal != null && hasSignal(name)) {
             throw new BindingActiveException();
         }
         Registration registration = signal != null

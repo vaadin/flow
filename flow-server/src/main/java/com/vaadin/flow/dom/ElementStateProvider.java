@@ -245,7 +245,8 @@ public interface ElementStateProvider extends Serializable {
      * @param emitChange
      *            true to create a change event for the client side
      * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when a signal binding exists for the property
+     *             thrown when there is an existing binding for the given
+     *             property
      */
     void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange);
@@ -258,7 +259,8 @@ public interface ElementStateProvider extends Serializable {
      * @param name
      *            the property name, not <code>null</code>
      * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when a signal binding exists for the property
+     *             thrown when there is an existing binding for the given
+     *             property
      */
     void removeProperty(StateNode node, String name);
 
@@ -275,7 +277,8 @@ public interface ElementStateProvider extends Serializable {
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
      * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is already an existing binding
+     *             thrown when there is already an existing binding for the
+     *             given property
      */
     void bindPropertySignal(Element owner, String name, Signal<?> signal);
 

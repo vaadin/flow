@@ -215,6 +215,7 @@ public class ElementBindPropertyTest {
                 component.getElement().getPropertyRaw("foo"));
         assertEquals(null, component.getElement().getProperty("foo"));
 
+        component.getElement().bindProperty("foo", null);
         computedSignal = Signal.computed(JacksonUtils::createObjectNode);
         component.getElement().bindProperty("foo", computedSignal);
         assertEquals(JacksonUtils.createObjectNode(),
