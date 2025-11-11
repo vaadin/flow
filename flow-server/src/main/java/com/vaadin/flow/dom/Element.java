@@ -867,7 +867,7 @@ public class Element extends Node<Element> {
      * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
      * (bean), {@link List} and {@link Map}. Typed Lists and Maps are not
      * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
-     * {@code Signal<Map<String,?>}.
+     * {@code Signal<Map<?,?>}.
      * <p>
      * Example of usage:
      *
@@ -888,11 +888,10 @@ public class Element extends Node<Element> {
      *             thrown when there is already an existing binding
      * @see #setProperty(String, String)
      */
-    public Element bindProperty(String name, Signal<?> signal) {
+    public void bindProperty(String name, Signal<?> signal) {
         verifySetPropertyName(name);
 
         getStateProvider().bindPropertySignal(this, name, signal);
-        return this;
     }
 
     /**
