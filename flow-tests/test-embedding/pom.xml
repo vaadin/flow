@@ -55,6 +55,8 @@
         <!-- Custom theme tests -->
         <module>test-embedding-application-theme</module>
         <module>test-embedding-reusable-theme</module>
+        <module>test-embedding-style-containment</module>
+        <module>test-embedding-style-containment/pom-production.xml</module>
       </modules>
     </profile>
   </profiles>
