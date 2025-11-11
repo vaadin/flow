@@ -59,7 +59,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
-        expectArchiveDoesntContainVaadinWebpackBundle(war, false)
+        expectArchiveDoesntContainVaadinBundle(war, false)
     }
 
     /**
@@ -160,7 +160,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(null) { build.task(":vaadinBuildFrontend") }
 
         val jar: File = testProject.builtJar
-        expectArchiveDoesntContainVaadinWebpackBundle(jar, false)
+        expectArchiveDoesntContainVaadinBundle(jar, false)
     }
 
     /**
@@ -285,7 +285,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val jar: File = testProject.builtJar
-        expectArchiveDoesntContainVaadinWebpackBundle(jar, false)
+        expectArchiveDoesntContainVaadinBundle(jar, false)
     }
 
     private fun doTestSpringProject() {
