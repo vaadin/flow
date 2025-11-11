@@ -40,6 +40,10 @@ import com.vaadin.flow.server.VaadinService;
  * <p>
  * Subclasses should provide specific implementations or additional features for
  * handling custom behaviors associated with these events.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ *
+ * @since 25.0
  */
 abstract class HotswapEvent {
     protected final VaadinService vaadinService;
@@ -146,11 +150,11 @@ abstract class HotswapEvent {
      * @throws IllegalArgumentException
      *             if event is null or empty
      */
-    public final void sendHMRMessage(String event, JsonNode eventData) {
+    public final void sendHmrEvent(String event, JsonNode eventData) {
         if (event == null || event.isBlank()) {
             throw new IllegalArgumentException("event cannot be null or empty");
         }
-        clientCommands.add(new HMRMessage(event, eventData));
+        clientCommands.add(new HmrEvent(event, eventData));
     }
 
     /**
@@ -259,7 +263,7 @@ abstract class HotswapEvent {
      * @param eventData
      *            the event data; can be null
      */
-    private record HMRMessage(String event,
+    private record HmrEvent(String event,
             JsonNode eventData) implements ClientCommand {
         @Override
         public void apply(BrowserLiveReload browserLiveReload) {

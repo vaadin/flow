@@ -436,7 +436,7 @@ public class HotswapEventsTest {
     // ========== sendHMRMessage Tests ==========
 
     @Test
-    public void sendHMRMessage_validEventAndData_succeeds() {
+    public void sendHmrEvent_validEventAndData_succeeds() {
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
 
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
@@ -445,7 +445,7 @@ public class HotswapEventsTest {
         data.put("key", "value");
 
         String eventName = "test-event";
-        event.sendHMRMessage(eventName, data);
+        event.sendHmrEvent(eventName, data);
 
         event.applyClientCommands(reload);
         Mockito.verify(reload).sendHmrEvent(eventName, data);
@@ -453,38 +453,38 @@ public class HotswapEventsTest {
     }
 
     @Test
-    public void sendHMRMessage_validEventNullData_succeeds() {
+    public void sendHmrEvent_validEventNullData_succeeds() {
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
 
         String eventName = "test-event";
-        event.sendHMRMessage(eventName, null);
+        event.sendHmrEvent(eventName, null);
 
         event.applyClientCommands(reload);
         Mockito.verify(reload).sendHmrEvent(eventName, null);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void sendHMRMessage_nullEvent_throwsException() {
+    public void sendHmrEvent_nullEvent_throwsException() {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
         ObjectNode data = objectMapper.createObjectNode();
 
-        event.sendHMRMessage(null, data);
+        event.sendHmrEvent(null, data);
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void sendHMRMessage_emptyEvent_throwsException() {
+    public void sendHmrEvent_emptyEvent_throwsException() {
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
         ObjectNode data = objectMapper.createObjectNode();
 
-        event.sendHMRMessage("", data);
+        event.sendHmrEvent("", data);
     }
 
     @Test
-    public void sendHMRMessage_multipleMessages_succeeds() {
+    public void sendHmrEvent_multipleMessages_succeeds() {
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
@@ -496,9 +496,9 @@ public class HotswapEventsTest {
         data2.put("key2", "value2");
         String eventName3 = "event3";
 
-        event.sendHMRMessage(eventName1, data1);
-        event.sendHMRMessage(eventName2, data2);
-        event.sendHMRMessage(eventName3, null);
+        event.sendHmrEvent(eventName1, data1);
+        event.sendHmrEvent(eventName2, data2);
+        event.sendHmrEvent(eventName3, null);
 
         event.applyClientCommands(reload);
         Mockito.verify(reload).sendHmrEvent(eventName1, data1);
@@ -507,7 +507,7 @@ public class HotswapEventsTest {
     }
 
     @Test
-    public void sendHMRMessage_sameEvent_allowsDuplicates() {
+    public void sendHmrEvent_sameEvent_allowsDuplicates() {
         BrowserLiveReload reload = Mockito.mock(BrowserLiveReload.class);
         HotswapClassEvent event = new HotswapClassEvent(vaadinService, classes,
                 true);
@@ -517,8 +517,8 @@ public class HotswapEventsTest {
         data2.put("key2", "value2");
 
         String eventName = "same-event";
-        event.sendHMRMessage(eventName, data1);
-        event.sendHMRMessage(eventName, data2);
+        event.sendHmrEvent(eventName, data1);
+        event.sendHmrEvent(eventName, data2);
 
         event.applyClientCommands(reload);
         Mockito.verify(reload).sendHmrEvent(eventName, data1);

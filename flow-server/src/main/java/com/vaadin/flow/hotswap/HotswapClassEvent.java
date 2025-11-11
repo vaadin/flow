@@ -34,7 +34,7 @@ import com.vaadin.flow.server.VaadinService;
  * <li>Update client-side resources via
  * {@link #updateClientResource(String, String)}</li>
  * <li>Send Hot Module Replacement messages via
- * {@link #sendHMRMessage(String, JsonNode)}</li>
+ * {@link #sendHmrEvent(String, JsonNode)}</li>
  * </ul>
  * <p>
  * The event enforces a priority system where {@link UIUpdateStrategy#RELOAD}

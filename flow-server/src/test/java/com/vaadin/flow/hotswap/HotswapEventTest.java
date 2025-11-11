@@ -138,19 +138,19 @@ public class HotswapEventTest {
         HotswapClassEvent event1 = new HotswapClassEvent(service, Set.of(),
                 true);
         event1.updateClientResource("R1", "CONTENT1");
-        event1.sendHMRMessage("E1",
+        event1.sendHmrEvent("E1",
                 JacksonUtils.createObjectNode().put("key", "PAYLOAD1"));
         event1.updateClientResource("R2", "CONTENT2");
-        event1.sendHMRMessage("E2",
+        event1.sendHmrEvent("E2",
                 JacksonUtils.createObjectNode().put("key", "PAYLOAD2"));
 
         HotswapClassEvent event2 = new HotswapClassEvent(service, Set.of(),
                 true);
         event1.updateClientResource("R1", "CONTENT1_MOD");
-        event1.sendHMRMessage("E1",
+        event1.sendHmrEvent("E1",
                 JacksonUtils.createObjectNode().put("key", "PAYLOAD1_MOD"));
         event1.updateClientResource("R3", "CONTENT3");
-        event1.sendHMRMessage("E3",
+        event1.sendHmrEvent("E3",
                 JacksonUtils.createObjectNode().put("key", "PAYLOAD3"));
 
         event1.merge(event2);

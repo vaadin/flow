@@ -332,7 +332,6 @@ public class HotswapperTest {
                 .onClassesChange(any(HotswapClassSessionEvent.class));
         VaadinSession session = createMockVaadinSession();
         hotswapper.sessionInit(new SessionInitEvent(service, session, null));
-        RefreshTestingUI ui = initUIAndNavigateTo(session, MyRoute.class);
 
         Mockito.when(flowHotswapper.onClassLoadEvent(any(VaadinSession.class),
                 anySet(), anyBoolean())).thenReturn(true);
@@ -1260,7 +1259,7 @@ public class HotswapperTest {
         BiFunction<HotswapEvent, String, Void> clientUpdater = (event,
                 text) -> {
             event.updateClientResource(text, text + "-CONTENT");
-            event.sendHMRMessage(text + "-EVENT",
+            event.sendHmrEvent(text + "-EVENT",
                     JacksonUtils.createObjectNode().put("foo", text));
             return null;
         };
@@ -1541,14 +1540,29 @@ public class HotswapperTest {
     private RefreshTestingUI initUIAndNavigateTo(VaadinSession session,
             Class<? extends Component> route,
             Class<? extends RouterLayout>... parentChain) {
-        return initUIAndNavigateTo(session, route, UUID.randomUUID().toString(),
-                parentChain);
+        return initUIAndNavigateTo(service, session, route,
+                UUID.randomUUID().toString(), parentChain);
     }
 
     @SafeVarargs
     private RefreshTestingUI initUIAndNavigateTo(VaadinSession session,
             Class<? extends Component> route, String path,
             Class<? extends RouterLayout>... parentChain) {
+        return initUIAndNavigateTo(service, session, route, path, parentChain);
+    }
+
+    @SafeVarargs
+    static RefreshTestingUI initUIAndNavigateTo(VaadinService service,
+            VaadinSession session, Class<? extends Component> route,
+            Class<? extends RouterLayout>... parentChain) {
+        return initUIAndNavigateTo(service, session, route,
+                UUID.randomUUID().toString(), parentChain);
+    }
+
+    @SafeVarargs
+    static RefreshTestingUI initUIAndNavigateTo(VaadinService service,
+            VaadinSession session, Class<? extends Component> route,
+            String path, Class<? extends RouterLayout>... parentChain) {
         ApplicationRouteRegistry registry = ApplicationRouteRegistry
                 .getInstance(service.getContext());
         registry.setRoute(path, route, List.of(parentChain));
@@ -1562,7 +1576,7 @@ public class HotswapperTest {
         });
     }
 
-    private static class RefreshTestingUI extends MockUI {
+    static class RefreshTestingUI extends MockUI {
 
         private static final String REFRESH_EVENT_NAME = "vaadin-refresh-ui";
 
@@ -1632,6 +1646,10 @@ public class HotswapperTest {
     }
 
     private VaadinSession createMockVaadinSession() {
+        return createMockVaadinSession(service);
+    }
+
+    static VaadinSession createMockVaadinSession(VaadinService service) {
         WrappedSession wrappedSession = Mockito.mock(WrappedSession.class);
         when(wrappedSession.getId()).thenReturn(UUID.randomUUID().toString());
 

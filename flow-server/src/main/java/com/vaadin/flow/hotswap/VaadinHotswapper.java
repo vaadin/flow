@@ -21,7 +21,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Implementor ot this interface are responsible for update Vaadin components
+ * Implementors of this interface are responsible for update Vaadin components
  * when application classes change.
  * <p>
  * Listener instances are by default discovered using Flow
@@ -49,6 +49,7 @@ public interface VaadinHotswapper {
      *
      * @param vaadinService
      *            the active {@link VaadinService} instance being initialized
+     * @since 25.0
      */
     default void onInit(VaadinService vaadinService) {
         // no-op by default
@@ -102,6 +103,7 @@ public interface VaadinHotswapper {
      *            the event instance carrying the information about the changed
      *            classes.
      * @see #onClassesChange(HotswapClassSessionEvent)
+     * @since 25.0
      */
     default void onClassesChange(HotswapClassEvent event) {
         boolean reload = onClassLoadEvent(event.getVaadinService(),
@@ -159,6 +161,7 @@ public interface VaadinHotswapper {
      *            the event instance carrying the information about the changed
      *            classes.
      * @see #onClassesChange(HotswapClassEvent)
+     * @since 25.0
      */
     default void onClassesChange(HotswapClassSessionEvent event) {
         boolean reload = onClassLoadEvent(event.getVaadinSession(),
@@ -166,6 +169,23 @@ public interface VaadinHotswapper {
         if (reload) {
             event.triggerUpdate(UIUpdateStrategy.RELOAD);
         }
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application
+     * resources have been updated.
+     * <p>
+     * <p>
+     * This method is meant to perform application-wide updates, involving all
+     * active UI instances.
+     *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            resources.
+     * @since 25.0
+     */
+    default void onResourcesChange(HotswapResourceEvent event) {
+        // no-op by default
     }
 
     /**

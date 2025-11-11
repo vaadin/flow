@@ -18,8 +18,8 @@ package com.vaadin.flow.hotswap;
 /**
  * Strategy for updating the UI after a hotswap event.
  * <p>
- * This enum defines how the browser UI should respond when classes are
- * hot-swapped during development. The strategy determines whether a partial
+ * This enum defines how the browser UI should respond when classes or resources
+ * are hot-swapped during development. The strategy determines whether a partial
  * refresh or a full page reload is needed.
  * <p>
  * Note that {@link #RELOAD} has higher priority than {@link #REFRESH}. Once a

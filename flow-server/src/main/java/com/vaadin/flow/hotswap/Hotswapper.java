@@ -15,25 +15,23 @@
  */
 package com.vaadin.flow.hotswap;
 
-import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +42,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.internal.RouteTarget;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.RouteRegistry;
@@ -59,8 +56,6 @@ import com.vaadin.flow.server.UIInitEvent;
 import com.vaadin.flow.server.UIInitListener;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
  * Entry point for application classes hot reloads.
@@ -176,7 +171,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         }
         if (classes == null || classes.length == 0) {
             LOGGER.debug(
-                    "Hotswap event ignored because Hotswapper has been called without changes to apply.");
+                    "Hotswap event ignored because Hotswapper has been called without class changes to apply.");
             return;
         }
         onHotswapInternal(
@@ -207,92 +202,58 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                     "Hotswap resources change event ignored because VaadinService has been destroyed.");
             return;
         }
+        if ((createdResources == null || createdResources.length == 0)
+                && (modifiedResources == null || modifiedResources.length == 0)
+                && (deletedResources == null || deletedResources.length == 0)) {
+            LOGGER.debug(
+                    "Hotswap event ignored because Hotswapper has been called without resource changes to apply.");
+            return;
+        }
+
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace(
                     "Created resources: {}, modified resources: {}, deletedResources: {}.",
                     createdResources, modifiedResources, deletedResources);
         }
-
-        if (anyMatches(".*\\.css", createdResources, modifiedResources,
-                deletedResources)) {
-            if (liveReload == null) {
-                LOGGER.debug(
-                        "A change to one or more CSS resources requires a browser page refresh, but BrowserLiveReload is not available. "
-                                + "Please reload the browser page manually to make changes effective.");
-            } else {
-                LOGGER.debug(
-                        "Triggering browser live reload because of CSS resources changes");
-
-                File buildResourcesFolder = vaadinService
-                        .getDeploymentConfiguration().getOutputResourceFolder();
-
-                List<String> publicStaticResourcesPaths = Stream
-                        .of("META-INF/resources", "resources", "static",
-                                "public")
-                        .map(path -> new File(buildResourcesFolder, path))
-                        .filter(File::exists)
-                        .map(staticResourceFolder -> FrontendUtils
-                                .getUnixPath(staticResourceFolder.toPath()))
-                        .toList();
-
-                Stream.of(createdResources, modifiedResources, deletedResources)
-                        .flatMap(Arrays::stream).distinct()
-                        .filter(uri -> !new File(uri.getPath()).isDirectory())
-                        .forEach(resource -> {
-                            String resourcePath = resource.getPath();
-                            for (String staticResourcesPath : publicStaticResourcesPaths) {
-                                if (resourcePath
-                                        .startsWith(staticResourcesPath)) {
-                                    String path = resourcePath
-                                            .replace(staticResourcesPath, "");
-                                    if (path.startsWith("/")) {
-                                        path = path.substring(1);
-                                    }
-                                    liveReload.update(
-                                            ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                                                    + path,
-                                            null);
-                                }
-                            }
-                        });
+        Set<URI> allResources = new HashSet<>();
+        if (createdResources != null) {
+            Collections.addAll(allResources, createdResources);
+        }
+        if (modifiedResources != null) {
+            Collections.addAll(allResources, modifiedResources);
+        }
+        if (deletedResources != null) {
+            Collections.addAll(allResources, deletedResources);
+        }
+        HotswapResourceEvent event = new HotswapResourceEvent(vaadinService,
+                allResources);
+        for (VaadinHotswapper hotSwapper : hotSwappers) {
+            try {
+                hotSwapper.onResourcesChange(event);
+            } catch (Exception ex) {
+                LOGGER.debug("Resource hotswap failed executing {}", hotSwapper,
+                        ex);
             }
         }
 
-        if (anyMatches(".*/vaadin-i18n/.*\\.properties", createdResources,
-                modifiedResources, deletedResources)) {
-            // Clear resource bundle cache so that translations (and other
-            // resources) are reloaded
-            ResourceBundle.clearCache();
+        applyLiveReloadCommands(event);
 
-            // Trigger any potential Hilla translation updates
-            liveReload.sendHmrEvent("translations-update",
-                    JacksonUtils.createObjectNode());
+        EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
+                UIRefreshStrategy.class);
+        forEachActiveUI(ui -> {
+            boolean pushEnabled = ui.getPushConfiguration().getPushMode()
+                    .isEnabled();
+            UIRefreshStrategy refreshStrategy = event.getUIUpdateStrategy(ui)
+                    .map(upd -> mapUpdateStrategy(upd, pushEnabled))
+                    .orElse(UIRefreshStrategy.SKIP);
+            refreshActions
+                    .computeIfAbsent(refreshStrategy, k -> new ArrayList<>())
+                    .add(ui);
+        });
+        refreshActions.remove(UIRefreshStrategy.SKIP);
 
-            // Trigger any potential Flow translation updates
-            EnumMap<UIRefreshStrategy, List<UI>> refreshActions = new EnumMap<>(
-                    UIRefreshStrategy.class);
-            forEachActiveUI(ui -> {
-                UIRefreshStrategy strategy = ui.getPushConfiguration()
-                        .getPushMode().isEnabled()
-                                ? UIRefreshStrategy.PUSH_REFRESH_CHAIN
-                                : UIRefreshStrategy.REFRESH;
-                refreshActions.computeIfAbsent(strategy, k -> new ArrayList<>())
-                        .add(ui);
-            });
-            triggerClientUpdate(refreshActions, false);
-        }
-
-    }
-
-    private boolean anyMatches(String regexp, URI[]... resources) {
-        for (URI[] uris : resources) {
-            for (URI uri : uris) {
-                if (uri.toString().matches(regexp)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        boolean forceReload = event.anyUIRequiresPageReload();
+        triggerClientUpdate(refreshActions, forceReload);
     }
 
     private void onHotswapInternal(HashSet<Class<?>> classes,
@@ -336,11 +297,7 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             }
         }
 
-        try {
-            event.applyClientCommands(liveReload);
-        } catch (Exception ex) {
-            LOGGER.debug("Failed to apply client commands", ex);
-        }
+        applyLiveReloadCommands(event);
 
         // BrowseLiveReload currently broadcasts page reload to all active
         // clients,
@@ -376,6 +333,20 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
                 LOGGER.debug("Hotswap complete event handling failed for {}",
                         hotSwapper, ex);
             }
+        }
+    }
+
+    private void applyLiveReloadCommands(HotswapEvent event) {
+        if (liveReload != null) {
+            try {
+                event.applyClientCommands(liveReload);
+            } catch (Exception ex) {
+                LOGGER.debug("Failed to apply client commands", ex);
+            }
+        } else {
+            LOGGER.debug(
+                    "A change to one or more class or resource requires a browser page refresh, but BrowserLiveReload is not available. "
+                            + "Please reload the browser page manually to make changes effective.");
         }
     }
 
@@ -431,6 +402,17 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
         }
     }
 
+    private UIRefreshStrategy mapUpdateStrategy(UIUpdateStrategy strategy,
+            boolean pushEnabled) {
+        if (strategy == UIUpdateStrategy.RELOAD) {
+            return UIRefreshStrategy.RELOAD;
+        }
+        if (pushEnabled) {
+            return UIRefreshStrategy.PUSH_REFRESH_CHAIN;
+        }
+        return UIRefreshStrategy.REFRESH;
+    }
+
     private UIRefreshStrategy computeRefreshStrategy(UI ui,
             HotswapClassEvent event) {
         boolean pushEnabled = ui.getPushConfiguration().getPushMode()
@@ -438,15 +420,9 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
 
         // Check for strategy requested by VaadinHotswappers
         UIRefreshStrategy refreshStrategy = event.getUIUpdateStrategy(ui)
-                .map(requestedStrategy -> {
-                    if (requestedStrategy == UIUpdateStrategy.RELOAD) {
-                        return UIRefreshStrategy.RELOAD;
-                    }
-                    if (pushEnabled) {
-                        return UIRefreshStrategy.PUSH_REFRESH_CHAIN;
-                    }
-                    return UIRefreshStrategy.REFRESH;
-                }).orElse(null);
+                .map(requestedStrategy -> mapUpdateStrategy(requestedStrategy,
+                        pushEnabled))
+                .orElse(null);
         if (refreshStrategy != null) {
             return refreshStrategy;
         }
