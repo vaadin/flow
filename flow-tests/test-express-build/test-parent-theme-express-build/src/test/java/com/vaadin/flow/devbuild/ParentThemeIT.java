@@ -26,12 +26,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class ParentThemeIT extends ChromeBrowserTest {
 
@@ -102,12 +101,12 @@ public class ParentThemeIT extends ChromeBrowserTest {
         try {
             String themeJsonContent = FileUtils.readFileToString(statsJson,
                     StandardCharsets.UTF_8);
-            JsonObject json = Json.parse(themeJsonContent);
-            Assert.assertTrue(json.hasKey("themeJsonContents"));
-            Assert.assertTrue(json.getObject("themeJsonContents")
-                    .hasKey("reusable-theme"));
-            Assert.assertFalse(json.getObject("themeJsonContents")
-                    .getString("reusable-theme").isBlank());
+            ObjectNode json = JacksonUtils.readTree(themeJsonContent);
+            Assert.assertTrue(json.has("themeJsonContents"));
+            Assert.assertTrue(((ObjectNode) json.get("themeJsonContents"))
+                    .has("reusable-theme"));
+            Assert.assertFalse(((ObjectNode) json.get("themeJsonContents"))
+                    .get("reusable-theme").asText().isBlank());
         } catch (IOException e) {
             throw new RuntimeException("Failed to verify theme.json hash", e);
         }
