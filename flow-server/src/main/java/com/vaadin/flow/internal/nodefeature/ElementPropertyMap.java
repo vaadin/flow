@@ -41,6 +41,7 @@ import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.ValueSignal;
 
 /**
  * Map for element property values.
@@ -87,7 +88,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the value to store
      * @return a runnable for firing the deferred change event
      * @exception PropertyChangeDeniedException
-     *                if the property change is disallowed
+     *                if the property change is disallowed due to the property
+     *                not being set as synchronized, or the signal bound to the
+     *                property is not a ValueSignal and can not thus be updated
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
             throws PropertyChangeDeniedException {
@@ -171,20 +174,26 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;
 
-        Serializable valueToSet;
-        if (value == null) {
-            valueToSet = JacksonUtils.nullNode();
-        } else if (value instanceof String || value instanceof Number
-                || value instanceof Boolean || value instanceof BaseJsonNode) {
-            valueToSet = (Serializable) value;
-        } else if (value instanceof List) {
-            // List type conversion (return type ArrayNode)
-            valueToSet = JacksonUtils.listToJson((List<?>) value);
-        } else {
-            // Map and Bean/Object types conversion (return type ObjectNode)
-            valueToSet = JacksonUtils.beanToJson(value);
+        Serializable oldValue = get(name);
+        boolean valueChanged = !Objects.equals(oldValue, value);
+
+        if (valueChanged) {
+            Serializable valueToSet;
+            if (value == null) {
+                valueToSet = JacksonUtils.nullNode();
+            } else if (value instanceof String || value instanceof Number
+                    || value instanceof Boolean
+                    || value instanceof BaseJsonNode) {
+                valueToSet = (Serializable) value;
+            } else if (value instanceof List) {
+                // List type conversion (return type ArrayNode)
+                valueToSet = JacksonUtils.listToJson((List<?>) value);
+            } else {
+                // Map and Bean/Object types conversion (return type ObjectNode)
+                valueToSet = JacksonUtils.beanToJson(value);
+            }
+            setProperty(name, valueToSet, true);
         }
-        setProperty(name, valueToSet, true);
     }
 
     /**
@@ -642,6 +651,23 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         }
 
-        return putWithDeferredChangeEvent(key, value, false);
+        PutResult putResult = null;
+        if (hasSignal(key)) {
+            SignalBinding binding = (SignalBinding) super.get(key);
+            putResult = putWithDeferredChangeEvent(key, new SignalBinding(
+                    binding.signal(), binding.registration(), value), false);
+            if (binding.signal() instanceof ValueSignal valueSignal) {
+                valueSignal.value(value);
+            } else {
+                throw new PropertyChangeDeniedException(String.format(
+                        "Signal bound to property '%s' is not a ValueSignal, "
+                                + "cannot update its value from the client.",
+                        key));
+            }
+        } else {
+            putResult = putWithDeferredChangeEvent(key, value, false);
+        }
+
+        return putResult;
     }
 }
