@@ -174,24 +174,23 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;
 
-        Serializable oldValue = get(name);
-        boolean valueChanged = !Objects.equals(oldValue, value);
+        Serializable valueToSet;
+        if (value == null) {
+            valueToSet = JacksonUtils.nullNode();
+        } else if (value instanceof String || value instanceof Number
+                || value instanceof Boolean || value instanceof BaseJsonNode) {
+            valueToSet = (Serializable) value;
+        } else if (value instanceof List) {
+            // List type conversion (return type ArrayNode)
+            valueToSet = JacksonUtils.listToJson((List<?>) value);
+        } else {
+            // Map and Bean/Object types conversion (return type ObjectNode)
+            valueToSet = JacksonUtils.beanToJson(value);
+        }
 
+        Serializable oldValue = get(name);
+        boolean valueChanged = !Objects.equals(oldValue, valueToSet);
         if (valueChanged) {
-            Serializable valueToSet;
-            if (value == null) {
-                valueToSet = JacksonUtils.nullNode();
-            } else if (value instanceof String || value instanceof Number
-                    || value instanceof Boolean
-                    || value instanceof BaseJsonNode) {
-                valueToSet = (Serializable) value;
-            } else if (value instanceof List) {
-                // List type conversion (return type ArrayNode)
-                valueToSet = JacksonUtils.listToJson((List<?>) value);
-            } else {
-                // Map and Bean/Object types conversion (return type ObjectNode)
-                valueToSet = JacksonUtils.beanToJson(value);
-            }
             setProperty(name, valueToSet, true);
         }
     }
