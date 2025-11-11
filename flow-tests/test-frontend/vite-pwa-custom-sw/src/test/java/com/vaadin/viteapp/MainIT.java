@@ -30,11 +30,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-
-import com.vaadin.flow.testutil.ChromeDeviceTest;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
-import tools.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
     private static final Path SW_APP_TS_PATH = Path.of("src", "main",
@@ -119,7 +118,8 @@ public class MainIT extends ChromeDeviceTest {
     private boolean isProductionMode() throws IOException {
         ObjectNode stats = readJsonFromUrl(
                 getRootURL() + "?v-r=init&location=");
-        return ((ObjectNode) stats.get("appConfig")).get("productionMode").asBoolean();
+        return ((ObjectNode) stats.get("appConfig")).get("productionMode")
+                .asBoolean();
     }
 
 }

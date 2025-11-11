@@ -20,10 +20,9 @@ import java.io.IOException;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import tools.jackson.databind.node.ObjectNode;
 
 public class DevBundleJsModuleIT extends ChromeBrowserTest {
 

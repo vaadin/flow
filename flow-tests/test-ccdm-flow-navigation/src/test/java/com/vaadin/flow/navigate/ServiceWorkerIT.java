@@ -22,12 +22,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.testutil.ChromeDeviceTest;
-import com.vaadin.testbench.TestBenchElement;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
-import tools.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
+import com.vaadin.testbench.TestBenchElement;
 
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 

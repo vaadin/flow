@@ -26,12 +26,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
-import tools.jackson.databind.node.ObjectNode;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ParentThemeIT extends ChromeBrowserTest {
 

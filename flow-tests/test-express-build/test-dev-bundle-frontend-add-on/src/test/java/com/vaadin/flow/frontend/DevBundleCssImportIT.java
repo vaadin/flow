@@ -24,13 +24,12 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import com.vaadin.flow.internal.JacksonUtils;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class DevBundleCssImportIT extends ChromeBrowserTest {
 
@@ -110,7 +109,8 @@ public class DevBundleCssImportIT extends ChromeBrowserTest {
 
     public static ObjectNode getFrontendHashes() throws IOException {
         ObjectNode statsJson = getStatsJson();
-        ObjectNode frontendHashes = (ObjectNode) statsJson.get("frontendHashes");
+        ObjectNode frontendHashes = (ObjectNode) statsJson
+                .get("frontendHashes");
         Assert.assertNotNull("Frontend hashes are expected in the stats.json",
                 frontendHashes);
         return frontendHashes;

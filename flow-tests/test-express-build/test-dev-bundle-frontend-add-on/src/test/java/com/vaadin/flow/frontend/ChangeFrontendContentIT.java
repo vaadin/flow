@@ -23,13 +23,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-
-import com.vaadin.flow.internal.JacksonUtils;
-import tools.jackson.databind.node.ObjectNode;
 
 public class ChangeFrontendContentIT extends ChromeBrowserTest {
 
@@ -67,7 +66,8 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
                 StandardCharsets.UTF_8);
         ObjectNode jsonContent = JacksonUtils.readTree(content);
 
-        ObjectNode frontendHashes = (ObjectNode) jsonContent.get("frontendHashes");
+        ObjectNode frontendHashes = (ObjectNode) jsonContent
+                .get("frontendHashes");
 
         Assert.assertNotNull("Frontend hashes are expected in the stats.json",
                 frontendHashes);

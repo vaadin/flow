@@ -28,13 +28,12 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-
-import com.vaadin.flow.internal.JacksonUtils;
-import tools.jackson.databind.node.ObjectNode;
 
 @NotThreadSafe
 public class DevBundleThemeIT extends ChromeBrowserTest {
@@ -125,7 +124,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
                     StandardCharsets.UTF_8);
             ObjectNode json = JacksonUtils.readTree(themeJsonContent);
             Assert.assertTrue(json.has("themeJsonContents"));
-            ObjectNode themeJsonContents = (ObjectNode) json.get("themeJsonContents");
+            ObjectNode themeJsonContents = (ObjectNode) json
+                    .get("themeJsonContents");
 
             Assert.assertTrue(themeJsonContents.has("my-theme"));
             Assert.assertFalse(
@@ -154,8 +154,8 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
             Assert.assertTrue(frontendHashes
                     .has("themes/my-theme/components/my-component.css"));
             Assert.assertFalse(frontendHashes
-                    .get("themes/my-theme/components/my-component.css")
-                    .asText().isBlank());
+                    .get("themes/my-theme/components/my-component.css").asText()
+                    .isBlank());
 
             Assert.assertTrue(frontendHashes.has(
                     "themes/parent-theme/components/my-parent-component.css"));
