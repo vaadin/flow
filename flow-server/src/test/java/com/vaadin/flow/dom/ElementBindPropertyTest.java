@@ -164,6 +164,25 @@ public class ElementBindPropertyTest {
     }
 
     @Test
+    public void bindProperty_withNullBinding_removesBinding() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+
+        component.getElement().bindProperty("foo", signal);
+
+        assertEquals("bar", component.getElement().getProperty("foo"));
+
+        component.getElement().bindProperty("foo", null);
+
+        signal.value("baz");
+
+        assertEquals("bar", component.getElement().getProperty("foo"));
+        Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
     public void bindProperty_removePropertyWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);

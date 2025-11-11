@@ -134,7 +134,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public void bindSignal(Element owner, String name, Signal<?> signal) {
         SignalBinding previousSignalBinding;
-        if (super.getProperty(name) instanceof SignalBinding binding) {
+        if (super.get(name) instanceof SignalBinding binding) {
             previousSignalBinding = binding;
         } else {
             previousSignalBinding = null;
@@ -154,6 +154,16 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         } else {
             put(name, new SignalBinding(signal, registration, get(name)),
                     false);
+        }
+    }
+
+    @Override
+    protected Serializable get(String key) {
+        Serializable value = super.get(key);
+        if (value instanceof SignalBinding) {
+            return ((SignalBinding) value).value();
+        } else {
+            return value;
         }
     }
 

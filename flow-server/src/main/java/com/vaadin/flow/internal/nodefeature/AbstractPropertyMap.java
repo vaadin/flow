@@ -136,16 +136,6 @@ public abstract class AbstractPropertyMap extends NodeMap {
                 || StateNode.class.isAssignableFrom(type);
     }
 
-    @Override
-    protected Serializable get(String key) {
-        Serializable value = super.get(key);
-        if (value instanceof SignalBinding) {
-            return ((SignalBinding) value).value();
-        } else {
-            return value;
-        }
-    }
-
     public boolean hasSignal(String key) {
         return super.get(key) instanceof SignalBinding binding
                 && binding.signal() != null && binding.registration() != null;
