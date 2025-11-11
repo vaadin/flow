@@ -19,9 +19,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
@@ -37,9 +37,9 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("testproperty changed to: foo",
                 resultElement.getText());
 
-        JavascriptExecutor js = (JavascriptExecutor) getDriver();
-        js.executeScript(
-                "document.getElementById('target-div').testproperty = 'changed-value';");
+        $(DivElement.class).id("target-div").setProperty("testproperty",
+                "changed-value");
+        $(DivElement.class).id("target-div").dispatchEvent("change");
 
         Assert.assertEquals("testproperty changed to: changed-value",
                 resultElement.getText());
