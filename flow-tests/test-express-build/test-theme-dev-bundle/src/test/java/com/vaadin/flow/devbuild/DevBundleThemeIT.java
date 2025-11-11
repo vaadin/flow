@@ -33,8 +33,8 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
+import tools.jackson.databind.node.ObjectNode;
 
 @NotThreadSafe
 public class DevBundleThemeIT extends ChromeBrowserTest {
@@ -123,17 +123,17 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         try {
             String themeJsonContent = FileUtils.readFileToString(statsJson,
                     StandardCharsets.UTF_8);
-            JsonObject json = Json.parse(themeJsonContent);
-            Assert.assertTrue(json.hasKey("themeJsonContents"));
-            JsonObject themeJsonContents = json.getObject("themeJsonContents");
+            ObjectNode json = JacksonUtils.readTree(themeJsonContent);
+            Assert.assertTrue(json.has("themeJsonContents"));
+            ObjectNode themeJsonContents = (ObjectNode) json.get("themeJsonContents");
 
-            Assert.assertTrue(themeJsonContents.hasKey("my-theme"));
+            Assert.assertTrue(themeJsonContents.has("my-theme"));
             Assert.assertFalse(
-                    themeJsonContents.getString("my-theme").isBlank());
+                    themeJsonContents.get("my-theme").asText().isBlank());
 
-            Assert.assertTrue(themeJsonContents.hasKey("parent-theme"));
+            Assert.assertTrue(themeJsonContents.has("parent-theme"));
             Assert.assertFalse(
-                    themeJsonContents.getString("parent-theme").isBlank());
+                    themeJsonContents.get("parent-theme").asText().isBlank());
         } catch (IOException e) {
             throw new RuntimeException(
                     "Failed to verify theme.json content in stats.json", e);
@@ -147,21 +147,21 @@ public class DevBundleThemeIT extends ChromeBrowserTest {
         try {
             String themeJsonContent = FileUtils.readFileToString(statsJson,
                     StandardCharsets.UTF_8);
-            JsonObject json = Json.parse(themeJsonContent);
-            Assert.assertTrue(json.hasKey("frontendHashes"));
-            JsonObject frontendHashes = json.getObject("frontendHashes");
+            ObjectNode json = JacksonUtils.readTree(themeJsonContent);
+            Assert.assertTrue(json.has("frontendHashes"));
+            ObjectNode frontendHashes = (ObjectNode) json.get("frontendHashes");
 
             Assert.assertTrue(frontendHashes
-                    .hasKey("themes/my-theme/components/my-component.css"));
+                    .has("themes/my-theme/components/my-component.css"));
             Assert.assertFalse(frontendHashes
-                    .getString("themes/my-theme/components/my-component.css")
-                    .isBlank());
+                    .get("themes/my-theme/components/my-component.css")
+                    .asText().isBlank());
 
-            Assert.assertTrue(frontendHashes.hasKey(
+            Assert.assertTrue(frontendHashes.has(
                     "themes/parent-theme/components/my-parent-component.css"));
-            Assert.assertFalse(frontendHashes.getString(
+            Assert.assertFalse(frontendHashes.get(
                     "themes/parent-theme/components/my-parent-component.css")
-                    .isBlank());
+                    .asText().isBlank());
         } catch (IOException e) {
             throw new RuntimeException(
                     "Failed to verify hashes for shadow DOM stylesheets content in stats.json",

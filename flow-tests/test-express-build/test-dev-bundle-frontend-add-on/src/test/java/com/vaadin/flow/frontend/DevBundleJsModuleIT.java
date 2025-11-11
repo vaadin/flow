@@ -23,7 +23,7 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import elemental.json.JsonObject;
+import tools.jackson.databind.node.ObjectNode;
 
 public class DevBundleJsModuleIT extends ChromeBrowserTest {
 
@@ -31,13 +31,13 @@ public class DevBundleJsModuleIT extends ChromeBrowserTest {
     public void frontendJsModules_hashCalculated() throws IOException {
         open();
         waitForElementPresent(By.id(DevBundleJsModuleView.SPAN_ID));
-        JsonObject frontendHashes = DevBundleCssImportIT.getFrontendHashes();
+        ObjectNode frontendHashes = DevBundleCssImportIT.getFrontendHashes();
         Assert.assertTrue("test.ts content hash is expected",
-                frontendHashes.hasKey("test.ts"));
+                frontendHashes.has("test.ts"));
         Assert.assertTrue("js/test.js content hash is expected",
-                frontendHashes.hasKey("js/test.js"));
+                frontendHashes.has("js/test.js"));
         Assert.assertFalse("unknownfile.js content hash is not expected",
-                frontendHashes.hasKey("unknownfile.js"));
+                frontendHashes.has("unknownfile.js"));
     }
 
 }

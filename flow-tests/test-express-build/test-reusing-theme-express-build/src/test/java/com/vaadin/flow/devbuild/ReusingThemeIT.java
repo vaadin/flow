@@ -30,8 +30,8 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.JacksonUtils;
+import tools.jackson.databind.node.ObjectNode;
 
 public class ReusingThemeIT extends ChromeBrowserTest {
 
@@ -88,21 +88,21 @@ public class ReusingThemeIT extends ChromeBrowserTest {
         try {
             String themeJsonContent = FileUtils.readFileToString(statsJson,
                     StandardCharsets.UTF_8);
-            JsonObject json = Json.parse(themeJsonContent);
-            Assert.assertTrue(json.hasKey("themeJsonContents"));
-            Assert.assertTrue(json.getObject("themeJsonContents")
-                    .hasKey("reusable-theme"));
-            Assert.assertFalse(json.getObject("themeJsonContents")
-                    .getString("reusable-theme").isBlank());
+            ObjectNode json = JacksonUtils.readTree(themeJsonContent);
+            Assert.assertTrue(json.has("themeJsonContents"));
+            Assert.assertTrue(((ObjectNode) json.get("themeJsonContents"))
+                    .has("reusable-theme"));
+            Assert.assertFalse(((ObjectNode) json.get("themeJsonContents"))
+                    .get("reusable-theme").asText().isBlank());
 
-            Assert.assertTrue(json.hasKey("frontendHashes"));
-            JsonObject frontendHashes = json.getObject("frontendHashes");
+            Assert.assertTrue(json.has("frontendHashes"));
+            ObjectNode frontendHashes = (ObjectNode) json.get("frontendHashes");
 
-            Assert.assertTrue(frontendHashes.hasKey(
+            Assert.assertTrue(frontendHashes.has(
                     "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css"));
-            Assert.assertFalse(frontendHashes.getString(
+            Assert.assertFalse(frontendHashes.get(
                     "generated/jar-resources/themes/reusable-theme/components/my-reusable-component.css")
-                    .isBlank());
+                    .asText().isBlank());
 
         } catch (IOException e) {
             throw new RuntimeException("Failed to verify theme.json hash", e);
