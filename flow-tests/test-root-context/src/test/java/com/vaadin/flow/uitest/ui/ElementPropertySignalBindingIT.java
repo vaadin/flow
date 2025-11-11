@@ -52,6 +52,5 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
         Assert.assertEquals("Signal value: changed-value",
                 signalValueElement.getText());
         Assert.assertEquals(String.valueOf(2), listenerCountElement.getText());
-
     }
 }
