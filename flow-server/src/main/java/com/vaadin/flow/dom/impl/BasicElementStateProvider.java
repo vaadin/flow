@@ -282,12 +282,15 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        if (getPropertyFeature(node).hasSignal(name)) {
-            throw new BindingActiveException(
-                    "setProperty is not allowed while a binding for the given property exists.");
+        ElementPropertyMap propertyFeature = getPropertyFeature(node);
+
+        if (propertyFeature.hasSignal(name)) {
+            throw new BindingActiveException(String.format(
+                    "setProperty is not allowed while a binding for the property '%s' exists.",
+                    name));
         }
 
-        getPropertyFeature(node).setProperty(name, value, emitChange);
+        propertyFeature.setProperty(name, value, emitChange);
     }
 
     @Override
@@ -304,16 +307,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        ElementPropertyMap elementPropertyMap = getPropertyFeatureIfInitialized(
-                node).orElse(null);
-        if (elementPropertyMap != null) {
-            if (elementPropertyMap.hasSignal(name)) {
-                throw new BindingActiveException(
-                        "removeProperty is not allowed while a binding for the given property exists.");
+        getPropertyFeatureIfInitialized(node).ifPresent(propertyMap -> {
+            if (propertyMap.hasSignal(name)) {
+                throw new BindingActiveException(String.format(
+                        "removeProperty is not allowed while a binding for the property '%s' exists.",
+                        name));
             }
-
-            elementPropertyMap.removeProperty(name);
-        }
+            propertyMap.removeProperty(name);
+        });
     }
 
     @Override
