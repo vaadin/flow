@@ -326,6 +326,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         if (data.getType() == EntryPointType.APP_SHELL) {
             return ChunkInfo.APP_SHELL;
         }
+        if (data.getType() == EntryPointType.WEB_COMPONENT) {
+            return ChunkInfo.WEB_COMPONENT;
+        }
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
         }

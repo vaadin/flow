@@ -43,8 +43,8 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
 public class TaskGenerateTsConfigTest {
-    private static final CharSequence DEFAULT_ES_TARGET = "es2022";
-    private static final CharSequence NEWER_ES_TARGET = "es2023";
+    private static final CharSequence DEFAULT_ES_TARGET = "es2023";
+    private static final CharSequence NEWER_ES_TARGET = "es2024";
 
     static private String LATEST_VERSION = "9.1";
 
