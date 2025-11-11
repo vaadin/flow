@@ -849,17 +849,18 @@ public class Element extends Node<Element> {
     }
 
     /**
-     * Binds a {@link Signal}'s value to a given property and keeps the property
-     * value synchronized with the signal value while the element is in attached
-     * state. When the element is in detached state, signal value changes have
-     * no effect. <code>null</code> signal unbinds existing binding.
+     * Binds a {@link Signal}'s value to the given property and keeps the
+     * property value synchronized with the signal value while the element is in
+     * attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
      * <p>
-     * Same rules applies for the property name and value from the bound Signal
-     * as in {@link #setProperty(String, String)}.
+     * Same rules apply for the property name and value from the bound Signal as
+     * in {@link #setProperty(String, String)}.
      * <p>
-     * While a Signal is bound to a property, any attempt to set property value
-     * manually throws {@link BindingActiveException}. Same happens when trying
-     * to bind a new Signal while one is already bound.
+     * While a Signal is bound to a property, any attempt to set the property
+     * value manually throws {@link BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
      * <p>
      * Supported data types for the signal are the same as for the various
      * {@code setProperty} methods in this class: {@link String},
