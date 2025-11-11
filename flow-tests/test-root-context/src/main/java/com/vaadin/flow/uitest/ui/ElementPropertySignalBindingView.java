@@ -34,6 +34,10 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         result.setId("result-div");
         add(result);
 
+        Div signalValue = new Div();
+        signalValue.setId("signal-value-div");
+        add(signalValue);
+
         Signal<String> signal = new ValueSignal<>("foo");
         target.getElement().bindProperty("testproperty", signal);
 
@@ -41,6 +45,7 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
                 event -> {
                     String newValue = (String) event.getValue();
                     result.setText("testproperty changed to: " + newValue);
+                    signalValue.setText("Signal value: " + signal.value());
                 });
     }
 
