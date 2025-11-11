@@ -40,6 +40,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JacksonUtilsTest;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.internal.nodefeature.ElementListenersTest;
@@ -49,6 +50,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
@@ -173,6 +175,52 @@ public class ElementBindPropertyTest {
         assertThrows(BindingActiveException.class,
                 () -> component.getElement().removeProperty("foo"));
         Assert.assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindPropertyComputedSignal_getPropertyValue_returnsCorrectValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        Signal<String> computedSignal = Signal
+                .computed(() -> "computed-" + signal.value());
+        component.getElement().bindProperty("foo", computedSignal);
+
+        assertEquals("computed-bar",
+                component.getElement().getProperty("foo", "default"));
+    }
+
+    @Test
+    public void bindPropertyMappedSignal_getPropertyValue_returnsCorrectValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        ValueSignal<String> signal = new ValueSignal<>("bar");
+        component.getElement().bindProperty("foo",
+                signal.map(text -> "mapped-" + text));
+
+        assertEquals("mapped-bar",
+                component.getElement().getProperty("foo", "default"));
+    }
+
+    @Test
+    public void bindPropertyJacksonNullAndJacksonObjectNode_getPropertyValue_returnsCorrectValue() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        Signal<?> computedSignal = Signal.computed(() -> null);
+        component.getElement().bindProperty("foo", computedSignal);
+        assertEquals(JacksonUtils.nullNode(),
+                component.getElement().getPropertyRaw("foo"));
+        assertEquals(null, component.getElement().getProperty("foo"));
+
+        computedSignal = Signal.computed(JacksonUtils::createObjectNode);
+        component.getElement().bindProperty("foo", computedSignal);
+        assertEquals(JacksonUtils.createObjectNode(),
+                component.getElement().getPropertyRaw("foo"));
+        assertEquals("{}", component.getElement().getProperty("foo"));
+
     }
 
     @Test

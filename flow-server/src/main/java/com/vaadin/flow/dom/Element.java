@@ -864,7 +864,9 @@ public class Element extends Node<Element> {
      * Supported data types for the signal are the same as for the various
      * {@code setProperty} methods in this class: {@link String},
      * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
-     * (bean), {@link List} and {@link Map}.
+     * (bean), {@link List} and {@link Map}. Typed Lists and Maps are not
+     * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
+     * {@code Signal<Map<String,?>}.
      * <p>
      * Example of usage:
      *
