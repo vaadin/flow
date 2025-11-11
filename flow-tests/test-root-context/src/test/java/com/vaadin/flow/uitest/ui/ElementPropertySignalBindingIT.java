@@ -35,9 +35,13 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
     public void checkInitialPropertyValue_modifyPropertyValue_checkModifiedValue() {
         WebElement resultElement = findElement(By.id("result-div"));
         WebElement signalValueElement = findElement(By.id("signal-value-div"));
+        WebElement listenerCountElement = findElement(
+                By.id("listener-count-div"));
+
         Assert.assertEquals("testproperty changed to: foo",
                 resultElement.getText());
         Assert.assertEquals("Signal value: foo", signalValueElement.getText());
+        Assert.assertEquals(String.valueOf(1), listenerCountElement.getText());
 
         $(DivElement.class).id("target-div").setProperty("testproperty",
                 "changed-value");
@@ -47,6 +51,7 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
                 resultElement.getText());
         Assert.assertEquals("Signal value: changed-value",
                 signalValueElement.getText());
+        Assert.assertEquals(String.valueOf(2), listenerCountElement.getText());
 
     }
 }

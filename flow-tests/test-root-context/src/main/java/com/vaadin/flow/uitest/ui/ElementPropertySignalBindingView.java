@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -26,6 +28,8 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
 
     @Override
     protected void onShow() {
+        AtomicInteger listenerCounter = new AtomicInteger();
+
         Div target = new Div();
         target.setId("target-div");
         add(target);
@@ -38,6 +42,10 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
         signalValue.setId("signal-value-div");
         add(signalValue);
 
+        Div listenerCountDiv = new Div();
+        listenerCountDiv.setId("listener-count-div");
+        add(listenerCountDiv);
+
         Signal<String> signal = new ValueSignal<>("foo");
         target.getElement().bindProperty("testproperty", signal);
 
@@ -46,6 +54,8 @@ public class ElementPropertySignalBindingView extends AbstractDivView {
                     String newValue = (String) event.getValue();
                     result.setText("testproperty changed to: " + newValue);
                     signalValue.setText("Signal value: " + signal.value());
+                    listenerCountDiv.setText(
+                            String.valueOf(listenerCounter.incrementAndGet()));
                 });
     }
 
