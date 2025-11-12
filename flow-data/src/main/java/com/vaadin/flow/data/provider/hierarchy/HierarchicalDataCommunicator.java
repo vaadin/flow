@@ -258,7 +258,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     @Override
     public Stream<T> fetchFromProvider(int offset, int limit) {
-        return fetchDataProviderChildren(null, Range.withLength(offset, limit));
+        return fetchDataProviderChildren(null, Range.withLength(offset, limit))
+                .stream();
     }
 
     @Override
@@ -519,8 +520,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void preloadRange(Cache<T> cache, int start, int length) {
         var range = Range.withLength(start, length)
                 .restrictTo(Range.withLength(0, cache.getSize()));
-        var items = fetchDataProviderChildren(cache.getParentItem(), range)
-                .toList();
+        var items = fetchDataProviderChildren(cache.getParentItem(), range);
         cache.setItems(range.getStart(), items);
     }
 
@@ -786,16 +786,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Stream<T> fetchDataProviderChildren(T parent, Range range) {
+    private List<T> fetchDataProviderChildren(T parent, Range range) {
         var query = buildQuery(parent, range.getStart(), range.length());
 
-        return ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                .fetchChildren(query).peek((item) -> {
-                    if (item == null) {
-                        throw new IllegalStateException(
-                                "Data provider returned a null item. Null values are not supported");
-                    }
-                });
+        var items = ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                .fetchChildren(query).toList();
+        if (items.size() > range.length()) {
+            throw new IllegalStateException(
+                    """
+                            Data provider returned more items than requested. Requested %d but got %d. \
+                            Make sure that your data provider respects the offset and limit in HierarchicalQuery.
+                            """
+                            .formatted(range.length(), items.size()));
+        }
+        if (items.contains(null)) {
+            throw new IllegalStateException(
+                    "Data provider returned a null item. Null values are not supported");
+        }
+        return items;
     }
 
     @SuppressWarnings("unchecked")
