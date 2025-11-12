@@ -258,52 +258,16 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             VaadinContext context, UI ui) {
         Element htmlElement = indexDocument.head().parent();
 
-        // First, read any existing theme variant from the HTML element
-        // (user may have manually set it in index.html)
-        String existingThemeAttr = htmlElement.attr("theme");
-        String existingThemeVariant = existingThemeAttr != null
-                && !existingThemeAttr.isEmpty() ? existingThemeAttr : "";
-
-        // Check for Aura color scheme in inline styles if no theme attribute
-        if (existingThemeVariant.isEmpty()) {
-            String style = htmlElement.attr("style");
-            if (style != null && !style.isEmpty()) {
-                // Parse style attribute for --aura-color-scheme
-                String[] styleParts = style.split(";");
-                for (String part : styleParts) {
-                    String trimmed = part.trim();
-                    if (trimmed.startsWith("--aura-color-scheme:")) {
-                        existingThemeVariant = trimmed
-                                .substring("--aura-color-scheme:".length())
-                                .trim();
-                        break;
-                    }
-                }
-            }
-        }
-
-        // Cache the initial theme variant in UIInternals if UI is available
-        if (ui != null && !existingThemeVariant.isEmpty()) {
-            ui.getInternals().setThemeVariant(existingThemeVariant);
-        }
-
-        // Then, apply theme variant from @Theme annotation if present
-        // (this overwrites any manual setting)
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
                 htmlElement.attr("theme", variant);
-                // Also set Aura color scheme for Aura theme support
                 String style = htmlElement.attr("style");
                 String auraProperty = "--aura-color-scheme: " + variant + ";";
                 if (style != null && !style.isEmpty()) {
                     htmlElement.attr("style", style + " " + auraProperty);
                 } else {
                     htmlElement.attr("style", auraProperty);
-                }
-                // Update cached value in UIInternals
-                if (ui != null) {
-                    ui.getInternals().setThemeVariant(variant);
                 }
             }
         });

@@ -273,6 +273,16 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       }
       params['v-theme'] = themeAttr;
 
+      /* Theme name - detect which theme is in use */
+      var computedStyle = getComputedStyle(document.documentElement);
+      var themeName = '';
+      if (computedStyle.getPropertyValue('--vaadin-lumo-theme').trim()) {
+        themeName = 'lumo';
+      } else if (computedStyle.getPropertyValue('--vaadin-aura-theme').trim()) {
+        themeName = 'aura';
+      }
+      params['v-theme-name'] = themeName;
+
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function (key) {
         var value = params[key];

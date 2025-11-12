@@ -325,13 +325,11 @@ public class PageTest {
         Assert.assertTrue(
                 js.contains("setProperty('--aura-color-scheme', $0)"));
         Assert.assertEquals("dark", capturedParam.get());
-        Assert.assertEquals("dark", mockUI.getInternals().getThemeVariant());
     }
 
     @Test
     public void setThemeVariant_null_removesAttribute() {
         MockUI mockUI = new MockUI();
-        mockUI.getInternals().setThemeVariant("dark");
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
@@ -354,7 +352,6 @@ public class PageTest {
     @Test
     public void setThemeVariant_emptyString_removesAttribute() {
         MockUI mockUI = new MockUI();
-        mockUI.getInternals().setThemeVariant("dark");
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         Page page = new Page(mockUI) {
@@ -383,32 +380,13 @@ public class PageTest {
     @Test
     public void getThemeVariant_returnsCachedValue() {
         MockUI mockUI = new MockUI();
-        mockUI.getInternals().setThemeVariant("dark");
+        // Set up ExtendedClientDetails with theme variant
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, "dark", null);
+        mockUI.getInternals().setExtendedClientDetails(details);
 
         Page page = new Page(mockUI);
         Assert.assertEquals("dark", page.getThemeVariant());
-    }
-
-    @Test
-    public void setThemeVariant_updatesCache() {
-        MockUI mockUI = new MockUI();
-        Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... parameters) {
-                return Mockito.mock(PendingJavaScriptResult.class);
-            }
-        };
-
-        Assert.assertEquals("", page.getThemeVariant());
-
-        page.setThemeVariant("dark");
-        Assert.assertEquals("dark", page.getThemeVariant());
-
-        page.setThemeVariant("light");
-        Assert.assertEquals("light", page.getThemeVariant());
-
-        page.setThemeVariant(null);
-        Assert.assertEquals("", page.getThemeVariant());
     }
 }

@@ -34,6 +34,8 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         Div bodyElementHeight = createDiv("bh");
         Div devicePixelRatio = createDiv("pr");
         Div touchDevice = createDiv("td");
+        Div themeVariant = createDiv("theme-variant");
+        Div themeName = createDiv("theme-name");
 
         // Display initial values immediately
         getUI().ifPresent(ui -> {
@@ -42,7 +44,8 @@ public class ExtendedClientDetailsView extends AbstractDivView {
             if (details != null) {
                 displayDetails(details, screenWidth, screenHeight,
                         windowInnerWidth, windowInnerHeight, bodyElementWidth,
-                        bodyElementHeight, devicePixelRatio, touchDevice);
+                        bodyElementHeight, devicePixelRatio, touchDevice,
+                        themeVariant, themeName);
             }
         });
 
@@ -66,19 +69,41 @@ public class ExtendedClientDetailsView extends AbstractDivView {
                                     screenHeight, windowInnerWidth,
                                     windowInnerHeight, bodyElementWidth,
                                     bodyElementHeight, devicePixelRatio,
-                                    touchDevice);
+                                    touchDevice, themeVariant, themeName);
                         });
                     });
                 });
         fetchDetailsButton.setId("fetch-values");
 
-        add(setValuesButton, fetchDetailsButton);
+        // Theme variant buttons
+        NativeButton setDarkButton = new NativeButton("Set Dark Theme",
+                event -> {
+                    getUI().ifPresent(
+                            ui -> ui.getPage().setThemeVariant("dark"));
+                });
+        setDarkButton.setId("set-dark");
+
+        NativeButton setLightButton = new NativeButton("Set Light Theme",
+                event -> {
+                    getUI().ifPresent(
+                            ui -> ui.getPage().setThemeVariant("light"));
+                });
+        setLightButton.setId("set-light");
+
+        NativeButton clearThemeButton = new NativeButton("Clear Theme",
+                event -> {
+                    getUI().ifPresent(ui -> ui.getPage().setThemeVariant(null));
+                });
+        clearThemeButton.setId("clear-theme");
+
+        add(setValuesButton, fetchDetailsButton, setDarkButton, setLightButton,
+                clearThemeButton);
     }
 
     private void displayDetails(ExtendedClientDetails details, Div screenWidth,
             Div screenHeight, Div windowInnerWidth, Div windowInnerHeight,
             Div bodyElementWidth, Div bodyElementHeight, Div devicePixelRatio,
-            Div touchDevice) {
+            Div touchDevice, Div themeVariant, Div themeName) {
         screenWidth.setText("" + details.getScreenWidth());
         screenHeight.setText("" + details.getScreenHeight());
         windowInnerWidth.setText("" + details.getWindowInnerWidth());
@@ -87,6 +112,10 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         bodyElementHeight.setText("" + details.getBodyClientHeight());
         devicePixelRatio.setText("" + details.getDevicePixelRatio());
         touchDevice.setText("" + details.isTouchDevice());
+        String theme = details.getThemeVariant();
+        themeVariant.setText(theme.isEmpty() ? "(empty)" : theme);
+        String name = details.getThemeName();
+        themeName.setText(name.isEmpty() ? "(empty)" : name);
     }
 
     private Div createDiv(String id) {

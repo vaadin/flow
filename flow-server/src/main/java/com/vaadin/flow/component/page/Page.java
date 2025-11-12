@@ -85,24 +85,7 @@ public class Page implements Serializable {
     }
 
     /**
-     * Sets the theme variant for the page. This method supports both Lumo and
-     * Aura themes by setting the appropriate attributes and CSS properties.
-     * <p>
-     * For Lumo theme, this sets the {@code theme} attribute on the HTML
-     * document element. For Aura theme, this sets the
-     * {@code --aura-color-scheme} CSS custom property.
-     * <p>
-     * Example usage:
-     *
-     * <pre>
-     * // Switch to dark mode
-     * UI.getCurrent().getPage().setThemeVariant("dark");
-     *
-     * // Switch to light mode (or remove variant for Lumo)
-     * UI.getCurrent().getPage().setThemeVariant("");
-     * // or for explicit light mode in Aura
-     * UI.getCurrent().getPage().setThemeVariant("light");
-     * </pre>
+     * Sets the theme variant for the page.
      *
      * @param variant
      *            the theme variant to set (e.g., "dark", "light"), or
@@ -128,23 +111,18 @@ public class Page implements Serializable {
     }
 
     /**
-     * Gets the currently set theme variant for the page.
-     * <p>
-     * This returns the cached theme variant value that was either:
-     * <ul>
-     * <li>Set via {@link #setThemeVariant(String)}, or</li>
-     * <li>Retrieved from the browser on page load (if the theme attribute was
-     * set in index.html)</li>
-     * </ul>
+     * Gets the theme variant for the page.
      * <p>
      * Note that this method returns the server-side cached value and will not
-     * detect theme changes made directly via JavaScript or browser developer
-     * tools.
+     * detect theme changes made via {@link #setThemeVariant(String)} or
+     * directly via JavaScript or browser developer tools.
      *
      * @return the theme variant, or empty string if not set
      */
     public String getThemeVariant() {
-        return ui.getInternals().getThemeVariant();
+        ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        return details != null ? details.getThemeVariant() : "";
     }
 
     /**
@@ -565,7 +543,7 @@ public class Page implements Serializable {
             // Create placeholder instance with default values
             ExtendedClientDetails placeholder = new ExtendedClientDetails(ui,
                     null, null, null, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null, null);
+                    null, null, null, null, null, null, null, null);
             // Store placeholder immediately so we don't return null
             ui.getInternals().setExtendedClientDetails(placeholder);
             return placeholder;
