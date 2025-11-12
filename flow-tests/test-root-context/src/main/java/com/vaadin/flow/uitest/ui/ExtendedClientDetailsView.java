@@ -39,9 +39,9 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         // Display initial values immediately
         ExtendedClientDetails details = UI.getCurrentOrThrow().getPage()
                 .getExtendedClientDetails();
-        displayDetails(details, screenWidth, screenHeight,
-                windowInnerWidth, windowInnerHeight, bodyElementWidth,
-                bodyElementHeight, devicePixelRatio, touchDevice);
+        displayDetails(details, screenWidth, screenHeight, windowInnerWidth,
+                windowInnerHeight, bodyElementWidth, bodyElementHeight,
+                devicePixelRatio, touchDevice);
 
         // the sizing values cannot be set with JS but pixel ratio and touch
         // support can be faked
@@ -55,8 +55,8 @@ public class ExtendedClientDetailsView extends AbstractDivView {
 
         NativeButton fetchDetailsButton = new NativeButton(
                 "Fetch client details", event -> {
-                    UI.getCurrentOrThrow().getPage()
-                            .getExtendedClientDetails().refresh(updatedDetails -> {
+                    UI.getCurrentOrThrow().getPage().getExtendedClientDetails()
+                            .refresh(updatedDetails -> {
                                 displayDetails(updatedDetails, screenWidth,
                                         screenHeight, windowInnerWidth,
                                         windowInnerHeight, bodyElementWidth,

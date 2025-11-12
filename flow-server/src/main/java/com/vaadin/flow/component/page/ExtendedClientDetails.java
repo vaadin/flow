@@ -101,7 +101,7 @@ public class ExtendedClientDetails implements Serializable {
      * @param navigatorPlatform
      *            navigation platform received from the browser
      */
-    ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
+    public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,

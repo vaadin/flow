@@ -496,18 +496,7 @@ public class Page implements Serializable {
      * @return the extended client details (never {@code null})
      */
     public ExtendedClientDetails getExtendedClientDetails() {
-        ExtendedClientDetails details = ui.getInternals()
-                .getExtendedClientDetails();
-        if (details == null) {
-            // Create placeholder instance with default values
-            ExtendedClientDetails placeholder = new ExtendedClientDetails(ui,
-                    null, null, null, null, null, null, null, null, null, null,
-                    null, null, null, null, null, null);
-            // Store placeholder immediately so we don't return null
-            ui.getInternals().setExtendedClientDetails(placeholder);
-            return placeholder;
-        }
-        return details;
+        return ui.getInternals().getExtendedClientDetails();
     }
 
     /**
@@ -526,12 +515,12 @@ public class Page implements Serializable {
             ExtendedClientDetailsReceiver receiver) {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (details != null && details.getScreenWidth() != -1) {
+        if (details.getScreenWidth() != -1) {
             // Already fetched and complete, call receiver immediately
             receiver.receiveDetails(details);
         } else {
-            // Not available or placeholder, trigger refresh
-            getExtendedClientDetails().refresh(receiver::receiveDetails);
+            // Placeholder with default values, trigger refresh
+            details.refresh(receiver::receiveDetails);
         }
     }
 
