@@ -23,11 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.JsonNodeType;
-import tools.jackson.databind.node.ObjectNode;
+import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
@@ -482,75 +478,61 @@ public class Page implements Serializable {
     }
 
     /**
+     * Gets the extended client details, such as screen resolution and time zone
+     * information.
+     * <p>
+     * Browser details are automatically fetched during UI initialization and
+     * cached for the lifetime of the UI. In normal operation, this method
+     * returns complete details immediately after the UI is created. As a
+     * fallback, if details are not yet available, an asynchronous fetch is
+     * triggered automatically and a placeholder instance with default values is
+     * returned (which will be updated when the fetch completes). To refresh the
+     * cached values with updated data from the browser, use
+     * {@link ExtendedClientDetails#refresh(Consumer)}.
+     * <p>
+     * If you need to perform an action when the details are updated, use
+     * {@link ExtendedClientDetails#refresh(Consumer)} with a callback.
+     *
+     * @return the extended client details (never {@code null})
+     */
+    public ExtendedClientDetails getExtendedClientDetails() {
+        ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        if (details == null) {
+            // Create placeholder instance with default values
+            ExtendedClientDetails placeholder = new ExtendedClientDetails(ui,
+                    null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null);
+            // Store placeholder immediately so we don't return null
+            ui.getInternals().setExtendedClientDetails(placeholder);
+            return placeholder;
+        }
+        return details;
+    }
+
+    /**
      * Obtain extended client side details, such as time screen and time zone
      * information, via callback. If already obtained, the callback is called
      * directly. Otherwise, a client-side roundtrip will be carried out.
      *
      * @param receiver
      *            the callback to which the details are provided
+     * @deprecated Use {@link #getExtendedClientDetails()} to get the cached
+     *             details, or {@link ExtendedClientDetails#refresh(Consumer)}
+     *             to refresh the cached values.
      */
+    @Deprecated
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        final ExtendedClientDetails cachedDetails = ui.getInternals()
+        ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            receiver.receiveDetails(cachedDetails);
-            return;
+        if (details != null && details.getScreenWidth() != -1) {
+            // Already fetched and complete, call receiver immediately
+            receiver.receiveDetails(details);
+        } else {
+            // Not available or placeholder, trigger refresh
+            getExtendedClientDetails().refresh(receiver::receiveDetails);
         }
-        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-        final SerializableConsumer<JsonNode> resultHandler = json -> {
-            handleExtendedClientDetailsResponse(json);
-            receiver.receiveDetails(
-                    ui.getInternals().getExtendedClientDetails());
-        };
-        final SerializableConsumer<String> errorHandler = err -> {
-            throw new RuntimeException("Unable to retrieve extended "
-                    + "client details. JS error is '" + err + "'");
-        };
-        executeJs(js).then(resultHandler, errorHandler);
-    }
-
-    private void handleExtendedClientDetailsResponse(JsonNode json) {
-        ExtendedClientDetails cachedDetails = ui.getInternals()
-                .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            return;
-        }
-        if (!(json instanceof ObjectNode)) {
-            throw new RuntimeException("Expected a JSON object");
-        }
-        final ObjectNode jsonObj = (ObjectNode) json;
-
-        // Note that JSON returned is a plain string -> string map, the actual
-        // parsing of the fields happens in ExtendedClient's constructor. If a
-        // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
-            final JsonNode jsValue = jsonObj.get(key);
-            if (jsValue != null
-                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
-                return jsValue.asString();
-            } else {
-                return null;
-            }
-        };
-        ui.getInternals()
-                .setExtendedClientDetails(new ExtendedClientDetails(
-                        getStringElseNull.apply("v-sw"),
-                        getStringElseNull.apply("v-sh"),
-                        getStringElseNull.apply("v-ww"),
-                        getStringElseNull.apply("v-wh"),
-                        getStringElseNull.apply("v-bw"),
-                        getStringElseNull.apply("v-bh"),
-                        getStringElseNull.apply("v-tzo"),
-                        getStringElseNull.apply("v-rtzo"),
-                        getStringElseNull.apply("v-dstd"),
-                        getStringElseNull.apply("v-dston"),
-                        getStringElseNull.apply("v-tzid"),
-                        getStringElseNull.apply("v-curdate"),
-                        getStringElseNull.apply("v-td"),
-                        getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn"),
-                        getStringElseNull.apply("v-np")));
     }
 
     /**

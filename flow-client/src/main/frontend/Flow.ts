@@ -425,9 +425,16 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
+
+      // Collect browser details to send with init request as JSON
+      const browserDetails = ($wnd.Vaadin.Flow as any).getBrowserDetailsParameters();
+      const browserDetailsParam = browserDetails
+        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+        : '';
+
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 
