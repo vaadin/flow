@@ -108,14 +108,21 @@ public class Page implements Serializable {
                     variant);
             ui.getInternals().setThemeVariant(variant);
         }
+
+        // Update the cached value in ExtendedClientDetails
+        ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        if (details != null) {
+            details.setThemeVariant(variant);
+        }
     }
 
     /**
      * Gets the theme variant for the page.
      * <p>
      * Note that this method returns the server-side cached value and will not
-     * detect theme changes made via {@link #setThemeVariant(String)} or
-     * directly via JavaScript or browser developer tools.
+     * detect theme changes made directly via JavaScript or browser developer
+     * tools.
      *
      * @return the theme variant, or empty string if not set
      */

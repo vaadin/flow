@@ -389,4 +389,36 @@ public class PageTest {
         Page page = new Page(mockUI);
         Assert.assertEquals("dark", page.getThemeVariant());
     }
+
+    @Test
+    public void setThemeVariant_updatesGetThemeVariant() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("dark");
+        Assert.assertEquals("dark", page.getThemeVariant());
+
+        page.setThemeVariant("light");
+        Assert.assertEquals("light", page.getThemeVariant());
+
+        page.setThemeVariant(null);
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("");
+        Assert.assertEquals("", page.getThemeVariant());
+    }
 }

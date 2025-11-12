@@ -425,6 +425,16 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Updates the theme variant. For internal use only.
+     *
+     * @param themeVariant
+     *            the new theme variant
+     */
+    void setThemeVariant(String themeVariant) {
+        this.themeVariant = themeVariant == null ? "" : themeVariant;
+    }
+
+    /**
      * Creates an ExtendedClientDetails instance from browser details JSON
      * object. This is intended for internal use when browser details are
      * provided as JSON (e.g., during UI initialization or refresh).
