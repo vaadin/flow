@@ -22,12 +22,11 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 import com.vaadin.testbench.TestBenchElement;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.navigate.HelloWorldView.NAVIGATE_ABOUT;
 
@@ -291,9 +290,9 @@ public class ServiceWorkerIT extends ChromeDeviceTest {
 
             // expect JSON contents wrapped in <pre>
             String jsonString = findElement(By.tagName("pre")).getText();
-            JsonObject json = Json.parse(jsonString);
-            Assert.assertTrue(json.hasKey("name"));
-            Assert.assertTrue(json.hasKey("short_name"));
+            ObjectNode json = JacksonUtils.readTree(jsonString);
+            Assert.assertTrue(json.has("name"));
+            Assert.assertTrue(json.has("short_name"));
         } finally {
             getDevTools().setOfflineEnabled(false);
         }
