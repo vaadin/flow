@@ -38,8 +38,9 @@ import org.gradle.internal.component.external.model.ModuleComponentArtifactIdent
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
-     * Whether we are running in productionMode or not. Defaults to false.
-     * Responds to the `-Pvaadin.productionMode` property.
+     * Whether we are running in productionMode or not. Defaults to true when
+     * run with `bootJar` or `bootBuildImage` task, otherwise false. Responds to
+     * the `-Pvaadin.productionMode` property.
      */
     public abstract val productionMode: Property<Boolean>
 
@@ -352,8 +353,11 @@ public class PluginEffectiveConfiguration(
     internal val projectName = project.name
 
     public val productionMode: Provider<Boolean> = extension.productionMode
-        .convention(false)
+        .convention(project.tasks.names.any { task ->
+            task.contains("bootJar") || task.contains("bootBuildImage")
+        })
         .overrideWithSystemPropertyFlag(project, "vaadin.productionMode")
+
 
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
