@@ -411,26 +411,23 @@ public class FrontendToolsTest {
             }
         }
 
-        assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(NPM_CLI_STRING)));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(vaadinHomeDir)));
-        assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
+        String nodeExecutable = tools.getNodeExecutable();
+        assertThat(nodeExecutable, containsString("node"));
+        assertThat(nodeExecutable, not(containsString(DEFAULT_NODE)));
+        assertThat(nodeExecutable, not(containsString(NPM_CLI_STRING)));
+        assertThat(nodeExecutable, not(containsString(vaadinHomeDir)));
+        assertThat(nodeExecutable, not(containsString(baseDir)));
 
+        List<String> npmExecutable = tools.getNpmExecutable();
         assertEquals(
                 "Expected a command composed by 4 tokens, but got "
-                        + tools.getNpmExecutable().size() + ": "
-                        + tools.getNpmExecutable(),
-                4, tools.getNpmExecutable().size());
-        assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
-        assertThat(tools.getNpmExecutable().get(1),
+                        + npmExecutable.size() + ": " + npmExecutable,
+                4, npmExecutable.size());
+        assertThat(npmExecutable.get(0), containsString("npm"));
+        assertThat(npmExecutable.get(1),
                 containsString("--no-update-notifier"));
-        assertThat(tools.getNpmExecutable().get(2),
-                containsString("--no-audit"));
-        assertThat(tools.getNpmExecutable().get(3),
+        assertThat(npmExecutable.get(2), containsString("--no-audit"));
+        assertThat(npmExecutable.get(3),
                 containsString("--scripts-prepend-node-path=true"));
     }
 

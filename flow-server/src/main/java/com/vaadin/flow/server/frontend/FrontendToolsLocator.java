@@ -85,6 +85,10 @@ public class FrontendToolsLocator implements Serializable {
                         "/usr/local/bin/" + toolName,
                         "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
+        LoggerFactory.getLogger(FrontendToolsLocator.class).info(
+                "Candidate locations for '{}' are {}", toolName,
+                candidateLocations);
+
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
             if (verifyTool(candidate)) {
