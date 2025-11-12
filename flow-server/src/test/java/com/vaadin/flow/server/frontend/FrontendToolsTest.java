@@ -63,7 +63,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 
 @NotThreadSafe
-@Category(SlowTests.class)
+//@Category(SlowTests.class)
 public class FrontendToolsTest {
 
     private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "24.0.0";

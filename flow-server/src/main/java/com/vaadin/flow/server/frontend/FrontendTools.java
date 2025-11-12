@@ -820,6 +820,7 @@ public class FrontendTools {
                         npmVersionCommand.add("--version"); // NOSONAR
                         final FrontendVersion npmVersion = FrontendUtils
                                 .getVersion("npm", npmVersionCommand);
+                        getLogger().info("Got version {} from {}", npmVersion, npmVersionCommand);
                         if (npmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
                             // Global npm is older than SUPPORTED_NPM_VERSION.
                             // Using npm from ~/.vaadin
