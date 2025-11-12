@@ -420,7 +420,11 @@ public class FrontendToolsTest {
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
-        assertEquals(4, tools.getNpmExecutable().size());
+        assertEquals(
+                "Expected a command composed by 4 tokens, but got "
+                        + tools.getNpmExecutable().size() + ": "
+                        + tools.getNpmExecutable(),
+                4, tools.getNpmExecutable().size());
         assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(1),
                 containsString("--no-update-notifier"));
