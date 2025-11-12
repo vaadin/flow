@@ -23,13 +23,12 @@ import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class ChangeFrontendContentIT extends ChromeBrowserTest {
 
@@ -65,21 +64,22 @@ public class ChangeFrontendContentIT extends ChromeBrowserTest {
 
         String content = FileUtils.readFileToString(statsJson,
                 StandardCharsets.UTF_8);
-        JsonObject jsonContent = Json.parse(content);
+        ObjectNode jsonContent = JacksonUtils.readTree(content);
 
-        JsonObject frontendHashes = jsonContent.getObject("frontendHashes");
+        ObjectNode frontendHashes = (ObjectNode) jsonContent
+                .get("frontendHashes");
 
         Assert.assertNotNull("Frontend hashes are expected in the stats.json",
                 frontendHashes);
         Assert.assertTrue("Lit template content hash is expected",
-                frontendHashes.hasKey("views/lit-view.ts"));
+                frontendHashes.has("views/lit-view.ts"));
         Assert.assertTrue("Imported TS file content hash is expected",
-                frontendHashes.hasKey("views/another.ts"));
+                frontendHashes.has("views/another.ts"));
         Assert.assertEquals("Unexpected Lit template content hash",
                 "c1ce265100215245a5264dd124c4d890a7f66acbb5ceddf79dcdec2d914e6c30",
-                frontendHashes.getString("views/lit-view.ts"));
+                frontendHashes.get("views/lit-view.ts").asText());
         Assert.assertEquals("Unexpected imported file content hash",
                 "84951a8a4f324bd4f4a4d39c9913b139af094a0b425773fb8b8d43bb7cd61f10",
-                frontendHashes.getString("views/another.ts"));
+                frontendHashes.get("views/another.ts").asText());
     }
 }
