@@ -539,6 +539,24 @@ export class Flow {
       params['v-np'] = ($wnd as any).navigator.platform;
     }
 
+    /* Theme variant from HTML element - supports both Lumo and Aura */
+    let themeAttr = document.documentElement.getAttribute('theme');
+    if (!themeAttr) {
+      // If no theme attribute, check for Aura color scheme CSS property
+      const auraScheme = getComputedStyle(document.documentElement).getPropertyValue('--aura-color-scheme').trim();
+      themeAttr = auraScheme || '';
+    }
+    params['v-theme-variant'] = themeAttr;
+    /* Theme name - detect which theme is in use */
+    const computedStyle = getComputedStyle(document.documentElement);
+    let themeName = '';
+    if (computedStyle.getPropertyValue('--vaadin-lumo-theme').trim()) {
+      themeName = 'lumo';
+    } else if (computedStyle.getPropertyValue('--vaadin-aura-theme').trim()) {
+      themeName = 'aura';
+    }
+    params['v-theme-name'] = themeName;
+
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
     Object.keys(params).forEach((key) => {

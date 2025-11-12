@@ -85,6 +85,38 @@ public class Page implements Serializable {
     }
 
     /**
+     * Sets the theme variant for the page.
+     *
+     * @param variant
+     *            the theme variant to set (e.g., "dark", "light"), or
+     *            {@code null} or empty string to remove the theme variant
+     */
+    public void setThemeVariant(String variant) {
+        String newValue = (variant == null || variant.isEmpty()) ? null
+                : variant;
+        if (newValue == null) {
+            executeJs("document.documentElement.removeAttribute('theme');");
+        } else {
+            executeJs("document.documentElement.setAttribute('theme', $0);",
+                    newValue);
+        }
+        getExtendedClientDetails().setThemeVariant(newValue);
+    }
+
+    /**
+     * Gets the theme variant for the page.
+     * <p>
+     * Note that this method returns the server-side cached value and will not
+     * detect theme changes made directly via JavaScript or browser developer
+     * tools.
+     *
+     * @return the theme variant, or empty string if not set
+     */
+    public String getThemeVariant() {
+        return getExtendedClientDetails().getThemeVariant();
+    }
+
+    /**
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>

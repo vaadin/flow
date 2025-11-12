@@ -300,4 +300,121 @@ public class PageTest {
         MatcherAssert.assertThat(capture.get(), CoreMatchers
                 .startsWith("if ($1 == '_self') this.stopApplication();"));
     }
+
+    @Test
+    public void setThemeVariant_setsAttribute() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        AtomicReference<Object> capturedParam = new AtomicReference<>();
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                if (parameters.length > 0) {
+                    capturedParam.set(parameters[0]);
+                }
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant("dark");
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("setAttribute('theme', $0)"));
+        Assert.assertEquals("dark", capturedParam.get());
+    }
+
+    @Test
+    public void setThemeVariant_null_removesAttribute() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant(null);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("removeAttribute('theme')"));
+        Assert.assertEquals("", page.getThemeVariant());
+    }
+
+    @Test
+    public void setThemeVariant_emptyString_removesAttribute() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant("");
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("removeAttribute('theme')"));
+        Assert.assertEquals("", page.getThemeVariant());
+    }
+
+    @Test
+    public void getThemeVariant_returnsEmptyString_whenNotSet() {
+        Page page = new Page(new MockUI());
+        Assert.assertEquals("", page.getThemeVariant());
+    }
+
+    @Test
+    public void getThemeVariant_returnsCachedValue() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails with theme variant
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, "dark", null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI);
+        Assert.assertEquals("dark", page.getThemeVariant());
+    }
+
+    @Test
+    public void setThemeVariant_updatesGetThemeVariant() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("dark");
+        Assert.assertEquals("dark", page.getThemeVariant());
+
+        page.setThemeVariant("light");
+        Assert.assertEquals("light", page.getThemeVariant());
+
+        page.setThemeVariant(null);
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("");
+        Assert.assertEquals("", page.getThemeVariant());
+    }
 }

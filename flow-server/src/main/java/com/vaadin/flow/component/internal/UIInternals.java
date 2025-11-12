@@ -1359,7 +1359,7 @@ public class UIInternals implements Serializable {
             // Create placeholder with default values
             extendedClientDetails = new ExtendedClientDetails(ui, null, null,
                     null, null, null, null, null, null, null, null, null, null,
-                    null, null, null, null);
+                    null, null, null, null, null, null);
         }
         return extendedClientDetails;
     }

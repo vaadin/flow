@@ -60,6 +60,8 @@ public class ExtendedClientDetails implements Serializable {
     private double devicePixelRatio = -1.0D;
     private String windowName;
     private String navigatorPlatform;
+    private String themeVariant;
+    private String themeName;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -100,6 +102,10 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
+     * @param themeVariant
+     *            the current theme variant
+     * @param themeName
+     *            the theme name (e.g., "lumo", "aura")
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -107,7 +113,7 @@ public class ExtendedClientDetails implements Serializable {
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform) {
+            String navigatorPlatform, String themeVariant, String themeName) {
         this.ui = ui;
         if (screenWidth != null) {
             try {
@@ -184,6 +190,8 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
+        this.themeVariant = themeVariant;
+        this.themeName = themeName;
     }
 
     /**
@@ -398,6 +406,35 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the theme variant.
+     *
+     * @return the theme variant, or empty string if not set
+     */
+    public String getThemeVariant() {
+        return themeVariant;
+    }
+
+    /**
+     * Gets the theme name.
+     *
+     * @return the theme name (e.g., "lumo", "aura"), or empty string if not
+     *         detected
+     */
+    public String getThemeName() {
+        return themeName;
+    }
+
+    /**
+     * Updates the theme variant. For internal use only.
+     *
+     * @param themeVariant
+     *            the new theme variant
+     */
+    void setThemeVariant(String themeVariant) {
+        this.themeVariant = themeVariant == null ? "" : themeVariant;
+    }
+
+    /**
      * Creates an ExtendedClientDetails instance from browser details JSON
      * object. This is intended for internal use when browser details are
      * provided as JSON (e.g., during UI initialization or refresh).
@@ -446,7 +483,9 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-td"),
                 getStringElseNull.apply("v-pr"),
                 getStringElseNull.apply("v-wn"),
-                getStringElseNull.apply("v-np"));
+                getStringElseNull.apply("v-np"),
+                getStringElseNull.apply("v-theme-variant"),
+                getStringElseNull.apply("v-theme-name"));
     }
 
     /**
