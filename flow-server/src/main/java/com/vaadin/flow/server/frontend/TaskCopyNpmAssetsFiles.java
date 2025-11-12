@@ -127,9 +127,10 @@ public class TaskCopyNpmAssetsFiles
         File npmModuleDir = new File(options.getNodeModulesFolder(), npmModule);
 
         List<Path> paths = collectFiles(npmModuleDir.toPath(), rule.copyRule);
+        Path basePath = getBasePath(npmModuleDir.toPath(), rule.copyRule);
 
         paths.stream().map(Path::toFile).forEach(file -> {
-            copyFileToTarget(file, new File(staticOutput, rule.targetFolder));
+            copyFileToTarget(file, rule, basePath);
         });
     }
 
@@ -144,8 +145,13 @@ public class TaskCopyNpmAssetsFiles
         return rule;
     }
 
-    private void copyFileToTarget(File file, File targetFolder) {
-        File destFile = new File(targetFolder, file.getName());
+    private void copyFileToTarget(File file, Rule copyRule, Path basePath) {
+        File baseDestinationFolder = new File(staticOutput,
+                copyRule.targetFolder);
+
+        Path relativePath = basePath.relativize(file.toPath());
+        File destFile = new File(baseDestinationFolder,
+                relativePath.toString());
         // Copy file to a target path, if target file doesn't exist
         // or if file to copy is newer.
         if (!destFile.exists()
@@ -160,6 +166,36 @@ public class TaskCopyNpmAssetsFiles
                         file, destFile), e);
             }
         }
+    }
+
+    private Path getBasePath(Path npmModuleDir, String copyRule) {
+        // Extract the static part of the copy rule (before any wildcards)
+        String basePathStr = copyRule;
+
+        // Remove leading slashes
+        if (basePathStr.startsWith("/")) {
+            basePathStr = basePathStr.substring(1);
+        }
+
+        int wildcardIndex = -1;
+        if (basePathStr.contains("*")) {
+            wildcardIndex = basePathStr.indexOf('*');
+        } else if (basePathStr.contains("?")) {
+            wildcardIndex = basePathStr.indexOf('?');
+        }
+
+        if (wildcardIndex != -1) {
+            basePathStr = basePathStr.substring(0, wildcardIndex);
+            // Remove trailing slash or incomplete path segment
+            int lastSlash = basePathStr.lastIndexOf('/');
+            if (lastSlash != -1) {
+                // Resolve the base path relative to npmModuleDir
+                return npmModuleDir
+                        .resolve(basePathStr.substring(0, lastSlash));
+            }
+        }
+
+        return npmModuleDir;
     }
 
     private List<Path> collectFiles(Path basePath, String matcherPattern) {
