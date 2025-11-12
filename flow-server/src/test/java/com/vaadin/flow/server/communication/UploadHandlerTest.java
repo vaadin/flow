@@ -391,7 +391,7 @@ public class UploadHandlerTest {
 
     @Test
     public void mulitpartData_forInputIterator_dataIsGottenCorrectly()
-            throws IOException {
+            throws IOException, ServletException {
         List<String> outList = new ArrayList<>(2);
         List<String> fileNames = new ArrayList<>(2);
 
@@ -786,6 +786,20 @@ public class UploadHandlerTest {
         Mockito.when(request.getInputStream())
                 .thenReturn(createInputStream(content));
         Mockito.when(request.getMethod()).thenReturn("POST");
+
+        // Mock getParts() for multipart content
+        if (content.equals(MULTIPART_STREAM_CONTENT)) {
+            try {
+                List<Part> parts = new ArrayList<>();
+                parts.add(createPart(createInputStream("Sound"), "text/plain",
+                        "sound.txt", 5));
+                parts.add(createPart(createInputStream("Bytes"), "text/plain",
+                        "bytes.txt", 5));
+                Mockito.when(request.getParts()).thenReturn(parts);
+            } catch (ServletException e) {
+                throw new IOException(e);
+            }
+        }
     }
 
     private ServletInputStream createInputStream(final String content) {

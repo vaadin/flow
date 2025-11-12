@@ -43,6 +43,9 @@ public class ChunkInfo {
     public static final ChunkInfo GLOBAL = new ChunkInfo(
             EntryPointType.INTERNAL, null, null, false);
 
+    public static final ChunkInfo WEB_COMPONENT = new ChunkInfo(
+            EntryPointType.WEB_COMPONENT, "webComponent", null, false);
+
     private final EntryPointType type;
     private final String name;
 

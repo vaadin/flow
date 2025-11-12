@@ -71,7 +71,6 @@
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     <jsinterop.version>1.0.2</jsinterop.version>
     <sonar.java.source>21</sonar.java.source>
-    <sonar.analysis.mode>preview</sonar.analysis.mode>
     <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
     <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
 
@@ -79,7 +78,7 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.0-RC1</spring.boot.version>
+    <spring.boot.version>4.0.0-RC2</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.0.1.Final</hibernate.validator.version>
@@ -203,7 +202,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>2.1.1</version>
+        <version>2.2.0-beta1</version>
       </dependency>
 
       <!-- Test dependencies -->
