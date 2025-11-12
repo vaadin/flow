@@ -264,6 +264,15 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
         params['v-np'] = navigator.platform;
       }
 
+      /* Theme variant from HTML element - supports both Lumo and Aura */
+      var themeAttr = document.documentElement.getAttribute('theme');
+      if (!themeAttr) {
+        // If no theme attribute, check for Aura color scheme CSS property
+        var auraScheme = getComputedStyle(document.documentElement).getPropertyValue('--aura-color-scheme').trim();
+        themeAttr = auraScheme || '';
+      }
+      params['v-theme'] = themeAttr;
+
       /* Stringify each value (they are parsed on the server side) */
       Object.keys(params).forEach(function (key) {
         var value = params[key];

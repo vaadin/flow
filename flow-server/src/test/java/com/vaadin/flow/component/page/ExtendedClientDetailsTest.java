@@ -161,6 +161,7 @@ public class ExtendedClientDetailsTest {
         private String devicePixelRatio = "2.0";
         private String windowName = "ROOT-1234567-0.1234567";
         private String navigatorPlatform = "Linux i686";
+        private String themeVariant = null;
 
         public ExtendedClientDetails buildDetails() {
             return new ExtendedClientDetails(null, screenWidth, screenHeight,
@@ -168,7 +169,7 @@ public class ExtendedClientDetailsTest {
                     bodyClientHeight, timezoneOffset, rawTimezoneOffset,
                     dstSavings, dstInEffect, timeZoneId, clientServerTimeDelta,
                     touchDevice, devicePixelRatio, windowName,
-                    navigatorPlatform);
+                    navigatorPlatform, themeVariant);
         }
 
         public ExtendBuilder setScreenWidth(String screenWidth) {

@@ -230,6 +230,8 @@ public class UIInternals implements Serializable {
 
     private ExtendedClientDetails extendedClientDetails = null;
 
+    private String themeVariant = "";
+
     private ArrayDeque<Component> modalComponentStack;
 
     /**
@@ -1364,6 +1366,25 @@ public class UIInternals implements Serializable {
      */
     public void setExtendedClientDetails(ExtendedClientDetails details) {
         this.extendedClientDetails = details;
+    }
+
+    /**
+     * Gets the theme variant that is currently set for the page.
+     *
+     * @return the theme variant, or empty string if not set
+     */
+    public String getThemeVariant() {
+        return themeVariant;
+    }
+
+    /**
+     * Sets the theme variant for the page.
+     *
+     * @param themeVariant
+     *            the theme variant to set, or {@literal null} to clear
+     */
+    public void setThemeVariant(String themeVariant) {
+        this.themeVariant = themeVariant == null ? "" : themeVariant;
     }
 
     /**
