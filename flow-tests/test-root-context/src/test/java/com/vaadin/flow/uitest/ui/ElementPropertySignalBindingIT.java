@@ -33,24 +33,56 @@ public class ElementPropertySignalBindingIT extends ChromeBrowserTest {
 
     @Test
     public void checkInitialPropertyValue_modifyPropertyValue_checkModifiedValue() {
-        WebElement resultElement = findElement(By.id("result-div"));
-        WebElement signalValueElement = findElement(By.id("signal-value-div"));
+        WebElement resultElement = findElement(
+                By.id(ElementPropertySignalBindingView.RESULT_DIV_ID));
+        WebElement signalValueElement = findElement(
+                By.id(ElementPropertySignalBindingView.SIGNAL_VALUE_DIV_ID));
         WebElement listenerCountElement = findElement(
-                By.id("listener-count-div"));
+                By.id(ElementPropertySignalBindingView.LISTENER_COUNT_DIV_ID));
 
-        Assert.assertEquals("testproperty changed to: foo",
-                resultElement.getText());
+        Assert.assertEquals(ElementPropertySignalBindingView.TEST_PROPERTY_NAME
+                + " changed to: foo", resultElement.getText());
         Assert.assertEquals("Signal value: foo", signalValueElement.getText());
         Assert.assertEquals(String.valueOf(1), listenerCountElement.getText());
 
-        $(DivElement.class).id("target-div").setProperty("testproperty",
-                "changed-value");
-        $(DivElement.class).id("target-div").dispatchEvent("change");
+        $(DivElement.class).id(ElementPropertySignalBindingView.TARGET_DIV_ID)
+                .setProperty(
+                        ElementPropertySignalBindingView.TEST_PROPERTY_NAME,
+                        "changed-value");
+        $(DivElement.class).id(ElementPropertySignalBindingView.TARGET_DIV_ID)
+                .dispatchEvent("change");
 
-        Assert.assertEquals("testproperty changed to: changed-value",
+        Assert.assertEquals(
+                ElementPropertySignalBindingView.TEST_PROPERTY_NAME
+                        + " changed to: changed-value",
                 resultElement.getText());
         Assert.assertEquals("Signal value: changed-value",
                 signalValueElement.getText());
         Assert.assertEquals(String.valueOf(2), listenerCountElement.getText());
+    }
+
+    @Test
+    public void computedSignalBound_modifyPropertyValue_shouldThrow() {
+        $(DivElement.class)
+                .id(ElementPropertySignalBindingView.SHOULD_THROW_TARGET_DIV_ID)
+                .setProperty(
+                        ElementPropertySignalBindingView.TEST_PROPERTY_NAME,
+                        "changed-value");
+        $(DivElement.class)
+                .id(ElementPropertySignalBindingView.SHOULD_THROW_TARGET_DIV_ID)
+                .dispatchEvent("change");
+
+        Assert.assertTrue("Internal error expected when attempting to "
+                + "update a property bound to a (read-only) computed signal, "
+                + "but no internal error is present.",
+                isInternalErrorNotificationPresent());
+    }
+
+    private boolean isInternalErrorNotificationPresent() {
+        if (!isElementPresent(By.className("v-system-error"))) {
+            return false;
+        }
+        return findElement(By.className("v-system-error"))
+                .getAttribute("innerHTML").contains("Internal error");
     }
 }

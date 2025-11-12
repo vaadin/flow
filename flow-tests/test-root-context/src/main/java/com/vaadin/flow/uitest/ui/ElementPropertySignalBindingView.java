@@ -27,39 +27,59 @@ import com.vaadin.signals.ValueSignal;
 @Route(value = "com.vaadin.flow.uitest.ui.ElementPropertySignalBindingView", layout = ViewTestLayout.class)
 public class ElementPropertySignalBindingView extends AbstractDivView {
 
+    public static final String TARGET_DIV_ID = "target-div";
+    public static final String RESULT_DIV_ID = "result-div";
+    public static final String SIGNAL_VALUE_DIV_ID = "signal-value-div";
+    public static final String SHOULD_THROW_TARGET_DIV_ID = "should-throw-target-div";
+    public static final String LISTENER_COUNT_DIV_ID = "listener-count-div";
+    public static final String TEST_PROPERTY_NAME = "testproperty";
+
     @Override
     protected void onShow() {
-        AtomicInteger listenerCounter = new AtomicInteger();
+        AtomicInteger listenerCallCounter = new AtomicInteger();
 
-        Div target = new Div();
-        target.setId("target-div");
-        add(target);
-
-        Div result = new Div();
-        result.setId("result-div");
-        add(result);
-
-        Div signalValue = new Div();
-        signalValue.setId("signal-value-div");
-        add(signalValue);
-
-        Div listenerCountDiv = new Div();
-        listenerCountDiv.setId("listener-count-div");
-        add(listenerCountDiv);
+        // Happy path for updating a property from client and
+        // showing the value from property change listener as
+        // well as from a signal effect
+        Div target = createAndAddDiv(TARGET_DIV_ID);
+        Div result = createAndAddDiv(RESULT_DIV_ID);
+        Div signalValue = createAndAddDiv(SIGNAL_VALUE_DIV_ID);
+        Div listenerCountDiv = createAndAddDiv(LISTENER_COUNT_DIV_ID);
 
         Signal<String> signal = new ValueSignal<>("foo");
         ComponentEffect.effect(this, () -> {
             signalValue.setText("Signal value: " + signal.value());
         });
-        target.getElement().bindProperty("testproperty", signal);
+        target.getElement().bindProperty(TEST_PROPERTY_NAME, signal);
 
-        target.getElement().addPropertyChangeListener("testproperty", "change",
-                event -> {
+        target.getElement().addPropertyChangeListener(TEST_PROPERTY_NAME,
+                "change", event -> {
                     String newValue = (String) event.getValue();
-                    result.setText("testproperty changed to: " + newValue);
-                    listenerCountDiv.setText(
-                            String.valueOf(listenerCounter.incrementAndGet()));
+                    result.setText(
+                            TEST_PROPERTY_NAME + " changed to: " + newValue);
+                    listenerCountDiv.setText(String
+                            .valueOf(listenerCallCounter.incrementAndGet()));
                 });
+
+        // Attempt to update a property value from client to a computed signal
+        // should throw an exception
+        Div shouldThrowTarget = createAndAddDiv(SHOULD_THROW_TARGET_DIV_ID);
+        Signal<String> computedSignal = Signal
+                .computed(() -> "computed-" + signal.value());
+        shouldThrowTarget.getElement().bindProperty(TEST_PROPERTY_NAME,
+                computedSignal);
+        shouldThrowTarget.getElement().addPropertyChangeListener(
+                TEST_PROPERTY_NAME, "change", event -> {
+                    // NOP; listener is needed to synchronize the property
+                });
+    }
+
+    private Div createAndAddDiv(String id) {
+        Div div = new Div();
+        div.setText(id);
+        div.setId(id);
+        add(div);
+        return div;
     }
 
 }
