@@ -16,6 +16,7 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
@@ -48,6 +49,77 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
         assert value instanceof String;
         assert ElementUtil.isValidStylePropertyValue((String) value);
         super.setProperty(name, value, emitChange);
+    }
+
+    @Override
+    public void setPropertyFromSignal(String name, Object value) {
+        // Compare against the effectively stored value (unwrapped), but
+        // when null is incoming from signal, we will emit an empty string
+        // to the client to force style removal while preserving the binding.
+        Serializable currentRaw = super.get(name);
+        Serializable currentEffective;
+        if (currentRaw instanceof SignalBinding binding) {
+            currentEffective = binding.value();
+        } else {
+            currentEffective = currentRaw;
+        }
+
+        Object newEffective = (value == null) ? "" : value;
+        if (Objects.equals(currentEffective, newEffective)) {
+            return;
+        }
+
+        if (value == null) {
+            // Emit empty string so that a client removes the style property,
+            // but keep the SignalBinding container on the server side.
+            super.setProperty(name, "", true);
+        } else {
+            // Delegate to validated setter for non-null values
+            setProperty(name, (Serializable) value, true);
+        }
+    }
+
+    @Override
+    protected Serializable get(String key) {
+        Serializable value = super.get(key);
+        if (value instanceof SignalBinding binding) {
+            Serializable signalValue = binding.value();
+            if (signalValue instanceof String stringValue
+                    && stringValue.isEmpty()) {
+                // Treat empty string from signal as removed style
+                return null;
+            }
+            return signalValue;
+        }
+        return value;
+    }
+
+    @Override
+    public void removeAllProperties() {
+        // Dispose any effect registrations and forget bindings
+        for (String key : getPropertyNames().toList()) {
+            Serializable raw = super.get(key);
+            if (raw instanceof SignalBinding binding) {
+                if (binding.registration() != null) {
+                    binding.registration().remove();
+                }
+            }
+        }
+        super.removeAllProperties();
+    }
+
+    @Override
+    public boolean hasProperty(String name) {
+        Serializable raw = super.get(name);
+        if (raw instanceof SignalBinding binding) {
+            Serializable signalValue = binding.value();
+            if (signalValue instanceof String stringValue
+                    && stringValue.isEmpty()) {
+                return false;
+            }
+            return signalValue != null;
+        }
+        return super.hasProperty(name);
     }
 
     /**
