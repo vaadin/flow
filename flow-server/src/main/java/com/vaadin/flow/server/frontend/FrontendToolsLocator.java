@@ -85,15 +85,18 @@ public class FrontendToolsLocator implements Serializable {
                         "/usr/local/bin/" + toolName,
                         "/opt/local/bin/" + toolName, "/opt/bin/" + toolName));
 
-        LoggerFactory.getLogger(FrontendToolsLocator.class).info(
+        Logger logger = LoggerFactory.getLogger(FrontendToolsLocator.class);
+        logger.info(
                 "Candidate locations for '{}' are {}", toolName,
                 candidateLocations);
 
         for (String candidateLocation : candidateLocations) {
             File candidate = new File(candidateLocation);
             if (verifyTool(candidate)) {
+                logger.info("Selected '{}' at '{}'", toolName, candidate);
                 return Optional.of(candidate);
             }
+            logger.info("Rejected '{}' at '{}'", toolName, candidate);
         }
         return Optional.empty();
     }
@@ -204,32 +207,32 @@ public class FrontendToolsLocator implements Serializable {
 
     private CommandResult omitErrorResult(CommandResult commandResult) {
         if (!commandResult.isSuccessful()) {
-            if (log().isDebugEnabled()) {
-                log().debug(
+            //if (log().isDebugEnabled()) {
+                log().warn(
                         "Command '{}' exited with non-zero exit code: {}. stdout:\n'{}'\nstderr:\n'{}'",
                         commandResult.command, commandResult.exitCode,
                         commandResult.exitCode,
                         String.join("\n", commandResult.stderr));
-            }
+            //}
             return null;
         }
         if (commandResult.stdout.isEmpty()) {
-            if (log().isDebugEnabled()) {
-                log().debug("Command '{}' has no output, stderr:\n'{}'",
+            //if (log().isDebugEnabled()) {
+                log().warn("Command '{}' has no output, stderr:\n'{}'",
                         commandResult.command,
                         String.join("\n", commandResult.stderr));
-            }
+            //}
             return null;
         }
         if (!commandResult.stderr.isEmpty()) {
             // "npm -v" can output deprecation warnings to stderr but it still
             // works
-            if (log().isDebugEnabled()) {
-                log().debug(
+            //if (log().isDebugEnabled()) {
+                log().warn(
                         "Command '{}' has non-empty stderr but assuming this is fine:\n'{}'",
                         commandResult.command,
                         String.join("\n", commandResult.stderr));
-            }
+            //}
         }
         return commandResult;
     }
