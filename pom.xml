@@ -115,7 +115,7 @@
         <!-- Used in OSGi manifests -->
         <jsoup.version>1.15.3</jsoup.version>
         <!-- Note that this should be kept in sync with the class Constants -->
-        <atmosphere.runtime.version>2.7.3.slf4jvaadin6</atmosphere.runtime.version>
+        <atmosphere.runtime.version>2.7.3.slf4jvaadin7</atmosphere.runtime.version>
 
         <!-- OSGi -->
         <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
