@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.hotswap;
 
+import jakarta.annotation.Priority;
+
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -125,8 +128,15 @@ public class Hotswapper implements ServiceDestroyListener, SessionInitListener,
             throw new IllegalStateException(
                     "Lookup not found in VaadinContext");
         }
-        Collection<VaadinHotswapper> hotSwappers = lookup
-                .lookupAll(VaadinHotswapper.class);
+        List<VaadinHotswapper> hotSwappers = new ArrayList<>(
+                lookup.lookupAll(VaadinHotswapper.class));
+        hotSwappers.sort(Comparator.comparingInt(plugin -> {
+            Priority priority = plugin.getClass().getAnnotation(Priority.class);
+            if (priority == null) {
+                return 0;
+            }
+            return priority.value();
+        }));
         for (VaadinHotswapper hotSwapper : hotSwappers) {
             try {
                 hotSwapper.onInit(vaadinService);
