@@ -59,7 +59,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
-        expectArchiveDoesntContainVaadinWebpackBundle(war, false)
+        expectArchiveDoesntContainVaadinBundle(war, false)
     }
 
     /**
@@ -160,7 +160,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(null) { build.task(":vaadinBuildFrontend") }
 
         val jar: File = testProject.builtJar
-        expectArchiveDoesntContainVaadinWebpackBundle(jar, false)
+        expectArchiveDoesntContainVaadinBundle(jar, false)
     }
 
     /**
@@ -230,6 +230,19 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         doTestSpringProjectProductionMode();
     }
 
+    @Test
+    fun testSpringProjectAutoProductionMode() {
+        doTestSpringProjectAutoProductionMode();
+    }
+
+    /**
+     * Test Spring boot project build with 'bootJar' task (production), but forced in dev mode.
+     */
+    @Test
+    fun testSpringProjectForcedDevelopmentMode() {
+        doTestSpringProjectForcedDevelopmentMode();
+    }
+
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testSpringProjectProductionModeWebpack() {
@@ -238,6 +251,44 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
+        doTestSpringProject()
+
+        val build: BuildResult =
+                testProject.build("-Pvaadin.productionMode", "build")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
+    }
+
+    private fun doTestSpringProjectAutoProductionMode(compressedExtension: String = "*.br") {
+
+        doTestSpringProject()
+
+        val build: BuildResult =
+            testProject.build("bootJar")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
+    }
+
+    private fun doTestSpringProjectForcedDevelopmentMode(compressedExtension: String = "*.br") {
+
+        doTestSpringProject()
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode=false", "bootJar")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveDoesntContainVaadinBundle(jar, false)
+    }
+
+    private fun doTestSpringProject() {
         val springBootVersion = "3.3.4"
 
         testProject.settingsFile.writeText(
@@ -251,7 +302,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
         )
         testProject.buildFile.writeText(
-                """
+            """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -298,7 +349,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // need to create the Application.java file otherwise bootJar will fail
         testProject.newFile(
-                "src/main/java/com/example/demo/DemoApplication.java", """
+            "src/main/java/com/example/demo/DemoApplication.java", """
             package com.example.demo;
             
             import org.springframework.boot.SpringApplication;
@@ -317,7 +368,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // AppShell.java file creation
         testProject.newFile(
-                "src/main/java/com/example/demo/AppShell.java", """
+            "src/main/java/com/example/demo/AppShell.java", """
             package com.example.demo;
             
             import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -328,14 +379,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
         """.trimIndent()
         )
-
-        val build: BuildResult =
-                testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
-        build.expectTaskSucceded("vaadinBuildFrontend")
-
-        val jar: File = testProject.builtJar
-        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
     }
 
     /**

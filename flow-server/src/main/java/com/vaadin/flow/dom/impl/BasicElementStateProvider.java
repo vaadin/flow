@@ -57,6 +57,7 @@ import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
 
 /**
@@ -281,7 +282,24 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeature(node).setProperty(name, value, emitChange);
+        ElementPropertyMap propertyFeature = getPropertyFeature(node);
+
+        if (propertyFeature.hasSignal(name)) {
+            throw new BindingActiveException(String.format(
+                    "setProperty is not allowed while a binding for the property '%s' exists.",
+                    name));
+        }
+
+        propertyFeature.setProperty(name, value, emitChange);
+    }
+
+    @Override
+    public void bindPropertySignal(Element owner, String name,
+            Signal<?> signal) {
+        assert owner != null;
+        assert name != null;
+
+        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal);
     }
 
     @Override
@@ -289,8 +307,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeatureIfInitialized(node)
-                .ifPresent(feature -> feature.removeProperty(name));
+        getPropertyFeatureIfInitialized(node).ifPresent(propertyMap -> {
+            if (propertyMap.hasSignal(name)) {
+                throw new BindingActiveException(String.format(
+                        "removeProperty is not allowed while a binding for the property '%s' exists.",
+                        name));
+            }
+            propertyMap.removeProperty(name);
+        });
     }
 
     @Override

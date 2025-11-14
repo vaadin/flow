@@ -147,6 +147,12 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void bindPropertySignal(Element owner, String name,
+            Signal<?> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void removeProperty(StateNode node, String name) {
         throw new UnsupportedOperationException();
     }

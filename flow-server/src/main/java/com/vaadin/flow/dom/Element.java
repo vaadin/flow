@@ -849,6 +849,52 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the given property and keeps the
+     * property value synchronized with the signal value while the element is in
+     * attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
+     * <p>
+     * Same rules apply for the property name and value from the bound Signal as
+     * in {@link #setProperty(String, String)}.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the property
+     * value manually throws {@link BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Supported data types for the signal are the same as for the various
+     * {@code setProperty} methods in this class: {@link String},
+     * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
+     * (bean), {@link List} and {@link Map}. Typed Lists and Maps are not
+     * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
+     * {@code Signal<Map<?,?>}.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindProperty("mol", signal);
+     * signal.value("42"); // The element now has property mol="42"
+     * </pre>
+     *
+     * @param name
+     *            the name of the property
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setProperty(String, String)
+     */
+    public void bindProperty(String name, Signal<?> signal) {
+        verifySetPropertyName(name);
+
+        getStateProvider().bindPropertySignal(this, name, signal);
+    }
+
+    /**
      * Adds a property change listener which is triggered when the property's
      * value is updated on the server side.
      * <p>
@@ -946,10 +992,6 @@ public class Element extends Node<Element> {
     public String getProperty(String name, String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
-            return defaultValue;
-        } else if (value instanceof JsonNode) {
-            return ((JsonNode) value).toString();
-        } else if (value instanceof NullNode) {
             return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
