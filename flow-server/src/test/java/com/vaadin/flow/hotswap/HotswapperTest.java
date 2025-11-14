@@ -15,7 +15,10 @@
  */
 package com.vaadin.flow.hotswap;
 
+import jakarta.annotation.Priority;
+
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -1453,6 +1456,58 @@ public class HotswapperTest {
         new Hotswapper(service);
         Mockito.verify(flowHotswapper).onInit(service);
         Mockito.verify(hillaHotswapper).onInit(service);
+    }
+
+    @Test
+    public void constructor_ensureOrderAnnotationIsRespected() {
+        List<VaadinHotswapper> hotswappers = List.of(new Last(), new First(),
+                new DefaultPriority());
+        Mockito.when(lookup.lookupAll(VaadinHotswapper.class))
+                .thenReturn(hotswappers);
+        ExecutionListener executionListener = new ExecutionListener();
+        service.getContext().setAttribute(executionListener);
+
+        hotswapper = new Hotswapper(service);
+
+        Assert.assertEquals(
+                List.of(First.class, DefaultPriority.class, Last.class),
+                executionListener.executed);
+    }
+
+    private static class ExecutionListener {
+        private final List<Class<? extends VaadinHotswapper>> executed = new ArrayList<>();
+
+        void add(VaadinHotswapper hotswapper) {
+            executed.add(hotswapper.getClass());
+        }
+    }
+
+    @Priority(-10)
+    private static class First implements VaadinHotswapper {
+
+        @Override
+        public void onInit(VaadinService vaadinService) {
+            vaadinService.getContext().getAttribute(ExecutionListener.class)
+                    .add(this);
+        }
+
+    }
+
+    @Priority(10)
+    private static class Last implements VaadinHotswapper {
+        @Override
+        public void onInit(VaadinService vaadinService) {
+            vaadinService.getContext().getAttribute(ExecutionListener.class)
+                    .add(this);
+        }
+    }
+
+    private static class DefaultPriority implements VaadinHotswapper {
+        @Override
+        public void onInit(VaadinService vaadinService) {
+            vaadinService.getContext().getAttribute(ExecutionListener.class)
+                    .add(this);
+        }
     }
 
     private void assertOnHotswapCompleteInvoked(VaadinHotswapper hotswapper,
