@@ -526,11 +526,10 @@ public class VaadinServletContextInitializer
             devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
             if (devModeHandlerManager == null) {
                 throw new RuntimeException(
-                        "no DevModeHandlerManager implementation found but "
-                                + "but dev server enabled. Either disable by "
-                                + "setting vaadin.frontend.hotdeploy=false (and "
+                        "DevModeHandlerManager not found, but dev server is enabled. "
+                                + "Either disable by setting vaadin.frontend.hotdeploy=false (and "
                                 + "run the build-frontend maven goal) or "
-                                + "include the vaadin-dev-server dependency");
+                                + "add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev'.");
             }
             if (devModeHandlerManager.getDevModeHandler() != null) {
                 /*

@@ -102,10 +102,9 @@ public class VaadinServletService extends VaadinService {
                             handlers.add(idx, devModeHandler);
                         }, () -> handlers.add(devModeHandler));
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
-                getLogger()
-                        .warn("no DevModeHandlerManager implementation found "
-                                + "but dev server enabled. Include the "
-                                + "com.vaadin.vaadin-dev-server dependency.");
+                getLogger().warn(
+                        "DevModeHandlerManager not found, but dev server is enabled. "
+                                + "Add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev'.");
             }
         }
 
