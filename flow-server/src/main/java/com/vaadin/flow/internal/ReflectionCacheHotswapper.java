@@ -15,17 +15,23 @@
  */
 package com.vaadin.flow.internal;
 
+import jakarta.annotation.Priority;
+
 import com.vaadin.flow.hotswap.HotswapClassEvent;
 import com.vaadin.flow.hotswap.VaadinHotswapper;
 
 /**
  * Clears all mappings from all reflection caches and related resources when one
  * or more classes has been changed.
+ * <p>
+ * Should run as last, so other hotswappers can still query
+ * {@link ReflectionCache} to get previous data before the cache is cleared.
  */
+@Priority(Integer.MAX_VALUE)
 public class ReflectionCacheHotswapper implements VaadinHotswapper {
 
     @Override
     public void onClassesChange(HotswapClassEvent event) {
-        ReflectionCache.clearAll();
+        event.getChangedClasses().forEach(ReflectionCache::clearAll);
     }
 }
