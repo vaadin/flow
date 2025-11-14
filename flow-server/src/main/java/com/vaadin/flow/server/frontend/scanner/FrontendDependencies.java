@@ -944,6 +944,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         if (theme.isNotheme()) {
             return true;
         }
+        if (theme.themeAnnotationPresent) {
+            return true;
+        }
 
         return false;
     }

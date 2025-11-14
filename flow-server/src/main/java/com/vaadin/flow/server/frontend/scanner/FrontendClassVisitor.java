@@ -284,6 +284,7 @@ final class FrontendClassVisitor extends ClassVisitor {
             return null;
         }
         if (annotationClassName.contains(Theme.class.getName())) {
+            classInfo.theme.themeAnnotationPresent = true;
             return themeVisitor;
         }
         if (annotationClassName.contains(CssImport.class.getName())) {
