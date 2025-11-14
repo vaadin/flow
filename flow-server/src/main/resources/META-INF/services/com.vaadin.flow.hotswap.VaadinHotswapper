@@ -14,7 +14,7 @@
 # the License.
 #
 
-com.vaadin.flow.component.dependency.StyleSheetHotswapper
+com.vaadin.flow.component.internal.StyleSheetHotswapper
 com.vaadin.flow.internal.ReflectionCacheHotswapper
 com.vaadin.flow.i18n.DefaultTranslationsHotswapper
 com.vaadin.flow.router.internal.RouteRegistryHotswapper
