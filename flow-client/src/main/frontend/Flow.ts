@@ -102,6 +102,12 @@ export class Flow {
   private navigation: string = '';
 
   constructor(config?: FlowConfig) {
+    // Set window.name early so @PreserveOnRefresh can use it to identify the browser tab
+    // Only set if not already set to preserve any existing value
+    if (!window.name) {
+      window.name = `v-${Math.random()}`;
+    }
+
     flowRoot.$ = flowRoot.$ || [];
     this.config = config || {};
 
