@@ -481,17 +481,18 @@ public class Page implements Serializable {
      * Gets the extended client details, such as screen resolution and time zone
      * information.
      * <p>
-     * Browser details are automatically fetched during UI initialization and
-     * cached for the lifetime of the UI. In normal operation, this method
-     * returns complete details immediately after the UI is created. As a
-     * fallback, if details are not yet available, an asynchronous fetch is
-     * triggered automatically and a placeholder instance with default values is
-     * returned (which will be updated when the fetch completes). To refresh the
-     * cached values with updated data from the browser, use
-     * {@link ExtendedClientDetails#refresh(Consumer)}.
+     * Browser details are automatically collected and sent during UI
+     * initialization, making them immediately available. In normal operation,
+     * this method returns complete details right after the UI is created.
      * <p>
-     * If you need to perform an action when the details are updated, use
-     * {@link ExtendedClientDetails#refresh(Consumer)} with a callback.
+     * If details are not yet available, this method returns a placeholder
+     * instance with default values (dimensions set to -1). If you need to fetch
+     * the actual values in such cases, use
+     * {@link ExtendedClientDetails#refresh(Consumer)} to explicitly retrieve
+     * updated values from the browser.
+     * <p>
+     * To refresh the cached values with updated data from the browser at any
+     * time, use {@link ExtendedClientDetails#refresh(Consumer)}.
      *
      * @return the extended client details (never {@code null})
      */
@@ -513,8 +514,7 @@ public class Page implements Serializable {
     @Deprecated
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        ExtendedClientDetails details = ui.getInternals()
-                .getExtendedClientDetails();
+        ExtendedClientDetails details = getExtendedClientDetails();
         if (details.getScreenWidth() != -1) {
             // Already fetched and complete, call receiver immediately
             receiver.receiveDetails(details);
