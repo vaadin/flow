@@ -127,6 +127,7 @@
           <archive>
             <manifestEntries>
               <Dependencies>jdk.unsupported</Dependencies>
+              <Spring-Boot-Jar-Type>development-tool</Spring-Boot-Jar-Type>
             </manifestEntries>
           </archive>
         </configuration>
