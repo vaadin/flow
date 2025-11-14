@@ -84,76 +84,9 @@ public class PageTest {
     }
 
     @Test
-    public void retrieveExtendedClientDetails_twice_theSecondResultComesDifferentBeforeCachedValueIsSet() {
-        // given
-        final UI mockUI = new MockUI();
-        List<Runnable> invocations = new ArrayList<>();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... params) {
-                super.executeJs(expression, params);
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("v-sw", "2560");
-                        params.put("v-sh", "1450");
-                        params.put("v-tzo", "-270");
-                        params.put("v-rtzo", "-210");
-                        params.put("v-dstd", "60");
-                        params.put("v-dston", "true");
-                        params.put("v-tzid", "Asia/Tehran");
-                        params.put("v-curdate", "1555000000000");
-                        params.put("v-td", "false");
-                        if (invocations.isEmpty()) {
-                            params.put("v-wn", "ROOT-1234567-0.1234567");
-                        } else {
-                            params.put("v-wn", "foo");
-                        }
-                        invocations.add(() -> resultHandler
-                                .accept(JacksonUtils.createObject(params,
-                                        JacksonUtils::createNode)));
-                    }
-                };
-            }
-        };
-        final AtomicInteger callbackInvocations = new AtomicInteger();
-        final Page.ExtendedClientDetailsReceiver receiver = details -> {
-            callbackInvocations.incrementAndGet();
-        };
-
-        // when
-        page.retrieveExtendedClientDetails(receiver);
-        page.retrieveExtendedClientDetails(receiver);
-
-        // then : before cached value is set the second retrieve is requested
-        invocations.forEach(Runnable::run);
-
-        Assert.assertEquals(2, callbackInvocations.get());
-
-        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals()
-                .getExtendedClientDetails().getWindowName());
-    }
-
-    @Test
     public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
         // given
-        final UI mockUI = new MockUI();
+        final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
@@ -193,6 +126,7 @@ public class PageTest {
                 };
             }
         };
+        mockUI.setPage(page);
         final AtomicInteger callbackInvocations = new AtomicInteger();
         final Page.ExtendedClientDetailsReceiver receiver = details -> {
             callbackInvocations.incrementAndGet();

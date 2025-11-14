@@ -163,7 +163,7 @@ public class ExtendedClientDetailsTest {
         private String navigatorPlatform = "Linux i686";
 
         public ExtendedClientDetails buildDetails() {
-            return new ExtendedClientDetails(screenWidth, screenHeight,
+            return new ExtendedClientDetails(null, screenWidth, screenHeight,
                     windowInnerWidth, windowInnerHeight, bodyClientWidth,
                     bodyClientHeight, timezoneOffset, rawTimezoneOffset,
                     dstSavings, dstInEffect, timeZoneId, clientServerTimeDelta,

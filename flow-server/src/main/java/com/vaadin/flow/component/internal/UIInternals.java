@@ -1347,12 +1347,20 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * The extended client details, if obtained, are cached in this field.
+     * Returns the extended client details. If browser details have not been
+     * received yet, returns a placeholder instance with default values (all
+     * dimensions set to -1). The placeholder will be updated with actual values
+     * when the browser details are received.
      *
-     * @return the extended client details, or {@literal null} if not yet
-     *         received.
+     * @return the extended client details (never {@code null})
      */
     public ExtendedClientDetails getExtendedClientDetails() {
+        if (extendedClientDetails == null) {
+            // Create placeholder with default values
+            extendedClientDetails = new ExtendedClientDetails(ui, null, null,
+                    null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null);
+        }
         return extendedClientDetails;
     }
 

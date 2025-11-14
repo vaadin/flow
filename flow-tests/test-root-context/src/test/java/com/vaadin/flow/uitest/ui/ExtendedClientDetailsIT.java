@@ -24,6 +24,26 @@ import com.vaadin.testbench.TestBenchElement;
 public class ExtendedClientDetailsIT extends ChromeBrowserTest {
 
     @Test
+    public void testExtendedClientDetails_availableImmediately() {
+        open();
+
+        // Values should be available immediately without clicking any button
+        verifyTextMatchesJSExecution("sh", "window.screen.height");
+        verifyTextMatchesJSExecution("sw", "window.screen.width");
+        verifyTextMatchesJSExecution("wh", "window.innerHeight");
+        verifyTextMatchesJSExecution("ww", "window.innerWidth");
+        verifyTextMatchesJSExecution("bh", "document.body.clientHeight");
+        verifyTextMatchesJSExecution("bw", "document.body.clientWidth");
+        try {
+            Double.parseDouble($(TestBenchElement.class).id("pr").getText());
+        } catch (NumberFormatException nfe) {
+            Assert.fail("Could not parse reported device pixel ratio");
+        }
+        Assert.assertTrue("false".equalsIgnoreCase(
+                $(TestBenchElement.class).id("td").getText()));
+    }
+
+    @Test
     public void testExtendedClientDetails_reportsSomething() {
         open();
 

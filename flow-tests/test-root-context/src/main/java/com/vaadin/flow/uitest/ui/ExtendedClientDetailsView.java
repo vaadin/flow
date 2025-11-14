@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -34,6 +36,13 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         Div devicePixelRatio = createDiv("pr");
         Div touchDevice = createDiv("td");
 
+        // Display initial values immediately
+        ExtendedClientDetails details = UI.getCurrentOrThrow().getPage()
+                .getExtendedClientDetails();
+        displayDetails(details, screenWidth, screenHeight, windowInnerWidth,
+                windowInnerHeight, bodyElementWidth, bodyElementHeight,
+                devicePixelRatio, touchDevice);
+
         // the sizing values cannot be set with JS but pixel ratio and touch
         // support can be faked
         NativeButton setValuesButton = new NativeButton("Set test values",
@@ -46,29 +55,33 @@ public class ExtendedClientDetailsView extends AbstractDivView {
 
         NativeButton fetchDetailsButton = new NativeButton(
                 "Fetch client details", event -> {
-                    getUI().ifPresent(ui -> ui.getPage()
-                            .retrieveExtendedClientDetails(details -> {
-                                screenWidth
-                                        .setText("" + details.getScreenWidth());
-                                screenHeight.setText(
-                                        "" + details.getScreenHeight());
-                                windowInnerWidth.setText(
-                                        "" + details.getWindowInnerWidth());
-                                windowInnerHeight.setText(
-                                        "" + details.getWindowInnerHeight());
-                                bodyElementWidth.setText(
-                                        "" + details.getBodyClientWidth());
-                                bodyElementHeight.setText(
-                                        "" + details.getBodyClientHeight());
-                                devicePixelRatio.setText(
-                                        "" + details.getDevicePixelRatio());
-                                touchDevice
-                                        .setText("" + details.isTouchDevice());
-                            }));
+                    UI.getCurrentOrThrow().getPage().getExtendedClientDetails()
+                            .refresh(updatedDetails -> {
+                                displayDetails(updatedDetails, screenWidth,
+                                        screenHeight, windowInnerWidth,
+                                        windowInnerHeight, bodyElementWidth,
+                                        bodyElementHeight, devicePixelRatio,
+                                        touchDevice);
+
+                            });
                 });
         fetchDetailsButton.setId("fetch-values");
 
         add(setValuesButton, fetchDetailsButton);
+    }
+
+    private void displayDetails(ExtendedClientDetails details, Div screenWidth,
+            Div screenHeight, Div windowInnerWidth, Div windowInnerHeight,
+            Div bodyElementWidth, Div bodyElementHeight, Div devicePixelRatio,
+            Div touchDevice) {
+        screenWidth.setText("" + details.getScreenWidth());
+        screenHeight.setText("" + details.getScreenHeight());
+        windowInnerWidth.setText("" + details.getWindowInnerWidth());
+        windowInnerHeight.setText("" + details.getWindowInnerHeight());
+        bodyElementWidth.setText("" + details.getBodyClientWidth());
+        bodyElementHeight.setText("" + details.getBodyClientHeight());
+        devicePixelRatio.setText("" + details.getDevicePixelRatio());
+        touchDevice.setText("" + details.isTouchDevice());
     }
 
     private Div createDiv(String id) {
