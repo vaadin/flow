@@ -177,7 +177,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         addDevBundleTheme(indexDocument, context);
-        applyThemeVariant(indexDocument, context);
+        applyThemeVariant(indexDocument, context,
+                indexHtmlResponse.getUI().orElse(null));
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -254,11 +255,20 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     }
 
     private void applyThemeVariant(Document indexDocument,
-            VaadinContext context) {
+            VaadinContext context, UI ui) {
+        Element htmlElement = indexDocument.head().parent();
+
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
-                indexDocument.head().parent().attr("theme", variant);
+                htmlElement.attr("theme", variant);
+                String style = htmlElement.attr("style");
+                String auraProperty = "--aura-color-scheme: " + variant + ";";
+                if (style != null && !style.isEmpty()) {
+                    htmlElement.attr("style", style + " " + auraProperty);
+                } else {
+                    htmlElement.attr("style", auraProperty);
+                }
             }
         });
     }

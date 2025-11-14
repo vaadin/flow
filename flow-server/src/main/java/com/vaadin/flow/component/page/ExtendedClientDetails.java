@@ -18,21 +18,32 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Provides extended information about the web browser, such as screen
  * resolution and time zone.
  * <p>
- * Please note that all information is fetched only once, and <em>not updated
- * automatically</em>. To retrieve updated values, you can execute JS with
- * {@link Page#executeJs(String, Object...)} and get the current value back.
+ * Browser details are automatically fetched on the first call to
+ * {@link Page#getExtendedClientDetails()} and cached for the lifetime of the
+ * UI. The fetch happens asynchronously, so the first call may return
+ * {@code null} while the data is being retrieved. To update the cached values
+ * with fresh data from the browser, use {@link #refresh(Consumer)}.
  *
  * @author Vaadin Ltd
  * @since 2.0
  */
 public class ExtendedClientDetails implements Serializable {
+    private final UI ui;
     private int screenWidth = -1;
     private int screenHeight = -1;
     private int windowInnerWidth = -1;
@@ -49,11 +60,15 @@ public class ExtendedClientDetails implements Serializable {
     private double devicePixelRatio = -1.0D;
     private String windowName;
     private String navigatorPlatform;
+    private String themeVariant;
+    private String themeName;
 
     /**
      * For internal use only. Updates all properties in the class according to
      * the given information.
      *
+     * @param ui
+     *            the UI instance that owns this ExtendedClientDetails
      * @param screenWidth
      *            Screen width
      * @param screenHeight
@@ -87,14 +102,19 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
+     * @param themeVariant
+     *            the current theme variant
+     * @param themeName
+     *            the theme name (e.g., "lumo", "aura")
      */
-    ExtendedClientDetails(String screenWidth, String screenHeight,
+    ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform) {
+            String navigatorPlatform, String themeVariant, String themeName) {
+        this.ui = ui;
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -170,6 +190,8 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
+        this.themeVariant = themeVariant;
+        this.themeName = themeName;
     }
 
     /**
@@ -382,4 +404,120 @@ public class ExtendedClientDetails implements Serializable {
                 || (navigatorPlatform != null
                         && navigatorPlatform.startsWith("iPod"));
     }
+
+    /**
+     * Gets the theme variant.
+     *
+     * @return the theme variant, or empty string if not set
+     */
+    public String getThemeVariant() {
+        return themeVariant;
+    }
+
+    /**
+     * Gets the theme name.
+     *
+     * @return the theme name (e.g., "lumo", "aura"), or empty string if not
+     *         detected
+     */
+    public String getThemeName() {
+        return themeName;
+    }
+
+    /**
+     * Updates the theme variant. For internal use only.
+     *
+     * @param themeVariant
+     *            the new theme variant
+     */
+    void setThemeVariant(String themeVariant) {
+        this.themeVariant = themeVariant == null ? "" : themeVariant;
+    }
+
+    /**
+     * Creates an ExtendedClientDetails instance from browser details JSON
+     * object. This is intended for internal use when browser details are
+     * provided as JSON (e.g., during UI initialization or refresh).
+     * <p>
+     * For internal use only.
+     *
+     * @param ui
+     *            the UI instance that owns this ExtendedClientDetails
+     * @param json
+     *            the JSON object containing browser details parameters
+     * @return a new ExtendedClientDetails instance
+     * @throws RuntimeException
+     *             if the JSON is not a valid object
+     */
+    public static ExtendedClientDetails fromJson(UI ui, JsonNode json) {
+        if (!(json instanceof ObjectNode)) {
+            throw new RuntimeException("Expected a JSON object");
+        }
+        final ObjectNode jsonObj = (ObjectNode) json;
+
+        // Note that JSON returned is a plain string -> string map, the actual
+        // parsing of the fields happens in ExtendedClient's constructor. If a
+        // field is missing or the wrong type, pass on null for default.
+        final Function<String, String> getStringElseNull = key -> {
+            final JsonNode jsValue = jsonObj.get(key);
+            if (jsValue != null
+                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                return jsValue.asString();
+            } else {
+                return null;
+            }
+        };
+
+        return new ExtendedClientDetails(ui, getStringElseNull.apply("v-sw"),
+                getStringElseNull.apply("v-sh"),
+                getStringElseNull.apply("v-ww"),
+                getStringElseNull.apply("v-wh"),
+                getStringElseNull.apply("v-bw"),
+                getStringElseNull.apply("v-bh"),
+                getStringElseNull.apply("v-tzo"),
+                getStringElseNull.apply("v-rtzo"),
+                getStringElseNull.apply("v-dstd"),
+                getStringElseNull.apply("v-dston"),
+                getStringElseNull.apply("v-tzid"),
+                getStringElseNull.apply("v-curdate"),
+                getStringElseNull.apply("v-td"),
+                getStringElseNull.apply("v-pr"),
+                getStringElseNull.apply("v-wn"),
+                getStringElseNull.apply("v-np"),
+                getStringElseNull.apply("v-theme"),
+                getStringElseNull.apply("v-theme-name"));
+    }
+
+    /**
+     * Refreshes the browser details by fetching updated values from the
+     * browser. The refresh happens asynchronously. The cached values in this
+     * instance will be updated when the browser responds, and then the provided
+     * callback will be invoked with the updated details.
+     *
+     * @param callback
+     *            a callback that will be invoked with the updated
+     *            ExtendedClientDetails when the refresh is complete
+     */
+    public void refresh(Consumer<ExtendedClientDetails> callback) {
+        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            ExtendedClientDetails details = fromJson(ui, json);
+            ui.getInternals().setExtendedClientDetails(details);
+            if (callback != null) {
+                callback.accept(details);
+            }
+        };
+        final SerializableConsumer<String> errorHandler = err -> {
+            throw new RuntimeException("Unable to retrieve extended "
+                    + "client details. JS error is '" + err + "'");
+        };
+        ui.getPage().executeJs(js).then(resultHandler, errorHandler);
+    }
+
+    private void handleExtendedClientDetailsResponse(JsonNode json) {
+        // Always update with fresh details from the response
+        ExtendedClientDetails details = fromJson(ui, json);
+        ui.getInternals().setExtendedClientDetails(details);
+    }
+
 }

@@ -84,76 +84,9 @@ public class PageTest {
     }
 
     @Test
-    public void retrieveExtendedClientDetails_twice_theSecondResultComesDifferentBeforeCachedValueIsSet() {
-        // given
-        final UI mockUI = new MockUI();
-        List<Runnable> invocations = new ArrayList<>();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Object... params) {
-                super.executeJs(expression, params);
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonNode> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("v-sw", "2560");
-                        params.put("v-sh", "1450");
-                        params.put("v-tzo", "-270");
-                        params.put("v-rtzo", "-210");
-                        params.put("v-dstd", "60");
-                        params.put("v-dston", "true");
-                        params.put("v-tzid", "Asia/Tehran");
-                        params.put("v-curdate", "1555000000000");
-                        params.put("v-td", "false");
-                        if (invocations.isEmpty()) {
-                            params.put("v-wn", "ROOT-1234567-0.1234567");
-                        } else {
-                            params.put("v-wn", "foo");
-                        }
-                        invocations.add(() -> resultHandler
-                                .accept(JacksonUtils.createObject(params,
-                                        JacksonUtils::createNode)));
-                    }
-                };
-            }
-        };
-        final AtomicInteger callbackInvocations = new AtomicInteger();
-        final Page.ExtendedClientDetailsReceiver receiver = details -> {
-            callbackInvocations.incrementAndGet();
-        };
-
-        // when
-        page.retrieveExtendedClientDetails(receiver);
-        page.retrieveExtendedClientDetails(receiver);
-
-        // then : before cached value is set the second retrieve is requested
-        invocations.forEach(Runnable::run);
-
-        Assert.assertEquals(2, callbackInvocations.get());
-
-        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals()
-                .getExtendedClientDetails().getWindowName());
-    }
-
-    @Test
     public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
         // given
-        final UI mockUI = new MockUI();
+        final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
@@ -193,6 +126,7 @@ public class PageTest {
                 };
             }
         };
+        mockUI.setPage(page);
         final AtomicInteger callbackInvocations = new AtomicInteger();
         final Page.ExtendedClientDetailsReceiver receiver = details -> {
             callbackInvocations.incrementAndGet();
@@ -365,5 +299,126 @@ public class PageTest {
 
         MatcherAssert.assertThat(capture.get(), CoreMatchers
                 .startsWith("if ($1 == '_self') this.stopApplication();"));
+    }
+
+    @Test
+    public void setThemeVariant_setsAttribute() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        AtomicReference<Object> capturedParam = new AtomicReference<>();
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                if (parameters.length > 0) {
+                    capturedParam.set(parameters[0]);
+                }
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant("dark");
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue(
+                js.contains("setProperty('--aura-color-scheme', $0)"));
+        Assert.assertEquals("dark", capturedParam.get());
+    }
+
+    @Test
+    public void setThemeVariant_null_removesAttribute() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant(null);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("removeAttribute('theme')"));
+        Assert.assertTrue(js.contains("removeProperty('--aura-color-scheme')"));
+        Assert.assertEquals("", mockUI.getInternals().getThemeVariant());
+    }
+
+    @Test
+    public void setThemeVariant_emptyString_removesAttribute() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setThemeVariant("");
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("removeAttribute('theme')"));
+        Assert.assertTrue(js.contains("removeProperty('--aura-color-scheme')"));
+        Assert.assertEquals("", mockUI.getInternals().getThemeVariant());
+    }
+
+    @Test
+    public void getThemeVariant_returnsEmptyString_whenNotSet() {
+        Page page = new Page(new MockUI());
+        Assert.assertEquals("", page.getThemeVariant());
+    }
+
+    @Test
+    public void getThemeVariant_returnsCachedValue() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails with theme variant
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, "dark", null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI);
+        Assert.assertEquals("dark", page.getThemeVariant());
+    }
+
+    @Test
+    public void setThemeVariant_updatesGetThemeVariant() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("dark");
+        Assert.assertEquals("dark", page.getThemeVariant());
+
+        page.setThemeVariant("light");
+        Assert.assertEquals("light", page.getThemeVariant());
+
+        page.setThemeVariant(null);
+        Assert.assertEquals("", page.getThemeVariant());
+
+        page.setThemeVariant("");
+        Assert.assertEquals("", page.getThemeVariant());
     }
 }
