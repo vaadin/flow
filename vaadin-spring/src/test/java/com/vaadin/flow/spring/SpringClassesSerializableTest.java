@@ -104,7 +104,6 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.security\\.AuthenticationContext",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.NavigationAccessControlConfigurer",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategy",
-                "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinAwareSecurityContextHolderStrategyConfiguration",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSecurityConfigurer",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinSecurityConfigurer(\\$.*)?",
                 "com\\.vaadin\\.flow\\.spring\\.security\\.VaadinDefaultRequestCache",
