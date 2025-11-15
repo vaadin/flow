@@ -19,11 +19,11 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
@@ -53,7 +53,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  * @author Vaadin Ltd
  *
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @ConditionalOnClass(WebSecurityCustomizer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringSecurityAutoConfiguration {
