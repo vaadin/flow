@@ -64,7 +64,6 @@ import org.springframework.web.context.WebApplicationContext;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 
 import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 import static org.hamcrest.Matchers.greaterThan;
@@ -242,13 +241,11 @@ class JwtStatelessAuthenticationTest {
 
     @TestConfiguration
     @EnableWebSecurity
-    @Import({ FakeController.class,
-            VaadinAwareSecurityContextHolderStrategyConfiguration.class })
+    @Import(FakeController.class)
     public static class SecurityConfig {
 
         @Bean("VaadinSecurityFilterChainBean")
-        SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-                throws Exception {
+        SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
             http.authorizeHttpRequests(auth -> auth.requestMatchers("/")
                     .permitAll().requestMatchers("/protected").authenticated());
             http.with(vaadin(), cfg -> {

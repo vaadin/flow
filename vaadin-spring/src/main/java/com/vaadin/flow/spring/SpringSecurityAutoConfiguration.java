@@ -18,14 +18,17 @@ package com.vaadin.flow.spring;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -40,6 +43,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
@@ -49,7 +53,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  * @author Vaadin Ltd
  *
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @ConditionalOnClass(WebSecurityCustomizer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringSecurityAutoConfiguration {
@@ -208,5 +212,17 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     AuthenticationContext authenticationContext() {
         return new AuthenticationContext();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+        return new VaadinAwareSecurityContextHolderStrategy();
+    }
+
+    @Bean
+    SmartInitializingSingleton securityContextHolderStrategyInitializer(
+            SecurityContextHolderStrategy strategy) {
+        return () -> SecurityContextHolder.setContextHolderStrategy(strategy);
     }
 }

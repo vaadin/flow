@@ -27,7 +27,6 @@ import org.apache.commons.io.IOUtils;
 import org.hamcrest.CoreMatchers;
 import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
@@ -117,11 +116,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("""
-                Requires VaadinAwareSecurityContextHolderStrategyConfiguration that
-                in a custom Spring Security configuration without Vaadin helpers might not be imported.
-                Leaving the test here just as a template in case of future improvements.
-            """)
     public void redirect_to_private_view_after_navigation_and_login() {
         open("");
         navigateTo("private", false);
@@ -286,11 +280,6 @@ public class AppViewIT extends AbstractIT {
     }
 
     @Test
-    @Ignore("""
-                Requires VaadinAwareSecurityContextHolderStrategyConfiguration that
-                in a custom Spring Security configuration without Vaadin helpers might not be imported.
-                Leaving the test here just as a template in case of future improvements.
-            """)
     public void navigate_in_thread_with_access() {
         open(LOGIN_PATH);
         loginAdmin();
