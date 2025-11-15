@@ -590,4 +590,133 @@ public class TaskRunNpmInstallTest {
                 .map(Path::toFile).forEach(File::delete);
     }
 
+    @Test
+    public void verifyPackageLockAndClean_lockfileVersion3_fileNotRemoved()
+            throws IOException {
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        String packageLockContent = """
+                {
+                  "name": "test-project",
+                  "version": "1.0.0",
+                  "lockfileVersion": 3,
+                  "requires": true,
+                  "packages": {}
+                }
+                """;
+        FileUtils.write(packageLockFile, packageLockContent,
+                StandardCharsets.UTF_8);
+
+        task.verifyPackageLockAndClean();
+
+        Assert.assertTrue(
+                "package-lock.json with version 3 should not be removed",
+                packageLockFile.exists());
+    }
+
+    @Test
+    public void verifyPackageLockAndClean_lockfileVersion2_fileRemoved()
+            throws IOException {
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        String packageLockContent = """
+                {
+                  "name": "test-project",
+                  "version": "1.0.0",
+                  "lockfileVersion": 2,
+                  "requires": true,
+                  "packages": {}
+                }
+                """;
+        FileUtils.write(packageLockFile, packageLockContent,
+                StandardCharsets.UTF_8);
+
+        task.verifyPackageLockAndClean();
+
+        Assert.assertFalse("package-lock.json with version 2 should be removed",
+                packageLockFile.exists());
+    }
+
+    @Test
+    public void verifyPackageLockAndClean_lockfileVersion1_fileRemoved()
+            throws IOException {
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        String packageLockContent = """
+                {
+                  "name": "test-project",
+                  "version": "1.0.0",
+                  "lockfileVersion": 1,
+                  "requires": true,
+                  "dependencies": {}
+                }
+                """;
+        FileUtils.write(packageLockFile, packageLockContent,
+                StandardCharsets.UTF_8);
+
+        task.verifyPackageLockAndClean();
+
+        Assert.assertFalse("package-lock.json with version 1 should be removed",
+                packageLockFile.exists());
+    }
+
+    @Test
+    public void verifyPackageLockAndClean_withSpaces_correctlyParsed()
+            throws IOException {
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        String packageLockContent = """
+                {
+                  "name": "test-project",
+                  "version": "1.0.0",
+                  "lockfileVersion"  :  3,
+                  "requires": true,
+                  "packages": {}
+                }
+                """;
+        FileUtils.write(packageLockFile, packageLockContent,
+                StandardCharsets.UTF_8);
+
+        task.verifyPackageLockAndClean();
+
+        Assert.assertTrue(
+                "package-lock.json with version 3 (with spaces) should not be removed",
+                packageLockFile.exists());
+    }
+
+    @Test
+    public void verifyPackageLockAndClean_pnpmEnabled_fileNotChecked()
+            throws IOException {
+        options.withEnablePnpm(true);
+        task = createTask(new ArrayList<>());
+
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        String packageLockContent = """
+                {
+                  "name": "test-project",
+                  "version": "1.0.0",
+                  "lockfileVersion": 2,
+                  "requires": true,
+                  "packages": {}
+                }
+                """;
+        FileUtils.write(packageLockFile, packageLockContent,
+                StandardCharsets.UTF_8);
+
+        task.verifyPackageLockAndClean();
+
+        Assert.assertTrue(
+                "package-lock.json should not be checked when pnpm is enabled",
+                packageLockFile.exists());
+    }
+
+    @Test
+    public void verifyPackageLockAndClean_noLockfile_doesNotThrow() {
+        File packageLockFile = new File(npmFolder, "package-lock.json");
+        Assert.assertFalse("package-lock.json should not exist",
+                packageLockFile.exists());
+
+        // Should not throw any exception
+        task.verifyPackageLockAndClean();
+
+        Assert.assertFalse("package-lock.json should still not exist",
+                packageLockFile.exists());
+    }
+
 }

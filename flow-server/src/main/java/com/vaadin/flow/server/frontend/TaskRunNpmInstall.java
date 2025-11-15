@@ -15,7 +15,9 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -27,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.FileUtils;
@@ -516,6 +520,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private void cleanUp() throws ExecutionFailedException {
+        verifyPackageLockAndClean();
+
         if (!options.getNodeModulesFolder().exists()) {
             return;
         }
@@ -541,6 +547,53 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 }
             }
         }
+    }
+
+    /**
+     * Check the lockfile lockversion to see if it is compatible with the used
+     * npm version. If the lockfile is too old delete it.
+     */
+    protected void verifyPackageLockAndClean() {
+        File packageLockFile = packageUpdater.getPackageLockFile();
+        if (!options.isEnablePnpm() && packageLockFile.exists()) {
+            boolean removeLockfile = false;
+            try (BufferedReader br = new BufferedReader(
+                    new FileReader(packageLockFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("\"lockfileVersion\"")) {
+                        int lockfileVersion = getLockfileVersion(line);
+                        removeLockfile = lockfileVersion != 3;
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                // NO-OP
+                packageUpdater.log()
+                        .debug("Failed to read the package-lock.json file.", e);
+            }
+            if (removeLockfile) {
+                packageUpdater.log().info(
+                        "Removing package-lock.json as it has the wrong lockfileVersion.");
+                try {
+                    FileUtils.delete(packageLockFile);
+                } catch (IOException e) {
+                    // NO-OP
+                    packageUpdater.log().warn(
+                            "Exception handling the package-lock.json file.",
+                            e);
+                }
+            }
+        }
+    }
+
+    private static int getLockfileVersion(String line) {
+        Matcher matcher = Pattern.compile("\"lockfileVersion\"\\s*:\\s*(\\d+)")
+                .matcher(line);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)
