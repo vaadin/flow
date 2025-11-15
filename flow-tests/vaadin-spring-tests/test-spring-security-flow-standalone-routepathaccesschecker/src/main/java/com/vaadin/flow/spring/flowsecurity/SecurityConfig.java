@@ -49,7 +49,6 @@ import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
@@ -85,13 +84,12 @@ public class SecurityConfig {
 
     @Bean
     AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer customRequestTransformer() {
-        return SpringAccessPathChecker.principalAwareRequestTransformer(
-                new PathPatternRequestTransformer());
+        return new PathPatternRequestTransformer();
     }
 
     @Bean
     public SecurityFilterChain webFilterChain(HttpSecurity http,
-            AuthenticationContext authenticationContext) throws Exception {
+            AuthenticationContext authenticationContext) {
         // Setup
         http.csrf(AbstractHttpConfigurer::disable); // simple for testing
         // purpose

@@ -263,23 +263,6 @@ public class RequestUtil {
                 .toArray(RequestMatcher[]::new);
     }
 
-    /**
-     * Wraps a given {@link RequestMatcher} to ensure requests are processed
-     * with the principal awareness provided by
-     * {@link RequestUtil.PrincipalAwareRequestWrapper}.
-     *
-     * @param matcher
-     *            the {@link RequestMatcher} to be wrapped
-     * @return a {@link RequestMatcher} that processes requests using a
-     *         {@link RequestUtil.PrincipalAwareRequestWrapper} for principal
-     *         awareness
-     */
-    public static RequestMatcher principalAwareRequestMatcher(
-            RequestMatcher matcher) {
-        return request -> matcher.matches(
-                RequestUtil.PrincipalAwareRequestWrapper.wrap(request));
-    }
-
     private boolean isSecuredFlowRouteInternal(HttpServletRequest request) {
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
