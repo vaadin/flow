@@ -308,13 +308,16 @@ jobs:
         working-directory: ../base-build
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env.BASE_REF }}"
+          echo "Running in $(pwd)"
           mvn clean install -B -ntp -DskipTests -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am
       - name: Use temporary flow version for PR
+        # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
-          echo "Switching back to PR branch and setting temporary version"
+          echo "Setting temporary version for PR branch"
           mvn versions:set -DnewVersion=1111.3.2-SNAPSHOT -B
       - name: Calculate API version difference
         run: |
+          echo "Running in $(pwd)"
           mvn clean install -B -ntp -e -V -pl=flow-server,flow-data,flow-html-components,vaadin-spring -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
