@@ -267,6 +267,10 @@ public class StreamReceiverHandler implements Serializable {
         return false;
     }
 
+    public void newMethod() {
+        // New method for demonstration
+    }
+
     /**
      * Used to stream plain file post (aka XHR2.post(File))
      * <p>
