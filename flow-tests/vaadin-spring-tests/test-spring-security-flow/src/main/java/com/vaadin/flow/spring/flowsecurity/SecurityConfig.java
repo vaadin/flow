@@ -31,6 +31,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -95,8 +96,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers("/admin-only/**").hasAnyRole(ROLE_ADMIN)
                 .requestMatchers("/public/**", "/error").permitAll()
@@ -167,8 +167,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SwitchUserFilter switchUserFilter() {
+    public SwitchUserFilter switchUserFilter(
+            SecurityContextHolderStrategy securityContextHolderStrategy) {
         SwitchUserFilter filter = new SwitchUserFilter();
+        filter.setSecurityContextHolderStrategy(securityContextHolderStrategy);
         filter.setUserDetailsService(userDetailsService());
         filter.setSwitchUserMatcher(PathPatternRequestMatcher
                 .pathPattern(HttpMethod.GET, "/impersonate"));
