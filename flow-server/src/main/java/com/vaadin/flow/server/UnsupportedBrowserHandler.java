@@ -18,8 +18,6 @@ package com.vaadin.flow.server;
 import java.io.IOException;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.server.HandlerHelper.RequestType;
@@ -55,15 +53,17 @@ public class UnsupportedBrowserHandler implements RequestHandler {
                 final URL applicationBrowserTooOldPage = resourceProvider
                         .getApplicationResource(BROWSER_TOO_OLD_HTML);
                 if (applicationBrowserTooOldPage != null) {
-                    IOUtils.copy(applicationBrowserTooOldPage,
-                            response.getOutputStream());
+                    try (var in = applicationBrowserTooOldPage.openStream()) {
+                        in.transferTo(response.getOutputStream());
+                    }
                     return true;
                 }
             }
         }
 
-        IOUtils.copy(getClass().getResourceAsStream(BROWSER_TOO_OLD_HTML),
-                response.getOutputStream());
+        try (var in = getClass().getResourceAsStream(BROWSER_TOO_OLD_HTML)) {
+            in.transferTo(response.getOutputStream());
+        }
         return true;
     }
 

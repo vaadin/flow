@@ -32,7 +32,6 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.function.Function;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -245,8 +244,8 @@ public class FeatureFlags implements Serializable {
             featureFlagFile.getParentFile().mkdirs(); // NOSONAR
         }
         try {
-            FileUtils.write(featureFlagFile, properties.toString(),
-                    StandardCharsets.UTF_8);
+            java.nio.file.Files.writeString(featureFlagFile.toPath(),
+                    properties.toString(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             getLogger().error("Unable to store feature flags", e);
         }

@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.io.IOUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.BaseJsonNode;
@@ -63,7 +62,8 @@ public class WebComponentGenerator {
     private static String getStringResource(String name) {
         try (InputStream resourceStream = WebComponentGenerator.class
                 .getResourceAsStream(name)) {
-            return IOUtils.toString(resourceStream, StandardCharsets.UTF_8);
+            return new String(resourceStream.readAllBytes(),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Couldn't load string resource '" + name + "'!", e);

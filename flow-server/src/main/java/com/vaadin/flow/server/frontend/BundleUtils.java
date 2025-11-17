@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -93,9 +91,9 @@ public final class BundleUtils {
         if (statsUrl == null) {
             return JacksonUtils.createObjectNode();
         }
-        try {
+        try (var in = statsUrl.openStream()) {
             return JacksonUtils.readTree(
-                    IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+                    new String(in.readAllBytes(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             getLogger().warn(
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);

@@ -41,8 +41,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -552,7 +550,14 @@ public class FrontendUtils {
 
             return content != null ? streamToString(content) : null;
         } finally {
-            IOUtils.closeQuietly(content);
+            // content is already closed by streamToString()
+            if (content != null) {
+                try {
+                    content.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
     }
 
@@ -1043,7 +1048,7 @@ public class FrontendUtils {
      * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
-        File home = FileUtils.getUserDirectory();
+        File home = new File(System.getProperty("user.home"));
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
                     + home.getAbsolutePath() + "' doesn't exist");
@@ -1065,7 +1070,7 @@ public class FrontendUtils {
             }
         }
         try {
-            FileUtils.forceMkdir(vaadinFolder);
+            Files.createDirectories(vaadinFolder.toPath());
             return vaadinFolder;
         } catch (IOException exception) {
             throw new UncheckedIOException(
@@ -1374,7 +1379,7 @@ public class FrontendUtils {
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
         if (indexTs.exists()) {
             try {
-                String indexTsContent = IOUtils.toString(indexTs.toURI(),
+                String indexTsContent = Files.readString(indexTs.toPath(),
                         UTF_8);
                 indexTsContent = StringUtil.removeComments(indexTsContent);
                 result = !indexTsContent.contains("@vaadin/router");
@@ -1409,7 +1414,7 @@ public class FrontendUtils {
                 Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
-                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    String viewContent = Files.readString(view);
                     viewContent = StringUtil.removeComments(viewContent);
                     if (!viewContent.isBlank()) {
                         return true;
@@ -1428,8 +1433,8 @@ public class FrontendUtils {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
                 try {
-                    String routesTsContent = IOUtils
-                            .toString(routesFile.toURI(), UTF_8);
+                    String routesTsContent = Files.readString(
+                            routesFile.toPath(), UTF_8);
                     return isRoutesContentUsingHillaViews(routesTsContent);
                 } catch (IOException e) {
                     getLogger().error(
@@ -1441,7 +1446,7 @@ public class FrontendUtils {
         File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         if (routesFile.exists()) {
             try {
-                String routesTsContent = IOUtils.toString(routesFile.toURI(),
+                String routesTsContent = Files.readString(routesFile.toPath(),
                         UTF_8);
                 return isRoutesTsxContentUsingHillaViews(routesTsContent);
             } catch (IOException e) {

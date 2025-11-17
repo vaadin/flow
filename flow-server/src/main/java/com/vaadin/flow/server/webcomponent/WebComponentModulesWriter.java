@@ -31,8 +31,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
@@ -121,7 +119,7 @@ public final class WebComponentModulesWriter implements Serializable {
         String fileName = tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
         try {
-            FileUtils.forceMkdir(generatedFile.getParent().toFile());
+            Files.createDirectories(generatedFile.getParent());
             Files.write(generatedFile,
                     Collections
                             .singletonList(generateModule(factory, themeName)),
