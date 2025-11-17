@@ -226,7 +226,7 @@ public class MutableTreeRevisionTest {
 
         Id inserted = Id.random();
         CommandResult result = applySingle(new SignalCommand.InsertCommand(
-                inserted, Id.ZERO, null, null, ListSignal.ListPosition.last()));
+                inserted, Id.ZERO, null, null, ListSignal.ListPosition.blast()));
 
         // Check result object
         assertTrue(result.accepted());
@@ -303,11 +303,11 @@ public class MutableTreeRevisionTest {
     void insertCommand_betweenAdjacent_insertedBetween() {
         Id other1 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other1, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id other2 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other2, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
@@ -325,11 +325,11 @@ public class MutableTreeRevisionTest {
     void insertCommand_betweenNonAdjacent_reject() {
         Id other1 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other1, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id other2 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other2, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
@@ -541,7 +541,7 @@ public class MutableTreeRevisionTest {
     @Test
     void adoptAtCommand_childMissing_reject() {
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
-                commandId, Id.ZERO, Id.random(), ListPosition.last()));
+                commandId, Id.ZERO, Id.random(), ListPosition.blast()));
 
         // Check result object
         assertFalse(result.accepted());
@@ -554,10 +554,10 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childAdoptsItsParent_reject() {
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
-                commandId, child, Id.ZERO, ListPosition.last()));
+                commandId, child, Id.ZERO, ListPosition.blast()));
 
         // Check result object
         assertFalse(result.accepted());
@@ -570,11 +570,11 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childAlreadyInParent_orderChanged() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, child, ListPosition.first()));
@@ -590,11 +590,11 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childInAnotherParent_adopted() {
         Id target = Id.random();
         applySingle(new SignalCommand.InsertCommand(target, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                ListSignal.ListPosition.blast()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, target, child, ListPosition.first()));
@@ -630,7 +630,7 @@ public class MutableTreeRevisionTest {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
-                commandId, alias, children.get(0), ListPosition.last()));
+                commandId, alias, children.get(0), ListPosition.blast()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -648,7 +648,7 @@ public class MutableTreeRevisionTest {
         Id alias = createAlias(children.get(0));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
-                commandId, Id.ZERO, alias, ListPosition.last()));
+                commandId, Id.ZERO, alias, ListPosition.blast()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -724,7 +724,7 @@ public class MutableTreeRevisionTest {
     void adoptAsCommand_listChild_removedFromList() {
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListPosition.last()));
+                ListPosition.blast()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAsCommand(
                 commandId, Id.ZERO, child, "key"));
@@ -823,11 +823,11 @@ public class MutableTreeRevisionTest {
     void removeCommand_childWithGrandchild_recursivelyRemoved() {
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListPosition.last()));
+                ListPosition.blast()));
 
         Id grandChild = Id.random();
         applySingle(new SignalCommand.InsertCommand(grandChild, child, null,
-                null, ListPosition.last()));
+                null, ListPosition.blast()));
 
         CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, child, null));
@@ -851,11 +851,11 @@ public class MutableTreeRevisionTest {
     void removeCommand_expectedParentNotParent_reject() {
         Id expectedParent = Id.random();
         applySingle(new SignalCommand.InsertCommand(expectedParent, Id.ZERO,
-                null, null, ListPosition.last()));
+                null, null, ListPosition.blast()));
 
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListPosition.last()));
+                ListPosition.blast()));
 
         CommandResult result = applySingle(new SignalCommand.RemoveCommand(
                 commandId, child, expectedParent));
@@ -871,7 +871,7 @@ public class MutableTreeRevisionTest {
     void removeCommand_expectedParentIsParent_childRemoved() {
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListPosition.last()));
+                ListPosition.blast()));
 
         CommandResult result = applySingle(
                 new SignalCommand.RemoveCommand(commandId, child, Id.ZERO));
@@ -1005,7 +1005,7 @@ public class MutableTreeRevisionTest {
     void clearCommand_nodeWithChildren_childrenRemoved() {
         Id listChild = Id.random();
         applySingle(new SignalCommand.InsertCommand(listChild, Id.ZERO, null,
-                null, ListPosition.last()));
+                null, ListPosition.blast()));
 
         Id mapChild = Id.random();
         applySingle(
@@ -1122,7 +1122,7 @@ public class MutableTreeRevisionTest {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
         CommandResult result = applySingle(new SignalCommand.PositionCondition(
-                commandId, Id.ZERO, children.get(0), ListPosition.last()));
+                commandId, Id.ZERO, children.get(0), ListPosition.blast()));
 
         assertTestResult(false, result);
     }
@@ -1132,7 +1132,7 @@ public class MutableTreeRevisionTest {
         List<Id> children = insertChildren(Id.ZERO, 2);
 
         CommandResult result = applySingle(new SignalCommand.PositionCondition(
-                commandId, Id.ZERO, children.get(1), ListPosition.last()));
+                commandId, Id.ZERO, children.get(1), ListPosition.blast()));
 
         assertTestResult(true, result);
     }
@@ -1575,7 +1575,7 @@ public class MutableTreeRevisionTest {
     void clearOwnerEvent_ownedListNode_removed() {
         Id node = Id.random();
         applySingle(new SignalCommand.InsertCommand(node, Id.ZERO,
-                revision.ownerId(), null, ListPosition.last()));
+                revision.ownerId(), null, ListPosition.blast()));
 
         assertEquals(node, revision.originalInserts().get(node).commandId());
 
@@ -1743,7 +1743,7 @@ public class MutableTreeRevisionTest {
     private List<Id> insertChildren(Id parent, int count) {
         return IntStream.range(0, count).mapToObj(ignore -> Id.random())
                 .peek(id -> applySingle(new SignalCommand.InsertCommand(id,
-                        parent, null, null, ListPosition.last())))
+                        parent, null, null, ListPosition.blast())))
                 .toList();
     }
 

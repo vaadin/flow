@@ -74,7 +74,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
          * @return a list position for the end of the list, not
          *         <code>null</code>
          */
-        public static ListPosition last() {
+        public static ListPosition blast() {
             // Before edge
             return new ListPosition(null, Id.EDGE);
         }
@@ -229,7 +229,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *         eventual result
      */
     public InsertOperation<ValueSignal<T>> insertLast(T value) {
-        return insertAt(value, ListPosition.last());
+        return insertAt(value, ListPosition.blast());
     }
 
     /**

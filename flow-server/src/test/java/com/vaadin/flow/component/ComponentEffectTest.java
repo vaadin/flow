@@ -520,7 +520,7 @@ public class ComponentEffectTest {
 
             // move it back to last
             taskList.moveTo(taskList.value().get(0),
-                    ListSignal.ListPosition.last());
+                    ListSignal.ListPosition.blast());
             assertEquals("last", ((TestComponent) parentComponent.getChildren()
                     .toList().get(2)).getValue());
 
@@ -570,7 +570,7 @@ public class ComponentEffectTest {
 
             // move first to last
             taskList.moveTo(taskList.value().get(0),
-                    ListSignal.ListPosition.last());
+                    ListSignal.ListPosition.blast());
 
             List<TestComponent> children = parentComponent.getChildren()
                     .map(TestComponent.class::cast).toList();

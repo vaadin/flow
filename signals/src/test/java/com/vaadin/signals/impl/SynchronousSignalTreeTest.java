@@ -381,7 +381,7 @@ public class SynchronousSignalTreeTest {
         });
 
         tree.commitSingleCommand(new SignalCommand.InsertCommand(childId,
-                Id.ZERO, null, new DoubleNode(2), ListPosition.last()));
+                Id.ZERO, null, new DoubleNode(2), ListPosition.blast()));
 
         // Nothing yet since root observer not invoked
         assertEquals(0, count.get());
