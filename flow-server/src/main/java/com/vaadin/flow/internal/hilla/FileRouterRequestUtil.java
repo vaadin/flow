@@ -36,5 +36,7 @@ public interface FileRouterRequestUtil {
      */
     boolean isRouteAllowed(HttpServletRequest request);
 
-    boolean thisIs_0_1_0_change();
+    default boolean thisIs_1_0_0_change() {
+        return false;
+    }
 }
