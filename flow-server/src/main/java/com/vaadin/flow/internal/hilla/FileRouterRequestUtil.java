@@ -35,4 +35,6 @@ public interface FileRouterRequestUtil {
      * @return {@code true} if the request is allowed, {@code false} otherwise
      */
     boolean isRouteAllowed(HttpServletRequest request);
+
+    boolean thisIs_0_1_0_change();
 }
