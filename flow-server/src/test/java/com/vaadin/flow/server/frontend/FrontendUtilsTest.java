@@ -41,13 +41,13 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
 import static com.vaadin.flow.server.frontend.NodeUpdater.DEPENDENCIES;
+import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -454,7 +454,7 @@ public class FrontendUtilsTest {
 
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
         new TaskRunNpmInstall(nodeUpdater, options).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));

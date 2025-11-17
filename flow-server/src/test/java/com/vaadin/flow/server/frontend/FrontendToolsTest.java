@@ -50,12 +50,12 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;

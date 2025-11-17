@@ -13,23 +13,25 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.frontendtools.installer;
 
 /**
- * Exception indicating a failure during downloaded archive verification.
+ * Exception indicating a failure during extraction of an archive file.
+ * <p>
+ * Derived from eirslett/frontend-maven-plugin
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  */
-public final class VerificationException extends Exception {
+public class ArchiveExtractionException extends Exception {
 
     /**
-     * Exceptioon with message.
+     * Exception with message.
      *
      * @param message
      *            exception message
      */
-    public VerificationException(String message) {
+    public ArchiveExtractionException(String message) {
         super(message);
     }
 
@@ -41,7 +43,7 @@ public final class VerificationException extends Exception {
      * @param cause
      *            cause for exception
      */
-    VerificationException(String message, Throwable cause) {
+    public ArchiveExtractionException(String message, Throwable cause) {
         super(message, cause);
     }
 }

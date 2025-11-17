@@ -40,7 +40,6 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -48,6 +47,8 @@ import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 @NotThreadSafe
@@ -123,7 +124,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         options.withHomeNodeExecRequired(true).withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
         options.withPostinstallPackages(POSTINSTALL_PACKAGES);
 
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
@@ -450,7 +451,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT))
                 .withCiBuild(true);
         return new TaskRunNpmInstall(updater, options);
     }
@@ -461,7 +462,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT))
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT))
                 .withPostinstallPackages(additionalPostInstall);
         return new TaskRunNpmInstall(updater, options);
     }
@@ -471,7 +472,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         options.withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
         return new TaskRunNpmInstall(updater, options);
     }
 

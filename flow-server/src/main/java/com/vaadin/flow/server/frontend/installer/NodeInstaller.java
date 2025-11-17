@@ -38,6 +38,10 @@ import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.ArchiveExtractor;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
+import com.vaadin.frontendtools.installer.VerificationException;
 
 /**
  * Node installation class.
@@ -50,10 +54,6 @@ import com.vaadin.flow.server.frontend.FrontendVersion;
 public class NodeInstaller {
 
     public static final String INSTALL_PATH = "/node";
-
-    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
-
-    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
 

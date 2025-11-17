@@ -21,9 +21,6 @@ import java.nio.file.Paths;
 
 import com.vaadin.flow.server.frontend.FrontendVersion;
 
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;
-
 /**
  * Platform contains information about system architecture and OS.
  * <p>
@@ -33,6 +30,10 @@ import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL
  *
  */
 public class Platform {
+    
+    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
+
+    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
     enum Architecture {
         X86, X64, PPC64LE, S390X, ARM64, ARMV7L;
@@ -69,7 +70,7 @@ public class Platform {
         }
     }
 
-    enum OS {
+    public enum OS {
         WINDOWS, MAC, LINUX, SUN_OS;
 
         /**

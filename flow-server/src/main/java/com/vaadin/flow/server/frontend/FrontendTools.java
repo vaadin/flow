@@ -38,13 +38,13 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.InstallationException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 
 /**
  * Provides access to frontend tools (Node.js and npm, pnpm, bun) and optionally

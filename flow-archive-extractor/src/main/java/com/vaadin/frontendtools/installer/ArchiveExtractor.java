@@ -13,37 +13,31 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.frontendtools.installer;
+
+import java.io.File;
+import java.io.Serializable;
 
 /**
- * Exception indicating a failure during extraction of an archive file.
+ * Handle extracting file archives.
  * <p>
  * Derived from eirslett/frontend-maven-plugin
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  */
-public class ArchiveExtractionException extends Exception {
+public interface ArchiveExtractor extends Serializable {
 
     /**
-     * Exception with message.
+     * Extract archive contents to given destination.
      *
-     * @param message
-     *            exception message
+     * @param archive
+     *            archive file to extract
+     * @param destinationDirectory
+     *            destination directory to extract files to
+     * @throws ArchiveExtractionException
+     *             exception thrown for failure during extraction
      */
-    public ArchiveExtractionException(String message) {
-        super(message);
-    }
-
-    /**
-     * Exceptioon with message and cause.
-     *
-     * @param message
-     *            exception message
-     * @param cause
-     *            cause for exception
-     */
-    public ArchiveExtractionException(String message, Throwable cause) {
-        super(message, cause);
-    }
+    void extract(File archive, File destinationDirectory)
+            throws ArchiveExtractionException;
 }

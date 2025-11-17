@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;

@@ -29,7 +29,6 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;

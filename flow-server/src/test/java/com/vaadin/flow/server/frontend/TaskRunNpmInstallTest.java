@@ -47,7 +47,6 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -60,6 +59,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
@@ -111,7 +111,7 @@ public class TaskRunNpmInstallTest {
         options.withPostinstallPackages(additionalPostInstall);
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         return new TaskRunNpmInstall(getNodeUpdater(), options);
     }
@@ -304,7 +304,7 @@ public class TaskRunNpmInstallTest {
         options.withHomeNodeExecRequired(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));
