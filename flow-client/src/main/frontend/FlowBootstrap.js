@@ -144,10 +144,6 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
       };
       apps[appId] = app;
 
-      if (!window.name) {
-        window.name = appId + '-' + Math.random();
-      }
-
       var widgetset = 'client';
       widgetsets[widgetset] = {
         pendingApps: []

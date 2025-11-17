@@ -22,6 +22,8 @@ import java.util.stream.Stream;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.hotswap.HotswapClassEvent;
+import com.vaadin.flow.hotswap.HotswapClassSessionEvent;
 import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.SessionRouteRegistry;
@@ -57,12 +59,14 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
      *
      */
     @Override
-    public boolean onClassLoadEvent(VaadinService vaadinService,
-            Set<Class<?>> classes, boolean redefined) {
+    public void onClassesChange(HotswapClassEvent event) {
+        boolean redefined = event.isRedefined();
+        Set<Class<?>> classes = event.getChangedClasses();
         Set<Class<?>> addedClasses = redefined ? Set.of() : classes;
         Set<Class<?>> modifiedClasses = redefined ? classes : Set.of();
         Set<Class<?>> removedClasses = Set.of();
 
+        VaadinService vaadinService = event.getVaadinService();
         if (hasComponentClasses(addedClasses, modifiedClasses,
                 removedClasses)) {
             ApplicationRouteRegistry appRegistry = ApplicationRouteRegistry
@@ -92,12 +96,14 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
                         ((AbstractRouteRegistry) appRegistry).getLayouts());
             }
         }
-        return false;
     }
 
     @Override
-    public boolean onClassLoadEvent(VaadinSession session,
-            Set<Class<?>> classes, boolean redefined) {
+    public void onClassesChange(HotswapClassSessionEvent event) {
+        boolean redefined = event.isRedefined();
+        Set<Class<?>> classes = event.getChangedClasses();
+        VaadinSession session = event.getVaadinSession();
+
         Set<Class<?>> addedClasses = redefined ? Set.of() : classes;
         Set<Class<?>> modifiedClasses = redefined ? classes : Set.of();
         Set<Class<?>> removedClasses = Set.of();
@@ -108,7 +114,6 @@ public class RouteRegistryHotswapper implements VaadinHotswapper {
                     SessionRouteRegistry.getSessionRegistry(session), Set.of(),
                     modifiedClasses, removedClasses);
         }
-        return false;
     }
 
     @SafeVarargs

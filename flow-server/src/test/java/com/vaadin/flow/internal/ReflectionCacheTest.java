@@ -67,6 +67,35 @@ public class ReflectionCacheTest {
     }
 
     @Test
+    public void cacheClearEntry() {
+        ReflectionCache<Number, Object> cache = new ReflectionCache<>(
+                type -> type);
+
+        cache.get(Integer.class);
+        cache.get(Double.class);
+        cache.get(Long.class);
+        Assert.assertTrue(cache.contains(Integer.class));
+        Assert.assertTrue(cache.contains(Double.class));
+        Assert.assertTrue(cache.contains(Long.class));
+
+        cache.clear(Double.class);
+        Assert.assertTrue(cache.contains(Integer.class));
+        Assert.assertFalse(cache.contains(Double.class));
+        Assert.assertTrue(cache.contains(Long.class));
+
+        cache.clear(Integer.class);
+        Assert.assertFalse(cache.contains(Integer.class));
+        Assert.assertFalse(cache.contains(Double.class));
+        Assert.assertTrue(cache.contains(Long.class));
+
+        cache.clear(Long.class);
+        Assert.assertFalse(cache.contains(Integer.class));
+        Assert.assertFalse(cache.contains(Double.class));
+        Assert.assertFalse(cache.contains(Long.class));
+
+    }
+
+    @Test
     public void clearAll() {
         ReflectionCache<Object, Object> cache1 = new ReflectionCache<>(
                 type -> type);
@@ -80,6 +109,32 @@ public class ReflectionCacheTest {
 
         Assert.assertFalse(cache1.contains(Object.class));
         Assert.assertFalse(cache2.contains(Object.class));
+    }
+
+    @Test
+    public void clearAllForGivenType() {
+        ReflectionCache<Number, Object> cache1 = new ReflectionCache<>(
+                type -> type);
+
+        ReflectionCache<Number, Object> cache2 = new ReflectionCache<>(
+                type -> type);
+
+        cache1.get(Integer.class);
+        cache1.get(Double.class);
+        cache2.get(Float.class);
+        cache2.get(Double.class);
+
+        ReflectionCache.clearAll(Integer.class);
+
+        Assert.assertFalse(cache1.contains(Integer.class));
+        Assert.assertTrue(cache1.contains(Double.class));
+        Assert.assertTrue(cache2.contains(Float.class));
+        Assert.assertTrue(cache2.contains(Double.class));
+
+        ReflectionCache.clearAll(Double.class);
+        Assert.assertFalse(cache1.contains(Double.class));
+        Assert.assertTrue(cache2.contains(Float.class));
+        Assert.assertFalse(cache2.contains(Double.class));
     }
 
     @Test
