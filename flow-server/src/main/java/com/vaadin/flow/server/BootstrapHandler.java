@@ -1564,7 +1564,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
                 "Frontend development bundle is expected to be in the project"
-                        + " or on the classpath, but not found.");
+                        + " or on the classpath, but not found."
+                        + " Add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev' to let Vaadin build the development bundle automatically.");
         return JacksonUtils.readTree(statsJson);
     }
 
