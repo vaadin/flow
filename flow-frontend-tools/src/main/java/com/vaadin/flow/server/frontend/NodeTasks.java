@@ -295,7 +295,7 @@ public class NodeTasks implements FallibleCommand {
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             commands.add(new TaskGenerateReactFiles(options));
-            if (FrontendUtils.isTailwindCssEnabled(options)) {
+            if (options.getFeatureFlags().isEnabled("tailwindCss")) {
                 commands.add(new TaskGenerateTailwindCss(options));
             }
             if (!options.isProductionMode()) {

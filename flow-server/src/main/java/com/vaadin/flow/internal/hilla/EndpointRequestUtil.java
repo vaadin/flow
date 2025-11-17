@@ -79,6 +79,24 @@ public interface EndpointRequestUtil extends Serializable {
      */
     @Deprecated
     static boolean isHillaAvailable(Object classFinder) {
+        if (classFinder != null) {
+            try {
+                // Use reflection to call loadClass method on the classFinder
+                // to support test mocking
+                java.lang.reflect.Method loadClass = classFinder.getClass()
+                        .getMethod("loadClass", String.class);
+                loadClass.invoke(classFinder, HILLA_ENDPOINT_CLASS);
+                return true;
+            } catch (java.lang.reflect.InvocationTargetException e) {
+                if (e.getCause() instanceof ClassNotFoundException) {
+                    return false;
+                }
+                // If something else went wrong, fall back to the default
+                // implementation
+            } catch (Exception e) {
+                // If reflection fails, fall back to the default implementation
+            }
+        }
         return isHillaAvailable();
     }
 }

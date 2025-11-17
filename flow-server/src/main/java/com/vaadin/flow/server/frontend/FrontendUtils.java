@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -413,7 +412,7 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
+            return new String(inputStream.readAllBytes())
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
@@ -1488,7 +1487,8 @@ public class FrontendUtils {
     @Deprecated
     public static boolean isHillaUsed(File frontendDirectory,
             Object classFinder) {
-        return isHillaUsed(frontendDirectory);
+        return EndpointRequestUtil.isHillaAvailable(classFinder)
+                && isHillaViewsUsed(frontendDirectory);
     }
 
     private static boolean isRoutesContentUsingHillaViews(
@@ -1569,20 +1569,6 @@ public class FrontendUtils {
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());
-    }
-
-    /**
-     * Checks if integration with Tailwind CSS framework is enabled.
-     *
-     * @param options
-     *            the build options
-     * @return true if Tailwind CSS integration is enabled, false otherwise
-     * @deprecated This method has been moved to flow-frontend-tools. Check feature flags directly at build time.
-     */
-    @Deprecated
-    public static boolean isTailwindCssEnabled(Object options) {
-        throw new UnsupportedOperationException(
-                "This method requires build-time dependencies and has been moved to flow-frontend-tools");
     }
 
 }
