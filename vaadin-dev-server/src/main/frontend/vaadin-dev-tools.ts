@@ -1,6 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property, query, state } from 'lit/decorators.js';
-import { handleLicenseMessage, licenseCheckFailed, licenseInit, Product } from './License';
+import { handleLicenseMessage, licenseCheckOk, licenseInit, Product } from './License';
 import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
@@ -838,7 +838,7 @@ export class VaadinDevTools extends LitElement {
     if (this.frontendConnection) {
       this.frontendConnection.send('checkLicense', productInfo);
     } else {
-      licenseCheckFailed({ message: 'Internal error: no connection', product: productInfo });
+      licenseCheckOk(productInfo);
     }
   }
 
