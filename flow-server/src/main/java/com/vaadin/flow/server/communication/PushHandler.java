@@ -25,7 +25,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -664,7 +663,7 @@ public class PushHandler {
                 return;
             }
 
-            String msg = IOUtils.toString(reader);
+            String msg = readerToString(reader);
             liveReload.get().onMessage(resource, msg);
         } catch (IOException e) {
             getLogger().error(
@@ -702,5 +701,15 @@ public class PushHandler {
      */
     public int getLongPollingSuspendTimeout() {
         return longPollingSuspendTimeout;
+    }
+
+    private static String readerToString(Reader reader) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        char[] buffer = new char[8192];
+        int length;
+        while ((length = reader.read(buffer)) != -1) {
+            sb.append(buffer, 0, length);
+        }
+        return sb.toString();
     }
 }

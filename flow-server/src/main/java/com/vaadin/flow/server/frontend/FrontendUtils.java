@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -42,8 +41,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -62,12 +59,10 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -352,7 +347,7 @@ public class FrontendUtils {
             + "%nPlease install a new one either:"
             + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
             + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
+            + "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm -DnodeVersion=\"v24.10.0\" %n" //
             + DISABLE_CHECK //
             + "%n======================================================================================================%n";
 
@@ -415,7 +410,7 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
+            return new String(inputStream.readAllBytes())
                     .replaceAll("\\R", System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
@@ -555,7 +550,14 @@ public class FrontendUtils {
 
             return content != null ? streamToString(content) : null;
         } finally {
-            IOUtils.closeQuietly(content);
+            // content is already closed by streamToString()
+            if (content != null) {
+                try {
+                    content.close();
+                } catch (IOException e) {
+                    // Ignore
+                }
+            }
         }
     }
 
@@ -730,13 +732,28 @@ public class FrontendUtils {
      * @param finder
      *            the class finder to use for locating the resource
      * @return resource as String or {@code null} if not found
+     * @deprecated Use {@link #getJarResourceString(String)} instead
      */
+    @Deprecated
     public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
-        URL resource = finder
+            Object finder) {
+        return getJarResourceString(jarImport);
+    }
+
+    /**
+     * Get resource from JAR package.
+     *
+     * @param jarImport
+     *            jar file to get (no resource folder should be added)
+     * @return resource as String or {@code null} if not found
+     */
+    public static String getJarResourceString(String jarImport) {
+        ClassLoader classLoader = Thread.currentThread()
+                .getContextClassLoader();
+        URL resource = classLoader
                 .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         if (resource == null) {
-            resource = finder.getResource(
+            resource = classLoader.getResource(
                     COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
         }
 
@@ -1031,7 +1048,7 @@ public class FrontendUtils {
      * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
-        File home = FileUtils.getUserDirectory();
+        File home = new File(System.getProperty("user.home"));
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
                     + home.getAbsolutePath() + "' doesn't exist");
@@ -1053,7 +1070,7 @@ public class FrontendUtils {
             }
         }
         try {
-            FileUtils.forceMkdir(vaadinFolder);
+            Files.createDirectories(vaadinFolder.toPath());
             return vaadinFolder;
         } catch (IOException exception) {
             throw new UncheckedIOException(
@@ -1362,7 +1379,7 @@ public class FrontendUtils {
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
         if (indexTs.exists()) {
             try {
-                String indexTsContent = IOUtils.toString(indexTs.toURI(),
+                String indexTsContent = Files.readString(indexTs.toPath(),
                         UTF_8);
                 indexTsContent = StringUtil.removeComments(indexTsContent);
                 result = !indexTsContent.contains("@vaadin/router");
@@ -1397,7 +1414,7 @@ public class FrontendUtils {
                 Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
-                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    String viewContent = Files.readString(view);
                     viewContent = StringUtil.removeComments(viewContent);
                     if (!viewContent.isBlank()) {
                         return true;
@@ -1416,8 +1433,8 @@ public class FrontendUtils {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
                 try {
-                    String routesTsContent = IOUtils
-                            .toString(routesFile.toURI(), UTF_8);
+                    String routesTsContent = Files.readString(
+                            routesFile.toPath(), UTF_8);
                     return isRoutesContentUsingHillaViews(routesTsContent);
                 } catch (IOException e) {
                     getLogger().error(
@@ -1429,7 +1446,7 @@ public class FrontendUtils {
         File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         if (routesFile.exists()) {
             try {
-                String routesTsContent = IOUtils.toString(routesFile.toURI(),
+                String routesTsContent = Files.readString(routesFile.toPath(),
                         UTF_8);
                 return isRoutesTsxContentUsingHillaViews(routesTsContent);
             } catch (IOException e) {
@@ -1470,9 +1487,11 @@ public class FrontendUtils {
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
+     * @deprecated Use {@link #isHillaUsed(File)} instead
      */
+    @Deprecated
     public static boolean isHillaUsed(File frontendDirectory,
-            ClassFinder classFinder) {
+            Object classFinder) {
         return EndpointRequestUtil.isHillaAvailable(classFinder)
                 && isHillaViewsUsed(frontendDirectory);
     }
@@ -1533,10 +1552,13 @@ public class FrontendUtils {
      * @param options
      *            the build options
      * @return true if the React module is available, false otherwise
+     * @deprecated This method has been moved to flow-frontend-tools. Use the classloader directly or check for the class at build time.
      */
-    public static boolean isReactModuleAvailable(Options options) {
+    @Deprecated
+    public static boolean isReactModuleAvailable(Object options) {
+        // Check using classloader directly
         try {
-            options.getClassFinder().loadClass(
+            Thread.currentThread().getContextClassLoader().loadClass(
                     "com.vaadin.flow.component.react.ReactAdapterComponent");
             return true;
         } catch (ClassNotFoundException e) {
@@ -1552,18 +1574,6 @@ public class FrontendUtils {
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());
-    }
-
-    /**
-     * Checks if integration with Tailwind CSS framework is enabled.
-     *
-     * @param options
-     *            the build options
-     * @return true if Tailwind CSS integration is enabled, false otherwise
-     */
-    public static boolean isTailwindCssEnabled(Options options) {
-        return options.getFeatureFlags()
-                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
     }
 
 }

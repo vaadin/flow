@@ -33,7 +33,6 @@ import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -92,8 +91,11 @@ public class FileIOUtils {
         log().debug("writing to file '{}' because content does not match",
                 file);
 
-        FileUtils.forceMkdirParent(file);
-        FileUtils.writeStringToFile(file, content, StandardCharsets.UTF_8);
+        File parentFile = file.getParentFile();
+        if (parentFile != null) {
+            Files.createDirectories(parentFile.toPath());
+        }
+        Files.writeString(file.toPath(), content, StandardCharsets.UTF_8);
         return true;
     }
 
@@ -105,7 +107,7 @@ public class FileIOUtils {
         if (!file.exists()) {
             return null;
         }
-        return FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+        return Files.readString(file.toPath(), StandardCharsets.UTF_8);
     }
 
     /**

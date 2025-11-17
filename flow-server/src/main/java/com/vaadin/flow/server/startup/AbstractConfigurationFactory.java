@@ -24,7 +24,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.UsageStatistics;
@@ -262,7 +261,7 @@ public class AbstractConfigurationFactory implements Serializable {
             if (location != null) {
                 File tokenFile = new File(location);
                 if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile,
+                    json = java.nio.file.Files.readString(tokenFile.toPath(),
                             StandardCharsets.UTF_8);
                 }
             }

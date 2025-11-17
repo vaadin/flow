@@ -32,7 +32,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
@@ -262,7 +261,7 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
                 context)) {
-            return IOUtils.toString(inlineResourceStream,
+            return new String(inlineResourceStream.readAllBytes(),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new IllegalStateException(String

@@ -25,8 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -93,9 +91,9 @@ public final class BundleUtils {
         if (statsUrl == null) {
             return JacksonUtils.createObjectNode();
         }
-        try {
+        try (var in = statsUrl.openStream()) {
             return JacksonUtils.readTree(
-                    IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+                    new String(in.readAllBytes(), StandardCharsets.UTF_8));
         } catch (IOException e) {
             getLogger().warn(
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);
@@ -156,81 +154,5 @@ public final class BundleUtils {
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(BundleUtils.class);
-    }
-
-    /**
-     * Copy package-lock.json/.yaml file from existing dev-bundle for building
-     * new bundle.
-     *
-     * @param options
-     *            task options
-     */
-    public static void copyPackageLockFromBundle(Options options) {
-        String lockFile;
-        if (options.isEnablePnpm()) {
-            lockFile = Constants.PACKAGE_LOCK_YAML;
-        } else {
-            lockFile = Constants.PACKAGE_LOCK_JSON;
-        }
-        File packageLock = new File(options.getNpmFolder(), lockFile);
-        if (packageLock.exists()) {
-            // NO-OP due to existing package-lock
-            return;
-        }
-
-        try {
-            copyAppropriatePackageLock(options, packageLock);
-        } catch (IOException ioe) {
-            getLogger().error(
-                    "Failed to copy existing `" + lockFile + "` to use", ioe);
-        }
-
-    }
-
-    private static void copyAppropriatePackageLock(Options options,
-            File packageLock) throws IOException {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
-                Constants.DEV_BUNDLE_LOCATION);
-        String packageLockFile = options.isEnablePnpm()
-                ? Constants.PACKAGE_LOCK_YAML
-                : Constants.PACKAGE_LOCK_JSON;
-        if (devBundleFolder.exists()) {
-            File devPackageLock = new File(devBundleFolder, packageLockFile);
-            if (devPackageLock.exists()) {
-                FileUtils.copyFile(devPackageLock, packageLock);
-                return;
-            }
-        }
-        boolean hillaUsed = FrontendUtils.isHillaUsed(
-                options.getFrontendDirectory(), options.getClassFinder());
-        URL resource = null;
-        if (hillaUsed) {
-            resource = options.getClassFinder().getResource(
-                    DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
-        }
-        if (resource == null) {
-            // If Hilla is in used but the hybrid lock file is not found in the
-            // dev-bundle, fallback to the standard.
-            // Could happen if Flow, dev-bundle and Vaadin maven plugin are not
-            // in sync because of project configuration.
-            if (hillaUsed) {
-                getLogger().debug(
-                        "The '{}' template for hybrid application could not be found in dev-bundle JAR. Fallback to standard template.",
-                        packageLockFile);
-            }
-            resource = options.getClassFinder()
-                    .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
-        }
-        if (resource != null) {
-            FileUtils.write(packageLock,
-                    IOUtils.toString(resource, StandardCharsets.UTF_8),
-                    StandardCharsets.UTF_8);
-        } else {
-            getLogger().debug(
-                    "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",
-                    packageLockFile);
-        }
     }
 }

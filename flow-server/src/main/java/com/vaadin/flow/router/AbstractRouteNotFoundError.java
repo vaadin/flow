@@ -25,7 +25,6 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
@@ -104,7 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
-            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+            return new String(stream.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);

@@ -74,10 +74,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-io</groupId>
-      <artifactId>commons-io</artifactId>
-    </dependency>
-    <dependency>
       <groupId>tools.jackson.core</groupId>
       <artifactId>jackson-core</artifactId>
     </dependency>
@@ -106,19 +102,14 @@
       <version>1.2.0.vaadin1</version>
     </dependency>
 
-    <!-- Download libraries -->
+    <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.28.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
+      <scope>test</scope>
     </dependency>
-    <!-- TESTING DEPENDENCIES -->
+
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-generic</artifactId>
@@ -184,6 +175,13 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.karaf.tooling</groupId>

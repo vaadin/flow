@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -509,14 +508,30 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String[] allowedHosts = hostsAllowed.split(",");
 
             for (String allowedHost : allowedHosts) {
-                if (FilenameUtils.wildcardMatch(remoteAddress,
-                        allowedHost.trim())) {
+                if (wildcardMatch(remoteAddress, allowedHost.trim())) {
                     return true;
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Matches a string against a wildcard pattern. Supports * (any characters)
+     * and ? (single character) wildcards.
+     *
+     * @param str
+     *            the string to test
+     * @param pattern
+     *            the wildcard pattern
+     * @return true if the string matches the pattern
+     */
+    private static boolean wildcardMatch(String str, String pattern) {
+        String regex = pattern.replace(".", "\\.")
+                .replace("*", ".*")
+                .replace("?", ".");
+        return str.matches(regex);
     }
 
     private void addInitialFlow(ObjectNode initialJson, Document indexDocument,

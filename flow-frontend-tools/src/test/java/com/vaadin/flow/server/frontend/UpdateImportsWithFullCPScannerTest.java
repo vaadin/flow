@@ -22,7 +22,6 @@ import java.util.List;
 import org.junit.Test;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
-import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 public class UpdateImportsWithFullCPScannerTest

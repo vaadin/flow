@@ -27,7 +27,6 @@ import java.util.regex.MatchResult;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -112,7 +111,7 @@ public class CssBundler {
 
     private static String inlineImports(File themeFolder, File cssFile,
             Set<String> assetAliases) throws IOException {
-        String content = FileUtils.readFileToString(cssFile,
+        String content = java.nio.file.Files.readString(cssFile.toPath(),
                 StandardCharsets.UTF_8);
 
         Matcher urlMatcher = urlPattern.matcher(content);

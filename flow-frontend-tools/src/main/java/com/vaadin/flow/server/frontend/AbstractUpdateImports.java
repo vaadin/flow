@@ -310,7 +310,7 @@ abstract class AbstractUpdateImports implements Runnable {
         List<CssData> eagerCssData = new ArrayList<>();
         List<CssData> appShellCssData = new ArrayList<>();
         List<CssData> webComponentCssData = new ArrayList<>();
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (options.getFeatureFlags().isEnabled("tailwindCss")) {
             appShellCssData.add(new CssData(TAILWIND_IMPORT, null, null, null));
         }
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {

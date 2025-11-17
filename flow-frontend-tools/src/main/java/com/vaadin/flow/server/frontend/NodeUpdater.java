@@ -310,7 +310,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (options.getFeatureFlags().isEnabled("tailwindCss")) {
             dependencies
                     .putAll(readDependencies("tailwindcss", "dependencies"));
         }
@@ -377,7 +377,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (options.getFeatureFlags().isEnabled("tailwindCss")) {
             defaults.putAll(readDependencies("tailwindcss", "devDependencies"));
         }
 

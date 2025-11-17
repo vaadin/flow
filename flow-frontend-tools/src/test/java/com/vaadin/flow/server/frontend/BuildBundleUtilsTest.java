@@ -43,7 +43,7 @@ import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
-public class BundleUtilsTest {
+public class BuildBundleUtilsTest {
 
     private List<AutoCloseable> closeOnTearDown = new ArrayList<>();
 
@@ -153,7 +153,7 @@ public class BundleUtilsTest {
 
         FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
@@ -187,7 +187,7 @@ public class BundleUtilsTest {
         final String packageLockContent = "{ \"bundleFile\"}";
         FileUtils.write(devPackageLockJson, packageLockContent);
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -222,7 +222,7 @@ public class BundleUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -262,7 +262,7 @@ public class BundleUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(jarHybridPackageLock.toURI().toURL());
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -297,7 +297,7 @@ public class BundleUtilsTest {
                 DEV_BUNDLE_JAR_PATH + "hybrid-" + Constants.PACKAGE_LOCK_JSON))
                 .thenReturn(null);
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_JSON),
@@ -335,7 +335,7 @@ public class BundleUtilsTest {
         FileUtils.write(devPackageLock, packageLockContent);
         FileUtils.write(devPackageLockJson, "{ \"json\"}");
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils.readFileToString(
                 new File(options.getNpmFolder(), Constants.PACKAGE_LOCK_YAML),
@@ -366,7 +366,7 @@ public class BundleUtilsTest {
 
         FileUtils.write(devPackageLockJson, "{ \"bundleFile\"}");
 
-        BundleUtils.copyPackageLockFromBundle(options);
+        BuildBundleUtils.copyPackageLockFromBundle(options);
 
         final String packageLockContents = FileUtils
                 .readFileToString(packageLockFile, StandardCharsets.UTF_8);
