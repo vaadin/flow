@@ -114,7 +114,7 @@ public class Options implements Serializable {
     /**
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
-     * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     * mirror. Defaults to {@link Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
     private URI nodeDownloadRoot = URI
             .create(Platform.guess().getNodeDownloadRoot());
@@ -527,7 +527,7 @@ public class Options implements Serializable {
     /**
      * Sets the download node.js URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
-     * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     * mirror. Defaults to {@link Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      *
      * @param nodeDownloadRoot
      *            the new download URL to set, not null.

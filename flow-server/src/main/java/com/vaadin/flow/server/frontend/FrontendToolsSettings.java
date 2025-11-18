@@ -97,7 +97,7 @@ public class FrontendToolsSettings implements Serializable {
      *
      * @param nodeDownloadRoot
      *            node download root uri, default is
-     *            {@value NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}
+     *            {@value Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT}
      */
     public void setNodeDownloadRoot(URI nodeDownloadRoot) {
         this.nodeDownloadRoot = nodeDownloadRoot;

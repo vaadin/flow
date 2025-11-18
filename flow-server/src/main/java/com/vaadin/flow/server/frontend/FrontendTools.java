@@ -239,7 +239,7 @@ public class FrontendTools {
      *            Download Node.js from this URL. Handy in heavily firewalled
      *            corporate environments where the Node.js download can be
      *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
+     *            {@link Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
      * @param forceAlternativeNode
      *            force usage of node executable from alternative directory
      * @param useGlobalPnpm
