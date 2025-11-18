@@ -97,14 +97,6 @@ public class SecurityConfig {
         // configuration provided by VaadinSecurityConfigurer
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
-                // Ensures that SpringPathAccessChecker does not fail when matchers get Principal from HTTP request
-                .requestMatchers(request -> {
-                    Principal principal = request.getUserPrincipal();
-                    if (principal == null) {
-                        // Do nothing, just avoid IDE complain about not used variable
-                    }
-                    return false; // no need to match rule, we just want to access principal.
-                }).denyAll()
                 // Permit access to static resources
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                 .permitAll()

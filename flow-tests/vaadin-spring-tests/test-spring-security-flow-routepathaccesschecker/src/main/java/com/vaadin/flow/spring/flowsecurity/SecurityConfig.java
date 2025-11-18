@@ -66,21 +66,6 @@ public class SecurityConfig {
                 .withRoutePathAccessChecker();
     }
 
-    /*
-     * Simulates Hilla implementation that accesses request principal.
-     */
-    @Bean
-    FileRouterRequestUtil sutbFileRouterRequestUtil() {
-        return request -> {
-            var principal = request.getUserPrincipal();
-            if (principal != null) {
-                // do nothing, just prevent IDE from complaining about unused
-                // variable
-            }
-            return false;
-        };
-    }
-
     public String getLogoutSuccessUrl() {
         String logoutSuccessUrl;
         String mapping = vaadinConfigurationProperties.getUrlMapping();
@@ -97,8 +82,7 @@ public class SecurityConfig {
     }
 
     @Bean
-    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http)
-            throws Exception {
+    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
         http.authorizeHttpRequests(cfg -> cfg
                 .requestMatchers("/admin-only/**", "/admin")
                 .hasAnyRole(ROLE_ADMIN).requestMatchers("/private")
