@@ -25,6 +25,7 @@ import java.util.Set;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
+import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
 
@@ -57,7 +58,7 @@ public interface PluginAdapterBase {
     /**
      * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
-     * @return {@link boolean}
+     * @return true if eager server load should happen
      */
     boolean eagerServerLoad();
 
@@ -183,7 +184,7 @@ public interface PluginAdapterBase {
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to null which will cause the downloader to use
-     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     * {@link Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      *
