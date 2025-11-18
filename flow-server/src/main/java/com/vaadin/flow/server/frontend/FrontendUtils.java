@@ -459,7 +459,7 @@ public class FrontendUtils {
          * Ensure the location of the command to run is in PATH. This is in some
          * cases needed by npm to locate a node binary.
          */
-        File commandFile = new File(command.get(0));
+        File commandFile = new File(command.getFirst());
         if (commandFile.isAbsolute()) {
             String commandPath = commandFile.getParent();
             Map<String, String> environment = processBuilder.environment();
@@ -999,10 +999,31 @@ public class FrontendUtils {
      */
     public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
             Process process) {
-        CompletableFuture<String> stdOut = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getInputStream()));
-        CompletableFuture<String> stdErr = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        return consumeProcessStreams(process, null);
+    }
+
+    /**
+     * Reads input and error stream from the given process asynchronously using the provided executor.
+     * If {@code executor} is {@code null}, the default {@link CompletableFuture}
+     * executor will be used (typically {@code ForkJoinPool.commonPool()}).
+     *
+     * @param process the process whose streams should be read
+     * @param executor the executor to use for reading streams concurrently; if null, use default
+     * @return a {@link CompletableFuture} that returns the string contents of the process input and error streams
+     *         when both are consumed, wrapped into a {@link Pair}
+     */
+    public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
+            Process process, java.util.concurrent.Executor executor) {
+        CompletableFuture<String> stdOut = (executor == null)
+                ? CompletableFuture.supplyAsync(
+                        () -> streamToString(process.getInputStream()))
+                : CompletableFuture.supplyAsync(
+                        () -> streamToString(process.getInputStream()), executor);
+        CompletableFuture<String> stdErr = (executor == null)
+                ? CompletableFuture.supplyAsync(
+                        () -> streamToString(process.getErrorStream()))
+                : CompletableFuture.supplyAsync(
+                        () -> streamToString(process.getErrorStream()), executor);
         return CompletableFuture.allOf(stdOut, stdErr).thenApply(
                 unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
     }
