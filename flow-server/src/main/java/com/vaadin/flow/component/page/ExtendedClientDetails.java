@@ -18,7 +18,6 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import tools.jackson.databind.JsonNode;
@@ -37,7 +36,8 @@ import com.vaadin.flow.server.VaadinSession;
  * {@link Page#getExtendedClientDetails()} and cached for the lifetime of the
  * UI. The fetch happens asynchronously, so the first call may return
  * {@code null} while the data is being retrieved. To update the cached values
- * with fresh data from the browser, use {@link #refresh(Consumer)}.
+ * with fresh data from the browser, use
+ * {@link #refresh(SerializableConsumer)}}.
  *
  * @author Vaadin Ltd
  * @since 2.0
