@@ -23,7 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
@@ -488,11 +487,11 @@ public class Page implements Serializable {
      * If details are not yet available, this method returns a placeholder
      * instance with default values (dimensions set to -1). If you need to fetch
      * the actual values in such cases, use
-     * {@link ExtendedClientDetails#refresh(Consumer)} to explicitly retrieve
-     * updated values from the browser.
+     * {@link ExtendedClientDetails#refresh(SerializableConsumer)} to explicitly
+     * retrieve updated values from the browser.
      * <p>
      * To refresh the cached values with updated data from the browser at any
-     * time, use {@link ExtendedClientDetails#refresh(Consumer)}.
+     * time, use {@link ExtendedClientDetails#refresh(SerializableConsumer)}.
      *
      * @return the extended client details (never {@code null})
      */
@@ -508,7 +507,8 @@ public class Page implements Serializable {
      * @param receiver
      *            the callback to which the details are provided
      * @deprecated Use {@link #getExtendedClientDetails()} to get the cached
-     *             details, or {@link ExtendedClientDetails#refresh(Consumer)}
+     *             details, or
+     *             {@link ExtendedClientDetails#refresh(SerializableConsumer)}
      *             to refresh the cached values.
      */
     @Deprecated
