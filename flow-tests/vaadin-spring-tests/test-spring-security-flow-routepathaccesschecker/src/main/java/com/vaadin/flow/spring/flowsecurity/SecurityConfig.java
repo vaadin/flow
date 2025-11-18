@@ -34,7 +34,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
