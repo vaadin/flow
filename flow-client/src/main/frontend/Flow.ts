@@ -546,7 +546,7 @@ export class Flow {
       const auraScheme = getComputedStyle(document.documentElement).getPropertyValue('--aura-color-scheme').trim();
       themeAttr = auraScheme || '';
     }
-    params['v-theme-variant'] = themeAttr;
+    params['v-tv'] = themeAttr;
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';
@@ -555,7 +555,7 @@ export class Flow {
     } else if (computedStyle.getPropertyValue('--vaadin-aura-theme').trim()) {
       themeName = 'aura';
     }
-    params['v-theme-name'] = themeName;
+    params['v-tn'] = themeName;
 
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};

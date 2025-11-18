@@ -484,8 +484,8 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-pr"),
                 getStringElseNull.apply("v-wn"),
                 getStringElseNull.apply("v-np"),
-                getStringElseNull.apply("v-theme-variant"),
-                getStringElseNull.apply("v-theme-name"));
+                getStringElseNull.apply("v-tv"),
+                getStringElseNull.apply("v-tn"));
     }
 
     /**
