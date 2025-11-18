@@ -113,7 +113,8 @@ public class Page implements Serializable {
      * @return the theme variant, or empty string if not set
      */
     public String getThemeVariant() {
-        return getExtendedClientDetails().getThemeVariant();
+        String variant = getExtendedClientDetails().getThemeVariant();
+        return variant == null ? "" : variant;
     }
 
     /**
