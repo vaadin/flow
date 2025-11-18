@@ -19,10 +19,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 /**
  * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated
  * folder.
@@ -61,7 +57,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream devModeStream = getClass()
                 .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
-            return IOUtils.toString(devModeStream, UTF_8);
+            return new String(devModeStream.readAllBytes());
         }
     }
 

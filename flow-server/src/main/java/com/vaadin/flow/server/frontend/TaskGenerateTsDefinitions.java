@@ -22,12 +22,9 @@ import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and
@@ -289,7 +286,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     private String getTemplateContent(String suffix) throws IOException {
         try (InputStream tsDefinitionStream = getClass()
                 .getResourceAsStream(TS_DEFINITIONS + suffix)) {
-            return IOUtils.toString(tsDefinitionStream, UTF_8);
+            return new String(tsDefinitionStream.readAllBytes());
         }
     }
 

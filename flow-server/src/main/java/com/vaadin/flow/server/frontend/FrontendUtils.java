@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -42,8 +41,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -69,7 +66,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -415,8 +411,8 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
-                    .replaceAll("\\R", System.lineSeparator());
+            return new String(handledStream.readAllBytes()).replaceAll("\\R",
+                    System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             getLogger().warn("Couldn't close template input stream", exception);
@@ -555,7 +551,7 @@ public class FrontendUtils {
 
             return content != null ? streamToString(content) : null;
         } finally {
-            IOUtils.closeQuietly(content);
+            FileIOUtils.closeQuietly(content);
         }
     }
 
@@ -1031,7 +1027,7 @@ public class FrontendUtils {
      * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
-        File home = FileUtils.getUserDirectory();
+        File home = FileIOUtils.getUserDirectory();
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
                     + home.getAbsolutePath() + "' doesn't exist");
@@ -1053,7 +1049,7 @@ public class FrontendUtils {
             }
         }
         try {
-            FileUtils.forceMkdir(vaadinFolder);
+            Files.createDirectories(vaadinFolder.toPath());
             return vaadinFolder;
         } catch (IOException exception) {
             throw new UncheckedIOException(
@@ -1362,8 +1358,7 @@ public class FrontendUtils {
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
         if (indexTs.exists()) {
             try {
-                String indexTsContent = IOUtils.toString(indexTs.toURI(),
-                        UTF_8);
+                String indexTsContent = Files.readString(indexTs.toPath());
                 indexTsContent = StringUtil.removeComments(indexTsContent);
                 result = !indexTsContent.contains("@vaadin/router");
             } catch (IOException e) {
@@ -1397,7 +1392,7 @@ public class FrontendUtils {
                 Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
-                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    String viewContent = Files.readString(view);
                     viewContent = StringUtil.removeComments(viewContent);
                     if (!viewContent.isBlank()) {
                         return true;
@@ -1416,8 +1411,8 @@ public class FrontendUtils {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
                 try {
-                    String routesTsContent = IOUtils
-                            .toString(routesFile.toURI(), UTF_8);
+                    String routesTsContent = Files
+                            .readString(routesFile.toPath());
                     return isRoutesContentUsingHillaViews(routesTsContent);
                 } catch (IOException e) {
                     getLogger().error(
@@ -1429,8 +1424,7 @@ public class FrontendUtils {
         File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         if (routesFile.exists()) {
             try {
-                String routesTsContent = IOUtils.toString(routesFile.toURI(),
-                        UTF_8);
+                String routesTsContent = Files.readString(routesFile.toPath());
                 return isRoutesTsxContentUsingHillaViews(routesTsContent);
             } catch (IOException e) {
                 getLogger().error(

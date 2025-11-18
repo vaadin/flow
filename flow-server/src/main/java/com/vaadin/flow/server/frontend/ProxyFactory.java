@@ -24,8 +24,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
-
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 /**
@@ -57,7 +55,7 @@ public class ProxyFactory {
      */
     public static List<ProxyConfig.Proxy> getProxies(File projectDirectory) {
         File projectNpmrc = new File(projectDirectory, ".npmrc");
-        File userNpmrc = new File(FileUtils.getUserDirectory(), ".npmrc");
+        File userNpmrc = new File(FileIOUtils.getUserDirectory(), ".npmrc");
         List<ProxyConfig.Proxy> proxyList = new ArrayList<>();
 
         proxyList.addAll(readProxySettingsFromSystemProperties());

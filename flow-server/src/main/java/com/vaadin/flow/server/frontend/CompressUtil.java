@@ -20,14 +20,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
-
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for compression and decompression of folders and files.
@@ -176,7 +173,7 @@ public class CompressUtil {
                 return null;
             }
             try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                return IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+                return new String(inputStream.readAllBytes());
             }
         } catch (ZipException e) {
             throw new IOException(e);

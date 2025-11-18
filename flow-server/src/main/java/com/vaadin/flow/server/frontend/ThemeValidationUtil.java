@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,8 +33,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -184,16 +183,23 @@ public class ThemeValidationUtil {
 
             List<String> themeComponentsCssFiles = new ArrayList<>();
             for (Path dir : themeComponentsDirs) {
-                FileUtils.listFiles(dir.toFile(), new String[] { "css" }, true)
-                        .stream()
-                        .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
-                                hashesWithNoComponentCssMatches,
-                                frontendDirectory, themeFile))
-                        .map(f -> frontendDirectory.toPath()
-                                .relativize(f.toPath()).toString()
-                                .replaceAll("\\\\", "/"))
-                        .collect(Collectors
-                                .toCollection(() -> themeComponentsCssFiles));
+                try {
+                    FileIOUtils
+                            .listFiles(
+                                    dir.toFile(), new String[] { "css" }, true)
+                            .stream()
+                            .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
+                                    hashesWithNoComponentCssMatches,
+                                    frontendDirectory, themeFile))
+                            .map(f -> frontendDirectory.toPath()
+                                    .relativize(f.toPath()).toString()
+                                    .replaceAll("\\\\", "/"))
+                            .collect(Collectors.toCollection(
+                                    () -> themeComponentsCssFiles));
+                } catch (IOException e) {
+                    throw new IllegalStateException(
+                            "Could not list theme CSS files in " + dir, e);
+                }
             }
             if (!themeComponentsCssFiles.isEmpty()) {
                 BundleValidationUtil.logChangedFiles(themeComponentsCssFiles,
@@ -284,7 +290,8 @@ public class ThemeValidationUtil {
             for (String themeJson : themeJsons) {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
-                String content = IOUtils.toString(byteContent, "UTF-8");
+                String content = new String(byteContent,
+                        StandardCharsets.UTF_8);
                 content = content.replaceAll("\\r\\n", "\n");
 
                 Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
@@ -392,7 +399,7 @@ public class ThemeValidationUtil {
             final String contentHash;
             try {
                 contentHash = BundleValidationUtil.calculateHash(
-                        FileUtils.readFileToString(frontendResource,
+                        Files.readString(frontendResource.toPath(),
                                 StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
