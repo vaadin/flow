@@ -149,6 +149,7 @@ public class BuildFrontendMojoTest {
                 "flow_resources");
 
         defaultJavaSource = new File(".", "src/test/java");
+        File defaultJavaResource = new File(".", "src/test/resources");
         openApiJsonFile = new File(npmFolder,
                 "target/classes/com/vaadin/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "src/main/frontend/generated");
@@ -185,6 +186,8 @@ public class BuildFrontendMojoTest {
                         "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "javaResourceFolder",
+                defaultJavaResource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
@@ -671,11 +674,11 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void noTokenFile_noTokenFileShouldBeCreated()
+    public void noTokenFile_tokenFileShouldBeCreated()
             throws MojoExecutionException, MojoFailureException {
         mojo.execute();
 
-        Assert.assertFalse(tokenFile.exists());
+        Assert.assertTrue(tokenFile.exists());
     }
 
     @Test
