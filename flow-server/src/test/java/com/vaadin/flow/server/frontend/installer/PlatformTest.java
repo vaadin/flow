@@ -25,10 +25,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.FrontendVersion;
+
 import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.frontend.installer.Platform.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;
-
 
 public class PlatformTest {
 

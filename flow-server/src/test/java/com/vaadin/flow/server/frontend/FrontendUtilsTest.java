@@ -453,8 +453,7 @@ public class FrontendUtilsTest {
         };
 
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(
-                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .withNodeDownloadRoot(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
         new TaskRunNpmInstall(nodeUpdater, options).execute();
 
         FrontendUtils.deleteNodeModules(new File(npmFolder, "node_modules"));

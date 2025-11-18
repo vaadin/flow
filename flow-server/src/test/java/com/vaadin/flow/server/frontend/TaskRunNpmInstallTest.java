@@ -110,8 +110,7 @@ public class TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         options.withPostinstallPackages(additionalPostInstall);
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(
-                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .withNodeDownloadRoot(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         return new TaskRunNpmInstall(getNodeUpdater(), options);
     }
@@ -303,8 +302,7 @@ public class TaskRunNpmInstallTest {
 
         options.withHomeNodeExecRequired(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(
-                        URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .withNodeDownloadRoot(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));

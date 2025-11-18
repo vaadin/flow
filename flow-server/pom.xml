@@ -14,7 +14,7 @@
   <dependencies>
 
     <!-- Project dependencies -->
-    
+
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-frontend-tools</artifactId>

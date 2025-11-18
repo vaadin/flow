@@ -30,7 +30,7 @@ import com.vaadin.flow.server.frontend.FrontendVersion;
  *
  */
 public class Platform {
-    
+
     public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
 
     public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";

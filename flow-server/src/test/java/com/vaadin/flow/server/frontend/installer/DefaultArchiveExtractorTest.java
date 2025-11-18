@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend.installer;
 
-import com.vaadin.frontendtools.installer.ArchiveExtractionException;
-import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -33,6 +31,9 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
 
 public class DefaultArchiveExtractorTest {
 
