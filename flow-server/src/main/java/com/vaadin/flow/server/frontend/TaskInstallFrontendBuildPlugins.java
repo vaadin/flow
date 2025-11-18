@@ -19,9 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -86,8 +85,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
         if (pluginTargetFolder.exists()
                 && new File(pluginTargetFolder, PACKAGE_JSON).exists()) {
-            String packageFile = FileUtils.readFileToString(
-                    new File(pluginTargetFolder, PACKAGE_JSON),
+            String packageFile = Files.readString(
+                    new File(pluginTargetFolder, PACKAGE_JSON).toPath(),
                     StandardCharsets.UTF_8);
             final JsonNode targetJson = JacksonUtils.readTree(packageFile);
             if (targetJson.has("update")
@@ -100,7 +99,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         }
 
         // Create target folder if necessary
-        FileUtils.forceMkdir(pluginTargetFolder);
+        Files.createDirectories(pluginTargetFolder.toPath());
 
         // copy only files named in package.json { files }
         final JsonNode files = packageJson.get("files");
@@ -116,9 +115,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     private void copyIfNeeded(File targetFile, String sourceResource)
             throws IOException {
-        String content = IOUtils.toString(
-                FrontendPluginsUtil.getResourceUrl(sourceResource),
-                StandardCharsets.UTF_8);
+        String content = new String(FrontendPluginsUtil
+                .getResourceAsStream(sourceResource).readAllBytes());
         FileIOUtils.writeIfChanged(targetFile, content);
     }
 

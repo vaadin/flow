@@ -19,11 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.
@@ -50,7 +47,7 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream swStream = getClass()
                 .getResourceAsStream(SERVICE_WORKER_SRC)) {
-            return IOUtils.toString(swStream, UTF_8);
+            return new String(swStream.readAllBytes());
         }
     }
 

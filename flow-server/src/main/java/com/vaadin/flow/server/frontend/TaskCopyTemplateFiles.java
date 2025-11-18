@@ -19,10 +19,10 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Set;
-
-import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.Template;
@@ -83,10 +83,10 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                             options.getResourceOutputDirectory(),
                             Constants.TEMPLATE_DIRECTORY);
                 }
-                File target = new File(templateDirectory, path).getParentFile();
-                target.mkdirs();
+                Path targetFile = templateDirectory.toPath().resolve(path);
                 try {
-                    FileUtils.copyFileToDirectory(source, target);
+                    Files.createDirectories(targetFile.getParent());
+                    Files.copy(source.toPath(), targetFile);
                 } catch (IOException e) {
                     throw new ExecutionFailedException(e);
                 }

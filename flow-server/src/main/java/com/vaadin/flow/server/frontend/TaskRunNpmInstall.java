@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -33,7 +34,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
 
@@ -486,7 +486,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 ".npmrc");
         boolean shouldWrite;
         if (npmrcFile.exists()) {
-            List<String> lines = FileUtils.readLines(npmrcFile,
+            List<String> lines = Files.readAllLines(npmrcFile.toPath(),
                     StandardCharsets.UTF_8);
             if (lines.stream().anyMatch(line -> line
                     .contains("NOTICE: this is an auto-generated file"))) {
@@ -512,7 +512,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     throw new IOException(
                             "Couldn't find template npmrc in the classpath");
                 }
-                FileUtils.copyInputStreamToFile(content, npmrcFile);
+                Files.copy(content, npmrcFile.toPath());
                 packageUpdater.log().debug("Generated pnpm configuration: '{}'",
                         npmrcFile);
             }
@@ -576,7 +576,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 packageUpdater.log().info(
                         "Removing package-lock.json as it has the wrong lockfileVersion.");
                 try {
-                    FileUtils.delete(packageLockFile);
+                    FileIOUtils.delete(packageLockFile);
                 } catch (IOException e) {
                     // NO-OP
                     packageUpdater.log().warn(

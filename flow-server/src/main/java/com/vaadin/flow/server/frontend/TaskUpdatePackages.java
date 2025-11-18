@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -31,8 +30,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -201,8 +198,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = coreVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(new String(content.readAllBytes())),
                     platformDependencies);
         }
 
@@ -215,8 +211,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = vaadinVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(new String(content.readAllBytes())),
                     platformDependencies);
         }
 
@@ -559,8 +554,8 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
         try (InputStream vaadinVersionsStream = coreVersionsResource
                 .openStream()) {
-            final JsonNode versionsJson = JacksonUtils.readTree(IOUtils
-                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
+            final JsonNode versionsJson = JacksonUtils
+                    .readTree(new String(vaadinVersionsStream.readAllBytes()));
             if (versionsJson.has("platform")) {
                 return Optional.of(versionsJson.get("platform").asString());
             }
@@ -617,7 +612,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         File packageLockFile = getPackageLockFile();
         if (packageLockFile.exists()) {
-            FileUtils.forceDelete(getPackageLockFile());
+            FileIOUtils.delete(getPackageLockFile());
         }
         return result;
     }

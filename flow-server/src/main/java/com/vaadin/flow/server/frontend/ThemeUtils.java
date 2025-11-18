@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -27,8 +28,6 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -94,7 +93,7 @@ public class ThemeUtils {
             }
 
             try {
-                String themeJsContent = FileUtils.readFileToString(themeJs,
+                String themeJsContent = Files.readString(themeJs.toPath(),
                         StandardCharsets.UTF_8);
                 Matcher matcher = THEME_GENERATED_FILE_PATTERN
                         .matcher(themeJsContent);
@@ -139,8 +138,7 @@ public class ThemeUtils {
                                 Paths.get(Constants.APPLICATION_THEME_ROOT,
                                         themeName, "theme.json").toString());
                 if (themeJsonUrl != null) {
-                    content = IOUtils.toString(themeJsonUrl,
-                            StandardCharsets.UTF_8);
+                    content = FileIOUtils.urlToString(themeJsonUrl);
                 }
             } else {
                 File frontendFolder = FrontendUtils
@@ -148,7 +146,7 @@ public class ThemeUtils {
                 File themeFolder = getThemeFolder(frontendFolder, themeName);
                 File themeJsonFile = new File(themeFolder, "theme.json");
                 if (themeJsonFile.exists()) {
-                    content = FileUtils.readFileToString(themeJsonFile,
+                    content = Files.readString(themeJsonFile.toPath(),
                             StandardCharsets.UTF_8);
                 }
             }
@@ -193,7 +191,7 @@ public class ThemeUtils {
         if (themeJsonFile.exists()) {
             String content;
             try {
-                content = FileUtils.readFileToString(themeJsonFile,
+                content = Files.readString(themeJsonFile.toPath(),
                         StandardCharsets.UTF_8);
                 return Optional.of(JacksonUtils.readTree(content));
             } catch (IOException e) {

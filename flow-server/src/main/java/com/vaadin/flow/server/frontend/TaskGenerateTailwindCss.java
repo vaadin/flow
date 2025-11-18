@@ -19,10 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-
 import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>tailwind.css</code> if it is missing in the generated frontend
@@ -60,7 +57,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(TAILWIND_CSS)) {
-            var template = IOUtils.toString(indexStream, UTF_8);
+            var template = new String(indexStream.readAllBytes());
             template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
                     relativeSourcePath);
             return template;
