@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -309,7 +310,7 @@ public final class Reflector {
         record FilterableArtifact(Artifact artifact, boolean scan) {
         }
 
-        Map<String, FilterableArtifact> projectDependencies = new HashMap<>(
+        Map<String, FilterableArtifact> projectDependencies = 
                 project.getArtifacts().stream()
                         // Exclude all maven artifacts to prevent class loading
                         // clash
@@ -321,7 +322,9 @@ public final class Reflector {
                                 shouldScan.test(artifact)))
                         .collect(Collectors.toMap(
                                 item -> keyMapper.apply(item.artifact),
-                                Function.identity())));
+                                Function.identity(),
+                                (a, b) -> a,
+                                LinkedHashMap::new));
 
         if (mojoExecution != null) {
 
