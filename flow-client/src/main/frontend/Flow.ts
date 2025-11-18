@@ -542,9 +542,9 @@ export class Flow {
     /* Theme variant from HTML element - supports both Lumo and Aura */
     let themeAttr = document.documentElement.getAttribute('theme');
     if (!themeAttr) {
-      // If no theme attribute, check for Aura color scheme CSS property
-      const auraScheme = getComputedStyle(document.documentElement).getPropertyValue('--aura-color-scheme').trim();
-      themeAttr = auraScheme || '';
+      // If no theme attribute, check for native color-scheme property
+      const colorScheme = getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim();
+      themeAttr = colorScheme || '';
     }
     params['v-tv'] = themeAttr;
     /* Theme name - detect which theme is in use */
