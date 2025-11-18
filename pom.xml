@@ -29,6 +29,7 @@
 
   <modules>
     <module>flow</module>
+    <module>flow-archive-extractor</module>
     <module>flow-server</module>
     <module>flow-react</module>
     <module>flow-polymer-template</module>
@@ -50,7 +51,6 @@
     <module>vaadin-spring</module>
     <module>flow-polymer2lit</module>
     <module>signals</module>
-    <module>flow-archive-extractor</module>
   </modules>
   <scm>
     <connection>scm:https:https://github.com/vaadin/flow.git</connection>

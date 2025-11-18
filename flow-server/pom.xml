@@ -17,7 +17,7 @@
 
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-frontend-tools</artifactId>
+      <artifactId>flow-archive-extractor</artifactId>
       <version>${project.version}</version>
       <!-- Note, ideally vaadin-server should not depend this module at all
            and development time tooling shared with plugins should end up here.
