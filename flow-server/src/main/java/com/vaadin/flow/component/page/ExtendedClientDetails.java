@@ -459,7 +459,7 @@ public class ExtendedClientDetails implements Serializable {
      *            a callback that will be invoked with the updated
      *            ExtendedClientDetails when the refresh is complete
      */
-    public void refresh(Consumer<ExtendedClientDetails> callback) {
+    public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
         final SerializableConsumer<JsonNode> resultHandler = json -> {
             ExtendedClientDetails details = fromJson(ui, json);
