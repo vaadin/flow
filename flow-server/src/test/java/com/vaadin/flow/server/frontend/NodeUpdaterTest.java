@@ -240,7 +240,7 @@ public class NodeUpdaterTest {
                 "7.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.3", packageJson
+        Assert.assertEquals("12.0.0", packageJson
                 .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
     }
 
