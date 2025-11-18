@@ -544,7 +544,8 @@ export class Flow {
     if (!themeAttr) {
       // If no theme attribute, check for native color-scheme property
       const colorScheme = getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim();
-      themeAttr = colorScheme || '';
+      // "normal" is the default value and means no variant is set
+      themeAttr = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
     }
     params['v-tv'] = themeAttr;
     /* Theme name - detect which theme is in use */
