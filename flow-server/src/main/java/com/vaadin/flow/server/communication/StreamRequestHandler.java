@@ -142,8 +142,8 @@ public class StreamRequestHandler implements RequestHandler {
         session.lock();
         try {
             if (blockInert(elementRequest, node)
-                    || blockDisabled(elementRequest, node)
-                    || !node.isAttached() || !node.isVisible()) {
+                    || blockDisabled(elementRequest, node) || !node.isAttached()
+                    || !node.isVisible()) {
                 response.sendError(HttpStatusCode.FORBIDDEN.getCode(),
                         "Resource not available");
                 return;
