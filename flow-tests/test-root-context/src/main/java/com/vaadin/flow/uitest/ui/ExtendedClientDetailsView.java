@@ -35,8 +35,8 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         Div bodyElementHeight = createDiv("bh");
         Div devicePixelRatio = createDiv("pr");
         Div touchDevice = createDiv("td");
-        Div themeVariant = createDiv("theme-variant");
-        Div themeName = createDiv("theme-name");
+        Div themeVariant = createDiv("tv");
+        Div themeName = createDiv("tn");
 
         // Display initial values immediately
         ExtendedClientDetails details = UI.getCurrentOrThrow().getPage()
