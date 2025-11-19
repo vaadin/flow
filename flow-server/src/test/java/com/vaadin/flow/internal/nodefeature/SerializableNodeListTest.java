@@ -69,7 +69,7 @@ public class SerializableNodeListTest
         nodeList.add("5");
         collectChanges(nodeList);
 
-        Iterator<String> i = nodeList.iterator();
+        Iterator<Serializable> i = nodeList.iterator();
         i.next();
         i.remove();
         List<NodeChange> changes = collectChanges(nodeList);
@@ -87,7 +87,7 @@ public class SerializableNodeListTest
 
         List<String> actual = new ArrayList<>();
         for (int j = 0; j < nodeList.size(); j++) {
-            actual.add(nodeList.get(j));
+            actual.add((String) nodeList.get(j));
         }
         Assert.assertArrayEquals(new String[] { "2", "4", "5" },
                 actual.toArray());
@@ -100,7 +100,7 @@ public class SerializableNodeListTest
         nodeList.add("2");
         collectChanges(nodeList);
 
-        Iterator<String> i = nodeList.iterator();
+        Iterator<Serializable> i = nodeList.iterator();
         i.next();
         i.remove();
         i.next();

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -132,13 +133,15 @@ public class NodeListAddRemoveTest
         nodeList.add("bar1");
 
         int index = items.size();
-        String item = nodeList.get(index);
+        String item = (String) nodeList.get(index);
         nodeList.remove(index);
         // verify that nodelist is adjusted immediately to avoid memory leaks
-        Optional<AbstractListChange<String>> optionalChange = nodeList
+        Optional<AbstractListChange<Serializable>> optionalChange = nodeList
                 .getChangeTracker().stream().filter(change -> {
-                    ListAddChange<String> addChange = (ListAddChange<String>) change;
-                    return addChange.getNewItems().contains(item);
+                    if (change instanceof ListAddChange<?> addChange) {
+                        return addChange.getNewItems().contains(item);
+                    }
+                    return false;
                 }).findFirst();
         Assert.assertFalse(optionalChange.isPresent());
         Assert.assertEquals(2, nodeList.getChangeTracker().size());
