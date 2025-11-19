@@ -38,6 +38,10 @@ import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.ArchiveExtractor;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
+import com.vaadin.frontendtools.installer.VerificationException;
 
 /**
  * Node installation class.
@@ -51,10 +55,6 @@ public class NodeInstaller {
 
     public static final String INSTALL_PATH = "/node";
 
-    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
-
-    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
-
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
 
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
@@ -67,6 +67,8 @@ public class NodeInstaller {
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
     public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
+    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
+    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
     private final Object lock = new Object();
 

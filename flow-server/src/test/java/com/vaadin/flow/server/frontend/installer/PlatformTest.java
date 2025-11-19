@@ -26,8 +26,6 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.FrontendVersion;
 
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;
 import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 
 public class PlatformTest {
@@ -47,7 +45,7 @@ public class PlatformTest {
                     .thenReturn(true);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
+            Assert.assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
                     platform.getNodeDownloadRoot());
 
             FrontendVersion frontendVersion = Mockito
@@ -65,7 +63,7 @@ public class PlatformTest {
             os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     platform.getNodeDownloadRoot());
 
             FrontendVersion frontendVersion = Mockito
@@ -83,19 +81,19 @@ public class PlatformTest {
             os.when(Platform.OS::guess).thenReturn(Platform.OS.WINDOWS);
 
             Platform platform = Platform.guess();
-            Assert.assertEquals(DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     platform.getNodeDownloadRoot());
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.MAC);
 
             platform = Platform.guess();
-            Assert.assertEquals(DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     platform.getNodeDownloadRoot());
 
             os.when(Platform.OS::guess).thenReturn(Platform.OS.SUN_OS);
 
             platform = Platform.guess();
-            Assert.assertEquals(DEFAULT_NODEJS_DOWNLOAD_ROOT,
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
                     platform.getNodeDownloadRoot());
         }
     }
