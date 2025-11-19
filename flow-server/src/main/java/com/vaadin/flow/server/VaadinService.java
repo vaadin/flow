@@ -22,6 +22,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -628,9 +629,17 @@ public abstract class VaadinService implements Serializable {
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
-        ThreadFactory namedVirtualThreadFactory = Thread.ofVirtual()
-                .name("VaadinTaskExecutor-thread-", 1).factory();
+        ThreadFactory namedVirtualThreadFactory = defaultExecutorFactory()
+                .factory();
         return Executors.newThreadPerTaskExecutor(namedVirtualThreadFactory);
+    }
+
+    /*
+     * Package private to allow overriding with an uncaught exception handler in
+     * tests
+     */
+    OfVirtual defaultExecutorFactory() {
+        return Thread.ofVirtual().name("VaadinTaskExecutor-thread-", 1);
     }
 
     /**
