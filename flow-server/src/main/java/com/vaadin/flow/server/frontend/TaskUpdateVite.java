@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -30,6 +29,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Updates the Vite configuration files according with current project settings.
@@ -58,7 +59,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private static String getTemplate(String string) {
         try {
-            return StringUtil.toUtf8Str(TaskUpdateVite.class.getResourceAsStream(string));
+            return StringUtil.toUtf8Str(
+                    TaskUpdateVite.class.getResourceAsStream(string));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

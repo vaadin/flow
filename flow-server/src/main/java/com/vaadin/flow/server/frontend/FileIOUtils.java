@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -41,6 +40,8 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
+
 /**
  * Utility class for file I/O operations, including conditional file writing,
  * file searching, and content comparison.
@@ -65,7 +66,6 @@ public class FileIOUtils {
             return StringUtil.toUtf8Str(input);
         }
     }
-
 
     /**
      * Copies a directory recursively.

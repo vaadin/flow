@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import com.nimbusds.jose.util.StandardCharset;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -25,6 +24,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.UUID;
+
+import com.nimbusds.jose.util.StandardCharset;
 
 /**
  * Utility class for special string handling.
@@ -245,5 +246,5 @@ public final class StringUtil {
         }
         return result.toString();
     }
-    
+
 }

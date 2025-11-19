@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -26,6 +25,8 @@ import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Utility class for compression and decompression of folders and files.

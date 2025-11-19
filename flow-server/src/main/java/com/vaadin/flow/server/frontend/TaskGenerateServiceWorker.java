@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
+import com.vaadin.flow.internal.StringUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
 import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;

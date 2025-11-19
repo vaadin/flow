@@ -116,8 +116,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     private void copyIfNeeded(File targetFile, String sourceResource)
             throws IOException {
-        String content = StringUtil.toUtf8Str(FrontendPluginsUtil
-                .getResourceAsStream(sourceResource));
+        String content = StringUtil.toUtf8Str(
+                FrontendPluginsUtil.getResourceAsStream(sourceResource));
         FileIOUtils.writeIfChanged(targetFile, content);
     }
 

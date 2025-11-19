@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated

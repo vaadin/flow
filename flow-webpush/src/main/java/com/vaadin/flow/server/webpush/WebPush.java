@@ -247,8 +247,8 @@ public class WebPush {
         Page page = ui.getPage();
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
-            page.executeJs(StringUtil
-                    .removeComments(StringUtil.toUtf8Str(stream)))
+            page.executeJs(
+                    StringUtil.removeComments(StringUtil.toUtf8Str(stream)))
                     .then(unused -> getLogger()
                             .debug("Webpush client code initialized"),
                             err -> getLogger().error(
