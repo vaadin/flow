@@ -41,7 +41,7 @@ public final class StringUtil {
     }
 
     public static String toUtf8Str(InputStream input) throws IOException {
-        return StringUtil.toUtf8Str(input.readAllBytes());
+        return toUtf8Str(input.readAllBytes());
     }
 
     /**
