@@ -152,6 +152,7 @@ public class TaskCopyNpmAssetsFiles
             log().debug("Copying npm file {} to {}", file.getAbsolutePath(),
                     destFile.getAbsolutePath());
             try {
+                Files.createDirectories(destFile.toPath().getParent());
                 Files.copy(file.toPath(), destFile.toPath());
             } catch (IOException e) {
                 throw new UncheckedIOException(String.format(

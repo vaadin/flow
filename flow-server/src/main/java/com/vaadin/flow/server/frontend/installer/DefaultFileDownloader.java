@@ -77,6 +77,7 @@ public final class DefaultFileDownloader implements FileDownloader {
         String oldProtocols = System.setProperty(HTTPS_PROTOCOLS, "TLSv1.2");
         try {
             if ("file".equalsIgnoreCase(downloadURI.getScheme())) {
+                Files.createDirectories(destination.getParentFile().toPath());
                 Files.copy(new File(downloadURI).toPath(),
                         destination.toPath());
             } else {

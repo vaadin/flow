@@ -111,7 +111,7 @@ public class BundleValidationTest {
 
     private MockedStatic<BundleValidationUtil> bundleUtils;
 
-    private MockedStatic<IOUtils> ioUtils;
+    private MockedStatic<FileIOUtils> ioUtils;
 
     private String bundleLocation;
 
@@ -133,7 +133,7 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
-        ioUtils = Mockito.mockStatic(IOUtils.class, Mockito.CALLS_REAL_METHODS);
+        ioUtils = Mockito.mockStatic(FileIOUtils.class, Mockito.CALLS_REAL_METHODS);
     }
 
     @After
@@ -2372,7 +2372,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2412,7 +2412,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2484,7 +2484,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2514,7 +2514,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,

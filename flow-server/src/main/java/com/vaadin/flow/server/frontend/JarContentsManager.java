@@ -319,6 +319,7 @@ public class JarContentsManager {
             if (!target.exists()
                     || !hasSameContent(jarFile.getInputStream(jarEntry),
                             target)) {
+                Files.createDirectories(target.toPath().getParent());
                 Files.copy(jarFile.getInputStream(jarEntry), target.toPath(),
                         StandardCopyOption.REPLACE_EXISTING);
             }
