@@ -16,9 +16,7 @@
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 
-import java.security.Principal;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -47,7 +45,6 @@ import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
-import com.vaadin.flow.spring.AuthenticationUtil;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
@@ -173,8 +170,7 @@ public class RequestUtil {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
             ROUTE_PATH_MATCHER_RUNNING.set(Boolean.TRUE);
             try {
-                return isAnonymousRouteInternal(
-                        PrincipalAwareRequestWrapper.wrap(request));
+                return isAnonymousRouteInternal(request);
             } finally {
                 ROUTE_PATH_MATCHER_RUNNING.remove();
             }
@@ -292,8 +288,9 @@ public class RequestUtil {
 
     private boolean isFlowRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
-        if (path == null)
+        if (path == null) {
             return false;
+        }
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -320,8 +317,9 @@ public class RequestUtil {
 
     private boolean isAnonymousRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
-        if (path == null)
+        if (path == null) {
             return false;
+        }
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -342,8 +340,7 @@ public class RequestUtil {
         if (routeTarget == null) {
             return false;
         }
-        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
-                .getTarget();
+        Class<? extends Component> targetView = routeTarget.getTarget();
         if (targetView == null) {
             return false;
         }
@@ -405,7 +402,7 @@ public class RequestUtil {
 
     /**
      * Prepends to the given {@code path} with the configured url mapping.
-     *
+     * <p>
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
@@ -421,7 +418,7 @@ public class RequestUtil {
     /**
      * Prepends to the given {@code path} with the servlet path prefix from
      * input url mapping.
-     *
+     * <p>
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
@@ -441,47 +438,6 @@ public class RequestUtil {
             path = path.substring(1);
         }
         return urlMapping + "/" + path;
-    }
-
-    /**
-     * A wrapper for {@link HttpServletRequest} that provides additional
-     * functionality to handle the user principal retrieval in a safer manner.
-     * <p>
-     * This class extends {@link HttpServletRequestWrapper} and overrides its
-     * {@code getUserPrincipal()} method to handle cases where the operation
-     * might not be supported by the underlying {@link HttpServletRequest}, for
-     * example when called by a Spring request matcher in the context of
-     * {@code WebInvocationPrivilegeEvaluator} permissions evaluation.
-     */
-    static class PrincipalAwareRequestWrapper
-            extends HttpServletRequestWrapper {
-
-        private PrincipalAwareRequestWrapper(HttpServletRequest request) {
-            super(request);
-        }
-
-        @Override
-        public Principal getUserPrincipal() {
-            try {
-                return super.getUserPrincipal();
-            } catch (UnsupportedOperationException e) {
-                return AuthenticationUtil.getSecurityHolderAuthentication();
-            }
-        }
-
-        static HttpServletRequest wrap(HttpServletRequest request) {
-            if (request instanceof PrincipalAwareRequestWrapper) {
-                return request;
-            }
-            HttpServletRequest maybeWrapper = request;
-            while (maybeWrapper instanceof HttpServletRequestWrapper wrapper) {
-                if (wrapper instanceof PrincipalAwareRequestWrapper) {
-                    return request;
-                }
-                maybeWrapper = (HttpServletRequest) wrapper.getRequest();
-            }
-            return new PrincipalAwareRequestWrapper(request);
-        }
     }
 
     private Logger getLogger() {
