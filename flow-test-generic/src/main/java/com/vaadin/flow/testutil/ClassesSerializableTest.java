@@ -60,6 +60,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     @SuppressWarnings("WeakerAccess")
     protected Stream<String> getExcludedPatterns() {
         return Stream.of(
+                "com\\..vaadin\\..frontendtools\\..installer\\..*",
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.fileupload2\\..*", ".*\\.slf4j\\..*",
@@ -264,8 +265,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",

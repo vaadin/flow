@@ -16,7 +16,6 @@
 package com.vaadin.frontendtools.installer;
 
 import java.io.File;
-import java.io.Serializable;
 
 /**
  * Handle extracting file archives.
@@ -26,7 +25,7 @@ import java.io.Serializable;
  * For internal use only. May be renamed or removed in a future release.
  *
  */
-public interface ArchiveExtractor extends Serializable {
+public interface ArchiveExtractor {
 
     /**
      * Extract archive contents to given destination.
