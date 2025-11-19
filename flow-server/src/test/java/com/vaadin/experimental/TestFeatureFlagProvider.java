@@ -15,12 +15,6 @@
  */
 package com.vaadin.experimental;
 
-import com.vaadin.flow.server.frontend.FileIOUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Test;
-
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.List;
 
 /**

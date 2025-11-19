@@ -207,9 +207,8 @@ public final class BundleUtils {
                 options.getFrontendDirectory(), options.getClassFinder());
         URL resource = null;
         if (hillaUsed) {
-            resource = options.getClassFinder()
-                    .getResource(
-                            DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
+            resource = options.getClassFinder().getResource(
+                    DEV_BUNDLE_JAR_PATH + "hybrid-" + packageLockFile);
         }
         if (resource == null) {
             // If Hilla is in used but the hybrid lock file is not found in the

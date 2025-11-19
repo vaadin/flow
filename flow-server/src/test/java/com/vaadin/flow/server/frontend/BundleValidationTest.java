@@ -133,7 +133,8 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
-        ioUtils = Mockito.mockStatic(FileIOUtils.class, Mockito.CALLS_REAL_METHODS);
+        ioUtils = Mockito.mockStatic(FileIOUtils.class,
+                Mockito.CALLS_REAL_METHODS);
     }
 
     @After

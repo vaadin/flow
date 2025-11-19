@@ -34,7 +34,7 @@
             <artifactId>flow-client</artifactId>
             <version>${flow.version}</version>
         </dependency>
-        <!-- commons-io 2.6 is incompatible with Flow plugin -->
+        <!-- commons-io 2.6 is compatible with Flow plugin -->
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
