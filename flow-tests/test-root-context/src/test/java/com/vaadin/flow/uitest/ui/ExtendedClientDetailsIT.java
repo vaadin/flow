@@ -96,10 +96,12 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
             int jsValue = ((Number) executionResult).intValue();
 
             Assert.assertTrue(
-                    "reported value for " + elementId + " should be > 50, but was: " + reportedValue,
+                    "reported value for " + elementId
+                            + " should be > 50, but was: " + reportedValue,
                     reportedValue > 50);
             Assert.assertTrue(
-                    "js execution value for " + elementId + " should be > 50, but was: " + jsValue,
+                    "js execution value for " + elementId
+                            + " should be > 50, but was: " + jsValue,
                     jsValue > 50);
         } catch (NumberFormatException nfe) {
             Assert.fail("Could not parse dimension value for " + elementId);
