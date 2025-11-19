@@ -45,6 +45,7 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 
 public class CleanFrontendMojoTest {
@@ -96,8 +97,7 @@ public class CleanFrontendMojoTest {
                 true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
-                DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot", NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",

@@ -59,6 +59,7 @@ import static com.vaadin.flow.server.frontend.NodeUpdater.DEV_DEPENDENCIES;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -110,7 +111,7 @@ public class TaskRunNpmInstallTest {
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {
         options.withPostinstallPackages(additionalPostInstall);
         options.withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .withNodeDownloadRoot(URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         return new TaskRunNpmInstall(getNodeUpdater(), options);
     }
@@ -302,7 +303,7 @@ public class TaskRunNpmInstallTest {
 
         options.withHomeNodeExecRequired(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .withNodeDownloadRoot(URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
         assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));

@@ -91,6 +91,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 import static java.io.File.pathSeparator;
 
@@ -192,8 +193,7 @@ public class BuildFrontendMojoTest {
                 generatedTsFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
-                DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot", NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",

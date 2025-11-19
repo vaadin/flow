@@ -67,6 +67,8 @@ public class NodeInstaller {
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
     public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
+    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
+    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
     private final Object lock = new Object();
 

@@ -76,6 +76,7 @@ import com.vaadin.pro.licensechecker.Product;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 
 public class BuildFrontendUtilTest {
@@ -766,7 +767,7 @@ public class BuildFrontendUtilTest {
         Mockito.when(adapter.nodeVersion())
                 .thenReturn(FrontendTools.DEFAULT_NODE_VERSION);
         Mockito.when(adapter.nodeDownloadRoot())
-                .thenReturn(URI.create(DEFAULT_NODEJS_DOWNLOAD_ROOT));
+                .thenReturn(URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
         Mockito.when(adapter.frontendDirectory()).thenReturn(
                 new File(baseDir, FrontendUtils.DEFAULT_FRONTEND_DIR));
         Mockito.when(adapter.buildFolder()).thenReturn(Constants.TARGET);
