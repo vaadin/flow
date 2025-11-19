@@ -24,6 +24,7 @@ import java.util.Set;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.utils.LookupImpl;
 
