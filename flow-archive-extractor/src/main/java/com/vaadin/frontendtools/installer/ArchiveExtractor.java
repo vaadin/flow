@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.frontendtools.installer;
 
 import java.io.File;
 
@@ -25,7 +25,7 @@ import java.io.File;
  * For internal use only. May be renamed or removed in a future release.
  *
  */
-interface ArchiveExtractor {
+public interface ArchiveExtractor {
 
     /**
      * Extract archive contents to given destination.
