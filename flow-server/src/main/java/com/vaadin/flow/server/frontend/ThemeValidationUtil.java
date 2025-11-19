@@ -40,6 +40,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.JsonNodeType;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -290,8 +291,7 @@ public class ThemeValidationUtil {
             for (String themeJson : themeJsons) {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
-                String content = new String(byteContent,
-                        StandardCharsets.UTF_8);
+                String content = StringUtil.toUtf8Str(byteContent);
                 content = content.replaceAll("\\r\\n", "\n");
 
                 Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);

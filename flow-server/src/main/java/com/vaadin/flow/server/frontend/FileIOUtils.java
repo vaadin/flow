@@ -50,6 +50,15 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public class FileIOUtils {
 
+    /**
+     * Deletes file if it exists and eats exceptions.
+     *
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param file
+     *            to be deleted
+     * @return true if succeeded
+     */
     static boolean deleteFileQuietly(File file) {
         if (file == null) {
             return false;
@@ -61,6 +70,16 @@ public class FileIOUtils {
         }
     }
 
+    /**
+     * Reads the content from given URL into UTF 8 String.
+     * 
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param url
+     *            the URL to read
+     * @return string from the content
+     * @throws IOException
+     */
     static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {
             return StringUtil.toUtf8Str(input);

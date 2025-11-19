@@ -34,10 +34,28 @@ import java.util.UUID;
  */
 public final class StringUtil {
 
+    /**
+     * Creates new UTF 8 String from given bytes.
+     * 
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param bytes
+     * @return new string enforced in UTF_8 because jdk engineers didn't have
+     *         the guts to break all things
+     */
     public static String toUtf8Str(byte[] bytes) {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
+    /**
+     * Reads given input stream into a new UTF 8 String.
+     * 
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param input
+     * @return string in UTF 8
+     * @throws IOException
+     */
     public static String toUtf8Str(InputStream input) throws IOException {
         return toUtf8Str(input.readAllBytes());
     }
