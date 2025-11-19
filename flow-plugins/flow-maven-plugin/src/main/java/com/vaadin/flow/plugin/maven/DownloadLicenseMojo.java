@@ -20,6 +20,7 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
 
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseChecker.DownloadOptions;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.LocalProKey;
 import com.vaadin.pro.licensechecker.Product;
@@ -55,8 +56,8 @@ public class DownloadLicenseMojo extends FlowModeAbstractMojo {
         }
 
         try {
-            LicenseChecker.downloadLicense(new Product(PRODUCT_NAME, version),
-                    TIMEOUT_SECONDS);
+            LicenseChecker.downloadLicense(new DownloadOptions(
+                    new Product(PRODUCT_NAME, version), TIMEOUT_SECONDS));
 
             getLog().info("License key downloaded and saved successfully to "
                     + LocalProKey.getLocation());
