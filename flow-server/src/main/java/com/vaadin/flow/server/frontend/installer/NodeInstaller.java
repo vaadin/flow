@@ -21,9 +21,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -59,7 +57,7 @@ public class NodeInstaller {
 
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
             "\\\\") + "\\node.exe";
-    private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
+    private static final String NODE_DEFAULT = INSTALL_PATH + "/bin/node";
 
     public static final String PROVIDED_VERSION = "provided";
 
@@ -290,84 +288,20 @@ public class NodeInstaller {
     private void installNodeUnix(InstallData data)
             throws InstallationException, IOException {
 
-        // Search for the node binary
-        File nodeBinary = new File(data.getTmpDirectory(),
-                data.getNodeFilename() + File.separator + "bin" + File.separator
-                        + data.getNodeExecutable());
+        File extractedNodeDir = new File(data.getTmpDirectory(),
+                data.getNodeFilename());
 
-        if (!nodeBinary.exists()) {
+        // Verify the extraction created the expected directory
+        if (!extractedNodeDir.exists() || !extractedNodeDir.isDirectory()) {
             throw new FileNotFoundException(
-                    "Could not find the downloaded Node.js binary in "
-                            + nodeBinary);
+                    "Could not find the extracted Node.js directory at "
+                            + extractedNodeDir);
         }
 
-        File destinationDirectory = getNodeBinaryInstallDirectory();
+        // Verify the node binary exists in the extracted archive
+        File nodeBinary = new File(extractedNodeDir,
+                "bin" + File.separator + data.getNodeExecutable());
 
-        File destination = new File(destinationDirectory,
-                data.getNodeExecutable());
-
-        copyNodeBinaryToDestination(nodeBinary, destination);
-
-        if (!destination.setExecutable(true, false)) {
-            throw new InstallationException(
-                    "Could not install Node: Was not allowed to make "
-                            + destination + " executable.");
-        }
-
-        createSymbolicLinkToBinary(destination, data.getNodeExecutable());
-
-        if (npmProvided()) {
-            extractUnixNpm(data, getNodeInstallDirectory());
-        }
-
-        deleteTempDirectory(data.getTmpDirectory());
-    }
-
-    private void extractUnixNpm(InstallData data, File destinationDirectory)
-            throws IOException {
-        getLogger().info("Extracting npm");
-        File tmpNodeModulesDir = new File(data.getTmpDirectory(),
-                data.getNodeFilename() + File.separator + "lib" + File.separator
-                        + FrontendUtils.NODE_MODULES);
-        File nodeModulesDirectory = new File(
-                destinationDirectory + File.separator + "lib",
-                FrontendUtils.NODE_MODULES);
-        File npmDirectory = new File(nodeModulesDirectory, "npm");
-
-        // delete old node_modules directory to not end up with corrupted
-        // combination of two npm versions in node_modules/npm during upgrade
-        if (nodeModulesDirectory.exists()) {
-            FileUtils.deleteDirectory(nodeModulesDirectory);
-        }
-        // delete old/windows type node_modules so it is not messing
-        // up the installation
-        final File oldNodeModulesDirectory = new File(destinationDirectory
-                + File.separator + FrontendUtils.NODE_MODULES);
-        if (oldNodeModulesDirectory.exists()) {
-            FileUtils.deleteDirectory(oldNodeModulesDirectory);
-        }
-
-        FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
-        // create a copy of the npm scripts next to the node executable
-        for (String script : Arrays.asList("npm", "npm.cmd")) {
-            File scriptFile = new File(npmDirectory,
-                    "bin" + File.separator + script);
-            if (scriptFile.exists()) {
-                boolean success = scriptFile.setExecutable(true);
-                if (!success) {
-                    getLogger().debug("Failed to make '{}' executable.",
-                            scriptFile.toPath());
-                }
-            }
-        }
-    }
-
-    private void installNodeWindows(InstallData data)
-            throws InstallationException, IOException {
-        // Search for the node binary
-        File nodeBinary = new File(data.getTmpDirectory(),
-                data.getNodeFilename() + File.separator
-                        + data.getNodeExecutable());
         if (!nodeBinary.exists()) {
             throw new FileNotFoundException(
                     "Could not find the downloaded Node.js binary in "
@@ -376,47 +310,63 @@ public class NodeInstaller {
 
         File destinationDirectory = getNodeInstallDirectory();
 
-        File destination = new File(destinationDirectory,
-                data.getNodeExecutable());
+        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        getLogger().info(
+                "Installing complete Node.js distribution from {} to {}",
+                extractedNodeDir, destinationDirectory);
+        FileUtils.copyDirectory(extractedNodeDir, destinationDirectory);
 
-        copyNodeBinaryToDestination(nodeBinary, destination);
-
-        if (npmProvided()) {
-            getLogger().info("Extracting npm");
-            File tmpNodeModulesDir = new File(data.getTmpDirectory(),
-                    data.getNodeFilename() + File.separator
-                            + FrontendUtils.NODE_MODULES);
-            File nodeModulesDirectory = new File(destinationDirectory,
-                    FrontendUtils.NODE_MODULES);
-            // delete old node_modules directory to not end up with corrupted
-            // combination of two npm versions in node_modules/npm during
-            // upgrade
-            if (nodeModulesDirectory.exists()) {
-                FileUtils.deleteDirectory(nodeModulesDirectory);
-            }
-            FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+        // Make the node binary and npm scripts executable
+        File installedNodeBinary = new File(destinationDirectory,
+                "bin" + File.separator + data.getNodeExecutable());
+        if (!installedNodeBinary.setExecutable(true, false)) {
+            throw new InstallationException(
+                    "Could not install Node: Was not allowed to make "
+                            + installedNodeBinary + " executable.");
         }
+
+        // Make npm and npx scripts executable
+        makeScriptExecutable(destinationDirectory, "bin/npm");
+        makeScriptExecutable(destinationDirectory, "bin/npx");
+        makeScriptExecutable(destinationDirectory, "bin/corepack");
+
         deleteTempDirectory(data.getTmpDirectory());
     }
 
-    private void copyNodeBinaryToDestination(File nodeBinary, File destination)
-            throws InstallationException {
-        getLogger().info("Copying node binary from {} to {}", nodeBinary,
-                destination);
-        if (destination.exists() && !destination.delete()) {
-            throw new InstallationException(
-                    "Could not install Node: Was not allowed to delete "
-                            + destination);
+    private void makeScriptExecutable(File baseDirectory, String scriptPath) {
+        File scriptFile = new File(baseDirectory, scriptPath);
+        if (scriptFile.exists()) {
+            boolean success = scriptFile.setExecutable(true, false);
+            if (!success) {
+                getLogger().debug("Failed to make '{}' executable.",
+                        scriptFile.toPath());
+            }
         }
-        try {
-            Files.move(nodeBinary.toPath(), destination.toPath(),
-                    StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {
-            getLogger().debug("Renaming failed.", e);
-            throw new InstallationException(
-                    "Could not install Node: Was not allowed to rename "
-                            + nodeBinary + " to " + destination);
+    }
+
+    private void installNodeWindows(InstallData data)
+            throws InstallationException, IOException {
+
+        File extractedNodeDir = new File(data.getTmpDirectory(),
+                data.getNodeFilename());
+
+        // Verify the node binary exists in the extracted archive
+        File nodeBinary = new File(extractedNodeDir, data.getNodeExecutable());
+        if (!nodeBinary.exists()) {
+            throw new FileNotFoundException(
+                    "Could not find the downloaded Node.js binary in "
+                            + nodeBinary);
         }
+
+        File destinationDirectory = getNodeInstallDirectory();
+
+        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        getLogger().info(
+                "Installing complete Node.js distribution from {} to {}",
+                extractedNodeDir, destinationDirectory);
+        FileUtils.copyDirectory(extractedNodeDir, destinationDirectory);
+
+        deleteTempDirectory(data.getTmpDirectory());
     }
 
     public String getInstallDirectory() {
@@ -438,34 +388,6 @@ public class NodeInstaller {
             }
         }
         return nodeInstallDirectory;
-    }
-
-    private File getNodeBinaryInstallDirectory() {
-        File nodeInstallDirectory = new File(getInstallDirectoryFile(), "bin");
-        if (!nodeInstallDirectory.exists()) {
-            getLogger().debug("Creating install directory {}",
-                    nodeInstallDirectory);
-            boolean success = nodeInstallDirectory.mkdirs();
-            if (!success) {
-                getLogger().debug("Failed to create install directory");
-            }
-        }
-        return nodeInstallDirectory;
-    }
-
-    private void createSymbolicLinkToBinary(File destination,
-            String nodeExecutable) throws InstallationException, IOException {
-        final File symLink = new File(getInstallDirectory(), nodeExecutable);
-        if (symLink.exists()) {
-            FileUtils.delete(symLink);
-        }
-        try {
-            Files.createSymbolicLink(symLink.toPath(), destination.toPath());
-        } catch (IOException e) {
-            throw new InstallationException(String.format(
-                    "Could not install Node: Was not allowed to create symbolic link %s for %s",
-                    symLink, destination), e);
-        }
     }
 
     private void deleteTempDirectory(File tmpDirectory) throws IOException {
