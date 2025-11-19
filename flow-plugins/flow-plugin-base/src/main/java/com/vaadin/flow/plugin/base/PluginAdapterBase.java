@@ -183,7 +183,7 @@ public interface PluginAdapterBase {
      * Download node.js from this URL. Handy in heavily firewalled corporate
      * environments where the node.js download can be provided from an intranet
      * mirror. Defaults to null which will cause the downloader to use
-     * {@link Platform#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
+     * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
      * Example: <code>"https://nodejs.org/dist/"</code>.
      *
