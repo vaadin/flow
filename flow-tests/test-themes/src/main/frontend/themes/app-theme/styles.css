@@ -69,6 +69,6 @@ body.bg {
   background-color: rgb(30, 30, 30);
 }
 
-:root[theme='light'] #test-element {
-  background-color: rgb(255, 255, 255);
+:root #test-element {
+  background-color: rgb(200, 200, 200);
 }

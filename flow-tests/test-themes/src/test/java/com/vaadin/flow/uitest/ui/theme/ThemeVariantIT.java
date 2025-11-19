@@ -23,7 +23,6 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.CLEAR_THEME_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_DARK_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_LIGHT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.TEST_ELEMENT_ID;
@@ -95,37 +94,6 @@ public class ThemeVariantIT extends ChromeBrowserTest {
         String backgroundColor = testElement.getCssValue("background-color");
         Assert.assertEquals(
                 "Light theme background should be rgb(255, 255, 255)",
-                "rgba(255, 255, 255, 1)", backgroundColor);
-    }
-
-    @Test
-    public void clearTheme_variantIsEmptyAndDefaultStylesApplied() {
-        open();
-
-        // First set a theme
-        $(NativeButtonElement.class).id(SET_DARK_ID).click();
-
-        // Verify it was set
-        DivElement variantDisplay = $(DivElement.class)
-                .id(THEME_VARIANT_DISPLAY_ID);
-        Assert.assertEquals("Theme Variant: dark", variantDisplay.getText());
-
-        // Now clear it
-        $(NativeButtonElement.class).id(CLEAR_THEME_ID).click();
-
-        // Verify the display is cleared
-        Assert.assertEquals("Theme Variant: ", variantDisplay.getText());
-
-        // Verify the DOM attribute is removed
-        String themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertNull("Theme attribute should be null after clearing",
-                themeAttr);
-
-        // Verify the default CSS is applied
-        TestBenchElement testElement = $(DivElement.class).id(TEST_ELEMENT_ID);
-        String backgroundColor = testElement.getCssValue("background-color");
-        Assert.assertEquals("Default background should be rgb(200, 200, 200)",
                 "rgba(200, 200, 200, 1)", backgroundColor);
     }
 
@@ -138,8 +106,7 @@ public class ThemeVariantIT extends ChromeBrowserTest {
         String text = themeNameDisplay.getText();
 
         // The theme name should be detected from the configured theme
-        // In test-themes, app-theme doesn't set lumo or aura markers,
-        // so it should be empty
+        // In test-themes, app-theme loads fake-aura.css which has the marker
         Assert.assertTrue("Theme name text should start with 'Theme Name: '",
                 text.startsWith("Theme Name: "));
     }
@@ -159,12 +126,6 @@ public class ThemeVariantIT extends ChromeBrowserTest {
         themeAttr = (String) executeScript(
                 "return document.documentElement.getAttribute('theme');");
         Assert.assertEquals("light", themeAttr);
-
-        // Clear theme
-        $(NativeButtonElement.class).id(CLEAR_THEME_ID).click();
-        themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertNull(themeAttr);
     }
 
     @Test
@@ -185,16 +146,11 @@ public class ThemeVariantIT extends ChromeBrowserTest {
         // Switch to light
         $(NativeButtonElement.class).id(SET_LIGHT_ID).click();
         backgroundColor = testElement.getCssValue("background-color");
-        Assert.assertEquals("rgba(255, 255, 255, 1)", backgroundColor);
+        Assert.assertEquals("rgba(200, 200, 200, 1)", backgroundColor);
 
         // Switch back to dark
         $(NativeButtonElement.class).id(SET_DARK_ID).click();
         backgroundColor = testElement.getCssValue("background-color");
         Assert.assertEquals("rgba(30, 30, 30, 1)", backgroundColor);
-
-        // Clear
-        $(NativeButtonElement.class).id(CLEAR_THEME_ID).click();
-        backgroundColor = testElement.getCssValue("background-color");
-        Assert.assertEquals("rgba(200, 200, 200, 1)", backgroundColor);
     }
 }

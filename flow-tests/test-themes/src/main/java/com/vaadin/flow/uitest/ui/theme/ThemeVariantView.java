@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Route;
 
 /**
@@ -54,13 +56,6 @@ public class ThemeVariantView extends Div {
                 });
         setLightButton.setId(SET_LIGHT_ID);
 
-        NativeButton clearThemeButton = new NativeButton("Clear Theme",
-                event -> {
-                    getUI().ifPresent(ui -> ui.getPage().setThemeVariant(null));
-                    updateDisplays();
-                });
-        clearThemeButton.setId(CLEAR_THEME_ID);
-
         // Create display elements
         themeVariantDisplay = new Div();
         themeVariantDisplay.setId(THEME_VARIANT_DISPLAY_ID);
@@ -74,21 +69,19 @@ public class ThemeVariantView extends Div {
         testElement.setText("Test Element");
         testElement.getStyle().set("width", "100px").set("height", "100px");
 
-        add(setDarkButton, setLightButton, clearThemeButton,
-                themeVariantDisplay, themeNameDisplay, testElement);
+        add(setDarkButton, setLightButton, themeVariantDisplay,
+                themeNameDisplay, testElement);
 
         // Update initial displays
         updateDisplays();
     }
 
     private void updateDisplays() {
-        getUI().ifPresent(ui -> {
-            String variant = ui.getPage().getThemeVariant();
-            String themeName = ui.getPage().getExtendedClientDetails()
-                    .getThemeName();
+        Page page = UI.getCurrentOrThrow().getPage();
+        String variant = page.getThemeVariant();
+        String themeName = page.getExtendedClientDetails().getThemeName();
 
-            themeVariantDisplay.setText("Theme Variant: " + variant);
-            themeNameDisplay.setText("Theme Name: " + themeName);
-        });
+        themeVariantDisplay.setText("Theme Variant: " + variant);
+        themeNameDisplay.setText("Theme Name: " + themeName);
     }
 }
