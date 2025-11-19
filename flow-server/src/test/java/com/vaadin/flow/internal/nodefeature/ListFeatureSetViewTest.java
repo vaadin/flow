@@ -20,169 +20,97 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.internal.change.AbstractListChange;
-import com.vaadin.flow.internal.nodefeature.NodeList.SetView;
+import com.vaadin.flow.dom.ClassList;
 
-public class ListFeatureSetViewTest {
-
-    private TestFeature feature;
-    private SetView<String> set;
-
-    private static class TestFeature extends SerializableNodeList<String> {
-        private final ArrayList<AbstractListChange<String>> changes = new ArrayList<>();
-
-        public TestFeature() {
-            super(Mockito.mock(StateNode.class));
-        }
-
-        @Override
-        protected List<AbstractListChange<String>> getChangeTracker() {
-            // Default implementation calls unmocked method in StateNode
-            return changes;
-        }
-    }
-
-    private static class TestSetView extends NodeList.SetView<String> {
-        public TestSetView(NodeList<String> list) {
-            super(list);
-        }
-
-        @Override
-        protected void validate(String string) {
-            if (string.length() > 5) {
-                throw new IllegalArgumentException(
-                        "All strings must be less than 5 characters");
-            }
-        }
-    }
-
-    @Before
-    public void setup() {
-        feature = new TestFeature();
-        set = new TestSetView(feature);
-    }
+/**
+ * Tests for ElementClassList.ClassListView which presents a Set<String>-like
+ * view over ElementClassList. These mirror the old SetView semantics tests.
+ */
+public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClassList> {
 
     @Test
-    public void testSetViewAdd() {
-        set.add("0");
-        assertContents("0");
-        set.add("1");
-        assertContents("0", "1");
-        set.add("2");
-        assertContents("0", "1", "2");
-    }
+    public void addContainsSize_basicSetSemantics() {
+        ElementClassList feature = createFeature();
+        ClassList set = feature.getClassList();
 
-    @Test
-    public void testSetViewSize() {
-        set.add("0");
-        Assert.assertEquals(1, set.size());
-        set.add("1");
-        Assert.assertEquals(2, set.size());
-        set.remove("1");
-        Assert.assertEquals(1, set.size());
-        set.remove("1"); // Not in the list
-        Assert.assertEquals(1, set.size());
-        set.remove("0");
         Assert.assertEquals(0, set.size());
-    }
-
-    @Test
-    public void testSetViewRemove() {
-        set.add("0");
-        set.add("1");
-        set.remove("0");
-        assertContents("1");
-        set.remove("1");
-        assertContents();
-    }
-
-    @Test(expected = IllegalArgumentException.class)
-    public void testSetViewValidateAdd() {
-        set.add("as89w4573");
-    }
-
-    @Test
-    public void testSetViewClear() {
-        set.add("a");
-        set.add("b");
-        set.add("c");
-        set.clear();
-        assertContents();
-        set.clear();
-    }
-
-    @Test
-    public void testSetViewIteratorIterate() {
-        set.add("a");
-        set.add("b");
-        set.add("c");
-
-        Iterator<String> i = set.iterator();
-        Assert.assertEquals("a", i.next());
-        Assert.assertEquals("b", i.next());
-        Assert.assertEquals("c", i.next());
-        Assert.assertFalse(i.hasNext());
-    }
-
-    @Test
-    public void testSetViewIteratorRemove() {
-        set.add("a");
-        set.add("b");
-        set.add("c");
-
-        Iterator<String> i = set.iterator();
-        i.next();
-        i.next();
-        i.remove();
-        assertContents("a", "c");
-
-    }
-
-    @Test
-    public void testSetViewContains() {
-        set.add("a");
-        set.add("b");
-        set.add("c");
+        Assert.assertTrue(set.add("a"));
+        Assert.assertTrue(set.add("b"));
+        Assert.assertEquals(2, set.size());
 
         Assert.assertTrue(set.contains("a"));
         Assert.assertTrue(set.contains("b"));
-        Assert.assertTrue(set.contains("c"));
-        Assert.assertFalse(set.contains("d"));
+        Assert.assertFalse(set.contains("c"));
+
+        // duplicate add returns false and doesn't change size
+        Assert.assertFalse(set.add("a"));
+        Assert.assertEquals(2, set.size());
     }
 
     @Test
-    public void testSetViewSameFeatureEquals() {
-        set.add("a");
+    public void removeAndClear_updatesSize() {
+        ElementClassList feature = createFeature();
+        ClassList set = feature.getClassList();
 
-        TestSetView otherSet = new TestSetView(feature);
+        set.add("x");
+        set.add("y");
+        Assert.assertEquals(2, set.size());
 
-        Assert.assertEquals(set, otherSet);
-        Assert.assertEquals(set.hashCode(), otherSet.hashCode());
+        Assert.assertTrue(set.remove("x"));
+        Assert.assertEquals(1, set.size());
+        Assert.assertFalse(set.contains("x"));
+        Assert.assertTrue(set.contains("y"));
+
+        // removing non-existing returns false
+        Assert.assertFalse(set.remove("nope"));
+
+        set.clear();
+        Assert.assertEquals(0, set.size());
+        Assert.assertFalse(set.contains("y"));
     }
 
     @Test
-    public void testSetViewDifferentFeatureEquals() {
-        set.add("a");
-        TestFeature otherFeature = new TestFeature();
-        TestSetView otherSet = new TestSetView(otherFeature);
-        otherSet.add("a");
+    public void iterator_returnsStringsInInsertionOrder() {
+        ElementClassList feature = createFeature();
+        ClassList set = feature.getClassList();
+        set.add("first");
+        set.add("second");
+        set.add("third");
 
-        Assert.assertEquals(set, otherSet);
-        Assert.assertEquals(set.hashCode(), otherSet.hashCode());
-
-    }
-
-    private void assertContents(String... expected) {
-        String[] actual = new String[feature.size()];
-        for (int i = 0; i < feature.size(); i++) {
-            actual[i] = feature.get(i);
+        List<String> seen = new ArrayList<>();
+        Iterator<String> it = set.iterator();
+        while (it.hasNext()) {
+            seen.add(it.next());
         }
-        Assert.assertArrayEquals(expected, actual);
+        Assert.assertArrayEquals(new String[] { "first", "second", "third" }, seen.toArray());
+    }
 
+    @Test
+    public void contains_nonString_returnsFalse() {
+        ElementClassList feature = createFeature();
+        ClassList set = feature.getClassList();
+        set.add("a");
+        Assert.assertFalse(set.contains(123));
+        Assert.assertFalse(set.remove(123));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void add_null_throws() {
+        ElementClassList feature = createFeature();
+        feature.getClassList().add(null);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void add_empty_throws() {
+        ElementClassList feature = createFeature();
+        feature.getClassList().add("");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void add_withSpaces_throws() {
+        ElementClassList feature = createFeature();
+        feature.getClassList().add("a b");
     }
 }

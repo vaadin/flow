@@ -16,14 +16,12 @@
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
-import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 import java.util.function.Consumer;
 
 import com.vaadin.flow.internal.StateNode;
@@ -74,70 +72,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
         }
     }
 
-    /**
-     * Provides access to a {@link NodeList} as a {@link Set}.
-     *
-     * @param <T>
-     *            the type of objects in the list (and set)
-     */
-    protected abstract static class SetView<T extends Serializable>
-            extends AbstractSet<T> implements Serializable {
-
-        private NodeList<T> nodeList;
-
-        /**
-         * Creates a new view for the given list.
-         *
-         * @param nodeList
-         *            the list to wrap
-         */
-        public SetView(NodeList<T> nodeList) {
-            this.nodeList = nodeList;
-        }
-
-        @Override
-        public int size() {
-            return nodeList.size();
-        }
-
-        @Override
-        public void clear() {
-            nodeList.clear();
-        }
-
-        @Override
-        public boolean add(T o) {
-            validate(o);
-            if (contains(o)) {
-                return false;
-            }
-
-            nodeList.add(size(), o);
-            return true;
-        }
-
-        @Override
-        public boolean remove(Object o) {
-            if (!contains(o)) {
-                return false;
-            }
-            T removedItem = nodeList.remove(nodeList.indexOf((T) o));
-            return removedItem != null;
-        }
-
-        protected abstract void validate(T o);
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public boolean contains(Object o) {
-            return nodeList.indexOf((T) o) != -1;
-        }
-
-        @Override
-        public Iterator<T> iterator() {
-            return nodeList.iterator();
-        }
-    }
 
     private List<T> values;
 
