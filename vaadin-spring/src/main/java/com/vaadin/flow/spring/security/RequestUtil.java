@@ -29,8 +29,8 @@ import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Location;
@@ -54,7 +54,6 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 /**
  * Contains utility methods related to request handling.
  */
-@Component
 public class RequestUtil {
 
     private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();
@@ -134,10 +133,29 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to an accessible Hilla
      *         view, {@code false} otherwise
+     * @deprecated use {@link #isAnonymousHillaView(HttpServletRequest)} to
+     *             match requests to Hilla views that do not require
+     *             authentication
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isAllowedHillaView(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
             return fileRouterRequestUtil.isRouteAllowed(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the request targets an anonymous Hilla view.
+     * 
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to an anonymous Hilla
+     *         view, {@code false} otherwise
+     */
+    public boolean isAnonymousHillaView(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isAnonymousRoute(request);
         }
         return false;
     }
@@ -296,8 +314,7 @@ public class RequestUtil {
         if (routeTarget == null) {
             return false;
         }
-        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
-                .getTarget();
+        Class<? extends Component> targetView = routeTarget.getTarget();
         return targetView != null;
     }
 

@@ -26,6 +26,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * @since 24.4
  */
 public interface FileRouterRequestUtil {
+
     /**
      * Checks if the request corresponds to a Hilla route and, if so, applies
      * the corresponding access control.
@@ -33,6 +34,19 @@ public interface FileRouterRequestUtil {
      * @param request
      *            the HTTP request to check
      * @return {@code true} if the request is allowed, {@code false} otherwise
+     * @deprecated use {@link #isAnonymousRoute(HttpServletRequest)} to match
+     *             requests to anonymous routes
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     boolean isRouteAllowed(HttpServletRequest request);
+
+    /**
+     * Checks if the given request goes to an anonymous (public) route.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request is targeting an anonymous route,
+     *         {@code false} otherwise
+     */
+    boolean isAnonymousRoute(HttpServletRequest request);
 }

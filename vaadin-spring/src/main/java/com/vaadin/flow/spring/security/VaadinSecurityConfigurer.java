@@ -485,8 +485,8 @@ public final class VaadinSecurityConfigurer
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
         if (EndpointRequestUtil.isHillaAvailable()) {
             return RequestMatchers.anyOf(baseMatcher,
-                    // Matchers for known Hilla views
-                    getRequestUtil()::isAllowedHillaView,
+                    // Matchers for anonymous Hilla views
+                    getRequestUtil()::isAnonymousHillaView,
                     // Matcher for public Hilla endpoints
                     getRequestUtil()::isAnonymousEndpoint);
         }
