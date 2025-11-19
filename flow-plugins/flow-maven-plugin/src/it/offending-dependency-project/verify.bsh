@@ -5,3 +5,11 @@ if ( !Files.exists(flowTsx, new LinkOption[0]) )
 {
     throw new RuntimeException("build.log not found");
 }
+
+lines = Files.readString(flowTsx);
+if (
+    !lines.contains("Found dependencies defined with different versions in project and Vaadin maven plugin") &&
+    !lines.matches("^com.vaadin:license-checker.*\\[1\\.13\\.5\\],.*")
+    ) {
+    throw new RuntimeException("Offending dependency not detected");
+}
