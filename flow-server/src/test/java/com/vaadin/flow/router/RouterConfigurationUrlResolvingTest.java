@@ -145,6 +145,30 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
     }
 
     @Test
+    public void getUrl_with_wildcard_parameter_requires_pre_encoded_special_chars()
+            throws InvalidRouteConfigurationException, NotFoundException {
+        setNavigationTargets(WildParameter.class);
+
+        // When generating URLs, special characters that should be preserved
+        // as data (not path structure) must be encoded BEFORE calling getUrl()
+
+        // Example: If you want a parameter value of "a/b" (with actual slash)
+        // you must encode it before passing to getUrl()
+        String parameterWithSlash = "a%2Fb";  // %2F will be preserved in URL
+        Assert.assertEquals("wild/a%2Fb",
+                routeConfiguration.getUrl(WildParameter.class, parameterWithSlash));
+
+        // Unencoded slashes are treated as path separators
+        Assert.assertEquals("wild/a/b",
+                routeConfiguration.getUrl(WildParameter.class, "a/b"));
+
+        // Other special characters should also be pre-encoded if needed
+        String parameterWithQuestion = "test%3Fquestion";
+        Assert.assertEquals("wild/test%3Fquestion",
+                routeConfiguration.getUrl(WildParameter.class, parameterWithQuestion));
+    }
+
+    @Test
     public void wildcardPathWithEmptyParameter_emptyParameterIsAvailable() {
         WildParameter.events.clear();
         WildParameter.param = null;

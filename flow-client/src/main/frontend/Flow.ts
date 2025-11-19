@@ -293,7 +293,10 @@ export class Flow {
   }
 
   private getFlowRoutePath(context: NavigationParameters | Location): string {
-    return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
+    // Don't decode the pathname here - let the server handle decoding
+    // individual path segments. This preserves the distinction between
+    // literal slashes (path separators) and encoded slashes (%2F, data).
+    return context.pathname.replace(this.baseRegex, '');
   }
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
     return (context.search && context.search.substring(1)) || '';
