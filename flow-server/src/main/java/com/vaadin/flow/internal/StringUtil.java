@@ -25,8 +25,6 @@ import java.util.Map.Entry;
 import java.util.Scanner;
 import java.util.UUID;
 
-import com.nimbusds.jose.util.StandardCharset;
-
 /**
  * Utility class for special string handling.
  * <p>
@@ -37,7 +35,7 @@ import com.nimbusds.jose.util.StandardCharset;
 public final class StringUtil {
 
     public static String toUtf8Str(byte[] bytes) {
-        return new String(bytes, StandardCharset.UTF_8);
+        return new String(bytes, StandardCharsets.UTF_8);
     }
 
     public static String toUtf8Str(InputStream input) throws IOException {
