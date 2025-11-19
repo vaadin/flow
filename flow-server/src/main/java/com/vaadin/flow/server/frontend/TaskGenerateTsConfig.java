@@ -26,6 +26,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.ExecutionFailedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -97,7 +98,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         }
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
-            String config = new String(tsConfStream.readAllBytes());
+            String config = StringUtil.toUtf8Str(tsConfStream);
 
             config = config.replaceAll("%FRONTEND%",
                     options.getNpmFolder().toPath()

@@ -31,6 +31,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.shared.util.SharedUtil;
 import com.vaadin.flow.theme.Theme;
 
@@ -61,7 +62,7 @@ public class WebComponentGenerator {
     private static String getStringResource(String name) {
         try (InputStream resourceStream = WebComponentGenerator.class
                 .getResourceAsStream(name)) {
-            return new String(resourceStream.readAllBytes());
+            return StringUtil.toUtf8Str(resourceStream.readAllBytes());
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Couldn't load string resource '" + name + "'!", e);

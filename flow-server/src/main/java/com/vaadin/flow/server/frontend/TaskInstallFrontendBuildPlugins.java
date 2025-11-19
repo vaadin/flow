@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
@@ -115,8 +116,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     private void copyIfNeeded(File targetFile, String sourceResource)
             throws IOException {
-        String content = new String(FrontendPluginsUtil
-                .getResourceAsStream(sourceResource).readAllBytes());
+        String content = StringUtil.toUtf8Str(FrontendPluginsUtil
+                .getResourceAsStream(sourceResource));
         FileIOUtils.writeIfChanged(targetFile, content);
     }
 

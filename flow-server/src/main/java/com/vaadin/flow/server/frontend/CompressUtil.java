@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -173,7 +174,7 @@ public class CompressUtil {
                 return null;
             }
             try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                return new String(inputStream.readAllBytes());
+                return StringUtil.toUtf8Str(inputStream);
             }
         } catch (ZipException e) {
             throw new IOException(e);

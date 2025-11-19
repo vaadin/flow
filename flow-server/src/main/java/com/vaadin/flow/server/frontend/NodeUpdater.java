@@ -39,6 +39,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -171,7 +172,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(new String(content.readAllBytes())),
+                    JacksonUtils.readTree(StringUtil.toUtf8Str(content)),
                     options.isReactEnabled()
                             && FrontendUtils.isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());

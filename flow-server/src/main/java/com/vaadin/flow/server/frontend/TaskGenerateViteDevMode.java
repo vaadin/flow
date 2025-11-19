@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream devModeStream = getClass()
                 .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
-            return new String(devModeStream.readAllBytes());
+            return StringUtil.toUtf8Str(devModeStream);
         }
     }
 

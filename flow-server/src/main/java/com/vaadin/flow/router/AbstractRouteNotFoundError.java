@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -102,7 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
-            return new String(stream.readAllBytes());
+            return StringUtil.toUtf8Str(stream);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);

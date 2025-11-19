@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,7 +58,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(TAILWIND_CSS)) {
-            var template = new String(indexStream.readAllBytes());
+            var template = StringUtil.toUtf8Str(indexStream);
             template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
                     relativeSourcePath);
             return template;

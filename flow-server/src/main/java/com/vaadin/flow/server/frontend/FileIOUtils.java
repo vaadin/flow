@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
@@ -61,9 +62,10 @@ public class FileIOUtils {
 
     static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {
-            return new String(input.readAllBytes());
+            return StringUtil.toUtf8Str(input);
         }
     }
+
 
     /**
      * Copies a directory recursively.

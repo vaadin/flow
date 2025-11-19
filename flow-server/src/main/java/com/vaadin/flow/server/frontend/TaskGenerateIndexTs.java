@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -100,7 +101,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         }
         try (InputStream indexTsStream = getClass()
                 .getResourceAsStream(indexFile)) {
-            indexTemplate = new String(indexTsStream.readAllBytes());
+            indexTemplate = StringUtil.toUtf8Str(indexTsStream);
             if (options.isReactEnabled()) {
                 File routesTsx = new File(frontendDirectory,
                         FrontendUtils.ROUTES_TSX);

@@ -95,7 +95,7 @@ public final class BundleUtils {
         }
 
         try {
-            return JacksonUtils.readTree(new String(stats.readAllBytes()));
+            return JacksonUtils.readTree(StringUtil.toUtf8Str(stats));
         } catch (IOException e) {
             getLogger().warn(
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);

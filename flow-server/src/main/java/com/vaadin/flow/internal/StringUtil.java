@@ -15,6 +15,9 @@
  */
 package com.vaadin.flow.internal;
 
+import com.nimbusds.jose.util.StandardCharset;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -31,6 +34,14 @@ import java.util.UUID;
  * @since 2.1.4
  */
 public final class StringUtil {
+
+    public static String toUtf8Str(byte[] bytes) {
+        return new String(bytes, StandardCharset.UTF_8);
+    }
+
+    public static String toUtf8Str(InputStream input) throws IOException {
+        return StringUtil.toUtf8Str(input.readAllBytes());
+    }
 
     /**
      * Comment parser state enumeration.
@@ -234,4 +245,5 @@ public final class StringUtil {
         }
         return result.toString();
     }
+    
 }

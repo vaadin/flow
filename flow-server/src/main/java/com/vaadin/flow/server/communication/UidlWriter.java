@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -260,7 +261,7 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
                 context)) {
-            return new String(inlineResourceStream.readAllBytes());
+            return StringUtil.toUtf8Str(inlineResourceStream);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);

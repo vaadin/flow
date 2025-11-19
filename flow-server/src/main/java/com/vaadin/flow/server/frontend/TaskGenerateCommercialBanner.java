@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +60,7 @@ public class TaskGenerateCommercialBanner extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream content = getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)) {
-            return new String(content.readAllBytes());
+            return StringUtil.toUtf8Str(content);
         }
     }
 

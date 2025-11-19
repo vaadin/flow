@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,8 +58,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private static String getTemplate(String string) {
         try {
-            return new String(TaskUpdateVite.class.getResourceAsStream(string)
-                    .readAllBytes());
+            return StringUtil.toUtf8Str(TaskUpdateVite.class.getResourceAsStream(string));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -115,7 +115,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 FrontendUtils.VITE_GENERATED_CONFIG);
         InputStream resource = this.getClass().getClassLoader()
                 .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG);
-        String template = new String(resource.readAllBytes());
+        String template = StringUtil.toUtf8Str(resource);
 
         template = template
                 .replace("#settingsImport#",

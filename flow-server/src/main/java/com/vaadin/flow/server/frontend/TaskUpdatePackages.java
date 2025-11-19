@@ -198,7 +198,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = coreVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(new String(content.readAllBytes())),
+                    JacksonUtils.readTree(StringUtil.toUtf8Str(content)),
                     platformDependencies);
         }
 
@@ -211,7 +211,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = vaadinVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(new String(content.readAllBytes())),
+                    JacksonUtils.readTree(StringUtil.toUtf8Str(content)),
                     platformDependencies);
         }
 
@@ -555,7 +555,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         try (InputStream vaadinVersionsStream = coreVersionsResource
                 .openStream()) {
             final JsonNode versionsJson = JacksonUtils
-                    .readTree(new String(vaadinVersionsStream.readAllBytes()));
+                    .readTree(StringUtil.toUtf8Str(vaadinVersionsStream));
             if (versionsJson.has("platform")) {
                 return Optional.of(versionsJson.get("platform").asString());
             }

@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import com.vaadin.flow.internal.StringUtil;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,7 +47,7 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(INDEX_HTML)) {
-            return new String(indexStream.readAllBytes());
+            return StringUtil.toUtf8Str(indexStream);
         }
     }
 

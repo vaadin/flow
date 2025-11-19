@@ -355,7 +355,7 @@ public class TaskGenerateReactFiles
         try (InputStream indexTsStream = options.getClassFinder()
                 .getClassLoader()
                 .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
-            indexTemplate = new String(indexTsStream.readAllBytes());
+            indexTemplate = StringUtil.toUtf8Str(indexTsStream);
         }
         return indexTemplate;
     }
