@@ -431,7 +431,7 @@ public class ExtendedClientDetails implements Serializable {
      *            the new theme variant
      */
     void setThemeVariant(String themeVariant) {
-        this.themeVariant = themeVariant == null ? "" : themeVariant;
+        this.themeVariant = themeVariant;
     }
 
     /**
