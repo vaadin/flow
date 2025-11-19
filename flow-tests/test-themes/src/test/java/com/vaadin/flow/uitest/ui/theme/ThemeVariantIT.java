@@ -43,7 +43,8 @@ public class ThemeVariantIT extends ChromeBrowserTest {
         // Browser may report 'light' as default color-scheme
         String text = variantDisplay.getText();
         Assert.assertTrue("Theme variant should be empty or 'light'",
-                "Theme Variant: ".equals(text) || "Theme Variant: light".equals(text));
+                "Theme Variant: ".equals(text)
+                        || "Theme Variant: light".equals(text));
 
         // Verify the DOM attribute is not set
         String themeAttr = (String) executeScript(
