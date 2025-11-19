@@ -47,6 +47,7 @@ import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.di.Lookup;
@@ -54,12 +55,14 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -1564,6 +1567,115 @@ public class FrontendUtils {
     public static boolean isTailwindCssEnabled(Options options) {
         return options.getFeatureFlags()
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered as staying on the same version.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules) throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent() && nodeModules.exists()) {
+            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            // If no record of previous version, version is considered same
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return false;
+            }
+            FrontendVersion jsonVersion = new FrontendVersion(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString());
+            FrontendVersion platformsVersion = new FrontendVersion(
+                    platformVersion.get());
+            return jsonVersion.getMajorVersion() != platformsVersion
+                    .getMajorVersion();
+        }
+        return false;
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered updated.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules) throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent() && nodeModules.exists()) {
+            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            // If no record of previous version, version is considered updated
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return true;
+            }
+            return !Objects.equals(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString(),
+                    platformVersion.get());
+        }
+        return false;
+    }
+
+    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        if (coreVersionsResource == null) {
+            return Optional.empty();
+        }
+        try (InputStream vaadinVersionsStream = coreVersionsResource
+                .openStream()) {
+            final JsonNode versionsJson = JacksonUtils.readTree(IOUtils
+                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
+            if (versionsJson.has("platform")) {
+                return Optional.of(versionsJson.get("platform").asString());
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine version information", e);
+        }
+
+        return Optional.empty();
+    }
+
+    static File getVaadinJsonFile(File npmFolder) {
+        return new File(new File(npmFolder, NODE_MODULES),
+                NodeUpdater.VAADIN_JSON);
+    }
+
+    static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
+        File vaadinJsonFile = getVaadinJsonFile(npmFolder);
+        if (vaadinJsonFile.exists()) {
+            String fileContent = FileUtils.readFileToString(vaadinJsonFile,
+                    UTF_8.name());
+            return JacksonUtils.readTree(fileContent);
+        } else {
+            return JacksonUtils.createObjectNode();
+        }
     }
 
 }
