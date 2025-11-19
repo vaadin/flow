@@ -23,13 +23,17 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorityAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.SecurityConfigurer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -42,12 +46,14 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.annotation.web.configurers.RequestCacheConfigurer;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.oidc.web.logout.OidcClientInitiatedLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.access.AccessDeniedHandlerImpl;
 import org.springframework.security.web.access.DelegatingAccessDeniedHandler;
 import org.springframework.security.web.access.RequestMatcherDelegatingAccessDeniedHandler;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
@@ -486,7 +492,7 @@ public final class VaadinSecurityConfigurer
         if (EndpointRequestUtil.isHillaAvailable()) {
             return RequestMatchers.anyOf(baseMatcher,
                     // Matchers for anonymous Hilla views
-                    getRequestUtil()::isAnonymousHillaView,
+                    getRequestUtil()::isAnonymousHillaRoute,
                     // Matcher for public Hilla endpoints
                     getRequestUtil()::isAnonymousEndpoint);
         }
@@ -830,6 +836,8 @@ public final class VaadinSecurityConfigurer
                 .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
                 .authenticated();
         if (EndpointRequestUtil.isHillaAvailable()) {
+            registry.requestMatchers(getRequestUtil()::isSecuredHillaRoute)
+                    .access(getRequestUtil()::authorizeHillaRoute);
             registry.requestMatchers(getRequestUtil()::isEndpointRequest)
                     .authenticated();
         }

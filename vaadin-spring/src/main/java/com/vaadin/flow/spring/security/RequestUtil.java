@@ -17,6 +17,9 @@ package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -25,6 +28,10 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthoritiesAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
@@ -55,6 +62,8 @@ public class RequestUtil {
 
     private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();
 
+    private final AuthoritiesAuthorizationManager authoritiesAuthorizationManager = new AuthoritiesAuthorizationManager();
+
     @Autowired
     private ObjectProvider<NavigationAccessControl> accessControl;
 
@@ -74,10 +83,10 @@ public class RequestUtil {
 
     /**
      * Checks whether the request is an internal request.
-     *
+     * <p>
      * An internal request is one that is needed for all Vaadin applications to
      * function, e.g. UIDL or init requests.
-     *
+     * <p>
      * Note that bootstrap requests for any route or static resource requests
      * are not internal, neither are resource requests for the JS bundle.
      *
@@ -130,7 +139,7 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to an accessible Hilla
      *         view, {@code false} otherwise
-     * @deprecated use {@link #isAnonymousHillaView(HttpServletRequest)} to
+     * @deprecated use {@link #isAnonymousHillaRoute(HttpServletRequest)} to
      *             match requests to Hilla views that do not require
      *             authentication
      */
@@ -138,21 +147,6 @@ public class RequestUtil {
     public boolean isAllowedHillaView(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
             return fileRouterRequestUtil.isRouteAllowed(request);
-        }
-        return false;
-    }
-
-    /**
-     * Checks if the request targets an anonymous Hilla view.
-     * 
-     * @param request
-     *            the HTTP request to check
-     * @return {@code true} if the request corresponds to an anonymous Hilla
-     *         view, {@code false} otherwise
-     */
-    public boolean isAnonymousHillaView(HttpServletRequest request) {
-        if (fileRouterRequestUtil != null) {
-            return fileRouterRequestUtil.isAnonymousRoute(request);
         }
         return false;
     }
@@ -192,6 +186,50 @@ public class RequestUtil {
      */
     public boolean isSecuredFlowRoute(HttpServletRequest request) {
         return isSecuredFlowRouteInternal(request);
+    }
+
+    /**
+     * Checks if the request targets a Hilla route that allows anonymous access.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to a Hilla route that
+     *         allows anonymous access, {@code false} otherwise
+     */
+    public boolean isAnonymousHillaRoute(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isAnonymousRoute(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the request targets a Hilla route that requires authentication.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to a Hilla route that
+     *         requires authentication, {@code false} otherwise
+     */
+    public boolean isSecuredHillaRoute(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isSecuredRoute(request);
+        }
+        return false;
+    }
+
+    AuthorizationResult authorizeHillaRoute(
+            Supplier<? extends Authentication> authenticationSupplier,
+            RequestAuthorizationContext context) {
+        return authoritiesAuthorizationManager.authorize(authenticationSupplier,
+                getHillaAllowedAuthorities(context.getRequest()));
+    }
+
+    private Set<String> getHillaAllowedAuthorities(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.getAllowedAuthorities(request);
+        }
+        return Collections.emptySet();
     }
 
     /**

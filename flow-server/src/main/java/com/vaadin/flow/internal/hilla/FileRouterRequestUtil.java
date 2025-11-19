@@ -17,6 +17,10 @@ package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Set;
+
+import org.jspecify.annotations.NullMarked;
+
 /**
  * A container for utility methods related with Hilla file-based router.
  * <p>
@@ -25,6 +29,7 @@ import jakarta.servlet.http.HttpServletRequest;
  * @author Vaadin Ltd
  * @since 24.4
  */
+@NullMarked
 public interface FileRouterRequestUtil {
 
     /**
@@ -41,12 +46,32 @@ public interface FileRouterRequestUtil {
     boolean isRouteAllowed(HttpServletRequest request);
 
     /**
-     * Checks if the given request goes to an anonymous (public) route.
+     * Checks if the given request goes to a route that allows anonymous access.
      *
      * @param request
      *            the HTTP request to check
-     * @return {@code true} if the request is targeting an anonymous route,
-     *         {@code false} otherwise
+     * @return {@code true} if the request is targeting a route that allows
+     *         anonymous access, {@code false} otherwise
      */
     boolean isAnonymousRoute(HttpServletRequest request);
+
+    /**
+     * Checks if the given request goes to a route that requires authentication.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request is targeting a route that requires
+     *         authentication, {@code false} otherwise
+     */
+    boolean isSecuredRoute(HttpServletRequest request);
+
+    /**
+     * Gets the set of authorities that are allowed to access the given request.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return the set of authorities that are allowed to access the given
+     *         request, or an empty set if no authority is required
+     */
+    Set<String> getAllowedAuthorities(HttpServletRequest request);
 }
