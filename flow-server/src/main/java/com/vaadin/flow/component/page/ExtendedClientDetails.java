@@ -190,7 +190,7 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
-        this.themeVariant = themeVariant;
+        setThemeVariant(themeVariant);
         this.themeName = themeName;
     }
 
