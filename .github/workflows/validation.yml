@@ -273,21 +273,6 @@ jobs:
       contents: read
       issues: write
       pull-requests: write
-    env:
-      # Opt-out: Modules to exclude from API diff checking
-      # These are excluded because they are not public APIs or are infrastructure/test modules
-      EXCLUDED_MODULES: |
-        flow-client
-        flow-test-util
-        flow-test-generic
-        flow-tests
-        flow-html-components-testbench
-        flow-server-production-mode
-        flow-plugins
-        flow-bom
-        vaadin-dev-server
-        flow-jandex
-        flow-polymer2lit
     steps:
       - uses: actions/checkout@v4
         with:
@@ -308,14 +293,6 @@ jobs:
             !~/.m2/repository/com/vaadin
           key: ${{ runner.os }}-maven-api-diff-${{ hashFiles('**/pom.xml') }}
           restore-keys: ${{ runner.os }}-maven-
-      - name: Prepare Maven exclusion list
-        run: |
-          echo "Excluded modules:"
-          echo "$EXCLUDED_MODULES"
-          # Transform newline-separated list to Maven exclusion format (!module1,!module2,...)
-          EXCLUSION_LIST=$(echo "$EXCLUDED_MODULES" | tr '\n' ',' | sed 's/,$//' | sed 's/,/,!/g;s/^/!/')
-          echo "Maven exclusion list: $EXCLUSION_LIST"
-          echo "MAVEN_EXCLUSION_LIST=$EXCLUSION_LIST" >> $GITHUB_ENV
       - name: Checkout base branch for API comparison
         run: |
           echo "Checking out base branch: ${{ env.BASE_REF }}"
@@ -332,8 +309,7 @@ jobs:
         run: |
           echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env.BASE_REF }}"
           echo "Running in $(pwd)"
-          echo "Using Maven exclusion list: $MAVEN_EXCLUSION_LIST"
-          mvn clean install -B -ntp -DskipTests -pl "$MAVEN_EXCLUSION_LIST" -am
+          mvn clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
         # working-directory is not set, so it defaults back to the PR branch checkout
         run: |
@@ -342,15 +318,13 @@ jobs:
       - name: Calculate API version difference
         run: |
           echo "Running in $(pwd)"
-          echo "Using Maven exclusion list: $MAVEN_EXCLUSION_LIST"
-          mvn clean install -B -ntp -e -V -pl "$MAVEN_EXCLUSION_LIST" -am -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
+          mvn clean install -B -ntp -e -V -Papicmp -DskipTests -Dapi.reference.version=${{ steps.base-version.outputs.BASE_API_VERSION }} -Dtest.use.hub=true -Djapicmp.maven.plugin.version=0.22.0
       - name: Move API diff results
         run: |
           #!/bin/bash
           set -e
           mkdir -p apidiff
           # Find all japicmp output directories and move them
-          # Excluding the excluded modules
           for module_dir in */target/japicmp; do
             if [ -d "$module_dir" ]; then
               module_name=$(dirname $(dirname "$module_dir"))

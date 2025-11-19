@@ -15,6 +15,7 @@
   <properties>
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
     <sonar.skip>true</sonar.skip>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
   <dependencies>

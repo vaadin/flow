@@ -771,5 +771,48 @@
         <sonar.issuesReport.html.enable/>
       </properties>
     </profile>
+    <profile>
+      <id>apicmp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.siom79.japicmp</groupId>
+            <artifactId>japicmp-maven-plugin</artifactId>
+            <version>${japicmp.maven.plugin.version}</version>
+            <configuration>
+              <oldVersion>
+                <dependency>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${api.reference.version}</version>
+                  <type>jar</type>
+                </dependency>
+              </oldVersion>
+              <newVersion>
+                <file>
+                  <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                </file>
+              </newVersion>
+              <parameter>
+                <onlyModified>true</onlyModified>
+                <ignoreMissingClasses>true</ignoreMissingClasses>
+                <skipXmlReport>true</skipXmlReport>
+                <skipDiffReport>true</skipDiffReport>
+                <ignoreMissingOldVersion>true</ignoreMissingOldVersion>
+              </parameter>
+              <skip>${flow.apicmp.skip}</skip>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>cmp</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 </project>
