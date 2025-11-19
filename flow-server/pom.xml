@@ -17,6 +17,19 @@
 
     <dependency>
       <groupId>com.vaadin</groupId>
+      <artifactId>flow-archive-extractor</artifactId>
+      <version>${project.version}</version>
+      <!-- Note, ideally vaadin-server should not depend this module at all
+           and development time tooling shared with plugins should end up here.
+           Temporarily build this way so that commons-compress can be ditched
+           from flow-server runtime dependencies with reasonable effort.
+           The actual dependency brought in by plugins or dev mode.
+      -->
+      <optional>true</optional>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
       <artifactId>flow-push</artifactId>
       <version>${project.version}</version>
     </dependency>
@@ -106,18 +119,6 @@
       <version>1.2.0.vaadin1</version>
     </dependency>
 
-    <!-- Download libraries -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.28.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>com.vaadin</groupId>
