@@ -28,6 +28,7 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthoritiesAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationResult;
 import org.springframework.security.core.Authentication;
@@ -61,6 +62,8 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 public class RequestUtil {
 
     private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();
+
+    private final AuthenticatedAuthorizationManager<?> authenticatedAuthenticationManager = new AuthenticatedAuthorizationManager<>();
 
     private final AuthoritiesAuthorizationManager authoritiesAuthorizationManager = new AuthoritiesAuthorizationManager();
 
@@ -221,8 +224,14 @@ public class RequestUtil {
     AuthorizationResult authorizeHillaRoute(
             Supplier<? extends Authentication> authenticationSupplier,
             RequestAuthorizationContext context) {
-        return authoritiesAuthorizationManager.authorize(authenticationSupplier,
-                getHillaAllowedAuthorities(context.getRequest()));
+        var authorities = getHillaAllowedAuthorities(context.getRequest());
+        if (authorities.isEmpty()) {
+            return authenticatedAuthenticationManager
+                    .authorize(authenticationSupplier, null);
+        } else {
+            return authoritiesAuthorizationManager
+                    .authorize(authenticationSupplier, authorities);
+        }
     }
 
     private Set<String> getHillaAllowedAuthorities(HttpServletRequest request) {
