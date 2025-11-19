@@ -47,8 +47,8 @@ public class DownloadLicenseMojo extends FlowModeAbstractMojo {
 
         // Check if we already have a proKey
         if (LocalProKey.get() != null) {
-            getLog().info(
-                    "A license key already exists at " + LocalProKey.getLocation());
+            getLog().info("A license key already exists at "
+                    + LocalProKey.getLocation());
             getLog().info(
                     "Delete the existing key file if you want to download a new one.");
             return;
@@ -61,8 +61,7 @@ public class DownloadLicenseMojo extends FlowModeAbstractMojo {
             getLog().info("License key downloaded and saved successfully to "
                     + LocalProKey.getLocation());
         } catch (LicenseException e) {
-            throw new MojoFailureException(
-                    "Failed to download license key", e);
+            throw new MojoFailureException("Failed to download license key", e);
         }
     }
 
