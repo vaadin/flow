@@ -261,7 +261,7 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
                 context)) {
-            return StringUtil.toUtf8Str(inlineResourceStream);
+            return StringUtil.toUTF8String(inlineResourceStream);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);

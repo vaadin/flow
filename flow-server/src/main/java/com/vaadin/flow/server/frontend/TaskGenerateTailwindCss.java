@@ -59,7 +59,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(TAILWIND_CSS)) {
-            var template = StringUtil.toUtf8Str(indexStream);
+            var template = StringUtil.toUTF8String(indexStream);
             template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
                     relativeSourcePath);
             return template;

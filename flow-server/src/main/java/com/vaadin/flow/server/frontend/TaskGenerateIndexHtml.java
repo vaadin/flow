@@ -48,7 +48,7 @@ public class TaskGenerateIndexHtml extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(INDEX_HTML)) {
-            return StringUtil.toUtf8Str(indexStream);
+            return StringUtil.toUTF8String(indexStream);
         }
     }
 

@@ -49,7 +49,7 @@ public class TaskGenerateServiceWorker extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream swStream = getClass()
                 .getResourceAsStream(SERVICE_WORKER_SRC)) {
-            return StringUtil.toUtf8Str(swStream);
+            return StringUtil.toUTF8String(swStream);
         }
     }
 

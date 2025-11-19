@@ -62,7 +62,7 @@ public class WebComponentGenerator {
     private static String getStringResource(String name) {
         try (InputStream resourceStream = WebComponentGenerator.class
                 .getResourceAsStream(name)) {
-            return StringUtil.toUtf8Str(resourceStream.readAllBytes());
+            return StringUtil.toUTF8String(resourceStream.readAllBytes());
         } catch (IOException e) {
             throw new IllegalArgumentException(
                     "Couldn't load string resource '" + name + "'!", e);

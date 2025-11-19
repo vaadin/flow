@@ -101,7 +101,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         }
         try (InputStream indexTsStream = getClass()
                 .getResourceAsStream(indexFile)) {
-            indexTemplate = StringUtil.toUtf8Str(indexTsStream);
+            indexTemplate = StringUtil.toUTF8String(indexTsStream);
             if (options.isReactEnabled()) {
                 File routesTsx = new File(frontendDirectory,
                         FrontendUtils.ROUTES_TSX);

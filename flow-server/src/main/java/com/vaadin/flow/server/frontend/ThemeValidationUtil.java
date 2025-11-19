@@ -291,7 +291,7 @@ public class ThemeValidationUtil {
             for (String themeJson : themeJsons) {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
-                String content = StringUtil.toUtf8Str(byteContent);
+                String content = StringUtil.toUTF8String(byteContent);
                 content = content.replaceAll("\\r\\n", "\n");
 
                 Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);

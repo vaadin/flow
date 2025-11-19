@@ -57,7 +57,7 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(WEB_COMPONENT_HTML)) {
-            return StringUtil.toUtf8Str(indexStream);
+            return StringUtil.toUTF8String(indexStream);
         }
     }
 

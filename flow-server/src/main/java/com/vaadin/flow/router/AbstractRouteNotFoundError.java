@@ -103,7 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
-            return StringUtil.toUtf8Str(stream);
+            return StringUtil.toUTF8String(stream);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);

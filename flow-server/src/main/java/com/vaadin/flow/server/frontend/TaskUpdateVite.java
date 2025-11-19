@@ -59,7 +59,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private static String getTemplate(String string) {
         try {
-            return StringUtil.toUtf8Str(
+            return StringUtil.toUTF8String(
                     TaskUpdateVite.class.getResourceAsStream(string));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -117,7 +117,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                 FrontendUtils.VITE_GENERATED_CONFIG);
         InputStream resource = this.getClass().getClassLoader()
                 .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG);
-        String template = StringUtil.toUtf8Str(resource);
+        String template = StringUtil.toUTF8String(resource);
 
         template = template
                 .replace("#settingsImport#",

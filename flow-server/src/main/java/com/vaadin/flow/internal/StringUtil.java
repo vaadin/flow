@@ -43,7 +43,7 @@ public final class StringUtil {
      * @return new string enforced in UTF_8 because jdk engineers didn't have
      *         the guts to break all things
      */
-    public static String toUtf8Str(byte[] bytes) {
+    public static String toUTF8String(byte[] bytes) {
         return new String(bytes, StandardCharsets.UTF_8);
     }
 
@@ -56,8 +56,8 @@ public final class StringUtil {
      * @return string in UTF 8
      * @throws IOException
      */
-    public static String toUtf8Str(InputStream input) throws IOException {
-        return toUtf8Str(input.readAllBytes());
+    public static String toUTF8String(InputStream input) throws IOException {
+        return toUTF8String(input.readAllBytes());
     }
 
     /**

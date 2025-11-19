@@ -172,7 +172,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUtf8Str(content)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     options.isReactEnabled()
                             && FrontendUtils.isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());

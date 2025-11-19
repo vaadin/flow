@@ -59,7 +59,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream devModeStream = getClass()
                 .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
-            return StringUtil.toUtf8Str(devModeStream);
+            return StringUtil.toUTF8String(devModeStream);
         }
     }
 

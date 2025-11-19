@@ -61,7 +61,7 @@ public class TaskGenerateCommercialBanner extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream content = getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)) {
-            return StringUtil.toUtf8Str(content);
+            return StringUtil.toUTF8String(content);
         }
     }
 

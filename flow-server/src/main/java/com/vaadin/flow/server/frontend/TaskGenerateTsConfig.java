@@ -98,7 +98,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         }
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
-            String config = StringUtil.toUtf8Str(tsConfStream);
+            String config = StringUtil.toUTF8String(tsConfStream);
 
             config = config.replaceAll("%FRONTEND%",
                     options.getNpmFolder().toPath()

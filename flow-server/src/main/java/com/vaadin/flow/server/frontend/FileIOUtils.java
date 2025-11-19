@@ -82,7 +82,7 @@ public class FileIOUtils {
      */
     static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {
-            return StringUtil.toUtf8Str(input);
+            return StringUtil.toUTF8String(input);
         }
     }
 

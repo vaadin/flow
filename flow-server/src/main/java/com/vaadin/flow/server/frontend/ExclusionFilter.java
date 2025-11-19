@@ -108,7 +108,7 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(StringUtil.toUtf8Str(content)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     reactEnabled, excludeWebComponentNpmPackages);
             return convert.getExclusions();
         }

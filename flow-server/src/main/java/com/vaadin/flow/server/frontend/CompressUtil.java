@@ -175,7 +175,7 @@ public class CompressUtil {
                 return null;
             }
             try (InputStream inputStream = zipFile.getInputStream(entry)) {
-                return StringUtil.toUtf8Str(inputStream);
+                return StringUtil.toUTF8String(inputStream);
             }
         } catch (ZipException e) {
             throw new IOException(e);

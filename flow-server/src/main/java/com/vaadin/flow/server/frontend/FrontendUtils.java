@@ -411,7 +411,7 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return StringUtil.toUtf8Str(handledStream).replaceAll("\\R",
+            return StringUtil.toUTF8String(handledStream).replaceAll("\\R",
                     System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()

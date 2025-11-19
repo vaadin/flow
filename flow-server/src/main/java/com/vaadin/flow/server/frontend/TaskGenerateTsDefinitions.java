@@ -287,7 +287,7 @@ public class TaskGenerateTsDefinitions extends AbstractTaskClientGenerator {
     private String getTemplateContent(String suffix) throws IOException {
         try (InputStream tsDefinitionStream = getClass()
                 .getResourceAsStream(TS_DEFINITIONS + suffix)) {
-            return StringUtil.toUtf8Str(tsDefinitionStream);
+            return StringUtil.toUTF8String(tsDefinitionStream);
         }
     }
 
