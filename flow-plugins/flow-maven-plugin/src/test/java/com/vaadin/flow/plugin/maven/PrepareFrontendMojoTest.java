@@ -39,6 +39,7 @@ import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertNotContainingPackages;
@@ -50,8 +51,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import static com.vaadin.flow.server.frontend.installer.Platform.DEFAULT_NODEJS_DOWNLOAD_ROOT;
 
 public class PrepareFrontendMojoTest {
     @Rule
@@ -115,7 +114,8 @@ public class PrepareFrontendMojoTest {
                 true);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
                 FrontendTools.DEFAULT_NODE_VERSION);
-        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot", NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
+        ReflectionUtils.setVariableValueInObject(mojo, "nodeDownloadRoot",
+                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBasedir",
                 projectBase);
         ReflectionUtils.setVariableValueInObject(mojo, "projectBuildDir",

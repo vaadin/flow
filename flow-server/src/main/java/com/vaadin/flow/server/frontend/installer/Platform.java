@@ -31,7 +31,6 @@ import com.vaadin.flow.server.frontend.FrontendVersion;
  */
 public class Platform {
 
-
     enum Architecture {
         X86, X64, PPC64LE, S390X, ARM64, ARMV7L;
 
@@ -131,7 +130,8 @@ public class Platform {
      *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
-        this(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture, null);
+        this(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture,
+                null);
     }
 
     public Platform(String nodeDownloadRoot, OS os, Architecture architecture,
@@ -164,7 +164,8 @@ public class Platform {
                     // project, yet.
                     // See
                     // https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list
-                    NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT, os, architecture, "musl");
+                    NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT, os,
+                    architecture, "musl");
         }
         return new Platform(os, architecture);
     }
