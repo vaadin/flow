@@ -18,7 +18,6 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 import tools.jackson.databind.JsonNode;
@@ -37,7 +36,8 @@ import com.vaadin.flow.server.VaadinSession;
  * {@link Page#getExtendedClientDetails()} and cached for the lifetime of the
  * UI. The fetch happens asynchronously, so the first call may return
  * {@code null} while the data is being retrieved. To update the cached values
- * with fresh data from the browser, use {@link #refresh(Consumer)}.
+ * with fresh data from the browser, use
+ * {@link #refresh(SerializableConsumer)}}.
  *
  * @author Vaadin Ltd
  * @since 2.0
@@ -459,7 +459,7 @@ public class ExtendedClientDetails implements Serializable {
      *            a callback that will be invoked with the updated
      *            ExtendedClientDetails when the refresh is complete
      */
-    public void refresh(Consumer<ExtendedClientDetails> callback) {
+    public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
         final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
         final SerializableConsumer<JsonNode> resultHandler = json -> {
             ExtendedClientDetails details = fromJson(ui, json);
