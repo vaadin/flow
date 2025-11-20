@@ -767,7 +767,7 @@ public class FrontendTools {
         if (FrontendUtils.isWindows()) {
             return new Pair<>("node.exe", "node/node.exe");
         } else {
-            return new Pair<>("node", "node/node");
+            return new Pair<>("node", "node/bin/node");
         }
     }
 
