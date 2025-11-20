@@ -764,10 +764,13 @@ public class FrontendTools {
     }
 
     private Pair<String, String> getNodeCommands() {
+        String versionSuffix = (nodeVersion != null && !NodeInstaller.PROVIDED_VERSION.equals(nodeVersion))
+                ? "-" + nodeVersion
+                : "";
         if (FrontendUtils.isWindows()) {
-            return new Pair<>("node.exe", "node/node.exe");
+            return new Pair<>("node.exe", "node" + versionSuffix + "/node.exe");
         } else {
-            return new Pair<>("node", "node/bin/node");
+            return new Pair<>("node", "node" + versionSuffix + "/bin/node");
         }
     }
 

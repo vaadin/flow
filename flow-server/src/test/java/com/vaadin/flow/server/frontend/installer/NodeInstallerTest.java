@@ -146,17 +146,20 @@ public class NodeInstallerTest {
             throw new IllegalStateException("Failed to install Node", e);
         }
 
-        String nodeInstallPath = platform.isWindows() ? "node/" + nodeExec
-                : "node/bin/" + nodeExec;
+        String versionedNodeDir = "node-" + FrontendTools.DEFAULT_NODE_VERSION;
+        String nodeInstallPath = platform.isWindows()
+                ? versionedNodeDir + "/" + nodeExec
+                : versionedNodeDir + "/bin/" + nodeExec;
         Assert.assertTrue("node should have been installed",
                 new File(targetDir, nodeInstallPath).exists());
         String npmInstallPath = platform.isWindows()
-                ? "node/node_modules/npm/bin/npm"
-                : "node/lib/node_modules/npm/bin/npm";
+                ? versionedNodeDir + "/node_modules/npm/bin/npm"
+                : versionedNodeDir + "/lib/node_modules/npm/bin/npm";
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, npmInstallPath).exists());
-        String npmBinPath = platform.isWindows() ? "node/npm.cmd"
-                : "node/bin/npm";
+        String npmBinPath = platform.isWindows()
+                ? versionedNodeDir + "/npm.cmd"
+                : versionedNodeDir + "/bin/npm";
         Assert.assertTrue("npm should be available in bin",
                 new File(targetDir, npmBinPath).exists());
         // Note: old installation cleanup is verified by the fact that the

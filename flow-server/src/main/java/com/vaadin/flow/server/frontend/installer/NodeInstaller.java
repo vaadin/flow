@@ -51,13 +51,9 @@ import com.vaadin.frontendtools.installer.VerificationException;
  */
 public class NodeInstaller {
 
-    public static final String INSTALL_PATH = "/node";
+    public static final String INSTALL_PATH_PREFIX = "/node";
 
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
-
-    private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
-            "\\\\") + "\\node.exe";
-    private static final String NODE_DEFAULT = INSTALL_PATH + "/bin/node";
 
     public static final String PROVIDED_VERSION = "provided";
 
@@ -310,7 +306,8 @@ public class NodeInstaller {
 
         File destinationDirectory = getNodeInstallDirectory();
 
-        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        // Copy the entire Node.js distribution as-is, overwriting any existing
+        // files
         getLogger().info(
                 "Installing complete Node.js distribution from {} to {}",
                 extractedNodeDir, destinationDirectory);
@@ -360,7 +357,8 @@ public class NodeInstaller {
 
         File destinationDirectory = getNodeInstallDirectory();
 
-        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        // Copy the entire Node.js distribution as-is, overwriting any existing
+        // files
         getLogger().info(
                 "Installing complete Node.js distribution from {} to {}",
                 extractedNodeDir, destinationDirectory);
@@ -374,7 +372,14 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectoryFile() {
-        return new File(installDirectory, INSTALL_PATH);
+        return new File(installDirectory, getVersionedInstallPath());
+    }
+
+    private String getVersionedInstallPath() {
+        if (nodeVersion == null || PROVIDED_VERSION.equals(nodeVersion)) {
+            return INSTALL_PATH_PREFIX;
+        }
+        return INSTALL_PATH_PREFIX + "-" + nodeVersion;
     }
 
     private File getNodeInstallDirectory() {
@@ -555,8 +560,10 @@ public class NodeInstaller {
      * @return node executable
      */
     private File getNodeExecutable() {
-        String nodeExecutable = platform.isWindows() ? NODE_WINDOWS
-                : NODE_DEFAULT;
+        String versionedPath = getVersionedInstallPath();
+        String nodeExecutable = platform.isWindows()
+                ? versionedPath.replaceAll("/", "\\\\") + "\\node.exe"
+                : versionedPath + "/bin/node";
         return new File(installDirectory + nodeExecutable);
     }
 
