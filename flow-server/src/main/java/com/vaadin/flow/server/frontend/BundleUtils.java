@@ -169,7 +169,7 @@ public final class BundleUtils {
         try {
             if (FrontendUtils.isPlatformMajorVersionUpdated(
                     options.getClassFinder(), options.getNodeModulesFolder(),
-                    options.getNpmFolder())) {
+                    options.getNpmFolder(), options.getBuildDirectory())) {
                 getLogger().info(
                         "Platform version updated. Skipping bundle lock file copy.");
                 return;

@@ -757,7 +757,7 @@ public class FrontendUtilsTest {
     }
 
     @Test
-    public void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange()
+    public void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inNodeModulesVersion()
             throws IOException {
         File npmFolder = tmpDir.newFolder();
         File versionJsonFile = new File(npmFolder, "versions.json");
@@ -786,7 +786,7 @@ public class FrontendUtilsTest {
 
         Assert.assertFalse("Change in minor version should return false",
                 FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules));
+                        nodeModules, npmFolder));
 
         //@formatter:off
         versionJsonString = "{"
@@ -798,7 +798,99 @@ public class FrontendUtilsTest {
 
         Assert.assertTrue("Change in major version should return true",
                 FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules));
+                        nodeModules, npmFolder));
+    }
+
+    @Test
+    public void platformMajorVersionVersionUpdated_returnsTrueOnlyForMajorVersionChange_inBundleVersion()
+            throws IOException {
+        File npmFolder = tmpDir.newFolder();
+        File versionJsonFile = new File(npmFolder, "versions.json");
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+
+        //@formatter:off
+        String versionJsonString = "{"
+                + "  \"platform\": \"21.1.0\"\n"
+                + "}\n";
+        //@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        File nodeModules = new File(npmFolder, "node_modules");
+        File buildFolder = new File(npmFolder, "target");
+        File bundleFolder = new File(buildFolder, "dev-bundle");
+        File bundleVaadinJson = new File(bundleFolder, "vaadin.json");
+        String bundleVersionString = """
+                        {
+                          "vaadinVersion" : "21.0.0"
+                        }
+                """;
+
+        FileUtils.write(bundleVaadinJson, bundleVersionString,
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse("Change in minor version should return false",
+                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
+                        nodeModules, buildFolder));
+
+        //@formatter:off
+        versionJsonString = "{"
+                + "  \"platform\": \"22.0.0\"\n"
+                + "}\n";
+        //@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        Assert.assertTrue("Change in major version should return true",
+                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
+                        nodeModules, buildFolder));
+    }
+
+    @Test
+    public void platformMajorVersionVersionUpdated_bundleVersionIsCheckedOverNodeModulesVersion()
+            throws IOException {
+        File npmFolder = tmpDir.newFolder();
+        File versionJsonFile = new File(npmFolder, "versions.json");
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
+                .thenReturn(versionJsonFile.toURI().toURL());
+
+        //@formatter:off
+        String versionJsonString = "{"
+                + "  \"platform\": \"21.1.0\"\n"
+                + "}\n";
+        //@formatter:on
+        FileUtils.write(versionJsonFile, versionJsonString,
+                StandardCharsets.UTF_8);
+
+        File nodeModules = new File(npmFolder, "node_modules");
+        File buildFolder = new File(npmFolder, "target");
+        File bundleFolder = new File(buildFolder, "dev-bundle");
+        File bundleVaadinJson = new File(bundleFolder, "vaadin.json");
+        String bundleVersionString = """
+                        {
+                          "vaadinVersion" : "21.0.0"
+                        }
+                """;
+
+        FileUtils.write(bundleVaadinJson, bundleVersionString,
+                StandardCharsets.UTF_8);
+
+        File projectVaadinJson = new File(nodeModules, ".vaadin/vaadin.json");
+        String projectVersionString = """
+                        {
+                          "vaadinVersion" : "20.0.0"
+                        }
+                """;
+
+        FileUtils.write(projectVaadinJson, projectVersionString,
+                StandardCharsets.UTF_8);
+
+        Assert.assertFalse("Change in minor version should return false",
+                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
+                        nodeModules, buildFolder));
     }
 
     private File prepareFrontendForRoutesFile(String fileName, String content)

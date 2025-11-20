@@ -1586,12 +1586,18 @@ public class FrontendUtils {
      *             when file reading fails
      */
     protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
-            File npmFolder, File nodeModules) throws IOException {
+            File npmFolder, File nodeModules, File buildDirectory)
+            throws IOException {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = getVaadinVersion(finder);
         if (platformVersion.isPresent() && nodeModules.exists()) {
-            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            JsonNode vaadinJsonContents = getBundleVaadinVersion(
+                    buildDirectory);
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                // Check for vaadin version from installed node_modules
+                vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            }
             // If no record of previous version, version is considered same
             if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
                 return false;
@@ -1604,6 +1610,21 @@ public class FrontendUtils {
                     .getMajorVersion();
         }
         return false;
+    }
+
+    private static JsonNode getBundleVaadinVersion(File buildDirectory)
+            throws IOException {
+        JsonNode vaadinJsonContents;
+        File vaadinJsonFile = new File(
+                new File(buildDirectory, Constants.DEV_BUNDLE_LOCATION),
+                TaskRunDevBundleBuild.VAADIN_JSON);
+        if (!vaadinJsonFile.exists()) {
+            return JacksonUtils.createObjectNode();
+        }
+        String fileContent = FileUtils.readFileToString(vaadinJsonFile,
+                UTF_8.name());
+        vaadinJsonContents = JacksonUtils.readTree(fileContent);
+        return vaadinJsonContents;
     }
 
     /**
