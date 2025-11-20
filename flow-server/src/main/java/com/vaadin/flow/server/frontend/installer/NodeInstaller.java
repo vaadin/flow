@@ -310,7 +310,8 @@ public class NodeInstaller {
 
         File destinationDirectory = getNodeInstallDirectory();
 
-        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        // Copy the entire Node.js distribution as-is, overwriting any existing
+        // files
         getLogger().info(
                 "Installing complete Node.js distribution from {} to {}",
                 extractedNodeDir, destinationDirectory);
@@ -360,7 +361,8 @@ public class NodeInstaller {
 
         File destinationDirectory = getNodeInstallDirectory();
 
-        // Copy the entire Node.js distribution as-is, overwriting any existing files
+        // Copy the entire Node.js distribution as-is, overwriting any existing
+        // files
         getLogger().info(
                 "Installing complete Node.js distribution from {} to {}",
                 extractedNodeDir, destinationDirectory);
