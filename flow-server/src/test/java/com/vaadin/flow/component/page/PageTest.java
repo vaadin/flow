@@ -321,7 +321,10 @@ public class PageTest {
         page.setColorScheme(ColorScheme.Value.DARK);
 
         String js = capturedExpression.get();
-        Assert.assertTrue(js.contains("style.colorScheme = $0"));
+        Assert.assertTrue("Should set theme attribute",
+                js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue("Should clear inline style",
+                js.contains("style.colorScheme = ''"));
         Assert.assertEquals("dark", capturedParam.get());
     }
 
@@ -342,7 +345,10 @@ public class PageTest {
         page.setColorScheme(null);
 
         String js = capturedExpression.get();
-        Assert.assertTrue(js.contains("style.colorScheme = ''"));
+        Assert.assertTrue("Should remove theme attribute",
+                js.contains("removeAttribute('theme')"));
+        Assert.assertTrue("Should clear inline style",
+                js.contains("style.colorScheme = ''"));
         Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 

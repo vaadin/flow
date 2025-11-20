@@ -265,8 +265,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             if (colorSchemeAnnotation != null) {
                 String colorScheme = colorSchemeAnnotation.value().getValue();
                 if (!colorScheme.isEmpty() && !colorScheme.equals("normal")) {
-                    indexDocument.head().parent().attr("style",
-                            "color-scheme: " + colorScheme);
+                    indexDocument.head().parent().attr("theme", colorScheme);
                 }
             }
         }
@@ -276,12 +275,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
-                String existingStyle = indexDocument.head().parent()
-                        .attr("style");
-                String newStyle = existingStyle.isEmpty()
-                        ? "color-scheme: " + variant
-                        : existingStyle + "; color-scheme: " + variant;
-                indexDocument.head().parent().attr("style", newStyle);
+                indexDocument.head().parent().attr("theme", variant);
             }
         });
     }
