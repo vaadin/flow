@@ -775,6 +775,7 @@ public class FrontendUtilsTest {
 
         File nodeModules = new File(npmFolder, "node_modules");
         File projectVaadinJson = new File(nodeModules, ".vaadin/vaadin.json");
+        Files.createDirectories(projectVaadinJson.getParentFile().toPath());
         String projectVersionString = """
                         {
                           "vaadinVersion" : "21.0.0"
@@ -821,6 +822,7 @@ public class FrontendUtilsTest {
         File nodeModules = new File(npmFolder, "node_modules");
         File buildFolder = new File(npmFolder, "target");
         File bundleFolder = new File(buildFolder, "dev-bundle");
+        Files.createDirectories(bundleFolder.toPath());
         File bundleVaadinJson = new File(bundleFolder, "vaadin.json");
         String bundleVersionString = """
                         {
@@ -868,6 +870,7 @@ public class FrontendUtilsTest {
         File nodeModules = new File(npmFolder, "node_modules");
         File buildFolder = new File(npmFolder, "target");
         File bundleFolder = new File(buildFolder, "dev-bundle");
+        Files.createDirectories(bundleFolder.toPath());
         File bundleVaadinJson = new File(bundleFolder, "vaadin.json");
         String bundleVersionString = """
                         {
@@ -879,6 +882,7 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         File projectVaadinJson = new File(nodeModules, ".vaadin/vaadin.json");
+        Files.createDirectories(projectVaadinJson.getParentFile().toPath());
         String projectVersionString = """
                         {
                           "vaadinVersion" : "20.0.0"
