@@ -52,12 +52,6 @@
       <groupId>io.methvin</groupId>
       <artifactId>directory-watcher</artifactId>
       <version>0.19.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- API dependencies -->
