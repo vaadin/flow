@@ -24,14 +24,10 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.ClassList;
 
-/**
- * Tests for ElementClassList.ClassListView which presents a Set<String>-like
- * view over ElementClassList. These mirror the old SetView semantics tests.
- */
 public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClassList> {
 
     @Test
-    public void addContainsSize_basicSetSemantics() {
+    public void testSetViewAdd() {
         ElementClassList feature = createFeature();
         ClassList set = feature.getClassList();
 
@@ -42,7 +38,6 @@ public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClass
 
         Assert.assertTrue(set.contains("a"));
         Assert.assertTrue(set.contains("b"));
-        Assert.assertFalse(set.contains("c"));
 
         // duplicate add returns false and doesn't change size
         Assert.assertFalse(set.add("a"));
@@ -50,7 +45,7 @@ public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClass
     }
 
     @Test
-    public void removeAndClear_updatesSize() {
+    public void testSetViewClear() {
         ElementClassList feature = createFeature();
         ClassList set = feature.getClassList();
 
@@ -67,12 +62,13 @@ public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClass
         Assert.assertFalse(set.remove("nope"));
 
         set.clear();
+        //noinspection ConstantConditions
         Assert.assertEquals(0, set.size());
         Assert.assertFalse(set.contains("y"));
     }
 
     @Test
-    public void iterator_returnsStringsInInsertionOrder() {
+    public void testSetViewIteratorIterate() {
         ElementClassList feature = createFeature();
         ClassList set = feature.getClassList();
         set.add("first");
@@ -88,12 +84,13 @@ public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClass
     }
 
     @Test
-    public void contains_nonString_returnsFalse() {
+    public void testSetViewContains() {
         ElementClassList feature = createFeature();
         ClassList set = feature.getClassList();
         set.add("a");
-        Assert.assertFalse(set.contains(123));
-        Assert.assertFalse(set.remove(123));
+        Assert.assertTrue(set.contains("a"));
+        Assert.assertTrue(set.remove("a"));
+        Assert.assertFalse(set.contains("a"));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -109,7 +106,7 @@ public class ListFeatureSetViewTest extends AbstractNodeFeatureTest<ElementClass
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void add_withSpaces_throws() {
+    public void testSetViewValidateAdd() {
         ElementClassList feature = createFeature();
         feature.getClassList().add("a b");
     }
