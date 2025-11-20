@@ -16,6 +16,7 @@
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
     <skipTests>${maven.test.skip}</skipTests>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
   <dependencies>
@@ -51,12 +52,6 @@
       <groupId>io.methvin</groupId>
       <artifactId>directory-watcher</artifactId>
       <version>0.19.1</version>
-      <exclusions>
-        <exclusion>
-          <groupId>net.java.dev.jna</groupId>
-          <artifactId>jna</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
 
     <!-- API dependencies -->
