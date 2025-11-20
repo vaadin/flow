@@ -23,51 +23,53 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
+import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.COLOR_SCHEME_DISPLAY_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_DARK_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_LIGHT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.TEST_ELEMENT_ID;
 import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.THEME_NAME_DISPLAY_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.THEME_VARIANT_DISPLAY_ID;
 
 /**
- * Integration tests for theme variant functionality.
+ * Integration tests for color scheme functionality.
  */
 public class ThemeVariantIT extends ChromeBrowserTest {
 
     @Test
-    public void initialThemeVariant_isEmpty() {
+    public void initialColorScheme_isEmpty() {
         open();
 
-        DivElement variantDisplay = $(DivElement.class)
-                .id(THEME_VARIANT_DISPLAY_ID);
-        // Browser may report 'light' as default color-scheme
-        String text = variantDisplay.getText();
-        Assert.assertTrue("Theme variant should be empty or 'light'",
-                "Theme Variant: ".equals(text)
-                        || "Theme Variant: light".equals(text));
+        DivElement colorSchemeDisplay = $(DivElement.class)
+                .id(COLOR_SCHEME_DISPLAY_ID);
+        // Browser may report 'light' or 'normal' as default color-scheme
+        String text = colorSchemeDisplay.getText();
+        Assert.assertTrue("Color scheme should be empty, 'light', or 'normal'",
+                "Color Scheme: ".equals(text)
+                        || "Color Scheme: light".equals(text)
+                        || "Color Scheme: normal".equals(text));
 
-        // Verify the DOM attribute is not set
-        String themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertNull("Initial theme attribute should be null", themeAttr);
+        // Verify the CSS property is not explicitly set
+        String colorScheme = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertTrue("Initial color-scheme should be empty or default",
+                colorScheme == null || colorScheme.isEmpty());
     }
 
     @Test
-    public void setDarkTheme_variantIsSetAndStylesApplied() {
+    public void setDarkTheme_colorSchemeIsSetAndStylesApplied() {
         open();
 
         // Click the set dark button
         $(NativeButtonElement.class).id(SET_DARK_ID).click();
 
         // Verify the display is updated
-        DivElement variantDisplay = $(DivElement.class)
-                .id(THEME_VARIANT_DISPLAY_ID);
-        Assert.assertEquals("Theme Variant: dark", variantDisplay.getText());
+        DivElement colorSchemeDisplay = $(DivElement.class)
+                .id(COLOR_SCHEME_DISPLAY_ID);
+        Assert.assertEquals("Color Scheme: dark", colorSchemeDisplay.getText());
 
-        // Verify the DOM attribute is set
-        String themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertEquals("dark", themeAttr);
+        // Verify the CSS property is set
+        String colorScheme = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("dark", colorScheme);
 
         // Verify the CSS is applied
         TestBenchElement testElement = $(DivElement.class).id(TEST_ELEMENT_ID);
@@ -77,21 +79,22 @@ public class ThemeVariantIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void setLightTheme_variantIsSetAndStylesApplied() {
+    public void setLightTheme_colorSchemeIsSetAndStylesApplied() {
         open();
 
         // Click the set light button
         $(NativeButtonElement.class).id(SET_LIGHT_ID).click();
 
         // Verify the display is updated
-        DivElement variantDisplay = $(DivElement.class)
-                .id(THEME_VARIANT_DISPLAY_ID);
-        Assert.assertEquals("Theme Variant: light", variantDisplay.getText());
+        DivElement colorSchemeDisplay = $(DivElement.class)
+                .id(COLOR_SCHEME_DISPLAY_ID);
+        Assert.assertEquals("Color Scheme: light",
+                colorSchemeDisplay.getText());
 
-        // Verify the DOM attribute is set
-        String themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertEquals("light", themeAttr);
+        // Verify the CSS property is set
+        String colorScheme = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("light", colorScheme);
 
         // Verify the CSS is applied
         TestBenchElement testElement = $(DivElement.class).id(TEST_ELEMENT_ID);
@@ -116,24 +119,24 @@ public class ThemeVariantIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void themeVariantAttributeReflectsServerSide() {
+    public void colorSchemePropertyReflectsServerSide() {
         open();
 
         // Set dark theme
         $(NativeButtonElement.class).id(SET_DARK_ID).click();
-        String themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertEquals("dark", themeAttr);
+        String colorScheme = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("dark", colorScheme);
 
         // Set light theme
         $(NativeButtonElement.class).id(SET_LIGHT_ID).click();
-        themeAttr = (String) executeScript(
-                "return document.documentElement.getAttribute('theme');");
-        Assert.assertEquals("light", themeAttr);
+        colorScheme = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("light", colorScheme);
     }
 
     @Test
-    public void switchBetweenVariants_stylesUpdateCorrectly() {
+    public void switchBetweenColorSchemes_stylesUpdateCorrectly() {
         open();
 
         TestBenchElement testElement = $(DivElement.class).id(TEST_ELEMENT_ID);

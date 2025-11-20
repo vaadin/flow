@@ -539,15 +539,10 @@ export class Flow {
       params['v-np'] = ($wnd as any).navigator.platform;
     }
 
-    /* Theme variant from HTML element - supports both Lumo and Aura */
-    let themeAttr = document.documentElement.getAttribute('theme');
-    if (!themeAttr) {
-      // If no theme attribute, check for native color-scheme property
-      const colorScheme = getComputedStyle(document.documentElement).getPropertyValue('color-scheme').trim();
-      // "normal" is the default value and means no variant is set
-      themeAttr = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
-    }
-    params['v-tv'] = themeAttr;
+    /* Color scheme from CSS color-scheme property */
+    const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
+    // "normal" is the default value and means no color scheme is set
+    params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
     /* Theme name - detect which theme is in use */
     const computedStyle = getComputedStyle(document.documentElement);
     let themeName = '';

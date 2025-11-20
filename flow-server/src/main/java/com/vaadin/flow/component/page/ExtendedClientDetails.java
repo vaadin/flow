@@ -60,7 +60,7 @@ public class ExtendedClientDetails implements Serializable {
     private double devicePixelRatio = -1.0D;
     private String windowName;
     private String navigatorPlatform;
-    private String themeVariant = "";
+    private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
     private String themeName;
 
     /**
@@ -102,8 +102,8 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
-     * @param themeVariant
-     *            the current theme variant
+     * @param colorScheme
+     *            the current color scheme
      * @param themeName
      *            the theme name (e.g., "lumo", "aura")
      */
@@ -113,7 +113,7 @@ public class ExtendedClientDetails implements Serializable {
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform, String themeVariant, String themeName) {
+            String navigatorPlatform, String colorScheme, String themeName) {
         this.ui = ui;
         if (screenWidth != null) {
             try {
@@ -190,7 +190,7 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
-        setThemeVariant(themeVariant);
+        setColorScheme(ColorScheme.Value.fromString(colorScheme));
         this.themeName = themeName;
     }
 
@@ -406,12 +406,12 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Gets the theme variant.
+     * Gets the color scheme.
      *
-     * @return the theme variant, or empty string if not set
+     * @return the color scheme, never {@code null}
      */
-    public String getThemeVariant() {
-        return themeVariant;
+    public ColorScheme.Value getColorScheme() {
+        return colorScheme;
     }
 
     /**
@@ -425,13 +425,14 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
-     * Updates the theme variant. For internal use only.
+     * Updates the color scheme. For internal use only.
      *
-     * @param themeVariant
-     *            the new theme variant
+     * @param colorScheme
+     *            the new color scheme
      */
-    void setThemeVariant(String themeVariant) {
-        this.themeVariant = themeVariant == null ? "" : themeVariant;
+    void setColorScheme(ColorScheme.Value colorScheme) {
+        this.colorScheme = colorScheme == null ? ColorScheme.Value.NORMAL
+                : colorScheme;
     }
 
     /**
@@ -484,7 +485,7 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-pr"),
                 getStringElseNull.apply("v-wn"),
                 getStringElseNull.apply("v-np"),
-                getStringElseNull.apply("v-tv"),
+                getStringElseNull.apply("v-cs"),
                 getStringElseNull.apply("v-tn"));
     }
 

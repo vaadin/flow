@@ -177,7 +177,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         addDevBundleTheme(indexDocument, context);
-        applyThemeVariant(indexDocument, context);
+        applyColorScheme(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -253,12 +253,35 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void applyThemeVariant(Document indexDocument,
+    private void applyColorScheme(Document indexDocument,
             VaadinContext context) {
+        // Check for @ColorScheme annotation first
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        Class<?> shell = registry.getShell();
+        if (shell != null) {
+            com.vaadin.flow.component.page.ColorScheme colorSchemeAnnotation = shell
+                    .getAnnotation(
+                            com.vaadin.flow.component.page.ColorScheme.class);
+            if (colorSchemeAnnotation != null) {
+                String colorScheme = colorSchemeAnnotation.value().getValue();
+                if (!colorScheme.isEmpty() && !colorScheme.equals("normal")) {
+                    indexDocument.head().parent().attr("style",
+                            "color-scheme: " + colorScheme);
+                }
+            }
+        }
+
+        // Also apply from deprecated @Theme variant attribute for backwards
+        // compatibility
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
-                indexDocument.head().parent().attr("theme", variant);
+                String existingStyle = indexDocument.head().parent()
+                        .attr("style");
+                String newStyle = existingStyle.isEmpty()
+                        ? "color-scheme: " + variant
+                        : existingStyle + "; color-scheme: " + variant;
+                indexDocument.head().parent().attr("style", newStyle);
             }
         });
     }

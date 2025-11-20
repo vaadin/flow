@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -35,7 +36,7 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         Div bodyElementHeight = createDiv("bh");
         Div devicePixelRatio = createDiv("pr");
         Div touchDevice = createDiv("td");
-        Div themeVariant = createDiv("tv");
+        Div colorScheme = createDiv("cs");
         Div themeName = createDiv("tn");
 
         // Display initial values immediately
@@ -43,7 +44,7 @@ public class ExtendedClientDetailsView extends AbstractDivView {
                 .getExtendedClientDetails();
         displayDetails(details, screenWidth, screenHeight, windowInnerWidth,
                 windowInnerHeight, bodyElementWidth, bodyElementHeight,
-                devicePixelRatio, touchDevice, themeVariant, themeName);
+                devicePixelRatio, touchDevice, colorScheme, themeName);
 
         // the sizing values cannot be set with JS but pixel ratio and touch
         // support can be faked
@@ -63,31 +64,31 @@ public class ExtendedClientDetailsView extends AbstractDivView {
                                         screenHeight, windowInnerWidth,
                                         windowInnerHeight, bodyElementWidth,
                                         bodyElementHeight, devicePixelRatio,
-                                        touchDevice, themeVariant, themeName);
+                                        touchDevice, colorScheme, themeName);
 
                             });
-                    getUI().ifPresent(
-                            ui -> ui.getPage().setThemeVariant("light"));
+                    getUI().ifPresent(ui -> ui.getPage()
+                            .setColorScheme(ColorScheme.Value.LIGHT));
                 });
         fetchDetailsButton.setId("fetch-values");
-        // Theme variant buttons
+        // Color scheme buttons
         NativeButton setDarkButton = new NativeButton("Set Dark Theme",
                 event -> {
-                    getUI().ifPresent(
-                            ui -> ui.getPage().setThemeVariant("dark"));
+                    getUI().ifPresent(ui -> ui.getPage()
+                            .setColorScheme(ColorScheme.Value.DARK));
                 });
         setDarkButton.setId("set-dark");
 
         NativeButton setLightButton = new NativeButton("Set Light Theme",
                 event -> {
-                    getUI().ifPresent(
-                            ui -> ui.getPage().setThemeVariant("light"));
+                    getUI().ifPresent(ui -> ui.getPage()
+                            .setColorScheme(ColorScheme.Value.LIGHT));
                 });
         setLightButton.setId("set-light");
 
         NativeButton clearThemeButton = new NativeButton("Clear Theme",
                 event -> {
-                    getUI().ifPresent(ui -> ui.getPage().setThemeVariant(null));
+                    getUI().ifPresent(ui -> ui.getPage().setColorScheme(null));
                 });
         clearThemeButton.setId("clear-theme");
 
@@ -98,7 +99,7 @@ public class ExtendedClientDetailsView extends AbstractDivView {
     private void displayDetails(ExtendedClientDetails details, Div screenWidth,
             Div screenHeight, Div windowInnerWidth, Div windowInnerHeight,
             Div bodyElementWidth, Div bodyElementHeight, Div devicePixelRatio,
-            Div touchDevice, Div themeVariant, Div themeName) {
+            Div touchDevice, Div colorScheme, Div themeName) {
         screenWidth.setText("" + details.getScreenWidth());
         screenHeight.setText("" + details.getScreenHeight());
         windowInnerWidth.setText("" + details.getWindowInnerWidth());
@@ -107,7 +108,7 @@ public class ExtendedClientDetailsView extends AbstractDivView {
         bodyElementHeight.setText("" + details.getBodyClientHeight());
         devicePixelRatio.setText("" + details.getDevicePixelRatio());
         touchDevice.setText("" + details.isTouchDevice());
-        themeVariant.setText("" + details.getThemeVariant());
+        colorScheme.setText("" + details.getColorScheme().getValue());
         themeName.setText("" + details.getThemeName());
     }
 

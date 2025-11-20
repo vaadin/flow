@@ -18,11 +18,12 @@ package com.vaadin.flow.uitest.ui.theme;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.router.Route;
 
 /**
- * Test view for theme variant functionality.
+ * Test view for color scheme functionality.
  */
 @Route("com.vaadin.flow.uitest.ui.theme.ThemeVariantView")
 public class ThemeVariantView extends Div {
@@ -30,35 +31,35 @@ public class ThemeVariantView extends Div {
     public static final String SET_DARK_ID = "set-dark";
     public static final String SET_LIGHT_ID = "set-light";
     public static final String CLEAR_THEME_ID = "clear-theme";
-    public static final String THEME_VARIANT_DISPLAY_ID = "theme-variant-display";
+    public static final String COLOR_SCHEME_DISPLAY_ID = "color-scheme-display";
     public static final String THEME_NAME_DISPLAY_ID = "theme-name-display";
     public static final String TEST_ELEMENT_ID = "test-element";
 
-    private final Div themeVariantDisplay;
+    private final Div colorSchemeDisplay;
     private final Div themeNameDisplay;
     private final Div testElement;
 
     public ThemeVariantView() {
-        // Create buttons to control theme variant
+        // Create buttons to control color scheme
         NativeButton setDarkButton = new NativeButton("Set Dark Theme",
                 event -> {
-                    getUI().ifPresent(
-                            ui -> ui.getPage().setThemeVariant("dark"));
+                    getUI().ifPresent(ui -> ui.getPage()
+                            .setColorScheme(ColorScheme.Value.DARK));
                     updateDisplays();
                 });
         setDarkButton.setId(SET_DARK_ID);
 
         NativeButton setLightButton = new NativeButton("Set Light Theme",
                 event -> {
-                    getUI().ifPresent(
-                            ui -> ui.getPage().setThemeVariant("light"));
+                    getUI().ifPresent(ui -> ui.getPage()
+                            .setColorScheme(ColorScheme.Value.LIGHT));
                     updateDisplays();
                 });
         setLightButton.setId(SET_LIGHT_ID);
 
         // Create display elements
-        themeVariantDisplay = new Div();
-        themeVariantDisplay.setId(THEME_VARIANT_DISPLAY_ID);
+        colorSchemeDisplay = new Div();
+        colorSchemeDisplay.setId(COLOR_SCHEME_DISPLAY_ID);
 
         themeNameDisplay = new Div();
         themeNameDisplay.setId(THEME_NAME_DISPLAY_ID);
@@ -69,8 +70,8 @@ public class ThemeVariantView extends Div {
         testElement.setText("Test Element");
         testElement.getStyle().set("width", "100px").set("height", "100px");
 
-        add(setDarkButton, setLightButton, themeVariantDisplay,
-                themeNameDisplay, testElement);
+        add(setDarkButton, setLightButton, colorSchemeDisplay, themeNameDisplay,
+                testElement);
 
         // Update initial displays
         updateDisplays();
@@ -78,10 +79,10 @@ public class ThemeVariantView extends Div {
 
     private void updateDisplays() {
         Page page = UI.getCurrentOrThrow().getPage();
-        String variant = page.getThemeVariant();
+        ColorScheme.Value colorScheme = page.getColorScheme();
         String themeName = page.getExtendedClientDetails().getThemeName();
 
-        themeVariantDisplay.setText("Theme Variant: " + variant);
+        colorSchemeDisplay.setText("Color Scheme: " + colorScheme.getValue());
         themeNameDisplay.setText("Theme Name: " + themeName);
     }
 }

@@ -302,7 +302,7 @@ public class PageTest {
     }
 
     @Test
-    public void setThemeVariant_setsAttribute() {
+    public void setColorScheme_setsStyleProperty() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
         AtomicReference<Object> capturedParam = new AtomicReference<>();
         MockUI mockUI = new MockUI();
@@ -318,15 +318,15 @@ public class PageTest {
             }
         };
 
-        page.setThemeVariant("dark");
+        page.setColorScheme(ColorScheme.Value.DARK);
 
         String js = capturedExpression.get();
-        Assert.assertTrue(js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue(js.contains("style.colorScheme = $0"));
         Assert.assertEquals("dark", capturedParam.get());
     }
 
     @Test
-    public void setThemeVariant_null_removesAttribute() {
+    public void setColorScheme_null_clearsProperty() {
         MockUI mockUI = new MockUI();
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
@@ -339,15 +339,15 @@ public class PageTest {
             }
         };
 
-        page.setThemeVariant(null);
+        page.setColorScheme(null);
 
         String js = capturedExpression.get();
-        Assert.assertTrue(js.contains("removeAttribute('theme')"));
-        Assert.assertEquals("", page.getThemeVariant());
+        Assert.assertTrue(js.contains("style.colorScheme = ''"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
-    public void setThemeVariant_emptyString_removesAttribute() {
+    public void setColorScheme_normal_clearsProperty() {
         MockUI mockUI = new MockUI();
 
         AtomicReference<String> capturedExpression = new AtomicReference<>();
@@ -360,34 +360,34 @@ public class PageTest {
             }
         };
 
-        page.setThemeVariant("");
+        page.setColorScheme(ColorScheme.Value.NORMAL);
 
         String js = capturedExpression.get();
-        Assert.assertTrue(js.contains("removeAttribute('theme')"));
-        Assert.assertEquals("", page.getThemeVariant());
+        Assert.assertTrue(js.contains("style.colorScheme = ''"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
-    public void getThemeVariant_returnsEmptyString_whenNotSet() {
+    public void getColorScheme_returnsNormal_whenNotSet() {
         Page page = new Page(new MockUI());
-        Assert.assertEquals("", page.getThemeVariant());
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 
     @Test
-    public void getThemeVariant_returnsCachedValue() {
+    public void getColorScheme_returnsCachedValue() {
         MockUI mockUI = new MockUI();
-        // Set up ExtendedClientDetails with theme variant
+        // Set up ExtendedClientDetails with color scheme
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
                 null, null, null, null, null, null, null, null, null, null,
                 null, null, null, null, null, "dark", null);
         mockUI.getInternals().setExtendedClientDetails(details);
 
         Page page = new Page(mockUI);
-        Assert.assertEquals("dark", page.getThemeVariant());
+        Assert.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
     }
 
     @Test
-    public void setThemeVariant_updatesGetThemeVariant() {
+    public void setColorScheme_updatesGetColorScheme() {
         MockUI mockUI = new MockUI();
         // Set up ExtendedClientDetails
         ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
@@ -403,18 +403,18 @@ public class PageTest {
             }
         };
 
-        Assert.assertEquals("", page.getThemeVariant());
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
 
-        page.setThemeVariant("dark");
-        Assert.assertEquals("dark", page.getThemeVariant());
+        page.setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
 
-        page.setThemeVariant("light");
-        Assert.assertEquals("light", page.getThemeVariant());
+        page.setColorScheme(ColorScheme.Value.LIGHT);
+        Assert.assertEquals(ColorScheme.Value.LIGHT, page.getColorScheme());
 
-        page.setThemeVariant(null);
-        Assert.assertEquals("", page.getThemeVariant());
+        page.setColorScheme(null);
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
 
-        page.setThemeVariant("");
-        Assert.assertEquals("", page.getThemeVariant());
+        page.setColorScheme(ColorScheme.Value.NORMAL);
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 }

@@ -84,35 +84,37 @@ public class Page implements Serializable {
     }
 
     /**
-     * Sets the theme variant for the page.
+     * Sets the color scheme for the page using the CSS color-scheme property.
+     * <p>
+     * The color scheme affects how the browser renders UI elements and allows
+     * the application to adapt to system color scheme preferences.
      *
-     * @param variant
-     *            the theme variant to set (e.g., "dark", "light"), or
-     *            {@code null} or empty string to remove the theme variant
+     * @param colorScheme
+     *            the color scheme to set (e.g., ColorScheme.Value.DARK,
+     *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
      */
-    public void setThemeVariant(String variant) {
-        String newValue = (variant == null || variant.isEmpty()) ? null
-                : variant;
-        if (newValue == null) {
-            executeJs("document.documentElement.removeAttribute('theme');");
+    public void setColorScheme(ColorScheme.Value colorScheme) {
+        if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
+            executeJs("document.documentElement.style.colorScheme = '';");
+            getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
         } else {
-            executeJs("document.documentElement.setAttribute('theme', $0);",
-                    newValue);
+            executeJs("document.documentElement.style.colorScheme = $0;",
+                    colorScheme.getValue());
+            getExtendedClientDetails().setColorScheme(colorScheme);
         }
-        getExtendedClientDetails().setThemeVariant(newValue);
     }
 
     /**
-     * Gets the theme variant for the page.
+     * Gets the color scheme for the page.
      * <p>
      * Note that this method returns the server-side cached value and will not
-     * detect theme changes made directly via JavaScript or browser developer
-     * tools.
+     * detect color scheme changes made directly via JavaScript or browser
+     * developer tools.
      *
-     * @return the theme variant, or empty string if not set
+     * @return the color scheme value, never {@code null}
      */
-    public String getThemeVariant() {
-        return getExtendedClientDetails().getThemeVariant();
+    public ColorScheme.Value getColorScheme() {
+        return getExtendedClientDetails().getColorScheme();
     }
 
     /**

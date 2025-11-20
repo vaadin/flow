@@ -51,7 +51,7 @@ public class ExtendedClientDetailsTest {
         Assert.assertEquals(2.0D, details.getDevicePixelRatio(), 0.0);
         Assert.assertEquals("ROOT-1234567-0.1234567", details.getWindowName());
         Assert.assertFalse(details.isIPad());
-        Assert.assertEquals("light", details.getThemeVariant());
+        Assert.assertEquals(ColorScheme.Value.LIGHT, details.getColorScheme());
         Assert.assertEquals("aura", details.getThemeName());
 
         // Don't test getCurrentDate() and time delta due to the dependency on
@@ -163,7 +163,7 @@ public class ExtendedClientDetailsTest {
         private String devicePixelRatio = "2.0";
         private String windowName = "ROOT-1234567-0.1234567";
         private String navigatorPlatform = "Linux i686";
-        private String themeVariant = "light";
+        private String colorScheme = "light";
         private String themeName = "aura";
 
         public ExtendedClientDetails buildDetails() {
@@ -172,7 +172,7 @@ public class ExtendedClientDetailsTest {
                     bodyClientHeight, timezoneOffset, rawTimezoneOffset,
                     dstSavings, dstInEffect, timeZoneId, clientServerTimeDelta,
                     touchDevice, devicePixelRatio, windowName,
-                    navigatorPlatform, themeVariant, themeName);
+                    navigatorPlatform, colorScheme, themeName);
         }
 
         public ExtendBuilder setScreenWidth(String screenWidth) {

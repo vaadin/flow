@@ -60,15 +60,13 @@ body.bg {
   width: 1em;
 }
 
-/* Theme variant styles for testing */
+/* Color scheme styles for testing */
 #test-element {
   background-color: rgb(200, 200, 200);
 }
 
-:root[theme='dark'] #test-element {
-  background-color: rgb(30, 30, 30);
-}
-
-:root #test-element {
-  background-color: rgb(200, 200, 200);
+@media (prefers-color-scheme: dark) {
+  #test-element {
+    background-color: rgb(30, 30, 30);
+  }
 }
