@@ -33,8 +33,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 import com.vaadin.flow.component.UI;
@@ -79,11 +77,6 @@ public class SecurityConfig {
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
         return new NavigationAccessControlConfigurer()
                 .withLoginView(LoginView.class).withRoutePathAccessChecker();
-    }
-
-    @Bean
-    AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer customRequestTransformer() {
-        return new PathPatternRequestTransformer();
     }
 
     @Bean
