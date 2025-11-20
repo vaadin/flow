@@ -110,10 +110,9 @@ public class ElementClassList extends SerializableNodeList<String> {
                 return;
             }
 
-            // Replace any existing binding
-            SignalBinding existing = getBindings().remove(name);
-            if (existing != null && existing.registration != null) {
-                existing.registration.remove();
+            if (isBound(name)) {
+                throw new BindingActiveException("Class name '" + name
+                        + "' is already bound to a signal");
             }
             Element owner = Element.get(getNode());
             Registration registration = ElementEffect.bind(owner, signal,
