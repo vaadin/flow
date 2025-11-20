@@ -1581,6 +1581,8 @@ public class FrontendUtils {
      *            npm root folder
      * @param nodeModules
      *            node_modules folder
+     * @param buildDirectory
+     *            project build directory, to find dev-bundle folder
      * @return {@code true} if the version has changed, {@code false} if not
      * @throws IOException
      *             when file reading fails
@@ -1622,8 +1624,7 @@ public class FrontendUtils {
         if (!vaadinJsonFile.exists()) {
             return JacksonUtils.createObjectNode();
         }
-        String fileContent = FileUtils.readFileToString(vaadinJsonFile,
-                UTF_8.name());
+        String fileContent = Files.readString(vaadinJsonFile.toPath(), UTF_8);
         vaadinJsonContents = JacksonUtils.readTree(fileContent);
         return vaadinJsonContents;
     }
@@ -1692,8 +1693,8 @@ public class FrontendUtils {
     static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
         File vaadinJsonFile = getVaadinJsonFile(npmFolder);
         if (vaadinJsonFile.exists()) {
-            String fileContent = FileUtils.readFileToString(vaadinJsonFile,
-                    UTF_8.name());
+            String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                    UTF_8);
             return JacksonUtils.readTree(fileContent);
         } else {
             return JacksonUtils.createObjectNode();

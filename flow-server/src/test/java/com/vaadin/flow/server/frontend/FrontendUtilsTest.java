@@ -770,7 +770,7 @@ public class FrontendUtilsTest {
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
+        Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
         File nodeModules = new File(npmFolder, "node_modules");
@@ -781,7 +781,7 @@ public class FrontendUtilsTest {
                         }
                 """;
 
-        FileUtils.write(projectVaadinJson, projectVersionString,
+        Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
@@ -793,7 +793,7 @@ public class FrontendUtilsTest {
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
+        Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
         Assert.assertTrue("Change in major version should return true",
@@ -815,7 +815,7 @@ public class FrontendUtilsTest {
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
+        Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
         File nodeModules = new File(npmFolder, "node_modules");
@@ -828,7 +828,7 @@ public class FrontendUtilsTest {
                         }
                 """;
 
-        FileUtils.write(bundleVaadinJson, bundleVersionString,
+        Files.writeString(bundleVaadinJson.toPath(), bundleVersionString,
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
@@ -840,7 +840,7 @@ public class FrontendUtilsTest {
                 + "  \"platform\": \"22.0.0\"\n"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
+        Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
         Assert.assertTrue("Change in major version should return true",
@@ -862,7 +862,7 @@ public class FrontendUtilsTest {
                 + "  \"platform\": \"21.1.0\"\n"
                 + "}\n";
         //@formatter:on
-        FileUtils.write(versionJsonFile, versionJsonString,
+        Files.writeString(versionJsonFile.toPath(), versionJsonString,
                 StandardCharsets.UTF_8);
 
         File nodeModules = new File(npmFolder, "node_modules");
@@ -875,7 +875,7 @@ public class FrontendUtilsTest {
                         }
                 """;
 
-        FileUtils.write(bundleVaadinJson, bundleVersionString,
+        Files.writeString(bundleVaadinJson.toPath(), bundleVersionString,
                 StandardCharsets.UTF_8);
 
         File projectVaadinJson = new File(nodeModules, ".vaadin/vaadin.json");
@@ -885,7 +885,7 @@ public class FrontendUtilsTest {
                         }
                 """;
 
-        FileUtils.write(projectVaadinJson, projectVersionString,
+        Files.writeString(projectVaadinJson.toPath(), projectVersionString,
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
