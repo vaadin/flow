@@ -1591,10 +1591,11 @@ public class FrontendUtils {
         // if no record of current version is present, version is not
         // considered updated
         Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent() && nodeModules.exists()) {
+        if (platformVersion.isPresent()) {
             JsonNode vaadinJsonContents = getBundleVaadinVersion(
                     buildDirectory);
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)
+                    && nodeModules.exists()) {
                 // Check for vaadin version from installed node_modules
                 vaadinJsonContents = getVaadinJsonContents(npmFolder);
             }
