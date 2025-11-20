@@ -150,8 +150,11 @@ public class ClassListBindTest {
         // Toggling signals has no effect (bindings were cleared)
         a.value(false);
         b.value(false);
+        a.value(true);
+        b.value(true);
         Assert.assertFalse(element.getClassList().contains("a"));
         Assert.assertFalse(element.getClassList().contains("b"));
+        Assert.assertFalse(element.getClassList().iterator().hasNext());
     }
 
     @Test
