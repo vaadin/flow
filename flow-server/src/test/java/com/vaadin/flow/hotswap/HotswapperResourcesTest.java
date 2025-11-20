@@ -15,10 +15,9 @@
  */
 package com.vaadin.flow.hotswap;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
+import java.util.List;
 
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,35 +27,44 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.MockVaadinServletService;
+import com.vaadin.flow.server.ServiceException;
+import com.vaadin.flow.server.SessionInitEvent;
+import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
-import com.vaadin.flow.shared.ApplicationConstants;
-import com.vaadin.tests.util.MockDeploymentConfiguration;
+
+import static com.vaadin.flow.hotswap.HotswapperTest.createMockVaadinSession;
+import static com.vaadin.flow.hotswap.HotswapperTest.initUIAndNavigateTo;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.Mockito.never;
 
 public class HotswapperResourcesTest {
 
     private MockVaadinServletService service;
     private BrowserLiveReload liveReload;
     private Hotswapper hotswapper;
+    private VaadinHotswapper flowHotswapper;
+    private VaadinHotswapper hillaHotswapper;
 
     @Rule
     public TemporaryFolder tempProjectDir = new TemporaryFolder();
 
     @Before
     public void setUp() throws IOException {
-        MockDeploymentConfiguration dc = new MockDeploymentConfiguration();
-        // Use TemporaryFolder for the project directory required for build
-        // resources
-        dc.setProjectFolder(tempProjectDir.getRoot());
-
-        service = new MockVaadinServletService(dc);
+        service = new MockVaadinServletService();
 
         // Wire BrowserLiveReload into Lookup via BrowserLiveReloadAccessor
         liveReload = Mockito.mock(BrowserLiveReload.class);
         Mockito.when(
                 service.getLookup().lookup(BrowserLiveReloadAccessor.class))
                 .thenReturn(context -> liveReload);
+        flowHotswapper = Mockito.mock(VaadinHotswapper.class);
+        hillaHotswapper = Mockito.mock(VaadinHotswapper.class);
+        Mockito.when(service.getLookup().lookupAll(VaadinHotswapper.class))
+                .thenReturn(List.of(flowHotswapper, hillaHotswapper));
 
         ApplicationConfiguration appConfig = Mockito
                 .mock(ApplicationConfiguration.class);
@@ -69,55 +77,121 @@ public class HotswapperResourcesTest {
         hotswapper = new Hotswapper(service);
     }
 
-    @Test
-    public void cssResourceChange_triggersLiveReloadUpdateWithRelativePath()
-            throws Exception {
-        File buildResources = service.getDeploymentConfiguration()
-                .getOutputResourceFolder();
-        // Mimic a static resources folder under build resources
-        File publicDir = new File(buildResources, "public");
-        File css = new File(publicDir, "styles/app.css");
-        css.getParentFile().mkdirs();
-        Files.writeString(css.toPath(), "body{}\n");
-
-        URI modified = css.toURI();
-        hotswapper.onHotswap(new URI[0], new URI[] { modified }, new URI[0]);
-
-        // Expect BrowserLiveReload.update to be called with relative URL path
-        // "styles/app.css"
-        Mockito.verify(liveReload).update(
-                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX + "styles/app.css",
-                null);
-        Mockito.verifyNoMoreInteractions(liveReload);
+    protected BrowserLiveReload getLiveReload() {
+        return liveReload;
     }
 
     @Test
-    public void cssResourceChange_noLiveReloadAvailable_noCrash()
-            throws Exception {
-        // Create a new service without BrowserLiveReload in Lookup
-        MockDeploymentConfiguration dc = new MockDeploymentConfiguration();
-        dc.setProjectFolder(tempProjectDir.getRoot());
-        MockVaadinServletService serviceNoLR = new MockVaadinServletService(dc);
-        // Provide ApplicationConfiguration via factory to avoid NPE in
-        // BrowserLiveReloadAccessor
-        com.vaadin.flow.server.startup.ApplicationConfiguration appConfig = Mockito
-                .mock(com.vaadin.flow.server.startup.ApplicationConfiguration.class);
-        Mockito.when(appConfig.isProductionMode()).thenAnswer(i -> serviceNoLR
-                .getDeploymentConfiguration().isProductionMode());
-        Mockito.when(serviceNoLR.getLookup().lookup(
-                com.vaadin.flow.server.startup.ApplicationConfigurationFactory.class))
-                .thenReturn(context -> appConfig);
+    public void resourceChange_noLiveReloadAvailable_noCrash()
+            throws IOException {
+        // Simulate no live reload
+        liveReload = null;
+        hotswapper = new Hotswapper(service);
 
-        Hotswapper noLR = new Hotswapper(serviceNoLR);
-
-        File buildResources = serviceNoLR.getDeploymentConfiguration()
-                .getOutputResourceFolder();
-        File staticDir = new File(buildResources, "static");
-        File css = new File(staticDir, "theme.css");
-        css.getParentFile().mkdirs();
-        Files.writeString(css.toPath(), "html{}\n");
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .sendHmrEvent("my-event", JacksonUtils.createObjectNode());
+            return null;
+        }).when(flowHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
 
         // Should not throw even though live reload is not available; just logs
-        noLR.onHotswap(new URI[0], new URI[] { css.toURI() }, new URI[0]);
+        hotswapper.onHotswap(new URI[0],
+                new URI[] { URI.create("/some/resources/somewhere.txt") },
+                new URI[0]);
+
     }
+
+    @Test
+    public void onResourceHotswap_hotswapperRequestsReload_liveReloadTriggered()
+            throws ServiceException {
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .triggerUpdate(UIUpdateStrategy.REFRESH);
+            return null;
+        }).when(flowHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .triggerUpdate(UIUpdateStrategy.RELOAD);
+            return null;
+        }).when(hillaHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
+        VaadinSession session = createMockVaadinSession(service);
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+        HotswapperTest.RefreshTestingUI ui = initUIAndNavigateTo(service,
+                session, HotswapperTest.MyRoute.class);
+
+        hotswapper.onHotswap(new URI[0],
+                new URI[] { URI.create("some-file.txt") }, new URI[0]);
+        Mockito.verify(liveReload).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
+    @Test
+    public void onResourceHotswap_hotswapperRequestsRefresh_refreshTriggered()
+            throws ServiceException {
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .triggerUpdate(UIUpdateStrategy.REFRESH);
+            return null;
+        }).when(flowHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
+        VaadinSession session = createMockVaadinSession(service);
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+        HotswapperTest.RefreshTestingUI ui = initUIAndNavigateTo(service,
+                session, HotswapperTest.MyRoute.class);
+
+        hotswapper.onHotswap(new URI[0],
+                new URI[] { URI.create("some-file.txt") }, new URI[0]);
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload).refresh(true);
+    }
+
+    @Test
+    public void onHotswap_pushDisabled_hotswapperRequestsRefresh_UINotRefreshedButLiveReloadTriggered()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession(service);
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+        HotswapperTest.RefreshTestingUI ui = initUIAndNavigateTo(service,
+                session, HotswapperTest.MyRoute.class);
+
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .triggerUpdate(UIUpdateStrategy.REFRESH);
+            return null;
+        }).when(flowHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
+
+        hotswapper.onHotswap(new URI[0],
+                new URI[] { URI.create("some-file.txt") }, new URI[0]);
+        ui.assertNotRefreshed();
+        Mockito.verify(liveReload).refresh(true);
+        Mockito.verify(liveReload, never()).reload();
+    }
+
+    @Test
+    public void onHotswap_pushEnabled_hotswapperRequestRefresh_allUIsRefreshed()
+            throws ServiceException {
+        VaadinSession session = createMockVaadinSession(service);
+        hotswapper.sessionInit(new SessionInitEvent(service, session, null));
+        Mockito.doAnswer(i -> {
+            i.getArgument(0, HotswapResourceEvent.class)
+                    .triggerUpdate(UIUpdateStrategy.REFRESH);
+            return null;
+        }).when(flowHotswapper)
+                .onResourcesChange(any(HotswapResourceEvent.class));
+
+        HotswapperTest.RefreshTestingUI ui = initUIAndNavigateTo(service,
+                session, HotswapperTest.MyRouteWithModal.class);
+        ui.enablePush();
+
+        hotswapper.onHotswap(new URI[0],
+                new URI[] { URI.create("some-file.txt") }, new URI[0]);
+
+        ui.assertChainRefreshed();
+        Mockito.verify(liveReload, never()).reload();
+        Mockito.verify(liveReload, never()).refresh(anyBoolean());
+    }
+
 }

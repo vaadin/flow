@@ -141,6 +141,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
 
+        if (!BuildFrontendUtil.getTokenFile(this).exists()) {
+            // if not prepare-frontend token file exists propagate build info
+            // to token file
+            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+        }
+
         Options options = new Options(null, getClassFinder(), npmFolder())
                 .withFrontendDirectory(frontendDirectory())
                 .withFrontendGeneratedFolder(generatedTsFolder());
