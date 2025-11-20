@@ -38,6 +38,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.State;
+import com.vaadin.tests.util.MockUI;
 
 /**
  * @author Vaadin Ltd
@@ -52,9 +53,10 @@ public class AtmospherePushConnectionTest {
 
     @Before
     public void setup() throws Exception {
-        UI ui = Mockito.spy(new UI());
         vaadinSession = new MockVaadinSession();
-        Mockito.when(ui.getSession()).thenReturn(vaadinSession);
+        vaadinSession.lock();
+        UI ui = new MockUI(vaadinSession);
+        vaadinSession.unlock();
         broadcaster = Mockito.mock(Broadcaster.class);
         resource = Mockito.mock(AtmosphereResource.class);
         Mockito.when(resource.getBroadcaster()).thenReturn(broadcaster);
