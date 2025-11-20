@@ -112,6 +112,10 @@ public class ElementConstants {
      */
     public static final String STYLE_CURSOR = "cursor";
     /**
+     * The style property for color-scheme.
+     */
+    public static final String STYLE_COLOR_SCHEME = "color-scheme";
+    /**
      * The style property for display.
      */
     public static final String STYLE_DISPLAY = "display";
