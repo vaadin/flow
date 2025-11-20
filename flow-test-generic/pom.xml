@@ -10,6 +10,11 @@
   <artifactId>flow-test-generic</artifactId>
   <name>Flow Generic Test Utilities</name>
   <description>${project.name}</description>
+
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>

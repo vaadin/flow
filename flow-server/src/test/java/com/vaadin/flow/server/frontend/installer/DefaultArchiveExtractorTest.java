@@ -32,6 +32,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
+
 public class DefaultArchiveExtractorTest {
 
     public static final String ROOT_FILE = "root.file";

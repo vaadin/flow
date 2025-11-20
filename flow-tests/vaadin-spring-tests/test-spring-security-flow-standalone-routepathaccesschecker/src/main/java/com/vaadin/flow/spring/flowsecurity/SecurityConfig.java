@@ -47,6 +47,7 @@ import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
+import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSuccessHandler;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
@@ -135,7 +136,9 @@ public class SecurityConfig {
         });
 
         // Custom login page with form authentication
-        http.formLogin(cfg -> cfg.loginPage("/my/login/page").permitAll());
+        http.formLogin(cfg -> cfg.loginPage("/my/login/page").successHandler(
+                new VaadinSavedRequestAwareAuthenticationSuccessHandler())
+                .permitAll());
         DefaultSecurityFilterChain filterChain = http.build();
         // Test application uses AuthenticationContext, configure it with
         // the logout handlers

@@ -16,7 +16,6 @@
 package com.vaadin.flow.spring.flowsecurity;
 
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
 
@@ -28,11 +27,6 @@ import com.vaadin.testbench.TestBenchElement;
 public class UIAccessContextIT extends AbstractIT {
 
     @Test
-    @Ignore("""
-                Requires VaadinAwareSecurityContextHolderStrategyConfiguration that
-                in a custom Spring Security configuration without Vaadin helpers might not be imported.
-                Leaving the test here just as a template in case of future improvements.
-            """)
     public void securityContextSetForUIAccess() throws Exception {
         String expectedUserBalance = "Hello John the User, your bank account balance is $10000.00.";
         String expectedAdminBalance = "Hello Emma the Admin, your bank account balance is $200000.00.";
