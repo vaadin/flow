@@ -21,7 +21,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
- * Implementor ot this interface are responsible for update Vaadin components
+ * Implementors of this interface are responsible for update Vaadin components
  * when application classes change.
  * <p>
  * Listener instances are by default discovered using Flow
@@ -42,10 +42,24 @@ import com.vaadin.flow.server.VaadinSession;
 public interface VaadinHotswapper {
 
     /**
+     * Called during the initialization of the Vaadin {@link Hotswapper}. This
+     * method provides an entry point for executing logic that needs to occur
+     * when the associated VaadinService is initialized and before any hotswap
+     * events are triggered.
+     *
+     * @param vaadinService
+     *            the active {@link VaadinService} instance being initialized
+     * @since 25.0
+     */
+    default void onInit(VaadinService vaadinService) {
+        // no-op by default
+    }
+
+    /**
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
-     *
+     * <p>
      * This method is meant to perform application-wide updates. Operation
      * targeting Vaadin session should be implemented in
      * {@link #onClassLoadEvent(VaadinSession, Set, boolean)} method.
@@ -61,7 +75,11 @@ public interface VaadinHotswapper {
      * @return {@literal true} if a browser page reload is required,
      *         {@literal false} otherwise.
      * @see #onClassLoadEvent(VaadinSession, Set, boolean)
+     * @deprecated As of 25.0, replaced by
+     *             {@link #onClassesChange(HotswapClassEvent)}. Please consider
+     *             moving your implementation to that method.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     default boolean onClassLoadEvent(VaadinService vaadinService,
             Set<Class<?>> classes, boolean redefined) {
         // no-op by default
@@ -72,7 +90,34 @@ public interface VaadinHotswapper {
      * Called by Vaadin hotswap entry point when one or more application classes
      * have been updated.
      * <p>
+     * <p>
+     * This method is meant to perform application-wide updates. Operation
+     * targeting Vaadin session should be implemented in
+     * {@link #onClassesChange(HotswapClassSessionEvent)} method.
+     * <p>
+     * Currently, the default implementation delegates to the deprecated
+     * {@link #onClassLoadEvent(VaadinService, Set, boolean)} method for
+     * backward compatibility.
      *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            classes.
+     * @see #onClassesChange(HotswapClassSessionEvent)
+     * @since 25.0
+     */
+    default void onClassesChange(HotswapClassEvent event) {
+        boolean reload = onClassLoadEvent(event.getVaadinService(),
+                event.getChangedClasses(), event.isRedefined());
+        if (reload) {
+            event.triggerUpdate(UIUpdateStrategy.RELOAD);
+        }
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application classes
+     * have been updated.
+     * <p>
+     * <p>
      * This method is meant to perform updates at {@link VaadinSession} level.
      * Operation targeting the entire application should be implemented in
      * {@link #onClassLoadEvent(VaadinService, Set, boolean)} method.
@@ -88,11 +133,59 @@ public interface VaadinHotswapper {
      * @return {@literal true} if a browser page reload is required,
      *         {@literal false} otherwise.
      * @see #onClassLoadEvent(VaadinService, Set, boolean)
+     * @deprecated As of 25.0, replaced by
+     *             {@link #onClassesChange(HotswapClassSessionEvent)}. Please
+     *             consider moving your implementation to that method.
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     default boolean onClassLoadEvent(VaadinSession vaadinSession,
             Set<Class<?>> classes, boolean redefined) {
         // no-op by default
         return false;
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application classes
+     * have been updated.
+     * <p>
+     * <p>
+     * This method is meant to perform updates at {@link VaadinSession} level.
+     * Operation targeting the entire application should be implemented in
+     * {@link #onClassesChange(HotswapClassEvent)} method.
+     * <p>
+     * Currently, the default implementation delegates to the deprecated
+     * {@link #onClassLoadEvent(VaadinSession, Set, boolean)} method for
+     * backward compatibility.
+     *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            classes.
+     * @see #onClassesChange(HotswapClassEvent)
+     * @since 25.0
+     */
+    default void onClassesChange(HotswapClassSessionEvent event) {
+        boolean reload = onClassLoadEvent(event.getVaadinSession(),
+                event.getChangedClasses(), event.isRedefined());
+        if (reload) {
+            event.triggerUpdate(UIUpdateStrategy.RELOAD);
+        }
+    }
+
+    /**
+     * Called by Vaadin hotswap entry point when one or more application
+     * resources have been updated.
+     * <p>
+     * <p>
+     * This method is meant to perform application-wide updates, involving all
+     * active UI instances.
+     *
+     * @param event
+     *            the event instance carrying the information about the changed
+     *            resources.
+     * @since 25.0
+     */
+    default void onResourcesChange(HotswapResourceEvent event) {
+        // no-op by default
     }
 
     /**

@@ -1,12 +1,15 @@
 name: Sonar PR Analysis
 
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
 
 concurrency:
   group: sonar-pr-${{ github.event.pull_request.number }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -29,6 +32,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.head.sha }}
           clean: true
           fetch-depth: 0  # Shallow clones should be disabled for better SonarCloud analysis
 
@@ -57,12 +61,3 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Upload Sonar reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: sonar-reports
-          path: target/sonar/issues-report
-          if-no-files-found: ignore
-          retention-days: 30

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.frontendtools.installer;
 
 /**
  * Exception indicating a failure during extraction of an archive file.
