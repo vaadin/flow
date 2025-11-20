@@ -11,6 +11,10 @@
   <name>Flow Bill of Materials</name>
   <description>Flow Bill of Materials</description>
 
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
