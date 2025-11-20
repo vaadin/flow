@@ -47,11 +47,10 @@ public class ColorSchemeIT extends ChromeBrowserTest {
                         || "Color Scheme: light".equals(text)
                         || "Color Scheme: normal".equals(text));
 
-        // Verify the CSS property is not explicitly set
-        String colorScheme = (String) executeScript(
-                "return document.documentElement.style.colorScheme;");
-        Assert.assertTrue("Initial color-scheme should be empty or default",
-                colorScheme == null || colorScheme.isEmpty());
+        // Verify no theme attribute is set initially
+        String themeAttr = (String) executeScript(
+                "return document.documentElement.getAttribute('theme');");
+        Assert.assertNull("Initial theme attribute should be null", themeAttr);
     }
 
     @Test
@@ -66,9 +65,14 @@ public class ColorSchemeIT extends ChromeBrowserTest {
                 .id(COLOR_SCHEME_DISPLAY_ID);
         Assert.assertEquals("Color Scheme: dark", colorSchemeDisplay.getText());
 
-        // Verify the CSS property is set
+        // Verify the theme attribute is set
+        String themeAttr = (String) executeScript(
+                "return document.documentElement.getAttribute('theme');");
+        Assert.assertEquals("dark", themeAttr);
+
+        // Verify the computed color-scheme property (set by theme CSS)
         String colorScheme = (String) executeScript(
-                "return document.documentElement.style.colorScheme;");
+                "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("dark", colorScheme);
 
         // Verify the CSS is applied
@@ -91,9 +95,14 @@ public class ColorSchemeIT extends ChromeBrowserTest {
         Assert.assertEquals("Color Scheme: light",
                 colorSchemeDisplay.getText());
 
-        // Verify the CSS property is set
+        // Verify the theme attribute is set
+        String themeAttr = (String) executeScript(
+                "return document.documentElement.getAttribute('theme');");
+        Assert.assertEquals("light", themeAttr);
+
+        // Verify the computed color-scheme property (set by theme CSS)
         String colorScheme = (String) executeScript(
-                "return document.documentElement.style.colorScheme;");
+                "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("light", colorScheme);
 
         // Verify the CSS is applied
@@ -124,14 +133,20 @@ public class ColorSchemeIT extends ChromeBrowserTest {
 
         // Set dark theme
         $(NativeButtonElement.class).id(SET_DARK_ID).click();
+        String themeAttr = (String) executeScript(
+                "return document.documentElement.getAttribute('theme');");
+        Assert.assertEquals("dark", themeAttr);
         String colorScheme = (String) executeScript(
-                "return document.documentElement.style.colorScheme;");
+                "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("dark", colorScheme);
 
         // Set light theme
         $(NativeButtonElement.class).id(SET_LIGHT_ID).click();
+        themeAttr = (String) executeScript(
+                "return document.documentElement.getAttribute('theme');");
+        Assert.assertEquals("light", themeAttr);
         colorScheme = (String) executeScript(
-                "return document.documentElement.style.colorScheme;");
+                "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("light", colorScheme);
     }
 

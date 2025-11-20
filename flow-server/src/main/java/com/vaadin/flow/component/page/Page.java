@@ -84,10 +84,11 @@ public class Page implements Serializable {
     }
 
     /**
-     * Sets the color scheme for the page using the CSS color-scheme property.
+     * Sets the color scheme for the page by setting the theme attribute.
      * <p>
-     * The color scheme affects how the browser renders UI elements and allows
-     * the application to adapt to system color scheme preferences.
+     * The color scheme is applied via a theme attribute on the html element,
+     * allowing CSS to target different color schemes. Any inline color-scheme
+     * style is cleared to allow the theme's CSS to take effect.
      *
      * @param colorScheme
      *            the color scheme to set (e.g., ColorScheme.Value.DARK,
@@ -95,11 +96,16 @@ public class Page implements Serializable {
      */
     public void setColorScheme(ColorScheme.Value colorScheme) {
         if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
-            executeJs("document.documentElement.style.colorScheme = '';");
+            executeJs("""
+                    document.documentElement.removeAttribute('theme');
+                    document.documentElement.style.colorScheme = '';
+                    """);
             getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
         } else {
-            executeJs("document.documentElement.style.colorScheme = $0;",
-                    colorScheme.getValue());
+            executeJs("""
+                    document.documentElement.setAttribute('theme', $0);
+                    document.documentElement.style.colorScheme = '';
+                    """, colorScheme.getValue());
             getExtendedClientDetails().setColorScheme(colorScheme);
         }
     }

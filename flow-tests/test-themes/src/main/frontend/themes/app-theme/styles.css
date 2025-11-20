@@ -60,7 +60,20 @@ body.bg {
   width: 1em;
 }
 
+/* Set color-scheme CSS property based on theme attribute */
+html[theme~="dark"] {
+  color-scheme: dark;
+}
+
+html[theme~="light"] {
+  color-scheme: light;
+}
+
 /* Color scheme styles for testing */
 #test-element {
-  background-color: light-dark(rgb(200, 200, 200), rgb(30, 30, 30));
+  background-color: rgb(200, 200, 200);
+}
+
+html[theme~="dark"] #test-element {
+  background-color: rgb(30, 30, 30);
 }
