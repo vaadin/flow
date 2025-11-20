@@ -192,8 +192,8 @@ public class ClassListBindTest {
         Assert.assertTrue(element.getClassList().contains("badge"));
     }
 
-    @Test
-    public void rebindingReplacesPreviousBinding_andFollowsNewSignal() {
+    @Test(expected = BindingActiveException.class)
+    public void rebinding_alreadyBound_throws() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> s1 = new ValueSignal<>(true);
@@ -204,17 +204,6 @@ public class ClassListBindTest {
 
         // Rebind to a new signal
         element.getClassList().bind("tag", s2);
-
-        // Presence should immediately reflect s2
-        Assert.assertFalse(element.getClassList().contains("tag"));
-
-        // Toggle s1 should no longer affect
-        s1.value(false);
-        Assert.assertFalse(element.getClassList().contains("tag"));
-
-        // Toggle s2 should apply
-        s2.value(true);
-        Assert.assertTrue(element.getClassList().contains("tag"));
     }
 
     @Test

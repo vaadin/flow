@@ -118,16 +118,15 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
                 }
                 return;
             }
-
-            SignalBinding existing = elementClassList.removeBinding(name);
-            if (existing != null && existing.registration() != null) {
-                existing.registration().remove();
+            if (isBound(name)) {
+                throw new BindingActiveException("Class name '" + name
+                        + "' is already bound to a signal");
             }
             Element owner = Element.get(getNode());
             Registration registration = ElementEffect.bind(owner, signal,
                     (element, value) -> internalSetPresence(name,
                             Boolean.TRUE.equals(value)));
-            elementClassList.addBinding(new SignalBinding(signal, registration, name));
+            elementClassList.addBinding(new SignalBinding(signal, registration, name, null));
         }
 
         private void validate(String className) {
@@ -197,8 +196,8 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
     private int findBindingIndex(String name) {
         int n = size();
         for (int i = 0; i < n; i++) {
-            Serializable v = get(i);
-            if (v instanceof SignalBinding b && b.name().equals(name)) {
+            Serializable entry = get(i);
+            if (entry instanceof SignalBinding binding && name.equals(binding.name())) {
                 return i;
             }
         }
@@ -217,8 +216,8 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
     private SignalBinding removeBinding(String name) {
         int idx = findBindingIndex(name);
         if (idx != -1) {
-            Serializable v = remove(idx);
-            return (SignalBinding) v;
+            Serializable entry = remove(idx);
+            return (SignalBinding) entry;
         }
         return null;
     }
