@@ -23,16 +23,16 @@ import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.COLOR_SCHEME_DISPLAY_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_DARK_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.SET_LIGHT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.TEST_ELEMENT_ID;
-import static com.vaadin.flow.uitest.ui.theme.ThemeVariantView.THEME_NAME_DISPLAY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ColorSchemeView.COLOR_SCHEME_DISPLAY_ID;
+import static com.vaadin.flow.uitest.ui.theme.ColorSchemeView.SET_DARK_ID;
+import static com.vaadin.flow.uitest.ui.theme.ColorSchemeView.SET_LIGHT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ColorSchemeView.TEST_ELEMENT_ID;
+import static com.vaadin.flow.uitest.ui.theme.ColorSchemeView.THEME_NAME_DISPLAY_ID;
 
 /**
  * Integration tests for color scheme functionality.
  */
-public class ThemeVariantIT extends ChromeBrowserTest {
+public class ColorSchemeIT extends ChromeBrowserTest {
 
     @Test
     public void initialColorScheme_isEmpty() {

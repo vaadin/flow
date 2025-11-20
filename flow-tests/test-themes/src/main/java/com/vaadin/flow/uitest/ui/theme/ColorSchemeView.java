@@ -25,8 +25,8 @@ import com.vaadin.flow.router.Route;
 /**
  * Test view for color scheme functionality.
  */
-@Route("com.vaadin.flow.uitest.ui.theme.ThemeVariantView")
-public class ThemeVariantView extends Div {
+@Route("com.vaadin.flow.uitest.ui.theme.ColorSchemeView")
+public class ColorSchemeView extends Div {
 
     public static final String SET_DARK_ID = "set-dark";
     public static final String SET_LIGHT_ID = "set-light";
@@ -39,7 +39,7 @@ public class ThemeVariantView extends Div {
     private final Div themeNameDisplay;
     private final Div testElement;
 
-    public ThemeVariantView() {
+    public ColorSchemeView() {
         // Create buttons to control color scheme
         NativeButton setDarkButton = new NativeButton("Set Dark Theme",
                 event -> {
