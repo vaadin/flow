@@ -31,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -187,7 +186,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(
                             new TaskGenerateWebComponentBootstrap(options));
                     webComponentTags = webComponents.stream().map(
-                            webComponentPath -> FilenameUtils.removeExtension(
+                            webComponentPath -> FileIOUtils.removeExtension(
                                     webComponentPath.getName()))
                             .collect(Collectors.toSet());
                     UsageStatistics.markAsUsed(

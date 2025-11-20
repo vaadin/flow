@@ -28,7 +28,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +102,7 @@ public class TaskCopyLocalFrontendFiles
             long start = System.nanoTime();
             Set<String> handledFiles = new HashSet<>(TaskCopyFrontendFiles
                     .getFilesInDirectory(source, relativePathExclusions));
-            FileUtils.copyDirectory(source, target,
+            FileIOUtils.copyDirectory(source, target,
                     withoutExclusions(source, relativePathExclusions));
             if (shouldApplyWriteableFlag()) {
                 try (Stream<Path> fileStream = Files
@@ -126,7 +125,7 @@ public class TaskCopyLocalFrontendFiles
 
     static void createTargetFolder(File target) {
         try {
-            FileUtils.forceMkdir(Objects.requireNonNull(target));
+            Files.createDirectories(Objects.requireNonNull(target).toPath());
         } catch (IOException e) {
             throw new UncheckedIOException(
                     String.format("Failed to create directory '%s'", target),

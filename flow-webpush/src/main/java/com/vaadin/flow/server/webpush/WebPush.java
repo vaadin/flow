@@ -19,14 +19,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.security.GeneralSecurityException;
 import java.security.Security;
 
 import nl.martijndwars.webpush.Notification;
 import nl.martijndwars.webpush.PushService;
 import nl.martijndwars.webpush.Subscription;
-import org.apache.commons.io.IOUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -249,8 +247,8 @@ public class WebPush {
         Page page = ui.getPage();
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
-            page.executeJs(StringUtil.removeComments(
-                    IOUtils.toString(stream, StandardCharsets.UTF_8)))
+            page.executeJs(
+                    StringUtil.removeComments(StringUtil.toUTF8String(stream)))
                     .then(unused -> getLogger()
                             .debug("Webpush client code initialized"),
                             err -> getLogger().error(
