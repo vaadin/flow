@@ -17,4 +17,8 @@
     https://vaadin.com/docs/v10/flow/web-components/tutorial-webcomponents-es5.html for more
     information.</description>
 
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+
 </project>

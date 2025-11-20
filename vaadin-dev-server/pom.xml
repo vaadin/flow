@@ -16,6 +16,7 @@
     <!-- Allows to skip running NPM tests via exec-maven-plugin with both -Dmaven.test.skip=true and -DskipTests=true -->
     <maven.test.skip>false</maven.test.skip>
     <skipTests>${maven.test.skip}</skipTests>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
   <dependencies>

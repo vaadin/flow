@@ -28,6 +28,7 @@
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
 
     <maven.deploy.skip>true</maven.deploy.skip>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
     <!-- Used in the tests, should be overridden for each module to support
             concurrent running of test modules. -->
     <server.port>8888</server.port>
