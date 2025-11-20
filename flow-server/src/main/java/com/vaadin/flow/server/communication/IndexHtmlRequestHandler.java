@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -65,6 +64,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -532,7 +532,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String[] allowedHosts = hostsAllowed.split(",");
 
             for (String allowedHost : allowedHosts) {
-                if (FilenameUtils.wildcardMatch(remoteAddress,
+                if (FileIOUtils.wildcardMatch(remoteAddress,
                         allowedHost.trim())) {
                     return true;
                 }

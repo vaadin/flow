@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -31,6 +33,32 @@ import java.util.UUID;
  * @since 2.1.4
  */
 public final class StringUtil {
+
+    /**
+     * Creates new UTF 8 String from given bytes.
+     * 
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param bytes
+     * @return new string enforced in UTF_8 because jdk engineers didn't have
+     *         the guts to break all things
+     */
+    public static String toUTF8String(byte[] bytes) {
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Reads given input stream into a new UTF 8 String.
+     * 
+     * Note, this is an internal helper method, use only from framework code.
+     * 
+     * @param input
+     * @return string in UTF 8
+     * @throws IOException
+     */
+    public static String toUTF8String(InputStream input) throws IOException {
+        return toUTF8String(input.readAllBytes());
+    }
 
     /**
      * Comment parser state enumeration.
@@ -234,4 +262,5 @@ public final class StringUtil {
         }
         return result.toString();
     }
+
 }
