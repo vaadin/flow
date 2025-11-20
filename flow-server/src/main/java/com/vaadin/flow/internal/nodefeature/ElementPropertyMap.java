@@ -155,7 +155,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             }
             put(name, get(name), false);
         } else {
-            put(name, new SignalBinding(signal, registration, get(name)),
+            put(name, new SignalBinding(signal, registration, name, get(name)),
                     false);
         }
     }
@@ -654,7 +654,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         if (hasSignal(key)) {
             SignalBinding binding = (SignalBinding) super.get(key);
             putResult = putWithDeferredChangeEvent(key, new SignalBinding(
-                    binding.signal(), binding.registration(), value), false);
+                    binding.signal(), binding.registration(), key, value), false);
             if (binding.signal() instanceof ValueSignal valueSignal) {
                 valueSignal.value(value);
             } else {

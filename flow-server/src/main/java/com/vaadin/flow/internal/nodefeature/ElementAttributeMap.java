@@ -115,7 +115,7 @@ public class ElementAttributeMap extends NodeMap {
             put(attribute, get(attribute), false);
         } else {
             put(attribute,
-                    new SignalBinding(signal, registration, get(attribute)),
+                    new SignalBinding(signal, registration, attribute, get(attribute)),
                     false);
         }
     }
@@ -315,7 +315,7 @@ public class ElementAttributeMap extends NodeMap {
         if (hasSignal(attribute)) {
             SignalBinding binding = (SignalBinding) super.get(attribute);
             put(attribute, new SignalBinding(binding.signal(),
-                    binding.registration(), (String) value));
+                    binding.registration(), attribute, value));
         } else if (value == null) {
             super.remove(attribute);
         } else {

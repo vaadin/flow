@@ -18,7 +18,4 @@ import java.io.Serializable;
  */
 public record SignalBinding(Signal<?> signal, Registration registration,
                             String name, Serializable value) implements Serializable {
-    public SignalBinding(Signal<?> signal, Registration registration, Serializable value) {
-        this(signal, registration, null, value);
-    }
 }
