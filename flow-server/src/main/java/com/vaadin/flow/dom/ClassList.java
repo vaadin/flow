@@ -60,7 +60,7 @@ public interface ClassList extends Set<String>, Serializable {
      * {@link #set(String, boolean)} for that name will throw a
      * {@code com.vaadin.flow.dom.BindingActiveException}. Bindings are
      * lifecycle-aware and only active while the owning {@link Element} is
-     * attached; they are deactivated while the element is detached.
+     * in attached state; they are deactivated while the element is in detached state.
      * <p>
      * Bulk operations that indiscriminately replace or clear the class list
      * (for example {@link #clear()} or setting the {@code class} attribute via
