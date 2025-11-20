@@ -43,10 +43,6 @@ import com.vaadin.signals.Signal;
  */
 public class ElementClassList extends SerializableNodeList<Serializable> {
 
-    private record SignalBinding(Signal<Boolean> signal,
-            Registration registration, String name) implements Serializable {
-    }
-
     private static class ClassListView extends AbstractSet<String>
             implements ClassList {
 
@@ -117,15 +113,15 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
             validate(name);
             if (signal == null) {
                 SignalBinding old = elementClassList.removeBinding(name);
-                if (old != null && old.registration != null) {
-                    old.registration.remove();
+                if (old != null && old.registration() != null) {
+                    old.registration().remove();
                 }
                 return;
             }
 
             SignalBinding existing = elementClassList.removeBinding(name);
-            if (existing != null && existing.registration != null) {
-                existing.registration.remove();
+            if (existing != null && existing.registration() != null) {
+                existing.registration().remove();
             }
             Element owner = Element.get(getNode());
             Registration registration = ElementEffect.bind(owner, signal,
@@ -279,7 +275,7 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
     public void collectChanges(
             java.util.function.Consumer<NodeChange> collector) {
         if (!hasBindings()) {
-            // Use default behavior when there are no inline bindings
+            // Use the default behavior when there are no inline bindings
             super.collectChanges(collector);
             return;
         }
@@ -324,7 +320,7 @@ public class ElementClassList extends SerializableNodeList<Serializable> {
     @Override
     public void onDetach() {
         super.onDetach();
-        // Reset snapshot so that after re-attach we emit initial state again
+        // Reset the snapshot so that after re-attach we emit initial state again
         previousStrings = null;
     }
 }

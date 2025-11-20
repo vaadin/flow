@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -71,7 +73,6 @@ public abstract class NodeList<T extends Serializable> extends NodeFeature {
             index--;
         }
     }
-
 
     private List<T> values;
 

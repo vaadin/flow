@@ -147,10 +147,6 @@ public abstract class NodeMap extends NodeFeature {
         }
     }
 
-    public record SignalBinding(Signal<?> signal, Registration registration,
-            Serializable value) implements Serializable {
-    }
-
     private Values values;
 
     private boolean isPopulated;
