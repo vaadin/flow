@@ -84,11 +84,12 @@ public class Page implements Serializable {
     }
 
     /**
-     * Sets the color scheme for the page by setting the theme attribute.
+     * Sets the color scheme for the page.
      * <p>
      * The color scheme is applied via a theme attribute on the html element,
-     * allowing CSS to target different color schemes. Any inline color-scheme
-     * style is cleared to allow the theme's CSS to take effect.
+     * allowing CSS to use that attribute to target different color schemes. The
+     * theme attribute also ensures that browsers apply a color-scheme property
+     * accordingly.
      *
      * @param colorScheme
      *            the color scheme to set (e.g., ColorScheme.Value.DARK,
