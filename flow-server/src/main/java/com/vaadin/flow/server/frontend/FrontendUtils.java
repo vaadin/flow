@@ -1589,7 +1589,7 @@ public class FrontendUtils {
         // considered updated
         Optional<String> platformVersion = getVaadinVersion(finder);
         if (platformVersion.isPresent()) {
-            JsonNode vaadinJsonContents = getBundleVaadinVersion(
+            JsonNode vaadinJsonContents = getBundleVaadinContent(
                     buildDirectory);
             if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)
                     && nodeModules.exists()) {
@@ -1610,7 +1610,7 @@ public class FrontendUtils {
         return false;
     }
 
-    private static JsonNode getBundleVaadinVersion(File buildDirectory)
+    private static JsonNode getBundleVaadinContent(File buildDirectory)
             throws IOException {
         JsonNode vaadinJsonContents;
         File vaadinJsonFile = new File(
