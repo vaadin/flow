@@ -706,6 +706,7 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_export_usage_statistics_in_development_mode()
             throws IOException {
+        UsageStatistics.resetEntries();
         File projectRootFolder = temporaryFolder.newFolder();
         TestUtil.createIndexHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);

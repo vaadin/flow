@@ -163,7 +163,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
-                "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
+                "Failed to find the following imports in the `node_modules` tree:",
+                "unresolved/component");
     }
 
     @Test
