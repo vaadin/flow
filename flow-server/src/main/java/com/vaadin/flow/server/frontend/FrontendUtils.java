@@ -42,11 +42,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.di.Lookup;
@@ -54,12 +53,14 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -69,7 +70,6 @@ import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -415,8 +415,8 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
-                    .replaceAll("\\R", System.lineSeparator());
+            return StringUtil.toUTF8String(handledStream).replaceAll("\\R",
+                    System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             getLogger().warn("Couldn't close template input stream", exception);
@@ -555,7 +555,7 @@ public class FrontendUtils {
 
             return content != null ? streamToString(content) : null;
         } finally {
-            IOUtils.closeQuietly(content);
+            FileIOUtils.closeQuietly(content);
         }
     }
 
@@ -1031,7 +1031,7 @@ public class FrontendUtils {
      * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
-        File home = FileUtils.getUserDirectory();
+        File home = FileIOUtils.getUserDirectory();
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
                     + home.getAbsolutePath() + "' doesn't exist");
@@ -1053,7 +1053,7 @@ public class FrontendUtils {
             }
         }
         try {
-            FileUtils.forceMkdir(vaadinFolder);
+            Files.createDirectories(vaadinFolder.toPath());
             return vaadinFolder;
         } catch (IOException exception) {
             throw new UncheckedIOException(
@@ -1362,8 +1362,7 @@ public class FrontendUtils {
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
         if (indexTs.exists()) {
             try {
-                String indexTsContent = IOUtils.toString(indexTs.toURI(),
-                        UTF_8);
+                String indexTsContent = Files.readString(indexTs.toPath());
                 indexTsContent = StringUtil.removeComments(indexTsContent);
                 result = !indexTsContent.contains("@vaadin/router");
             } catch (IOException e) {
@@ -1397,7 +1396,7 @@ public class FrontendUtils {
                 Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
-                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    String viewContent = Files.readString(view);
                     viewContent = StringUtil.removeComments(viewContent);
                     if (!viewContent.isBlank()) {
                         return true;
@@ -1416,8 +1415,8 @@ public class FrontendUtils {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
                 try {
-                    String routesTsContent = IOUtils
-                            .toString(routesFile.toURI(), UTF_8);
+                    String routesTsContent = Files
+                            .readString(routesFile.toPath());
                     return isRoutesContentUsingHillaViews(routesTsContent);
                 } catch (IOException e) {
                     getLogger().error(
@@ -1429,8 +1428,7 @@ public class FrontendUtils {
         File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         if (routesFile.exists()) {
             try {
-                String routesTsContent = IOUtils.toString(routesFile.toURI(),
-                        UTF_8);
+                String routesTsContent = Files.readString(routesFile.toPath());
                 return isRoutesTsxContentUsingHillaViews(routesTsContent);
             } catch (IOException e) {
                 getLogger().error(
@@ -1564,6 +1562,139 @@ public class FrontendUtils {
     public static boolean isTailwindCssEnabled(Options options) {
         return options.getFeatureFlags()
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered as staying on the same version.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @param buildDirectory
+     *            project build directory, to find dev-bundle folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules, File buildDirectory)
+            throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent()) {
+            JsonNode vaadinJsonContents = getBundleVaadinContent(
+                    buildDirectory);
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)
+                    && nodeModules.exists()) {
+                // Check for vaadin version from installed node_modules
+                vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            }
+            // If no record of previous version, version is considered same
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return false;
+            }
+            FrontendVersion jsonVersion = new FrontendVersion(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString());
+            FrontendVersion platformsVersion = new FrontendVersion(
+                    platformVersion.get());
+            return jsonVersion.getMajorVersion() != platformsVersion
+                    .getMajorVersion();
+        }
+        return false;
+    }
+
+    private static JsonNode getBundleVaadinContent(File buildDirectory)
+            throws IOException {
+        JsonNode vaadinJsonContents;
+        File vaadinJsonFile = new File(
+                new File(buildDirectory, Constants.DEV_BUNDLE_LOCATION),
+                TaskRunDevBundleBuild.VAADIN_JSON);
+        if (!vaadinJsonFile.exists()) {
+            return JacksonUtils.createObjectNode();
+        }
+        String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                StandardCharsets.UTF_8);
+        vaadinJsonContents = JacksonUtils.readTree(fileContent);
+        return vaadinJsonContents;
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered updated.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules) throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent() && nodeModules.exists()) {
+            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            // If no record of previous version, version is considered updated
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return true;
+            }
+            return !Objects.equals(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString(),
+                    platformVersion.get());
+        }
+        return false;
+    }
+
+    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        if (coreVersionsResource == null) {
+            return Optional.empty();
+        }
+        try (InputStream vaadinVersionsStream = coreVersionsResource
+                .openStream()) {
+            final JsonNode versionsJson = JacksonUtils
+                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
+            if (versionsJson.has("platform")) {
+                return Optional.of(versionsJson.get("platform").asString());
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine version information", e);
+        }
+
+        return Optional.empty();
+    }
+
+    static File getVaadinJsonFile(File npmFolder) {
+        return new File(new File(npmFolder, NODE_MODULES),
+                NodeUpdater.VAADIN_JSON);
+    }
+
+    static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
+        File vaadinJsonFile = getVaadinJsonFile(npmFolder);
+        if (vaadinJsonFile.exists()) {
+            String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                    StandardCharsets.UTF_8);
+            return JacksonUtils.readTree(fileContent);
+        } else {
+            return JacksonUtils.createObjectNode();
+        }
     }
 
 }

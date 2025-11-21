@@ -33,7 +33,6 @@ import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
-import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.spring.RootMappedCondition;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
@@ -61,21 +60,6 @@ public class SecurityConfig {
     static NavigationAccessControlConfigurer navigationAccessControlConfigurer() {
         return new NavigationAccessControlConfigurer()
                 .withRoutePathAccessChecker();
-    }
-
-    /*
-     * Simulates Hilla implementation that accesses request principal.
-     */
-    @Bean
-    FileRouterRequestUtil sutbFileRouterRequestUtil() {
-        return request -> {
-            var principal = request.getUserPrincipal();
-            if (principal != null) {
-                // do nothing, just prevent IDE from complaining about unused
-                // variable
-            }
-            return false;
-        };
     }
 
     public String getLogoutSuccessUrl() {

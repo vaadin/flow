@@ -24,13 +24,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Predicate;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -159,7 +159,9 @@ public class TaskCopyNpmAssetsFiles
             log().debug("Copying npm file {} to {}", file.getAbsolutePath(),
                     destFile.getAbsolutePath());
             try {
-                FileUtils.copyFile(file, destFile);
+                Files.createDirectories(destFile.toPath().getParent());
+                Files.copy(file.toPath(), destFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 throw new UncheckedIOException(String.format(
                         "Failed to copy project frontend resources from '%s' to '%s'",
