@@ -71,6 +71,8 @@ public interface ClassList extends Set<String>, Serializable {
      *            the class name to bind, not {@code null} or blank
      * @param signal
      *            the boolean signal to bind to, or {@code null} to unbind
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
      * @since 25.0
      */
     void bind(String name, Signal<Boolean> signal);

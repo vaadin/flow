@@ -173,6 +173,7 @@ public class ClassListBindTest {
 
         // Binding should be cleared, so toggling has no effect
         bound.value(false);
+        bound.value(true);
         Assert.assertFalse(element.getClassList().contains("flag"));
     }
 
