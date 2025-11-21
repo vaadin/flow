@@ -77,7 +77,7 @@ public class StyleBindTest {
         VaadinService.setCurrent(null);
     }
 
-    // Lifecycle: applies on attach and signal changes when attached
+    // Lifecycle: applies on attachment and signal changes when attached
     @Test
     public void bindingMirrorsSignalWhileAttached_updatesStyleValue() {
         Element element = new Element("div");
@@ -97,7 +97,7 @@ public class StyleBindTest {
     }
 
     // Lifecycle: no updates while detached; lastApplied preserved across
-    // detach/attach
+    // detach/attachment
     @Test
     public void detached_noUpdates_lastAppliedPreservedOnReattach() {
         Element element = new Element("div");
@@ -203,18 +203,18 @@ public class StyleBindTest {
         Set<String> names = element.getStyle().getNames()
                 .collect(Collectors.toSet());
         Assert.assertTrue(names.contains("margin-top"));
-        // b has null last-applied value, but the binding is preserved -> name
+        // b has a null last-applied value, but the binding is preserved -> name
         // present
         Assert.assertTrue(names.contains("margin-bottom"));
 
-        // Detach before any apply for c -> bind while detached -> no value
+        // Detach before any applying for c -> bind while detached -> no value
         // applied yet, get returns null
         ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
         Assert.assertNull(element.getStyle().get("paddingTop"));
         names = element.getStyle().getNames().collect(Collectors.toSet());
-        // Current implementation records the binding name even before first
+        // The current implementation records the binding name even before first
         // attach
         Assert.assertTrue(names.contains("padding-top"));
     }

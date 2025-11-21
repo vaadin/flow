@@ -170,36 +170,37 @@ public interface Style extends Serializable {
     Stream<String> getNames();
 
     /**
-     * Binds a Signal's value to a given style property and keeps the style
-     * value synchronized with the signal while the owner element is attached.
+     * Binds the given style property to the provided string signal and keeps
+     * the style property value synchronized with the signal.
      * <p>
-     * Semantics:
-     * <ul>
-     * <li>Mirroring: When a binding is in place, the style value mirrors
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given style property. When unbinding, the current presence of the
+     * style property is left unchanged.
+     * <p>
+     * When a binding is in place, the style signal mirrors
      * {@code signal.value()}. If the signal value is {@code null}, the style
-     * property is removed; otherwise it is set to the string value.</li>
-     * <li>Lifecycle: The binding effect is active only while the owner element
-     * is attached. While detached, updates from the signal have no effect. The
-     * latest value that was applied while attached is remembered and exposed
-     * via {@link #get(String)} and included in {@link #getNames()} as defined
-     * below.</li>
-     * <li>Conflicts: While a binding for a specific style name is active, any
-     * attempt to manually {@link #set(String, String) set} or
-     * {@link #remove(String) remove} that same style must throw a
-     * {@link BindingActiveException}. The same applies when attempting to bind
-     * another signal for the same name while one is already bound.</li>
-     * <li>Bulk operations: {@link #clear()} must silently clear all style
-     * signal bindings (unsubscribe and forget recorded values) in addition to
-     * clearing style values.</li>
-     * <li>Unbinding: Passing {@code null} as {@code value} unbinds any existing
-     * binding for {@code name} without forcing removal of the current style
-     * value.</li>
-     * <li>Getters: {@link #get(String)} returns the latest value that was
-     * applied for a bound style while the element was attached; returns
-     * {@code null} if never attached/never applied. {@link #getNames()}
-     * includes names that have recorded a last-applied value from an attached
-     * period; otherwise it may be empty.</li>
-     * </ul>
+     * property is removed; otherwise it is set to the string value.
+     * <p>
+     * The binding effect is active only while the owner element is in the
+     * attached state. While the owner is in the detached state, updates from
+     * the signal have no effect. The latest value applied while an owner was
+     * attached is remembered and exposed via {@link #get(String)} and included
+     * in {@link #getNames()} as defined below.
+     * <p>
+     * While a binding for a specific style name is active, any attempt to
+     * manually {@link #set(String, String) set} or {@link #remove(String)
+     * remove} that same style throws a {@link BindingActiveException}. The same
+     * applies when attempting to bind another signal for the same name while
+     * one is already bound.
+     * <p>
+     * {@link #clear()} silently clears all style signal bindings (unsubscribe
+     * and forget recorded values) in addition to clearing style values.
+     * <p>
+     * {@link #get(String)} returns the latest signal applied for a bound style
+     * while the element was in attached state; returns {@code null} if never
+     * attached/never applied. {@link #getNames()} includes names that have
+     * recorded a last-applied signal from an attached period; otherwise it may
+     * be empty.
      * <p>
      * Name handling follows the same rules as {@link #set(String, String)}:
      * both camelCase and dash-separated names are supported and normalized in
@@ -207,20 +208,15 @@ public interface Style extends Serializable {
      *
      * @param name
      *            the style property name, not {@code null}
-     * @param value
-     *            the signal that provides the style value; {@code null} removes
-     *            an existing binding for the given name
+     * @param signal
+     *            the signal that provides the style signal; {@code null}
+     *            removes an existing binding for the given name
      * @return this style instance
      * @throws BindingActiveException
-     *             if there is an active binding that prevents manual
-     *             modifications as described above
+     *             thrown when there is already an existing binding
      * @since 25.0
      */
-    default Style bind(String name, Signal<String> value) {
-        // API stub: concrete implementations should override in Phase 2.
-        throw new UnsupportedOperationException(
-                "Style.bind(name, signal) is not implemented in this Style implementation");
-    }
+    Style bind(String name, Signal<String> signal);
 
     /**
      * Sets the <code>background</code> property.

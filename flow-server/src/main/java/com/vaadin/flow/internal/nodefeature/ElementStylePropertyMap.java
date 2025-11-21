@@ -53,9 +53,6 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
     @Override
     public void setPropertyFromSignal(String name, Object value) {
-        // Compare against the effectively stored value (unwrapped), but
-        // when null is incoming from signal, we will emit an empty string
-        // to the client to force style removal while preserving the binding.
         Serializable currentRaw = super.get(name);
         Serializable currentEffective;
         if (currentRaw instanceof SignalBinding binding) {
@@ -64,6 +61,9 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
             currentEffective = currentRaw;
         }
 
+        // Compare against the effectively stored value (unwrapped), but
+        // when null is incoming from signal, we will emit an empty string
+        // to the client to force style removal while preserving the binding.
         Object newEffective = (value == null) ? "" : value;
         if (Objects.equals(currentEffective, newEffective)) {
             return;
@@ -71,7 +71,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
         if (value == null) {
             // Emit empty string so that a client removes the style property,
-            // but keep the SignalBinding container on the server side.
+            // but keep the SignalBinding on the server side.
             super.setProperty(name, "", true);
         } else {
             // Delegate to validated setter for non-null values
@@ -96,7 +96,7 @@ public class ElementStylePropertyMap extends AbstractPropertyMap {
 
     @Override
     public void removeAllProperties() {
-        // Dispose any effect registrations and forget bindings
+        // Dispose of any effect registrations and forget bindings
         for (String key : getPropertyNames().toList()) {
             Serializable raw = super.get(key);
             if (raw instanceof SignalBinding binding) {

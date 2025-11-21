@@ -50,10 +50,10 @@ public class BasicElementStyle implements Style {
     @Override
     public Style set(String name, String value) {
         ElementUtil.validateStylePropertyName(name);
-        String attr = StyleUtil.stylePropertyToAttribute(name);
-        if (propertyMap.hasSignal(attr)) {
-            throw new BindingActiveException("Style '" + name
-                    + "' is bound and cannot be modified manually");
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
+        if (propertyMap.hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "Style '" + name + "' is already bound to a signal");
         }
         if (value == null) {
             return this.remove(name);
@@ -61,19 +61,19 @@ public class BasicElementStyle implements Style {
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        propertyMap.setProperty(attr, trimmedValue, true);
+        propertyMap.setProperty(attribute, trimmedValue, true);
         return this;
     }
 
     @Override
     public Style remove(String name) {
         ElementUtil.validateStylePropertyName(name);
-        String attr = StyleUtil.stylePropertyToAttribute(name);
-        if (propertyMap.hasSignal(attr)) {
-            throw new BindingActiveException("Style '" + name
-                    + "' is bound and cannot be modified manually");
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
+        if (propertyMap.hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "Style '" + name + "' is already bound to a signal");
         }
-        propertyMap.removeProperty(attr);
+        propertyMap.removeProperty(attribute);
         return this;
     }
 
@@ -97,11 +97,11 @@ public class BasicElementStyle implements Style {
     }
 
     @Override
-    public Style bind(String name, Signal<String> value) {
+    public Style bind(String name, Signal<String> signal) {
         ElementUtil.validateStylePropertyName(name);
-        String attr = StyleUtil.stylePropertyToAttribute(name);
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
         Element owner = Element.get(propertyMap.getNode());
-        propertyMap.bindSignal(owner, attr, value);
+        propertyMap.bindSignal(owner, attribute, signal);
         return this;
     }
 
