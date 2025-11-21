@@ -92,8 +92,11 @@ public @interface ColorScheme {
         DARK_LIGHT("dark light"),
 
         /**
-         * Normal/default color scheme. Uses the browser's default behavior
-         * without any specific color scheme preference.
+         * Normal/default color scheme. Indicates that no specific color scheme
+         * preference is set via this API. The actual color scheme used will
+         * depend on other factors such as the browser's default behavior,
+         * system preferences, or other meta tags like
+         * {@code <meta name="color-scheme" content="dark">}.
          */
         NORMAL("normal");
 
