@@ -16,9 +16,10 @@
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletRequestWrapper;
 
-import java.security.Principal;
+import java.util.Collections;
+import java.util.Set;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -27,10 +28,15 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
+import org.springframework.security.authorization.AuthoritiesAuthorizationManager;
+import org.springframework.security.authorization.AuthorizationResult;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.stereotype.Component;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Location;
@@ -47,17 +53,19 @@ import com.vaadin.flow.server.auth.AccessCheckResult;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.server.auth.NavigationContext;
-import com.vaadin.flow.spring.AuthenticationUtil;
 import com.vaadin.flow.spring.SpringServlet;
 import com.vaadin.flow.spring.VaadinConfigurationProperties;
 
 /**
  * Contains utility methods related to request handling.
  */
-@Component
 public class RequestUtil {
 
     private static final ThreadLocal<Boolean> ROUTE_PATH_MATCHER_RUNNING = new ThreadLocal<>();
+
+    private final AuthenticatedAuthorizationManager<?> authenticatedAuthenticationManager = new AuthenticatedAuthorizationManager<>();
+
+    private final AuthoritiesAuthorizationManager authoritiesAuthorizationManager = new AuthoritiesAuthorizationManager();
 
     @Autowired
     private ObjectProvider<NavigationAccessControl> accessControl;
@@ -78,10 +86,10 @@ public class RequestUtil {
 
     /**
      * Checks whether the request is an internal request.
-     *
+     * <p>
      * An internal request is one that is needed for all Vaadin applications to
      * function, e.g. UIDL or init requests.
-     *
+     * <p>
      * Note that bootstrap requests for any route or static resource requests
      * are not internal, neither are resource requests for the JS bundle.
      *
@@ -134,7 +142,11 @@ public class RequestUtil {
      *            the HTTP request to check
      * @return {@code true} if the request corresponds to an accessible Hilla
      *         view, {@code false} otherwise
+     * @deprecated use {@link #isAnonymousHillaRoute(HttpServletRequest)} to
+     *             match requests to Hilla views that do not require
+     *             authentication
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isAllowedHillaView(HttpServletRequest request) {
         if (fileRouterRequestUtil != null) {
             return fileRouterRequestUtil.isRouteAllowed(request);
@@ -155,8 +167,7 @@ public class RequestUtil {
         if (ROUTE_PATH_MATCHER_RUNNING.get() == null) {
             ROUTE_PATH_MATCHER_RUNNING.set(Boolean.TRUE);
             try {
-                return isAnonymousRouteInternal(
-                        PrincipalAwareRequestWrapper.wrap(request));
+                return isAnonymousRouteInternal(request);
             } finally {
                 ROUTE_PATH_MATCHER_RUNNING.remove();
             }
@@ -178,6 +189,56 @@ public class RequestUtil {
      */
     public boolean isSecuredFlowRoute(HttpServletRequest request) {
         return isSecuredFlowRouteInternal(request);
+    }
+
+    /**
+     * Checks if the request targets a Hilla route that allows anonymous access.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to a Hilla route that
+     *         allows anonymous access, {@code false} otherwise
+     */
+    public boolean isAnonymousHillaRoute(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isAnonymousRoute(request);
+        }
+        return false;
+    }
+
+    /**
+     * Checks if the request targets a Hilla route that requires authentication.
+     *
+     * @param request
+     *            the HTTP request to check
+     * @return {@code true} if the request corresponds to a Hilla route that
+     *         requires authentication, {@code false} otherwise
+     */
+    public boolean isSecuredHillaRoute(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.isSecuredRoute(request);
+        }
+        return false;
+    }
+
+    AuthorizationResult authorizeHillaRoute(
+            Supplier<? extends Authentication> authenticationSupplier,
+            RequestAuthorizationContext context) {
+        var authorities = getHillaAllowedAuthorities(context.getRequest());
+        if (authorities.isEmpty()) {
+            return authenticatedAuthenticationManager
+                    .authorize(authenticationSupplier, null);
+        } else {
+            return authoritiesAuthorizationManager
+                    .authorize(authenticationSupplier, authorities);
+        }
+    }
+
+    private Set<String> getHillaAllowedAuthorities(HttpServletRequest request) {
+        if (fileRouterRequestUtil != null) {
+            return fileRouterRequestUtil.getAllowedAuthorities(request);
+        }
+        return Collections.emptySet();
     }
 
     /**
@@ -263,23 +324,6 @@ public class RequestUtil {
                 .toArray(RequestMatcher[]::new);
     }
 
-    /**
-     * Wraps a given {@link RequestMatcher} to ensure requests are processed
-     * with the principal awareness provided by
-     * {@link RequestUtil.PrincipalAwareRequestWrapper}.
-     *
-     * @param matcher
-     *            the {@link RequestMatcher} to be wrapped
-     * @return a {@link RequestMatcher} that processes requests using a
-     *         {@link RequestUtil.PrincipalAwareRequestWrapper} for principal
-     *         awareness
-     */
-    public static RequestMatcher principalAwareRequestMatcher(
-            RequestMatcher matcher) {
-        return request -> matcher.matches(
-                RequestUtil.PrincipalAwareRequestWrapper.wrap(request));
-    }
-
     private boolean isSecuredFlowRouteInternal(HttpServletRequest request) {
         NavigationAccessControl navigationAccessControl = accessControl
                 .getObject();
@@ -291,8 +335,9 @@ public class RequestUtil {
 
     private boolean isFlowRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
-        if (path == null)
+        if (path == null) {
             return false;
+        }
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -313,15 +358,15 @@ public class RequestUtil {
         if (routeTarget == null) {
             return false;
         }
-        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
-                .getTarget();
+        Class<? extends Component> targetView = routeTarget.getTarget();
         return targetView != null;
     }
 
     private boolean isAnonymousRouteInternal(HttpServletRequest request) {
         String path = getRequestRoutePath(request);
-        if (path == null)
+        if (path == null) {
             return false;
+        }
 
         SpringServlet servlet = springServletRegistration.getServlet();
         VaadinService service = servlet.getService();
@@ -342,8 +387,7 @@ public class RequestUtil {
         if (routeTarget == null) {
             return false;
         }
-        Class<? extends com.vaadin.flow.component.Component> targetView = routeTarget
-                .getTarget();
+        Class<? extends Component> targetView = routeTarget.getTarget();
         if (targetView == null) {
             return false;
         }
@@ -405,7 +449,7 @@ public class RequestUtil {
 
     /**
      * Prepends to the given {@code path} with the configured url mapping.
-     *
+     * <p>
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
@@ -421,7 +465,7 @@ public class RequestUtil {
     /**
      * Prepends to the given {@code path} with the servlet path prefix from
      * input url mapping.
-     *
+     * <p>
      * A {@literal null} path is treated as empty string; the same applies for
      * url mapping.
      *
@@ -441,47 +485,6 @@ public class RequestUtil {
             path = path.substring(1);
         }
         return urlMapping + "/" + path;
-    }
-
-    /**
-     * A wrapper for {@link HttpServletRequest} that provides additional
-     * functionality to handle the user principal retrieval in a safer manner.
-     * <p>
-     * This class extends {@link HttpServletRequestWrapper} and overrides its
-     * {@code getUserPrincipal()} method to handle cases where the operation
-     * might not be supported by the underlying {@link HttpServletRequest}, for
-     * example when called by a Spring request matcher in the context of
-     * {@code WebInvocationPrivilegeEvaluator} permissions evaluation.
-     */
-    static class PrincipalAwareRequestWrapper
-            extends HttpServletRequestWrapper {
-
-        private PrincipalAwareRequestWrapper(HttpServletRequest request) {
-            super(request);
-        }
-
-        @Override
-        public Principal getUserPrincipal() {
-            try {
-                return super.getUserPrincipal();
-            } catch (UnsupportedOperationException e) {
-                return AuthenticationUtil.getSecurityHolderAuthentication();
-            }
-        }
-
-        static HttpServletRequest wrap(HttpServletRequest request) {
-            if (request instanceof PrincipalAwareRequestWrapper) {
-                return request;
-            }
-            HttpServletRequest maybeWrapper = request;
-            while (maybeWrapper instanceof HttpServletRequestWrapper wrapper) {
-                if (wrapper instanceof PrincipalAwareRequestWrapper) {
-                    return request;
-                }
-                maybeWrapper = (HttpServletRequest) wrapper.getRequest();
-            }
-            return new PrincipalAwareRequestWrapper(request);
-        }
     }
 
     private Logger getLogger() {

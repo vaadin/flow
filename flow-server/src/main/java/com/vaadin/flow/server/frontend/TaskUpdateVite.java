@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -95,7 +96,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
         InputStream resource = this.getClass().getClassLoader()
                 .getResourceAsStream(FrontendUtils.VITE_CONFIG);
-        Files.copy(resource, configFile.toPath());
+        Files.copy(resource, configFile.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
         log().debug("Created vite configuration file: '{}'", configFile);
 
     }

@@ -21,6 +21,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -166,6 +167,18 @@ public final class BundleUtils {
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
+        try {
+            if (FrontendUtils.isPlatformMajorVersionUpdated(
+                    options.getClassFinder(), options.getNodeModulesFolder(),
+                    options.getNpmFolder(), options.getBuildDirectory())) {
+                getLogger().info(
+                        "Platform version updated. Skipping bundle lock file copy.");
+                return;
+            }
+        } catch (IOException ioe) {
+            getLogger().debug("Failed to validate platform version change.",
+                    ioe);
+        }
         String lockFile;
         if (options.isEnablePnpm()) {
             lockFile = Constants.PACKAGE_LOCK_YAML;
@@ -199,7 +212,8 @@ public final class BundleUtils {
         if (devBundleFolder.exists()) {
             File devPackageLock = new File(devBundleFolder, packageLockFile);
             if (devPackageLock.exists()) {
-                Files.copy(devPackageLock.toPath(), packageLock.toPath());
+                Files.copy(devPackageLock.toPath(), packageLock.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
                 return;
             }
         }

@@ -71,7 +71,6 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 
 /**
  * A {@link SecurityConfigurer} specifically designed for Vaadin applications.
@@ -485,23 +484,13 @@ public final class VaadinSecurityConfigurer
                 getDefaultHttpSecurityPermitMatcher(urlMapping),
                 getDefaultWebSecurityIgnoreMatcher(urlMapping));
         if (EndpointRequestUtil.isHillaAvailable()) {
-            return toRequestPrincipalAwareMatcher(
-                    RequestMatchers.anyOf(baseMatcher,
-                            // Matchers for known Hilla views
-                            getRequestUtil()::isAllowedHillaView,
-                            // Matcher for public Hilla endpoints
-                            getRequestUtil()::isAnonymousEndpoint));
+            return RequestMatchers.anyOf(baseMatcher,
+                    // Matchers for anonymous Hilla views
+                    getRequestUtil()::isAnonymousHillaRoute,
+                    // Matcher for public Hilla endpoints
+                    getRequestUtil()::isAnonymousEndpoint);
         }
-        return toRequestPrincipalAwareMatcher(baseMatcher);
-    }
-
-    private RequestMatcher toRequestPrincipalAwareMatcher(
-            RequestMatcher matcher) {
-        if (enableNavigationAccessControl && getNavigationAccessControl()
-                .hasAccessChecker(RoutePathAccessChecker.class)) {
-            return RequestUtil.principalAwareRequestMatcher(matcher);
-        }
-        return matcher;
+        return baseMatcher;
     }
 
     @Override
@@ -838,12 +827,13 @@ public final class VaadinSecurityConfigurer
     private void customizeAuthorizeHttpRequests(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry) {
         registry.requestMatchers(defaultPermitMatcher()).permitAll()
-                .requestMatchers(toRequestPrincipalAwareMatcher(
-                        getRequestUtil()::isSecuredFlowRoute))
+                .requestMatchers(getRequestUtil()::isSecuredFlowRoute)
                 .authenticated();
         if (EndpointRequestUtil.isHillaAvailable()) {
-            registry.requestMatchers(toRequestPrincipalAwareMatcher(
-                    getRequestUtil()::isEndpointRequest)).authenticated();
+            registry.requestMatchers(getRequestUtil()::isSecuredHillaRoute)
+                    .access(getRequestUtil()::authorizeHillaRoute);
+            registry.requestMatchers(getRequestUtil()::isEndpointRequest)
+                    .authenticated();
         }
     }
 

@@ -26,11 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -38,8 +36,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.Platform;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.JS_VERSION;
@@ -410,7 +406,9 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
-        doCleanUp = doCleanUp || (!enablePnpm && isPlatformVersionUpdated());
+        doCleanUp = doCleanUp || (!enablePnpm && FrontendUtils
+                .isPlatformVersionUpdated(finder, options.getNpmFolder(),
+                        options.getNodeModulesFolder()));
 
         // Remove obsolete devDependencies
         dependencyCollection = new ArrayList<>(
@@ -515,56 +513,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
         return true;
-    }
-
-    /**
-     * Compares current platform version with the one last recorded as installed
-     * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform version recorder and node_modules exists, then platform is
-     * considered updated.
-     *
-     * @return {@code true} if the version has changed, {@code false} if not
-     * @throws IOException
-     *             when file reading fails
-     */
-    private boolean isPlatformVersionUpdated() throws IOException {
-        // if no record of current version is present, version is not
-        // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent()
-                && options.getNodeModulesFolder().exists()) {
-            JsonNode vaadinJsonContents = getVaadinJsonContents();
-            // If no record of previous version, version is considered updated
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
-                return true;
-            }
-            return !Objects.equals(vaadinJsonContents
-                    .get(NodeUpdater.VAADIN_VERSION).asString(),
-                    platformVersion.get());
-        }
-        return false;
-    }
-
-    static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        if (coreVersionsResource == null) {
-            return Optional.empty();
-        }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonNode versionsJson = JacksonUtils
-                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
-            if (versionsJson.has("platform")) {
-                return Optional.of(versionsJson.get("platform").asString());
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(Platform.class)
-                    .error("Unable to determine version information", e);
-        }
-
-        return Optional.empty();
     }
 
     /**
