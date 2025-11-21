@@ -84,6 +84,47 @@ public class Page implements Serializable {
     }
 
     /**
+     * Sets the color scheme for the page.
+     * <p>
+     * The color scheme is applied via a theme attribute on the html element,
+     * allowing CSS to use that attribute to target different color schemes. The
+     * theme attribute also ensures that browsers apply a color-scheme property
+     * accordingly.
+     *
+     * @param colorScheme
+     *            the color scheme to set (e.g., ColorScheme.Value.DARK,
+     *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
+     */
+    public void setColorScheme(ColorScheme.Value colorScheme) {
+        if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
+            executeJs("""
+                    document.documentElement.removeAttribute('theme');
+                    document.documentElement.style.colorScheme = '';
+                    """);
+            getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
+        } else {
+            executeJs("""
+                    document.documentElement.setAttribute('theme', $0);
+                    document.documentElement.style.colorScheme = '';
+                    """, colorScheme.getValue());
+            getExtendedClientDetails().setColorScheme(colorScheme);
+        }
+    }
+
+    /**
+     * Gets the color scheme for the page.
+     * <p>
+     * Note that this method returns the server-side cached value and will not
+     * detect color scheme changes made directly via JavaScript or browser
+     * developer tools.
+     *
+     * @return the color scheme value, never {@code null}
+     */
+    public ColorScheme.Value getColorScheme() {
+        return getExtendedClientDetails().getColorScheme();
+    }
+
+    /**
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>

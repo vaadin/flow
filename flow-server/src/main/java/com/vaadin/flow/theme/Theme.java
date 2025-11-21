@@ -100,9 +100,15 @@ public @interface Theme {
 
     /**
      * The theme variant, if any.
+     * <p>
+     * <b>Deprecated:</b> Use {@link com.vaadin.flow.component.page.ColorScheme}
+     * annotation instead to set the color scheme for the application.
      *
      * @return the theme variant
+     * @deprecated Use {@link com.vaadin.flow.component.page.ColorScheme}
+     *             annotation instead
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     String variant() default "";
 
     /**
