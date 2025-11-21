@@ -66,7 +66,7 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
  *
  * @since 2.0
  */
-@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class BuildFrontendMojo extends FlowModeAbstractMojo
         implements PluginAdapterBuild {
 
@@ -140,6 +140,12 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
+
+        if (!BuildFrontendUtil.getTokenFile(this).exists()) {
+            // if not prepare-frontend token file exists propagate build info
+            // to token file
+            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+        }
 
         Options options = new Options(null, getClassFinder(), npmFolder())
                 .withFrontendDirectory(frontendDirectory())

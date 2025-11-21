@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.compress.utils.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -354,7 +353,7 @@ public class FrontendTools {
         // If auto-update flag set or installed node older than minimum
         // supported
         try {
-            List<String> versionCommand = Lists.newArrayList();
+            List<String> versionCommand = new ArrayList<>();
             versionCommand.add(file.getAbsolutePath());
             versionCommand.add("--version"); // NOSONAR
             final FrontendVersion installedNodeVersion = FrontendUtils
@@ -400,7 +399,7 @@ public class FrontendTools {
             return null;
         }
         try {
-            List<String> versionCommand = Lists.newArrayList();
+            List<String> versionCommand = new ArrayList<>();
             versionCommand.add(nodeExecutable.getAbsolutePath());
             versionCommand.add("--version"); // NOSONAR
             final FrontendVersion installedNodeVersion = FrontendUtils

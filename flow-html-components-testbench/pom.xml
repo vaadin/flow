@@ -11,7 +11,9 @@
   <name>TestBench elements for Flow HTML Components</name>
   <description>${project.name}</description>
 
-  <properties/>
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
 
   <dependencies>
     <dependency>
