@@ -47,7 +47,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -67,7 +66,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     // .vaadin/vaadin.json contains local installation data inside node_modules
     // This will help us know to execute even when another developer has pushed
     // a new hash to the code repository.
-    private static final String VAADIN_JSON = ".vaadin/vaadin.json";
+    protected static final String VAADIN_JSON = ".vaadin/vaadin.json";
 
     static final String DEPENDENCIES = "dependencies";
     static final String VAADIN_DEP_KEY = "vaadin";
@@ -542,7 +541,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     File getVaadinJsonFile() {
-        return new File(new File(options.getNpmFolder(), NODE_MODULES),
+        return new File(
+                new File(options.getNpmFolder(), FrontendUtils.NODE_MODULES),
                 VAADIN_JSON);
     }
 

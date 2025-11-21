@@ -167,6 +167,18 @@ public final class BundleUtils {
      *            task options
      */
     public static void copyPackageLockFromBundle(Options options) {
+        try {
+            if (FrontendUtils.isPlatformMajorVersionUpdated(
+                    options.getClassFinder(), options.getNodeModulesFolder(),
+                    options.getNpmFolder(), options.getBuildDirectory())) {
+                getLogger().info(
+                        "Platform version updated. Skipping bundle lock file copy.");
+                return;
+            }
+        } catch (IOException ioe) {
+            getLogger().debug("Failed to validate platform version change.",
+                    ioe);
+        }
         String lockFile;
         if (options.isEnablePnpm()) {
             lockFile = Constants.PACKAGE_LOCK_YAML;
