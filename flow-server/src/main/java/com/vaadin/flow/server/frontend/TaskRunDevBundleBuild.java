@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -241,7 +242,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (packageLockJson.exists()) {
             try {
                 Files.copy(packageLockJson.toPath(),
-                        new File(devBundleFolder, packageLockFile).toPath());
+                        new File(devBundleFolder, packageLockFile).toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 getLogger().error("Failed to copy '" + packageLockFile + "' to "
                         + getDevBundleFolderInTarget(), e);

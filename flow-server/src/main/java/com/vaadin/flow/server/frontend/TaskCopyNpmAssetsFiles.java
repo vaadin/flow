@@ -24,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
@@ -159,7 +160,8 @@ public class TaskCopyNpmAssetsFiles
                     destFile.getAbsolutePath());
             try {
                 Files.createDirectories(destFile.toPath().getParent());
-                Files.copy(file.toPath(), destFile.toPath());
+                Files.copy(file.toPath(), destFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 throw new UncheckedIOException(String.format(
                         "Failed to copy project frontend resources from '%s' to '%s'",
