@@ -18,6 +18,7 @@
   <properties>
     <bnd.skip>true</bnd.skip>
     <testListener/>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
   <profiles>
     <profile>

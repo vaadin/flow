@@ -112,6 +112,29 @@ public class TaskCopyNpmAssetsFilesTest {
     }
 
     @Test
+    public void copiedFolderStructureIsKept() throws IOException {
+        Mockito.when(scanner.getAssets())
+                .thenReturn(Map.of("test-button", List.of("**:button")));
+
+        TaskCopyNpmAssetsFiles taskCopyNpmAssetsFiles = new TaskCopyNpmAssetsFiles(
+                options);
+        taskCopyNpmAssetsFiles.execute();
+
+        Set<String> filesInDirectory = getFilesInDirectory(
+                webappResourcesDirectory);
+        Assert.assertEquals(3, filesInDirectory.size());
+        Assert.assertTrue("Could not find file images/image.jpg",
+                filesInDirectory.contains(
+                        "VAADIN/static/assets/button/images/image.jpg"));
+        Assert.assertTrue("Could not find file images/image.gif",
+                filesInDirectory.contains(
+                        "VAADIN/static/assets/button/images/image.gif"));
+        Assert.assertTrue("Could not find file templates/button.template",
+                filesInDirectory.contains(
+                        "VAADIN/static/assets/button/templates/button.template"));
+    }
+
+    @Test
     public void singleAssertFromFolderIsCopied() throws IOException {
         Mockito.when(scanner.getAssets()).thenReturn(
                 Map.of("test-button", List.of("images/*.jpg:copy")));

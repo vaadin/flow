@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.frontendtools.installer;
 
 /**
  * Exception indicating a failure during downloaded archive verification.
@@ -41,7 +41,7 @@ public final class VerificationException extends Exception {
      * @param cause
      *            cause for exception
      */
-    VerificationException(String message, Throwable cause) {
+    public VerificationException(String message, Throwable cause) {
         super(message, cause);
     }
 }

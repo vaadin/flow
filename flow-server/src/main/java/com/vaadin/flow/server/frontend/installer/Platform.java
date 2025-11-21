@@ -21,9 +21,6 @@ import java.nio.file.Paths;
 
 import com.vaadin.flow.server.frontend.FrontendVersion;
 
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT;
-import static com.vaadin.flow.server.frontend.installer.NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;
-
 /**
  * Platform contains information about system architecture and OS.
  * <p>
@@ -69,7 +66,7 @@ public class Platform {
         }
     }
 
-    enum OS {
+    public enum OS {
         WINDOWS, MAC, LINUX, SUN_OS;
 
         /**
@@ -133,7 +130,8 @@ public class Platform {
      *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
-        this(DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture, null);
+        this(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture,
+                null);
     }
 
     public Platform(String nodeDownloadRoot, OS os, Architecture architecture,
@@ -166,7 +164,8 @@ public class Platform {
                     // project, yet.
                     // See
                     // https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list
-                    UNOFFICIAL_NODEJS_DOWNLOAD_ROOT, os, architecture, "musl");
+                    NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT, os,
+                    architecture, "musl");
         }
         return new Platform(os, architecture);
     }
