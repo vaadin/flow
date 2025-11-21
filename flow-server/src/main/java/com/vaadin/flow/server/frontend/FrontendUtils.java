@@ -483,6 +483,7 @@ public class FrontendUtils {
                 path = commandPath + File.pathSeparatorChar + path;
             }
             environment.put(pathEnvVar, path);
+            getLogger().info("Environment for {} : {} ", command, environment);
         }
 
         return configureProcessBuilder.apply(processBuilder);
@@ -964,6 +965,7 @@ public class FrontendUtils {
                 throw new CommandExecutionException(exitCode,
                         outputs.getFirst(), outputs.getSecond());
             }
+            getLogger().info("Output of {} ==> OUT:{}, ERR: {}", command, outputs.getFirst(), outputs.getSecond());
             return outputs.getFirst();
         } catch (ExecutionException e) {
             throw new CommandExecutionException(e.getCause());
