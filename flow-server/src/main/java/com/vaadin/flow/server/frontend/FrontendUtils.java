@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -1618,7 +1619,8 @@ public class FrontendUtils {
         if (!vaadinJsonFile.exists()) {
             return JacksonUtils.createObjectNode();
         }
-        String fileContent = Files.readString(vaadinJsonFile.toPath(), UTF_8);
+        String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                StandardCharsets.UTF_8);
         vaadinJsonContents = JacksonUtils.readTree(fileContent);
         return vaadinJsonContents;
     }
@@ -1666,8 +1668,8 @@ public class FrontendUtils {
         }
         try (InputStream vaadinVersionsStream = coreVersionsResource
                 .openStream()) {
-            final JsonNode versionsJson = JacksonUtils.readTree(IOUtils
-                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
+            final JsonNode versionsJson = JacksonUtils
+                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
             if (versionsJson.has("platform")) {
                 return Optional.of(versionsJson.get("platform").asString());
             }
@@ -1688,7 +1690,7 @@ public class FrontendUtils {
         File vaadinJsonFile = getVaadinJsonFile(npmFolder);
         if (vaadinJsonFile.exists()) {
             String fileContent = Files.readString(vaadinJsonFile.toPath(),
-                    UTF_8);
+                    StandardCharsets.UTF_8);
             return JacksonUtils.readTree(fileContent);
         } else {
             return JacksonUtils.createObjectNode();
