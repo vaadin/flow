@@ -70,7 +70,12 @@ public class ColorSchemeIT extends ChromeBrowserTest {
                 "return document.documentElement.getAttribute('theme');");
         Assert.assertEquals("dark", themeAttr);
 
-        // Verify the computed color-scheme property (set by theme CSS)
+        // Verify the inline color-scheme style is set
+        String inlineStyle = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("dark", inlineStyle);
+
+        // Verify the computed color-scheme property
         String colorScheme = (String) executeScript(
                 "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("dark", colorScheme);
@@ -100,7 +105,12 @@ public class ColorSchemeIT extends ChromeBrowserTest {
                 "return document.documentElement.getAttribute('theme');");
         Assert.assertEquals("light", themeAttr);
 
-        // Verify the computed color-scheme property (set by theme CSS)
+        // Verify the inline color-scheme style is set
+        String inlineStyle = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("light", inlineStyle);
+
+        // Verify the computed color-scheme property
         String colorScheme = (String) executeScript(
                 "return getComputedStyle(document.documentElement).colorScheme;");
         Assert.assertEquals("light", colorScheme);
@@ -136,18 +146,18 @@ public class ColorSchemeIT extends ChromeBrowserTest {
         String themeAttr = (String) executeScript(
                 "return document.documentElement.getAttribute('theme');");
         Assert.assertEquals("dark", themeAttr);
-        String colorScheme = (String) executeScript(
-                "return getComputedStyle(document.documentElement).colorScheme;");
-        Assert.assertEquals("dark", colorScheme);
+        String inlineStyle = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("dark", inlineStyle);
 
         // Set light theme
         $(NativeButtonElement.class).id(SET_LIGHT_ID).click();
         themeAttr = (String) executeScript(
                 "return document.documentElement.getAttribute('theme');");
         Assert.assertEquals("light", themeAttr);
-        colorScheme = (String) executeScript(
-                "return getComputedStyle(document.documentElement).colorScheme;");
-        Assert.assertEquals("light", colorScheme);
+        inlineStyle = (String) executeScript(
+                "return document.documentElement.style.colorScheme;");
+        Assert.assertEquals("light", inlineStyle);
     }
 
     @Test

@@ -323,8 +323,8 @@ public class PageTest {
         String js = capturedExpression.get();
         Assert.assertTrue("Should set theme attribute",
                 js.contains("setAttribute('theme', $0)"));
-        Assert.assertTrue("Should clear inline style",
-                js.contains("style.colorScheme = ''"));
+        Assert.assertTrue("Should set color-scheme property",
+                js.contains("style.colorScheme = $0"));
         Assert.assertEquals("dark", capturedParam.get());
     }
 
