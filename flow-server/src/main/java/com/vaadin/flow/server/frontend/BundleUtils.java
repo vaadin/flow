@@ -17,16 +17,16 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -88,14 +88,14 @@ public final class BundleUtils {
      * @return the stats json as a json object
      */
     static ObjectNode loadStatsJson() {
-        URL statsUrl = BundleUtils.class.getClassLoader()
-                .getResource("META-INF/VAADIN/config/stats.json");
-        if (statsUrl == null) {
+        InputStream stats = BundleUtils.class.getClassLoader()
+                .getResourceAsStream("META-INF/VAADIN/config/stats.json");
+        if (stats == null) {
             return JacksonUtils.createObjectNode();
         }
+
         try {
-            return JacksonUtils.readTree(
-                    IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+            return JacksonUtils.readTree(StringUtil.toUTF8String(stats));
         } catch (IOException e) {
             getLogger().warn(
                     "Unable to parse META-INF/VAADIN/config/stats.json", e);
@@ -211,7 +211,7 @@ public final class BundleUtils {
         if (devBundleFolder.exists()) {
             File devPackageLock = new File(devBundleFolder, packageLockFile);
             if (devPackageLock.exists()) {
-                FileUtils.copyFile(devPackageLock, packageLock);
+                Files.copy(devPackageLock.toPath(), packageLock.toPath());
                 return;
             }
         }
@@ -236,9 +236,8 @@ public final class BundleUtils {
                     .getResource(DEV_BUNDLE_JAR_PATH + packageLockFile);
         }
         if (resource != null) {
-            FileUtils.write(packageLock,
-                    IOUtils.toString(resource, StandardCharsets.UTF_8),
-                    StandardCharsets.UTF_8);
+            String filecontents = FileIOUtils.urlToString(resource);
+            Files.writeString(packageLock.toPath(), filecontents);
         } else {
             getLogger().debug(
                     "The '{}' file cannot be created because the dev-bundle JAR does not contain a suitable template.",

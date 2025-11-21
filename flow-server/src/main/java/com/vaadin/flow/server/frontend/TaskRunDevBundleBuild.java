@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
@@ -247,8 +246,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 packageLockFile);
         if (packageLockJson.exists()) {
             try {
-                FileUtils.copyFile(packageLockJson,
-                        new File(devBundleFolder, packageLockFile));
+                Files.copy(packageLockJson.toPath(),
+                        new File(devBundleFolder, packageLockFile).toPath());
             } catch (IOException e) {
                 getLogger().error("Failed to copy '" + packageLockFile + "' to "
                         + getDevBundleFolderInTarget(), e);
@@ -298,8 +297,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         try {
             boolean created = readme.createNewFile();
             if (created) {
-                FileUtils.writeStringToFile(readme, README,
-                        StandardCharsets.UTF_8);
+                Files.writeString(readme.toPath(), README);
             } else {
                 getLogger().warn("Failed to create " + readme);
             }

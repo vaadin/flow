@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,8 +29,6 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
@@ -197,8 +194,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = coreVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     platformDependencies);
         }
 
@@ -211,8 +207,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = vaadinVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     platformDependencies);
         }
 
@@ -565,7 +560,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         File packageLockFile = getPackageLockFile();
         if (packageLockFile.exists()) {
-            FileUtils.forceDelete(getPackageLockFile());
+            FileIOUtils.delete(getPackageLockFile());
         }
         return result;
     }

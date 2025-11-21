@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -32,8 +32,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -41,6 +39,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -172,8 +171,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     options.isReactEnabled()
                             && FrontendUtils.isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());
@@ -198,12 +196,18 @@ public abstract class NodeUpdater implements FallibleCommand {
             return Collections.emptySet();
         }
 
-        return FileUtils
-                .listFiles(webComponentsFolder, new String[] { "js" }, true)
-                .stream()
-                .map(file -> unixPath
-                        .apply(baseDir.relativize(file.toURI()).getPath()))
-                .collect(Collectors.toSet());
+        try {
+            return FileIOUtils
+                    .listFiles(webComponentsFolder, new String[] { "js" }, true)
+                    .stream()
+                    .map(file -> unixPath
+                            .apply(baseDir.relativize(file.toURI()).getPath()))
+                    .collect(Collectors.toSet());
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not read web components from " + webComponentsFolder,
+                    e);
+        }
     }
 
     ObjectNode getPackageJson() throws IOException {
@@ -256,8 +260,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static ObjectNode getJsonFileContent(File packageFile) throws IOException {
         ObjectNode jsonContent = null;
         if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile,
-                    UTF_8.name());
+            String fileContent = Files.readString(packageFile.toPath(), UTF_8);
             try {
                 jsonContent = (ObjectNode) JacksonUtils.readTree(fileContent);
             } catch (JsonDecodingException e) { // NOSONAR
@@ -350,8 +353,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             return JacksonUtils.readTree("{\"%s\":{},\"%s\":{}}"
                     .formatted(DEPENDENCIES, DEV_DEPENDENCIES));
         }
-        return JacksonUtils
-                .readTree(IOUtils.toString(resource, StandardCharsets.UTF_8));
+        return JacksonUtils.readTree(FileIOUtils.urlToString(resource));
     }
 
     boolean hasPackageJson(String id) {
@@ -532,7 +534,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
-            FileUtils.forceMkdirParent(packageFile);
+            Files.createDirectories(packageFile.toPath().getParent());
             FileIOUtils.writeIfChanged(packageFile, content);
         }
         return content;
@@ -547,8 +549,8 @@ public abstract class NodeUpdater implements FallibleCommand {
     ObjectNode getVaadinJsonContents() throws IOException {
         File vaadinJsonFile = getVaadinJsonFile();
         if (vaadinJsonFile.exists()) {
-            String fileContent = FileUtils.readFileToString(vaadinJsonFile,
-                    UTF_8.name());
+            String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                    UTF_8);
             return JacksonUtils.readTree(fileContent);
         } else {
             return JacksonUtils.createObjectNode();
@@ -560,7 +562,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         ObjectNode fileContent = getVaadinJsonContents();
         newContent.forEach(fileContent::put);
         File vaadinJsonFile = getVaadinJsonFile();
-        FileUtils.forceMkdirParent(vaadinJsonFile);
+        Files.createDirectories(vaadinJsonFile.toPath().getParent());
         String content = fileContent.toPrettyString() + "\n";
         FileIOUtils.writeIfChanged(vaadinJsonFile, content);
     }
