@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
@@ -194,7 +192,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 URL url = getClientResource(key);
                 try (InputStream stream = url.openStream()) {
                     ByteArrayOutputStream tempBuffer = new ByteArrayOutputStream();
-                    IOUtils.copy(stream, tempBuffer);
+                    stream.transferTo(tempBuffer);
                     return new CachedStreamData(tempBuffer.toByteArray(), null);
                 } catch (IOException e) {
                     return new CachedStreamData(null, e);

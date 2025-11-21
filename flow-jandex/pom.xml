@@ -28,6 +28,10 @@
   <name>Flow Jandex index</name>
   <description>Jandex index for flow packages for when the vaadin platform is not used</description>
 
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>com.vaadin</groupId>

@@ -28,7 +28,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.file.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -101,7 +100,7 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                             @Override
                             public FileVisitResult postVisitDirectory(Path dir,
                                     IOException exc) throws IOException {
-                                if (PathUtils.isEmptyDirectory(dir)) {
+                                if (FileIOUtils.isEmptyDirectory(dir)) {
                                     Files.deleteIfExists(dir);
                                 }
                                 return FileVisitResult.CONTINUE;
