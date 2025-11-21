@@ -116,6 +116,19 @@ public @interface ColorScheme {
         }
 
         /**
+         * Gets the theme attribute value.
+         * <p>
+         * For multi-value color schemes (e.g., "light dark"), this returns the
+         * value with spaces replaced by hyphens (e.g., "light-dark") for use in
+         * the theme attribute.
+         *
+         * @return the theme attribute value
+         */
+        public String getThemeValue() {
+            return value.replace(' ', '-');
+        }
+
+        /**
          * Converts a string to a ColorScheme.Value enum.
          *
          * @param value

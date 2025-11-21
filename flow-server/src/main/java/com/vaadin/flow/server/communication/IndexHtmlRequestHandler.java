@@ -263,7 +263,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                     .getAnnotation(
                             com.vaadin.flow.component.page.ColorScheme.class);
             if (colorSchemeAnnotation != null) {
-                String colorScheme = colorSchemeAnnotation.value().getValue();
+                String colorScheme = colorSchemeAnnotation.value()
+                        .getThemeValue();
                 if (!colorScheme.isEmpty() && !colorScheme.equals("normal")) {
                     indexDocument.head().parent().attr("theme", colorScheme);
                 }

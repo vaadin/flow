@@ -87,8 +87,8 @@ public class Page implements Serializable {
      * Sets the color scheme for the page.
      * <p>
      * The color scheme is applied via both a theme attribute and the
-     * color-scheme CSS property on the html element. The theme attribute
-     * allows CSS to target different color schemes (e.g.,
+     * color-scheme CSS property on the html element. The theme attribute allows
+     * CSS to target different color schemes (e.g.,
      * {@code html[theme~="dark"]}), while the color-scheme property ensures
      * browser UI adaptation works even for custom themes that don't define
      * their own color-scheme CSS rules.
@@ -107,8 +107,8 @@ public class Page implements Serializable {
         } else {
             executeJs("""
                     document.documentElement.setAttribute('theme', $0);
-                    document.documentElement.style.colorScheme = $0;
-                    """, colorScheme.getValue());
+                    document.documentElement.style.colorScheme = $1;
+                    """, colorScheme.getThemeValue(), colorScheme.getValue());
             getExtendedClientDetails().setColorScheme(colorScheme);
         }
     }

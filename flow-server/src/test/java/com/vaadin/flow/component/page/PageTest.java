@@ -304,16 +304,14 @@ public class PageTest {
     @Test
     public void setColorScheme_setsStyleProperty() {
         AtomicReference<String> capturedExpression = new AtomicReference<>();
-        AtomicReference<Object> capturedParam = new AtomicReference<>();
+        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
         MockUI mockUI = new MockUI();
         Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
                     Object... parameters) {
                 capturedExpression.set(expression);
-                if (parameters.length > 0) {
-                    capturedParam.set(parameters[0]);
-                }
+                capturedParams.set(parameters);
                 return Mockito.mock(PendingJavaScriptResult.class);
             }
         };
@@ -324,8 +322,41 @@ public class PageTest {
         Assert.assertTrue("Should set theme attribute",
                 js.contains("setAttribute('theme', $0)"));
         Assert.assertTrue("Should set color-scheme property",
-                js.contains("style.colorScheme = $0"));
-        Assert.assertEquals("dark", capturedParam.get());
+                js.contains("style.colorScheme = $1"));
+        Object[] params = capturedParams.get();
+        Assert.assertEquals("Theme attribute should be 'dark'", "dark",
+                params[0]);
+        Assert.assertEquals("Color scheme property should be 'dark'", "dark",
+                params[1]);
+    }
+
+    @Test
+    public void setColorScheme_lightDark_setsCorrectValues() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                capturedParams.set(parameters);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setColorScheme(ColorScheme.Value.LIGHT_DARK);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue("Should set theme attribute",
+                js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue("Should set color-scheme property",
+                js.contains("style.colorScheme = $1"));
+        Object[] params = capturedParams.get();
+        Assert.assertEquals("Theme attribute should use hyphen", "light-dark",
+                params[0]);
+        Assert.assertEquals("Color scheme property should use space",
+                "light dark", params[1]);
     }
 
     @Test
