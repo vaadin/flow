@@ -21,6 +21,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -86,7 +87,8 @@ public class TaskCopyTemplateFiles implements FallibleCommand {
                 Path targetFile = templateDirectory.toPath().resolve(path);
                 try {
                     Files.createDirectories(targetFile.getParent());
-                    Files.copy(source.toPath(), targetFile);
+                    Files.copy(source.toPath(), targetFile,
+                            StandardCopyOption.REPLACE_EXISTING);
                 } catch (IOException e) {
                     throw new ExecutionFailedException(e);
                 }
