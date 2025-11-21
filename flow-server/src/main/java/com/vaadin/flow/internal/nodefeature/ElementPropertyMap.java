@@ -32,15 +32,12 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 
 /**
@@ -120,46 +117,6 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         setProperty(name, value, true);
     }
 
-    /**
-     * Binds the given signal to the given property. <code>null</code> signal
-     * unbinds existing binding.
-     *
-     * @param owner
-     *            the element owning the property, not <code>null</code>
-     * @param name
-     *            the name of the property
-     * @param signal
-     *            the signal to bind or <code>null</code> to unbind any existing
-     *            binding
-     * @throws com.vaadin.signals.BindingActiveException
-     *             thrown when there is already an existing binding for the
-     *             given property
-     */
-    public void bindSignal(Element owner, String name, Signal<?> signal) {
-        SignalBinding previousSignalBinding;
-        if (super.get(name) instanceof SignalBinding binding) {
-            previousSignalBinding = binding;
-        } else {
-            previousSignalBinding = null;
-        }
-        if (signal != null && hasSignal(name)) {
-            throw new BindingActiveException();
-        }
-        Registration registration = signal != null
-                ? ElementEffect.bind(owner, signal,
-                        (element, value) -> setPropertyFromSignal(name, value))
-                : null;
-        if (signal == null && previousSignalBinding != null) {
-            if (previousSignalBinding.registration() != null) {
-                previousSignalBinding.registration().remove();
-            }
-            put(name, get(name), false);
-        } else {
-            put(name, new SignalBinding(signal, registration, get(name)),
-                    false);
-        }
-    }
-
     @Override
     protected Serializable get(String key) {
         Serializable value = super.get(key);
@@ -170,6 +127,7 @@ public class ElementPropertyMap extends AbstractPropertyMap {
         }
     }
 
+    @Override
     public void setPropertyFromSignal(String name, Object value) {
         assert !forbiddenProperties.contains(name)
                 : "Forbidden property name: " + name;

@@ -18,6 +18,9 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
+
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_ITEMS;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_SELF;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND;
@@ -165,6 +168,55 @@ public interface Style extends Serializable {
      * @return a stream of defined style property names
      */
     Stream<String> getNames();
+
+    /**
+     * Binds the given style property to the provided string signal and keeps
+     * the style property value synchronized with the signal.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given style property. When unbinding, the current presence of the
+     * style property is left unchanged.
+     * <p>
+     * When a binding is in place, the style signal mirrors
+     * {@code signal.value()}. If the signal value is {@code null}, the style
+     * property is removed; otherwise it is set to the string value.
+     * <p>
+     * The binding effect is active only while the owner element is in the
+     * attached state. While the owner is in the detached state, updates from
+     * the signal have no effect. The latest value applied while an owner was
+     * attached is remembered and exposed via {@link #get(String)} and included
+     * in {@link #getNames()} as defined below.
+     * <p>
+     * While a binding for a specific style name is active, any attempt to
+     * manually {@link #set(String, String) set} or {@link #remove(String)
+     * remove} that same style throws a {@link BindingActiveException}. The same
+     * applies when attempting to bind another signal for the same name while
+     * one is already bound.
+     * <p>
+     * {@link #clear()} silently clears all style signal bindings (unsubscribe
+     * and forget recorded values) in addition to clearing style values.
+     * <p>
+     * {@link #get(String)} returns the latest signal applied for a bound style
+     * while the element was in attached state; returns {@code null} if never
+     * attached/never applied. {@link #getNames()} includes names that have
+     * recorded a last-applied signal from an attached period; otherwise it may
+     * be empty.
+     * <p>
+     * Name handling follows the same rules as {@link #set(String, String)}:
+     * both camelCase and dash-separated names are supported and normalized in
+     * the same way.
+     *
+     * @param name
+     *            the style property name, not {@code null}
+     * @param signal
+     *            the signal that provides the style signal; {@code null}
+     *            removes an existing binding for the given name
+     * @return this style instance
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @since 25.0
+     */
+    Style bind(String name, Signal<String> signal);
 
     /**
      * Sets the <code>background</code> property.

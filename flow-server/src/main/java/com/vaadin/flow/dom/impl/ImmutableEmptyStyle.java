@@ -18,6 +18,7 @@ package com.vaadin.flow.dom.impl;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Style;
+import com.vaadin.signals.Signal;
 
 /**
  * A style implementation which is empty and immutable.
@@ -59,5 +60,16 @@ public class ImmutableEmptyStyle implements Style {
     @Override
     public Stream<String> getNames() {
         return Stream.empty();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Immutable style implementation does not support binding a {@link Signal}
+     * to a style property,
+     */
+    @Override
+    public Style bind(String name, Signal<String> signal) {
+        throw new UnsupportedOperationException(CANT_MODIFY_MESSAGE);
     }
 }

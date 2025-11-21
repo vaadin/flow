@@ -17,10 +17,13 @@ package com.vaadin.flow.dom.impl;
 
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.
@@ -32,7 +35,7 @@ import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
  */
 public class BasicElementStyle implements Style {
 
-    private ElementStylePropertyMap propertyMap;
+    private final ElementStylePropertyMap propertyMap;
 
     /**
      * Creates an instance connected to the given map.
@@ -47,22 +50,30 @@ public class BasicElementStyle implements Style {
     @Override
     public Style set(String name, String value) {
         ElementUtil.validateStylePropertyName(name);
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
+        if (propertyMap.hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "Style '" + name + "' is already bound to a signal");
+        }
         if (value == null) {
             return this.remove(name);
         }
         String trimmedValue = value.trim();
         ElementUtil.validateStylePropertyValue(trimmedValue);
 
-        propertyMap.setProperty(StyleUtil.stylePropertyToAttribute(name),
-                trimmedValue, true);
+        propertyMap.setProperty(attribute, trimmedValue, true);
         return this;
     }
 
     @Override
     public Style remove(String name) {
         ElementUtil.validateStylePropertyName(name);
-
-        propertyMap.removeProperty(StyleUtil.stylePropertyToAttribute(name));
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
+        if (propertyMap.hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "Style '" + name + "' is already bound to a signal");
+        }
+        propertyMap.removeProperty(attribute);
         return this;
     }
 
@@ -83,6 +94,15 @@ public class BasicElementStyle implements Style {
     @Override
     public Stream<String> getNames() {
         return propertyMap.getPropertyNames();
+    }
+
+    @Override
+    public Style bind(String name, Signal<String> signal) {
+        ElementUtil.validateStylePropertyName(name);
+        String attribute = StyleUtil.stylePropertyToAttribute(name);
+        Element owner = Element.get(propertyMap.getNode());
+        propertyMap.bindSignal(owner, attribute, signal);
+        return this;
     }
 
     @Override
