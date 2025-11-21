@@ -366,7 +366,7 @@ public class RequestUtil {
                 targetView,
                 new Location(path,
                         QueryParameters.full(request.getParameterMap())),
-                target.getRouteParameters(), null, role -> false, false);
+                target.getRouteParameters(), null, role -> false, false, false);
 
         AccessCheckResult result = navigationAccessControl
                 .checkAccess(navigationContext, productionMode);
