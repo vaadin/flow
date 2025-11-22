@@ -105,8 +105,10 @@ public class NodeInstallerTest {
             }
         }
 
-        // add a file to node/node_modules_npm that should be cleaned out
-        File nodeDirectory = new File(targetDir, "node");
+        // add a file to node-{version}/node_modules_npm that should be cleaned
+        // out
+        String versionedNodeDir = "node-" + FrontendTools.DEFAULT_NODE_VERSION;
+        File nodeDirectory = new File(targetDir, versionedNodeDir);
         String nodeModulesPath = platform.isWindows() ? "node_modules"
                 : "lib/node_modules";
         File nodeModulesDirectory = new File(nodeDirectory, nodeModulesPath);
@@ -133,11 +135,12 @@ public class NodeInstallerTest {
             throw new IllegalStateException("Failed to install Node", e);
         }
 
-        Assert.assertTrue("npm should have been copied to node_modules",
-                new File(targetDir, "node/" + nodeExec).exists());
+        Assert.assertTrue("node should have been installed",
+                new File(targetDir, versionedNodeDir + "/" + nodeExec)
+                        .exists());
         String npmInstallPath = platform.isWindows()
-                ? "node/node_modules/npm/bin/npm"
-                : "node/lib/node_modules/npm/bin/npm";
+                ? versionedNodeDir + "/node_modules/npm/bin/npm"
+                : versionedNodeDir + "/lib/node_modules/npm/bin/npm";
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, npmInstallPath).exists());
         Assert.assertFalse("old npm files should have been removed",
@@ -145,5 +148,89 @@ public class NodeInstallerTest {
         Assert.assertFalse(
                 "old style node_modules files should have been removed",
                 oldGarbage.exists());
+    }
+
+    @Test
+    public void fallbackToExistingCompatibleVersion() throws IOException {
+        Platform platform = Platform.guess();
+        String nodeExec = platform.isWindows() ? "node.exe" : "node";
+
+        File targetDir = new File(baseDir + "/installation");
+
+        // Pre-install an older but compatible version (v24.8.0)
+        String existingVersion = "v24.8.0";
+        String existingVersionDir = "node-" + existingVersion;
+        File existingNodeDir = new File(targetDir, existingVersionDir);
+        File existingBinDir = platform.isWindows() ? existingNodeDir
+                : new File(existingNodeDir, "bin");
+        FileUtils.forceMkdir(existingBinDir);
+        File existingNodeExec = new File(existingBinDir, nodeExec);
+        Assert.assertTrue("Existing node executable should be created",
+                existingNodeExec.createNewFile());
+
+        // Request a newer version that doesn't exist
+        String requestedVersion = "v24.99.0";
+
+        NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
+                Collections.emptyList()).setNodeVersion(requestedVersion)
+                .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
+
+        // The install should succeed by falling back to v24.8.0
+        try {
+            nodeInstaller.install();
+        } catch (InstallationException e) {
+            // Expected - download will fail, but fallback should work
+            Assert.fail(
+                    "Should have used fallback version instead of trying to download: "
+                            + e.getMessage());
+        }
+
+        // Verify that the install directory points to the fallback version
+        Assert.assertEquals(
+                "Install directory should point to fallback version",
+                new File(targetDir, existingVersionDir).getPath(),
+                nodeInstaller.getInstallDirectory());
+    }
+
+    @Test
+    public void fallbackSelectsNewestCompatibleVersion() throws IOException {
+        Platform platform = Platform.guess();
+        String nodeExec = platform.isWindows() ? "node.exe" : "node";
+
+        File targetDir = new File(baseDir + "/installation");
+
+        // Pre-install multiple versions
+        for (String version : new String[] { "v24.5.0", "v24.8.0", "v24.6.0",
+                "v23.0.0" }) {
+            String versionDir = "node-" + version;
+            File nodeDir = new File(targetDir, versionDir);
+            File binDir = platform.isWindows() ? nodeDir
+                    : new File(nodeDir, "bin");
+            FileUtils.forceMkdir(binDir);
+            File nodeExecFile = new File(binDir, nodeExec);
+            nodeExecFile.createNewFile();
+        }
+
+        // Request a version that doesn't exist
+        String requestedVersion = "v24.99.0";
+
+        NodeInstaller nodeInstaller = new NodeInstaller(targetDir,
+                Collections.emptyList()).setNodeVersion(requestedVersion)
+                .setNodeDownloadRoot(new File(baseDir).toPath().toUri());
+
+        try {
+            nodeInstaller.install();
+        } catch (InstallationException e) {
+            Assert.fail(
+                    "Should have used fallback version instead of trying to download: "
+                            + e.getMessage());
+        }
+
+        // Verify that the newest compatible version (v24.8.0) was selected
+        // Note: v23.0.0 should be skipped as it's below minimum supported
+        // version
+        Assert.assertEquals("Should select newest compatible version (v24.8.0)",
+                new File(targetDir, "node-v24.8.0").getPath(),
+                nodeInstaller.getInstallDirectory());
     }
 }

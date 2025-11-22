@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FileIOUtils;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
@@ -53,13 +54,9 @@ import com.vaadin.frontendtools.installer.VerificationException;
  */
 public class NodeInstaller {
 
-    public static final String INSTALL_PATH = "/node";
+    public static final String INSTALL_PATH_PREFIX = "/node";
 
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
-
-    private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
-            "\\\\") + "\\node.exe";
-    private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
     public static final String PROVIDED_VERSION = "provided";
 
@@ -74,6 +71,11 @@ public class NodeInstaller {
 
     private String npmVersion = PROVIDED_VERSION;
     private String nodeVersion;
+    /**
+     * The actual node version being used. May differ from nodeVersion if a
+     * compatible fallback version was found.
+     */
+    private String activeNodeVersion;
     private URI nodeDownloadRoot;
     private String userName;
     private String password;
@@ -234,9 +236,9 @@ public class NodeInstaller {
     }
 
     private boolean nodeIsAlreadyInstalled() throws InstallationException {
-        File nodeFile = getNodeExecutable();
+        // First, check if the exact requested version is installed
+        File nodeFile = getNodeExecutableForVersion(nodeVersion);
         if (nodeFile.exists()) {
-
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(nodeFile.toString());
             nodeVersionCommand.add("--version");
@@ -245,15 +247,99 @@ public class NodeInstaller {
 
             if (version.equals(nodeVersion)) {
                 getLogger().info("Node {} is already installed.", version);
+                activeNodeVersion = nodeVersion;
                 return true;
             } else {
                 getLogger().info(
                         "Node {} was installed, but we need version {}",
                         version, nodeVersion);
-                return false;
             }
         }
+
+        // Check if any other compatible version is available
+        String fallbackVersion = findCompatibleInstalledVersion();
+        if (fallbackVersion != null) {
+            getLogger().debug("Using existing Node {} instead of installing {}",
+                    fallbackVersion, nodeVersion);
+            activeNodeVersion = fallbackVersion;
+            return true;
+        }
+
         return false;
+    }
+
+    /**
+     * Scans the install directory for installed Node.js versions and returns
+     * the newest one that is supported.
+     *
+     * @return the version string (e.g., "v24.10.0") of the best available
+     *         version, or null if none found
+     */
+    private String findCompatibleInstalledVersion() {
+        if (!installDirectory.exists() || !installDirectory.isDirectory()) {
+            return null;
+        }
+
+        File[] nodeDirs = installDirectory.listFiles(file -> file.isDirectory()
+                && file.getName().startsWith("node-v"));
+
+        if (nodeDirs == null || nodeDirs.length == 0) {
+            return null;
+        }
+
+        FrontendVersion bestVersion = null;
+        String bestVersionString = null;
+
+        for (File nodeDir : nodeDirs) {
+            String dirName = nodeDir.getName();
+            // Extract version from directory name (node-v24.10.0 -> v24.10.0)
+            String versionString = dirName.substring("node-".length());
+
+            try {
+                FrontendVersion version = new FrontendVersion(versionString);
+
+                // Skip versions older than minimum supported
+                if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+                    getLogger().debug(
+                            "Skipping {} - older than minimum supported {}",
+                            versionString, FrontendTools.SUPPORTED_NODE_VERSION
+                                    .getFullVersion());
+                    continue;
+                }
+
+                // Verify the node executable actually exists and works
+                File nodeExecutable = getNodeExecutableForVersion(
+                        versionString);
+                if (!nodeExecutable.exists()) {
+                    getLogger().debug(
+                            "Skipping {} - executable not found at {}",
+                            versionString, nodeExecutable);
+                    continue;
+                }
+
+                // Keep the newest version
+                if (bestVersion == null || version.isNewerThan(bestVersion)) {
+                    bestVersion = version;
+                    bestVersionString = versionString;
+                }
+            } catch (NumberFormatException e) {
+                getLogger().debug("Could not parse version from directory: {}",
+                        dirName);
+            }
+        }
+
+        return bestVersionString;
+    }
+
+    /**
+     * Gets the node executable path for a specific version.
+     */
+    private File getNodeExecutableForVersion(String version) {
+        String versionedPath = INSTALL_PATH_PREFIX + "-" + version;
+        String nodeExecutable = platform.isWindows()
+                ? versionedPath.replaceAll("/", "\\\\") + "\\node.exe"
+                : versionedPath + "/bin/node";
+        return new File(installDirectory + nodeExecutable);
     }
 
     private void installNode(InstallData data) throws InstallationException {
@@ -285,6 +371,7 @@ public class NodeInstaller {
         }
 
         getLogger().info("Local node installation successful.");
+        activeNodeVersion = nodeVersion;
     }
 
     private void installNodeUnix(InstallData data)
@@ -424,7 +511,18 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectoryFile() {
-        return new File(installDirectory, INSTALL_PATH);
+        return new File(installDirectory, getVersionedInstallPath());
+    }
+
+    private String getVersionedInstallPath() {
+        // Use activeNodeVersion if set (fallback version), otherwise use
+        // requested nodeVersion
+        String version = activeNodeVersion != null ? activeNodeVersion
+                : nodeVersion;
+        if (version == null || PROVIDED_VERSION.equals(version)) {
+            return INSTALL_PATH_PREFIX;
+        }
+        return INSTALL_PATH_PREFIX + "-" + version;
     }
 
     private File getNodeInstallDirectory() {
@@ -625,17 +723,6 @@ public class NodeInstaller {
             throw new VerificationException("Failed to validate archive hash.",
                     e);
         }
-    }
-
-    /**
-     * Get node executable file.
-     *
-     * @return node executable
-     */
-    private File getNodeExecutable() {
-        String nodeExecutable = platform.isWindows() ? NODE_WINDOWS
-                : NODE_DEFAULT;
-        return new File(installDirectory + nodeExecutable);
     }
 
     private static FrontendVersion getVersion(String tool,

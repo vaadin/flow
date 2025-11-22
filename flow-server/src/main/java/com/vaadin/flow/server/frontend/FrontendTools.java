@@ -119,7 +119,7 @@ public class FrontendTools {
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
-    static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
+    public static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
