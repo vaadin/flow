@@ -17,6 +17,7 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -182,7 +183,8 @@ public class FrontendTools {
      *            npm version string (e.g., "11.3.0")
      */
     private record ActiveNodeInstallation(String nodeExecutable,
-            String nodeVersion, String npmCliScript, String npmVersion) {
+            String nodeVersion, String npmCliScript,
+            String npmVersion) implements Serializable {
         ActiveNodeInstallation {
             Objects.requireNonNull(nodeExecutable);
             Objects.requireNonNull(nodeVersion);
