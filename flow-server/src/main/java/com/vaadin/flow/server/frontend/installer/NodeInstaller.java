@@ -544,8 +544,11 @@ public class NodeInstaller {
         if (activeNodeVersion == null) {
             return null;
         }
-        File npmCliScript = new File(getInstallDirectoryFile(),
-                FrontendUtils.NODE_MODULES + "/npm/bin/npm-cli.js");
+        // npm is in different locations on Windows vs Unix
+        String npmPath = platform.isWindows()
+                ? "node_modules/npm/bin/npm-cli.js"
+                : "lib/node_modules/npm/bin/npm-cli.js";
+        File npmCliScript = new File(getInstallDirectoryFile(), npmPath);
         return npmCliScript.exists() ? npmCliScript.getAbsolutePath() : null;
     }
 
