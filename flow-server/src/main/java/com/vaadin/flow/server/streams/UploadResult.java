@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.streams;
 
+import java.io.Serializable;
+
 import com.vaadin.flow.server.VaadinResponse;
 
 /**
@@ -33,7 +35,7 @@ import com.vaadin.flow.server.VaadinResponse;
  *            successful or no exception available
  */
 public record UploadResult(boolean success, VaadinResponse response,
-        Exception exception) {
+        Exception exception) implements Serializable {
 
     /**
      * Creates an upload result without an exception.
