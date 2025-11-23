@@ -380,7 +380,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-        frontendTools.validateNodeAndNpmVersion();
 
         List<String> command = getServerStartupCommand(frontendTools);
 

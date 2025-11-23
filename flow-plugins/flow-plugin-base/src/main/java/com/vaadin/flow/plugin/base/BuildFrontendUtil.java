@@ -146,7 +146,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
@@ -507,7 +506,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
         String tokenContent = "";
         File tokenFile = getTokenFile(adapter);

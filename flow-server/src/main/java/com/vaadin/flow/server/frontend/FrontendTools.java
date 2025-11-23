@@ -168,6 +168,32 @@ public class FrontendTools {
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
+    /**
+     * Information about the active node/npm installation that will be used. All
+     * fields are required and non-null.
+     *
+     * @param nodeExecutable
+     *            path to node binary
+     * @param nodeVersion
+     *            node version string (e.g., "24.10.0")
+     * @param npmCliScript
+     *            path to npm-cli.js script
+     * @param npmVersion
+     *            npm version string (e.g., "11.3.0")
+     */
+    private record ActiveNodeInstallation(String nodeExecutable,
+            String nodeVersion, String npmCliScript, String npmVersion) {
+        ActiveNodeInstallation {
+            Objects.requireNonNull(nodeExecutable);
+            Objects.requireNonNull(nodeVersion);
+            Objects.requireNonNull(npmCliScript);
+            Objects.requireNonNull(npmVersion);
+        }
+    }
+
+    // The active node installation - shared across all FrontendTools instances
+    private static volatile ActiveNodeInstallation activeNodeInstallation;
+
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
 
@@ -312,6 +338,11 @@ public class FrontendTools {
      * @return the full path to the executable
      */
     public String getNodeExecutable() {
+        ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null) {
+            return active.nodeExecutable();
+        }
+
         Pair<String, String> nodeCommands = getNodeCommands();
         File file = getExecutable(baseDir, nodeCommands.getSecond());
         if (file == null && !forceAlternativeNode) {
@@ -319,69 +350,71 @@ public class FrontendTools {
                     .orElse(null);
         }
         file = rejectUnsupportedNodeVersion(file);
-        if (file == null) {
-            file = updateAlternateIfNeeded(getExecutable(getAlternativeDir(),
-                    nodeCommands.getSecond()));
-        }
+
+        // If no valid node found yet, try to resolve from alternative dir
+        // using NodeInstaller which handles version-specific paths
         if (file == null && alternativeDirGetter != null) {
-            getLogger().info("Couldn't find {}. Installing Node and npm to {}.",
-                    nodeCommands.getFirst(), getAlternativeDir());
-            file = new File(installNode(nodeVersion, nodeDownloadRoot));
+            String resolvedPath = resolveOrInstallNode();
+            if (resolvedPath != null) {
+                return resolvedPath;
+            }
         }
+
         if (file == null) {
             // This should never happen, because node is automatically installed
             // if not detected globally or at project level
             throw new IllegalStateException("Node not found");
         }
+
+        // Don't cache global/local node - we can't reliably get all required
+        // npm info. getNpmCliToolExecutable will use standard lookup.
         return file.getAbsolutePath();
     }
 
     /**
-     * Update installed node version if installed version is not supported.
-     * <p>
-     * Also update is {@code auto.update} flag set and installed version is
-     * older than the current default version.
+     * Resolves an existing compatible node installation or installs a new one.
+     * Uses NodeInstaller which handles version-specific paths and fallback
+     * logic.
      *
-     * @param file
-     *            node executable
-     * @return node executable after possible installation of new version
+     * @return the path to node executable, or null if resolution failed
      */
-    private File updateAlternateIfNeeded(File file) {
-        if (file == null) {
-            return null;
+    private String resolveOrInstallNode() {
+        NodeInstaller nodeInstaller = new NodeInstaller(
+                new File(getAlternativeDir()), getProxies())
+                .setNodeVersion(nodeVersion);
+        if (nodeDownloadRoot != null) {
+            nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
         }
-        // If auto-update flag set or installed node older than minimum
-        // supported
-        try {
-            List<String> versionCommand = new ArrayList<>();
-            versionCommand.add(file.getAbsolutePath());
-            versionCommand.add("--version"); // NOSONAR
-            final FrontendVersion installedNodeVersion = FrontendUtils
-                    .getVersion("node", versionCommand);
 
-            boolean installDefault = false;
-            final FrontendVersion defaultVersion = new FrontendVersion(
-                    nodeVersion);
-            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
-                getLogger().info("Updating unsupported node version {} to {}",
-                        installedNodeVersion.getFullVersion(),
-                        defaultVersion.getFullVersion());
-                installDefault = true;
-            } else if (autoUpdate
-                    && installedNodeVersion.isOlderThan(defaultVersion)) {
-                getLogger().info(
-                        "Updating current installed node version from {} to {}",
-                        installedNodeVersion.getFullVersion(),
-                        defaultVersion.getFullVersion());
-                installDefault = true;
+        try {
+            nodeInstaller.install();
+            String nodePath = nodeInstaller.getNodeExecutablePath();
+            if (nodePath == null) {
+                throw new IllegalStateException(
+                        "Node installation failed - executable not found");
             }
-            if (installDefault) {
-                file = new File(installNode(nodeVersion, nodeDownloadRoot));
+            String nodeVersion = nodeInstaller.getActiveNodeVersion();
+            String npmCliScript = nodeInstaller.getNpmCliScriptPath();
+            if (npmCliScript == null) {
+                throw new IllegalStateException(
+                        "npm not found in node installation");
             }
-        } catch (UnknownVersionException e) {
-            getLogger().error("Failed to get version for installed node.", e);
+            String npmVersion;
+            try {
+                npmVersion = FrontendUtils
+                        .getVersion("npm",
+                                List.of(nodePath, npmCliScript, "--version"))
+                        .getFullVersion();
+            } catch (FrontendUtils.UnknownVersionException e) {
+                getLogger().debug("Could not determine npm version", e);
+                npmVersion = "unknown";
+            }
+            activeNodeInstallation = new ActiveNodeInstallation(nodePath,
+                    nodeVersion, npmCliScript, npmVersion);
+            return nodePath;
+        } catch (InstallationException e) {
+            throw new IllegalStateException("Failed to install Node", e);
         }
-        return file;
     }
 
     /**
@@ -441,21 +474,20 @@ public class FrontendTools {
      * @return the full path to the executable
      */
     public String forceAlternativeNodeExecutable() {
-        Pair<String, String> nodeCommands = getNodeCommands();
-        String dir = getAlternativeDir();
-        File file = new File(dir, nodeCommands.getSecond());
-        if (file.exists()) {
-            if (!frontendToolsLocator.verifyTool(file)) {
-                throw new IllegalStateException(
-                        String.format(LOCAL_NODE_NOT_FOUND, dir, dir,
-                                file.getAbsolutePath()));
-            }
-            return updateAlternateIfNeeded(file).getAbsolutePath();
-        } else {
-            getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    nodeVersion);
-            return installNode(nodeVersion, nodeDownloadRoot);
+        ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null) {
+            return active.nodeExecutable();
         }
+
+        // Use NodeInstaller to resolve or install - it handles version-specific
+        // paths
+        String resolvedPath = resolveOrInstallNode();
+        if (resolvedPath != null) {
+            return resolvedPath;
+        }
+
+        throw new IllegalStateException(
+                "Failed to resolve or install Node in " + getAlternativeDir());
     }
 
     /**
@@ -561,7 +593,8 @@ public class FrontendTools {
     }
 
     /**
-     * Install node and npm.
+     * Install node and npm. This is a test utility method that installs a
+     * specific node version without updating the active installation cache.
      *
      * @param nodeVersion
      *            node version to install
@@ -585,8 +618,7 @@ public class FrontendTools {
             throw new IllegalStateException("Failed to install Node", e);
         }
 
-        return new File(nodeInstaller.getInstallDirectory(),
-                getNodeCommands().getFirst()).toString();
+        return nodeInstaller.getNodeExecutablePath();
     }
 
     /**
@@ -795,6 +827,19 @@ public class FrontendTools {
 
     private List<String> getNpmCliToolExecutable(BuildTool cliTool,
             String... flags) {
+        // Check if we have a cached npm from the active installation
+        ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null && active.npmCliScript() != null
+                && cliTool.equals(BuildTool.NPM)) {
+            List<String> returnCommand = new ArrayList<>();
+            returnCommand.add(active.nodeExecutable());
+            returnCommand.add(active.npmCliScript());
+            if (flags.length > 0) {
+                Collections.addAll(returnCommand, flags);
+            }
+            return returnCommand;
+        }
+
         // First look for *-cli.js script in project/node_modules
         List<String> returnCommand = getNpmScriptCommand(baseDir,
                 cliTool.getScript());

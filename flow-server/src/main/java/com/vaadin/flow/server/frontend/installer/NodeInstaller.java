@@ -510,6 +510,45 @@ public class NodeInstaller {
         return getInstallDirectoryFile().getPath();
     }
 
+    /**
+     * Returns the path to the node executable after installation or resolution.
+     *
+     * @return the absolute path to the node executable, or null if not
+     *         installed
+     */
+    public String getNodeExecutablePath() {
+        if (activeNodeVersion == null) {
+            return null;
+        }
+        File executable = getNodeExecutableForVersion(activeNodeVersion);
+        return executable.exists() ? executable.getAbsolutePath() : null;
+    }
+
+    /**
+     * Returns the active node version being used. This may differ from the
+     * requested version if a compatible fallback version was found.
+     *
+     * @return the active node version, or null if not resolved yet
+     */
+    public String getActiveNodeVersion() {
+        return activeNodeVersion;
+    }
+
+    /**
+     * Returns the path to the npm-cli.js script after installation or
+     * resolution.
+     *
+     * @return the absolute path to npm-cli.js, or null if not installed
+     */
+    public String getNpmCliScriptPath() {
+        if (activeNodeVersion == null) {
+            return null;
+        }
+        File npmCliScript = new File(getInstallDirectoryFile(),
+                FrontendUtils.NODE_MODULES + "/npm/bin/npm-cli.js");
+        return npmCliScript.exists() ? npmCliScript.getAbsolutePath() : null;
+    }
+
     private File getInstallDirectoryFile() {
         return new File(installDirectory, getVersionedInstallPath());
     }
