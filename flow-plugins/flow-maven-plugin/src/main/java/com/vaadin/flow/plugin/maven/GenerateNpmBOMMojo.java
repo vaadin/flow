@@ -173,7 +173,6 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withFrontendGeneratedFolder(generatedTsFolder())
                         .withNodeVersion(nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRoot())
-                        .setNodeAutoUpdate(nodeAutoUpdate())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)

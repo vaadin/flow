@@ -45,7 +45,6 @@ public class FrontendToolsSettings implements Serializable {
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;
     private boolean useGlobalPnpm = Constants.GLOBAL_PNPM_DEFAULT;
-    private boolean autoUpdate = Constants.DEFAULT_NODE_AUTO_UPDATE;
 
     /**
      * Create a tools configuration object.
@@ -164,19 +163,6 @@ public class FrontendToolsSettings implements Serializable {
     }
 
     /**
-     * When set to true the alternative version is updated to the latest default
-     * node version as defined for the framework.
-     *
-     * @param autoUpdate
-     *            update node in {@link #alternativeDirGetter} if version older
-     *            than the current default
-     *            {@value FrontendTools#DEFAULT_NODE_VERSION}
-     */
-    public void setAutoUpdate(boolean autoUpdate) {
-        this.autoUpdate = autoUpdate;
-    }
-
-    /**
      * Get the defined base dir.
      *
      * @return defined base dir
@@ -237,14 +223,5 @@ public class FrontendToolsSettings implements Serializable {
      */
     public boolean isUseGlobalPnpm() {
         return useGlobalPnpm;
-    }
-
-    /**
-     * Check if automatic updates are enabled.
-     *
-     * @return automatic update
-     */
-    public boolean isAutoUpdate() {
-        return autoUpdate;
     }
 }

@@ -202,7 +202,6 @@ public class FrontendTools {
     private final boolean ignoreVersionChecks;
     private boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
-    private final boolean autoUpdate;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -227,7 +226,6 @@ public class FrontendTools {
         this.ignoreVersionChecks = settings.isIgnoreVersionChecks();
         this.forceAlternativeNode = settings.isForceAlternativeNode();
         this.useGlobalPnpm = settings.isUseGlobalPnpm();
-        this.autoUpdate = settings.isAutoUpdate();
     }
 
     /**
@@ -273,10 +271,6 @@ public class FrontendTools {
      * @param useGlobalPnpm
      *            use globally installed pnpm instead of the default one (see
      *            {@link #DEFAULT_PNPM_VERSION})
-     * @param autoUpdate
-     *            update node in {@link #alternativeDirGetter} if version older
-     *            than the current default
-     *            {@value FrontendTools#DEFAULT_NODE_VERSION}
      * @deprecated use
      *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
      *             instead, as it simplifies configuring the frontend tools and
@@ -285,18 +279,17 @@ public class FrontendTools {
     @Deprecated
     public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
-            boolean forceAlternativeNode, boolean useGlobalPnpm,
-            boolean autoUpdate) {
+            boolean forceAlternativeNode, boolean useGlobalPnpm) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
                 "true".equalsIgnoreCase(System.getProperty(
                         FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
-                forceAlternativeNode, useGlobalPnpm, autoUpdate);
+                forceAlternativeNode, useGlobalPnpm);
     }
 
     FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
             boolean ignoreVersionChecks, boolean forceAlternativeNode,
-            boolean useGlobalPnpm, boolean autoUpdate) {
+            boolean useGlobalPnpm) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
@@ -304,7 +297,6 @@ public class FrontendTools {
         this.ignoreVersionChecks = ignoreVersionChecks;
         this.forceAlternativeNode = forceAlternativeNode;
         this.useGlobalPnpm = useGlobalPnpm;
-        this.autoUpdate = autoUpdate;
     }
 
     private static FrontendToolsSettings createSettings(
@@ -312,8 +304,6 @@ public class FrontendTools {
             File projectRoot) {
         boolean useHomeNodeExec = applicationConfiguration.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = applicationConfiguration
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
         final String nodeVersion = applicationConfiguration.getStringProperty(
@@ -326,7 +316,6 @@ public class FrontendTools {
                 projectRoot.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
         settings.setUseGlobalPnpm(useGlobalPnpm);
         settings.setNodeVersion(nodeVersion);
         settings.setNodeDownloadRoot(URI.create(nodeDownloadRoot));

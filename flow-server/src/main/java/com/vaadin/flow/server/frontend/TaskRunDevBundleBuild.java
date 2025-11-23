@@ -139,7 +139,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
