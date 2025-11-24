@@ -885,6 +885,30 @@ public class FrontendTools {
             forceAlternativeNode = true;
         }
 
+        // If npm/npx still not found, install node (which includes npm/npx)
+        if (returnCommand.isEmpty() && alternativeDirGetter != null
+                && (cliTool.equals(BuildTool.NPM)
+                        || cliTool.equals(BuildTool.NPX))) {
+            forceAlternativeNodeExecutable();
+            // After installation, activeNodeInstallation should be populated
+            // with the correct paths for version-specific node installation
+            ActiveNodeInstallation installed = activeNodeInstallation;
+            if (installed != null && installed.npmCliScript() != null) {
+                returnCommand = new ArrayList<>();
+                returnCommand.add(installed.nodeExecutable());
+                if (cliTool.equals(BuildTool.NPM)) {
+                    returnCommand.add(installed.npmCliScript());
+                } else {
+                    // NPX is in the same directory as npm, just different
+                    // filename
+                    File npmCliFile = new File(installed.npmCliScript());
+                    File npxCliFile = new File(npmCliFile.getParentFile(),
+                            "npx-cli.js");
+                    returnCommand.add(npxCliFile.getAbsolutePath());
+                }
+            }
+        }
+
         if (flags.length > 0) {
             returnCommand = new ArrayList<>(returnCommand);
             Collections.addAll(returnCommand, flags);
