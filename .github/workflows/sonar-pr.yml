@@ -50,7 +50,7 @@ jobs:
       - name: Run Sonar analysis
         run: |
           mvn clean install sonar:sonar \
-            -B -e -V \
+            -ntp -B -e -V \
             -DskipTests \
             -Dsonar.projectKey=vaadin_flow \
             -Dsonar.organization=vaadin \
