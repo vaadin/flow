@@ -120,6 +120,8 @@ export class Flow {
         isActive: () => this.isActive
       }
     };
+    // Set browser details collection function as global for use by refresh()
+    ($wnd.Vaadin.Flow as any).getBrowserDetailsParameters = this.collectBrowserDetails.bind(this);
 
     // Regular expression used to remove the app-context
     const elm = document.head.querySelector('base');
@@ -425,9 +427,16 @@ export class Flow {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       const httpRequest = xhr as any;
+
+      // Collect browser details to send with init request as JSON
+      const browserDetails = this.collectBrowserDetails();
+      const browserDetailsParam = browserDetails
+        ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
+        : '';
+
       const requestPath = `?v-r=init&location=${encodeURIComponent(
         this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}`;
+      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 
@@ -450,6 +459,109 @@ export class Flow {
       };
       httpRequest.send();
     });
+  }
+
+  // Collects browser details parameters
+  private collectBrowserDetails(): Record<string, string> {
+    const params: Record<string, any> = {};
+
+    /* Screen height and width */
+    params['v-sh'] = ($wnd as any).screen.height;
+    params['v-sw'] = ($wnd as any).screen.width;
+    /* Browser window dimensions */
+    params['v-wh'] = ($wnd as any).innerHeight;
+    params['v-ww'] = ($wnd as any).innerWidth;
+    /* Body element dimensions */
+    params['v-bh'] = ($wnd as any).document.body.clientHeight;
+    params['v-bw'] = ($wnd as any).document.body.clientWidth;
+
+    /* Current time */
+    const date = new Date();
+    params['v-curdate'] = date.getTime();
+
+    /* Current timezone offset (including DST shift) */
+    const tzo1 = date.getTimezoneOffset();
+
+    /* Compare the current tz offset with the first offset from the end
+       of the year that differs --- if less that, we are in DST, otherwise
+       we are in normal time */
+    let dstDiff = 0;
+    let rawTzo = tzo1;
+    for (let m = 12; m > 0; m -= 1) {
+      date.setUTCMonth(m);
+      const tzo2 = date.getTimezoneOffset();
+      if (tzo1 !== tzo2) {
+        dstDiff = tzo1 > tzo2 ? tzo1 - tzo2 : tzo2 - tzo1;
+        rawTzo = tzo1 > tzo2 ? tzo1 : tzo2;
+        break;
+      }
+    }
+
+    /* Time zone offset */
+    params['v-tzo'] = tzo1;
+
+    /* DST difference */
+    params['v-dstd'] = dstDiff;
+
+    /* Time zone offset without DST */
+    params['v-rtzo'] = rawTzo;
+
+    /* DST in effect? */
+    params['v-dston'] = tzo1 !== rawTzo;
+
+    /* Time zone id (if available) */
+    try {
+      params['v-tzid'] = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    } catch (err) {
+      params['v-tzid'] = '';
+    }
+
+    /* Window name */
+    if (($wnd as any).name) {
+      params['v-wn'] = ($wnd as any).name;
+    }
+
+    /* Detect touch device support */
+    let supportsTouch = false;
+    try {
+      ($wnd as any).document.createEvent('TouchEvent');
+      supportsTouch = true;
+    } catch (e) {
+      /* Chrome and IE10 touch detection */
+      supportsTouch = 'ontouchstart' in $wnd || typeof ($wnd as any).navigator.msMaxTouchPoints !== 'undefined';
+    }
+    params['v-td'] = supportsTouch;
+
+    /* Device Pixel Ratio */
+    params['v-pr'] = ($wnd as any).devicePixelRatio;
+
+    if (($wnd as any).navigator.platform) {
+      params['v-np'] = ($wnd as any).navigator.platform;
+    }
+
+    /* Color scheme from CSS color-scheme property */
+    const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
+    // "normal" is the default value and means no color scheme is set
+    params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
+    /* Theme name - detect which theme is in use */
+    const computedStyle = getComputedStyle(document.documentElement);
+    let themeName = '';
+    if (computedStyle.getPropertyValue('--vaadin-lumo-theme').trim()) {
+      themeName = 'lumo';
+    } else if (computedStyle.getPropertyValue('--vaadin-aura-theme').trim()) {
+      themeName = 'aura';
+    }
+    params['v-tn'] = themeName;
+
+    /* Stringify each value (they are parsed on the server side) */
+    const stringParams: Record<string, string> = {};
+    Object.keys(params).forEach((key) => {
+      const value = params[key];
+      if (typeof value !== 'undefined') {
+        stringParams[key] = value.toString();
+      }
+    });
+    return stringParams;
   }
 
   // Create shared connection state store and connection indicator

@@ -37,4 +37,5 @@ public class TestFeatureFlagProvider implements FeatureFlagProvider {
     public List<Feature> getFeatures() {
         return List.of(EXAMPLE);
     }
+
 }

@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,9 +31,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
 
@@ -152,7 +157,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
-            TaskUpdatePackages.getVaadinVersion(packageUpdater.finder)
+            FrontendUtils.getVaadinVersion(packageUpdater.finder)
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
             updates.put(PROJECT_FOLDER,
                     options.getNpmFolder().getAbsolutePath());
@@ -482,7 +487,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 ".npmrc");
         boolean shouldWrite;
         if (npmrcFile.exists()) {
-            List<String> lines = FileUtils.readLines(npmrcFile,
+            List<String> lines = Files.readAllLines(npmrcFile.toPath(),
                     StandardCharsets.UTF_8);
             if (lines.stream().anyMatch(line -> line
                     .contains("NOTICE: this is an auto-generated file"))) {
@@ -508,7 +513,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     throw new IOException(
                             "Couldn't find template npmrc in the classpath");
                 }
-                FileUtils.copyInputStreamToFile(content, npmrcFile);
+                Files.copy(content, npmrcFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
                 packageUpdater.log().debug("Generated pnpm configuration: '{}'",
                         npmrcFile);
             }
@@ -516,6 +522,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private void cleanUp() throws ExecutionFailedException {
+        verifyPackageLockAndClean();
+
         if (!options.getNodeModulesFolder().exists()) {
             return;
         }
@@ -541,6 +549,53 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 }
             }
         }
+    }
+
+    /**
+     * Check the lockfile lockversion to see if it is compatible with the used
+     * npm version. If the lockfile is too old delete it.
+     */
+    protected void verifyPackageLockAndClean() {
+        File packageLockFile = packageUpdater.getPackageLockFile();
+        if (!options.isEnablePnpm() && packageLockFile.exists()) {
+            boolean removeLockfile = false;
+            try (BufferedReader br = new BufferedReader(
+                    new FileReader(packageLockFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("\"lockfileVersion\"")) {
+                        int lockfileVersion = getLockfileVersion(line);
+                        removeLockfile = lockfileVersion != 3;
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                // NO-OP
+                packageUpdater.log()
+                        .debug("Failed to read the package-lock.json file.", e);
+            }
+            if (removeLockfile) {
+                packageUpdater.log().info(
+                        "Removing package-lock.json as it has the wrong lockfileVersion.");
+                try {
+                    FileIOUtils.delete(packageLockFile);
+                } catch (IOException e) {
+                    // NO-OP
+                    packageUpdater.log().warn(
+                            "Exception handling the package-lock.json file.",
+                            e);
+                }
+            }
+        }
+    }
+
+    private static int getLockfileVersion(String line) {
+        Matcher matcher = Pattern.compile("\"lockfileVersion\"\\s*:\\s*(\\d+)")
+                .matcher(line);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
     }
 
     private void deleteNodeModules(File nodeModulesFolder)

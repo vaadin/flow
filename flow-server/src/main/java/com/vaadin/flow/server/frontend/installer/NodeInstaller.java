@@ -30,14 +30,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.frontendtools.installer.ArchiveExtractionException;
+import com.vaadin.frontendtools.installer.ArchiveExtractor;
+import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
+import com.vaadin.frontendtools.installer.VerificationException;
 
 /**
  * Node installation class.
@@ -51,10 +55,6 @@ public class NodeInstaller {
 
     public static final String INSTALL_PATH = "/node";
 
-    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
-
-    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
-
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
 
     private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
@@ -67,6 +67,8 @@ public class NodeInstaller {
 
     private static final int DOWNLOAD_ATTEMPT_DELAY = 5;
     public static final String ACCEPT_MISSING_SHA = "vaadin.node.download.acceptMissingSHA";
+    public static final String DEFAULT_NODEJS_DOWNLOAD_ROOT = "https://nodejs.org/dist/";
+    public static final String UNOFFICIAL_NODEJS_DOWNLOAD_ROOT = "https://unofficial-builds.nodejs.org/download/release/";
 
     private final Object lock = new Object();
 
@@ -335,17 +337,17 @@ public class NodeInstaller {
         // delete old node_modules directory to not end up with corrupted
         // combination of two npm versions in node_modules/npm during upgrade
         if (nodeModulesDirectory.exists()) {
-            FileUtils.deleteDirectory(nodeModulesDirectory);
+            FileIOUtils.delete(nodeModulesDirectory);
         }
         // delete old/windows type node_modules so it is not messing
         // up the installation
         final File oldNodeModulesDirectory = new File(destinationDirectory
                 + File.separator + FrontendUtils.NODE_MODULES);
         if (oldNodeModulesDirectory.exists()) {
-            FileUtils.deleteDirectory(oldNodeModulesDirectory);
+            FileIOUtils.delete(oldNodeModulesDirectory);
         }
 
-        FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+        FileIOUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         // create a copy of the npm scripts next to the node executable
         for (String script : Arrays.asList("npm", "npm.cmd")) {
             File scriptFile = new File(npmDirectory,
@@ -390,9 +392,9 @@ public class NodeInstaller {
             // combination of two npm versions in node_modules/npm during
             // upgrade
             if (nodeModulesDirectory.exists()) {
-                FileUtils.deleteDirectory(nodeModulesDirectory);
+                FileIOUtils.delete(nodeModulesDirectory);
             }
-            FileUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
+            FileIOUtils.copyDirectory(tmpNodeModulesDir, nodeModulesDirectory);
         }
         deleteTempDirectory(data.getTmpDirectory());
     }
@@ -455,7 +457,7 @@ public class NodeInstaller {
             String nodeExecutable) throws InstallationException, IOException {
         final File symLink = new File(getInstallDirectory(), nodeExecutable);
         if (symLink.exists()) {
-            FileUtils.delete(symLink);
+            FileIOUtils.delete(symLink);
         }
         try {
             Files.createSymbolicLink(symLink.toPath(), destination.toPath());
@@ -469,7 +471,7 @@ public class NodeInstaller {
     private void deleteTempDirectory(File tmpDirectory) throws IOException {
         if (tmpDirectory != null && tmpDirectory.exists()) {
             getLogger().debug("Deleting temporary directory {}", tmpDirectory);
-            FileUtils.deleteDirectory(tmpDirectory);
+            FileIOUtils.delete(tmpDirectory);
         }
     }
 
@@ -498,7 +500,7 @@ public class NodeInstaller {
                         archive.getPath());
                 removeArchiveFile(archive);
                 try {
-                    FileUtils.deleteDirectory(destinationDirectory);
+                    FileIOUtils.delete(destinationDirectory);
                 } catch (IOException ioe) {
                     getLogger().error("Failed to remove target directory '{}'",
                             destinationDirectory, ioe);

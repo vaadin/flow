@@ -57,7 +57,7 @@ public interface PluginAdapterBase {
     /**
      * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
-     * @return {@link boolean}
+     * @return true if eager server load should happen
      */
     boolean eagerServerLoad();
 

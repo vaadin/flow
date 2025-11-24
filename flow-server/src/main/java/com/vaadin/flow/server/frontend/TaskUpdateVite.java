@@ -17,19 +17,21 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Updates the Vite configuration files according with current project settings.
@@ -58,9 +60,8 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
 
     private static String getTemplate(String string) {
         try {
-            return IOUtils.toString(
-                    TaskUpdateVite.class.getResourceAsStream(string),
-                    StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(
+                    TaskUpdateVite.class.getResourceAsStream(string));
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -93,17 +94,17 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
         }
 
-        URL resource = this.getClass().getClassLoader()
-                .getResource(FrontendUtils.VITE_CONFIG);
-        String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
-        FileUtils.write(configFile, template, StandardCharsets.UTF_8);
+        InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_CONFIG);
+        Files.copy(resource, configFile.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
         log().debug("Created vite configuration file: '{}'", configFile);
 
     }
 
     private boolean replaceWithDefault(File configFile) throws IOException {
         String text = simplifyTemplate(
-                IOUtils.toString(configFile.toURI(), StandardCharsets.UTF_8));
+                Files.readString(configFile.toPath(), StandardCharsets.UTF_8));
         for (String template : reactPluginTemplatesUsedInStarters) {
             if (text.equals(template)) {
                 return true;
@@ -116,9 +117,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         // Always overwrite this
         File generatedConfigFile = new File(options.getNpmFolder(),
                 FrontendUtils.VITE_GENERATED_CONFIG);
-        URL resource = this.getClass().getClassLoader()
-                .getResource(FrontendUtils.VITE_GENERATED_CONFIG);
-        String template = IOUtils.toString(resource, StandardCharsets.UTF_8);
+        InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG);
+        String template = StringUtil.toUTF8String(resource);
 
         template = template
                 .replace("#settingsImport#",

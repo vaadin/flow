@@ -39,6 +39,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
@@ -135,7 +136,9 @@ public class BundleUtilsTest {
 
     @Test
     public void packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
+        Options options = new Options(Mockito.mock(Lookup.class), finder,
                 temporaryFolder.getRoot()).withBuildDirectory("target");
 
         File packageLockFile = temporaryFolder
@@ -347,7 +350,9 @@ public class BundleUtilsTest {
 
     @Test
     public void pnpm_packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
+        Options options = new Options(Mockito.mock(Lookup.class), finder,
                 temporaryFolder.getRoot()).withBuildDirectory("target")
                 .withEnablePnpm(true);
 

@@ -620,6 +620,7 @@ public class UIInternals implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+        session.checkHasLock();
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
@@ -677,6 +678,7 @@ public class UIInternals implements Serializable {
 
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
+            session.checkHasLock();
             UIInternals.this.pendingJsInvocations.remove(invocation);
             if (invocationList.isEmpty() && registration != null) {
                 registration.remove();
@@ -699,6 +701,7 @@ public class UIInternals implements Serializable {
      */
     // Non-private for testing purposes
     Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        session.checkHasLock();
         return pendingJsInvocations.stream()
                 .filter(invocation -> !invocation.isCanceled());
     }
@@ -1347,12 +1350,20 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * The extended client details, if obtained, are cached in this field.
+     * Returns the extended client details. If browser details have not been
+     * received yet, returns a placeholder instance with default values (all
+     * dimensions set to -1). The placeholder will be updated with actual values
+     * when the browser details are received.
      *
-     * @return the extended client details, or {@literal null} if not yet
-     *         received.
+     * @return the extended client details (never {@code null})
      */
     public ExtendedClientDetails getExtendedClientDetails() {
+        if (extendedClientDetails == null) {
+            // Create placeholder with default values
+            extendedClientDetails = new ExtendedClientDetails(ui, null, null,
+                    null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null);
+        }
         return extendedClientDetails;
     }
 
