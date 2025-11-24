@@ -17,9 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
@@ -49,8 +48,8 @@ public class CvdlProducts {
         }
 
         try {
-            JsonNode packageJson = JacksonUtils.readTree(FileUtils
-                    .readFileToString(packageJsonFile, StandardCharsets.UTF_8));
+            JsonNode packageJson = JacksonUtils
+                    .readTree(Files.readString(packageJsonFile.toPath()));
             if (packageJson.has(CVDL_PACKAGE_KEY)) {
                 return new Product(packageJson.get(CVDL_PACKAGE_KEY).asString(),
                         packageJson.get("version").asString());

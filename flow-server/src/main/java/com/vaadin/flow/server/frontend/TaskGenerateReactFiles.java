@@ -24,8 +24,6 @@ import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
@@ -193,7 +191,7 @@ public class TaskGenerateReactFiles
 
             if (routesTsx.exists()) {
                 track(routesTsx);
-                String routesContent = FileUtils.readFileToString(routesTsx,
+                String routesContent = Files.readString(routesTsx.toPath(),
                         UTF_8);
                 routesContent = StringUtil.removeComments(routesContent);
 
@@ -268,23 +266,23 @@ public class TaskGenerateReactFiles
             File frontendGeneratedFolderRoutesTsx = new File(
                     frontendGeneratedFolder, FrontendUtils.ROUTES_TSX);
             File layoutsJson = new File(frontendGeneratedFolder, LAYOUTS_JSON);
-            FileUtils.deleteQuietly(flowTsx);
-            FileUtils.deleteQuietly(
+            FileIOUtils.deleteFileQuietly(flowTsx);
+            FileIOUtils.deleteFileQuietly(
                     new File(frontendGeneratedFolder, JSX_TRANSFORM_INDEX));
-            FileUtils.deleteQuietly(new File(frontendGeneratedFolder,
+            FileIOUtils.deleteFileQuietly(new File(frontendGeneratedFolder,
                     JSX_TRANSFORM_DEV_RUNTIME));
-            FileUtils.deleteQuietly(
+            FileIOUtils.deleteFileQuietly(
                     new File(frontendGeneratedFolder, JSX_TRANSFORM_RUNTIME));
-            FileUtils.deleteQuietly(layoutsJson);
-            FileUtils.deleteQuietly(vaadinReactTsx);
-            FileUtils.deleteQuietly(reactAdapterTsx);
-            FileUtils.deleteQuietly(frontendGeneratedFolderRoutesTsx);
+            FileIOUtils.deleteFileQuietly(layoutsJson);
+            FileIOUtils.deleteFileQuietly(vaadinReactTsx);
+            FileIOUtils.deleteFileQuietly(reactAdapterTsx);
+            FileIOUtils.deleteFileQuietly(frontendGeneratedFolderRoutesTsx);
 
             File routesTsx = new File(frontendDirectory,
                     FrontendUtils.ROUTES_TSX);
             if (routesTsx.exists()) {
-                String defaultRoutesContent = FileUtils
-                        .readFileToString(routesTsx, UTF_8);
+                String defaultRoutesContent = Files
+                        .readString(routesTsx.toPath(), UTF_8);
                 if (compareIgnoringIndentationEOLAndWhiteSpace(
                         defaultRoutesContent,
                         getFileContent(FrontendUtils.ROUTES_TSX),
@@ -357,7 +355,7 @@ public class TaskGenerateReactFiles
         try (InputStream indexTsStream = options.getClassFinder()
                 .getClassLoader()
                 .getResourceAsStream(CLASS_PACKAGE.formatted(fileName))) {
-            indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
+            indexTemplate = StringUtil.toUTF8String(indexTsStream);
         }
         return indexTemplate;
     }

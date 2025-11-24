@@ -28,7 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -65,6 +64,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -177,7 +177,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         addDevBundleTheme(indexDocument, context);
-        applyThemeVariant(indexDocument, context);
+        applyColorScheme(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -253,8 +253,26 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void applyThemeVariant(Document indexDocument,
+    private void applyColorScheme(Document indexDocument,
             VaadinContext context) {
+        // Check for @ColorScheme annotation first
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        Class<?> shell = registry.getShell();
+        if (shell != null) {
+            com.vaadin.flow.component.page.ColorScheme colorSchemeAnnotation = shell
+                    .getAnnotation(
+                            com.vaadin.flow.component.page.ColorScheme.class);
+            if (colorSchemeAnnotation != null) {
+                String colorScheme = colorSchemeAnnotation.value()
+                        .getThemeValue();
+                if (!colorScheme.isEmpty() && !colorScheme.equals("normal")) {
+                    indexDocument.head().parent().attr("theme", colorScheme);
+                }
+            }
+        }
+
+        // Also apply from deprecated @Theme variant attribute for backwards
+        // compatibility
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
@@ -509,7 +527,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String[] allowedHosts = hostsAllowed.split(",");
 
             for (String allowedHost : allowedHosts) {
-                if (FilenameUtils.wildcardMatch(remoteAddress,
+                if (FileIOUtils.wildcardMatch(remoteAddress,
                         allowedHost.trim())) {
                     return true;
                 }
