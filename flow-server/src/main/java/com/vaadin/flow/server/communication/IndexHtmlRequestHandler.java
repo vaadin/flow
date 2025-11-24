@@ -445,8 +445,8 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
 
-        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
-                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+        String pushUrl = BootstrapHandlerHelper.resolveContextRootRelativeUrl(
+                request, ApplicationConstants.VAADIN_PUSH_DEBUG_JS);
         addScriptSrc(indexDocument, pushUrl);
     }
 

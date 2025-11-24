@@ -187,8 +187,10 @@ public class JavaScriptBootstrapHandlerTest {
         JsonNode json = JacksonUtils.readTree(response.getPayload());
 
         // Using regex, because version depends on the build
+        // When servlet is mapped to /vaadin/, the context root is one level up,
+        // so the relative path needs to go up one level (./..)
         Assert.assertTrue(json.get("pushScript").asString().matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+                "^\\./../VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     @Test

@@ -61,6 +61,36 @@ public final class BootstrapHandlerHelper implements Serializable {
     }
 
     /**
+     * Resolves a resource path relative to the context root.
+     * <p>
+     * This method properly handles servlet context paths by using
+     * {@link com.vaadin.flow.server.VaadinService#getContextRootRelativePath}
+     * to construct the correct relative URL.
+     *
+     * @param vaadinRequest
+     *            the request
+     * @param resourcePath
+     *            the resource path relative to context root (e.g.,
+     *            "VAADIN/static/push/vaadinPush.js")
+     * @return the resolved URL relative to the current request
+     */
+    public static String resolveContextRootRelativeUrl(
+            VaadinRequest vaadinRequest, String resourcePath) {
+        String contextRootPath = vaadinRequest.getService()
+                .getContextRootRelativePath(vaadinRequest);
+
+        // Ensure proper path joining
+        if (contextRootPath.endsWith("/") && resourcePath.startsWith("/")) {
+            resourcePath = resourcePath.substring(1);
+        } else if (!contextRootPath.endsWith("/")
+                && !resourcePath.startsWith("/")) {
+            contextRootPath = contextRootPath + "/";
+        }
+
+        return contextRootPath + resourcePath;
+    }
+
+    /**
      * Gets the push URL as a URL relative to the request URI.
      *
      * @param vaadinSession
