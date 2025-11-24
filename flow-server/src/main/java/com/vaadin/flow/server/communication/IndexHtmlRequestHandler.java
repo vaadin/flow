@@ -456,9 +456,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
 
-        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
-                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-        addScriptSrc(indexDocument, pushUrl);
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        addScriptSrc(indexDocument, ApplicationConstants.VAADIN_PUSH_DEBUG_JS);
     }
 
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
