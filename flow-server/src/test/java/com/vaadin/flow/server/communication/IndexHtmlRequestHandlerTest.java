@@ -910,28 +910,47 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_append_colorScheme_to_existing_style()
             throws IOException {
-        // Test that color-scheme is appended to existing style, not overwriting
-        String htmlWithStyle = """
+        File projectRootFolder = temporaryFolder.newFolder();
+
+        // Create custom index.html with existing style attribute on html
+        // element
+        String indexHtmlWithStyle = """
                 <!DOCTYPE html>
                 <html style="--custom-prop: value;">
-                <head><title>Test</title></head>
-                <body></body>
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                </head>
+                <body>
+                  <div id="outlet"></div>
+                </body>
                 </html>
                 """;
-        Document document = Jsoup.parse(htmlWithStyle);
 
-        // Simulate what applyColorScheme does
-        Element html = document.head().parent();
-        String colorSchemeStyle = "color-scheme: dark;";
-        String existingStyle = html.attr("style");
-        if (existingStyle != null && !existingStyle.isBlank()) {
-            html.attr("style", existingStyle.trim() + " " + colorSchemeStyle);
-        } else {
-            html.attr("style", colorSchemeStyle);
-        }
+        File frontendDir = new File(projectRootFolder, "frontend");
+        frontendDir.mkdirs();
+        File indexHtml = new File(frontendDir, "index.html");
+        java.nio.file.Files.writeString(indexHtml.toPath(), indexHtmlWithStyle);
 
+        TestUtil.createStatsJsonStub(projectRootFolder);
+
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtmlOutput = responseOutput
+                .toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtmlOutput);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
         assertEquals("--custom-prop: value; color-scheme: dark;",
-                html.attr("style"));
+                document.head().parent().attr("style"));
     }
 
     @Test
