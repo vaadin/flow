@@ -1518,8 +1518,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        return BootstrapHandlerHelper.resolveContextRootRelativeUrl(request,
-                pushJs) + versionQueryParam;
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        return pushJs + versionQueryParam;
     }
 
     protected static void setupErrorDialogs(Element style) {
