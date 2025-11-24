@@ -51,6 +51,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -185,8 +186,9 @@ public class IndexHtmlRequestHandlerTest {
         indexHtmlRequestHandler.synchronizedHandleRequest(session,
                 createVaadinRequest("/"), response);
         String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
-        Assert.assertTrue("Response should have a language attribute",
-                indexHtml.contains("<html lang"));
+        Document document = Jsoup.parse(indexHtml);
+        Assert.assertFalse("Response should have a language attribute",
+                document.head().parent().attr("lang").isEmpty());
     }
 
     @Test
@@ -839,6 +841,73 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         assertEquals("dark", document.head().parent().attr("theme"));
+    }
+
+    @ColorScheme(ColorScheme.Value.DARK)
+    public static class ClassWithDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_dark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+        assertEquals("--test-property: test-value; color-scheme: dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.LIGHT_DARK)
+    public static class ClassWithLightDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_lightDark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithLightDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("light-dark", document.head().parent().attr("theme"));
+        assertEquals("--test-property: test-value; color-scheme: light dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.NORMAL)
+    public static class ClassWithNormalColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_not_apply_colorScheme_normal() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithNormalColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("", document.head().parent().attr("theme"));
+        // Existing style should be preserved when no color scheme is applied
+        assertEquals("--test-property: test-value;",
+                document.head().parent().attr("style"));
     }
 
     @Test

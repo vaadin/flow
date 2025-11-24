@@ -43,6 +43,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -259,14 +260,24 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         AppShellRegistry registry = AppShellRegistry.getInstance(context);
         Class<?> shell = registry.getShell();
         if (shell != null) {
-            com.vaadin.flow.component.page.ColorScheme colorSchemeAnnotation = shell
-                    .getAnnotation(
-                            com.vaadin.flow.component.page.ColorScheme.class);
+            ColorScheme colorSchemeAnnotation = shell
+                    .getAnnotation(ColorScheme.class);
             if (colorSchemeAnnotation != null) {
-                String colorScheme = colorSchemeAnnotation.value()
-                        .getThemeValue();
-                if (!colorScheme.isEmpty() && !colorScheme.equals("normal")) {
-                    indexDocument.head().parent().attr("theme", colorScheme);
+                ColorScheme.Value colorSchemeValue = colorSchemeAnnotation
+                        .value();
+                String themeValue = colorSchemeValue.getThemeValue();
+                if (!themeValue.isEmpty() && !themeValue.equals("normal")) {
+                    Element html = indexDocument.head().parent();
+                    html.attr("theme", themeValue);
+                    String colorSchemeStyle = "color-scheme: "
+                            + colorSchemeValue.getValue() + ";";
+                    String existingStyle = html.attr("style");
+                    if (existingStyle != null && !existingStyle.isBlank()) {
+                        html.attr("style",
+                                existingStyle.trim() + " " + colorSchemeStyle);
+                    } else {
+                        html.attr("style", colorSchemeStyle);
+                    }
                 }
             }
         }
