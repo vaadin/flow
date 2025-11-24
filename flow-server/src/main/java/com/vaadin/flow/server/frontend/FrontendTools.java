@@ -697,6 +697,11 @@ public class FrontendTools {
                 File npmCliFile = new File(active.npmCliScript());
                 File npxCliFile = new File(npmCliFile.getParentFile(),
                         "npx-cli.js");
+                if (!npxCliFile.exists()) {
+                    throw new IllegalStateException(
+                            "npx-cli.js not found at expected location: "
+                                    + npxCliFile.getAbsolutePath());
+                }
                 returnCommand.add(npxCliFile.getAbsolutePath());
             }
         }

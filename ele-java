@@ -1,0 +1,9 @@
+flow-tests/test-ccdm-flow-navigation/src/test/java/com/vaadin/flow/navigate/ServiceWorkerIT.java
+flow-tests/test-express-build/test-dev-bundle-frontend-add-on/src/test/java/com/vaadin/flow/frontend/ChangeFrontendContentIT.java
+flow-tests/test-express-build/test-dev-bundle-frontend-add-on/src/test/java/com/vaadin/flow/frontend/DevBundleCssImportIT.java
+flow-tests/test-express-build/test-dev-bundle-frontend-add-on/src/test/java/com/vaadin/flow/frontend/DevBundleJsModuleIT.java
+flow-tests/test-express-build/test-parent-theme-express-build/src/test/java/com/vaadin/flow/devbuild/ParentThemeIT.java
+flow-tests/test-express-build/test-reusing-theme-express-build/src/test/java/com/vaadin/flow/devbuild/ReusingThemeIT.java
+flow-tests/test-express-build/test-theme-dev-bundle/src/test/java/com/vaadin/flow/devbuild/DevBundleThemeIT.java
+flow-tests/test-frontend/vite-pwa-custom-sw/src/test/java/com/vaadin/viteapp/MainIT.java
+flow-tests/test-pwa/src/test/java/com/vaadin/flow/pwatest/ui/PwaTestIT.java
