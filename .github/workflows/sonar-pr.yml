@@ -49,7 +49,7 @@ jobs:
 
       - name: Run Sonar analysis
         run: |
-          mvn clean install org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+          mvn clean install sonar:sonar \
             -ntp -B -e -V \
             -DskipTests \
             -Dsonar.projectKey=vaadin_flow \
