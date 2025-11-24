@@ -163,32 +163,11 @@ public class FrontendTools {
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
-    /**
-     * Information about the active node/npm installation that will be used. All
-     * fields are required and non-null.
-     *
-     * @param nodeExecutable
-     *            path to node binary
-     * @param nodeVersion
-     *            node version string (e.g., "24.10.0")
-     * @param npmCliScript
-     *            path to npm-cli.js script
-     * @param npmVersion
-     *            npm version string (e.g., "11.3.0")
-     */
-    private record ActiveNodeInstallation(String nodeExecutable,
-            String nodeVersion, String npmCliScript,
-            String npmVersion) implements Serializable {
-        ActiveNodeInstallation {
-            Objects.requireNonNull(nodeExecutable);
-            Objects.requireNonNull(nodeVersion);
-            Objects.requireNonNull(npmCliScript);
-            Objects.requireNonNull(npmVersion);
-        }
-    }
-
     // The active node installation - shared across all FrontendTools instances
-    private static volatile ActiveNodeInstallation activeNodeInstallation;
+    private static volatile NodeResolver.ActiveNodeInstallation activeNodeInstallation;
+
+    // Lock object for synchronizing node resolution
+    private static final Object RESOLUTION_LOCK = new Object();
 
     /**
      * Resets the cached active node installation. This is intended for testing
@@ -202,7 +181,7 @@ public class FrontendTools {
     private final URI nodeDownloadRoot;
 
     private final boolean ignoreVersionChecks;
-    private boolean forceAlternativeNode;
+    private final boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
 
     /**
@@ -331,151 +310,56 @@ public class FrontendTools {
      * @return the full path to the executable
      */
     public String getNodeExecutable() {
-        ActiveNodeInstallation active = activeNodeInstallation;
+        return ensureNodeResolved().nodeExecutable();
+    }
+
+    /**
+     * Ensures that node has been resolved and cached. Uses double-checked
+     * locking to ensure thread-safe lazy initialization.
+     *
+     * @return the active node installation information
+     */
+    private NodeResolver.ActiveNodeInstallation ensureNodeResolved() {
+        NodeResolver.ActiveNodeInstallation active = activeNodeInstallation;
         if (active != null) {
-            return active.nodeExecutable();
+            return active;
         }
 
-        // Try to find node in global PATH (unless forceAlternativeNode is set)
-        File file = null;
-        if (!forceAlternativeNode) {
-            String nodeCommand = FrontendUtils.isWindows() ? "node.exe"
-                    : "node";
-            file = frontendToolsLocator.tryLocateTool(nodeCommand).orElse(null);
-            file = rejectUnsupportedNodeVersion(file);
-        }
-
-        // If no valid node found, use NodeInstaller to resolve or install
-        if (file == null && alternativeDirGetter != null) {
-            String resolvedPath = resolveOrInstallNode();
-            if (resolvedPath != null) {
-                return resolvedPath;
+        synchronized (RESOLUTION_LOCK) {
+            // Double-check after acquiring lock
+            active = activeNodeInstallation;
+            if (active != null) {
+                return active;
             }
-        }
 
-        if (file == null) {
-            throw new IllegalStateException("Node not found");
-        }
-
-        // Don't cache global node - we can't reliably get all required
-        // npm info. getNpmCliToolExecutable will use standard lookup.
-        return file.getAbsolutePath();
-    }
-
-    /**
-     * Resolves an existing compatible node installation or installs a new one.
-     * Uses NodeInstaller which handles version-specific paths and fallback
-     * logic.
-     *
-     * @return the path to node executable, or null if resolution failed
-     */
-    private String resolveOrInstallNode() {
-        NodeInstaller nodeInstaller = new NodeInstaller(
-                new File(getAlternativeDir()), getProxies())
-                .setNodeVersion(nodeVersion);
-        if (nodeDownloadRoot != null) {
-            nodeInstaller.setNodeDownloadRoot(nodeDownloadRoot);
-        }
-
-        try {
-            nodeInstaller.install();
-            String nodePath = nodeInstaller.getNodeExecutablePath();
-            if (nodePath == null) {
+            // Perform resolution
+            if (alternativeDirGetter == null) {
                 throw new IllegalStateException(
-                        "Node installation failed - executable not found");
+                        "Node not found and no alternative directory configured for installation");
             }
-            String nodeVersion = nodeInstaller.getActiveNodeVersion();
-            String npmCliScript = nodeInstaller.getNpmCliScriptPath();
-            if (npmCliScript == null) {
-                throw new IllegalStateException(
-                        "npm not found in node installation");
-            }
-            String npmVersion;
-            try {
-                npmVersion = FrontendUtils
-                        .getVersion("npm",
-                                List.of(nodePath, npmCliScript, "--version"))
-                        .getFullVersion();
-            } catch (FrontendUtils.UnknownVersionException e) {
-                getLogger().debug("Could not determine npm version", e);
-                npmVersion = "unknown";
-            }
-            activeNodeInstallation = new ActiveNodeInstallation(nodePath,
-                    nodeVersion, npmCliScript, npmVersion);
-            return nodePath;
-        } catch (InstallationException e) {
-            throw new IllegalStateException("Failed to install Node", e);
-        }
-    }
 
-    /**
-     * Ensures that given node executable is supported by Vaadin.
-     *
-     * Returns the input executable if version is supported, otherwise
-     * {@literal null}.
-     *
-     * @param nodeExecutable
-     *            node executable to be checked
-     * @return input node executable if supported, otherwise {@literal null}.
-     */
-    private File rejectUnsupportedNodeVersion(File nodeExecutable) {
-        if (nodeExecutable == null) {
-            return null;
+            NodeResolver resolver = new NodeResolver(getAlternativeDir(),
+                    nodeVersion, nodeDownloadRoot, forceAlternativeNode,
+                    getProxies());
+            active = resolver.resolve();
+            activeNodeInstallation = active;
+            return active;
         }
-        try {
-            List<String> versionCommand = new ArrayList<>();
-            versionCommand.add(nodeExecutable.getAbsolutePath());
-            versionCommand.add("--version"); // NOSONAR
-            final FrontendVersion installedNodeVersion = FrontendUtils
-                    .getVersion("node", versionCommand);
-
-            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
-                getLogger().info(
-                        "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                        installedNodeVersion.getFullVersion(),
-                        SUPPORTED_NODE_VERSION.getFullVersion(),
-                        alternativeDirGetter.get());
-                // Global node is not supported use alternative for everything
-                forceAlternativeNode = true;
-                return null;
-            }
-        } catch (UnknownVersionException e) {
-            getLogger().error("Failed to get version for installed node.", e);
-        }
-        return nodeExecutable;
     }
 
     /**
      * Locate <code>node</code> executable from the alternative directory given.
      *
      * <p>
-     * The difference between {@link #getNodeExecutable()} and this method in a
-     * search algorithm: {@link #getNodeExecutable()} first searches executable
-     * in the base/alternative directory and fallbacks to the globally installed
-     * if it's not found there. The {@link #forceAlternativeNodeExecutable()}
-     * doesn't search for globally installed executable. It tries to find it in
-     * the installation directory and if it's not found it downloads and
-     * installs it there.
+     * This method always uses the cached node installation once resolved. The
+     * resolution respects the {@code forceAlternativeNode} setting.
      *
      * @see #getNodeExecutable()
      *
      * @return the full path to the executable
      */
     public String forceAlternativeNodeExecutable() {
-        ActiveNodeInstallation active = activeNodeInstallation;
-        if (active != null) {
-            return active.nodeExecutable();
-        }
-
-        // Use NodeInstaller to resolve or install - it handles version-specific
-        // paths
-        String resolvedPath = resolveOrInstallNode();
-        if (resolvedPath != null) {
-            return resolvedPath;
-        }
-
-        throw new IllegalStateException(
-                "Failed to resolve or install Node in " + getAlternativeDir());
+        return ensureNodeResolved().nodeExecutable();
     }
 
     /**
@@ -799,112 +683,25 @@ public class FrontendTools {
 
     private List<String> getNpmCliToolExecutable(BuildTool cliTool,
             String... flags) {
-        // Check if we have a cached npm from the active installation
-        ActiveNodeInstallation active = activeNodeInstallation;
-        if (active != null && cliTool.equals(BuildTool.NPM)) {
-            List<String> returnCommand = new ArrayList<>();
-            returnCommand.add(active.nodeExecutable());
-            returnCommand.add(active.npmCliScript());
-            if (flags.length > 0) {
-                Collections.addAll(returnCommand, flags);
-            }
-            return returnCommand;
-        }
-
         List<String> returnCommand = new ArrayList<>();
 
-        if (forceAlternativeNode) {
-            // Force alternative node - ensure activeNodeInstallation is
-            // populated
-            forceAlternativeNodeExecutable();
-            active = activeNodeInstallation;
-            if (active != null && cliTool.equals(BuildTool.NPM)) {
-                returnCommand.add(active.nodeExecutable());
+        // For npm/npx, we always use the resolved node installation
+        if (cliTool.equals(BuildTool.NPM) || cliTool.equals(BuildTool.NPX)) {
+            NodeResolver.ActiveNodeInstallation active = ensureNodeResolved();
+            returnCommand.add(active.nodeExecutable());
+
+            if (cliTool.equals(BuildTool.NPM)) {
                 returnCommand.add(active.npmCliScript());
-                if (flags.length > 0) {
-                    Collections.addAll(returnCommand, flags);
-                }
-                return returnCommand;
-            }
-        }
-
-        if (returnCommand.isEmpty() && !forceAlternativeNode) {
-            // Look for regular `npm`/`npx` in global search path
-            Optional<String> command = frontendToolsLocator
-                    .tryLocateTool(cliTool.getCommand())
-                    .map(File::getAbsolutePath);
-            if (command.isPresent()) {
-                returnCommand = Collections.singletonList(command.get());
-                if (cliTool.equals(BuildTool.NPM)) {
-                    try {
-                        List<String> npmVersionCommand = new ArrayList<>(
-                                returnCommand);
-                        npmVersionCommand.add("--version"); // NOSONAR
-                        final FrontendVersion npmVersion = FrontendUtils
-                                .getVersion("npm", npmVersionCommand);
-                        if (npmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
-                            // Global npm is older than SUPPORTED_NPM_VERSION.
-                            // Using npm from ~/.vaadin
-                            returnCommand = new ArrayList<>();
-                            forceAlternativeNodeExecutable();
-                            active = activeNodeInstallation;
-                            if (active != null) {
-                                returnCommand.add(active.nodeExecutable());
-                                returnCommand.add(active.npmCliScript());
-                            }
-                        }
-                    } catch (UnknownVersionException uve) {
-                        getLogger().error("Could not determine npm version",
-                                uve);
-                        returnCommand = new ArrayList<>();
-                        forceAlternativeNodeExecutable();
-                        active = activeNodeInstallation;
-                        if (active != null) {
-                            returnCommand.add(active.nodeExecutable());
-                            returnCommand.add(active.npmCliScript());
-                        }
-                    }
-                }
-            }
-        }
-
-        if (returnCommand.isEmpty()) {
-            // Use alternative if global is not found
-            forceAlternativeNodeExecutable();
-            active = activeNodeInstallation;
-            if (active != null && cliTool.equals(BuildTool.NPM)) {
-                returnCommand.add(active.nodeExecutable());
-                returnCommand.add(active.npmCliScript());
-            }
-            forceAlternativeNode = true;
-        }
-
-        // If npm/npx still not found, install node (which includes npm/npx)
-        if (returnCommand.isEmpty() && alternativeDirGetter != null
-                && (cliTool.equals(BuildTool.NPM)
-                        || cliTool.equals(BuildTool.NPX))) {
-            forceAlternativeNodeExecutable();
-            // After installation, activeNodeInstallation should be populated
-            // with the correct paths for version-specific node installation
-            ActiveNodeInstallation installed = activeNodeInstallation;
-            if (installed != null && installed.npmCliScript() != null) {
-                returnCommand = new ArrayList<>();
-                returnCommand.add(installed.nodeExecutable());
-                if (cliTool.equals(BuildTool.NPM)) {
-                    returnCommand.add(installed.npmCliScript());
-                } else {
-                    // NPX is in the same directory as npm, just different
-                    // filename
-                    File npmCliFile = new File(installed.npmCliScript());
-                    File npxCliFile = new File(npmCliFile.getParentFile(),
-                            "npx-cli.js");
-                    returnCommand.add(npxCliFile.getAbsolutePath());
-                }
+            } else {
+                // NPX is in the same directory as npm, just different filename
+                File npmCliFile = new File(active.npmCliScript());
+                File npxCliFile = new File(npmCliFile.getParentFile(),
+                        "npx-cli.js");
+                returnCommand.add(npxCliFile.getAbsolutePath());
             }
         }
 
         if (flags.length > 0) {
-            returnCommand = new ArrayList<>(returnCommand);
             Collections.addAll(returnCommand, flags);
         }
         return returnCommand;
