@@ -75,12 +75,6 @@ public class FrontendTools {
     public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
             + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
 
-    public static final String NPM_BIN_PATH = FrontendUtils.isWindows()
-            ? "node/node_modules/npm/bin/"
-            : "node/lib/node_modules/npm/bin/";
-
-    private static final String NPM_BIN_LINUX_LEGACY_PATH = "node/node_modules/npm/bin/";
-
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
 
@@ -195,6 +189,14 @@ public class FrontendTools {
 
     // The active node installation - shared across all FrontendTools instances
     private static volatile ActiveNodeInstallation activeNodeInstallation;
+
+    /**
+     * Resets the cached active node installation. This is intended for testing
+     * purposes to ensure tests start with a clean state.
+     */
+    static void resetActiveNodeInstallation() {
+        activeNodeInstallation = null;
+    }
 
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
@@ -334,16 +336,16 @@ public class FrontendTools {
             return active.nodeExecutable();
         }
 
-        Pair<String, String> nodeCommands = getNodeCommands();
-        File file = getExecutable(baseDir, nodeCommands.getSecond());
-        if (file == null && !forceAlternativeNode) {
-            file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
-                    .orElse(null);
+        // Try to find node in global PATH (unless forceAlternativeNode is set)
+        File file = null;
+        if (!forceAlternativeNode) {
+            String nodeCommand = FrontendUtils.isWindows() ? "node.exe"
+                    : "node";
+            file = frontendToolsLocator.tryLocateTool(nodeCommand).orElse(null);
+            file = rejectUnsupportedNodeVersion(file);
         }
-        file = rejectUnsupportedNodeVersion(file);
 
-        // If no valid node found yet, try to resolve from alternative dir
-        // using NodeInstaller which handles version-specific paths
+        // If no valid node found, use NodeInstaller to resolve or install
         if (file == null && alternativeDirGetter != null) {
             String resolvedPath = resolveOrInstallNode();
             if (resolvedPath != null) {
@@ -352,12 +354,10 @@ public class FrontendTools {
         }
 
         if (file == null) {
-            // This should never happen, because node is automatically installed
-            // if not detected globally or at project level
             throw new IllegalStateException("Node not found");
         }
 
-        // Don't cache global/local node - we can't reliably get all required
+        // Don't cache global node - we can't reliably get all required
         // npm info. getNpmCliToolExecutable will use standard lookup.
         return file.getAbsolutePath();
     }
@@ -431,10 +431,7 @@ public class FrontendTools {
 
             if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
                 getLogger().info(
-                        "{} Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                        nodeExecutable.getPath().startsWith(baseDir)
-                                ? "The project-specific"
-                                : "The globally installed",
+                        "The globally installed Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
                         installedNodeVersion.getFullVersion(),
                         SUPPORTED_NODE_VERSION.getFullVersion(),
                         alternativeDirGetter.get());
@@ -778,22 +775,6 @@ public class FrontendTools {
         return environment;
     }
 
-    private File getExecutable(String dir, String location) {
-        File file = new File(dir, location);
-        if (frontendToolsLocator.verifyTool(file)) {
-            return file;
-        }
-        return null;
-    }
-
-    private Pair<String, String> getNodeCommands() {
-        if (FrontendUtils.isWindows()) {
-            return new Pair<>("node.exe", "node/node.exe");
-        } else {
-            return new Pair<>("node", "node/node");
-        }
-    }
-
     private Logger getLogger() {
         return LoggerFactory.getLogger(FrontendTools.class);
     }
@@ -820,8 +801,7 @@ public class FrontendTools {
             String... flags) {
         // Check if we have a cached npm from the active installation
         ActiveNodeInstallation active = activeNodeInstallation;
-        if (active != null && active.npmCliScript() != null
-                && cliTool.equals(BuildTool.NPM)) {
+        if (active != null && cliTool.equals(BuildTool.NPM)) {
             List<String> returnCommand = new ArrayList<>();
             returnCommand.add(active.nodeExecutable());
             returnCommand.add(active.npmCliScript());
@@ -831,25 +811,31 @@ public class FrontendTools {
             return returnCommand;
         }
 
-        // First look for *-cli.js script in project/node_modules
-        List<String> returnCommand = getNpmScriptCommand(baseDir,
-                cliTool.getScript());
-        boolean alternativeDirChecked = false;
-        if (returnCommand.isEmpty() && forceAlternativeNode) {
-            // First look for *-cli.js script in ~/.vaadin/node/node_modules
-            // only if alternative node takes precedence over all other location
-            returnCommand = getNpmScriptCommand(getAlternativeDir(),
-                    cliTool.getScript());
-            alternativeDirChecked = true;
+        List<String> returnCommand = new ArrayList<>();
+
+        if (forceAlternativeNode) {
+            // Force alternative node - ensure activeNodeInstallation is
+            // populated
+            forceAlternativeNodeExecutable();
+            active = activeNodeInstallation;
+            if (active != null && cliTool.equals(BuildTool.NPM)) {
+                returnCommand.add(active.nodeExecutable());
+                returnCommand.add(active.npmCliScript());
+                if (flags.length > 0) {
+                    Collections.addAll(returnCommand, flags);
+                }
+                return returnCommand;
+            }
         }
-        if (returnCommand.isEmpty()) {
-            // Otherwise look for regular `npm`/`npx` global search path
+
+        if (returnCommand.isEmpty() && !forceAlternativeNode) {
+            // Look for regular `npm`/`npx` in global search path
             Optional<String> command = frontendToolsLocator
                     .tryLocateTool(cliTool.getCommand())
                     .map(File::getAbsolutePath);
             if (command.isPresent()) {
                 returnCommand = Collections.singletonList(command.get());
-                if (!alternativeDirChecked && cliTool.equals(BuildTool.NPM)) {
+                if (cliTool.equals(BuildTool.NPM)) {
                     try {
                         List<String> npmVersionCommand = new ArrayList<>(
                                 returnCommand);
@@ -860,28 +846,36 @@ public class FrontendTools {
                             // Global npm is older than SUPPORTED_NPM_VERSION.
                             // Using npm from ~/.vaadin
                             returnCommand = new ArrayList<>();
-                            // Force installation if not installed
                             forceAlternativeNodeExecutable();
+                            active = activeNodeInstallation;
+                            if (active != null) {
+                                returnCommand.add(active.nodeExecutable());
+                                returnCommand.add(active.npmCliScript());
+                            }
                         }
                     } catch (UnknownVersionException uve) {
                         getLogger().error("Could not determine npm version",
                                 uve);
-                        // Use from alternate directory if global
-                        // version check failed
                         returnCommand = new ArrayList<>();
-                        // Force installation if not installed
-                        // as the global version check failed
                         forceAlternativeNodeExecutable();
+                        active = activeNodeInstallation;
+                        if (active != null) {
+                            returnCommand.add(active.nodeExecutable());
+                            returnCommand.add(active.npmCliScript());
+                        }
                     }
                 }
             }
         }
-        if (!alternativeDirChecked && returnCommand.isEmpty()) {
-            // Use alternative if global is not found and alternative location
-            // is not yet checked
-            returnCommand = getNpmScriptCommand(getAlternativeDir(),
-                    cliTool.getScript());
-            // force alternative to not check global again for these tools
+
+        if (returnCommand.isEmpty()) {
+            // Use alternative if global is not found
+            forceAlternativeNodeExecutable();
+            active = activeNodeInstallation;
+            if (active != null && cliTool.equals(BuildTool.NPM)) {
+                returnCommand.add(active.nodeExecutable());
+                returnCommand.add(active.npmCliScript());
+            }
             forceAlternativeNode = true;
         }
 
@@ -912,23 +906,6 @@ public class FrontendTools {
         if (flags.length > 0) {
             returnCommand = new ArrayList<>(returnCommand);
             Collections.addAll(returnCommand, flags);
-        }
-        return returnCommand;
-    }
-
-    private List<String> getNpmScriptCommand(String dir, String scriptName) {
-        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(dir, NPM_BIN_PATH + scriptName);
-        if (!FrontendUtils.isWindows() && !file.canRead()) {
-            file = new File(dir, NPM_BIN_LINUX_LEGACY_PATH + scriptName);
-        }
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeBinary());
-            returnCommand.add(file.getAbsolutePath());
         }
         return returnCommand;
     }
