@@ -1252,6 +1252,51 @@ public class StaticFileServerTest implements Serializable {
         Assert.assertFalse(fileServer.serveStaticResource(request, response));
     }
 
+    @Test
+    public void serveStaticResource_vaadinPushScript_servedFromMetaInfVaadinWebapp()
+            throws IOException {
+        String pathInfo = "/VAADIN/static/push/vaadinPush.js";
+        setupRequestURI("", "", pathInfo);
+        String fileData = "window.vaadinPush = {};";
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        // The push script should be loaded from META-INF/VAADIN/webapp/
+        // (not from META-INF/resources/VAADIN/static/push/)
+        Mockito.when(mockLoader.getResource(
+                "META-INF/VAADIN/webapp/VAADIN/static/push/vaadinPush.js"))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "/push/vaadinPush.js", fileData));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(fileData, out.getOutputString());
+    }
+
+    @Test
+    public void serveStaticResource_vaadinPushMinScript_servedFromMetaInfVaadinWebapp()
+            throws IOException {
+        String pathInfo = "/VAADIN/static/push/vaadinPush-min.js";
+        setupRequestURI("", "", pathInfo);
+        String fileData = "window.vaadinPush={};";
+        ClassLoader mockLoader = Mockito.mock(ClassLoader.class);
+        Mockito.when(servletService.getClassLoader()).thenReturn(mockLoader);
+
+        // The push script should be loaded from META-INF/VAADIN/webapp/
+        Mockito.when(mockLoader.getResource(
+                "META-INF/VAADIN/webapp/VAADIN/static/push/vaadinPush-min.js"))
+                .thenReturn(createFileURLWithDataAndLength(
+                        "/push/vaadinPush-min.js", fileData));
+
+        mockStatsBundles(mockLoader);
+        mockConfigurationPolyfills();
+
+        Assert.assertTrue(fileServer.serveStaticResource(request, response));
+        Assert.assertEquals(fileData, out.getOutputString());
+    }
+
     private static class CapturingServletOutputStream
             extends ServletOutputStream {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
