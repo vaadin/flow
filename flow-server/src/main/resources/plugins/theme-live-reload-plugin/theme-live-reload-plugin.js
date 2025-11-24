@@ -41,7 +41,7 @@ class ThemeLiveReloadPlugin {
       compiler.hooks.watchRun.tapAsync("ThemeLiveReloadPlugin", (compilation, callback) => {
         const logger = compiler.getInfrastructureLogger("ThemeLiveReloadPlugin");
         const changedFilesMap = compiler.watchFileSystem.watcher.mtimes;
-        if (changedFilesMap !== {}) {
+        if (changedFilesMap && changedFilesMap !== {}) {
           let themeName = undefined;
           let themeGeneratedFileChanged = false;
           let themeGeneratedFileDeleted = false;
