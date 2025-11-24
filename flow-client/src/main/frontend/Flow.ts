@@ -539,6 +539,20 @@ export class Flow {
       params['v-np'] = ($wnd as any).navigator.platform;
     }
 
+    /* Color scheme from CSS color-scheme property */
+    const colorScheme = getComputedStyle(document.documentElement).colorScheme.trim();
+    // "normal" is the default value and means no color scheme is set
+    params['v-cs'] = colorScheme && colorScheme !== 'normal' ? colorScheme : '';
+    /* Theme name - detect which theme is in use */
+    const computedStyle = getComputedStyle(document.documentElement);
+    let themeName = '';
+    if (computedStyle.getPropertyValue('--vaadin-lumo-theme').trim()) {
+      themeName = 'lumo';
+    } else if (computedStyle.getPropertyValue('--vaadin-aura-theme').trim()) {
+      themeName = 'aura';
+    }
+    params['v-tn'] = themeName;
+
     /* Stringify each value (they are parsed on the server side) */
     const stringParams: Record<string, string> = {};
     Object.keys(params).forEach((key) => {

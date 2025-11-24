@@ -60,6 +60,8 @@ public class ExtendedClientDetails implements Serializable {
     private double devicePixelRatio = -1.0D;
     private String windowName;
     private String navigatorPlatform;
+    private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
+    private String themeName;
 
     /**
      * For internal use only. Updates all properties in the class according to
@@ -100,6 +102,10 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
+     * @param colorScheme
+     *            the current color scheme
+     * @param themeName
+     *            the theme name (e.g., "lumo", "aura")
      */
     public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
@@ -107,7 +113,7 @@ public class ExtendedClientDetails implements Serializable {
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform) {
+            String navigatorPlatform, String colorScheme, String themeName) {
         this.ui = ui;
         if (screenWidth != null) {
             try {
@@ -184,6 +190,8 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
+        setColorScheme(ColorScheme.Value.fromString(colorScheme));
+        this.themeName = themeName;
     }
 
     /**
@@ -398,6 +406,36 @@ public class ExtendedClientDetails implements Serializable {
     }
 
     /**
+     * Gets the color scheme.
+     *
+     * @return the color scheme, never {@code null}
+     */
+    public ColorScheme.Value getColorScheme() {
+        return colorScheme;
+    }
+
+    /**
+     * Gets the theme name.
+     *
+     * @return the theme name (e.g., "lumo", "aura"), or empty string if not
+     *         detected
+     */
+    public String getThemeName() {
+        return themeName;
+    }
+
+    /**
+     * Updates the color scheme. For internal use only.
+     *
+     * @param colorScheme
+     *            the new color scheme
+     */
+    void setColorScheme(ColorScheme.Value colorScheme) {
+        this.colorScheme = colorScheme == null ? ColorScheme.Value.NORMAL
+                : colorScheme;
+    }
+
+    /**
      * Creates an ExtendedClientDetails instance from browser details JSON
      * object. This is intended for internal use when browser details are
      * provided as JSON (e.g., during UI initialization or refresh).
@@ -446,7 +484,9 @@ public class ExtendedClientDetails implements Serializable {
                 getStringElseNull.apply("v-td"),
                 getStringElseNull.apply("v-pr"),
                 getStringElseNull.apply("v-wn"),
-                getStringElseNull.apply("v-np"));
+                getStringElseNull.apply("v-np"),
+                getStringElseNull.apply("v-cs"),
+                getStringElseNull.apply("v-tn"));
     }
 
     /**
