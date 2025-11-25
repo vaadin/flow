@@ -18,6 +18,8 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.page.ColorScheme;
+
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_ITEMS;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_SELF;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND;
@@ -35,6 +37,7 @@ import static com.vaadin.flow.dom.ElementConstants.STYLE_BOX_SHADOW;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_BOX_SIZING;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_CLEAR;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_COLOR;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_COLOR_SCHEME;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_CURSOR;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_DISPLAY;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_FILTER;
@@ -355,6 +358,35 @@ public interface Style extends Serializable {
      */
     default Style setColor(String value) {
         return set(STYLE_COLOR, value);
+    }
+
+    /**
+     * Sets the <code>color-scheme</code> property.
+     * <p>
+     * The color scheme affects how the browser renders UI elements and allows
+     * the component to adapt to system color scheme preferences.
+     *
+     * @param value
+     *            the color scheme value (if <code>null</code> or NORMAL, the
+     *            property will be removed)
+     * @return this style instance
+     */
+    default Style setColorScheme(ColorScheme.Value value) {
+        if (value == null || value == ColorScheme.Value.NORMAL) {
+            return remove(STYLE_COLOR_SCHEME);
+        } else {
+            return set(STYLE_COLOR_SCHEME, value.getValue());
+        }
+    }
+
+    /**
+     * Gets the <code>color-scheme</code> property.
+     *
+     * @return the color scheme value, or NORMAL if not set
+     */
+    default ColorScheme.Value getColorScheme() {
+        String value = get(STYLE_COLOR_SCHEME);
+        return ColorScheme.Value.fromString(value);
     }
 
     /**
