@@ -395,7 +395,8 @@ public class AppShellRegistry implements Serializable {
 
         stylesheets.forEach((href, sourcePath) -> {
             Map<String, String> attributes = Map.of("rel", "stylesheet",
-                    "data-file-path", sourcePath);
+                    "data-file-path", sourcePath, "data-id",
+                    "appShell-" + sourcePath);
             settings.addLink(Position.APPEND, href, attributes);
         });
     }

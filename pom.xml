@@ -79,7 +79,7 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.0-RC2</spring.boot.version>
+    <spring.boot.version>4.0.0</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
@@ -542,6 +542,11 @@
             <propertiesEncoding>UTF-8</propertiesEncoding>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.sonarsource.scanner.maven</groupId>
+          <artifactId>sonar-maven-plugin</artifactId>
+          <version>5.3.0.6276</version>
+        </plugin>
       </plugins>
     </pluginManagement>
 
@@ -770,6 +775,49 @@
         <sonar.issuesReport.console.enable/>
         <sonar.issuesReport.html.enable/>
       </properties>
+    </profile>
+    <profile>
+      <id>apicmp</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>com.github.siom79.japicmp</groupId>
+            <artifactId>japicmp-maven-plugin</artifactId>
+            <version>${japicmp.maven.plugin.version}</version>
+            <configuration>
+              <oldVersion>
+                <dependency>
+                  <groupId>${project.groupId}</groupId>
+                  <artifactId>${project.artifactId}</artifactId>
+                  <version>${api.reference.version}</version>
+                  <type>jar</type>
+                </dependency>
+              </oldVersion>
+              <newVersion>
+                <file>
+                  <path>${project.build.directory}/${project.artifactId}-${project.version}.jar</path>
+                </file>
+              </newVersion>
+              <parameter>
+                <onlyModified>true</onlyModified>
+                <ignoreMissingClasses>true</ignoreMissingClasses>
+                <skipXmlReport>true</skipXmlReport>
+                <skipDiffReport>true</skipDiffReport>
+                <ignoreMissingOldVersion>true</ignoreMissingOldVersion>
+              </parameter>
+              <skip>${flow.apicmp.skip}</skip>
+            </configuration>
+            <executions>
+              <execution>
+                <goals>
+                  <goal>cmp</goal>
+                </goals>
+                <phase>verify</phase>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
     </profile>
   </profiles>
 </project>

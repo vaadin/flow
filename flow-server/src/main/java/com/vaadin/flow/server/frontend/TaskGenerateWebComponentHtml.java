@@ -19,10 +19,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
+import com.vaadin.flow.internal.StringUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>web-component.html</code> if it is missing in frontend folder.
@@ -58,7 +57,7 @@ public class TaskGenerateWebComponentHtml extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
                 .getResourceAsStream(WEB_COMPONENT_HTML)) {
-            return IOUtils.toString(indexStream, UTF_8);
+            return StringUtil.toUTF8String(indexStream);
         }
     }
 
