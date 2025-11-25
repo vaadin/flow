@@ -18,11 +18,11 @@ env:
   PR_NUMBER: ${{ github.event.number }}
   JAVA_VERSION: '21'
 jobs:
-  check-permissions:
+  check-permissions-validation:
     uses: ./.github/workflows/check-permissions.yml
 
   build:
-    needs: check-permissions
+    needs: check-permissions-validation
     timeout-minutes: 30
     runs-on: ubuntu-24.04
     outputs:
@@ -265,7 +265,7 @@ jobs:
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
   api-diff-labeling:
-    needs: check-permissions
+    needs: check-permissions-validation
     if: github.event_name == 'pull_request_target'
     timeout-minutes: 10
     runs-on: ubuntu-24.04

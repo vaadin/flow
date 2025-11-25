@@ -18,11 +18,11 @@ permissions:
   issues: write
 
 jobs:
-  check-permissions:
+  check-permissions-formatter:
     uses: ./.github/workflows/check-permissions.yml
 
   formatter:
-    needs: check-permissions
+    needs: check-permissions-formatter
     name: Verify Java code format
     runs-on: ubuntu-latest
     timeout-minutes: 120
