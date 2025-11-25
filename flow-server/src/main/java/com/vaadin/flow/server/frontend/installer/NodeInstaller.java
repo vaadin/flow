@@ -247,8 +247,12 @@ public class NodeInstaller {
                     .getFullVersion();
 
             // Normalize versions for comparison (remove 'v' prefix if present)
-            String normalizedVersion = version.startsWith("v") ? version.substring(1) : version;
-            String normalizedNodeVersion = nodeVersion.startsWith("v") ? nodeVersion.substring(1) : nodeVersion;
+            String normalizedVersion = version.startsWith("v")
+                    ? version.substring(1)
+                    : version;
+            String normalizedNodeVersion = nodeVersion.startsWith("v")
+                    ? nodeVersion.substring(1)
+                    : nodeVersion;
 
             if (normalizedVersion.equals(normalizedNodeVersion)) {
                 getLogger().info("Node {} is already installed.", nodeVersion);
