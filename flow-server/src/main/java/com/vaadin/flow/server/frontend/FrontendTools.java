@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -27,7 +26,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 

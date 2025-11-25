@@ -37,8 +37,8 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  * <li>If forceAlternativeNode is true, skip to step 3</li>
  * <li>Try to find node in global PATH and verify it meets version
  * requirements</li>
- * <li>If no suitable global node found, use NodeInstaller to resolve or
- * install node in alternative directory</li>
+ * <li>If no suitable global node found, use NodeInstaller to resolve or install
+ * node in alternative directory</li>
  * </ol>
  * <p>
  * Once resolved, the result is cached in an {@link ActiveNodeInstallation}
