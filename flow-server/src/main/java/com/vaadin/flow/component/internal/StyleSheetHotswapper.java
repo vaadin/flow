@@ -333,41 +333,10 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
     @Override
     public void onResourcesChange(HotswapResourceEvent event) {
-        if (event.anyMatches(".*\\.css")) {
-            LOGGER.debug(
-                    "Triggering browser live reload because of CSS resources changes");
-
-            VaadinService vaadinService = event.getVaadinService();
-            File buildResourcesFolder = vaadinService
-                    .getDeploymentConfiguration().getOutputResourceFolder();
-
-            List<String> publicStaticResourcesPaths = Stream
-                    .of("META-INF/resources", "resources", "static", "public")
-                    .map(path -> new File(buildResourcesFolder, path))
-                    .filter(File::exists)
-                    .map(staticResourceFolder -> FrontendUtils
-                            .getUnixPath(staticResourceFolder.toPath()))
-                    .toList();
-
-            event.getChangedResources().stream()
-                    .filter(uri -> !new File(uri.getPath()).isDirectory())
-                    .forEach(resource -> {
-                        String resourcePath = resource.getPath();
-                        for (String staticResourcesPath : publicStaticResourcesPaths) {
-                            if (resourcePath.startsWith(staticResourcesPath)) {
-                                String path = resourcePath
-                                        .replace(staticResourcesPath, "");
-                                if (path.startsWith("/")) {
-                                    path = path.substring(1);
-                                }
-                                event.updateClientResource(
-                                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                                                + path,
-                                        null);
-                            }
-                        }
-                    });
-        }
+        // Moved: CSS resource changes in public resource folders are now handled by
+        // a dedicated source-level watcher (PublicResourcesLiveUpdater) to improve
+        // reliability and speed. Intentionally do nothing here to avoid duplicate
+        // updates; @StyleSheet annotation changes are still handled elsewhere.
     }
 
     private boolean isComponentInUse(UI ui, Class<?> componentClass) {
