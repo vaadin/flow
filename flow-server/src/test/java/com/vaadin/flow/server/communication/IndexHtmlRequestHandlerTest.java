@@ -111,6 +111,7 @@ public class IndexHtmlRequestHandlerTest {
     @Before
     public void setUp() throws Exception {
 
+        UsageStatistics.resetEntries();
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
