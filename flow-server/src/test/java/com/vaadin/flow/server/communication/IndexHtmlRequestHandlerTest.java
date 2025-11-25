@@ -110,6 +110,7 @@ public class IndexHtmlRequestHandlerTest {
     @Before
     public void setUp() throws Exception {
 
+        UsageStatistics.resetEntries();
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
@@ -706,7 +707,6 @@ public class IndexHtmlRequestHandlerTest {
     @Test
     public void should_export_usage_statistics_in_development_mode()
             throws IOException {
-        UsageStatistics.resetEntries();
         File projectRootFolder = temporaryFolder.newFolder();
         TestUtil.createIndexHtmlStub(projectRootFolder);
         TestUtil.createStatsJsonStub(projectRootFolder);

@@ -17,7 +17,6 @@ package com.vaadin.flow.server.frontend.scanner;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -46,10 +45,7 @@ public class DepsTests {
     public static void assertImports(Map<ChunkInfo, List<String>> actualUrls,
             String... expectedUrls) {
         List<String> actual = merge(actualUrls);
-        Collections.sort(actual);
-        List<String> expected = new ArrayList<>(List.of(expectedUrls));
-        Collections.sort(expected);
-        Assert.assertEquals(expected, actual);
+        Assert.assertEquals(List.of(expectedUrls), actual);
     }
 
     public static void assertImportsExcludingUI(
