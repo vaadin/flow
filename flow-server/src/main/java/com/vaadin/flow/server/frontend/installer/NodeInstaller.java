@@ -238,6 +238,7 @@ public class NodeInstaller {
     private boolean nodeIsAlreadyInstalled() throws InstallationException {
         // First, check if the exact requested version is installed
         File nodeFile = getNodeExecutableForVersion(nodeVersion);
+
         if (nodeFile.exists()) {
             List<String> nodeVersionCommand = new ArrayList<>();
             nodeVersionCommand.add(nodeFile.toString());
@@ -245,14 +246,14 @@ public class NodeInstaller {
             String version = getVersion("Node", nodeVersionCommand)
                     .getFullVersion();
 
-            if (version.equals(nodeVersion)) {
-                getLogger().info("Node {} is already installed.", version);
+            // Normalize versions for comparison (remove 'v' prefix if present)
+            String normalizedVersion = version.startsWith("v") ? version.substring(1) : version;
+            String normalizedNodeVersion = nodeVersion.startsWith("v") ? nodeVersion.substring(1) : nodeVersion;
+
+            if (normalizedVersion.equals(normalizedNodeVersion)) {
+                getLogger().info("Node {} is already installed.", nodeVersion);
                 activeNodeVersion = nodeVersion;
                 return true;
-            } else {
-                getLogger().info(
-                        "Node {} was installed, but we need version {}",
-                        version, nodeVersion);
             }
         }
 
