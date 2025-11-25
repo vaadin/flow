@@ -232,6 +232,22 @@ public class AppShellRegistry implements Serializable {
                 stylesheets.put(href, sheet.value());
             }
         }
+        // Include any stylesheet URLs tracked during hot-reload as a
+        // best-effort merge
+        // so that dev-time additions persist across refresh. In production this
+        // set is typically empty.
+        try {
+            com.vaadin.flow.internal.ActiveStyleSheetTracker tracker = com.vaadin.flow.internal.ActiveStyleSheetTracker
+                    .get(request.getService());
+            for (String url : tracker.getActiveUrls()) {
+                String href = resolveStyleSheetHref(url, request);
+                if (href != null && !href.isBlank()) {
+                    stylesheets.putIfAbsent(href, url);
+                }
+            }
+        } catch (Exception ignore) {
+            // best-effort only
+        }
         addStyleSheets(request, stylesheets, settings);
         return settings;
     }

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,6 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
+            startWatchingPublicResourcesFolders(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -162,6 +164,29 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
+        }
+    }
+
+    // package-private for testing
+    void startWatchingPublicResourcesFolders(VaadinContext context,
+            ApplicationConfiguration config) {
+        try {
+            final File projectFolder = config.getProjectFolder();
+            List<String> locations = Stream
+                    .of("src/main/resources/META-INF/resources",
+                            "src/main/resources/resources",
+                            "src/main/resources/static",
+                            "src/main/resources/public", "src/main/webapp")
+                    .map(path -> new File(projectFolder, path))
+                    .filter(File::exists)
+                    .map(staticResourceFolder -> FrontendUtils
+                            .getUnixPath(staticResourceFolder.toPath()))
+                    .toList();
+            registerWatcherShutdownCommand(
+                    new PublicResourcesLiveUpdater(locations, context));
+        } catch (Exception e) {
+            getLogger().error(
+                    "Failed to start live-reload for public CSS resources", e);
         }
     }
 
