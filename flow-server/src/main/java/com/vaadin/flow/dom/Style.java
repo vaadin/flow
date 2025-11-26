@@ -18,10 +18,9 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
-
-import com.vaadin.flow.component.page.ColorScheme;
 
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_ITEMS;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_SELF;
