@@ -18,11 +18,11 @@ permissions:
   issues: write
 
 jobs:
-  check-permissions:
+  check-permissions-formatter:
     uses: ./.github/workflows/check-permissions.yml
 
   formatter:
-    needs: check-permissions
+    needs: check-permissions-formatter
     name: Verify Java code format
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -45,7 +45,7 @@ jobs:
         id: formatter
         run: |
           echo "Running formatter..."
-          mvn -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
+          mvn -ntp -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
 
           # Check for modified files
           files=$(git status --porcelain | awk '{print $2}')
