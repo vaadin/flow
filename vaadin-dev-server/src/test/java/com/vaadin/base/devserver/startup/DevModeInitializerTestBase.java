@@ -133,7 +133,8 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
                 "UTF-8");
-        // Create a minimal valid vite.config.ts that exports an empty configuration
+        // Create a minimal valid vite.config.ts that exports an empty
+        // configuration
         FileUtils.write(devServerConfigFile, "export default {}\n", "UTF-8");
         FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
