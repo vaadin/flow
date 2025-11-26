@@ -45,6 +45,7 @@ import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -65,6 +66,9 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        // Reset static node installation cache to ensure test isolation
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+
         Field firstMapping = VaadinServlet.class
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);

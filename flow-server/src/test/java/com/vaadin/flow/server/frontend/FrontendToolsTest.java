@@ -92,9 +92,9 @@ public class FrontendToolsTest {
     private FrontendToolsSettings settings;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception {
         // Reset static state to ensure clean test isolation
-        FrontendTools.resetActiveNodeInstallation();
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
         settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);

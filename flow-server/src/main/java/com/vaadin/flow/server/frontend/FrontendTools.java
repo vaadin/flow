@@ -167,14 +167,6 @@ public class FrontendTools {
     // Lock object for synchronizing node resolution
     private static final Object RESOLUTION_LOCK = new Object();
 
-    /**
-     * Resets the cached active node installation. This is intended for testing
-     * purposes to ensure tests start with a clean state.
-     */
-    static void resetActiveNodeInstallation() {
-        activeNodeInstallation = null;
-    }
-
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
 
