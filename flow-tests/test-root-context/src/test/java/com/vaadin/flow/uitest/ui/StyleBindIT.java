@@ -46,6 +46,8 @@ public class StyleBindIT extends ChromeBrowserTest {
 
         // Clear
         setNull.click();
+        // not trying to guess the value of computed CSS when the style property
+        // is absent, it may vary depending on the environment
         waitUntil(d -> !"rgba(0, 128, 0, 1)"
                 .equals(target.getCssValue("background-color")));
 

@@ -105,8 +105,10 @@ public interface Style extends Serializable {
      * Note that the name should be in camelCase and not dash-separated, i.e.,
      * use "fontFamily" and not "font-family".
      * <p>
-     * Returns the value of the latest signal applied for a bound style while
-     * the element was in the attached state.
+     * When a style property is bound to a signal with
+     * {@link #bind(String, Signal)}, this method returns the value of the
+     * latest signal applied for the given style property name while the element
+     * was in the attached state.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -122,8 +124,8 @@ public interface Style extends Serializable {
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
      * <p>
-     * While a binding for a specific style name is active, any attempt to
-     * manually set that same style throws a {@link BindingActiveException}.
+     * While a signal binding for a specific style name is active, any attempt
+     * to manually set that same style throws a {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -141,8 +143,9 @@ public interface Style extends Serializable {
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
      * <p>
-     * While a binding for a specific style name is active, any attempt to
-     * manually remove that same style throws a {@link BindingActiveException}.
+     * While a signal binding for a specific style name is active, any attempt
+     * to manually remove that same style throws a
+     * {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
