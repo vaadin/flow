@@ -1567,19 +1567,19 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         Frontend development bundle is expected to be in the project or on the classpath, but not found.
                         Add 'com.vaadin.vaadin-dev' dependency to let Vaadin build the development bundle automatically
                         or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
-                        
+
                         Maven:
                             <dependency>
                                 <groupId>com.vaadin</groupId>
                                 <artifactId>vaadin-dev</artifactId>
                                 <optional>true</optional>
                             </dependency>
-                        
+
                         Gradle:
                             dependencies {
                                 implementation('com.vaadin:vaadin-dev')
                             }
-                        
+
                         """);
         return JacksonUtils.readTree(statsJson);
     }

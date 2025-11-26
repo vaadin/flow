@@ -527,23 +527,23 @@ public class VaadinServletContextInitializer
             if (devModeHandlerManager == null) {
                 throw new RuntimeException(
                         """
-                        DevModeHandlerManager not found, but dev server is enabled.
-                        Either disable by setting vaadin.frontend.hotdeploy=false (and run the build-frontend maven goal)
-                        or add 'com.vaadin.vaadin-dev' dependency or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
-                        
-                        Maven:
-                            <dependency>
-                                <groupId>com.vaadin</groupId>
-                                <artifactId>vaadin-dev</artifactId>
-                                <optional>true</optional>
-                            </dependency>
-                        
-                        Gradle:
-                            dependencies {
-                                implementation('com.vaadin:vaadin-dev')
-                            }
-                        
-                        """);
+                                DevModeHandlerManager not found, but dev server is enabled.
+                                Either disable by setting vaadin.frontend.hotdeploy=false (and run the build-frontend maven goal)
+                                or add 'com.vaadin.vaadin-dev' dependency or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
+
+                                Maven:
+                                    <dependency>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-dev</artifactId>
+                                        <optional>true</optional>
+                                    </dependency>
+
+                                Gradle:
+                                    dependencies {
+                                        implementation('com.vaadin:vaadin-dev')
+                                    }
+
+                                """);
             }
             if (devModeHandlerManager.getDevModeHandler() != null) {
                 /*
