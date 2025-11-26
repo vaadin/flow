@@ -193,19 +193,21 @@ function swapStyleSheet(styleSheet: CSSStyleSheet, newHref?: string, onload: (CS
     shadowLink.href = newHref;
   }
 
-  linkElement.parentNode?.insertBefore(shadowLink, linkElement);
-  shadowLink.onload = () => {
-    shadowLink.onload = null;
-    onload(shadowLink.sheet);
-    shadowLink.media = linkElement.media;
-    setTimeout(() => {
-      linkElement.remove();
-    }, 100);
-  };
-  shadowLink.onerror = (event) => {
-    shadowLink.remove();
-    console.warn(`Failed to load stylesheet ${newHref}. Changes are not applied.`, event);
-  };
+  setTimeout(() => {
+    linkElement.parentNode?.insertBefore(shadowLink, linkElement);
+    shadowLink.onload = () => {
+      shadowLink.onload = null;
+      onload(shadowLink.sheet);
+      shadowLink.media = linkElement.media;
+      setTimeout(() => {
+        linkElement.remove();
+      }, 100);
+    };
+    shadowLink.onerror = (event) => {
+      shadowLink.remove();
+      console.warn(`Failed to load stylesheet ${newHref}. Changes are not applied.`, event);
+    };
+  }, 500);
 }
 
 function preloadStyleSheet(href: string, onload: () => void): void {
