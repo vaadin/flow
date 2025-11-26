@@ -55,6 +55,7 @@ import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -94,7 +95,7 @@ public class FrontendToolsTest {
     @Before
     public void setup() throws Exception {
         // Reset static state to ensure clean test isolation
-        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+        resetFrontendToolsNodeCache();
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
         settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);
