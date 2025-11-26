@@ -337,20 +337,6 @@ public class FrontendTools {
         }
     }
 
-    /**
-     * Locate <code>node</code> executable from the alternative directory given.
-     *
-     * <p>
-     * This method always uses the cached node installation once resolved. The
-     * resolution respects the {@code forceAlternativeNode} setting.
-     *
-     * @see #getNodeExecutable()
-     *
-     * @return the full path to the executable
-     */
-    public String forceAlternativeNodeExecutable() {
-        return ensureNodeResolved().nodeExecutable();
-    }
 
     /**
      * Locate <code>npm</code> executable.
@@ -789,11 +775,7 @@ public class FrontendTools {
      * @return the path to the node binary
      */
     public String getNodeBinary() {
-        if (forceAlternativeNode) {
-            return forceAlternativeNodeExecutable();
-        } else {
-            return getNodeExecutable();
-        }
+        return getNodeExecutable();
     }
 
     private String removeLineBreaks(String str) {

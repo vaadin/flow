@@ -250,7 +250,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         try {
             if (options.isRequireHomeNodeExec()) {
-                tools.forceAlternativeNodeExecutable();
+                tools.getNodeExecutable();
             }
             if (options.isEnableBun()) {
                 npmExecutable = tools.getBunExecutable();

@@ -162,12 +162,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (options.isRequireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);

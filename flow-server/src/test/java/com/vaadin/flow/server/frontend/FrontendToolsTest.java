@@ -107,7 +107,7 @@ public class FrontendToolsTest {
         // Force alternative node to install and set up activeNodeInstallation
         settings.setForceAlternativeNode(true);
         tools = new FrontendTools(settings);
-        String nodeExecutable = tools.forceAlternativeNodeExecutable();
+        String nodeExecutable = tools.getNodeExecutable();
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -206,7 +206,7 @@ public class FrontendToolsTest {
     public void forceAlternativeDirectory_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "7.7.3", () -> tools.forceAlternativeNodeExecutable());
+                "7.7.3", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Failed to update the old Node version when alternative directory forced",
@@ -324,7 +324,7 @@ public class FrontendToolsTest {
         settings.setNodeVersion(testVersion);
         tools = new FrontendTools(settings);
         prepareNodeDownloadableZipAt(baseDir, testVersion);
-        tools.forceAlternativeNodeExecutable();
+        tools.getNodeExecutable();
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(vaadinHomeDir, npmPath).exists());
@@ -430,7 +430,7 @@ public class FrontendToolsTest {
         File node = new File(vaadinHomeDir, nodePath);
         FileUtils.forceMkdir(node);
 
-        tools.forceAlternativeNodeExecutable();
+        tools.getNodeExecutable();
     }
 
     @Test
