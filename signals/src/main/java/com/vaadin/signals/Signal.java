@@ -66,6 +66,21 @@ public interface Signal<T> {
     T value();
 
     /**
+     * Reads the value without setting up any dependencies. This method returns
+     * the same value as {@link #value()} but without creating a dependency when
+     * used inside a transaction, effect or computed signal.
+     *
+     * @return the signal value
+     */
+    default T peek() {
+        /*
+         * Subclasses are encouraged to use an approach with less overhead than
+         * what this very generic implementation can do.
+         */
+        return untracked(() -> value());
+    }
+
+    /**
      * Creates a simple computed signal based on a mapper function that is
      * passed the value of this signal. If the mapper function accesses other
      * signal values, then the computed signal will also depend on those
