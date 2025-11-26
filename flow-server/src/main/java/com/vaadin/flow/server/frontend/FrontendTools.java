@@ -331,9 +331,8 @@ public class FrontendTools {
             NodeResolver resolver = new NodeResolver(getAlternativeDir(),
                     nodeVersion, nodeDownloadRoot, forceAlternativeNode,
                     getProxies());
-            active = resolver.resolve();
-            activeNodeInstallation = active;
-            return active;
+            activeNodeInstallation = resolver.resolve();
+            return activeNodeInstallation;
         }
     }
 
