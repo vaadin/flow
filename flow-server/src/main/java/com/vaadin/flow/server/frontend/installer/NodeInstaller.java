@@ -71,11 +71,6 @@ public class NodeInstaller {
 
     private String npmVersion = PROVIDED_VERSION;
     private String nodeVersion;
-    /**
-     * The actual node version being used. May differ from nodeVersion if a
-     * compatible fallback version was found.
-     */
-    private String activeNodeVersion;
     private URI nodeDownloadRoot;
     private String userName;
     private String password;
@@ -205,7 +200,9 @@ public class NodeInstaller {
     }
 
     /**
-     * Install node and npm.
+     * Install node and npm. This method unconditionally downloads and installs
+     * the specified node version without checking if it already exists. Use
+     * NodeResolver to check for existing installations before calling this.
      *
      * @throws InstallationException
      *             exception thrown when installation fails
@@ -216,10 +213,6 @@ public class NodeInstaller {
             // If no download root defined use default root
             if (nodeDownloadRoot == null) {
                 nodeDownloadRoot = URI.create(platform.getNodeDownloadRoot());
-            }
-
-            if (nodeIsAlreadyInstalled()) {
-                return;
             }
 
             getLogger().info("Installing node version {}", nodeVersion);
@@ -235,117 +228,6 @@ public class NodeInstaller {
         }
     }
 
-    private boolean nodeIsAlreadyInstalled() throws InstallationException {
-        // First, check if the exact requested version is installed
-        File nodeFile = getNodeExecutableForVersion(nodeVersion);
-
-        if (nodeFile.exists()) {
-            List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(nodeFile.toString());
-            nodeVersionCommand.add("--version");
-            String version = getVersion("Node", nodeVersionCommand)
-                    .getFullVersion();
-
-            // Normalize versions for comparison (remove 'v' prefix if present)
-            String normalizedVersion = version.startsWith("v")
-                    ? version.substring(1)
-                    : version;
-            String normalizedNodeVersion = nodeVersion.startsWith("v")
-                    ? nodeVersion.substring(1)
-                    : nodeVersion;
-
-            if (normalizedVersion.equals(normalizedNodeVersion)) {
-                getLogger().info("Node {} is already installed.", nodeVersion);
-                activeNodeVersion = nodeVersion;
-                return true;
-            }
-        }
-
-        // Check if any other compatible version is available
-        String fallbackVersion = findCompatibleInstalledVersion();
-        if (fallbackVersion != null) {
-            getLogger().debug("Using existing Node {} instead of installing {}",
-                    fallbackVersion, nodeVersion);
-            activeNodeVersion = fallbackVersion;
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Scans the install directory for installed Node.js versions and returns
-     * the newest one that is supported.
-     *
-     * @return the version string (e.g., "v24.10.0") of the best available
-     *         version, or null if none found
-     */
-    private String findCompatibleInstalledVersion() {
-        if (!installDirectory.exists() || !installDirectory.isDirectory()) {
-            return null;
-        }
-
-        File[] nodeDirs = installDirectory.listFiles(file -> file.isDirectory()
-                && file.getName().startsWith("node-v"));
-
-        if (nodeDirs == null || nodeDirs.length == 0) {
-            return null;
-        }
-
-        FrontendVersion bestVersion = null;
-        String bestVersionString = null;
-
-        for (File nodeDir : nodeDirs) {
-            String dirName = nodeDir.getName();
-            // Extract version from directory name (node-v24.10.0 -> v24.10.0)
-            String versionString = dirName.substring("node-".length());
-
-            try {
-                FrontendVersion version = new FrontendVersion(versionString);
-
-                // Skip versions older than minimum supported
-                if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
-                    getLogger().debug(
-                            "Skipping {} - older than minimum supported {}",
-                            versionString, FrontendTools.SUPPORTED_NODE_VERSION
-                                    .getFullVersion());
-                    continue;
-                }
-
-                // Verify the node executable actually exists and works
-                File nodeExecutable = getNodeExecutableForVersion(
-                        versionString);
-                if (!nodeExecutable.exists()) {
-                    getLogger().debug(
-                            "Skipping {} - executable not found at {}",
-                            versionString, nodeExecutable);
-                    continue;
-                }
-
-                // Keep the newest version
-                if (bestVersion == null || version.isNewerThan(bestVersion)) {
-                    bestVersion = version;
-                    bestVersionString = versionString;
-                }
-            } catch (NumberFormatException e) {
-                getLogger().debug("Could not parse version from directory: {}",
-                        dirName);
-            }
-        }
-
-        return bestVersionString;
-    }
-
-    /**
-     * Gets the node executable path for a specific version.
-     */
-    private File getNodeExecutableForVersion(String version) {
-        String versionedPath = INSTALL_PATH_PREFIX + "-" + version;
-        String nodeExecutable = platform.isWindows()
-                ? versionedPath.replaceAll("/", "\\\\") + "\\node.exe"
-                : versionedPath + "/bin/node";
-        return new File(installDirectory + nodeExecutable);
-    }
 
     private void installNode(InstallData data) throws InstallationException {
         try {
@@ -376,7 +258,6 @@ public class NodeInstaller {
         }
 
         getLogger().info("Local node installation successful.");
-        activeNodeVersion = nodeVersion;
     }
 
     private void installNodeUnix(InstallData data)
@@ -515,61 +396,15 @@ public class NodeInstaller {
         return getInstallDirectoryFile().getPath();
     }
 
-    /**
-     * Returns the path to the node executable after installation or resolution.
-     *
-     * @return the absolute path to the node executable, or null if not
-     *         installed
-     */
-    public String getNodeExecutablePath() {
-        if (activeNodeVersion == null) {
-            return null;
-        }
-        File executable = getNodeExecutableForVersion(activeNodeVersion);
-        return executable.exists() ? executable.getAbsolutePath() : null;
-    }
-
-    /**
-     * Returns the active node version being used. This may differ from the
-     * requested version if a compatible fallback version was found.
-     *
-     * @return the active node version, or null if not resolved yet
-     */
-    public String getActiveNodeVersion() {
-        return activeNodeVersion;
-    }
-
-    /**
-     * Returns the path to the npm-cli.js script after installation or
-     * resolution.
-     *
-     * @return the absolute path to npm-cli.js, or null if not installed
-     */
-    public String getNpmCliScriptPath() {
-        if (activeNodeVersion == null) {
-            return null;
-        }
-        // npm is in different locations on Windows vs Unix
-        String npmPath = platform.isWindows()
-                ? "node_modules/npm/bin/npm-cli.js"
-                : "lib/node_modules/npm/bin/npm-cli.js";
-        File npmCliScript = new File(getInstallDirectoryFile(), npmPath);
-        return npmCliScript.exists() ? npmCliScript.getAbsolutePath() : null;
-    }
-
     private File getInstallDirectoryFile() {
         return new File(installDirectory, getVersionedInstallPath());
     }
 
     private String getVersionedInstallPath() {
-        // Use activeNodeVersion if set (fallback version), otherwise use
-        // requested nodeVersion
-        String version = activeNodeVersion != null ? activeNodeVersion
-                : nodeVersion;
-        if (version == null || PROVIDED_VERSION.equals(version)) {
+        if (nodeVersion == null || PROVIDED_VERSION.equals(nodeVersion)) {
             return INSTALL_PATH_PREFIX;
         }
-        return INSTALL_PATH_PREFIX + "-" + version;
+        return INSTALL_PATH_PREFIX + "-" + nodeVersion;
     }
 
     private File getNodeInstallDirectory() {

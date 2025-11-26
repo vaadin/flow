@@ -187,7 +187,8 @@ public class FrontendToolsTest {
         FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
         createStubNode(nodeStub, npmStub, baseDir);
 
-        tools.installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
+        FrontendToolsTestHelper.installNode(new File(vaadinHomeDir),
+                tools.getProxies(), FrontendTools.DEFAULT_NODE_VERSION, null);
 
         List<String> nodeVersionCommand = new ArrayList<>();
         nodeVersionCommand.add(tools.getNodeExecutable());
@@ -222,7 +223,9 @@ public class FrontendToolsTest {
         tools = new FrontendTools(settings);
 
         String toBeInstalled = "v" + oldNodeVersion;
-        String nodeExecutable = tools.installNode(toBeInstalled, null);
+        String nodeExecutable = FrontendToolsTestHelper.installNode(
+                new File(vaadinHomeDir), tools.getProxies(), toBeInstalled,
+                null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -895,7 +898,8 @@ public class FrontendToolsTest {
     }
 
     private String installNodeToTempFolder() {
-        return tools.installNode(FrontendTools.DEFAULT_NODE_VERSION,
+        return FrontendToolsTestHelper.installNode(new File(vaadinHomeDir),
+                tools.getProxies(), FrontendTools.DEFAULT_NODE_VERSION,
                 new File(baseDir).toPath().toUri());
     }
 

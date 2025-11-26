@@ -455,35 +455,6 @@ public class FrontendTools {
     }
 
     /**
-     * Install node and npm. This is a test utility method that installs a
-     * specific node version without updating the active installation cache.
-     *
-     * @param nodeVersion
-     *            node version to install
-     * @param downloadRoot
-     *            optional download root for downloading node. May be a
-     *            filesystem file or a URL see
-     *            {@link NodeInstaller#setNodeDownloadRoot(URI)}.
-     * @return node installation path
-     */
-    protected String installNode(String nodeVersion, URI downloadRoot) {
-        NodeInstaller nodeInstaller = new NodeInstaller(
-                new File(getAlternativeDir()), getProxies())
-                .setNodeVersion(nodeVersion);
-        if (downloadRoot != null) {
-            nodeInstaller.setNodeDownloadRoot(downloadRoot);
-        }
-
-        try {
-            nodeInstaller.install();
-        } catch (InstallationException e) {
-            throw new IllegalStateException("Failed to install Node", e);
-        }
-
-        return nodeInstaller.getNodeExecutablePath();
-    }
-
-    /**
      * Read list of configured proxies in order from system properties, .npmrc
      * file in the project root folder, .npmrc file in user root folder and
      * system environment variables.
