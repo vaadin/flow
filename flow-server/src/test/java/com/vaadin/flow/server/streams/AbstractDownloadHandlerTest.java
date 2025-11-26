@@ -90,7 +90,7 @@ public class AbstractDownloadHandlerTest {
             public void handleDownloadRequest(DownloadEvent event) {
             }
         };
-        handler.setTransferUI(ui);
+
         mockContext = Mockito.mock(TransferContext.class);
         Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
@@ -196,7 +196,6 @@ public class AbstractDownloadHandlerTest {
             successAtomic.set(success);
         });
 
-        customHandler.setTransferUI(ui);
         customHandler.handleDownloadRequest(downloadEvent);
 
         Assert.assertTrue(successAtomic.get());

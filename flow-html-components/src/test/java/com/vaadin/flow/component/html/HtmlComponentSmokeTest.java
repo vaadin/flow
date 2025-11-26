@@ -40,6 +40,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasEnabled;
 import com.vaadin.flow.component.HasText;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.HtmlContainer;
@@ -174,8 +175,12 @@ public class HtmlComponentSmokeTest {
     private static void testSetters(HtmlComponent instance) {
         Arrays.stream(instance.getClass().getMethods())
                 .filter(HtmlComponentSmokeTest::isSetter)
-                .filter(m -> !isSpecialSetter(m))
-                .forEach(m -> testSetter(instance, m));
+                .filter(m -> !isSpecialSetter(m)).forEach(m -> {
+                    if (instance instanceof HasEnabled) {
+                        ((HasEnabled) instance).setEnabled(true);
+                    }
+                    testSetter(instance, m);
+                });
     }
 
     private static boolean isSetter(Method method) {
