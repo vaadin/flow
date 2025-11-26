@@ -132,6 +132,20 @@ public interface Signal<T> {
     }
 
     /**
+     * Crates a new computed signal containing the negation of the provided
+     * boolean-valued signal. <code>null</code> values are preserved as
+     * <code>null</code>.
+     * 
+     * @param signal
+     *            the boolean-valued signal to negate, not <code>null</code>
+     * @return the negated signal, not <code>null</code>
+     */
+    static Signal<Boolean> not(Signal<Boolean> signal) {
+        return Objects.requireNonNull(signal)
+                .map(value -> value == null ? null : !value);
+    }
+
+    /**
      * Runs the provided supplier in a transaction. All signal operations
      * performed within the transaction will be staged and atomically committed
      * at the end of the transaction. The commit fails and doesn't apply any of
