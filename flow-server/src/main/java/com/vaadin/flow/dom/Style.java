@@ -100,13 +100,17 @@ public interface Style extends Serializable {
     /**
      * Gets the value of the given style property.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
+     * Note that the name should be in camelCase and not dash-separated, i.e.,
+     * use "fontFamily" and not "font-family".
+     * <p>
+     * Returns the value of the latest signal applied for a bound style while
+     * the element was in the attached state.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @return the style property value, or <code>null</code> if the style
      *         property has not been set
+     * @see #bind(String, Signal)
      */
     String get(String name);
 
@@ -115,6 +119,9 @@ public interface Style extends Serializable {
      * <p>
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
+     * <p>
+     * While a binding for a specific style name is active, any attempt to
+     * manually set that same style throws a {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -122,6 +129,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style set(String name, String value);
 
@@ -130,17 +138,25 @@ public interface Style extends Serializable {
      * <p>
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
+     * <p>
+     * While a binding for a specific style name is active, any attempt to
+     * manually remove that same style throws a {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style remove(String name);
 
     /**
      * Removes all set style properties.
+     * <p>
+     * This method silently clears all style signal bindings (unsubscribe and
+     * forget recorded values) in addition to clearing style values.
      *
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style clear();
 
@@ -164,8 +180,12 @@ public interface Style extends Serializable {
      * Note that this always returns the name as camelCased, e.g.
      * <code>fontFamily</code> even if it has been set as dash-separated
      * (<code>font-family</code>).
+     * <p>
+     * Includes names of the style properties bound with the signals while the
+     * element was in the attached state.
      *
      * @return a stream of defined style property names
+     * @see #bind(String, Signal)
      */
     Stream<String> getNames();
 
@@ -183,24 +203,10 @@ public interface Style extends Serializable {
      * <p>
      * The binding effect is active only while the owner element is in the
      * attached state. While the owner is in the detached state, updates from
-     * the signal have no effect. The latest value applied while an owner was
-     * attached is remembered and exposed via {@link #get(String)} and included
-     * in {@link #getNames()} as defined below.
+     * the signal have no effect.
      * <p>
-     * While a binding for a specific style name is active, any attempt to
-     * manually {@link #set(String, String) set} or {@link #remove(String)
-     * remove} that same style throws a {@link BindingActiveException}. The same
-     * applies when attempting to bind another signal for the same name while
-     * one is already bound.
-     * <p>
-     * {@link #clear()} silently clears all style signal bindings (unsubscribe
-     * and forget recorded values) in addition to clearing style values.
-     * <p>
-     * {@link #get(String)} returns the latest signal applied for a bound style
-     * while the element was in attached state; returns {@code null} if never
-     * attached/never applied. {@link #getNames()} includes names that have
-     * recorded a last-applied signal from an attached period; otherwise it may
-     * be empty.
+     * While a binding for a specific style name is active, any attempt to bind
+     * another signal for the same name throws a {@link BindingActiveException}.
      * <p>
      * Name handling follows the same rules as {@link #set(String, String)}:
      * both camelCase and dash-separated names are supported and normalized in
@@ -214,6 +220,12 @@ public interface Style extends Serializable {
      * @return this style instance
      * @throws BindingActiveException
      *             thrown when there is already an existing binding
+     * @see #set(String, String)
+     * @see #remove(String)
+     * @see #clear()
+     * @see #get(String)
+     * @see #getNames()
+     *
      * @since 25.0
      */
     Style bind(String name, Signal<String> signal);

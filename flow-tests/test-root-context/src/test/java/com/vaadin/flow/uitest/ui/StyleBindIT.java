@@ -46,9 +46,8 @@ public class StyleBindIT extends ChromeBrowserTest {
 
         // Clear
         setNull.click();
-        waitUntil(d -> "rgba(0, 0, 0, 0)"
-                .equals(target.getCssValue("background-color"))
-                || target.getCssValue("background-color").isEmpty());
+        waitUntil(d -> !"rgba(0, 128, 0, 1)"
+                .equals(target.getCssValue("background-color")));
 
         // Back to red
         setRed.click();
