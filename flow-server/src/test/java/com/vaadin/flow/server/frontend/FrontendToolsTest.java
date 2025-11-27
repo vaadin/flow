@@ -149,59 +149,6 @@ public class FrontendToolsTest {
                 updatedNodeVersion.getFullVersion());
     }
 
-    @Ignore("Project folder node detection removed - test relied on detecting unsupported node in baseDir")
-    @Test
-    public void nodeIsBeingLocated_unsupportedNodeInstalled_defaultNodeVersionInstalledToAlternativeDirectory()
-            throws FrontendUtils.UnknownVersionException, IOException {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        // Unsupported node version
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(tools.getNodeExecutable());
-        nodeVersionCommand.add("--version");
-        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-
-        Assert.assertEquals(
-                "Locate unsupported Node version: Default Node version was not used.",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                usedNodeVersion.getFullVersion());
-    }
-
-    @Ignore("Project folder node detection removed - test relied on detecting unsupported node in baseDir")
-    @Test
-    public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
-            throws IOException, FrontendUtils.UnknownVersionException {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        // Unsupported node version
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        FrontendToolsTestHelper.installNode(new File(vaadinHomeDir),
-                tools.getProxies(), FrontendTools.DEFAULT_NODE_VERSION, null);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(tools.getNodeExecutable());
-        nodeVersionCommand.add("--version");
-        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-
-        Assert.assertEquals(
-                "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
-                FrontendTools.DEFAULT_NODE_VERSION.replace("v", ""),
-                usedNodeVersion.getFullVersion());
-    }
 
     @Test
     public void forceAlternativeDirectory_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
@@ -270,6 +217,9 @@ public class FrontendToolsTest {
                 zipOutputStream.putNextEntry(
                         new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
                 zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(
+                        new ZipEntry(prefix + "/node_modules/npm/bin/npm-cli.js"));
+                zipOutputStream.closeEntry();
             }
         } else {
             try (OutputStream fo = Files.newOutputStream(tempArchive);
@@ -290,11 +240,14 @@ public class FrontendToolsTest {
                         new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
                         prefix + "/lib/node_modules/npm/bin/npm.cmd"));
                 o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix + "/lib/node_modules/npm/bin/npm-cli.js"),
+                        prefix + "/lib/node_modules/npm/bin/npm-cli.js"));
+                o.closeArchiveEntry();
             }
         }
     }
 
-    @Ignore("Mock archives need to include npm-cli.js for versioned paths")
     @Test
     public void installNodeFromFileSystem_NodeIsInstalledToTargetDirectory()
             throws IOException {
@@ -312,7 +265,6 @@ public class FrontendToolsTest {
                 new File(vaadinHomeDir, npmInstallPath).exists());
     }
 
-    @Ignore("Mock archives need to include npm-cli.js for versioned paths")
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
             throws Exception {
@@ -612,17 +564,27 @@ public class FrontendToolsTest {
                 httpsProxy.nonProxyHosts);
     }
 
-    @Ignore("Stub nodes use non-versioned paths; test needs rework for versioned installation")
     @Test
     public void forceHomeNode_useHomeNpmFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
         settings.setForceAlternativeNode(true);
+        settings.setNodeDownloadRoot(new File(baseDir).toPath().toUri());
         tools = new FrontendTools(settings);
 
-        createStubNode(true, true, vaadinHomeDir);
-        assertNpmCommand(() -> vaadinHomeDir);
+        // Install node to vaadin home dir using the test helper
+        prepareNodeDownloadableZipAt(baseDir,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        String nodeExecutable = FrontendToolsTestHelper.installNode(
+                new File(vaadinHomeDir), tools.getProxies(),
+                FrontendTools.DEFAULT_NODE_VERSION,
+                new File(baseDir).toPath().toUri());
+        Assert.assertNotNull(nodeExecutable);
+
+        // Verify that node and npm from vaadin home are being used
+        assertThat(tools.getNodeExecutable(), containsString("node"));
+        assertThat(tools.getNodeExecutable(), containsString(vaadinHomeDir));
+        List<String> npmExecutable = tools.getNpmExecutable();
+        assertThat(npmExecutable.get(0), containsString(vaadinHomeDir));
+        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
     }
 
     @Test
@@ -793,26 +755,6 @@ public class FrontendToolsTest {
         Assert.assertTrue(accepted);
     }
 
-    @Ignore("Stub npm in baseDir is not used anymore - we use global npm")
-    @Test
-    public void getNpmCacheDir_returnsCorrectPath()
-            throws IOException, FrontendUtils.CommandExecutionException {
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")
-                .build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        File npmCacheDir = tools.getNpmCacheDir();
-
-        Assert.assertNotNull(npmCacheDir);
-        String npmCachePath = npmCacheDir.getPath();
-
-        Assert.assertEquals("foo/bar",
-                npmCachePath
-                        .substring(FilenameUtils.getPrefixLength(npmCachePath))
-                        .replace("\\", "/"));
-    }
 
     @Test
     public void getViteExecutable_returnsCorrectPath()
