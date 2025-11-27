@@ -174,9 +174,10 @@ class NodeResolver implements java.io.Serializable {
 
             String npmVersion;
             try {
-                npmVersion = FrontendUtils.getVersion("npm",
-                        List.of(nodeExecutable.getAbsolutePath(), npmCliScript,
-                                "--version"))
+                npmVersion = FrontendUtils
+                        .getVersion("npm",
+                                List.of(nodeExecutable.getAbsolutePath(),
+                                        npmCliScript, "--version"))
                         .getFullVersion();
             } catch (UnknownVersionException e) {
                 getLogger().debug(
@@ -314,7 +315,8 @@ class NodeResolver implements java.io.Serializable {
         String npmCliScript = getNpmCliScriptPath(installDir, version);
         if (npmCliScript == null) {
             String versionedPath = "node-v"
-                    + (version.startsWith("v") ? version.substring(1) : version);
+                    + (version.startsWith("v") ? version.substring(1)
+                            : version);
             boolean isWindows = FrontendUtils.isWindows();
             String expectedNpmPath = isWindows
                     ? versionedPath + "\\node_modules\\npm\\bin\\npm-cli.js"

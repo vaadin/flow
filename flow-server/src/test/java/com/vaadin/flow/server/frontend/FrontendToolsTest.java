@@ -944,8 +944,8 @@ public class FrontendToolsTest {
                 FrontendVersion version = FrontendUtils.getVersion("node",
                         versionCommand);
                 System.out.println("  ✓ Node executable is working");
-                System.out.println("  ✓ Verified version: "
-                        + version.getFullVersion());
+                System.out.println(
+                        "  ✓ Verified version: " + version.getFullVersion());
             } catch (Exception e) {
                 System.out.println("  ✗ Failed to verify node executable: "
                         + e.getMessage());
