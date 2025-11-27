@@ -394,7 +394,8 @@ class NodeResolver implements java.io.Serializable {
                     continue;
                 }
 
-                // Skip versions with major version higher than maximum supported
+                // Skip versions with major version higher than maximum
+                // supported
                 if (version
                         .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
                     getLogger().debug(

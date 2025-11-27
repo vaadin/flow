@@ -907,9 +907,8 @@ public class FrontendToolsTest {
                     + FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion()
                     + " - " + FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION
                     + ".x.x");
-            System.out.println(
-                    "  Preferred version (to install if needed): "
-                            + preferredVersion);
+            System.out.println("  Preferred version (to install if needed): "
+                    + preferredVersion);
             System.out.println("  Force alternative node: " + forceAlternative);
             System.out.println();
 
