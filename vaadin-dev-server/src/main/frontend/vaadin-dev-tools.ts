@@ -681,65 +681,27 @@ export class VaadinDevTools extends LitElement {
         path = this.conf.contextRelativePath + path.substring(contextPathProtocol.length);
       }
 
-      // If server explicitly signals removal with empty content, remove inline tag and re-enable links
-      if (content === '') {
-        const styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
-        if (styleTag && styleTag.parentElement) {
-          styleTag.parentElement.removeChild(styleTag);
-        }
-        try {
-          const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
-          links.forEach((link) => {
-            if (!link.href) return;
-            if (link.href.includes(path)) {
-              link.disabled = false;
-            }
-          });
-        } catch (e) {
-          // ignore
-        }
-        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-        return;
-      }
-
-      // If server provided inline content, create/update a <style data-file-path> tag.
-      if (content != null) {
+      if (content) {
+        // change or add a new stylesheet
         let styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
         if (!styleTag) {
           styleTag = document.createElement('style');
           styleTag.setAttribute('data-file-path', path);
           document.head.appendChild(styleTag);
+          this.removeOldLinks(path);
         }
         styleTag.textContent = content;
-
-        // Optionally disable matching <link rel="stylesheet"> tags to avoid duplicate styles.
-        try {
-          const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
-          links.forEach((link) => {
-            if (!link.href) return;
-            // Compare by substring match; path may be relative while link.href is absolute
-            if (link.href.includes(path)) {
-              link.disabled = true;
-            }
-          });
-        } catch (e) {
-          // ignore; best-effort only
-        }
-
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-        return;
-      }
-
-      // Fallback: no inline content provided. Update any stylesheets that reference the resource.
-      // Do not reload the page; this may be called for resources not used in CSS as well.
-      updateStylesheetsReferencingResource(path).then(
-        () => {
-          document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-        },
-        (error) => {
-          console.error('Failed to update theme', error);
+      } else if (content === '') {
+        // remove inlined stylesheets or initial links with the given path
+        const styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
+        if (styleTag) {
+            styleTag.remove();
+        } else {
+            this.removeOldLinks(path);
         }
-      );
+        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
+      }
     };
 
     const frontendConnection = new WebSocketConnection(this.getDedicatedWebSocketUrl());
@@ -771,6 +733,18 @@ export class VaadinDevTools extends LitElement {
         this.javaStatus = status;
       };
     }
+  }
+
+  removeOldLinks(path: string) {
+    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
+    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
+    links.forEach((link) => {
+      if (!link.href) return;
+      // Compare by substring match; a path may be relative while link.href is absolute
+      if (link.href.includes(path)) {
+        link.remove();
+      }
+    });
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {

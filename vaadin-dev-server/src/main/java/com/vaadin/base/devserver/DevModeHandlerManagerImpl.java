@@ -171,13 +171,13 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
     void startWatchingPublicResourcesFolders(VaadinContext context,
             ApplicationConfiguration config) {
         try {
-            final File projectFolder = config.getProjectFolder();
-            List<String> locations = Stream
-                    .of("src/main/resources/META-INF/resources",
-                            "src/main/resources/resources",
-                            "src/main/resources/static",
-                            "src/main/resources/public", "src/main/webapp")
-                    .map(path -> new File(projectFolder, path))
+            File projectFolder = config.getProjectFolder();
+            File resourceFolder = config.getJavaResourceFolder();
+            List<String> locations = Stream.concat(Stream
+                    .of("META-INF/resources", "resources", "static", "public")
+                    .map(location -> new File(resourceFolder, location)),
+                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    .filter(root -> root.exists() && root.isDirectory())
                     .filter(File::exists)
                     .map(staticResourceFolder -> FrontendUtils
                             .getUnixPath(staticResourceFolder.toPath()))

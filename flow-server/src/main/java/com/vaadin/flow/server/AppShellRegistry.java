@@ -42,6 +42,7 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
@@ -232,27 +233,12 @@ public class AppShellRegistry implements Serializable {
                 stylesheets.put(href, sheet.value());
             }
         }
-        // Include any stylesheet URLs tracked during hot-reload as a
-        // best-effort merge
-        // so that dev-time additions persist across refresh. In production this
-        // set is typically empty.
-        try {
-            com.vaadin.flow.internal.ActiveStyleSheetTracker tracker = com.vaadin.flow.internal.ActiveStyleSheetTracker
-                    .get(request.getService());
-            for (String url : tracker.getActiveUrls()) {
-                String href = resolveStyleSheetHref(url, request);
-                if (href != null && !href.isBlank()) {
-                    stylesheets.putIfAbsent(href, url);
-                }
-            }
-        } catch (Exception ignore) {
-            // best-effort only
-        }
         addStyleSheets(request, stylesheets, settings);
         return settings;
     }
 
-    private String resolveStyleSheetHref(String href, VaadinRequest request) {
+    private static String resolveStyleSheetHref(String href,
+            VaadinRequest request) {
         if (href == null || href.isBlank()) {
             return null;
         }
@@ -392,6 +378,20 @@ public class AppShellRegistry implements Serializable {
         DeploymentConfiguration config = request.getService()
                 .getDeploymentConfiguration();
         if (!config.isProductionMode()) {
+            // Include hot-reloaded stylesheets
+            try {
+                ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
+                        .get(request.getService());
+                for (String url : tracker.getActiveUrls()) {
+                    String href = resolveStyleSheetHref(url, request);
+                    if (href != null && !href.isBlank()) {
+                        stylesheets.putIfAbsent(href, url);
+                    }
+                }
+            } catch (Exception e) {
+                log.error("Failed to restore hot-reloaded stylesheets", e);
+            }
+
             stylesheets.replaceAll((resolved, source) -> {
                 if (source.startsWith("/")) {
                     source = source.substring(1);

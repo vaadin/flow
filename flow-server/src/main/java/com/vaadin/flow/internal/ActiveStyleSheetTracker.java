@@ -15,26 +15,28 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
- * Tracks the set of active stylesheet URLs used by the running application
+ * Tracks the set of all active stylesheets used by the running application
  * during development time.
  * <p>
  * The tracker keeps a per-session set of stylesheet URLs that are currently
  * applied via {@code @StyleSheet} and a global set for AppShell stylesheets
  * that are applied to all pages.
+ * <p>
+ * Per-session tracking is used for component-based annotations and to avoid
+ * accidentally adding stylesheets to those UIs not using a given component,
+ * when a new stylesheet is added and hot-reloaded.
  * <p>
  * The data is stored in the {@link VaadinContext} and can be retrieved from any
  * module using {@link #get(VaadinService)}.
@@ -43,10 +45,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public final class ActiveStyleSheetTracker implements Serializable {
 
-    @Serial
-    private static final long serialVersionUID = 1L;
-
-    private final ConcurrentHashMap<VaadinSession, Set<String>> sessionToUrls = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<VaadinSession, Set<String>> componentUrlsPerSessions = new ConcurrentHashMap<>();
     private final Set<String> appShellUrls = ConcurrentHashMap.newKeySet();
 
     private ActiveStyleSheetTracker() {
@@ -61,6 +60,10 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @return the tracker instance, never null
      */
     public static ActiveStyleSheetTracker get(VaadinService service) {
+        if (service.getDeploymentConfiguration().isProductionMode()) {
+            throw new IllegalStateException(
+                    "Cannot use ActiveStyleSheetTracker in production code");
+        }
         Objects.requireNonNull(service, "service cannot be null");
         VaadinContext context = service.getContext();
         return context.getAttribute(ActiveStyleSheetTracker.class,
@@ -76,6 +79,10 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @return the tracker instance, never null
      */
     public static ActiveStyleSheetTracker get(VaadinContext context) {
+        if (ApplicationConfiguration.get(context).isProductionMode()) {
+            throw new IllegalStateException(
+                    "Cannot use ActiveStyleSheetTracker in production code");
+        }
         Objects.requireNonNull(context, "context cannot be null");
         return context.getAttribute(ActiveStyleSheetTracker.class,
                 ActiveStyleSheetTracker::new);
@@ -89,13 +96,12 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @param url
      *            the stylesheet URL (as passed to addStyleSheet)
      */
-    public void registerAdded(VaadinSession session, String url) {
+    public void trackAddForComponent(VaadinSession session, String url) {
         if (session == null || url == null || url.isBlank()) {
             return;
         }
-        sessionToUrls
-                .computeIfAbsent(session, s -> ConcurrentHashMap.newKeySet())
-                .add(url);
+        componentUrlsPerSessions.computeIfAbsent(session,
+                ignored -> ConcurrentHashMap.newKeySet()).add(url);
     }
 
     /**
@@ -107,15 +113,15 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @param url
      *            the stylesheet URL
      */
-    public void registerRemoved(VaadinSession session, String url) {
+    public void trackRemoveForComponent(VaadinSession session, String url) {
         if (session == null || url == null || url.isBlank()) {
             return;
         }
-        Set<String> urls = sessionToUrls.get(session);
+        Set<String> urls = componentUrlsPerSessions.get(session);
         if (urls != null) {
             urls.remove(url);
             if (urls.isEmpty()) {
-                sessionToUrls.remove(session);
+                componentUrlsPerSessions.remove(session);
             }
         }
     }
@@ -126,7 +132,7 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @param urls
      *            the new set of app shell stylesheet URLs
      */
-    public void setAppShellUrls(Collection<String> urls) {
+    public void trackForAppShell(Collection<String> urls) {
         appShellUrls.clear();
         if (urls != null) {
             appShellUrls.addAll(urls);
@@ -142,30 +148,7 @@ public final class ActiveStyleSheetTracker implements Serializable {
     public Set<String> getActiveUrls() {
         Set<String> all = ConcurrentHashMap.newKeySet();
         all.addAll(appShellUrls);
-        sessionToUrls.values().forEach(all::addAll);
+        componentUrlsPerSessions.values().forEach(all::addAll);
         return all;
-    }
-
-    /**
-     * Returns active stylesheet URLs for the given session, merged with
-     * AppShell URLs.
-     *
-     * @param session
-     *            the session
-     * @return a new set of active stylesheet URLs for the session
-     */
-    public Set<String> getActiveUrls(VaadinSession session) {
-        if (session == null) {
-            return Collections.unmodifiableSet(appShellUrls);
-        }
-        Set<String> urls = sessionToUrls.get(session);
-        if (urls == null || urls.isEmpty()) {
-            return Collections.unmodifiableSet(appShellUrls);
-        }
-        return urls.stream().collect(
-                Collectors.collectingAndThen(Collectors.toSet(), set -> {
-                    set.addAll(appShellUrls);
-                    return set;
-                }));
     }
 }

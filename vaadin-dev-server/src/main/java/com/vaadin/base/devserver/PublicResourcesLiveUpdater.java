@@ -109,6 +109,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 return;
             }
             if (!file.getName().endsWith(".css")) {
+                liveReload.reload();
                 return;
             }
             try {
@@ -136,11 +137,12 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 }
             } catch (Exception e) {
                 getLogger().error(
-                        "Unable to perform hot update for CSS change under root {}",
+                        "Unable to perform hot update for CSS change under root {}, fall back to page reload",
                         root, e);
                 try {
                     liveReload.reload();
                 } catch (Exception ignore) {
+                    getLogger().error("Failed to reload resource changes", e);
                 }
             }
         }, root);

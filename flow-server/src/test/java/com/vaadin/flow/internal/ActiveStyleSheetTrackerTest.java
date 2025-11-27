@@ -47,25 +47,19 @@ public class ActiveStyleSheetTrackerTest {
 
         // Start with empty
         assertTrue(tracker.getActiveUrls().isEmpty());
-        assertTrue(tracker.getActiveUrls(session).isEmpty());
 
         // Set AppShell URLs
-        tracker.setAppShellUrls(Set.of("context://css/app.css"));
+        tracker.trackForAppShell(Set.of("context://css/app.css"));
         assertEquals(Set.of("context://css/app.css"), tracker.getActiveUrls());
-        assertEquals(Set.of("context://css/app.css"),
-                tracker.getActiveUrls(session));
 
         // Register session-specific URL
-        tracker.registerAdded(session, "context://css/view.css");
-        assertEquals(Set.of("context://css/app.css", "context://css/view.css"),
-                tracker.getActiveUrls(session));
+        tracker.trackAddForComponent(session, "context://css/view.css");
+
         // All active contains both (includes app shell + session)
         assertTrue(tracker.getActiveUrls().contains("context://css/app.css"));
         assertTrue(tracker.getActiveUrls().contains("context://css/view.css"));
 
         // Remove session URL
-        tracker.registerRemoved(session, "context://css/view.css");
-        assertEquals(Set.of("context://css/app.css"),
-                tracker.getActiveUrls(session));
+        tracker.trackRemoveForComponent(session, "context://css/view.css");
     }
 }

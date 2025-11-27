@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,6 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -105,12 +106,9 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                 .getShell();
 
         if (appShellClass != null) {
-            Set<String> urls = getStyleSheetUrls(appShellClass);
-            appShellStylesheets.put(appShellClass.getName(), urls);
-            // Keep tracker in sync with AppShell stylesheets
-            ActiveStyleSheetTracker.get(vaadinService)
-                    .setAppShellUrls(appShellStylesheets.values().stream()
-                            .flatMap(Set::stream).collect(Collectors.toSet()));
+            appShellStylesheets.put(appShellClass.getName(),
+                    getStyleSheetUrls(appShellClass));
+            trackAppShellUrls(vaadinService);
         }
     }
 
@@ -121,10 +119,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                 .filter(AppShellConfigurator.class::isAssignableFrom)
                 .forEach(clazz -> appShellStylesheets.put(clazz.getName(),
                         getStyleSheetUrls(clazz)));
-        // Sync tracker with latest AppShell stylesheets
-        ActiveStyleSheetTracker.get(event.getService())
-                .setAppShellUrls(appShellStylesheets.values().stream()
-                        .flatMap(Set::stream).collect(Collectors.toSet()));
+        trackAppShellUrls(event.getService());
     }
 
     @Override
@@ -257,13 +252,9 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
         updateUIs(event, clazz, addedStylesheets, removedStylesheets, registry);
 
-        // Immediately sync AppShell URLs to tracker so a browser refresh
-        // reflects the change
         Set<String> currentUrls = getStyleSheetUrls(clazz);
         appShellStylesheets.put(clazz.getName(), currentUrls);
-        ActiveStyleSheetTracker.get(event.getVaadinService())
-                .setAppShellUrls(appShellStylesheets.values().stream()
-                        .flatMap(Set::stream).collect(Collectors.toSet()));
+        trackAppShellUrls(event.getVaadinService());
     }
 
     private void handleComponentChange(HotswapClassSessionEvent event,
@@ -307,15 +298,14 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                             // Track removal for this session
                             ActiveStyleSheetTracker
                                     .get(event.getVaadinService())
-                                    .registerRemoved(event.getVaadinSession(),
-                                            url);
-                            // Also notify client to remove any inline style tag
-                            // pushed earlier
-                            String normalized = normalizePublicStylesheetUrl(
-                                    url);
+                                    .trackRemoveForComponent(
+                                            event.getVaadinSession(), url);
+                            String normalized = normalizeStylesheetUrl(url);
                             if (normalized != null) {
                                 event.updateClientResource(
-                                        "context://" + normalized, "");
+                                        ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                                                + normalized,
+                                        "");
                             }
                             event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
                         }
@@ -327,26 +317,27 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                                     // Track removal for this session
                                     ActiveStyleSheetTracker
                                             .get(event.getVaadinService())
-                                            .registerRemoved(
+                                            .trackRemoveForComponent(
                                                     event.getVaadinSession(),
                                                     url);
                                     // Also notify client to remove any inline
                                     // style tag pushed earlier
-                                    String normalized = normalizePublicStylesheetUrl(
+                                    String normalized = normalizeStylesheetUrl(
                                             url);
                                     if (normalized != null) {
                                         event.updateClientResource(
-                                                "context://" + normalized, "");
+                                                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                                                        + normalized,
+                                                "");
                                     }
                                     event.triggerUpdate(ui,
                                             UIUpdateStrategy.REFRESH);
                                 });
                     }
-                    // Remove any bootstrap-inserted link (added by
-                    // AppShellRegistry merge)
-                    ui.getInternals().removeStyleSheet("appShell-" + url);
                     if (isAppShell) {
-                        // Keep explicit handling for AppShell for clarity
+                        // Remove link tag added to head during page bootstrap
+                        // Sends removal for stylesheet added by
+                        // AppShellRegistry
                         ui.getInternals().removeStyleSheet("appShell-" + url);
                         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
                     }
@@ -362,17 +353,18 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                                 .getDependencyList().getDependencyByUrl(url,
                                         Dependency.Type.STYLESHEET);
                         registry.addRegistration(clazz, dependency);
-                        // Track addition for this session
                         ActiveStyleSheetTracker.get(event.getVaadinService())
-                                .registerAdded(event.getVaadinSession(), url);
+                                .trackAddForComponent(event.getVaadinSession(),
+                                        url);
                         // Immediately push bundled CSS content for the added
                         // URL so client applies it without link reload
-                        String normalized = normalizePublicStylesheetUrl(url);
+                        String normalized = normalizeStylesheetUrl(url);
                         if (normalized != null) {
                             tryBundlePublicStylesheet(event, normalized)
                                     .ifPresent(content -> event
                                             .updateClientResource(
-                                                    "context://" + normalized,
+                                                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                                                            + normalized,
                                                     content));
                         }
                         event.triggerUpdate(ui, UIUpdateStrategy.REFRESH);
@@ -390,13 +382,13 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
     @Override
     public void onResourcesChange(HotswapResourceEvent event) {
-        // Moved: CSS resource changes in public resource folders are now
-        // handled by
-        // a dedicated source-level watcher (PublicResourcesLiveUpdater) to
-        // improve
-        // reliability and speed. Intentionally do nothing here to avoid
-        // duplicate
-        // updates; @StyleSheet annotation changes are still handled elsewhere.
+        // no-op: changes in CSS files are handled by a dedicated file watcher
+    }
+
+    private void trackAppShellUrls(VaadinService vaadinService) {
+        ActiveStyleSheetTracker.get(vaadinService)
+                .trackForAppShell(appShellStylesheets.values().stream()
+                        .flatMap(Set::stream).collect(Collectors.toSet()));
     }
 
     private boolean isComponentInUse(UI ui, Class<?> componentClass) {
@@ -523,33 +515,14 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         }
     }
 
-    // --- Helpers for step 6: initial sync for @StyleSheet add/remove ---
-    private static String normalizePublicStylesheetUrl(String url) {
+    private static String normalizeStylesheetUrl(String url) {
         if (url == null || url.isBlank()) {
             return null;
         }
-        String u = url.trim();
-        if (u.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-            u = u.substring(
-                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
+        if (url.startsWith("/")) {
+            url = url.substring(1);
         }
-        int q = u.indexOf('?');
-        if (q >= 0) {
-            u = u.substring(0, q);
-        }
-        int h = u.indexOf('#');
-        if (h >= 0) {
-            u = u.substring(0, h);
-        }
-        if (u.startsWith("/")) {
-            u = u.substring(1);
-        }
-        // Normalize separators and leading ./
-        u = FrontendUtils.getUnixPath(new File(u).toPath());
-        if (u.startsWith("./")) {
-            u = u.substring(2);
-        }
-        return u.isEmpty() ? null : u;
+        return url;
     }
 
     private Optional<String> tryBundlePublicStylesheet(
@@ -563,29 +536,24 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
             if (projectFolder == null) {
                 return Optional.empty();
             }
-            List<File> roots = List.of(
-                    new File(projectFolder,
-                            "src/main/resources/META-INF/resources"),
-                    new File(projectFolder, "src/main/resources/resources"),
-                    new File(projectFolder, "src/main/resources/static"),
-                    new File(projectFolder, "src/main/resources/public"),
-                    new File(projectFolder, "src/main/webapp"));
-            for (File root : roots) {
-                if (!root.exists() || !root.isDirectory()) {
-                    continue;
-                }
-                File entry = new File(root, normalizedPath);
-                if (entry.exists() && entry.isFile()) {
-                    try {
-                        String bundled = CssBundler.inlineImports(
-                                entry.getParentFile(), entry, null);
-                        return Optional.ofNullable(bundled);
-                    } catch (IOException ioe) {
-                        LOGGER.debug(
-                                "Failed to inline CSS imports for {} in root {}",
-                                entry, root, ioe);
-                        return Optional.empty();
-                    }
+            File resourceFolder = config.getJavaResourceFolder();
+            Collection<File> stylesheets = Stream.concat(Stream
+                    .of("META-INF/resources", "resources", "static", "public")
+                    .map(location -> new File(resourceFolder, location)),
+                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    .filter(root -> root.exists() && root.isDirectory())
+                    .map(root -> new File(root, normalizedPath))
+                    .filter(File::exists).filter(File::isFile).toList();
+
+            for (File stylesheet : stylesheets) {
+                try {
+                    String bundled = CssBundler.inlineImports(
+                            stylesheet.getParentFile(), stylesheet, null);
+                    return Optional.ofNullable(bundled);
+                } catch (IOException ioe) {
+                    LOGGER.debug("Failed to inline CSS imports for {}",
+                            stylesheet, ioe);
+                    return Optional.empty();
                 }
             }
         } catch (Exception e) {

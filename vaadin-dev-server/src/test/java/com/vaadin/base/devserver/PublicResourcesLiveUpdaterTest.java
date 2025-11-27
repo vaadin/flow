@@ -103,7 +103,7 @@ public class PublicResourcesLiveUpdaterTest {
 
         // Register active stylesheet URL so updater knows what to rebundle
         ActiveStyleSheetTracker.get(context)
-                .setAppShellUrls(Set.of("context://main.css"));
+                .trackForAppShell(Set.of("context://main.css"));
 
         // Start the updater watching the public root
 
@@ -174,7 +174,7 @@ public class PublicResourcesLiveUpdaterTest {
 
         // Register two active stylesheet URLs
         ActiveStyleSheetTracker.get(context)
-                .setAppShellUrls(Set.of("context://a.css", "context://b.css"));
+                .trackForAppShell(Set.of("context://a.css", "context://b.css"));
 
         try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
                 List.of(publicRoot.getAbsolutePath()), context)) {
