@@ -903,8 +903,10 @@ public class FrontendToolsTest {
 
             System.out.println("\nConfiguration:");
             System.out.println("  Base directory: " + baseDir);
-            System.out.println("  Minimum supported version: "
-                    + FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion());
+            System.out.println("  Supported version range: "
+                    + FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion()
+                    + " - " + FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION
+                    + ".x.x");
             System.out.println(
                     "  Preferred version (to install if needed): "
                             + preferredVersion);

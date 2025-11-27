@@ -164,6 +164,17 @@ class NodeResolver implements java.io.Serializable {
                 return null;
             }
 
+            // Check that major version is within supported range
+            if (installedNodeVersion
+                    .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
+                getLogger().info(
+                        "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
+                        installedNodeVersion.getMajorVersion(),
+                        FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION,
+                        alternativeDir);
+                return null;
+            }
+
             // Found suitable global node - now get npm information
             String npmCliScript = getGlobalNpmCliScript(nodeExecutable);
             if (npmCliScript == null) {
@@ -380,6 +391,16 @@ class NodeResolver implements java.io.Serializable {
                             "Skipping {} - older than minimum supported {}",
                             versionString, FrontendTools.SUPPORTED_NODE_VERSION
                                     .getFullVersion());
+                    continue;
+                }
+
+                // Skip versions with major version higher than maximum supported
+                if (version
+                        .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
+                    getLogger().debug(
+                            "Skipping {} - major version {} is newer than maximum supported {}",
+                            versionString, version.getMajorVersion(),
+                            FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION);
                     continue;
                 }
 

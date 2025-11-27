@@ -108,6 +108,11 @@ public class FrontendTools {
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
+    /**
+     * Maximum supported Node.js major version. Versions with a higher major
+     * version are not tested and may not be compatible.
+     */
+    public static final int MAX_SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
     private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
