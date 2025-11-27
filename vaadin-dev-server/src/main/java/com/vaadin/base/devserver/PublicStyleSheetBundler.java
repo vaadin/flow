@@ -18,7 +18,6 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -26,7 +25,6 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -62,26 +60,20 @@ public final class PublicStyleSheetBundler {
      * Creates a new bundler instance configured for the current project
      * structure.
      *
-     * @param context
-     *            the current Vaadin context
      * @param config
      *            the application configuration
      * @return a configured {@link PublicStyleSheetBundler}
      */
-    public static PublicStyleSheetBundler create(VaadinContext context,
+    public static PublicStyleSheetBundler create(
             ApplicationConfiguration config) {
         Objects.requireNonNull(config, "config cannot be null");
         File projectFolder = config.getProjectFolder();
-        if (projectFolder == null) {
-            return new PublicStyleSheetBundler(Collections.emptyList());
-        }
+        File resourceFolder = config.getJavaResourceFolder();
         List<File> roots = new ArrayList<>();
-        addIfDir(roots, new File(projectFolder,
-                "src/main/resources/META-INF/resources"));
-        addIfDir(roots,
-                new File(projectFolder, "src/main/resources/resources"));
-        addIfDir(roots, new File(projectFolder, "src/main/resources/static"));
-        addIfDir(roots, new File(projectFolder, "src/main/resources/public"));
+        addIfDir(roots, new File(resourceFolder, "META-INF/resources"));
+        addIfDir(roots, new File(resourceFolder, "resources"));
+        addIfDir(roots, new File(resourceFolder, "static"));
+        addIfDir(roots, new File(resourceFolder, "public"));
         addIfDir(roots, new File(projectFolder, "src/main/webapp"));
         return new PublicStyleSheetBundler(roots);
     }
@@ -112,7 +104,6 @@ public final class PublicStyleSheetBundler {
             File entry = new File(root, normalized);
             if (entry.exists() && entry.isFile()) {
                 try {
-                    // No themeJson for public stylesheets
                     String bundled = CssBundler
                             .inlineImports(entry.getParentFile(), entry, null);
                     return Optional.ofNullable(bundled);
@@ -132,29 +123,20 @@ public final class PublicStyleSheetBundler {
      * path under the servlet context.
      */
     public static String normalizeUrl(String url) {
-        String u = url.trim();
-        if (u.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
-            u = u.substring(
+        url = url.trim();
+        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+            url = url.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
         }
-        // Remove possible query/hash suffixes just in case
-        int q = u.indexOf('?');
-        if (q >= 0) {
-            u = u.substring(0, q);
-        }
-        int h = u.indexOf('#');
-        if (h >= 0) {
-            u = u.substring(0, h);
-        }
-        if (u.startsWith("/")) {
-            u = u.substring(1);
+        if (url.startsWith("/")) {
+            url = url.substring(1);
         }
         // Normalize separators
-        u = FrontendUtils.getUnixPath(new File(u).toPath());
-        if (u.startsWith("./")) {
-            u = u.substring(2);
+        url = FrontendUtils.getUnixPath(new File(url).toPath());
+        if (url.startsWith("./")) {
+            url = url.substring(2);
         }
-        return u;
+        return url;
     }
 
     private static Logger getLogger() {

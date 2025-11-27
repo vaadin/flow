@@ -80,7 +80,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }
         // Prepare bundler using current application configuration
         ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        this.bundler = PublicStyleSheetBundler.create(context, config);
+        this.bundler = PublicStyleSheetBundler.create(config);
 
         for (String root : roots) {
             File rootLocation = new File(root);

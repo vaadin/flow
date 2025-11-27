@@ -62,8 +62,8 @@ public class PublicStyleSheetBundlerTest {
         Mockito.when(config.getProjectFolder()).thenReturn(project);
 
         VaadinContext ctx = Mockito.mock(VaadinContext.class);
-        PublicStyleSheetBundler bundler = PublicStyleSheetBundler.create(ctx,
-                config);
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .create(config);
 
         // Act
         Optional<String> bundled = bundler.bundle("/main.css");
@@ -98,8 +98,8 @@ public class PublicStyleSheetBundlerTest {
         Mockito.when(config.getProjectFolder()).thenReturn(project);
 
         VaadinContext ctx = Mockito.mock(VaadinContext.class);
-        PublicStyleSheetBundler bundler = PublicStyleSheetBundler.create(ctx,
-                config);
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .create(config);
 
         Optional<String> bundled = bundler.bundle("context://main.css");
         assertTrue(bundled.isPresent());

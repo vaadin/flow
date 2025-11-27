@@ -696,9 +696,9 @@ export class VaadinDevTools extends LitElement {
         // remove inlined stylesheets or initial links with the given path
         const styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
         if (styleTag) {
-            styleTag.remove();
+          styleTag.remove();
         } else {
-            this.removeOldLinks(path);
+          this.removeOldLinks(path);
         }
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       }

@@ -50,6 +50,7 @@ import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.CssBundler;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -110,6 +111,20 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                     getStyleSheetUrls(appShellClass));
             trackAppShellUrls(vaadinService);
         }
+
+        vaadinService.addUIInitListener(uiInitEvent -> {
+            UI ui = uiInitEvent.getUI();
+            VaadinSession session = ui.getSession();
+            ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
+                    .get(vaadinService);
+            ui.addAfterNavigationListener(navigationEvent -> {
+                UI newUi = navigationEvent.getLocationChangeEvent().getUI();
+                Set<String> allUrls = new LinkedHashSet<>();
+                lookupUrlsForComponents(newUi, allUrls, vaadinService);
+                allUrls.forEach(
+                        url -> tracker.trackAddForComponent(session, url));
+            });
+        });
     }
 
     @Override
@@ -519,8 +534,18 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         if (url == null || url.isBlank()) {
             return null;
         }
+        url = url.trim();
+        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+            url = url.substring(
+                    ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
+        }
         if (url.startsWith("/")) {
             url = url.substring(1);
+        }
+        // Normalize separators
+        url = FrontendUtils.getUnixPath(new File(url).toPath());
+        if (url.startsWith("./")) {
+            url = url.substring(2);
         }
         return url;
     }
@@ -561,5 +586,17 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                     normalizedPath, e);
         }
         return Optional.empty();
+    }
+
+    private void lookupUrlsForComponents(Component root, Set<String> allUrls,
+            VaadinService vaadinService) {
+        root.getChildren().forEach(child -> {
+            if (child.getClass().isAnnotationPresent(StyleSheet.class)) {
+                ComponentUtil.getDependencies(vaadinService, child.getClass())
+                        .getStyleSheets().stream().map(StyleSheet::value)
+                        .forEach(allUrls::add);
+            }
+            lookupUrlsForComponents(child, allUrls, vaadinService);
+        });
     }
 }
