@@ -870,6 +870,10 @@ public class FrontendToolsTest {
      * Manual testing utility to demonstrate which Node.js installation will be
      * used.
      * <p>
+     * The resolution logic uses any installed Node.js >= minimum supported
+     * version (v24.0.0). If no suitable installation exists, it installs the
+     * preferred version specified by -DnodeVersion.
+     * <p>
      * Usage examples:
      * <ul>
      * <li>Test with global node: {@code mvn exec:java
@@ -877,8 +881,8 @@ public class FrontendToolsTest {
      * -Dexec.classpathScope=test}</li>
      * <li>Test forcing alternative: {@code mvn exec:java ...
      * -Dalternative=true}</li>
-     * <li>Test with custom version: {@code mvn exec:java ...
-     * -DnodeVersion=v20.0.0}</li>
+     * <li>Test with custom preferred version: {@code mvn exec:java ...
+     * -DnodeVersion=v24.5.0}</li>
      * </ul>
      *
      * @param args
@@ -892,14 +896,18 @@ public class FrontendToolsTest {
         try {
             // Read configuration from system properties
             boolean forceAlternative = Boolean.getBoolean("alternative");
-            String nodeVersion = System.getProperty("nodeVersion",
+            String preferredVersion = System.getProperty("nodeVersion",
                     FrontendTools.DEFAULT_NODE_VERSION);
             String baseDir = System.getProperty("baseDir",
                     System.getProperty("user.dir"));
 
             System.out.println("\nConfiguration:");
             System.out.println("  Base directory: " + baseDir);
-            System.out.println("  Node version: " + nodeVersion);
+            System.out.println("  Minimum supported version: "
+                    + FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion());
+            System.out.println(
+                    "  Preferred version (to install if needed): "
+                            + preferredVersion);
             System.out.println("  Force alternative node: " + forceAlternative);
             System.out.println();
 
@@ -907,19 +915,19 @@ public class FrontendToolsTest {
             FrontendToolsSettings settings = new FrontendToolsSettings(baseDir,
                     () -> FrontendUtils.getVaadinHomeDirectory()
                             .getAbsolutePath());
-            settings.setNodeVersion(nodeVersion);
+            settings.setNodeVersion(preferredVersion);
             settings.setForceAlternativeNode(forceAlternative);
 
             FrontendTools tools = new FrontendTools(settings);
 
             // Get resolved node information
             String nodeExecutable = tools.getNodeExecutable();
-            String nodeVersionActual = tools.getNodeVersion().getFullVersion();
+            String actualVersionUsed = tools.getNodeVersion().getFullVersion();
             String npmVersion = tools.getNpmVersion().getFullVersion();
 
             System.out.println("Resolved Node.js installation:");
             System.out.println("  Node executable: " + nodeExecutable);
-            System.out.println("  Node version: " + nodeVersionActual);
+            System.out.println("  Actual version used: " + actualVersionUsed);
             System.out.println("  npm version: " + npmVersion);
 
             // Check if using global or alternative installation
