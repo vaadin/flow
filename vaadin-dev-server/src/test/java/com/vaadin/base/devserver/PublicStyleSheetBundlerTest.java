@@ -26,7 +26,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
