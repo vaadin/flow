@@ -89,6 +89,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
+            TaskProcessStylesheetCss.class,
             TaskCleanFrontendFiles.class,
             TaskRemoveOldFrontendGeneratedFiles.class
         ));
@@ -144,6 +145,8 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateCommercialBanner(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
+                // Process @StyleSheet CSS files (minify and inline @imports)
+                commands.add(new TaskProcessStylesheetCss(options));
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
                 // able to

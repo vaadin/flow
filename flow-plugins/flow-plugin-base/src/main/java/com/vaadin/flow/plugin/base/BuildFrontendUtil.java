@@ -374,7 +374,9 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled())
+                    .withMetaInfResourcesDirectory(
+                            adapter.resourcesOutputDirectory());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

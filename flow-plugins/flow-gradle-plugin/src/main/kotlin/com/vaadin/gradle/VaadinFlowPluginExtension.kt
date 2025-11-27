@@ -63,6 +63,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendOutputDirectory: Property<File>
 
     /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     * Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/resources/`.
+     */
+    public abstract val resourcesOutputDirectory: Property<File>
+
+    /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
      */
@@ -399,6 +407,17 @@ public class PluginEffectiveConfiguration(
                 )
         )
 
+
+    public val resourcesOutputDirectory: Provider<File> =
+        extension.resourcesOutputDirectory.convention(
+            sourceSetName.map {
+                File(
+                    project.getBuildResourcesDir(it),
+                    Constants.META_INF + "resources/"
+                )
+            }
+        )
+
     public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
 
@@ -650,6 +669,7 @@ public class PluginEffectiveConfiguration(
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
             "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
+            "resourcesOutputDirectory=${resourcesOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +
