@@ -36,7 +36,6 @@ import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
-import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -335,7 +334,6 @@ public class FrontendTools {
             return activeNodeInstallation;
         }
     }
-
 
     /**
      * Locate <code>npm</code> executable.

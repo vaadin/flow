@@ -228,8 +228,7 @@ class NodeResolver implements java.io.Serializable {
         String fallbackVersion = findCompatibleInstalledVersion(
                 alternativeDirFile);
         if (fallbackVersion != null) {
-            getLogger().debug(
-                    "Using existing Node {} instead of installing {}",
+            getLogger().debug("Using existing Node {} instead of installing {}",
                     fallbackVersion, nodeVersion);
             versionToUse = fallbackVersion;
             nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
@@ -253,8 +252,8 @@ class NodeResolver implements java.io.Serializable {
         }
     }
 
-    private ActiveNodeInstallation createActiveInstallation(
-            File nodeExecutable, String version, File installDir) {
+    private ActiveNodeInstallation createActiveInstallation(File nodeExecutable,
+            String version, File installDir) {
         String nodePath = nodeExecutable.exists()
                 ? nodeExecutable.getAbsolutePath()
                 : null;
@@ -360,12 +359,10 @@ class NodeResolver implements java.io.Serializable {
      * @return the File pointing to the node executable
      */
     private File getNodeExecutableForVersion(File installDir, String version) {
-        String versionedPath = "node-v" + (version.startsWith("v")
-                ? version.substring(1)
-                : version);
+        String versionedPath = "node-v"
+                + (version.startsWith("v") ? version.substring(1) : version);
         boolean isWindows = FrontendUtils.isWindows();
-        String nodeExecutable = isWindows
-                ? versionedPath + "\\node.exe"
+        String nodeExecutable = isWindows ? versionedPath + "\\node.exe"
                 : versionedPath + "/bin/node";
         return new File(installDir, nodeExecutable);
     }
@@ -380,9 +377,8 @@ class NodeResolver implements java.io.Serializable {
      * @return the absolute path to npm-cli.js, or null if not found
      */
     private String getNpmCliScriptPath(File installDir, String version) {
-        String versionedPath = "node-v" + (version.startsWith("v")
-                ? version.substring(1)
-                : version);
+        String versionedPath = "node-v"
+                + (version.startsWith("v") ? version.substring(1) : version);
         boolean isWindows = FrontendUtils.isWindows();
         String npmPath = isWindows
                 ? versionedPath + "\\node_modules\\npm\\bin\\npm-cli.js"

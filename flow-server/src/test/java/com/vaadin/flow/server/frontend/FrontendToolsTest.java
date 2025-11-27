@@ -37,7 +37,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -149,7 +148,6 @@ public class FrontendToolsTest {
                 updatedNodeVersion.getFullVersion());
     }
 
-
     @Test
     public void forceAlternativeDirectory_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
             throws FrontendUtils.UnknownVersionException {
@@ -217,8 +215,8 @@ public class FrontendToolsTest {
                 zipOutputStream.putNextEntry(
                         new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
                 zipOutputStream.closeEntry();
-                zipOutputStream.putNextEntry(
-                        new ZipEntry(prefix + "/node_modules/npm/bin/npm-cli.js"));
+                zipOutputStream.putNextEntry(new ZipEntry(
+                        prefix + "/node_modules/npm/bin/npm-cli.js"));
                 zipOutputStream.closeEntry();
             }
         } else {
@@ -241,7 +239,8 @@ public class FrontendToolsTest {
                         prefix + "/lib/node_modules/npm/bin/npm.cmd"));
                 o.closeArchiveEntry();
                 o.putArchiveEntry(o.createArchiveEntry(
-                        new File(prefix + "/lib/node_modules/npm/bin/npm-cli.js"),
+                        new File(prefix
+                                + "/lib/node_modules/npm/bin/npm-cli.js"),
                         prefix + "/lib/node_modules/npm/bin/npm-cli.js"));
                 o.closeArchiveEntry();
             }
@@ -754,7 +753,6 @@ public class FrontendToolsTest {
         // then
         Assert.assertTrue(accepted);
     }
-
 
     @Test
     public void getViteExecutable_returnsCorrectPath()

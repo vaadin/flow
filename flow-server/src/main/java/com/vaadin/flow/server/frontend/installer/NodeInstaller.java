@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.frontend.FileIOUtils;
-import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendVersion;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
@@ -227,7 +225,6 @@ public class NodeInstaller {
 
         }
     }
-
 
     private void installNode(InstallData data) throws InstallationException {
         try {
