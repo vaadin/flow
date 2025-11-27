@@ -35,10 +35,10 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  * Performs the following steps in order:
  * <ol>
  * <li>If forceAlternativeNode is true, skip to step 3</li>
- * <li>Try to find node in global PATH and verify it meets version
- * requirements</li>
+ * <li>Try to find and use node from global PATH if it meets version
+ * requirements and has npm available</li>
  * <li>If no suitable global node found, use NodeInstaller to resolve or install
- * node in alternative directory</li>
+ * node in alternative directory (~/.vaadin)</li>
  * </ol>
  * <p>
  * Once resolved, the result is cached in an {@link ActiveNodeInstallation}
@@ -121,14 +121,9 @@ class NodeResolver implements java.io.Serializable {
     ActiveNodeInstallation resolve() {
         // If forceAlternativeNode is set, skip global lookup
         if (!forceAlternativeNode) {
-            File globalNode = tryFindSuitableGlobalNode();
-            if (globalNode != null) {
-                // We found a suitable global node, but we can't cache it
-                // because we don't have reliable npm info without installing
-                // to alternative dir
-                getLogger().debug(
-                        "Found suitable global node at {}, but will use alternative dir for consistent npm access",
-                        globalNode);
+            ActiveNodeInstallation globalInstallation = tryUseGlobalNode();
+            if (globalInstallation != null) {
+                return globalInstallation;
             }
         }
 
@@ -137,11 +132,12 @@ class NodeResolver implements java.io.Serializable {
     }
 
     /**
-     * Tries to find a globally installed node that meets version requirements.
+     * Tries to use a globally installed node that meets version requirements.
      *
-     * @return the node executable file, or null if not found or unsuitable
+     * @return the active node installation, or null if global node not found or
+     *         unsuitable
      */
-    private File tryFindSuitableGlobalNode() {
+    private ActiveNodeInstallation tryUseGlobalNode() {
         String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
         File nodeExecutable = frontendToolsLocator.tryLocateTool(nodeCommand)
                 .orElse(null);
@@ -168,11 +164,63 @@ class NodeResolver implements java.io.Serializable {
                 return null;
             }
 
-            return nodeExecutable;
+            // Found suitable global node - now get npm information
+            String npmCliScript = getGlobalNpmCliScript(nodeExecutable);
+            if (npmCliScript == null) {
+                getLogger().debug(
+                        "npm-cli.js not found in global Node.js installation, will use alternative directory");
+                return null;
+            }
+
+            String npmVersion;
+            try {
+                npmVersion = FrontendUtils.getVersion("npm",
+                        List.of(nodeExecutable.getAbsolutePath(), npmCliScript,
+                                "--version"))
+                        .getFullVersion();
+            } catch (UnknownVersionException e) {
+                getLogger().debug(
+                        "Could not determine npm version from global installation",
+                        e);
+                npmVersion = "unknown";
+            }
+
+            getLogger().info("Using globally installed Node.js version {}",
+                    installedNodeVersion.getFullVersion());
+            return new ActiveNodeInstallation(nodeExecutable.getAbsolutePath(),
+                    installedNodeVersion.getFullVersion(), npmCliScript,
+                    npmVersion);
         } catch (UnknownVersionException e) {
             getLogger().error("Failed to get version for installed node.", e);
             return null;
         }
+    }
+
+    /**
+     * Tries to find npm-cli.js in a global Node.js installation.
+     *
+     * @param nodeExecutable
+     *            the global node executable
+     * @return path to npm-cli.js, or null if not found
+     */
+    private String getGlobalNpmCliScript(File nodeExecutable) {
+        // Global npm is typically installed alongside node
+        File nodeDir = nodeExecutable.getParentFile();
+        boolean isWindows = FrontendUtils.isWindows();
+
+        // Try common locations relative to node executable
+        String[] possiblePaths = isWindows
+                ? new String[] { "..\\node_modules\\npm\\bin\\npm-cli.js" }
+                : new String[] { "../lib/node_modules/npm/bin/npm-cli.js" };
+
+        for (String path : possiblePaths) {
+            File npmCliScript = new File(nodeDir, path);
+            if (npmCliScript.exists()) {
+                return npmCliScript.getAbsolutePath();
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -265,8 +313,16 @@ class NodeResolver implements java.io.Serializable {
 
         String npmCliScript = getNpmCliScriptPath(installDir, version);
         if (npmCliScript == null) {
+            String versionedPath = "node-v"
+                    + (version.startsWith("v") ? version.substring(1) : version);
+            boolean isWindows = FrontendUtils.isWindows();
+            String expectedNpmPath = isWindows
+                    ? versionedPath + "\\node_modules\\npm\\bin\\npm-cli.js"
+                    : versionedPath + "/lib/node_modules/npm/bin/npm-cli.js";
+            File expectedNpmFile = new File(installDir, expectedNpmPath);
             throw new IllegalStateException(
-                    "npm not found in node installation");
+                    "npm-cli.js not found at expected location: "
+                            + expectedNpmFile.getAbsolutePath());
         }
 
         String npmVersion;
