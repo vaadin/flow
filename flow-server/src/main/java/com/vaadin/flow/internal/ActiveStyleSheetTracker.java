@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
  * Tracks the set of all active stylesheets used by the running application
@@ -60,10 +59,6 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @return the tracker instance, never null
      */
     public static ActiveStyleSheetTracker get(VaadinService service) {
-        if (service.getDeploymentConfiguration().isProductionMode()) {
-            throw new IllegalStateException(
-                    "Cannot use ActiveStyleSheetTracker in production code");
-        }
         Objects.requireNonNull(service, "service cannot be null");
         VaadinContext context = service.getContext();
         return context.getAttribute(ActiveStyleSheetTracker.class,
@@ -79,10 +74,6 @@ public final class ActiveStyleSheetTracker implements Serializable {
      * @return the tracker instance, never null
      */
     public static ActiveStyleSheetTracker get(VaadinContext context) {
-        if (ApplicationConfiguration.get(context).isProductionMode()) {
-            throw new IllegalStateException(
-                    "Cannot use ActiveStyleSheetTracker in production code");
-        }
         Objects.requireNonNull(context, "context cannot be null");
         return context.getAttribute(ActiveStyleSheetTracker.class,
                 ActiveStyleSheetTracker::new);

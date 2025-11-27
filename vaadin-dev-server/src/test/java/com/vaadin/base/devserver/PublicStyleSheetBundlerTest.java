@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
@@ -60,8 +61,9 @@ public class PublicStyleSheetBundlerTest {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getProjectFolder()).thenReturn(project);
+        Mockito.when(config.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
 
-        VaadinContext ctx = Mockito.mock(VaadinContext.class);
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .create(config);
 
@@ -96,8 +98,9 @@ public class PublicStyleSheetBundlerTest {
         ApplicationConfiguration config = Mockito
                 .mock(ApplicationConfiguration.class);
         Mockito.when(config.getProjectFolder()).thenReturn(project);
+        Mockito.when(config.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
 
-        VaadinContext ctx = Mockito.mock(VaadinContext.class);
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .create(config);
 
@@ -107,6 +110,36 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(result.contains(".im{b:1;}"));
         assertTrue(result.contains(".m{c:2;}"));
         assertTrue(result.indexOf(".im{b:1;}") < result.indexOf(".m{c:2;}"));
+    }
+
+    @Test
+    public void normalize_contextProtocol_isStripped() {
+        assertEquals("css/app.css",
+                PublicStyleSheetBundler.normalizeUrl("context://css/app.css"));
+    }
+
+    @Test
+    public void normalize_leadingSlash_isRemoved() {
+        assertEquals("css/app.css",
+                PublicStyleSheetBundler.normalizeUrl("/css/app.css"));
+    }
+
+    @Test
+    public void normalize_relativeDotSlash_isRemoved() {
+        assertEquals("css/app.css",
+                PublicStyleSheetBundler.normalizeUrl("./css/app.css"));
+    }
+
+    @Test
+    public void normalize_queryAndHash_areRemoved() {
+        assertEquals("css/app.css", PublicStyleSheetBundler
+                .normalizeUrl("/css/app.css?v=123#hash"));
+    }
+
+    @Test
+    public void normalize_backslashes_areConverted() {
+        assertEquals("/css/app.css",
+                PublicStyleSheetBundler.normalizeUrl("\\css\\app.css"));
     }
 
     private static String normalizeWhitespace(String s) {

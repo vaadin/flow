@@ -69,12 +69,19 @@ public final class PublicStyleSheetBundler {
         Objects.requireNonNull(config, "config cannot be null");
         File projectFolder = config.getProjectFolder();
         File resourceFolder = config.getJavaResourceFolder();
+        if (resourceFolder == null && projectFolder != null) {
+            resourceFolder = new File(projectFolder, "src/main/resources");
+        }
         List<File> roots = new ArrayList<>();
-        addIfDir(roots, new File(resourceFolder, "META-INF/resources"));
-        addIfDir(roots, new File(resourceFolder, "resources"));
-        addIfDir(roots, new File(resourceFolder, "static"));
-        addIfDir(roots, new File(resourceFolder, "public"));
-        addIfDir(roots, new File(projectFolder, "src/main/webapp"));
+        if (resourceFolder != null) {
+            addIfDir(roots, new File(resourceFolder, "META-INF/resources"));
+            addIfDir(roots, new File(resourceFolder, "resources"));
+            addIfDir(roots, new File(resourceFolder, "static"));
+            addIfDir(roots, new File(resourceFolder, "public"));
+        }
+        if (projectFolder != null) {
+            addIfDir(roots, new File(projectFolder, "src/main/webapp"));
+        }
         return new PublicStyleSheetBundler(roots);
     }
 
@@ -127,6 +134,20 @@ public final class PublicStyleSheetBundler {
         if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
             url = url.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
+        }
+        // Strip query and hash parts if present
+        int q = url.indexOf('?');
+        int h = url.indexOf('#');
+        int cut = -1;
+        if (q >= 0 && h >= 0) {
+            cut = Math.min(q, h);
+        } else if (q >= 0) {
+            cut = q;
+        } else if (h >= 0) {
+            cut = h;
+        }
+        if (cut >= 0) {
+            url = url.substring(0, cut);
         }
         if (url.startsWith("/")) {
             url = url.substring(1);

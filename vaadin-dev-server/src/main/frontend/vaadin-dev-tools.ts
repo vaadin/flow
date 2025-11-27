@@ -5,7 +5,6 @@ import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
 import { preTrialStartFailed, updateLicenseDownloadStatus } from './pre-trial-splash-screen';
-import { updateStylesheetsReferencingResource } from './stylesheet-updater';
 
 /**
  * Plugin API for the dev tools window.
