@@ -535,7 +535,6 @@ public class VaadinServletContextInitializer
                                     <dependency>
                                         <groupId>com.vaadin</groupId>
                                         <artifactId>vaadin-dev</artifactId>
-                                        <optional>true</optional>
                                     </dependency>
 
                                 Gradle:

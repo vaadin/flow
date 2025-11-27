@@ -111,7 +111,6 @@ public class VaadinServletService extends VaadinService {
                                     <dependency>
                                         <groupId>com.vaadin</groupId>
                                         <artifactId>vaadin-dev</artifactId>
-                                        <optional>true</optional>
                                     </dependency>
 
                                 Gradle:

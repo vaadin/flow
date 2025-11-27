@@ -1572,7 +1572,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             <dependency>
                                 <groupId>com.vaadin</groupId>
                                 <artifactId>vaadin-dev</artifactId>
-                                <optional>true</optional>
                             </dependency>
 
                         Gradle:
