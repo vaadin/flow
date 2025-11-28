@@ -38,6 +38,29 @@ import org.slf4j.LoggerFactory;
 @Reflector.Cloneable
 public class FrontendScannerConfig {
 
+    /**
+     * Annotation scanner mode that determines which JARs are scanned for
+     * Vaadin annotations.
+     *
+     * @since 25.0
+     */
+    public enum AnnotationScannerMode {
+        /**
+         * Only scan JARs that have the Vaadin-Package-Version manifest
+         * attribute. This is the recommended mode for better performance.
+         * <p>
+         * Application classes (from the output directory) are always scanned
+         * regardless of this setting.
+         */
+        ADD_ON,
+
+        /**
+         * Scan all JARs in the classpath. This is the legacy behavior and the
+         * default in Vaadin 24.x for backward compatibility.
+         */
+        FULL
+    }
+
     private static final Logger LOGGER = LoggerFactory
             .getLogger(FrontendScannerConfig.class);
 
@@ -50,6 +73,8 @@ public class FrontendScannerConfig {
     private boolean enabled = true;
 
     private boolean includeOutputDirectory = true;
+
+    private AnnotationScannerMode scannerMode = AnnotationScannerMode.FULL;
 
     private final List<ArtifactMatcher> includes = new ArrayList<>();
 
@@ -113,6 +138,37 @@ public class FrontendScannerConfig {
      */
     public boolean isIncludeOutputDirectory() {
         return includeOutputDirectory;
+    }
+
+    /**
+     * Sets the annotation scanner mode.
+     * <p>
+     * The scanner mode determines which JARs are scanned for Vaadin
+     * annotations:
+     * <ul>
+     * <li>{@link AnnotationScannerMode#ADD_ON ADD_ON} - Only scan JARs with
+     * Vaadin-Package-Version manifest attribute (recommended for
+     * performance)</li>
+     * <li>{@link AnnotationScannerMode#FULL FULL} - Scan all JARs (legacy
+     * behavior, default)</li>
+     * </ul>
+     *
+     * @param scannerMode
+     *            the scanner mode to use, not {@literal null}
+     */
+    public void setScannerMode(AnnotationScannerMode scannerMode) {
+        this.scannerMode = Objects.requireNonNull(scannerMode,
+                "Scanner mode must not be null");
+    }
+
+    /**
+     * Gets the annotation scanner mode. Default is
+     * {@link AnnotationScannerMode#FULL FULL}.
+     *
+     * @return the scanner mode
+     */
+    public AnnotationScannerMode getScannerMode() {
+        return scannerMode;
     }
 
     /**
@@ -248,7 +304,8 @@ public class FrontendScannerConfig {
     public String toString() {
         return "FrontendScannerConfig { enabled=" + enabled
                 + ", includeOutputDirectory=" + includeOutputDirectory
-                + ", includes=" + includes + ", excludes=" + excludes + '}';
+                + ", scannerMode=" + scannerMode + ", includes=" + includes
+                + ", excludes=" + excludes + '}';
     }
 
     /**
