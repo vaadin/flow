@@ -16,7 +16,6 @@
 package com.vaadin.flow.server.streams;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,8 +52,8 @@ public record UploadResult(boolean success, VaadinResponse response,
      * @param reason
      *            the reason for rejection
      */
-    public record RejectedFile(String fileName, String reason)
-            implements Serializable {
+    public record RejectedFile(String fileName,
+            String reason) implements Serializable {
     }
 
     /**
@@ -122,76 +121,5 @@ public record UploadResult(boolean success, VaadinResponse response,
      */
     public boolean hasFiles() {
         return !acceptedFiles.isEmpty() || !rejectedFiles.isEmpty();
-    }
-
-    /**
-     * Builder class for constructing UploadResult instances with file tracking.
-     */
-    public static class Builder {
-        private final VaadinResponse response;
-        private final List<String> acceptedFiles = new ArrayList<>();
-        private final List<RejectedFile> rejectedFiles = new ArrayList<>();
-        private Exception exception;
-
-        /**
-         * Creates a new builder for the given response.
-         *
-         * @param response
-         *            the response object
-         */
-        public Builder(VaadinResponse response) {
-            this.response = response;
-        }
-
-        /**
-         * Adds an accepted file.
-         *
-         * @param fileName
-         *            the name of the accepted file
-         * @return this builder
-         */
-        public Builder addAccepted(String fileName) {
-            acceptedFiles.add(fileName);
-            return this;
-        }
-
-        /**
-         * Adds a rejected file.
-         *
-         * @param fileName
-         *            the name of the rejected file
-         * @param reason
-         *            the reason for rejection
-         * @return this builder
-         */
-        public Builder addRejected(String fileName, String reason) {
-            rejectedFiles.add(new RejectedFile(fileName, reason));
-            return this;
-        }
-
-        /**
-         * Sets an exception that occurred during upload.
-         *
-         * @param exception
-         *            the exception
-         * @return this builder
-         */
-        public Builder withException(Exception exception) {
-            this.exception = exception;
-            return this;
-        }
-
-        /**
-         * Builds the UploadResult.
-         *
-         * @return the constructed UploadResult
-         */
-        public UploadResult build() {
-            boolean success = !acceptedFiles.isEmpty() || rejectedFiles.isEmpty();
-            return new UploadResult(success, response, exception,
-                    Collections.unmodifiableList(new ArrayList<>(acceptedFiles)),
-                    Collections.unmodifiableList(
-                            new ArrayList<>(rejectedFiles)));
-        }
     }
 }

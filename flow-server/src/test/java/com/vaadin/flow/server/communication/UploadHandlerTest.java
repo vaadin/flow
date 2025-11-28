@@ -776,8 +776,7 @@ public class UploadHandlerTest {
     }
 
     @Test
-    public void xhrUpload_noRejection_returns200()
-            throws IOException {
+    public void xhrUpload_noRejection_returns200() throws IOException {
         UploadHandler handler = (event) -> {
             // Accept the file
         };
@@ -819,8 +818,8 @@ public class UploadHandlerTest {
                 "file1.png", 3));
         parts.add(createPart(createInputStream("two"), MULTIPART_CONTENT_TYPE,
                 "file2.zip", 3));
-        parts.add(createPart(createInputStream("three"),
-                MULTIPART_CONTENT_TYPE, "file3.png", 5));
+        parts.add(createPart(createInputStream("three"), MULTIPART_CONTENT_TYPE,
+                "file3.png", 5));
 
         Mockito.when(request.getParts()).thenReturn(parts);
 

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 
-import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.ObjectMapper;
@@ -178,17 +177,18 @@ public interface UploadHandler extends ElementRequestHandler {
     /**
      * JSON response structure for rejected files.
      */
-    record RejectedFilesResponse(
-            List<UploadResult.RejectedFile> rejected) implements
-            java.io.Serializable {
+    record RejectedFilesResponse(List<UploadResult.RejectedFile> rejected)
+            implements
+                java.io.Serializable {
     }
 
     /**
      * JSON response structure for mixed upload results.
      */
     record MixedUploadResponse(List<String> accepted,
-            List<UploadResult.RejectedFile> rejected) implements
-            java.io.Serializable {
+            List<UploadResult.RejectedFile> rejected)
+            implements
+                java.io.Serializable {
     }
 
     default void handleRequest(VaadinRequest request, VaadinResponse response,
