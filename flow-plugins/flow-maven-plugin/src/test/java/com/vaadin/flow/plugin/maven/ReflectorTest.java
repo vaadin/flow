@@ -463,20 +463,10 @@ public class ReflectorTest {
 
     private Artifact createArtifact(String groupId, String artifactId,
             String version, String scope, boolean addedToClasspath) {
-        return createArtifact(groupId, artifactId, version, scope, null,
-                addedToClasspath);
-    }
-
-    private Artifact createArtifact(String groupId, String artifactId,
-            String version, String scope, String optional,
-            boolean addedToClasspath) {
         DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
         artifactHandler.setAddedToClasspath(addedToClasspath);
         DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId,
                 version, scope, "jar", null, artifactHandler);
-        if ("true".equals(optional)) {
-            artifact.setOptional(true);
-        }
         artifact.setFile(
                 new File(String.format(FLAT_MAVEN_REPO_PATH + "%s-%s-%s.jar",
                         groupId, artifactId, version)));
