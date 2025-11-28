@@ -78,7 +78,6 @@ type DevToolsConf = {
   enable: boolean;
   url: string;
   contextRelativePath: string;
-  contextPath: string;
   backend?: string;
   liveReloadPort?: number;
   token?: string;
@@ -90,7 +89,7 @@ const hmrClient: any = import.meta.hot ? import.meta.hot.hmrClient : undefined;
 @customElement('vaadin-dev-tools')
 export class VaadinDevTools extends LitElement {
   unhandledMessages: ServerMessage[] = [];
-  conf: DevToolsConf = { enable: false, url: '', contextRelativePath: '', contextPath: '', liveReloadPort: -1 };
+  conf: DevToolsConf = { enable: false, url: '', contextRelativePath: '', liveReloadPort: -1 };
   bodyShadowRoot: ShadowRoot | null = null;
 
   static get styles() {
@@ -677,16 +676,9 @@ export class VaadinDevTools extends LitElement {
     };
     const onUpdate = (path: string, content: string) => {
       const contextPathProtocol = 'context://';
-      let linksPath = path;
+      const pathWithNoProtocol = path.substring(contextPathProtocol.length);
       if (path.startsWith(contextPathProtocol)) {
-        // 'context://css/styles.css' -> './../css/styles.css'
-        path = this.conf.contextRelativePath + path.substring(contextPathProtocol.length);
-        let relativeLinkPath = linksPath.substring(contextPathProtocol.length);
-        if (!relativeLinkPath.startsWith('/')) {
-          relativeLinkPath = '/' + relativeLinkPath;
-        }
-        // 'context://css/styles.css' -> '/vaadin/css/styles.css' (context-path='/vaadin')
-        linksPath = this.conf.contextPath + relativeLinkPath;
+        path = this.conf.contextRelativePath + pathWithNoProtocol;
       }
 
       if (content) {
@@ -696,7 +688,7 @@ export class VaadinDevTools extends LitElement {
           styleTag = document.createElement('style');
           styleTag.setAttribute('data-file-path', path);
           document.head.appendChild(styleTag);
-          this.removeOldLinks(linksPath);
+          this.removeOldLinks(pathWithNoProtocol);
         }
         styleTag.textContent = content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
@@ -706,7 +698,7 @@ export class VaadinDevTools extends LitElement {
         if (styleTag) {
           styleTag.remove();
         } else {
-          this.removeOldLinks(linksPath);
+          this.removeOldLinks(pathWithNoProtocol);
         }
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       }
@@ -747,9 +739,8 @@ export class VaadinDevTools extends LitElement {
     // removes initially added links that are outdated after hot-reload and replaced by inlined styles
     const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
     links.forEach((link) => {
-      if (!link.href) return;
-      // Compare by substring match; a path may be relative while link.href is absolute
-      if (link.href.includes(path)) {
+      const filePath = link.getAttribute('data-file-path');
+      if (filePath && filePath.includes(path)) {
         link.remove();
       }
     });
