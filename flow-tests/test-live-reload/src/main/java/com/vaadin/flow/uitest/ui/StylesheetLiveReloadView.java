@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -72,16 +73,18 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
     private String getContentForFile(String cssFile) {
         DeploymentConfiguration configuration = VaadinService.getCurrent()
                 .getDeploymentConfiguration();
-        String resourceFolder = configuration.getBuildFolder() + "/classes";
-        Path root = Paths.get(resourceFolder, "META-INF", "resources");
+        File projectFolder = configuration.getProjectFolder();
+        String outputFolder = configuration.getBuildFolder() + "/classes";
+        Path root = Paths.get(projectFolder.getAbsolutePath(), outputFolder,
+                "META-INF", "resources");
         Path filePath = root.resolve(cssFile).normalize();
         if (!Files.exists(filePath)) {
             throw new IllegalArgumentException("File not found: " + filePath);
         }
 
         try {
-            return CssBundler.inlineImports(filePath.toFile().getParentFile(),
-                    filePath.toFile(), null);
+            return CssBundler.inlineImportsForPublicResources(
+                    filePath.toFile().getParentFile(), filePath.toFile());
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to inline CSS content", e);
         }
