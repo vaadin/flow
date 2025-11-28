@@ -48,6 +48,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
@@ -64,6 +65,7 @@ import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
@@ -1562,6 +1564,26 @@ public class FrontendUtils {
     public static boolean isTailwindCssEnabled(Options options) {
         return options.getFeatureFlags()
                 .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+    }
+
+    /**
+     * Checks if integration with Tailwind CSS framework is enabled in the
+     * application configuration.
+     *
+     * @param configuration
+     *            application configuration
+     *
+     * @return true if Tailwind CSS integration is enabled, false otherwise
+     */
+    public static boolean isTailwindCssEnabled(
+            AbstractConfiguration configuration) {
+        if (!(configuration instanceof ApplicationConfiguration)) {
+            return false;
+        }
+
+        var context = ((ApplicationConfiguration) configuration).getContext();
+        var featureFlags = FeatureFlags.get(context);
+        return featureFlags.isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
     }
 
     /**
