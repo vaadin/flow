@@ -229,6 +229,14 @@ public class FrontendScannerConfig {
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "vaadin-dev"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "flow-archive-extractor"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "ui-tests"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external", "gentyref"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external.atmosphere", "atmosphere-runtime"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "vaadin-dev-server"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "vaadin-dev-bundle"));
