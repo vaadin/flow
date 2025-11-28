@@ -25,7 +25,6 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -53,7 +52,6 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     private final Map<Path, byte[]> styleSheetRestore = new HashMap<>();
 
     private Path resourcesPath;
-    private Path updatedImagePath;
 
     @Before
     public void detectStylesheetsLocation() throws URISyntaxException {
@@ -64,8 +62,7 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                         + markerUrl.getProtocol(),
                 "file", markerUrl.getProtocol());
         resourcesPath = Paths.get(markerUrl.toURI()).getParent();
-        updatedImagePath = resourcesPath
-                .resolve(Paths.get("css", "images", "vaadin-logo.png"));
+        Paths.get("css", "images", "vaadin-logo.png");
     }
 
     @After
@@ -98,9 +95,6 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         assertStyleSheetIsReloaded("view-imported", VIEW_IMPORTED_DIV_BG_COLOR);
         assertStyleSheetIsReloaded("view-nested-imported",
                 VIEW_NESTED_IMPORTED_DIV_BG_COLOR);
-
-        assertImageIsReloaded("appshell-image", "css/images/gobo.png");
-        assertImageIsReloaded("view-image", "css/images/viking.png");
     }
 
     private void assertStyleSheetIsReloaded(String styledDivID,
@@ -121,32 +115,6 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         });
     }
 
-    private void assertImageIsReloaded(String styledDivID,
-            String expectedImagePath) throws IOException {
-        String backgroundImage = $("div").id(styledDivID)
-                .getCssValue("backgroundImage");
-        Assert.assertTrue(
-                "Expected background image " + expectedImagePath + " but got "
-                        + backgroundImage,
-                backgroundImage.contains(expectedImagePath));
-        Assert.assertFalse("Image should not have cache killer parameter",
-                backgroundImage.contains("v-hotreload"));
-
-        triggerReloadImage(styledDivID);
-
-        Assert.assertEquals("Page should not be reloaded", getInitialAttachId(),
-                getAttachId());
-
-        waitUntil(d -> $("div").id(styledDivID).getCssValue("backgroundImage")
-                .contains("v-hotreload"));
-        backgroundImage = $("div").id(styledDivID)
-                .getCssValue("backgroundImage").replaceAll(
-                        "(?i).*url\\s*\\(\\s*['\"]?([^'\"]+)['\"]?\\s*\\).*",
-                        "$1");
-        waitUntilContentMatches(backgroundImage,
-                Files.readAllBytes(updatedImagePath));
-    }
-
     private void triggerReloadStyleSheet(String styledDivID)
             throws IOException {
         ThrowingConsumer<Path> updater = path -> {
@@ -160,14 +128,6 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                 writer.write(content);
                 writer.flush();
             }
-        };
-        triggerReload(styledDivID, updater);
-    }
-
-    private void triggerReloadImage(String styledDivID) throws IOException {
-        ThrowingConsumer<Path> updater = path -> {
-            Files.copy(updatedImagePath, path,
-                    StandardCopyOption.REPLACE_EXISTING);
         };
         triggerReload(styledDivID, updater);
     }

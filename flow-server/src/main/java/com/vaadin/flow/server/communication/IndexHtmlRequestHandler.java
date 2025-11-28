@@ -441,6 +441,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 BootstrapHandlerHelper.getPushURL(session, request));
         devToolsConf.put("contextRelativePath",
                 service.getContextRootRelativePath(request));
+        devToolsConf.put("contextPath", request.getContextPath());
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
         if (liveReloadPort != null) {
