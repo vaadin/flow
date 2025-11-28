@@ -1507,18 +1507,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
-        // Load client-side dependencies for push support
-        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
+        String pushJs;
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
         } else {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        pushJSPath += versionQueryParam;
-        return pushJSPath;
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        return pushJs + versionQueryParam;
     }
 
     protected static void setupErrorDialogs(Element style) {
