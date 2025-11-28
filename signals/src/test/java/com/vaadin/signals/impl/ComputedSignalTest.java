@@ -147,7 +147,7 @@ public class ComputedSignalTest extends SignalTestBase {
         assertTrue(negated.value());
 
         signal.value(null);
-        assertNull(signal.value());
+        assertNull(negated.value());
     }
 
     @Test
