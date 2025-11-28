@@ -73,12 +73,24 @@ public class SignalOperation<T> {
         }
     }
 
-    private final CompletableFuture<ResultOrError<T>> result = new CompletableFuture<>();
+    private final CompletableFuture<ResultOrError<T>> result;
 
     /**
-     * Creates a new signal operation.
+     * Creates a new signal operation that will get a result later.
      */
     public SignalOperation() {
+        result = new CompletableFuture<>();
+    }
+
+    /**
+     * Creates a new signal operation that already has a result.
+     * 
+     * @param resultOrError
+     *            the result of the operation, not <code>null</code>
+     */
+    public SignalOperation(ResultOrError<T> resultOrError) {
+        assert resultOrError != null;
+        result = CompletableFuture.completedFuture(resultOrError);
     }
 
     /**
