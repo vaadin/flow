@@ -81,9 +81,13 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
     public fun vaadinBuildFrontend() {
         val config = adapter.get().config
         logger.info("Running the vaadinBuildFrontend task with effective configuration $config")
-        // sanity check
         val tokenFile = BuildFrontendUtil.getTokenFile(adapter.get())
-        check(tokenFile.exists()) { "token file $tokenFile doesn't exist!" }
+        if (!tokenFile.exists()) {
+            // if prepare-frontend token file doesn't exist, propagate build info
+            // to token file
+            logger.info("Token file does not exist, propagating build info")
+            BuildFrontendUtil.propagateBuildInfo(adapter.get())
+        }
 
         val options = Options(null, adapter.get().classFinder, config.npmFolder.get())
             .withFrontendDirectory(BuildFrontendUtil.getFrontendDirectory(adapter.get()))

@@ -132,7 +132,7 @@ public class TaskRunNpmInstallTest {
     @Test
     public void runNpmInstallAndCi_emptyDir_npmInstallAndCiIsExecuted()
             throws ExecutionFailedException, IOException {
-        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+        assumeNPMIsInUse();
 
         File nodeModules = options.getNodeModulesFolder();
         nodeModules.mkdir();
@@ -152,7 +152,7 @@ public class TaskRunNpmInstallTest {
 
     @Test
     public void runNpmCi_emptyDir_npmCiFails() throws IOException {
-        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
+        assumeNPMIsInUse();
 
         File nodeModules = options.getNodeModulesFolder();
         nodeModules.mkdir();
@@ -593,6 +593,8 @@ public class TaskRunNpmInstallTest {
     @Test
     public void verifyPackageLockAndClean_lockfileVersion3_fileNotRemoved()
             throws IOException {
+        assumeNPMIsInUse();
+
         File packageLockFile = new File(npmFolder, "package-lock.json");
         String packageLockContent = """
                 {
@@ -616,6 +618,8 @@ public class TaskRunNpmInstallTest {
     @Test
     public void verifyPackageLockAndClean_lockfileVersion2_fileRemoved()
             throws IOException {
+        assumeNPMIsInUse();
+
         File packageLockFile = new File(npmFolder, "package-lock.json");
         String packageLockContent = """
                 {
@@ -638,6 +642,8 @@ public class TaskRunNpmInstallTest {
     @Test
     public void verifyPackageLockAndClean_lockfileVersion1_fileRemoved()
             throws IOException {
+        assumeNPMIsInUse();
+
         File packageLockFile = new File(npmFolder, "package-lock.json");
         String packageLockContent = """
                 {
@@ -717,6 +723,10 @@ public class TaskRunNpmInstallTest {
 
         Assert.assertFalse("package-lock.json should still not exist",
                 packageLockFile.exists());
+    }
+
+    private void assumeNPMIsInUse() {
+        Assume.assumeTrue(getClass().equals(TaskRunNpmInstallTest.class));
     }
 
 }

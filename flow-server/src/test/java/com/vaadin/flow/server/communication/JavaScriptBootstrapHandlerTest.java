@@ -170,7 +170,7 @@ public class JavaScriptBootstrapHandlerTest {
 
         // Using regex, because version depends on the build
         Assert.assertTrue(json.get("pushScript").asString().matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+                "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     @Test
@@ -188,7 +188,7 @@ public class JavaScriptBootstrapHandlerTest {
 
         // Using regex, because version depends on the build
         Assert.assertTrue(json.get("pushScript").asString().matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+                "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     @Test
@@ -223,7 +223,7 @@ public class JavaScriptBootstrapHandlerTest {
 
         // Using regex, because version depends on the build
         Assert.assertTrue(json.get("pushScript").asString().matches(
-                "^\\./VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
+                "^VAADIN/static/push/vaadinPush\\.js\\?v=[\\w\\.\\-]+$"));
     }
 
     @Test

@@ -115,7 +115,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
-                "com\\.vaadin\\.flow\\.component\\.dependency\\.StyleSheetHotswapper",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.StyleSheetHotswapper(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
                 "com\\.vaadin\\.flow\\.hotswap\\.Hotswap.*Event(\\$.*)?",
