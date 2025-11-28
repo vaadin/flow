@@ -106,11 +106,46 @@ public class CssBundler {
     public static String inlineImports(File themeFolder, File cssFile,
             JsonNode themeJson) throws IOException {
         return inlineImports(themeFolder, cssFile,
-                getThemeAssetsAliases(themeJson));
+                getThemeAssetsAliases(themeJson), null);
+    }
+
+    /**
+     * Recurse over CSS import and inlines all of them into a single CSS block.
+     * <p>
+     *
+     * Unresolvable imports are put on the top of the resulting code, because
+     * {@code @import} statements must come before any other CSS instruction,
+     * otherwise the import is ignored by the browser.
+     * <p>
+     *
+     * This overload supports resolving imports from node_modules in addition to
+     * relative paths.
+     *
+     * @param themeFolder
+     *            location of theme folder on the filesystem. May be null if not
+     *            processing theme files.
+     * @param cssFile
+     *            the CSS file to process.
+     * @param themeJson
+     *            the theme configuration, usually stored in
+     *            {@literal theme.json} file. May be null.
+     * @param nodeModulesFolder
+     *            the node_modules folder for resolving npm package imports. May
+     *            be null if node_modules resolution is not needed.
+     * @return the processed stylesheet content, with inlined imports and
+     *         rewritten URLs.
+     * @throws IOException
+     *             if filesystem resources can not be read.
+     */
+    public static String inlineImports(File themeFolder, File cssFile,
+            JsonNode themeJson, File nodeModulesFolder) throws IOException {
+        return inlineImports(themeFolder, cssFile,
+                getThemeAssetsAliases(themeJson), nodeModulesFolder);
     }
 
     private static String inlineImports(File themeFolder, File cssFile,
-            Set<String> assetAliases) throws IOException {
+            Set<String> assetAliases, File nodeModulesFolder)
+            throws IOException {
 
         String content = Files.readString(cssFile.toPath());
 
@@ -171,12 +206,13 @@ public class CssBundler {
             String url = getNonNullGroup(result, 3, 4, 5, 7, 8);
             String sanitizedUrl = sanitizeUrl(url);
             if (sanitizedUrl != null && sanitizedUrl.endsWith(".css")) {
-                File potentialFile = new File(cssFile.getParentFile(),
-                        sanitizedUrl);
-                if (potentialFile.exists()) {
+                File potentialFile = resolveImportPath(sanitizedUrl,
+                        cssFile.getParentFile(), nodeModulesFolder);
+                if (potentialFile != null && potentialFile.exists()) {
                     try {
-                        return Matcher.quoteReplacement(inlineImports(
-                                themeFolder, potentialFile, assetAliases));
+                        return Matcher.quoteReplacement(
+                                inlineImports(themeFolder, potentialFile,
+                                        assetAliases, nodeModulesFolder));
                     } catch (IOException e) {
                         getLogger().warn(
                                 "Unable to inline import: " + result.group());
@@ -264,8 +300,69 @@ public class CssBundler {
         return url.trim().split("\\?")[0];
     }
 
+    /**
+     * Resolve import path to a file. First check relative to the CSS file's,
+     * then check node_modules for non-relative path.
+     *
+     * @param importPath
+     *            the import path from the CSS file
+     * @param cssFileDir
+     *            the directory containing the CSS file
+     * @param nodeModulesFolder
+     *            the node_modules folder, may be null
+     * @return the resolved file, or null if not found
+     */
+    private static File resolveImportPath(String importPath, File cssFileDir,
+            File nodeModulesFolder) {
+        // First, try relative to the CSS file's directory
+        File relativeFile = new File(cssFileDir, importPath);
+        if (relativeFile.exists()) {
+            return relativeFile;
+        }
+
+        // If not a relative path (doesn't start with ./ or ../) and
+        // node_modules is available, try resolving from node_modules
+        if (nodeModulesFolder != null && !importPath.startsWith("./")
+                && !importPath.startsWith("../")) {
+            File nodeModulesFile = new File(nodeModulesFolder, importPath);
+            if (nodeModulesFile.exists()) {
+                return nodeModulesFile;
+            }
+        }
+
+        return null;
+    }
+
     private static Logger getLogger() {
         return LoggerFactory.getLogger(CssBundler.class);
+    }
+
+    /**
+     * Minify CSS content by removing comments and unnecessary whitespace.
+     * <p>
+     * This method performs basic CSS minification:
+     * <ul>
+     * <li>Remove CSS comments</li>
+     * <li>Collapse multiple whitespace characters</li>
+     * <li>Remove whitespace around special characters like braces and
+     * colons</li>
+     * <li>Remove trailing semicolons before closing braces</li>
+     * </ul>
+     *
+     * @param css
+     *            the CSS content to minify
+     * @return the minified CSS content
+     */
+    public static String minifyCss(String css) {
+        // Remove CSS comments /* ... */
+        css = css.replaceAll("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", "");
+        // Collapse whitespace
+        css = css.replaceAll("\\s+", " ");
+        // Remove spaces around special characters
+        css = css.replaceAll("\\s*([{};:,>~+])\\s*", "$1");
+        // Remove trailing semicolons before }
+        css = css.replaceAll(";}", "}");
+        return css.trim();
     }
 
 }

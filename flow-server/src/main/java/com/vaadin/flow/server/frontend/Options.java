@@ -134,6 +134,11 @@ public class Options implements Serializable {
     private File javaResourceFolder;
 
     /**
+     * META-INF/resources directory.
+     */
+    private File resourcesDirectory;
+
+    /**
      * Additional npm packages to run postinstall for.
      */
     private List<String> postinstallPackages = new ArrayList<>();
@@ -1090,5 +1095,26 @@ public class Options implements Serializable {
             return true;
         }
         return copyAssets;
+    }
+
+    /**
+     * Set where the META-INF/resources files are copied by the build.
+     *
+     * @param resourcesDirectory
+     *            META-INF resources directory
+     * @return this builder
+     */
+    public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
+        this.resourcesDirectory = resourcesDirectory;
+        return this;
+    }
+
+    /**
+     * Get the resources directory if defined.
+     *
+     * @return META-INF resources directory
+     */
+    public File getMetaInfResourcesDirectory() {
+        return resourcesDirectory;
     }
 }
