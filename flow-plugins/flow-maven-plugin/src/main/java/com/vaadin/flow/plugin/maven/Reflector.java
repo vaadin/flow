@@ -54,6 +54,8 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.JsonEncodingException;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.plugin.base.JarManifestChecker;
+import com.vaadin.flow.plugin.maven.FrontendScannerConfig.AnnotationScannerMode;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
@@ -306,6 +308,32 @@ public final class Reflector {
                 : FrontendScannerConfig.DEFAULT_FILTER
                         .or(scannerConfig::shouldScan);
 
+        // Add manifest-based filtering when in ADD_ON mode
+        Predicate<Artifact> manifestFilter = artifact -> {
+            if (scannerConfig == null || scannerConfig
+                    .getScannerMode() == AnnotationScannerMode.FULL) {
+                return true; // Full mode: scan everything
+            }
+
+            // ADD_ON mode: check for Vaadin manifest
+            File jarFile = artifact.getFile();
+            if (jarFile != null
+                    && JarManifestChecker.hasVaadinManifest(jarFile)) {
+                log.debug("Artifact {} accepted: has Vaadin-Package-Version",
+                        artifact.getId());
+                return true;
+            }
+
+            // Reject artifacts without Vaadin manifest in ADD_ON mode
+            log.debug(
+                    "Artifact {} rejected: no Vaadin-Package-Version manifest in ADD_ON mode",
+                    artifact.getId());
+            return false;
+        };
+
+        // Combine both filters: explicit config AND manifest check
+        Predicate<Artifact> combinedFilter = shouldScan.and(manifestFilter);
+
         record FilterableArtifact(Artifact artifact, boolean scan) {
         }
 
@@ -318,7 +346,7 @@ public final class Reflector {
                         .contains(artifact.getGroupId()))
                 .filter(Reflector::isProductionDependency)
                 .map(artifact -> new FilterableArtifact(artifact,
-                        shouldScan.test(artifact)))
+                        combinedFilter.test(artifact)))
                 .collect(Collectors.toMap(
                         item -> keyMapper.apply(item.artifact),
                         Function.identity(), (a, b) -> a, LinkedHashMap::new));
