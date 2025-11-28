@@ -69,9 +69,6 @@ public class FrontendTools {
 
     public static final String DEFAULT_PNPM_VERSION = "8.6.11";
 
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
-            + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
-
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
 
@@ -92,11 +89,7 @@ public class FrontendTools {
 
     private static final String BAD_VERSION = MSG_PREFIX
             + "%nYour installed '%s' version (%s) is known to have problems." //
-            + "%nPlease update to a new one either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%s"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
+            + "%nPlease update it%s." + "%n" //
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
@@ -395,36 +388,41 @@ public class FrontendTools {
         if (ignoreVersionChecks) {
             return;
         }
-        Pair<FrontendVersion, String> foundNodeVersionAndExe = null;
+        // Node version is already validated by NodeResolver, which ensures
+        // we have a suitable version (either from global PATH or auto-installed
+        // to ~/.vaadin). Just log which node we're using.
         try {
-            foundNodeVersionAndExe = getNodeVersionAndExecutable();
-            FrontendVersion foundNodeVersion = foundNodeVersionAndExe
-                    .getFirst();
+            Pair<FrontendVersion, String> foundNodeVersionAndExe = getNodeVersionAndExecutable();
             getLogger().debug("Using node {} located at {}",
-                    foundNodeVersion.getFullVersion(),
+                    foundNodeVersionAndExe.getFirst().getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
-            FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION);
         } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if node is new enough", e);
-        } catch (IllegalStateException ise) {
-            if (foundNodeVersionAndExe != null) {
-                getLogger().info("Validated node from '{}'",
-                        foundNodeVersionAndExe.getSecond());
-            }
-            throw ise;
+            getLogger().warn("Error checking node version", e);
         }
 
+        // Validate npm version (npm comes bundled with node)
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
+
+            // If npm is too old, this is an internal configuration error - the
+            // node version we accept/install should always come with a suitable
+            // npm
+            if (foundNpmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
+                throw new IllegalStateException(String.format(
+                        "Internal error: npm version %s is older than required %s. "
+                                + "This should not happen as Node %s should bundle a compatible npm version. "
+                                + "Please report this issue.",
+                        foundNpmVersion.getFullVersion(),
+                        SUPPORTED_NPM_VERSION.getFullVersion(),
+                        DEFAULT_NODE_VERSION));
+            }
+
             checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if npm is new enough", e);
+            getLogger().warn("Error checking npm version", e);
         }
 
     }
