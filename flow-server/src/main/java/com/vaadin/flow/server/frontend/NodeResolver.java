@@ -385,11 +385,13 @@ class NodeResolver implements java.io.Serializable {
             try {
                 FrontendVersion version = new FrontendVersion(versionString);
 
-                // Skip versions older than minimum supported
-                if (version.isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+                // Skip versions older than minimum auto-installed version
+                if (version.isOlderThan(
+                        FrontendTools.MINIMUM_AUTO_INSTALLED_NODE)) {
                     getLogger().debug(
-                            "Skipping {} - older than minimum supported {}",
-                            versionString, FrontendTools.SUPPORTED_NODE_VERSION
+                            "Skipping {} - older than minimum auto-installed {}",
+                            versionString,
+                            FrontendTools.MINIMUM_AUTO_INSTALLED_NODE
                                     .getFullVersion());
                     continue;
                 }
