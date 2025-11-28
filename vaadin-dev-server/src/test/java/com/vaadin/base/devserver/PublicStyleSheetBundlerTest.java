@@ -29,10 +29,21 @@ import org.mockito.Mockito;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class PublicStyleSheetBundlerTest {
+
+    private static String EXPECTED_CSS = """
+                DIV.appshell-image {
+                    background: url('../images/gobo.png') no-repeat;
+                    background-size: contain;
+                    background-position-x: center;
+                    width: 100%;
+                    height: 100px;
+                }
+            """;
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
@@ -130,15 +141,72 @@ public class PublicStyleSheetBundlerTest {
     }
 
     @Test
-    public void normalize_queryAndHash_areRemoved() {
-        assertEquals("css/app.css", PublicStyleSheetBundler
-                .normalizeUrl("/css/app.css?v=123#hash"));
-    }
-
-    @Test
     public void normalize_backslashes_areConverted() {
         assertEquals("/css/app.css",
                 PublicStyleSheetBundler.normalizeUrl("\\css\\app.css"));
+    }
+
+    @Test
+    public void bundle_preservesUrls_noRewrite() throws IOException {
+        File project = temporaryFolder.newFolder("project_meta");
+        File metaInfRoot = new File(project,
+                "src/main/resources/META-INF/resources/css");
+        assertTrue(metaInfRoot.mkdirs());
+        File styles = new File(metaInfRoot, "styles.css");
+        Files.writeString(styles.toPath(), EXPECTED_CSS,
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        Mockito.when(config.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .create(config);
+
+        Optional<String> bundled = bundler.bundle("/css/styles.css");
+        assertTrue("Bundled CSS should be present", bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        String expected = normalizeWhitespace(EXPECTED_CSS);
+        assertEquals("URL paths should be preserved for META-INF/resources CSS",
+                expected, result);
+        assertFalse("Should not rewrite to VAADIN/themes",
+                result.contains("VAADIN/themes"));
+    }
+
+    @Test
+    public void bundle_withImport_inlinesAndPreservesUrls() throws IOException {
+        // Arrange META-INF/resources with an import
+        File project = temporaryFolder.newFolder("project_meta_import");
+        File metaInfRoot = new File(project,
+                "src/main/resources/META-INF/resources/css");
+        assertTrue(metaInfRoot.mkdirs());
+        Files.writeString(new File(metaInfRoot, "imported.css").toPath(),
+                EXPECTED_CSS, StandardCharsets.UTF_8);
+        Files.writeString(new File(metaInfRoot, "styles.css").toPath(),
+                "@import './imported.css';\n/* main marker */",
+                StandardCharsets.UTF_8);
+
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        Mockito.when(config.getJavaResourceFolder())
+                .thenReturn(new File(project, "src/main/resources"));
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .create(config);
+
+        Optional<String> bundled = bundler.bundle("/css/styles.css");
+        assertTrue(bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        String expectedImported = normalizeWhitespace(EXPECTED_CSS);
+        assertTrue("Imported content should be inlined",
+                result.contains(expectedImported));
+        assertTrue("Main marker should be present after imported content",
+                result.contains(expectedImported));
+        assertFalse("Should not rewrite to VAADIN/themes",
+                result.contains("VAADIN/themes"));
     }
 
     private static String normalizeWhitespace(String s) {

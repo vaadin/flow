@@ -567,8 +567,8 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
             for (File stylesheet : stylesheets) {
                 try {
-                    String bundled = CssBundler.inlineImports(
-                            stylesheet.getParentFile(), stylesheet, null);
+                    String bundled = CssBundler.inlineImportsForPublicResources(
+                            stylesheet.getParentFile(), stylesheet);
                     return Optional.ofNullable(bundled);
                 } catch (IOException ioe) {
                     LOGGER.debug("Failed to inline CSS imports for {}",
