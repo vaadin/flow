@@ -24,9 +24,6 @@ import java.util.Optional;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -68,14 +65,8 @@ public class PublicStyleSheetBundlerTest {
         Files.writeString(mainCss.toPath(), mainContent,
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getProjectFolder()).thenReturn(project);
-        Mockito.when(config.getJavaResourceFolder())
-                .thenReturn(new File(project, "src/main/resources"));
-
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .create(config);
+                .forResourceLocations(java.util.List.of(publicRoot));
 
         // Act
         Optional<String> bundled = bundler.bundle("/main.css");
@@ -105,14 +96,8 @@ public class PublicStyleSheetBundlerTest {
         Files.writeString(new File(publicRoot, "main.css").toPath(),
                 "@import './imported.css';\n.m{c:2;}", StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getProjectFolder()).thenReturn(project);
-        Mockito.when(config.getJavaResourceFolder())
-                .thenReturn(new File(project, "src/main/resources"));
-
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .create(config);
+                .forResourceLocations(java.util.List.of(publicRoot));
 
         Optional<String> bundled = bundler.bundle("context://main.css");
         assertTrue(bundled.isPresent());
@@ -156,14 +141,9 @@ public class PublicStyleSheetBundlerTest {
         Files.writeString(styles.toPath(), EXPECTED_CSS,
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getProjectFolder()).thenReturn(project);
-        Mockito.when(config.getJavaResourceFolder())
-                .thenReturn(new File(project, "src/main/resources"));
-
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .create(config);
+                .forResourceLocations(java.util.List.of(new File(project,
+                        "src/main/resources/META-INF/resources")));
 
         Optional<String> bundled = bundler.bundle("/css/styles.css");
         assertTrue("Bundled CSS should be present", bundled.isPresent());
@@ -194,14 +174,9 @@ public class PublicStyleSheetBundlerTest {
                 "@import './nested/nested-imported.css';\n/* main marker */",
                 StandardCharsets.UTF_8);
 
-        ApplicationConfiguration config = Mockito
-                .mock(ApplicationConfiguration.class);
-        Mockito.when(config.getProjectFolder()).thenReturn(project);
-        Mockito.when(config.getJavaResourceFolder())
-                .thenReturn(new File(project, "src/main/resources"));
-
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .create(config);
+                .forResourceLocations(java.util.List.of(new File(project,
+                        "src/main/resources/META-INF/resources")));
 
         Optional<String> bundled = bundler.bundle("/css/styles.css");
         assertTrue(bundled.isPresent());

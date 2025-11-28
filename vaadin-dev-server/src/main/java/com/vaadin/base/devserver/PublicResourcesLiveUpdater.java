@@ -31,7 +31,6 @@ import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -72,15 +71,6 @@ public class PublicResourcesLiveUpdater implements Closeable {
         this.context = context;
         Optional<BrowserLiveReload> liveReload = BrowserLiveReloadAccessor
                 .getLiveReloadFromContext(context);
-        if (liveReload.isEmpty()) {
-            getLogger().error(
-                    "Browser live reload is not available. Unable to watch public resources for changes");
-            this.bundler = null;
-            return;
-        }
-        // Prepare bundler using current application configuration
-        ApplicationConfiguration config = ApplicationConfiguration.get(context);
-        this.bundler = PublicStyleSheetBundler.create(config);
 
         for (String root : roots) {
             File rootLocation = new File(root);
@@ -88,7 +78,12 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 this.roots.add(rootLocation);
             }
         }
-
+        this.bundler = PublicStyleSheetBundler.forResourceLocations(this.roots);
+        if (liveReload.isEmpty()) {
+            getLogger().error(
+                    "Browser live reload is not available. Unable to watch public resources for changes");
+            return;
+        }
         try {
             for (File root : this.roots) {
                 FileWatcher watcher = getFileWatcher(root, liveReload.get());

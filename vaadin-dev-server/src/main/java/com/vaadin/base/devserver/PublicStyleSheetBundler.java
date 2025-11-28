@@ -17,7 +17,6 @@ package com.vaadin.base.devserver;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -27,7 +26,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -57,31 +55,17 @@ public final class PublicStyleSheetBundler {
     }
 
     /**
-     * Creates a new bundler instance configured for the current project
-     * structure.
+     * Creates a new bundler instance configured with an explicit list of source
+     * roots. Only existing directories are included.
      *
-     * @param config
-     *            the application configuration
+     * @param roots
+     *            list of root directories to search in
      * @return a configured {@link PublicStyleSheetBundler}
      */
-    public static PublicStyleSheetBundler create(
-            ApplicationConfiguration config) {
-        Objects.requireNonNull(config, "config cannot be null");
-        File projectFolder = config.getProjectFolder();
-        File resourceFolder = config.getJavaResourceFolder();
-        List<File> roots = new ArrayList<>();
-        addIfDir(roots, new File(resourceFolder, "META-INF/resources"));
-        addIfDir(roots, new File(resourceFolder, "resources"));
-        addIfDir(roots, new File(resourceFolder, "static"));
-        addIfDir(roots, new File(resourceFolder, "public"));
-        addIfDir(roots, new File(projectFolder, "src/main/webapp"));
+    public static PublicStyleSheetBundler forResourceLocations(
+            List<File> roots) {
+        Objects.requireNonNull(roots, "roots cannot be null");
         return new PublicStyleSheetBundler(roots);
-    }
-
-    private static void addIfDir(List<File> roots, File dir) {
-        if (dir.exists() && dir.isDirectory()) {
-            roots.add(dir);
-        }
     }
 
     /**
