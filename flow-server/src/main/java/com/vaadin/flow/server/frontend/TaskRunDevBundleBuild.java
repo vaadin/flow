@@ -139,7 +139,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
@@ -163,12 +162,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (options.isRequireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);

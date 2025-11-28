@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -53,13 +52,9 @@ import com.vaadin.frontendtools.installer.VerificationException;
  */
 public class NodeInstaller {
 
-    public static final String INSTALL_PATH = "/node";
+    public static final String INSTALL_PATH_PREFIX = "/node";
 
     public static final String SHA_SUMS_FILE = "SHASUMS256.txt";
-
-    private static final String NODE_WINDOWS = INSTALL_PATH.replaceAll("/",
-            "\\\\") + "\\node.exe";
-    private static final String NODE_DEFAULT = INSTALL_PATH + "/node";
 
     public static final String PROVIDED_VERSION = "provided";
 
@@ -203,7 +198,9 @@ public class NodeInstaller {
     }
 
     /**
-     * Install node and npm.
+     * Install node and npm. This method unconditionally downloads and installs
+     * the specified node version without checking if it already exists. Use
+     * NodeResolver to check for existing installations before calling this.
      *
      * @throws InstallationException
      *             exception thrown when installation fails
@@ -214,10 +211,6 @@ public class NodeInstaller {
             // If no download root defined use default root
             if (nodeDownloadRoot == null) {
                 nodeDownloadRoot = URI.create(platform.getNodeDownloadRoot());
-            }
-
-            if (nodeIsAlreadyInstalled()) {
-                return;
             }
 
             getLogger().info("Installing node version {}", nodeVersion);
@@ -231,29 +224,6 @@ public class NodeInstaller {
             installNode(data);
 
         }
-    }
-
-    private boolean nodeIsAlreadyInstalled() throws InstallationException {
-        File nodeFile = getNodeExecutable();
-        if (nodeFile.exists()) {
-
-            List<String> nodeVersionCommand = new ArrayList<>();
-            nodeVersionCommand.add(nodeFile.toString());
-            nodeVersionCommand.add("--version");
-            String version = getVersion("Node", nodeVersionCommand)
-                    .getFullVersion();
-
-            if (version.equals(nodeVersion)) {
-                getLogger().info("Node {} is already installed.", version);
-                return true;
-            } else {
-                getLogger().info(
-                        "Node {} was installed, but we need version {}",
-                        version, nodeVersion);
-                return false;
-            }
-        }
-        return false;
     }
 
     private void installNode(InstallData data) throws InstallationException {
@@ -424,7 +394,14 @@ public class NodeInstaller {
     }
 
     private File getInstallDirectoryFile() {
-        return new File(installDirectory, INSTALL_PATH);
+        return new File(installDirectory, getVersionedInstallPath());
+    }
+
+    private String getVersionedInstallPath() {
+        if (nodeVersion == null || PROVIDED_VERSION.equals(nodeVersion)) {
+            return INSTALL_PATH_PREFIX;
+        }
+        return INSTALL_PATH_PREFIX + "-" + nodeVersion;
     }
 
     private File getNodeInstallDirectory() {
@@ -625,17 +602,6 @@ public class NodeInstaller {
             throw new VerificationException("Failed to validate archive hash.",
                     e);
         }
-    }
-
-    /**
-     * Get node executable file.
-     *
-     * @return node executable
-     */
-    private File getNodeExecutable() {
-        String nodeExecutable = platform.isWindows() ? NODE_WINDOWS
-                : NODE_DEFAULT;
-        return new File(installDirectory + nodeExecutable);
     }
 
     private static FrontendVersion getVersion(String tool,

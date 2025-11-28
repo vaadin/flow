@@ -134,14 +134,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
-    /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
-     */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
@@ -410,11 +402,6 @@ public class BuildDevBundleMojo extends AbstractMojo
             throw new URISyntaxException(nodeDownloadRoot,
                     "Failed to parse nodeDownloadRoot uri");
         }
-    }
-
-    @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     @Override

@@ -105,8 +105,10 @@ public class NodeInstallerTest {
             }
         }
 
-        // add a file to node/node_modules_npm that should be cleaned out
-        File nodeDirectory = new File(targetDir, "node");
+        // add a file to node-{version}/node_modules_npm that should be cleaned
+        // out
+        String versionedNodeDir = "node-" + FrontendTools.DEFAULT_NODE_VERSION;
+        File nodeDirectory = new File(targetDir, versionedNodeDir);
         String nodeModulesPath = platform.isWindows() ? "node_modules"
                 : "lib/node_modules";
         File nodeModulesDirectory = new File(nodeDirectory, nodeModulesPath);
@@ -133,11 +135,12 @@ public class NodeInstallerTest {
             throw new IllegalStateException("Failed to install Node", e);
         }
 
-        Assert.assertTrue("npm should have been copied to node_modules",
-                new File(targetDir, "node/" + nodeExec).exists());
+        Assert.assertTrue("node should have been installed",
+                new File(targetDir, versionedNodeDir + "/" + nodeExec)
+                        .exists());
         String npmInstallPath = platform.isWindows()
-                ? "node/node_modules/npm/bin/npm"
-                : "node/lib/node_modules/npm/bin/npm";
+                ? versionedNodeDir + "/node_modules/npm/bin/npm"
+                : versionedNodeDir + "/lib/node_modules/npm/bin/npm";
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(targetDir, npmInstallPath).exists());
         Assert.assertFalse("old npm files should have been removed",
@@ -146,4 +149,5 @@ public class NodeInstallerTest {
                 "old style node_modules files should have been removed",
                 oldGarbage.exists());
     }
+
 }
