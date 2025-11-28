@@ -231,7 +231,13 @@ public class ReflectorTest {
         Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
                 "com.vaadin-vaadin-core-1.0.jar",
                 "com.vaadin-flow-server-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+                "org.test-beta-1.0.jar",
+                // FrontendScannerConfig without includes also accept these:
+                "com.vaadin-open-1.0.jar", "com.vaadin-license-checker-1.0.jar",
+                "com.vaadin-vaadin-dev-1.0.jar",
+                "com.vaadin-vaadin-dev-server-1.0.jar",
+                "com.vaadin-vaadin-dev-bundle-1.0.jar",
+                "com.vaadin-copilot-1.0.jar");
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
     }
@@ -308,7 +314,13 @@ public class ReflectorTest {
                 "org.springframework.boot-spring-boot-1.0.jar",
                 "com.example.addon-alpha-1.0.jar",
                 "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+                "org.test-beta-1.0.jar",
+                // disabled FrontendScannerConfig includes also accept these:
+                "com.vaadin-open-1.0.jar", "com.vaadin-license-checker-1.0.jar",
+                "com.vaadin-vaadin-dev-1.0.jar",
+                "com.vaadin-vaadin-dev-server-1.0.jar",
+                "com.vaadin-vaadin-dev-bundle-1.0.jar",
+                "com.vaadin-copilot-1.0.jar");
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
     }
@@ -324,7 +336,14 @@ public class ReflectorTest {
                 "org.springframework.boot-spring-boot-1.0.jar",
                 "com.example.addon-alpha-1.0.jar",
                 "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+                "org.test-beta-1.0.jar",
+                // FrontendScannerConfig without includes/excludes also accept
+                // these:
+                "com.vaadin-open-1.0.jar", "com.vaadin-license-checker-1.0.jar",
+                "com.vaadin-vaadin-dev-1.0.jar",
+                "com.vaadin-vaadin-dev-server-1.0.jar",
+                "com.vaadin-vaadin-dev-bundle-1.0.jar",
+                "com.vaadin-copilot-1.0.jar");
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
     }
@@ -351,7 +370,17 @@ public class ReflectorTest {
                 createArtifact("com.example.addon", "beta", "1.0", "compile",
                         true),
                 createArtifact("org.test", "alpha", "1.0", "compile", true),
-                createArtifact("org.test", "beta", "1.0", "compile", true)
+                createArtifact("org.test", "beta", "1.0", "compile", true),
+                createArtifact("com.vaadin", "license-checker", "1.0",
+                        "compile", true),
+                createArtifact("com.vaadin", "open", "1.0", "compile", true),
+                createArtifact("com.vaadin", "vaadin-dev", "1.0", "compile",
+                        true),
+                createArtifact("com.vaadin", "vaadin-dev-server", "1.0",
+                        "compile", true),
+                createArtifact("com.vaadin", "vaadin-dev-bundle", "1.0",
+                        "compile", true),
+                createArtifact("com.vaadin", "copilot", "1.0", "compile", true)
 
         ));
 
@@ -380,7 +409,7 @@ public class ReflectorTest {
         // Ensure the classloader references all dependencies
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(9, urlSet.size());
+        Assert.assertEquals(15, urlSet.size());
         Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
         Assert.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
@@ -396,6 +425,18 @@ public class ReflectorTest {
                 urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
         Assert.assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
+        Assert.assertTrue(
+                urlSet.contains(toURLExternalForm("com.vaadin-open-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin-license-checker-1.0.jar")));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.vaadin-vaadin-dev-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin-vaadin-dev-server-1.0.jar")));
+        Assert.assertTrue(urlSet.contains(
+                toURLExternalForm("com.vaadin-vaadin-dev-bundle-1.0.jar")));
+        Assert.assertTrue(urlSet
+                .contains(toURLExternalForm("com.vaadin-copilot-1.0.jar")));
 
         // Verify scan URLs
         urlSet = Arrays.stream(isolatedClassLoader.getUrlsToScan())
@@ -404,6 +445,20 @@ public class ReflectorTest {
         for (String expectedUrl : expectedScanURLs) {
             Assert.assertTrue("Scan URL missing in Reflector: " + expectedUrl,
                     urlSet.contains(toURLExternalForm(expectedUrl)));
+        }
+        // verify default excluded URLs are indeed excluded
+        for (String expectedExcludedUrl : Set.of("com.vaadin-open-1.0.jar",
+                "com.vaadin-license-checker-1.0.jar",
+                "com.vaadin-vaadin-dev-1.0.jar",
+                "com.vaadin-vaadin-dev-server-1.0.jar",
+                "com.vaadin-vaadin-dev-bundle-1.0.jar",
+                "com.vaadin-copilot-1.0.jar")) {
+            if (expectedScanURLs.contains(expectedExcludedUrl)) {
+                continue; // already checked as included
+            }
+            Assert.assertFalse(
+                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl,
+                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)));
         }
 
     }
@@ -417,10 +472,20 @@ public class ReflectorTest {
 
     private Artifact createArtifact(String groupId, String artifactId,
             String version, String scope, boolean addedToClasspath) {
+        return createArtifact(groupId, artifactId, version, scope, null,
+                addedToClasspath);
+    }
+
+    private Artifact createArtifact(String groupId, String artifactId,
+            String version, String scope, String optional,
+            boolean addedToClasspath) {
         DefaultArtifactHandler artifactHandler = new DefaultArtifactHandler();
         artifactHandler.setAddedToClasspath(addedToClasspath);
         DefaultArtifact artifact = new DefaultArtifact(groupId, artifactId,
                 version, scope, "jar", null, artifactHandler);
+        if ("true".equals(optional)) {
+            artifact.setOptional(true);
+        }
         artifact.setFile(
                 new File(String.format(FLAT_MAVEN_REPO_PATH + "%s-%s-%s.jar",
                         groupId, artifactId, version)));
