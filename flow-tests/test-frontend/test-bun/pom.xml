@@ -45,6 +45,7 @@
                         <fileset>
                             <directory>${project.basedir}</directory>
                             <includes>
+                                <include>bun.lock*</include>
                                 <include>package.json</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
