@@ -62,7 +62,7 @@ public class FrontendScannerConfig {
         this.silent = false;
     }
 
-    FrontendScannerConfig(boolean silent) {
+    private FrontendScannerConfig(boolean silent) {
         this.silent = silent;
     }
 
