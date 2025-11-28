@@ -35,7 +35,7 @@ import static org.junit.Assert.assertTrue;
 
 public class PublicStyleSheetBundlerTest {
 
-    private static String EXPECTED_CSS = """
+    private static final String EXPECTED_CSS = """
                 DIV.appshell-image {
                     background: url('../images/gobo.png') no-repeat;
                     background-size: contain;
@@ -147,7 +147,7 @@ public class PublicStyleSheetBundlerTest {
     }
 
     @Test
-    public void bundle_preservesUrls_noRewrite() throws IOException {
+    public void bundle_preservesUrls_inTopLevelCss() throws IOException {
         File project = temporaryFolder.newFolder("project_meta");
         File metaInfRoot = new File(project,
                 "src/main/resources/META-INF/resources/css");
@@ -169,23 +169,29 @@ public class PublicStyleSheetBundlerTest {
         assertTrue("Bundled CSS should be present", bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(EXPECTED_CSS);
-        assertEquals("URL paths should be preserved for META-INF/resources CSS",
-                expected, result);
+        assertEquals("URL paths in top-level CSS should be preserved", expected,
+                result);
         assertFalse("Should not rewrite to VAADIN/themes",
                 result.contains("VAADIN/themes"));
     }
 
     @Test
-    public void bundle_withImport_inlinesAndPreservesUrls() throws IOException {
-        // Arrange META-INF/resources with an import
+    public void bundle_withImport_inlinesAndRebasesNestedUrls()
+            throws IOException {
+        // Arrange META-INF/resources with a nested import that has a relative
+        // URL
         File project = temporaryFolder.newFolder("project_meta_import");
         File metaInfRoot = new File(project,
                 "src/main/resources/META-INF/resources/css");
         assertTrue(metaInfRoot.mkdirs());
-        Files.writeString(new File(metaInfRoot, "imported.css").toPath(),
+        File nestedDir = new File(metaInfRoot, "nested");
+        assertTrue(nestedDir.mkdirs());
+        // nested/nested-imported.css contains url('../images/gobo.png')
+        Files.writeString(new File(nestedDir, "nested-imported.css").toPath(),
                 EXPECTED_CSS, StandardCharsets.UTF_8);
+        // styles.css imports the nested file
         Files.writeString(new File(metaInfRoot, "styles.css").toPath(),
-                "@import './imported.css';\n/* main marker */",
+                "@import './nested/nested-imported.css';\n/* main marker */",
                 StandardCharsets.UTF_8);
 
         ApplicationConfiguration config = Mockito
@@ -200,8 +206,10 @@ public class PublicStyleSheetBundlerTest {
         Optional<String> bundled = bundler.bundle("/css/styles.css");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
-        String expectedImported = normalizeWhitespace(EXPECTED_CSS);
-        assertTrue("Imported content should be inlined",
+        String expectedImported = normalizeWhitespace(
+                EXPECTED_CSS.replace("../images/gobo.png", "images/gobo.png"));
+        assertTrue(
+                "Imported nested content should be inlined with rebased URLs",
                 result.contains(expectedImported));
         assertTrue("Main marker should be present after imported content",
                 result.contains(expectedImported));
