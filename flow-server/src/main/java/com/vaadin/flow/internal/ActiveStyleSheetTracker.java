@@ -23,7 +23,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Tracks the set of all active stylesheets used by the running application
@@ -44,7 +43,7 @@ import com.vaadin.flow.server.VaadinSession;
  */
 public final class ActiveStyleSheetTracker implements Serializable {
 
-    private final ConcurrentHashMap<VaadinSession, Set<String>> componentUrlsPerSessions = new ConcurrentHashMap<>();
+    private final Set<String> componentUrls = ConcurrentHashMap.newKeySet();
     private final Set<String> appShellUrls = ConcurrentHashMap.newKeySet();
 
     private ActiveStyleSheetTracker() {
@@ -80,48 +79,38 @@ public final class ActiveStyleSheetTracker implements Serializable {
     }
 
     /**
-     * Register that the given stylesheet URL is active in the provided session.
+     * Register that the given stylesheet URL is active on the page and eligible
+     * for hot-reload.
      *
-     * @param session
-     *            the {@link VaadinSession}
      * @param url
-     *            the stylesheet URL (as passed to addStyleSheet)
+     *            the stylesheet URL to be hot-reloaded
      */
-    public void trackAddForComponent(VaadinSession session, String url) {
-        if (session == null || url == null || url.isBlank()) {
+    public void trackAddForComponent(String url) {
+        if (url == null || url.isBlank()) {
             return;
         }
-        componentUrlsPerSessions.computeIfAbsent(session,
-                ignored -> ConcurrentHashMap.newKeySet()).add(url);
+        componentUrls.add(url);
     }
 
     /**
-     * Register that the given stylesheet URL is no longer active in the
-     * provided session.
+     * Register that the given stylesheet URL is no longer active on the page
+     * and should not be hot-reloaded.
      *
-     * @param session
-     *            the {@link VaadinSession}
      * @param url
-     *            the stylesheet URL
+     *            the stylesheet URL to be skipped during hot-reload
      */
-    public void trackRemoveForComponent(VaadinSession session, String url) {
-        if (session == null || url == null || url.isBlank()) {
+    public void trackRemoveForComponent(String url) {
+        if (url == null || url.isBlank()) {
             return;
         }
-        Set<String> urls = componentUrlsPerSessions.get(session);
-        if (urls != null) {
-            urls.remove(url);
-            if (urls.isEmpty()) {
-                componentUrlsPerSessions.remove(session);
-            }
-        }
+        componentUrls.remove(url);
     }
 
     /**
-     * Replaces the set of AppShell stylesheet URLs that are applied globally.
+     * Replaces the set of active AppShell stylesheet URLs.
      *
      * @param urls
-     *            the new set of app shell stylesheet URLs
+     *            the new set of app shell stylesheet URLs to be hot-reloaded
      */
     public void trackForAppShell(Collection<String> urls) {
         appShellUrls.clear();
@@ -131,15 +120,16 @@ public final class ActiveStyleSheetTracker implements Serializable {
     }
 
     /**
-     * Returns all currently active stylesheet URLs across all sessions,
-     * including AppShell URLs.
+     * Returns all currently active stylesheet URLs, including AppShell URLs and
+     * components.
      *
-     * @return a new set containing all active stylesheet URLs
+     * @return a new set containing all active stylesheet URLs to be
+     *         hot-reloaded
      */
     public Set<String> getActiveUrls() {
         Set<String> all = ConcurrentHashMap.newKeySet();
         all.addAll(appShellUrls);
-        componentUrlsPerSessions.values().forEach(all::addAll);
+        all.addAll(componentUrls);
         return all;
     }
 }

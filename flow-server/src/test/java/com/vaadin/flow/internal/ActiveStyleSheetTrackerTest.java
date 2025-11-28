@@ -20,9 +20,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinSession;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
@@ -41,7 +39,6 @@ public class ActiveStyleSheetTrackerTest {
     @Test
     public void addRemoveAndAppShellMerge() {
         VaadinService service = new MockVaadinServletService();
-        VaadinSession session = new MockVaadinSession(service);
 
         ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker.get(service);
 
@@ -53,13 +50,13 @@ public class ActiveStyleSheetTrackerTest {
         assertEquals(Set.of("context://css/app.css"), tracker.getActiveUrls());
 
         // Register session-specific URL
-        tracker.trackAddForComponent(session, "context://css/view.css");
+        tracker.trackAddForComponent("context://css/view.css");
 
         // All active contains both (includes app shell + session)
         assertTrue(tracker.getActiveUrls().contains("context://css/app.css"));
         assertTrue(tracker.getActiveUrls().contains("context://css/view.css"));
 
         // Remove session URL
-        tracker.trackRemoveForComponent(session, "context://css/view.css");
+        tracker.trackRemoveForComponent("context://css/view.css");
     }
 }

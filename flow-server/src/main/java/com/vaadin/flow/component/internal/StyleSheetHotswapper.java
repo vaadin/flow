@@ -121,8 +121,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                 UI newUi = navigationEvent.getLocationChangeEvent().getUI();
                 Set<String> allUrls = new LinkedHashSet<>();
                 lookupUrlsForComponents(newUi, allUrls, vaadinService);
-                allUrls.forEach(
-                        url -> tracker.trackAddForComponent(session, url));
+                allUrls.forEach(tracker::trackAddForComponent);
             });
         });
     }
@@ -313,8 +312,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                             // Track removal for this session
                             ActiveStyleSheetTracker
                                     .get(event.getVaadinService())
-                                    .trackRemoveForComponent(
-                                            event.getVaadinSession(), url);
+                                    .trackRemoveForComponent(url);
                             String normalized = normalizeStylesheetUrl(url);
                             if (normalized != null) {
                                 event.updateClientResource(
@@ -332,9 +330,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                                     // Track removal for this session
                                     ActiveStyleSheetTracker
                                             .get(event.getVaadinService())
-                                            .trackRemoveForComponent(
-                                                    event.getVaadinSession(),
-                                                    url);
+                                            .trackRemoveForComponent(url);
                                     // Also notify client to remove any inline
                                     // style tag pushed earlier
                                     String normalized = normalizeStylesheetUrl(
@@ -369,8 +365,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                                         Dependency.Type.STYLESHEET);
                         registry.addRegistration(clazz, dependency);
                         ActiveStyleSheetTracker.get(event.getVaadinService())
-                                .trackAddForComponent(event.getVaadinSession(),
-                                        url);
+                                .trackAddForComponent(url);
                         // Immediately push bundled CSS content for the added
                         // URL so client applies it without link reload
                         String normalized = normalizeStylesheetUrl(url);
