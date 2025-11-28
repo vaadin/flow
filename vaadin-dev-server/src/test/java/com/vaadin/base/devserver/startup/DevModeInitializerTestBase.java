@@ -81,7 +81,10 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     public void setup() throws Exception {
         super.setup();
 
+        // Create stub npm (but not node - use real system node)
+        // The stub npm needs to be in baseDir/node/ for compatibility
         createStubNode(false, true, baseDir);
+
         devServerConfigFile = createStubDevServer(baseDir);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
@@ -130,7 +133,9 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // NodeUpdater.getDefaultDevDependencies
         FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
                 "UTF-8");
-        devServerConfigFile.createNewFile();
+        // Create a minimal valid vite.config.ts that exports an empty
+        // configuration
+        FileUtils.write(devServerConfigFile, "export default {}\n", "UTF-8");
         FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
 
         devModeStartupListener = new DevModeStartupListener();

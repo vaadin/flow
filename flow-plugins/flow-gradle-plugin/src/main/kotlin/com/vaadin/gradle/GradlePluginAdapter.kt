@@ -199,8 +199,6 @@ internal class GradlePluginAdapter private constructor(
     override fun nodeDownloadRoot(): URI =
         URI.create(config.nodeDownloadRoot.get())
 
-    override fun nodeAutoUpdate(): Boolean = config.nodeAutoUpdate.get()
-
     override fun nodeVersion(): String = config.nodeVersion.get()
 
     override fun npmFolder(): File = config.npmFolder.get()
