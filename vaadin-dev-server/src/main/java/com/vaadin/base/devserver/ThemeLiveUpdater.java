@@ -67,7 +67,7 @@ public class ThemeLiveUpdater implements Closeable {
                             liveReload.get()
                                     .update(ThemeUtils.getThemeFilePath(
                                             themeName, "styles.css"),
-                                            CssBundler.inlineImports(
+                                            CssBundler.inlineImportsForThemes(
                                                     stylesCss.getParentFile(),
                                                     stylesCss, themeJson));
                         } catch (IOException e) {

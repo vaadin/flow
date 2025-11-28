@@ -91,21 +91,21 @@ public class CssBundlerTest {
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
-                CssBundler.inlineImports(themeFolder,
+                CssBundler.inlineImportsForThemes(themeFolder,
                         getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(\"foo/bar.png\");", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
-                CssBundler.inlineImports(themeFolder,
+                CssBundler.inlineImportsForThemes(themeFolder,
                         getThemeFile("styles.css"), getThemeJson()));
 
         writeCss("background-image: url(foo/bar.png);", "styles.css");
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/foo/bar.png');",
-                CssBundler.inlineImports(themeFolder,
+                CssBundler.inlineImportsForThemes(themeFolder,
                         getThemeFile("styles.css"), getThemeJson()));
     }
 
@@ -128,8 +128,10 @@ public class CssBundlerTest {
                             src: url('VAADIN/themes/my-theme/fonts/ostrich-sans-regular.ttf') format("TrueType");
                         }"""
                         .trim(),
-                CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css"), getThemeJson()).trim());
+                CssBundler
+                        .inlineImportsForThemes(themeFolder,
+                                getThemeFile("styles.css"), getThemeJson())
+                        .trim());
     }
 
     @Test
@@ -140,7 +142,7 @@ public class CssBundlerTest {
 
         Assert.assertEquals(
                 "background-image: url('VAADIN/themes/my-theme/sub/file.png');",
-                CssBundler.inlineImports(themeFolder,
+                CssBundler.inlineImportsForThemes(themeFolder,
                         getThemeFile("styles.css"), getThemeJson()));
     }
 
@@ -150,8 +152,9 @@ public class CssBundlerTest {
         writeCss("@import 'other.css';", "styles.css");
         writeCss(css, "other.css");
 
-        Assert.assertEquals("body { content: '$\\'}", CssBundler.inlineImports(
-                themeFolder, getThemeFile("styles.css"), getThemeJson()));
+        Assert.assertEquals("body { content: '$\\'}",
+                CssBundler.inlineImportsForThemes(themeFolder,
+                        getThemeFile("styles.css"), getThemeJson()));
     }
 
     @Test
@@ -183,8 +186,10 @@ public class CssBundlerTest {
                         body {background: blue};
                         """
                         .trim(),
-                CssBundler.inlineImports(themeFolder,
-                        getThemeFile("styles.css"), getThemeJson()).trim());
+                CssBundler
+                        .inlineImportsForThemes(themeFolder,
+                                getThemeFile("styles.css"), getThemeJson())
+                        .trim());
     }
 
     @Test
@@ -210,7 +215,7 @@ public class CssBundlerTest {
                         background-image: url('VAADIN/themes/my-theme/my/icons/file2.png');
                         background-image: url('../my/icons/file3.png');
                         """,
-                CssBundler.inlineImports(themeFolder,
+                CssBundler.inlineImportsForThemes(themeFolder,
                         getThemeFile("styles.css"), getThemeJson()));
     }
 
@@ -239,7 +244,7 @@ public class CssBundlerTest {
         writeCss("background-image: url('../../my/icons/file2.png');",
                 "sub/nested/two.css");
 
-        String actualCss = CssBundler.inlineImports(themeFolder,
+        String actualCss = CssBundler.inlineImportsForThemes(themeFolder,
                 getThemeFile("styles.css"), getThemeJson());
         Assert.assertEquals(
                 """
@@ -277,7 +282,7 @@ public class CssBundlerTest {
         writeCss("background-image: url('../../unknown/icons/file2.png');",
                 "sub/nested/two.css");
 
-        String actualCss = CssBundler.inlineImports(themeFolder,
+        String actualCss = CssBundler.inlineImportsForThemes(themeFolder,
                 getThemeFile("styles.css"), getThemeJson());
         Assert.assertEquals("""
                 background-image: url('../../unknown/icons/file1.png');
@@ -301,14 +306,14 @@ public class CssBundlerTest {
     private void assertImportWorks(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
         Assert.assertEquals(importCss, TEST_CSS.trim(),
-                CssBundler.inlineImports(f.getParentFile(), f,
+                CssBundler.inlineImportsForThemes(f.getParentFile(), f,
                         new ObjectMapper().createArrayNode()).trim());
 
     }
 
     private void assertImportNotHandled(String importCss) throws IOException {
         File f = writeFileWithImport(importCss, "foo.css");
-        Assert.assertEquals(importCss, CssBundler.inlineImports(
+        Assert.assertEquals(importCss, CssBundler.inlineImportsForThemes(
                 f.getParentFile(), f, new ObjectMapper().createArrayNode()));
 
     }
