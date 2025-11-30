@@ -12,7 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
-    <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
+    <pushDirectory>${project.build.outputDirectory}/META-INF/VAADIN/webapp/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
     <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>
   </properties>
