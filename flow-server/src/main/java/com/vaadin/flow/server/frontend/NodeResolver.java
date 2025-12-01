@@ -222,8 +222,8 @@ class NodeResolver implements java.io.Serializable {
 
         // Try common locations relative to node executable
         String[] possiblePaths = isWindows
-                ? new String[] { "..\\node_modules\\npm\\bin\\npm-cli.js" }
-                : new String[] { "../lib/node_modules/npm/bin/npm-cli.js" };
+                ? new String[] { "node_modules\\npm\\bin\\npm-cli.js" }
+                : new String[] { "lib/node_modules/npm/bin/npm-cli.js" };
 
         for (String path : possiblePaths) {
             File npmCliScript = new File(nodeDir, path);
@@ -293,8 +293,31 @@ class NodeResolver implements java.io.Serializable {
             versionToUse = fallbackVersion;
             nodeExecutable = getNodeExecutableForVersion(alternativeDirFile,
                     versionToUse);
-            return createActiveInstallation(nodeExecutable, versionToUse,
-                    alternativeDirFile);
+
+            // Also validate that found alternative actually works.
+            try {
+                String installedVersion = FrontendUtils
+                        .getVersion("node", List.of(
+                                nodeExecutable.getAbsolutePath(), "--version"))
+                        .getFullVersion();
+
+                // Normalize versions for comparison
+                String normalizedInstalled = installedVersion.startsWith("v")
+                        ? installedVersion.substring(1)
+                        : installedVersion;
+                String normalizedRequested = nodeVersion.startsWith("v")
+                        ? nodeVersion.substring(1)
+                        : nodeVersion;
+
+                if (normalizedInstalled.equals(normalizedRequested)) {
+                    return createActiveInstallation(nodeExecutable,
+                            versionToUse, alternativeDirFile);
+                }
+            } catch (UnknownVersionException e) {
+                getLogger().debug(
+                        "Could not verify version of existing node installation",
+                        e);
+            }
         }
 
         // No suitable version found, install the requested version

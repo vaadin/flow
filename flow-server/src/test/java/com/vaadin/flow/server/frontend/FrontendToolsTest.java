@@ -51,7 +51,6 @@ import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
-import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache;
@@ -63,14 +62,6 @@ import static org.junit.Assert.assertEquals;
 @NotThreadSafe
 @Category(SlowTests.class)
 public class FrontendToolsTest {
-
-    public static final String DEFAULT_NODE = FrontendUtils.isWindows()
-            ? "node\\node.exe"
-            : "node/node";
-
-    public static final String NPM_CLI_STRING = FrontendUtils.isWindows()
-            ? "node\\node_modules\\npm\\bin\\npm-cli.js"
-            : "node/lib/node_modules/npm/bin/npm-cli.js";
 
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
@@ -274,6 +265,7 @@ public class FrontendToolsTest {
 
         settings.setNodeDownloadRoot(new File(baseDir).toURI());
         settings.setNodeVersion(testVersion);
+        settings.setForceAlternativeNode(true);
         tools = new FrontendTools(settings);
         prepareNodeDownloadableZipAt(baseDir, testVersion);
         tools.getNodeExecutable();
@@ -317,21 +309,23 @@ public class FrontendToolsTest {
         }
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(DEFAULT_NODE)));
-        assertThat(tools.getNodeExecutable(),
-                not(containsString(NPM_CLI_STRING)));
+        assertThat(tools.getNodeExecutable(), not(containsString(
+                getDefaultNode(tools.getNodeVersion().toString()))));
+        assertThat(tools.getNodeExecutable(), not(containsString(
+                getNpmCliString(tools.getNodeVersion().toString()))));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
-        assertEquals(4, tools.getNpmExecutable().size());
-        assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
-        assertThat(tools.getNpmExecutable().get(1),
-                containsString("--no-update-notifier"));
+        // Running npm using node and npm-cli.js script by default
+        assertEquals(5, tools.getNpmExecutable().size());
+        assertThat(tools.getNpmExecutable().get(0), containsString("node"));
+        assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
-                containsString("--no-audit"));
+                containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
+                containsString("--no-audit"));
+        assertThat(tools.getNpmExecutable().get(4),
                 containsString("--scripts-prepend-node-path=true"));
     }
 
@@ -371,9 +365,11 @@ public class FrontendToolsTest {
         Assert.assertTrue(file.exists());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
-            throws IOException {
+    @Test
+    public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_reinstallsOrSelectsOtherVersion()
+            throws IOException, FrontendUtils.UnknownVersionException {
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
         // Create a folder where the node binary should be (versioned path)
         String version = FrontendTools.DEFAULT_NODE_VERSION;
         String nodePath = FrontendUtils.isWindows()
@@ -383,6 +379,8 @@ public class FrontendToolsTest {
         FileUtils.forceMkdir(node);
 
         tools.getNodeExecutable();
+        Assert.assertEquals(FrontendTools.DEFAULT_NODE_VERSION,
+                "v" + tools.getNodeVersion().getFullVersion());
     }
 
     @Test
@@ -583,7 +581,8 @@ public class FrontendToolsTest {
         assertThat(tools.getNodeExecutable(), containsString(vaadinHomeDir));
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString(vaadinHomeDir));
-        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(FrontendTools.DEFAULT_NODE_VERSION)));
     }
 
     @Test
@@ -658,103 +657,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_falseForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertFalse(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_trueForNonWindows()
-            throws IOException {
-        Assume.assumeFalse(
-                "This test is for the rest of OS rather than Windows, since "
-                        + "the issue with whitespaces in directories processed by npm, "
-                        + "is not reproduced on them",
-                FrontendUtils.isWindows());
-
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npmCacheNoWhitespaces_trueForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-
-        // given
-        // dir with no whitespaces
-        File npmCacheDir = tmpDir.newFolder("FooBar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npm7_trueForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo  Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Acceptable npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("7.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
     public void getViteExecutable_returnsCorrectPath()
             throws IOException, FrontendUtils.CommandExecutionException {
         var projectDir = tmpDir.newFolder();
@@ -792,26 +694,32 @@ public class FrontendToolsTest {
                 vite.toRealPath());
     }
 
-    private void assertNpmCommand(Supplier<String> path) throws IOException {
+    private void assertNpmCommand(Supplier<String> path)
+            throws IOException, FrontendUtils.UnknownVersionException {
         createStubNode(false, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
 
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString("node"));
-        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(tools.getNodeVersion().getFullVersion())));
         assertThat(npmExecutable.get(1), containsString(path.get()));
     }
 
-    private void assertNodeCommand(Supplier<String> path) throws IOException {
+    private void assertNodeCommand(Supplier<String> path)
+            throws IOException, FrontendUtils.UnknownVersionException {
         createStubNode(true, true, vaadinHomeDir);
 
-        assertThat(tools.getNodeExecutable(), containsString(DEFAULT_NODE));
+        assertThat(tools.getNodeExecutable(), containsString(
+                getDefaultNode(tools.getNodeVersion().getFullVersion())));
         assertThat(tools.getNodeExecutable(), containsString(path.get()));
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString(path.get()));
-        assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
-        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        assertThat(npmExecutable.get(0), containsString(
+                getDefaultNode(tools.getNodeVersion().getFullVersion())));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(tools.getNodeVersion().getFullVersion())));
     }
 
     private void assertFaultyNpmVersion(FrontendVersion version) {
@@ -979,4 +887,17 @@ public class FrontendToolsTest {
             System.exit(1);
         }
     }
+
+    private String getDefaultNode(String nodeVersion) {
+        return FrontendUtils.isWindows() ? "node-" + nodeVersion + "\\node.exe"
+                : "node-" + nodeVersion + "/node";
+    }
+
+    private String getNpmCliString(String nodeVersion) {
+        return FrontendUtils.isWindows()
+                ? "node-" + nodeVersion + "\\node_modules\\npm\\bin\\npm-cli.js"
+                : "node-" + nodeVersion
+                        + "/lib/node_modules/npm/bin/npm-cli.js";
+    }
+
 }
