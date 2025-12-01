@@ -126,9 +126,6 @@ internal class PrepareFrontendInputProperties(
     fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
 
     @Input
-    fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
-
-    @Input
     fun getProjectBuildDir(): Provider<String> = config.projectBuildDir
 
     @Input

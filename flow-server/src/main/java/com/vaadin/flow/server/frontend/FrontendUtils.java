@@ -68,7 +68,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
 
 /**
@@ -346,15 +345,6 @@ public class FrontendUtils {
     public static final String PARAM_TOKEN_FILE = "vaadin.frontend.token.file";
 
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
-
-    private static final String TOO_OLD = "%n%n======================================================================================================"
-            + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
-            + "%nPlease install a new one either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
-            + DISABLE_CHECK //
-            + "%n======================================================================================================%n";
 
     // Proxy config properties keys (for both system properties and environment
     // variables) can be either fully upper case or fully lower case
@@ -767,12 +757,6 @@ public class FrontendUtils {
         return new File(frontendDirectory, GENERATED);
     }
 
-    private static String buildTooOldString(String tool, String version,
-            int supportedMajor, int supportedMinor) {
-        return String.format(TOO_OLD, tool, version, supportedMajor,
-                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
-    }
-
     /**
      * Get directory where project's frontend files are located.
      *
@@ -809,17 +793,6 @@ public class FrontendUtils {
      */
     public static String getUnixPath(Path source) {
         return source.toString().replaceAll("\\\\", "/");
-    }
-
-    static void validateToolVersion(String tool, FrontendVersion toolVersion,
-            FrontendVersion supported) {
-        if (toolVersion.isEqualOrNewer(supported)) {
-            return;
-        }
-
-        throw new IllegalStateException(buildTooOldString(tool,
-                toolVersion.getFullVersion(), supported.getMajorVersion(),
-                supported.getMinorVersion()));
     }
 
     /**
