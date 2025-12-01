@@ -22,6 +22,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -228,10 +229,13 @@ public class ReflectorTest {
         scanner.addExclude(new FrontendScannerConfig.ArtifactMatcher(
                 "com.example.addon", null));
 
-        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
-                "com.vaadin-vaadin-core-1.0.jar",
-                "com.vaadin-flow-server-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+        Set<String> expectedArtifacts = new HashSet<>(
+                Set.of(PROJECT_TARGET_FOLDER, "com.vaadin-vaadin-core-1.0.jar",
+                        "com.vaadin-flow-server-1.0.jar",
+                        "org.test-alpha-1.0.jar", "org.test-beta-1.0.jar"));
+        // FrontendScannerConfig without includes also accept
+        // getDefaultVaadinDependencies:
+        expectedArtifacts.addAll(getDefaultVaadinDependencies());
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
     }
@@ -302,13 +306,16 @@ public class ReflectorTest {
                 "com.example.addon", null));
         scanner.setEnabled(false);
 
-        Set<String> expectedArtifacts = Set.of(PROJECT_TARGET_FOLDER,
-                "com.vaadin-vaadin-core-1.0.jar",
-                "com.vaadin-flow-server-1.0.jar",
-                "org.springframework.boot-spring-boot-1.0.jar",
-                "com.example.addon-alpha-1.0.jar",
-                "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+        Set<String> expectedArtifacts = new HashSet<>(
+                Set.of(PROJECT_TARGET_FOLDER, "com.vaadin-vaadin-core-1.0.jar",
+                        "com.vaadin-flow-server-1.0.jar",
+                        "org.springframework.boot-spring-boot-1.0.jar",
+                        "com.example.addon-alpha-1.0.jar",
+                        "com.example.addon-beta-1.0.jar",
+                        "org.test-alpha-1.0.jar", "org.test-beta-1.0.jar"));
+        // disabled FrontendScannerConfig includes also accept
+        // getDefaultVaadinDependencies:
+        expectedArtifacts.addAll(getDefaultVaadinDependencies());
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
     }
@@ -319,14 +326,31 @@ public class ReflectorTest {
         FrontendScannerConfig scanner = new FrontendScannerConfig();
         scanner.setIncludeOutputDirectory(false);
 
-        Set<String> expectedArtifacts = Set.of("com.vaadin-vaadin-core-1.0.jar",
-                "com.vaadin-flow-server-1.0.jar",
-                "org.springframework.boot-spring-boot-1.0.jar",
-                "com.example.addon-alpha-1.0.jar",
-                "com.example.addon-beta-1.0.jar", "org.test-alpha-1.0.jar",
-                "org.test-beta-1.0.jar");
+        Set<String> expectedArtifacts = new HashSet<>(
+                Set.of("com.vaadin-vaadin-core-1.0.jar",
+                        "com.vaadin-flow-server-1.0.jar",
+                        "org.springframework.boot-spring-boot-1.0.jar",
+                        "com.example.addon-alpha-1.0.jar",
+                        "com.example.addon-beta-1.0.jar",
+                        "org.test-alpha-1.0.jar", "org.test-beta-1.0.jar"));
+        // FrontendScannerConfig without includes/excludes also accept
+        // getDefaultVaadinDependencies:
+        expectedArtifacts.addAll(getDefaultVaadinDependencies());
         assertThatIsolatedClassLoaderHasFilteredScanUrls(scanner,
                 expectedArtifacts);
+    }
+
+    private Set<String> getDefaultVaadinDependencies() {
+        return Set.of("com.vaadin-open-1.0.jar",
+                "com.vaadin-license-checker-1.0.jar",
+                "com.vaadin-vaadin-dev-1.0.jar",
+                "com.vaadin-vaadin-dev-server-1.0.jar",
+                "com.vaadin-vaadin-dev-bundle-1.0.jar",
+                "com.vaadin-copilot-1.0.jar",
+                "com.vaadin-flow-archive-extractor-1.0.jar",
+                "com.vaadin-ui-tests-1.0.jar",
+                "com.vaadin.external-gentyref-1.0.jar",
+                "com.vaadin.external.atmosphere-atmosphere-runtime-1.0.jar");
     }
 
     private void assertThatIsolatedClassLoaderHasFilteredScanUrls(
@@ -334,12 +358,14 @@ public class ReflectorTest {
             throws Exception {
         String outputDirectory = PROJECT_TARGET_FOLDER;
 
+        Set<String> defaultVaadinDependencies = getDefaultVaadinDependencies();
+
         MavenProject project = new MavenProject();
         project.setGroupId("com.vaadin.test");
         project.setArtifactId("reflector-tests");
         project.setBuild(new Build());
         project.getBuild().setOutputDirectory(outputDirectory);
-        project.setArtifacts(Set.of(
+        project.setArtifacts(new HashSet<>(Set.of(
                 createArtifact("com.vaadin", "vaadin-core", "1.0", "compile",
                         true),
                 createArtifact("com.vaadin", "flow-server", "1.0", "compile",
@@ -351,9 +377,17 @@ public class ReflectorTest {
                 createArtifact("com.example.addon", "beta", "1.0", "compile",
                         true),
                 createArtifact("org.test", "alpha", "1.0", "compile", true),
-                createArtifact("org.test", "beta", "1.0", "compile", true)
-
-        ));
+                createArtifact("org.test", "beta", "1.0", "compile", true))));
+        for (String vaadinDep : defaultVaadinDependencies) {
+            // create Artifact from String like
+            // "com.vaadin.external-gentyref-1.0.jar"
+            project.getArtifacts()
+                    .add(createArtifact(
+                            vaadinDep.substring(0, vaadinDep.indexOf("-")),
+                            vaadinDep.substring(vaadinDep.indexOf("-") + 1,
+                                    vaadinDep.length() - "-1.0.jar".length()),
+                            "1.0", "compile", true));
+        }
 
         MojoExecution mojoExecution = new MojoExecution(new MojoDescriptor());
         PluginDescriptor pluginDescriptor = new PluginDescriptor();
@@ -380,7 +414,7 @@ public class ReflectorTest {
         // Ensure the classloader references all dependencies
         Set<String> urlSet = Arrays.stream(isolatedClassLoader.getURLs())
                 .map(URL::toExternalForm).collect(Collectors.toSet());
-        Assert.assertEquals(9, urlSet.size());
+        Assert.assertEquals(19, urlSet.size());
         Assert.assertTrue(urlSet.contains(toURLExternalForm(outputDirectory)));
         Assert.assertTrue(urlSet
                 .contains(toURLExternalForm("com.vaadin-vaadin-core-1.0.jar")));
@@ -396,6 +430,9 @@ public class ReflectorTest {
                 urlSet.contains(toURLExternalForm("org.test-beta-1.0.jar")));
         Assert.assertTrue(urlSet.contains(
                 toURLExternalForm("com.example.plugin-plugin-dep-1.0.jar")));
+        for (String url : defaultVaadinDependencies) {
+            Assert.assertTrue(urlSet.contains(toURLExternalForm(url)));
+        }
 
         // Verify scan URLs
         urlSet = Arrays.stream(isolatedClassLoader.getUrlsToScan())
@@ -404,6 +441,15 @@ public class ReflectorTest {
         for (String expectedUrl : expectedScanURLs) {
             Assert.assertTrue("Scan URL missing in Reflector: " + expectedUrl,
                     urlSet.contains(toURLExternalForm(expectedUrl)));
+        }
+        // verify default excluded URLs are indeed excluded
+        for (String expectedExcludedUrl : defaultVaadinDependencies) {
+            if (expectedScanURLs.contains(expectedExcludedUrl)) {
+                continue; // already checked as included
+            }
+            Assert.assertFalse(
+                    "Unexpected scan URL in Reflector: " + expectedExcludedUrl,
+                    urlSet.contains(toURLExternalForm(expectedExcludedUrl)));
         }
 
     }

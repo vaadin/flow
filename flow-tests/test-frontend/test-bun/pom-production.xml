@@ -74,7 +74,6 @@
                 <configuration>
                     <bunEnable>true</bunEnable>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->

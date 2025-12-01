@@ -302,7 +302,7 @@ public final class Reflector {
                     scannerConfig);
         }
         Predicate<Artifact> shouldScan = scannerConfig == null
-                ? artifact -> true
+                ? FrontendScannerConfig.DEV_EXCLUSION_FILTER
                 : FrontendScannerConfig.DEFAULT_FILTER
                         .or(scannerConfig::shouldScan);
 
