@@ -17,7 +17,6 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
@@ -26,6 +25,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.pro.licensechecker.MachineId;
 
@@ -41,8 +41,7 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
 
         try (InputStream testResource = TestUtils
                 .getTestResource("stats-data/client-data-1.txt").openStream()) {
-            String data = new String(testResource.readAllBytes(),
-                    StandardCharsets.UTF_8);
+            String data = StringUtil.toUTF8String(testResource);
             DevModeUsageStatistics.handleBrowserData(wrapStats(data));
         }
     }
