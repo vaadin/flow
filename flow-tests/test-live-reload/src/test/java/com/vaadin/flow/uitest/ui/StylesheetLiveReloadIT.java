@@ -50,6 +50,7 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     private static final String VIEW_IMPORTED_DIV_BG_COLOR = "rgba(205, 133, 63, 1)";
     private static final String VIEW_NESTED_IMPORTED_DIV_BG_COLOR = "rgba(255, 127, 80, 1)";
     private final Map<Path, byte[]> styleSheetRestore = new HashMap<>();
+    private static final String DIV_BG_COLOR_BEFORE_DELETE = "rgba(0, 255, 0, 1)";
 
     private Path resourcesPath;
 
@@ -95,6 +96,8 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         assertStyleSheetIsReloaded("view-imported", VIEW_IMPORTED_DIV_BG_COLOR);
         assertStyleSheetIsReloaded("view-nested-imported",
                 VIEW_NESTED_IMPORTED_DIV_BG_COLOR);
+
+        assertStyleSheetIsRemoved();
     }
 
     private void assertStyleSheetIsReloaded(String styledDivID,
@@ -112,6 +115,27 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
             var newBgColor = $("div").id(styledDivID)
                     .getCssValue("backgroundColor");
             return UPDATED_DIV_BG_COLOR.equals(newBgColor);
+        });
+    }
+
+    private void assertStyleSheetIsRemoved() throws IOException {
+        String initialBgColor = $("div").id("view-style-deleted")
+                .getCssValue("backgroundColor");
+        // Before deletion, the element should be styled (i.e., not the
+        // default/transparent)
+        Assert.assertEquals(
+                "Precondition failed: element should be styled before deletion",
+                DIV_BG_COLOR_BEFORE_DELETE, initialBgColor);
+
+        triggerDelete();
+
+        Assert.assertEquals("Page should not be reloaded", getInitialAttachId(),
+                getAttachId());
+
+        waitUntil(d -> {
+            var newBgColor = $("div").id("view-style-deleted")
+                    .getCssValue("backgroundColor");
+            return !DIV_BG_COLOR_BEFORE_DELETE.equals(newBgColor);
         });
     }
 
@@ -154,6 +178,27 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         // Make sure the servlet container returns the updated content
         waitUntilContentMatches(
                 getRootURL() + "/context/" + resourceRelativePath, content);
+        button.click();
+    }
+
+    private void triggerDelete() throws IOException {
+        TestBenchElement button = $("button").id("delete-view-style-deleted");
+        String resourceRelativePath = button
+                .getDomAttribute("test-resource-file-path");
+        Assert.assertNotNull(
+                "No test-resource-file-path attribute found for button "
+                        + button,
+                resourceRelativePath);
+
+        Path resourcePath = resourcesPath
+                .resolve(resourceRelativePath.replace('/', File.separatorChar));
+        Assert.assertTrue("Resource file not found: " + resourcePath,
+                Files.exists(resourcePath));
+
+        styleSheetRestore.put(resourcePath, Files.readAllBytes(resourcePath));
+        Files.delete(resourcePath);
+
+        waitUntil(driver -> !Files.exists(resourcePath));
         button.click();
     }
 

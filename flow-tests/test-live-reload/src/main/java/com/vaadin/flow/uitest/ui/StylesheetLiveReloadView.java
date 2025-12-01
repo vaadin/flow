@@ -34,6 +34,7 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.StylesheetLiveReloadView", layout = ViewTestLayout.class)
 @StyleSheet("context://css/view/view.css")
+@StyleSheet("context://css/view/for-deletion.css")
 public class StylesheetLiveReloadView extends AbstractLiveReloadView {
 
     public StylesheetLiveReloadView() {
@@ -45,6 +46,7 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
         add(makeDiv("view-imported", "css/view/imported.css"));
         add(makeDiv("view-nested-imported",
                 "css/view/nested/nested-imported.css"));
+        add(makeDivForDelete());
     }
 
     private Div makeDiv(String cssClass, String resourceFile) {
@@ -68,6 +70,27 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
                 resourceFile);
         div.add(reloadButton);
         return div;
+    }
+
+    private Div makeDivForDelete() {
+        // Separate element to test deletion of a stylesheet file
+        Div deleteDiv = new Div();
+        deleteDiv.setId("view-style-deleted");
+        deleteDiv.setText("Style defined in css/view/view.css (delete test)");
+        // Use the same class so initial style applies before deletion
+        deleteDiv.addClassName("view-style-deleted");
+
+        NativeButton deleteButton = new NativeButton(
+                "Trigger Stylesheet delete",
+                ev -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromService(VaadinService.getCurrent())
+                        .ifPresent(reload -> reload.update(
+                                "context://css/view/for-deletion.css", null)));
+        deleteButton.setId("delete-view-style-deleted");
+        deleteButton.getElement().setAttribute("test-resource-file-path",
+                "css/view/for-deletion.css");
+        deleteDiv.add(deleteButton);
+        return deleteDiv;
     }
 
     private String getContentForFile(String cssFile) {

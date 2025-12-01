@@ -739,7 +739,7 @@ export class VaadinDevTools extends LitElement {
     // removes initially added links that are outdated after hot-reload and replaced by inlined styles
     const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
     links.forEach((link) => {
-      const filePath = link.getAttribute('data-file-path');
+      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
       if (filePath && filePath.includes(path)) {
         link.remove();
       }
