@@ -18,6 +18,7 @@ package com.vaadin.base.devserver;
 import jakarta.servlet.ServletRegistration;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -26,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,7 +109,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
+        Files.createDirectories(new File(baseDir, "src/main/java").toPath());
 
         devModeStartupListener = new DevModeStartupListener();
     }

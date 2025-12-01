@@ -48,7 +48,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -535,12 +534,13 @@ public class DevModeInitializer implements Serializable {
 
                 String relativePath = (String) getPathNameRelativeToMethod
                         .invoke(child, jarVirtualFile);
-                InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child);
-                ZipEntry zipEntry = new ZipEntry(relativePath);
-                zipOutputStream.putNextEntry(zipEntry);
-                IOUtils.copy(inputStream, zipOutputStream);
-                zipOutputStream.closeEntry();
+                try (InputStream inputStream = (InputStream) openStreamMethod
+                        .invoke(child)) {
+                    ZipEntry zipEntry = new ZipEntry(relativePath);
+                    zipOutputStream.putNextEntry(zipEntry);
+                    inputStream.transferTo(zipOutputStream);
+                    zipOutputStream.closeEntry();
+                }
             }
         }
     }

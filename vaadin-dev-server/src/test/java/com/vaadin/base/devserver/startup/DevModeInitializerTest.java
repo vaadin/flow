@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -327,10 +327,10 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private String getFlowGeneratedImports() throws IOException {
-        return FileUtils.readFileToString(
-                FrontendUtils.getFlowGeneratedImports(new File(npmFolder,
-                        FrontendUtils.DEFAULT_FRONTEND_DIR)),
-                StandardCharsets.UTF_8);
+        return Files.readString(FrontendUtils
+                .getFlowGeneratedImports(
+                        new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR))
+                .toPath(), StandardCharsets.UTF_8);
     }
 
     @Test
