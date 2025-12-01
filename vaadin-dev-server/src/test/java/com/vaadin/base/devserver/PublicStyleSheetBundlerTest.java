@@ -21,6 +21,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.Optional;
 
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -69,7 +70,7 @@ public class PublicStyleSheetBundlerTest {
                 .forResourceLocations(java.util.List.of(publicRoot));
 
         // Act
-        Optional<String> bundled = bundler.bundle("/main.css");
+        Optional<String> bundled = bundler.bundle(publicRoot, "/main.css");
 
         // Assert
         assertTrue("Bundled CSS should be present", bundled.isPresent());
@@ -99,7 +100,8 @@ public class PublicStyleSheetBundlerTest {
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle("context://main.css");
+        Optional<String> bundled = bundler.bundle(publicRoot,
+                "context://main.css");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         assertTrue(result.contains(".im{b:1;}"));
@@ -133,56 +135,67 @@ public class PublicStyleSheetBundlerTest {
 
     @Test
     public void bundle_preservesUrls_inTopLevelCss() throws IOException {
+        String given = """
+                DIV.appshell-image {
+                    background: url('./gobo.png') no-repeat;
+                }
+                """;
         File project = temporaryFolder.newFolder("project_meta");
-        File metaInfRoot = new File(project,
-                "src/main/resources/META-INF/resources/css");
-        assertTrue(metaInfRoot.mkdirs());
-        File styles = new File(metaInfRoot, "styles.css");
-        Files.writeString(styles.toPath(), EXPECTED_CSS,
-                StandardCharsets.UTF_8);
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        assertTrue(publicRoot.mkdirs());
+        File styles = new File(publicRoot, "styles.css");
+        Files.writeString(styles.toPath(), given, StandardCharsets.UTF_8);
 
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .forResourceLocations(java.util.List.of(new File(project,
-                        "src/main/resources/META-INF/resources")));
+                .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle("/css/styles.css");
+        Optional<String> bundled = bundler.bundle(publicRoot, "./styles.css");
         assertTrue("Bundled CSS should be present", bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
-        String expected = normalizeWhitespace(EXPECTED_CSS);
+        String expected = normalizeWhitespace(
+                given.replace("./gobo.png", "gobo.png"));
         assertEquals("URL paths in top-level CSS should be preserved", expected,
                 result);
-        assertFalse("Should not rewrite to VAADIN/themes",
-                result.contains("VAADIN/themes"));
     }
 
     @Test
     public void bundle_withImport_inlinesAndRebasesNestedUrls()
             throws IOException {
-        // Arrange META-INF/resources with a nested import that has a relative
-        // URL
+        // src/main/resources
+        // └── META-INF
+        // └── resources
+        // └── css
+        // ├── images
+        // │ └── gobo.png
+        // ├── nested
+        // │ └── nested-imported.css
+        // └── styles.css
+        //
         File project = temporaryFolder.newFolder("project_meta_import");
-        File metaInfRoot = new File(project,
-                "src/main/resources/META-INF/resources/css");
-        assertTrue(metaInfRoot.mkdirs());
-        File nestedDir = new File(metaInfRoot, "nested");
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        File cssRoot = new File(publicRoot, "css");
+        assertTrue(cssRoot.mkdirs());
+        File nestedDir = new File(cssRoot, "nested");
         assertTrue(nestedDir.mkdirs());
         // nested/nested-imported.css contains url('../images/gobo.png')
         Files.writeString(new File(nestedDir, "nested-imported.css").toPath(),
                 EXPECTED_CSS, StandardCharsets.UTF_8);
         // styles.css imports the nested file
-        Files.writeString(new File(metaInfRoot, "styles.css").toPath(),
+        Files.writeString(new File(cssRoot, "styles.css").toPath(),
                 "@import './nested/nested-imported.css';\n/* main marker */",
                 StandardCharsets.UTF_8);
 
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
-                .forResourceLocations(java.util.List.of(new File(project,
-                        "src/main/resources/META-INF/resources")));
+                .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle("/css/styles.css");
+        Optional<String> bundled = bundler.bundle(publicRoot,
+                "/css/styles.css");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
-        String expectedImported = normalizeWhitespace(
-                EXPECTED_CSS.replace("../images/gobo.png", "images/gobo.png"));
+        String expectedImported = normalizeWhitespace(EXPECTED_CSS
+                .replace("../images/gobo.png", "css/images/gobo.png"));
         assertTrue(
                 "Imported nested content should be inlined with rebased URLs",
                 result.contains(expectedImported));
@@ -190,6 +203,61 @@ public class PublicStyleSheetBundlerTest {
                 result.contains(expectedImported));
         assertFalse("Should not rewrite to VAADIN/themes",
                 result.contains("VAADIN/themes"));
+    }
+
+    @Test
+    public void bundle_withImport_inlinesAndRebasesDoubleNestedUrls()
+            throws IOException {
+        // src/main/resources
+        // └── META-INF
+        // └── resources
+        // └── css
+        // ├── images
+        // │ └── viking.png
+        // └── view
+        // ├── imported.css
+        // ├── nested
+        // │ └── nested-imported.css
+        // └── view.css
+        //
+        File project = temporaryFolder.newFolder("project_meta_import");
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        File cssRoot = new File(publicRoot, "css");
+        assertTrue(cssRoot.mkdirs());
+        File viewDir = new File(cssRoot, "view");
+        assertTrue(viewDir.mkdirs());
+        File nestedDir = new File(viewDir, "nested");
+        assertTrue(nestedDir.mkdirs());
+        // nested/nested-imported.css contains background-image:
+        // url(../../images/viking.png);
+        String given = """
+                DIV.nested-imported {
+                    background-image: url('../../images/viking.png');
+                }
+                """;
+        Files.writeString(new File(nestedDir, "nested-imported.css").toPath(),
+                given, StandardCharsets.UTF_8);
+        // imported.css imports the nested file
+        Files.writeString(new File(viewDir, "imported.css").toPath(),
+                "@import 'nested/nested-imported.css';",
+                StandardCharsets.UTF_8);
+        // view.css imports the sibling file
+        Files.writeString(new File(viewDir, "view.css").toPath(),
+                "@import 'imported.css';", StandardCharsets.UTF_8);
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .forResourceLocations(java.util.List.of(publicRoot));
+
+        Optional<String> bundled = bundler.bundle(publicRoot,
+                "/css/view/view.css");
+        assertTrue(bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        String expected = normalizeWhitespace(given
+                .replace("../../images/viking.png", "css/images/viking.png"));
+        Assert.assertEquals(
+                "Unexpected bundled content for double nested sub-directories",
+                expected, result);
     }
 
     private static String normalizeWhitespace(String s) {

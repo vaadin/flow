@@ -123,7 +123,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     String normalized = PublicStyleSheetBundler
                             .normalizeUrl(url);
                     String content = bundler != null
-                            ? bundler.bundle(url).orElse(null)
+                            ? bundler.bundle(root, url).orElse(null)
                             : null;
 
                     String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX

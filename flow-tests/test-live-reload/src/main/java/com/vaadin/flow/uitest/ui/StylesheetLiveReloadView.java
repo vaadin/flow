@@ -16,12 +16,10 @@
 package com.vaadin.flow.uitest.ui;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
+import com.vaadin.base.devserver.PublicStyleSheetBundler;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
@@ -29,7 +27,6 @@ import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.CssBundler;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.StylesheetLiveReloadView", layout = ViewTestLayout.class)
@@ -37,37 +34,54 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 @StyleSheet("context://css/view/for-deletion.css")
 public class StylesheetLiveReloadView extends AbstractLiveReloadView {
 
+    private final PublicStyleSheetBundler bundler;
+    private final File root;
+
     public StylesheetLiveReloadView() {
-        add(makeDiv("appshell-style", "css/styles.css"));
-        add(makeDiv("appshell-imported", "css/imported.css"));
+        DeploymentConfiguration configuration = VaadinService.getCurrent()
+                .getDeploymentConfiguration();
+        File projectFolder = configuration.getProjectFolder();
+        String outputFolder = configuration.getBuildFolder() + "/classes";
+        root = Paths.get(projectFolder.getAbsolutePath(), outputFolder,
+                "META-INF", "resources").toFile();
+        bundler = PublicStyleSheetBundler.forResourceLocations(List.of(root));
+
+        add(makeDiv("appshell-style", "css/styles.css", "css/styles.css"));
+        add(makeDiv("appshell-imported", "css/imported.css", "css/styles.css"));
         add(makeDiv("appshell-nested-imported",
-                "css/nested/nested-imported.css"));
-        add(makeDiv("view-style", "css/view/view.css"));
-        add(makeDiv("view-imported", "css/view/imported.css"));
+                "css/nested/nested-imported.css", "css/styles.css"));
+        add(makeDiv("appshell-image", "css/images/gobo.png", "css/styles.css"));
+        add(makeDiv("view-style", "css/view/view.css", "css/view/view.css"));
+        add(makeDiv("view-imported", "css/view/imported.css",
+                "css/view/view.css"));
         add(makeDiv("view-nested-imported",
-                "css/view/nested/nested-imported.css"));
+                "css/view/nested/nested-imported.css", "css/view/view.css"));
+        add(makeDiv("view-image", "css/images/viking.png",
+                "css/view/view.css"));
         add(makeDivForDelete());
     }
 
-    private Div makeDiv(String cssClass, String resourceFile) {
+    private Div makeDiv(String cssClass, String resourceFileToChange,
+            String mainCssFile) {
         Div div = new Div();
         div.setId(cssClass);
-        div.setText("Style defined in " + resourceFile);
+        div.setText("Style defined in " + resourceFileToChange);
         div.addClassName(cssClass);
 
         // Simulate Flow Hotswapper handling of CSS change
         NativeButton reloadButton = new NativeButton(
                 "Trigger Stylesheet live reload", ev -> {
-                    String cssContent = getContentForFile(resourceFile);
+                    String bundledCssContent = getContentForFile(mainCssFile);
                     BrowserLiveReloadAccessor
                             .getLiveReloadFromService(
                                     VaadinService.getCurrent())
                             .ifPresent(reload -> reload.update(
-                                    "context://" + resourceFile, cssContent));
+                                    "context://" + mainCssFile,
+                                    bundledCssContent));
                 });
         reloadButton.setId("reload-" + cssClass);
         reloadButton.getElement().setAttribute("test-resource-file-path",
-                resourceFile);
+                resourceFileToChange);
         div.add(reloadButton);
         return div;
     }
@@ -94,22 +108,6 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
     }
 
     private String getContentForFile(String cssFile) {
-        DeploymentConfiguration configuration = VaadinService.getCurrent()
-                .getDeploymentConfiguration();
-        File projectFolder = configuration.getProjectFolder();
-        String outputFolder = configuration.getBuildFolder() + "/classes";
-        Path root = Paths.get(projectFolder.getAbsolutePath(), outputFolder,
-                "META-INF", "resources");
-        Path filePath = root.resolve(cssFile).normalize();
-        if (!Files.exists(filePath)) {
-            throw new IllegalArgumentException("File not found: " + filePath);
-        }
-
-        try {
-            return CssBundler.inlineImportsForPublicResources(
-                    filePath.toFile().getParentFile(), filePath.toFile());
-        } catch (IOException e) {
-            throw new UncheckedIOException("Failed to inline CSS content", e);
-        }
+        return bundler.bundle(root, cssFile).orElseThrow(AssertionError::new);
     }
 }

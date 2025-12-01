@@ -73,13 +73,15 @@ public final class PublicStyleSheetBundler {
      * against known public source roots and inlining any {@code @import}
      * statements.
      *
+     * @param publicResourcesRoot
+     *            root folder for public resources
      * @param url
      *            the stylesheet URL as used in {@code @StyleSheet}; may start
      *            with {@code context://} or a leading '/'
      * @return the bundled CSS content if the entry file was found and bundled;
      *         otherwise, {@link Optional#empty()}
      */
-    public Optional<String> bundle(String url) {
+    public Optional<String> bundle(File publicResourcesRoot, String url) {
         if (url == null || url.isBlank()) {
             return Optional.empty();
         }
@@ -89,7 +91,7 @@ public final class PublicStyleSheetBundler {
             if (entry.exists() && entry.isFile()) {
                 try {
                     String bundled = CssBundler.inlineImportsForPublicResources(
-                            entry.getParentFile(), entry);
+                            publicResourcesRoot, entry);
                     return Optional.ofNullable(bundled);
                 } catch (IOException e) {
                     getLogger().debug(

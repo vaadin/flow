@@ -119,7 +119,7 @@ public class CssBundler {
      * META-INF/resources).
      *
      * @param baseFolder
-     *            base folder of the CSS file (typically its parent folder)
+     *            base folder the imports and url() references are relative to
      * @param cssFile
      *            the CSS file to process
      * @return the processed stylesheet content with inlined imports only
@@ -136,7 +136,8 @@ public class CssBundler {
      * Internal implementation that can optionally skip URL rewriting.
      *
      * @param baseFolder
-     *            base folder used for resolving relative paths
+     *            base folder used for resolving relative paths, e.g. imports
+     *            and url() references
      * @param cssFile
      *            the CSS file to process
      * @param assetAliases
