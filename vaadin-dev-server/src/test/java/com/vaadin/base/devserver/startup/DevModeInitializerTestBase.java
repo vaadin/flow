@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
@@ -131,12 +132,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
-        FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
-                "UTF-8");
+        Files.writeString(mainPackageFile.toPath(),
+                getInitalPackageJson().toString(), StandardCharsets.UTF_8);
         // Create a minimal valid vite.config.ts that exports an empty
         // configuration
-        FileUtils.write(devServerConfigFile, "export default {}\n", "UTF-8");
-        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
+        Files.writeString(devServerConfigFile.toPath(), "export default {}\n",
+                StandardCharsets.UTF_8);
+        Files.createDirectories(new File(baseDir, "src/main/java").toPath());
 
         devModeStartupListener = new DevModeStartupListener();
     }
