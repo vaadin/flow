@@ -103,6 +103,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
             if (file.isDirectory()) {
                 return;
             }
+            if (isTempFile(file)) {
+                // temp file created by IDE, ignore
+                return;
+            }
             if (!file.getName().endsWith(".css")) {
                 liveReload.reload();
                 return;
@@ -121,14 +125,13 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     String content = bundler != null
                             ? bundler.bundle(url).orElse(null)
                             : null;
-                    if (content != null) {
-                        String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
-                                + normalized;
-                        liveReload.update(path, content);
-                        getLogger().debug(
-                                "Pushed bundled stylesheet update for {}",
-                                path);
-                    }
+
+                    String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
+                            + normalized;
+                    liveReload.update(path, content);
+                    getLogger().debug("Pushed bundled stylesheet update for {}",
+                            path);
+
                 }
             } catch (Exception e) {
                 getLogger().error(
@@ -160,5 +163,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }
         watchers.clear();
         roots.clear();
+    }
+
+    private boolean isTempFile(File file) {
+        String name = file.getName();
+        return name.startsWith("~") || name.endsWith("~");
     }
 }

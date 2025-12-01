@@ -193,4 +193,50 @@ public class PublicResourcesLiveUpdaterTest {
             });
         }
     }
+
+    @Test
+    public void cssTempFiles_areIgnored_noLiveReloadInteractions()
+            throws Exception {
+        // Arrange a fake project structure with public resources
+        File project = temporaryFolder.newFolder("project3");
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        // Mock ApplicationConfiguration.get(context) -> project folder
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        // Use the lightweight MockVaadinContext in this module
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        // Mock BrowserLiveReload available from context
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath()), context)) {
+            // Create and modify a temporary IDE backup file that should be
+            // ignored
+            File temp = new File(publicRoot, "temp.css~");
+            Files.writeString(temp.toPath(), "/* draft */",
+                    StandardCharsets.UTF_8);
+            Files.writeString(temp.toPath(), "/* draft v2 */",
+                    StandardCharsets.UTF_8);
+
+            // Wait a bit to allow any file watcher events to be processed
+            Awaitility.await().untilAsserted(() -> {
+                Mockito.verifyNoInteractions(liveReload);
+            });
+        }
+    }
 }
