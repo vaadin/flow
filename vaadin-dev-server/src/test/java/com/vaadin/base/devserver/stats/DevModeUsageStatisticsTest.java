@@ -16,10 +16,10 @@
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import tools.jackson.databind.JsonNode;
@@ -39,10 +39,12 @@ public class DevModeUsageStatisticsTest extends AbstractStatisticsTest {
                 .getTestFolder("stats-data/maven-project-folder1");
         DevModeUsageStatistics.init(mavenProjectFolder, storage, sender);
 
-        String data = IOUtils.toString(
-                TestUtils.getTestResource("stats-data/client-data-1.txt"),
-                StandardCharsets.UTF_8);
-        DevModeUsageStatistics.handleBrowserData(wrapStats(data));
+        try (InputStream testResource = TestUtils
+                .getTestResource("stats-data/client-data-1.txt").openStream()) {
+            String data = new String(testResource.readAllBytes(),
+                    StandardCharsets.UTF_8);
+            DevModeUsageStatistics.handleBrowserData(wrapStats(data));
+        }
     }
 
     @Test
