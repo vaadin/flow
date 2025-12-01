@@ -377,4 +377,21 @@ public class FrontendStubs {
     public enum Tool {
         NODE, NPM
     }
+
+    /**
+     * Resets the static node installation cache in FrontendTools using
+     * reflection. This ensures test isolation by clearing cached node paths
+     * between test runs.
+     *
+     * @throws Exception
+     *             if reflection fails
+     */
+    public static void resetFrontendToolsNodeCache() throws Exception {
+        Class<?> frontendToolsClass = Class
+                .forName("com.vaadin.flow.server.frontend.FrontendTools");
+        java.lang.reflect.Field activeNodeField = frontendToolsClass
+                .getDeclaredField("activeNodeInstallation");
+        activeNodeField.setAccessible(true);
+        activeNodeField.set(null, null);
+    }
 }
