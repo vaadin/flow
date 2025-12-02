@@ -33,6 +33,10 @@ import static org.junit.Assert.assertTrue;
 
 public class PublicStyleSheetBundlerTest {
 
+    private static final String EXPECTED_INLINE_NESTED = """
+            DIV.nested-imported { background-image: url('../../images/viking.png'); }
+            """;
+
     private static final String EXPECTED_CSS = """
                 DIV.appshell-image {
                     background: url('../images/gobo.png') no-repeat;
@@ -153,7 +157,7 @@ public class PublicStyleSheetBundlerTest {
         assertTrue("Bundled CSS should be present", bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(
-                given.replace("./gobo.png", "gobo.png"));
+                given.replace("./gobo.png", "/gobo.png"));
         assertEquals("URL paths in top-level CSS should be preserved", expected,
                 result);
     }
@@ -193,7 +197,7 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expectedImported = normalizeWhitespace(EXPECTED_CSS
-                .replace("../images/gobo.png", "css/images/gobo.png"));
+                .replace("../images/gobo.png", "/css/images/gobo.png"));
         assertTrue(
                 "Imported nested content should be inlined with rebased URLs",
                 result.contains(expectedImported));
@@ -251,9 +255,78 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(given
-                .replace("../../images/viking.png", "css/images/viking.png"));
+                .replace("../../images/viking.png", "/css/images/viking.png"));
         Assert.assertEquals(
                 "Unexpected bundled content for double nested sub-directories",
+                expected, result);
+    }
+
+    @Test
+    public void bundle_withImport_inlinesWithContextPath() throws IOException {
+        File project = temporaryFolder.newFolder("project_inline_ctx");
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        File cssRoot = new File(publicRoot, "css");
+        assertTrue(cssRoot.mkdirs());
+        File viewDir = new File(cssRoot, "view");
+        assertTrue(viewDir.mkdirs());
+        File nestedDir = new File(viewDir, "nested");
+        assertTrue(nestedDir.mkdirs());
+        String nested = """
+                DIV.nested-imported {
+                    background-image: url('../../images/viking.png');
+                }
+                """;
+        Files.writeString(new File(nestedDir, "nested-imported.css").toPath(),
+                nested, StandardCharsets.UTF_8);
+        Files.writeString(new File(viewDir, "imported.css").toPath(),
+                "@import 'nested/nested-imported.css';",
+                StandardCharsets.UTF_8);
+        Files.writeString(new File(viewDir, "view.css").toPath(),
+                "@import 'imported.css';", StandardCharsets.UTF_8);
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .forResourceLocations(java.util.List.of(publicRoot));
+
+        Optional<String> bundled = bundler.bundle("/css/view/view.css",
+                "/context");
+        assertTrue(bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        String expected = normalizeWhitespace(nested.replace(
+                "../../images/viking.png", "/context/css/images/viking.png"));
+        Assert.assertEquals(
+                "Inline bundled content should contain absolute context-aware URL",
+                expected, result);
+    }
+
+    @Test
+    public void bundleInline_topLevel_rewritesToAbsoluteWithContextPath()
+            throws IOException {
+        String given = """
+                DIV.appshell-image {
+                    background: url('./gobo.png') no-repeat;
+                }
+                """;
+        File project = temporaryFolder.newFolder("project_inline_top_level");
+        File publicRoot = new File(project,
+                "src/main/resources/META-INF/resources");
+        assertTrue(publicRoot.mkdirs());
+        File cssDir = new File(publicRoot, "css");
+        assertTrue(cssDir.mkdirs());
+        File styles = new File(cssDir, "styles.css");
+        Files.writeString(styles.toPath(), given, StandardCharsets.UTF_8);
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .forResourceLocations(java.util.List.of(publicRoot));
+
+        Optional<String> bundled = bundler.bundle("/css/styles.css",
+                "/context");
+        assertTrue("Bundled CSS should be present", bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        String expected = normalizeWhitespace(
+                given.replace("./gobo.png", "/context/css/gobo.png"));
+        assertEquals(
+                "Top-level URL should be rewritten to absolute with context path",
                 expected, result);
     }
 

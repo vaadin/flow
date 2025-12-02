@@ -65,7 +65,8 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                         + markerUrl.getProtocol(),
                 "file", markerUrl.getProtocol());
         resourcesPath = Paths.get(markerUrl.toURI()).getParent();
-        Paths.get("css", "images", "vaadin-logo.png");
+        updatedImagePath = resourcesPath
+                .resolve(Paths.get("css", "images", "vaadin-logo.png"));
     }
 
     @After
@@ -99,8 +100,8 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         assertStyleSheetIsReloaded("view-nested-imported",
                 VIEW_NESTED_IMPORTED_DIV_BG_COLOR);
 
-        // assertImageIsReloaded("appshell-image", "css/images/gobo.png");
-        // assertImageIsReloaded("view-image", "css/images/viking.png");
+        assertImageIsReloaded("appshell-image", "css/images/gobo.png");
+        assertImageIsReloaded("view-image", "css/images/viking.png");
 
         assertStyleSheetIsRemoved();
     }
