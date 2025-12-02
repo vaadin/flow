@@ -65,6 +65,9 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        // Reset static node installation cache to ensure test isolation
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+
         Field firstMapping = VaadinServlet.class
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);

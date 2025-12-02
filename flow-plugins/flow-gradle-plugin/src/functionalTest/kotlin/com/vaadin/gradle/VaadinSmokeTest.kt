@@ -57,7 +57,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
     }
@@ -285,7 +285,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
         testProject.newFolder("libs")
@@ -487,7 +487,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         assertContains(result.output, "Configuration cache entry stored")
 
         val buildFile = testProject.buildFile.readText()
-            .replace("nodeAutoUpdate = true", "nodeAutoUpdate = false")
+            .replace("eagerServerLoad = false", "eagerServerLoad = true")
         testProject.buildFile.writeText(buildFile)
 
         val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)

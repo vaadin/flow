@@ -229,12 +229,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         if (options.isEnablePnpm()) {
             try {
@@ -252,7 +250,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         try {
             if (options.isRequireHomeNodeExec()) {
-                tools.forceAlternativeNodeExecutable();
+                tools.getNodeExecutable();
             }
             if (options.isEnableBun()) {
                 npmExecutable = tools.getBunExecutable();

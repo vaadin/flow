@@ -27,6 +27,7 @@ import java.net.HttpURLConnection;
 import java.net.InetAddress;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
@@ -38,8 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,6 +57,7 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -380,7 +380,6 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         ApplicationConfiguration config = getApplicationConfiguration();
         ProcessBuilder processBuilder = new ProcessBuilder()
                 .directory(getProjectRoot());
-        frontendTools.validateNodeAndNpmVersion();
 
         List<String> command = getServerStartupCommand(frontendTools);
 
@@ -514,8 +513,8 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         File portFile = getDevServerPortFile(npmFolder);
         if (portFile.canRead()) {
             try {
-                String portString = FileUtils
-                        .readFileToString(portFile, StandardCharsets.UTF_8)
+                String portString = Files
+                        .readString(portFile.toPath(), StandardCharsets.UTF_8)
                         .trim();
                 if (!portString.isEmpty()) {
                     port = Integer.parseInt(portString);
@@ -531,7 +530,11 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
      * Remove the running port from the vaadinContext and temporary file.
      */
     private void removeRunningDevServerPort() {
-        FileUtils.deleteQuietly(devServerPortFile);
+        try {
+            FileIOUtils.delete(devServerPortFile);
+        } catch (IOException e) {
+            // ignore
+        }
     }
 
     @Override
@@ -551,7 +554,7 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
 
     private void saveRunningDevServerPort() {
         try {
-            FileUtils.writeStringToFile(devServerPortFile, String.valueOf(port),
+            Files.writeString(devServerPortFile.toPath(), String.valueOf(port),
                     StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
@@ -679,9 +682,10 @@ public abstract class AbstractDevServerRunner implements DevModeHandler {
         } else {
             if (request.getHeader("X-DevModePoll") == null) {
                 // The initial request while the dev server is starting
-                InputStream inputStream = AbstractDevServerRunner.class
-                        .getResourceAsStream("dev-mode-not-ready.html");
-                IOUtils.copy(inputStream, response.getOutputStream());
+                try (InputStream inputStream = AbstractDevServerRunner.class
+                        .getResourceAsStream("dev-mode-not-ready.html")) {
+                    inputStream.transferTo(response.getOutputStream());
+                }
             } else {
                 // A polling request while the server is starting
                 response.getWriter().write("Pending");
