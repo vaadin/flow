@@ -190,11 +190,6 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val nodeDownloadRoot: Property<String>
 
     /**
-     * Allow automatic update of node installed to alternate location. Default `false`
-     */
-    public abstract val nodeAutoUpdate: Property<Boolean>
-
-    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file. Defaults to `build/vaadin-generated` folder.
      *
@@ -502,9 +497,6 @@ public class PluginEffectiveConfiguration(
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
         .convention(Platform.guess().nodeDownloadRoot)
 
-    public val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
-        .convention(false)
-
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory
             .convention(
@@ -671,7 +663,6 @@ public class PluginEffectiveConfiguration(
             "generatedTsFolder=${generatedTsFolder.get()}, " +
             "nodeVersion=${nodeVersion.get()}, " +
             "nodeDownloadRoot=${nodeDownloadRoot.get()}, " +
-            "nodeAutoUpdate=${nodeAutoUpdate.get()}, " +
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
