@@ -567,8 +567,11 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
 
             for (File stylesheet : stylesheets) {
                 try {
+                    String root = getResourceRootFromAbsolutePath(
+                            normalizedPath, stylesheet);
+                    String contextPath = getContextPath(service);
                     String bundled = CssBundler.inlineImportsForPublicResources(
-                            stylesheet.getParentFile(), stylesheet);
+                            new File(root), stylesheet, contextPath);
                     return Optional.ofNullable(bundled);
                 } catch (IOException ioe) {
                     LOGGER.debug("Failed to inline CSS imports for {}",
@@ -581,6 +584,22 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
                     normalizedPath, e);
         }
         return Optional.empty();
+    }
+
+    private static String getResourceRootFromAbsolutePath(String normalizedPath,
+            File stylesheet) {
+        return stylesheet.getAbsolutePath().substring(0,
+                stylesheet.getAbsolutePath().indexOf(normalizedPath));
+    }
+
+    private static String getContextPath(VaadinService service) {
+        String contextPath = "";
+        if (service
+                .getContext() instanceof com.vaadin.flow.server.VaadinServletContext) {
+            contextPath = ((com.vaadin.flow.server.VaadinServletContext) service
+                    .getContext()).getContext().getContextPath();
+        }
+        return contextPath;
     }
 
     private void lookupUrlsForComponents(Component root, Set<String> allUrls,

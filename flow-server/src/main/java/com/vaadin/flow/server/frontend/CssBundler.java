@@ -111,7 +111,7 @@ public class CssBundler {
     public static String inlineImportsForThemes(File themeFolder, File cssFile,
             JsonNode themeJson) throws IOException {
         return inlineImports(themeFolder, cssFile,
-                getThemeAssetsAliases(themeJson), BundleFor.THEMES);
+                getThemeAssetsAliases(themeJson), BundleFor.THEMES, null);
     }
 
     /**
@@ -122,14 +122,16 @@ public class CssBundler {
      *            base folder the imports and url() references are relative to
      * @param cssFile
      *            the CSS file to process
+     * @param contextPath
+     *            that url() are rewritten to and rebased onto
      * @return the processed stylesheet content with inlined imports only
      * @throws IOException
      *             if filesystem resources cannot be read
      */
     public static String inlineImportsForPublicResources(File baseFolder,
-            File cssFile) throws IOException {
+            File cssFile, String contextPath) throws IOException {
         return inlineImports(baseFolder, cssFile, new HashSet<>(),
-                BundleFor.STATIC_RESOURCES);
+                BundleFor.STATIC_RESOURCES, contextPath);
     }
 
     /**
@@ -142,6 +144,8 @@ public class CssBundler {
      *            the CSS file to process
      * @param assetAliases
      *            theme asset aliases (only used when rewriting URLs)
+     * @param contextPath
+     *            that url() are rewritten to and rebased onto
      * @param bundleFor
      *            defines a way how bundler resolves url(...), e.g. whether
      *            {@link com.vaadin.flow.theme.Theme} location is used
@@ -149,7 +153,8 @@ public class CssBundler {
      *            url(...) references to VAADIN/themes paths
      */
     private static String inlineImports(File baseFolder, File cssFile,
-            Set<String> assetAliases, BundleFor bundleFor) throws IOException {
+            Set<String> assetAliases, BundleFor bundleFor, String contextPath)
+            throws IOException {
 
         String content = Files.readString(cssFile.toPath());
 
@@ -225,10 +230,11 @@ public class CssBundler {
                 try {
                     Path target = cssFile.getParentFile().toPath()
                             .resolve(trimmed).normalize();
-                    String relativePath = baseFolder.toPath().relativize(target)
-                            .toString().replaceAll("\\\\", "/");
-                    return Matcher
-                            .quoteReplacement("url('" + relativePath + "')");
+                    // For inline <style> tags, make URLs absolute to the
+                    // application context
+                    String rebased = rebaseToContextPath(baseFolder,
+                            contextPath, target);
+                    return Matcher.quoteReplacement("url('" + rebased + "')");
                 } catch (Exception e) {
                     // On any resolution issue, keep original
                     return Matcher.quoteReplacement(urlMatcher.group());
@@ -257,7 +263,7 @@ public class CssBundler {
                     try {
                         return Matcher.quoteReplacement(
                                 inlineImports(baseFolder, potentialFile,
-                                        assetAliases, bundleFor));
+                                        assetAliases, bundleFor, contextPath));
                     } catch (IOException e) {
                         getLogger().warn(
                                 "Unable to inline import: " + result.group());
@@ -276,6 +282,20 @@ public class CssBundler {
                     + (content.isEmpty() ? "" : "\n" + content);
         }
         return content;
+    }
+
+    private static String rebaseToContextPath(File baseFolder,
+            String contextPath, Path target) {
+        String publicRelativePath = baseFolder.toPath().relativize(target)
+                .toString().replaceAll("\\\\", "/");
+        String context = contextPath == null ? "" : contextPath.trim();
+        if (!context.isEmpty() && !context.startsWith("/")) {
+            context = "/" + context;
+        }
+        if (context.endsWith("/")) {
+            context = context.substring(0, context.length() - 1);
+        }
+        return (context.isEmpty() ? "" : context) + "/" + publicRelativePath;
     }
 
     // A theme asset must:

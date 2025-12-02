@@ -31,6 +31,7 @@ import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -122,10 +123,9 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 for (String url : activeUrls) {
                     String normalized = PublicStyleSheetBundler
                             .normalizeUrl(url);
-                    String content = bundler != null
-                            ? bundler.bundle(root, url).orElse(null)
-                            : null;
-
+                    String contextPath = getContextPath();
+                    String content = bundler.bundle(url, contextPath)
+                            .orElse(null);
                     String path = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                             + normalized;
                     liveReload.update(path, content);
@@ -168,5 +168,14 @@ public class PublicResourcesLiveUpdater implements Closeable {
     private boolean isTempFile(File file) {
         String name = file.getName();
         return name.startsWith("~") || name.endsWith("~");
+    }
+
+    private String getContextPath() {
+        String contextPath = "";
+        if (context instanceof VaadinServletContext) {
+            contextPath = ((VaadinServletContext) context).getContext()
+                    .getContextPath();
+        }
+        return contextPath;
     }
 }

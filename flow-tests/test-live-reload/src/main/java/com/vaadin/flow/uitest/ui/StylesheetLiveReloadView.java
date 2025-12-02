@@ -26,6 +26,7 @@ import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
@@ -35,14 +36,13 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 public class StylesheetLiveReloadView extends AbstractLiveReloadView {
 
     private final PublicStyleSheetBundler bundler;
-    private final File root;
 
     public StylesheetLiveReloadView() {
         DeploymentConfiguration configuration = VaadinService.getCurrent()
                 .getDeploymentConfiguration();
         File projectFolder = configuration.getProjectFolder();
         String outputFolder = configuration.getBuildFolder() + "/classes";
-        root = Paths.get(projectFolder.getAbsolutePath(), outputFolder,
+        File root = Paths.get(projectFolder.getAbsolutePath(), outputFolder,
                 "META-INF", "resources").toFile();
         bundler = PublicStyleSheetBundler.forResourceLocations(List.of(root));
 
@@ -108,6 +108,10 @@ public class StylesheetLiveReloadView extends AbstractLiveReloadView {
     }
 
     private String getContentForFile(String cssFile) {
-        return bundler.bundle(root, cssFile).orElseThrow(AssertionError::new);
+        String contextPath = VaadinRequest.getCurrent() != null
+                ? VaadinRequest.getCurrent().getContextPath()
+                : "";
+        return bundler.bundle(cssFile, contextPath)
+                .orElseThrow(AssertionError::new);
     }
 }

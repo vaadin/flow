@@ -70,7 +70,7 @@ public class PublicStyleSheetBundlerTest {
                 .forResourceLocations(java.util.List.of(publicRoot));
 
         // Act
-        Optional<String> bundled = bundler.bundle(publicRoot, "/main.css");
+        Optional<String> bundled = bundler.bundle("/main.css", "");
 
         // Assert
         assertTrue("Bundled CSS should be present", bundled.isPresent());
@@ -100,8 +100,7 @@ public class PublicStyleSheetBundlerTest {
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle(publicRoot,
-                "context://main.css");
+        Optional<String> bundled = bundler.bundle("context://main.css", "");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         assertTrue(result.contains(".im{b:1;}"));
@@ -150,7 +149,7 @@ public class PublicStyleSheetBundlerTest {
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle(publicRoot, "./styles.css");
+        Optional<String> bundled = bundler.bundle("./styles.css", "");
         assertTrue("Bundled CSS should be present", bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(
@@ -190,8 +189,7 @@ public class PublicStyleSheetBundlerTest {
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle(publicRoot,
-                "/css/styles.css");
+        Optional<String> bundled = bundler.bundle("/css/styles.css", "");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expectedImported = normalizeWhitespace(EXPECTED_CSS
@@ -249,8 +247,7 @@ public class PublicStyleSheetBundlerTest {
         PublicStyleSheetBundler bundler = PublicStyleSheetBundler
                 .forResourceLocations(java.util.List.of(publicRoot));
 
-        Optional<String> bundled = bundler.bundle(publicRoot,
-                "/css/view/view.css");
+        Optional<String> bundled = bundler.bundle("/css/view/view.css", "");
         assertTrue(bundled.isPresent());
         String result = normalizeWhitespace(bundled.get());
         String expected = normalizeWhitespace(given
