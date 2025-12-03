@@ -111,19 +111,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(fakeFile.exists());
     }
 
-    @Override
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_nodeIsReinstalled()
-            throws IOException, ExecutionFailedException {
-        options.withHomeNodeExecRequired(true).withEnablePnpm(true)
-                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
-        options.withPostinstallPackages(POSTINSTALL_PACKAGES);
-
-        assertRunNpmInstallInstallsNewNode_whenVaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getNodeUpdater(), options));
-    }
-
     @Test
     public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
             throws IOException {
