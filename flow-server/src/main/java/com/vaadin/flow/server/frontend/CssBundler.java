@@ -76,13 +76,12 @@ public class CssBundler {
      * </pre>
      *
      */
-    private static final Pattern importPattern = Pattern
+    private static final Pattern IMPORT_PATTERN = Pattern
             .compile("@import" + WHITE_SPACE + URL_OR_STRING
                     + MAYBE_LAYER_OR_MEDIA_QUERY + WHITE_SPACE + ";");
-
-    private static final Pattern protocolPatternForUrls = Pattern
+    private static final Pattern PROTOCOL_PATTER_FOR_URLS = Pattern
             .compile("(?i)^(https?|data|ftp|file):.*");
-    private static final Pattern urlPattern = Pattern.compile(URL);
+    private static final Pattern URL_PATTERN = Pattern.compile(URL);
 
     /**
      * Recurse over CSS import and inlines all ot them into a single CSS block
@@ -159,7 +158,7 @@ public class CssBundler {
             throws IOException {
         String content = Files.readString(cssFile.toPath());
         if (bundleFor == BundleFor.THEMES) {
-            Matcher urlMatcher = urlPattern.matcher(content);
+            Matcher urlMatcher = URL_PATTERN.matcher(content);
             content = rewriteCssUrlsForThemes(baseFolder, cssFile, assetAliases,
                     urlMatcher);
         } else if (bundleFor == BundleFor.STATIC_RESOURCES) {
@@ -167,7 +166,7 @@ public class CssBundler {
                     contextPath, content);
         }
         List<String> unhandledImports = new ArrayList<>();
-        Matcher importMatcher = importPattern.matcher(content);
+        Matcher importMatcher = IMPORT_PATTERN.matcher(content);
         content = importMatcher.replaceAll(result -> {
             // Oh the horror
             // Group 3,4,5 are url() urls with different quotes
@@ -213,7 +212,7 @@ public class CssBundler {
             File cssFile, String contextPath, String content) {
         // Public resources: rebase URLs from the current cssFile to the
         // entry stylesheet base folder
-        Matcher urlMatcher = urlPattern.matcher(content);
+        Matcher urlMatcher = URL_PATTERN.matcher(content);
         content = urlMatcher.replaceAll(result -> {
             String url = getNonNullGroup(result, 2, 3, 4);
             if (url == null || url.trim().endsWith(".css")) {
@@ -230,7 +229,7 @@ public class CssBundler {
             // Treat only known protocols as absolute to avoid false
             // positives like "my:file.css"
             if (trimmed.startsWith("/")
-                    || protocolPatternForUrls.matcher(trimmed).matches()) {
+                    || PROTOCOL_PATTER_FOR_URLS.matcher(trimmed).matches()) {
                 return Matcher.quoteReplacement(urlMatcher.group());
             }
             try {
