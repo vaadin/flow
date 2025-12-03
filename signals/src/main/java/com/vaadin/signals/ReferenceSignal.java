@@ -186,8 +186,8 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
     /**
      * {@inheritDoc}
      * <p>
-     * Comparison between the expected value an the new value is performed using
-     * {@link #equals(Object)}.
+     * Comparison between the expected value and the new value is performed
+     * using {@link #equals(Object)}.
      */
     @Override
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
