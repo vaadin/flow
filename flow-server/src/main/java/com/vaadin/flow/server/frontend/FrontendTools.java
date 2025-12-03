@@ -130,6 +130,8 @@ public class FrontendTools {
             SUPPORTED_PNPM_MAJOR_VERSION, SUPPORTED_PNPM_MINOR_VERSION);
     private static final FrontendVersion SUPPORTED_BUN_VERSION = new FrontendVersion(
             1, 0, 6); // Bun 1.0.6 is the first version with "overrides" support
+    private static final Logger log = LoggerFactory.getLogger(
+            FrontendTools.class);
 
     private enum BuildTool {
         NPM("npm", "npm-cli.js"),
@@ -324,6 +326,7 @@ public class FrontendTools {
             // Double-check after acquiring lock
             active = activeNodeInstallation;
             if (active != null) {
+                log.info("Active node is already installed");
                 return active;
             }
 

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -49,6 +50,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ReflectionCacheTest;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
@@ -293,8 +295,7 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void homeNodeIsNotForced_useGlobalNode() throws IOException,
-            FrontendUtils.UnknownVersionException, NoSuchFieldException {
+    public void homeNodeIsNotForced_useGlobalNode() throws IOException, FrontendUtils.UnknownVersionException, NoSuchFieldException, InvocationTargetException, IllegalAccessException {
         createStubNode(true, true, vaadinHomeDir);
 
         // Validate the global node to be applicable for testing.
@@ -328,6 +329,13 @@ public class FrontendToolsTest {
         ReflectTools.setJavaFieldValue(tools,
                 FrontendTools.class.getDeclaredField("activeNodeInstallation"),
                 null);
+
+        LoggerFactory.getLogger(FrontendToolsTest.class)
+                .info("ActiveNodeInstallation is {}",
+                        ReflectTools.getJavaFieldValue(tools,
+                                FrontendTools.class.getDeclaredField(
+                                        "activeNodeInstallation")));
+
         assertThat(tools.getNodeExecutable(), containsString("node"));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(DEFAULT_NODE)));

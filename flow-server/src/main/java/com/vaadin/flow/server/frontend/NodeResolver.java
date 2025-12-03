@@ -54,6 +54,9 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  */
 class NodeResolver implements java.io.Serializable {
 
+    private static final Logger log = LoggerFactory.getLogger(
+            NodeResolver.class);
+
     /**
      * Information about the active node/npm installation that will be used. All
      * fields are required and non-null.
@@ -121,10 +124,13 @@ class NodeResolver implements java.io.Serializable {
     ActiveNodeInstallation resolve() {
         // If forceAlternativeNode is set, skip global lookup
         if (!forceAlternativeNode) {
+            log.info("resolving global node");
             ActiveNodeInstallation globalInstallation = tryUseGlobalNode();
             if (globalInstallation != null) {
+                log.info("using global node {}", globalInstallation.nodeExecutable);
                 return globalInstallation;
             }
+            log.info("no global node found");
         }
 
         // Either forceAlternativeNode is true, or global node was unsuitable
