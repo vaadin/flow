@@ -293,8 +293,9 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void homeNodeIsNotForced_useGlobalNode() throws IOException, FrontendUtils.UnknownVersionException, NoSuchFieldException {
-         createStubNode(true, true, vaadinHomeDir);
+    public void homeNodeIsNotForced_useGlobalNode() throws IOException,
+            FrontendUtils.UnknownVersionException, NoSuchFieldException {
+        createStubNode(true, true, vaadinHomeDir);
 
         // Validate the global node to be applicable for testing.
         String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
@@ -322,6 +323,8 @@ public class FrontendToolsTest {
             return;
         }
 
+        settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);
+        tools = new FrontendTools(settings);
         ReflectTools.setJavaFieldValue(tools,
                 FrontendTools.class.getDeclaredField("activeNodeInstallation"),
                 null);
