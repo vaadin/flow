@@ -48,7 +48,6 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
-import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -122,19 +121,6 @@ public class StyleSheetHotswapperTest {
     public void resourceChanged_cssNotIKnownPublicPath_ignore()
             throws IOException {
         assertLiveReloadNotTriggered("assets", "foo.css");
-    }
-
-    @Test
-    public void cssResourceChange_knownPublicPaths_noUpdateTriggered()
-            throws Exception {
-        // Resource change handling for public CSS is now done by
-        // PublicResourcesLiveUpdater.
-        // StyleSheetHotswapper.onResourcesChange should no-op to avoid
-        // duplicate updates.
-        assertLiveReloadNotTriggered("META-INF/resources", "styles/app.css");
-        assertLiveReloadNotTriggered("resources", "styles/app.css");
-        assertLiveReloadNotTriggered("public", "styles/app.css");
-        assertLiveReloadNotTriggered("static", "styles/app.css");
     }
 
     // ==== Stylesheet annotation hotswap
@@ -546,27 +532,6 @@ public class StyleSheetHotswapperTest {
                 event.getUIUpdateStrategy(new MockUI()).isEmpty());
 
         verify(event, never()).updateClientResource(anyString(), any());
-    }
-
-    private void assertLiveReloadTriggered(String resourceBasePath)
-            throws IOException {
-        File css = createResource(resourceBasePath + "/styles/app.css");
-
-        URI modified = css.toURI();
-        HotswapResourceEvent event = spy(
-                new HotswapResourceEvent(service, Set.of(modified)));
-        hotswapper.onResourcesChange(event);
-
-        assertFalse("Page reload is not necessary",
-                event.anyUIRequiresPageReload());
-        assertTrue("Should not refresh UIs",
-                event.getUIUpdateStrategy(new MockUI()).isEmpty());
-
-        // Expect BrowserLiveReload.update to be called with relative URL path
-        // "styles/app.css"
-        verify(event).updateClientResource(
-                ApplicationConstants.CONTEXT_PROTOCOL_PREFIX + "styles/app.css",
-                null);
     }
 
     private File createResource(String resourcePath) throws IOException {

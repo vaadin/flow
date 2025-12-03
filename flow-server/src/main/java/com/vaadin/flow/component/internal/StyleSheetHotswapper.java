@@ -418,10 +418,6 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
     }
 
     private static Set<String> getStyleSheetUrls(Class<?> clazz) {
-        return getStyleSheetUrlsInternal(clazz);
-    }
-
-    private static Set<String> getStyleSheetUrlsInternal(Class<?> clazz) {
         Set<String> urls = new LinkedHashSet<>();
         if (Component.class.isAssignableFrom(clazz)) {
             @SuppressWarnings("unchecked")

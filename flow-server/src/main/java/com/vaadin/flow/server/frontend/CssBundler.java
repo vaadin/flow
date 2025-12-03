@@ -169,20 +169,16 @@ public class CssBundler {
                 File potentialFile = new File(cssFile.getParentFile(),
                         url.trim());
                 if (potentialFile.exists()) {
-                    // e.g. background-image: url("./foo/bar.png") should become
-                    // url("VAADIN/themes/<theme-name>/foo/bar.png IF the file
-                    // is
-                    // inside the theme folder
-                    // Otherwise, "./foo/bar.png" can also refer to a file in
-                    // src/main/resources/META-INF/resources/foo/bar.png and
-                    // then we
-                    // don't need a rewrite...
-
-                    // Also the imports are relative to the folder containing
-                    // the
-                    // CSS file we are processing, not always relative to the
-                    // theme
-                    // folder
+                    // @formatter:off
+                    // e.g., background-image: url("./foo/bar.png") should become
+                    // url("VAADIN/themes/<theme-name>/foo/bar.png, IF the file
+                    // is inside the theme folder. Otherwise, "./foo/bar.png"
+                    // can also refer to a file in
+                    // src/main/resources/META-INF/resources/foo/bar.png, and
+                    // then we don't need a rewrite. Also, the imports are
+                    // relative to the folder containing theCSS file we are
+                    // processing, not always relative to the theme folder.
+                    // @formatter:on
                     String relativePath = baseFolder.getParentFile().toPath()
                             .relativize(potentialFile.toPath()).toString()
                             .replaceAll("\\\\", "/");
@@ -190,13 +186,18 @@ public class CssBundler {
                             "url('VAADIN/themes/" + relativePath + "')");
                 } else if (isPotentialThemeAsset(baseFolder, assetAliases,
                         potentialFile)) {
-                    // a reference to a theme asset, e.g with a theme.json
-                    // config
-                    // { "assets": {
-                    // "@some/pkg": { "svgs/regular/**": "my/icons" }
-                    // } }
+                    // @formatter:off
+                    // a reference to a theme asset, e.g., with a theme.json config:
+                    // {
+                    //     "assets": {
+                    //         "@some/pkg": {
+                    //             "svgs/regular/**": "my/icons"
+                    //         }
+                    //     }
+                    // }
                     // background-image: url("./my/icons/bar.png") should become
                     // url("VAADIN/themes/<theme-name>/my/icons/bar.png
+                    // @formatter:on
                     String relativePath = baseFolder.getParentFile().toPath()
                             .relativize(potentialFile.toPath()).toString()
                             .replaceAll("\\\\", "/");
@@ -223,22 +224,31 @@ public class CssBundler {
                 String trimmed = sanitized.trim();
                 // Only handle relative URLs (no protocol, no leading slash, not
                 // data URIs)
+                // Treat only known protocols as absolute to avoid false
+                // positives like "my:file.css"
                 if (trimmed.startsWith("/")
-                        || trimmed.matches("^[a-zA-Z][a-zA-Z0-9+.-]*:")) {
+                        || trimmed.matches("(?i)^(https?|data|ftp|file):.*")) {
                     return Matcher.quoteReplacement(urlMatcher.group());
                 }
                 try {
                     Path target = cssFile.getParentFile().toPath()
                             .resolve(trimmed).normalize();
-                    // For inline <style> tags, make URLs absolute to the
-                    // application context
-                    String rebased = rebaseToContextPath(baseFolder,
-                            contextPath, target);
-                    return Matcher.quoteReplacement("url('" + rebased + "')");
+                    // Only rewrite when we can safely confirm the target (in
+                    // url()) file exists
+                    if (Files.exists(target)) {
+                        // For inline <style> tags, make URLs absolute to the
+                        // application context
+                        String rebased = rebaseToContextPath(baseFolder,
+                                contextPath, target);
+                        return Matcher
+                                .quoteReplacement("url('" + rebased + "')");
+                    }
                 } catch (Exception e) {
-                    // On any resolution issue, keep original
-                    return Matcher.quoteReplacement(urlMatcher.group());
+                    // On any resolution issue, keep the original
+                    getLogger().debug("Unable to resolve url: {}",
+                            urlMatcher.group());
                 }
+                return Matcher.quoteReplacement(urlMatcher.group());
             });
         }
         List<String> unhandledImports = new ArrayList<>();

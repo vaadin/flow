@@ -23,6 +23,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.VaadinService;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 
@@ -49,14 +50,16 @@ public class ActiveStyleSheetTrackerTest {
         tracker.trackForAppShell(Set.of("context://css/app.css"));
         assertEquals(Set.of("context://css/app.css"), tracker.getActiveUrls());
 
-        // Register session-specific URL
+        // Register component-based URL
         tracker.trackAddForComponent("context://css/view.css");
 
-        // All active contains both (includes app shell + session)
+        // All active contains both (includes app shell + component)
         assertTrue(tracker.getActiveUrls().contains("context://css/app.css"));
         assertTrue(tracker.getActiveUrls().contains("context://css/view.css"));
 
-        // Remove session URL
+        // Remove component URL
         tracker.trackRemoveForComponent("context://css/view.css");
+        assertTrue(tracker.getActiveUrls().contains("context://css/app.css"));
+        assertFalse(tracker.getActiveUrls().contains("context://css/view.css"));
     }
 }
