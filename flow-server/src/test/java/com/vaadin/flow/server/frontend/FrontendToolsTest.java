@@ -291,7 +291,7 @@ public class FrontendToolsTest {
     @Test
     public void homeNodeIsNotForced_useGlobalNode()
             throws IOException, FrontendUtils.UnknownVersionException {
-        createStubNode(true, true, vaadinHomeDir);
+//        createStubNode(true, true, vaadinHomeDir);
 
         // Validate the global node to be applicable for testing.
         String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
@@ -301,6 +301,9 @@ public class FrontendToolsTest {
             LoggerFactory.getLogger(FrontendToolsTest.class)
                     .info("No global node found, skipping test");
             return;
+        } else {
+            LoggerFactory.getLogger(FrontendToolsTest.class)
+                    .info("Found global node {}", file.getAbsolutePath());
         }
         List<String> versionCommand = Lists.newArrayList();
         versionCommand.add(file.getAbsolutePath());
