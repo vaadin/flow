@@ -112,17 +112,15 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
     }
 
     @Override
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
+    public void runNpmInstall_vaadinHomeNodeIsAFolder_nodeIsReinstalled()
             throws IOException, ExecutionFailedException {
-        exception.expectMessage(
-                "it's either not a file or not a 'node' executable.");
         options.withHomeNodeExecRequired(true).withEnablePnpm(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
         options.withPostinstallPackages(POSTINSTALL_PACKAGES);
 
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+        assertRunNpmInstallInstallsNewNode_whenVaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));
     }
 

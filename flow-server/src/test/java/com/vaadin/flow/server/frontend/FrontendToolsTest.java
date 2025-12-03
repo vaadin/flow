@@ -63,6 +63,14 @@ import static org.junit.Assert.assertEquals;
 @Category(SlowTests.class)
 public class FrontendToolsTest {
 
+    public static final String DEFAULT_NODE = FrontendUtils.isWindows()
+            ? "node\\node.exe"
+            : "node/node";
+
+    public static final String NPM_CLI_STRING = FrontendUtils.isWindows()
+            ? "node\\node_modules\\npm\\bin\\npm-cli.js"
+            : "node/lib/node_modules/npm/bin/npm-cli.js";
+
     private static final String OLD_PNPM_VERSION = "4.5.0";
 
     private static final String SUPPORTED_PNPM_VERSION = "7.0.0";
@@ -309,10 +317,10 @@ public class FrontendToolsTest {
         }
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
-        assertThat(tools.getNodeExecutable(), not(containsString(
-                getDefaultNode(tools.getNodeVersion().toString()))));
-        assertThat(tools.getNodeExecutable(), not(containsString(
-                getNpmCliString(tools.getNodeVersion().toString()))));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(DEFAULT_NODE)));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(NPM_CLI_STRING)));
         assertThat(tools.getNodeExecutable(),
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));

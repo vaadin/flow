@@ -296,17 +296,15 @@ public class TaskRunNpmInstallTest {
     }
 
     @Test
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
+    public void runNpmInstall_vaadinHomeNodeIsAFolder_nodeIsReinstalled()
             throws IOException, ExecutionFailedException {
-        exception.expectMessage(
-                "it's either not a file or not a 'node' executable.");
 
         options.withHomeNodeExecRequired(true)
                 .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
                 .withNodeDownloadRoot(
                         URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
 
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+        assertRunNpmInstallInstallsNewNode_whenVaadinHomeNodeIsAFolder(
                 new TaskRunNpmInstall(getNodeUpdater(), options));
     }
 
@@ -526,7 +524,7 @@ public class TaskRunNpmInstallTest {
         packageJson.remove(DEV_DEPENDENCIES);
     }
 
-    protected void assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
+    protected void assertRunNpmInstallInstallsNewNode_whenVaadinHomeNodeIsAFolder(
             TaskRunNpmInstall task)
             throws IOException, ExecutionFailedException {
         String userHome = "user.home";
@@ -536,10 +534,22 @@ public class TaskRunNpmInstallTest {
         try {
             File homeDir = new File(home, ".vaadin");
             File node = new File(homeDir,
-                    FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+                    FrontendUtils.isWindows()
+                            ? "node-" + FrontendTools.DEFAULT_NODE_VERSION
+                                    + "/node.exe"
+                            : "node-" + FrontendTools.DEFAULT_NODE_VERSION
+                                    + "/bin/node");
             FileUtils.forceMkdir(node);
 
+            Assert.assertTrue("node executable should be a directory",
+                    node.isDirectory());
+
             task.execute();
+
+            Assert.assertFalse("node executable should have been reinstalled",
+                    node.isDirectory());
+            Assert.assertTrue("node executable should be executable",
+                    node.canExecute());
         } finally {
             System.setProperty(userHome, originalHome);
         }
