@@ -275,6 +275,12 @@ public class DefaultDeploymentConfiguration
         return sessionLockCheckStrategy;
     }
 
+    @Override
+    public Mode getMode() {
+        return frontendHotdeploy ? Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                : super.getMode();
+    }
+
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -436,7 +442,9 @@ public class DefaultDeploymentConfiguration
     }
 
     private boolean automaticHotdeployDefault() {
-        return FrontendUtils.isHillaUsed(getFrontendFolder());
+        return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                .equals(getParentConfiguration().getMode())
+                || FrontendUtils.isHillaUsed(getFrontendFolder());
     }
 
 }

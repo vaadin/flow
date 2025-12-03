@@ -265,6 +265,19 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
+    public void frontendHotdeploy_defaultsToParentConfiguration() {
+        ApplicationConfiguration appConfig = setupAppConfig();
+        Mockito.when(appConfig.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+
+        Assert.assertEquals(
+                "Expected dev server to be enabled from parent configuration",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+    }
+
+    @Test
     public void checkLockStrategy_defaultsToAssert() {
         Properties init = new Properties();
         DefaultDeploymentConfiguration config = createDeploymentConfig(init);
