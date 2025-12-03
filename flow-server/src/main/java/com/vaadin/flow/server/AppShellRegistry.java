@@ -42,7 +42,6 @@ import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.page.TargetElement;
 import com.vaadin.flow.component.page.Viewport;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.Theme;
