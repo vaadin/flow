@@ -231,7 +231,7 @@ class NodeResolver implements java.io.Serializable {
         // Try common locations relative to node executable
         String[] possiblePaths = isWindows
                 ? new String[] { "node_modules\\npm\\bin\\npm-cli.js" }
-                : new String[] { "lib/node_modules/npm/bin/npm-cli.js", "node_modules/npm/bin/npm-cli.js" };
+                : new String[] { "lib/node_modules/npm/bin/npm-cli.js", "../lib/node_modules/npm/bin/npm-cli.js" };
 
         for (String path : possiblePaths) {
             File npmCliScript = new File(nodeDir, path);
