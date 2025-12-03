@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -54,9 +53,6 @@ import com.vaadin.flow.server.frontend.installer.ProxyConfig;
  * @author Vaadin Ltd
  */
 class NodeResolver implements java.io.Serializable {
-
-    private static final Logger log = LoggerFactory.getLogger(
-            NodeResolver.class);
 
     /**
      * Information about the active node/npm installation that will be used. All
@@ -125,13 +121,10 @@ class NodeResolver implements java.io.Serializable {
     ActiveNodeInstallation resolve() {
         // If forceAlternativeNode is set, skip global lookup
         if (!forceAlternativeNode) {
-            log.info("resolving global node");
             ActiveNodeInstallation globalInstallation = tryUseGlobalNode();
             if (globalInstallation != null) {
-                log.info("using global node {}", globalInstallation.nodeExecutable);
                 return globalInstallation;
             }
-            log.info("no global node found");
         }
 
         // Either forceAlternativeNode is true, or global node was unsuitable
@@ -148,7 +141,6 @@ class NodeResolver implements java.io.Serializable {
         String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
         File nodeExecutable = frontendToolsLocator.tryLocateTool(nodeCommand)
                 .orElse(null);
-        log.info("Located global node {}", nodeExecutable);
 
         if (nodeExecutable == null) {
             return null;
@@ -186,7 +178,7 @@ class NodeResolver implements java.io.Serializable {
             // Found suitable global node - now get npm information
             String npmCliScript = getGlobalNpmCliScript(nodeExecutable);
             if (npmCliScript == null) {
-                getLogger().info(
+                getLogger().debug(
                         "npm-cli.js not found in global Node.js installation, will use alternative directory");
                 return null;
             }
@@ -199,7 +191,7 @@ class NodeResolver implements java.io.Serializable {
                                         npmCliScript, "--version"))
                         .getFullVersion();
             } catch (UnknownVersionException e) {
-                getLogger().info(
+                getLogger().debug(
                         "Could not determine npm version from global installation",
                         e);
                 npmVersion = "unknown";
@@ -229,21 +221,14 @@ class NodeResolver implements java.io.Serializable {
         boolean isWindows = FrontendUtils.isWindows();
 
         // Try common locations relative to node executable
-        String[] possiblePaths = isWindows
-                ? new String[] { "node_modules\\npm\\bin\\npm-cli.js" }
-                : new String[] { "lib/node_modules/npm/bin/npm-cli.js", "../lib/node_modules/npm/bin/npm-cli.js" };
+        String path = isWindows ? "node_modules\\npm\\bin\\npm-cli.js"
+                : "../lib/node_modules/npm/bin/npm-cli.js";
 
-        for (String path : possiblePaths) {
-            File npmCliScript = new File(nodeDir, path);
-            log.info("Using npm-cli.js from {}, exists {}", npmCliScript, npmCliScript.exists());
-            if (npmCliScript.exists()) {
-                return npmCliScript.getAbsolutePath();
-            }
+        File npmCliScript = new File(nodeDir, path);
+        if (npmCliScript.exists()) {
+            return npmCliScript.getAbsolutePath();
         }
 
-        Arrays.stream(nodeDir.getParentFile().listFiles()).forEach(file -> {
-            log.info(file.getPath());
-        });
         return null;
     }
 
