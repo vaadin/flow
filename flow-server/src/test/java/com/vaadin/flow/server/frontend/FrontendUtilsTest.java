@@ -39,6 +39,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
@@ -873,6 +875,19 @@ public class FrontendUtilsTest {
         Assert.assertFalse("Change in minor version should return false",
                 FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
                         nodeModules, buildFolder));
+    }
+
+    @Test
+    public void isTailwindCssEnabled_withOptions() throws IOException {
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        Mockito.doReturn(true).when(featureFlags)
+                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+        File npmFolder = tmpDir.newFolder();
+        Options options = new MockOptions(npmFolder)
+                .withFeatureFlags(featureFlags);
+        Assert.assertTrue(
+                "Expected TailwindCSS to be enabled when feature flag is set in Node tasks options",
+                FrontendUtils.isTailwindCssEnabled(options));
     }
 
     private File prepareFrontendForRoutesFile(String fileName, String content)
