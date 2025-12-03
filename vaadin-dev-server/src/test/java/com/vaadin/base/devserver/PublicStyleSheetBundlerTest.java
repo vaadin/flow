@@ -33,10 +33,6 @@ import static org.junit.Assert.assertTrue;
 
 public class PublicStyleSheetBundlerTest {
 
-    private static final String EXPECTED_INLINE_NESTED = """
-            DIV.nested-imported { background-image: url('../../images/viking.png'); }
-            """;
-
     private static final String EXPECTED_CSS = """
                 DIV.appshell-image {
                     background: url('../images/gobo.png') no-repeat;
@@ -167,16 +163,17 @@ public class PublicStyleSheetBundlerTest {
     @Test
     public void bundle_withImport_inlinesAndRebasesNestedUrls()
             throws IOException {
+        // @formatter:off
         // src/main/resources
         // └── META-INF
-        // └── resources
-        // └── css
-        // ├── images
-        // │ └── gobo.png
-        // ├── nested
-        // │ └── nested-imported.css
-        // └── styles.css
-        //
+        //     └── resources
+        //         └── css
+        //             ├── images
+        //             │   └── gobo.png
+        //             ├── nested
+        //             │   └── nested-imported.css
+        //             └── styles.css
+        // @formatter:on
         File project = temporaryFolder.newFolder("project_meta_import");
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
@@ -216,18 +213,19 @@ public class PublicStyleSheetBundlerTest {
     @Test
     public void bundle_withImport_inlinesAndRebasesDoubleNestedUrls()
             throws IOException {
+        // @formatter:off
         // src/main/resources
         // └── META-INF
-        // └── resources
-        // └── css
-        // ├── images
-        // │ └── viking.png
-        // └── view
-        // ├── imported.css
-        // ├── nested
-        // │ └── nested-imported.css
-        // └── view.css
-        //
+        //     └── resources
+        //         └── css
+        //             ├── images
+        //             │   └── viking.png
+        //             └── view
+        //                 ├── imported.css
+        //                 ├── nested
+        //                 │ └── nested-imported.css
+        //                 └── view.css
+        // @formatter:on
         File project = temporaryFolder.newFolder("project_meta_import");
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
