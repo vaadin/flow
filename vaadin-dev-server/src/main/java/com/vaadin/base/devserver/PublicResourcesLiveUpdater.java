@@ -110,7 +110,8 @@ public class PublicResourcesLiveUpdater implements Closeable {
                 return;
             }
             if (!file.getName().endsWith(".css")) {
-                liveReload.reload();
+                // non-CSS resources like images/fonts need IDE copying to
+                // output dir, so full reload is not reliable, ignore
                 return;
             }
             try {
