@@ -32,6 +32,7 @@ import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -121,6 +122,10 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     return;
                 }
                 for (String url : activeUrls) {
+                    if (isVaadinThemeUrl(url)) {
+                        // ignore Aura and Lumo urls
+                        continue;
+                    }
                     String normalized = PublicStyleSheetBundler
                             .normalizeUrl(url);
                     String contextPath = getContextPath();
@@ -146,6 +151,11 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }, root);
         watcher.start();
         return watcher;
+    }
+
+    private boolean isVaadinThemeUrl(String url) {
+        url = FrontendUtils.getUnixPath(new File(url).toPath());
+        return url.contains("lumo/lumo.css") || url.contains("aura/aura.css");
     }
 
     private Logger getLogger() {

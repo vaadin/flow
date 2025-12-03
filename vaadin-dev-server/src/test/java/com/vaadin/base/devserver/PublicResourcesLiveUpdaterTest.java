@@ -239,4 +239,58 @@ public class PublicResourcesLiveUpdaterTest {
             });
         }
     }
+
+    @Test
+    public void cssChange_ignoresVaadinThemeUrls_noLiveReloadUpdates()
+            throws Exception {
+        // Arrange a fake project structure with public resources
+        File project = temporaryFolder.newFolder("project4");
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        // Create a css file to trigger the watcher
+        File dummyCss = new File(publicRoot, "dummy.css");
+        Files.writeString(dummyCss.toPath(), "body{margin:0;}",
+                StandardCharsets.UTF_8);
+
+        // Mock ApplicationConfiguration.get(context) -> project folder
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.getProjectFolder()).thenReturn(project);
+        appConfigStatic = Mockito.mockStatic(ApplicationConfiguration.class);
+
+        // Use the lightweight MockVaadinContext in this module
+        VaadinContext context = new MockVaadinContext();
+        appConfigStatic
+                .when(() -> ApplicationConfiguration.get(Mockito.eq(context)))
+                .thenReturn(config);
+
+        // Mock BrowserLiveReload available from context
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        liveReloadAccessorStatic = Mockito
+                .mockStatic(BrowserLiveReloadAccessor.class);
+        liveReloadAccessorStatic
+                .when(() -> BrowserLiveReloadAccessor
+                        .getLiveReloadFromContext(Mockito.eq(context)))
+                .thenReturn(Optional.of(liveReload));
+
+        ActiveStyleSheetTracker.get(context)
+                .trackForAppShell(Set.of("context://lumo/lumo.css"));
+        ActiveStyleSheetTracker.get(context)
+                .trackForAppShell(Set.of("context://aura/aura.css"));
+
+        try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                List.of(publicRoot.getAbsolutePath()), context)) {
+            // Modify the css file to trigger the watcher
+            Files.writeString(dummyCss.toPath(), "body{margin:1;}",
+                    StandardCharsets.UTF_8);
+
+            // Assert: no BrowserLiveReload interactions since the only active
+            // URL
+            // is a Vaadin theme which should be skipped (lines 125-128)
+            Awaitility.await().untilAsserted(() -> {
+                Mockito.verifyNoInteractions(liveReload);
+            });
+        }
+    }
 }
