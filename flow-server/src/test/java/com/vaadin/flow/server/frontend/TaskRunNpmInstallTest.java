@@ -45,6 +45,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -86,7 +87,7 @@ public class TaskRunNpmInstallTest {
     protected Options options;
 
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, NoSuchFieldException {
         npmFolder = temporaryFolder.newFolder();
         options = new MockOptions(npmFolder).withBuildDirectory(TARGET)
                 .withBundleBuild(true);
@@ -105,6 +106,12 @@ public class TaskRunNpmInstallTest {
 
         };
         task = createTask(new ArrayList<>());
+        ReflectTools.setJavaFieldValue(
+                new FrontendTools(
+                        new FrontendToolsSettings(npmFolder.getAbsolutePath(),
+                                () -> npmFolder.getAbsolutePath())),
+                FrontendTools.class.getDeclaredField("activeNodeInstallation"),
+                null);
     }
 
     protected TaskRunNpmInstall createTask(List<String> additionalPostInstall) {

@@ -56,7 +56,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, NoSuchFieldException {
         super.setUp();
 
         // create an empty package.json so as pnpm can be run without
