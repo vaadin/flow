@@ -221,6 +221,8 @@ class NodeResolver implements java.io.Serializable {
         boolean isWindows = FrontendUtils.isWindows();
 
         // Try common locations relative to node executable
+        // *nix machines have the executable under node/bin folder,
+        // but windows has it in the node root folder
         String path = isWindows ? "node_modules\\npm\\bin\\npm-cli.js"
                 : "../lib/node_modules/npm/bin/npm-cli.js";
 
