@@ -236,7 +236,8 @@ public class AppShellRegistry implements Serializable {
         return settings;
     }
 
-    private String resolveStyleSheetHref(String href, VaadinRequest request) {
+    private static String resolveStyleSheetHref(String href,
+            VaadinRequest request) {
         if (href == null || href.isBlank()) {
             return null;
         }
