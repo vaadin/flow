@@ -147,6 +147,8 @@ public class PublicStyleSheetBundlerTest {
         File publicRoot = new File(project,
                 "src/main/resources/META-INF/resources");
         assertTrue(publicRoot.mkdirs());
+        File image = new File(publicRoot, "gobo.png");
+        Files.writeString(image.toPath(), "", StandardCharsets.UTF_8);
         File styles = new File(publicRoot, "styles.css");
         Files.writeString(styles.toPath(), given, StandardCharsets.UTF_8);
 
@@ -182,6 +184,10 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(cssRoot.mkdirs());
         File nestedDir = new File(cssRoot, "nested");
         assertTrue(nestedDir.mkdirs());
+        File imagesDir = new File(cssRoot, "images");
+        assertTrue(imagesDir.mkdirs());
+        Files.writeString(new File(imagesDir, "gobo.png").toPath(), "",
+                StandardCharsets.UTF_8);
         // nested/nested-imported.css contains url('../images/gobo.png')
         Files.writeString(new File(nestedDir, "nested-imported.css").toPath(),
                 EXPECTED_CSS, StandardCharsets.UTF_8);
@@ -231,6 +237,10 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(viewDir.mkdirs());
         File nestedDir = new File(viewDir, "nested");
         assertTrue(nestedDir.mkdirs());
+        File imagesDir = new File(cssRoot, "images");
+        assertTrue(imagesDir.mkdirs());
+        Files.writeString(new File(imagesDir, "viking.png").toPath(), "",
+                StandardCharsets.UTF_8);
         // nested/nested-imported.css contains background-image:
         // url(../../images/viking.png);
         String given = """
@@ -272,6 +282,10 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(viewDir.mkdirs());
         File nestedDir = new File(viewDir, "nested");
         assertTrue(nestedDir.mkdirs());
+        File imagesDir = new File(cssRoot, "images");
+        assertTrue(imagesDir.mkdirs());
+        Files.writeString(new File(imagesDir, "viking.png").toPath(), "",
+                StandardCharsets.UTF_8);
         String nested = """
                 DIV.nested-imported {
                     background-image: url('../../images/viking.png');
@@ -313,6 +327,8 @@ public class PublicStyleSheetBundlerTest {
         assertTrue(publicRoot.mkdirs());
         File cssDir = new File(publicRoot, "css");
         assertTrue(cssDir.mkdirs());
+        Files.writeString(new File(cssDir, "gobo.png").toPath(), "",
+                StandardCharsets.UTF_8);
         File styles = new File(cssDir, "styles.css");
         Files.writeString(styles.toPath(), given, StandardCharsets.UTF_8);
 
