@@ -117,7 +117,11 @@ Expected improvement when using `ADD_ON` mode:
 - Faster development mode startup
 - Faster production builds
 
-## Maven Goals and Manifest Filtering
+## Manifest Filtering in Different Environments
+
+### Maven Build Goals (prepare-frontend, build-frontend)
+
+Manifest filtering is **ACTIVE** in Maven build goals when using `vaadin.annotationScanner=ADD_ON`.
 
 ### How prepare-frontend and build-frontend Are Affected
 
@@ -193,6 +197,41 @@ Check debug logs for manifest filtering messages:
 ```bash
 mvn clean install -Dvaadin.annotationScanner=ADD_ON -X 2>&1 | grep -E "(has Vaadin-Package-Version|no Vaadin-Package-Version)"
 ```
+
+### Spring Boot Dev Mode
+
+Manifest filtering is **ACTIVE** in Spring Boot dev mode when using `vaadin.annotation-scanner-mode=addon`.
+
+**Configuration in application.properties:**
+```properties
+vaadin.annotation-scanner-mode=addon
+```
+
+**How it works:**
+- Spring's `CustomResourceLoader` checks JAR manifests during classpath scanning
+- Only JARs with `Vaadin-Package-Version` manifest attribute are scanned
+- Works alongside existing `vaadin.allowed-packages` / `vaadin.blocked-packages` filtering
+- Manifest checks are cached for performance
+
+**Expected behavior:**
+- Startup log message: "Manifest-based filtering enabled (vaadin.annotation-scanner-mode=addon): only JARs with Vaadin-Package-Version will be scanned"
+- Debug logs show: "JAR {name} will not be scanned: no Vaadin-Package-Version manifest"
+- Faster dev mode startup with fewer JARs scanned
+
+**Note:** This only affects Spring Boot applications. Servlet container dev mode (without Spring) uses `@HandlesTypes` and is not affected by this property.
+
+### Servlet Container Dev Mode (Non-Spring)
+
+Manifest filtering is **NOT ACTIVE** in servlet container dev mode.
+
+**How it works:**
+- Uses `@HandlesTypes` annotation on `DevModeStartupListener`
+- Servlet container scans all JARs automatically
+- No filtering mechanism available
+- All classes matching the annotation types are passed to Vaadin
+
+**Workaround:**
+For better performance in servlet container deployments, consider using Spring Boot for development.
 
 ## Technical Details
 
@@ -439,11 +478,13 @@ To test in a real application:
 ### Created
 - `flow-plugins/flow-plugin-base/src/main/java/com/vaadin/flow/plugin/base/JarManifestChecker.java`
 - `flow-plugins/flow-plugin-base/src/test/java/com/vaadin/flow/plugin/base/JarManifestCheckerTest.java`
+- `flow-server/src/main/java/com/vaadin/flow/server/scanner/JarManifestChecker.java` (runtime copy for Spring Boot)
 
 ### Modified
 - `flow-plugins/flow-maven-plugin/src/main/java/com/vaadin/flow/plugin/maven/FrontendScannerConfig.java`
 - `flow-plugins/flow-maven-plugin/src/main/java/com/vaadin/flow/plugin/maven/Reflector.java`
 - `flow-plugins/flow-maven-plugin/src/main/java/com/vaadin/flow/plugin/maven/FlowModeAbstractMojo.java`
+- `vaadin-spring/src/main/java/com/vaadin/flow/spring/VaadinServletContextInitializer.java` (Spring Boot dev mode support)
 
 ## Status Summary
 
@@ -451,8 +492,9 @@ To test in a real application:
 |-------|--------|-------------|
 | Phase 1 | ✅ Complete | Core manifest filtering infrastructure |
 | Phase 2 | ✅ Complete | Maven property configuration |
+| Phase 2.5 | ✅ Complete | Spring Boot dev mode support |
 | Phase 3 | ⏳ Pending | Logging and user guidance |
 | Phase 4 | 📅 Future | Runtime validation |
 | Phase 5 | 📅 Future | @Uses annotation extension |
 
-**Last Updated:** 2024-11-28
+**Last Updated:** 2025-12-04
