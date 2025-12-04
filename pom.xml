@@ -85,7 +85,7 @@
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
     <slf4j.version>2.0.17</slf4j.version>
     <polymer.version>2.6.1</polymer.version>
-    <jackson.version>3.0.2</jackson.version>
+    <jackson.version>3.0.3</jackson.version>
     <jaxb.version>4.0.6</jaxb.version>
     <guava.version>33.5.0-jre</guava.version>
     <javassist.version>3.30.2-GA</javassist.version>
@@ -94,7 +94,7 @@
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
     <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
-    <maven.war.plugin.version>3.5.0</maven.war.plugin.version>
+    <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
@@ -537,7 +537,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
           <configuration>
             <propertiesEncoding>UTF-8</propertiesEncoding>
           </configuration>
@@ -545,7 +545,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.3.0.6276</version>
+          <version>5.4.0.6343</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -615,7 +615,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
         <executions>
           <execution>
             <id>attach-sources</id>

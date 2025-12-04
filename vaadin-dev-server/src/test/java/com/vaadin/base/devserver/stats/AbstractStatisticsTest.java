@@ -17,8 +17,9 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.mockito.Mockito;
 
@@ -49,7 +50,8 @@ public abstract class AbstractStatisticsTest {
                 TestUtils.getTestResource(testResourceName).getFile());
         File result = File.createTempFile("test", "json");
         result.deleteOnExit();
-        FileUtils.copyFile(original, result);
+        Files.copy(original.toPath(), result.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
         return result;
     }
 
