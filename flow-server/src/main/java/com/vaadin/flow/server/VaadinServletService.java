@@ -105,7 +105,7 @@ public class VaadinServletService extends VaadinService {
                 getLogger()
                         .warn("""
                                 'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin.vaadin-dev' dependency
-                                or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
+                                or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
 
                                 Maven:
                                     <dependency>
