@@ -1675,8 +1675,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .orElse(null);
 
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler.inlineImports(
-                        stylesCss.getParentFile(), stylesCss, themeJson)));
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImportsForThemes(stylesCss.getParentFile(),
+                                stylesCss, themeJson)));
             }
         } catch (IOException e) {
             throw new RuntimeException(

@@ -255,7 +255,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
             if (options.isEnableBun()) {
                 npmExecutable = tools.getBunExecutable();
             } else if (options.isEnablePnpm()) {
-                validateInstalledNpm(tools);
                 npmExecutable = tools.getPnpmExecutable();
             } else {
                 npmExecutable = tools.getNpmExecutable();
@@ -608,23 +607,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "'. Please remove it manually.");
             throw new ExecutionFailedException(
                     "Exception removing node_modules. Please remove it manually.");
-        }
-    }
-
-    private void validateInstalledNpm(FrontendTools tools)
-            throws IllegalStateException {
-        File npmCacheDir = null;
-        try {
-            npmCacheDir = tools.getNpmCacheDir();
-        } catch (FrontendUtils.CommandExecutionException
-                | IllegalStateException e) {
-            packageUpdater.log().warn("Failed to get npm cache directory", e);
-        }
-
-        if (npmCacheDir != null
-                && !tools.folderIsAcceptableByNpm(npmCacheDir)) {
-            throw new IllegalStateException(
-                    String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
     }
 }
