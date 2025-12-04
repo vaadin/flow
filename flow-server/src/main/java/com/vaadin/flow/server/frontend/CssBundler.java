@@ -460,7 +460,7 @@ public class CssBundler {
      */
     public static String minifyCss(String css) {
         // Remove CSS comments /* ... */
-        css = css.replaceAll("/\\*[^*]*\\*+(?:[^/*][^*]*\\*+)*/", "");
+        css = StringUtil.removeComments(css, true);
         // Collapse whitespace
         css = css.replaceAll("\\s+", " ");
         // Remove spaces around special characters

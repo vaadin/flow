@@ -353,6 +353,19 @@ public class CssBundlerTest {
     }
 
     @Test
+    public void minifyCss_doesNotRemoveContentComment() {
+        String css = """
+                .selector {
+                  content: "/* not a comment, should not remove */";
+                }
+                """;
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(
+                ".selector{content:\"/* not a comment,should not remove */\"}",
+                result);
+    }
+
+    @Test
     public void minifyCss_removesMultilineComments() {
         String css = """
                 /* This is a
