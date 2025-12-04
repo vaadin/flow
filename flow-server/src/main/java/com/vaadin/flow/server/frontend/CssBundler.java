@@ -169,6 +169,7 @@ public class CssBundler {
         return inlineImports(baseFolder, cssFile, new HashSet<>(),
                 BundleFor.STATIC_RESOURCES, contextPath, null);
     }
+
     /**
      * Internal implementation that can optionally skip URL rewriting.
      *
