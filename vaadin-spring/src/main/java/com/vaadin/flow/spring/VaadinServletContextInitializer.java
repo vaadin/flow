@@ -733,20 +733,29 @@ public class VaadinServletContextInitializer
                         "vaadin.whitelisted-packages is deprecated and may not be supported in the future. Use vaadin.allowed-packages instead.");
             }
         }
+        // Read annotation scanner mode property
+        String scannerModeProperty = appContext.getEnvironment()
+                .getProperty("vaadin.annotation-scanner-mode");
+        boolean useManifestFiltering = "addon".equalsIgnoreCase(scannerModeProperty);
+
         if (onlyScanProperty == null) {
             customScanOnly = Collections.emptyList();
-            customLoader = new CustomResourceLoader(appContext, neverScan);
+            customLoader = new CustomResourceLoader(appContext, neverScan, useManifestFiltering);
 
         } else {
             customScanOnly = Arrays.stream(onlyScanProperty.split(","))
                     .map(onlyPackage -> onlyPackage.replace('/', '.').trim())
                     .collect(Collectors.toList());
-            customLoader = new CustomResourceLoader(appContext);
+            customLoader = new CustomResourceLoader(appContext, useManifestFiltering);
         }
 
         if (!customScanOnly.isEmpty() && !neverScan.isEmpty()) {
             getLogger().warn(
                     "vaadin.blocked-packages is ignored because both vaadin.allowed-packages and vaadin.blocked-packages have been set.");
+        }
+
+        if (useManifestFiltering) {
+            getLogger().info("Manifest-based filtering enabled (vaadin.annotation-scanner-mode=addon): only JARs with Vaadin-Package-Version will be scanned");
         }
     }
 
@@ -976,14 +985,27 @@ public class VaadinServletContextInitializer
          */
         private boolean filterOnlyByPackageProperties = false;
 
+        /**
+         * If true, only scan JARs with Vaadin-Package-Version manifest attribute.
+         * false by default.
+         */
+        private final boolean useManifestFiltering;
+
+        /**
+         * Cache for manifest check results. Key is the JAR path, value is whether
+         * it has the Vaadin-Package-Version manifest attribute.
+         */
+        private final Map<String, Boolean> manifestCache = new HashMap<>();
+
         public CustomResourceLoader(ResourceLoader resourceLoader,
-                List<String> addedScanNever) {
+                List<String> addedScanNever, boolean useManifestFiltering) {
             super(resourceLoader);
 
             Objects.requireNonNull(addedScanNever,
                     "addedScanNever shouldn't be null!");
 
             addedScanNever.forEach(scanNever::addPrefix);
+            this.useManifestFiltering = useManifestFiltering;
         }
 
         /**
@@ -992,10 +1014,14 @@ public class VaadinServletContextInitializer
          *
          * @param resourceLoader
          *            Resource loader
+         * @param useManifestFiltering
+         *            if true, only scan JARs with Vaadin-Package-Version manifest
          */
-        public CustomResourceLoader(ResourceLoader resourceLoader) {
+        public CustomResourceLoader(ResourceLoader resourceLoader,
+                boolean useManifestFiltering) {
             super(resourceLoader);
             filterOnlyByPackageProperties = true;
+            this.useManifestFiltering = useManifestFiltering;
         }
 
         /**
@@ -1161,6 +1187,11 @@ public class VaadinServletContextInitializer
         private boolean shouldPathBeScanned(String path, String rootPath,
                 AtomicBoolean parentIsAllowedByPackageProperties) {
             if (shouldPathBeScanned(path)) {
+                // Check manifest filtering first (if enabled)
+                if (useManifestFiltering && !isAllowedByManifest(rootPath)) {
+                    return false;
+                }
+
                 // The given parentIsAllowedByPackageProperties ensures that
                 // result from the previous check follows up here as a default
                 // value.
@@ -1174,6 +1205,47 @@ public class VaadinServletContextInitializer
                 return allowed;
             }
             return false;
+        }
+
+        /**
+         * Checks if a JAR file should be scanned based on its manifest.
+         * Returns true if manifest filtering is disabled or if the JAR
+         * has the Vaadin-Package-Version manifest attribute.
+         *
+         * @param jarPath
+         *            the path to the JAR file
+         * @return {@code true} if the JAR should be scanned, {@code false} otherwise
+         */
+        private boolean isAllowedByManifest(String jarPath) {
+            // Extract JAR file path from the resource path
+            String jarFilePath;
+            int jarIndex = jarPath.indexOf(".jar");
+            if (jarIndex >= 0) {
+                // Include the .jar extension
+                jarFilePath = jarPath.substring(0, jarIndex + 4);
+            } else {
+                // Not a JAR file, allow it (could be directory or other resource)
+                return true;
+            }
+
+            // Check cache first
+            Boolean cached = manifestCache.get(jarFilePath);
+            if (cached != null) {
+                return cached;
+            }
+
+            // Check manifest
+            File jarFile = new File(jarFilePath);
+            boolean hasManifest = com.vaadin.flow.server.scanner.JarManifestChecker.hasVaadinManifest(jarFile);
+
+            // Cache the result
+            manifestCache.put(jarFilePath, hasManifest);
+
+            if (!hasManifest) {
+                getLogger().debug("JAR {} will not be scanned: no Vaadin-Package-Version manifest", jarFile.getName());
+            }
+
+            return hasManifest;
         }
     }
 
