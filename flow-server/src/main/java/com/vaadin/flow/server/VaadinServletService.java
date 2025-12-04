@@ -104,7 +104,7 @@ public class VaadinServletService extends VaadinService {
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 getLogger()
                         .warn("""
-                                'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin.vaadin-dev' dependency
+                                'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin:vaadin-dev' dependency
                                 or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
 
                                 Maven:
