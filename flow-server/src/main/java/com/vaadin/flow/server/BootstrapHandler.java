@@ -1566,7 +1566,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 """
                         Frontend development bundle is expected to be in the project or on the classpath, but not found.
                         Add 'com.vaadin:vaadin-dev' dependency to let Vaadin re-use the pre-compiled development bundle
-                        or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
+                        or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
 
                         Maven:
                             <dependency>
