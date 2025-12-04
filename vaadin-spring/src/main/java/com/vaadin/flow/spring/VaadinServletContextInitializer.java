@@ -529,7 +529,7 @@ public class VaadinServletContextInitializer
                         """
                                 'vaadin-dev-server' not found, but dev server is enabled.
                                 Either disable by setting vaadin.frontend.hotdeploy=false (and run the build-frontend maven goal)
-                                or add 'com.vaadin.vaadin-dev' dependency or 'com.vaadin.vaadin-dev-server' for minimal working configuration.
+                                or add 'com.vaadin:vaadin-dev' dependency or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
 
                                 Maven:
                                     <dependency>
