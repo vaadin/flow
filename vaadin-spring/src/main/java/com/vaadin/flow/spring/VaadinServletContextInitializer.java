@@ -1219,7 +1219,7 @@ public class VaadinServletContextInitializer
          * @return {@code true} if the JAR should be scanned, {@code false} otherwise
          */
         private boolean isAllowedByManifest(String rootPath) {
-            // rootPath should end with .jar (e.g., /path/to/library.jar)
+            // rootPath should end with .jar (e.g., /path/to/library.jar or file:/path/to/library.jar)
             // If it's not a JAR file path, allow it (could be directory resource)
             if (!rootPath.endsWith(".jar")) {
                 return true;
@@ -1231,8 +1231,14 @@ public class VaadinServletContextInitializer
                 return cached;
             }
 
+            // Strip file: protocol prefix if present
+            String jarPath = rootPath;
+            if (jarPath.startsWith("file:")) {
+                jarPath = jarPath.substring(5); // Remove "file:" prefix
+            }
+
             // Check manifest
-            File jarFile = new File(rootPath);
+            File jarFile = new File(jarPath);
             boolean hasManifest = com.vaadin.flow.server.scanner.JarManifestChecker.hasVaadinManifest(jarFile);
 
             // Cache the result
