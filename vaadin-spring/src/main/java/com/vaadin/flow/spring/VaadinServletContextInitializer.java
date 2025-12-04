@@ -1099,8 +1099,9 @@ public class VaadinServletContextInitializer
                                         .replace(".class", "");
                                 ReloadCache.jarClassNames.add(className);
                             }
+                            // Include .jar extension in rootPath (index + 4)
                             if (shouldPathBeScanned(relativePath,
-                                    path.substring(0, index))) {
+                                    path.substring(0, index + 4))) {
                                 resources.add(resource);
                             }
                         } else {
@@ -1213,34 +1214,29 @@ public class VaadinServletContextInitializer
          * Returns true if manifest filtering is disabled or if the JAR
          * has the Vaadin-Package-Version manifest attribute.
          *
-         * @param jarPath
-         *            the path to the JAR file
+         * @param rootPath
+         *            the root path of the resource (JAR path including .jar extension)
          * @return {@code true} if the JAR should be scanned, {@code false} otherwise
          */
-        private boolean isAllowedByManifest(String jarPath) {
-            // Extract JAR file path from the resource path
-            String jarFilePath;
-            int jarIndex = jarPath.indexOf(".jar");
-            if (jarIndex >= 0) {
-                // Include the .jar extension
-                jarFilePath = jarPath.substring(0, jarIndex + 4);
-            } else {
-                // Not a JAR file, allow it (could be directory or other resource)
+        private boolean isAllowedByManifest(String rootPath) {
+            // rootPath should end with .jar (e.g., /path/to/library.jar)
+            // If it's not a JAR file path, allow it (could be directory resource)
+            if (!rootPath.endsWith(".jar")) {
                 return true;
             }
 
             // Check cache first
-            Boolean cached = manifestCache.get(jarFilePath);
+            Boolean cached = manifestCache.get(rootPath);
             if (cached != null) {
                 return cached;
             }
 
             // Check manifest
-            File jarFile = new File(jarFilePath);
+            File jarFile = new File(rootPath);
             boolean hasManifest = com.vaadin.flow.server.scanner.JarManifestChecker.hasVaadinManifest(jarFile);
 
             // Cache the result
-            manifestCache.put(jarFilePath, hasManifest);
+            manifestCache.put(rootPath, hasManifest);
 
             if (!hasManifest) {
                 getLogger().debug("JAR {} will not be scanned: no Vaadin-Package-Version manifest", jarFile.getName());
