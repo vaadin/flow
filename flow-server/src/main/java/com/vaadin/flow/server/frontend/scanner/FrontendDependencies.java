@@ -197,6 +197,11 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             long ms = (System.nanoTime() - start) / 1000000;
             log().info("Visited {} classes. Took {} ms.", visitedClasses.size(),
                     ms);
+            if (log().isDebugEnabled()) {
+                log().debug("Visited classes: {}",
+                        visitedClasses.keySet().stream().sorted()
+                                .collect(java.util.stream.Collectors.joining(", ")));
+            }
         } catch (IllegalArgumentException ex) {
             StackTraceElement[] stackTrace = ex.getStackTrace();
             if (ex.getMessage() != null

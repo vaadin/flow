@@ -167,6 +167,11 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         getLogger().info("Visited {} classes. Took {} ms.", getClasses().size(),
                 System.currentTimeMillis() - start);
+        if (getLogger().isDebugEnabled()) {
+            getLogger().debug("Visited classes: {}",
+                    getClasses().stream().sorted()
+                            .collect(java.util.stream.Collectors.joining(", ")));
+        }
     }
 
     @Override
