@@ -319,14 +319,15 @@ public final class Reflector {
             File jarFile = artifact.getFile();
             if (jarFile != null
                     && JarManifestChecker.hasVaadinManifest(jarFile)) {
-                log.debug("Artifact {} accepted: has Vaadin-Package-Version",
+                log.debug(
+                        "Artifact {} will be scanned: has Vaadin-Package-Version manifest",
                         artifact.getId());
                 return true;
             }
 
             // Reject artifacts without Vaadin manifest in ADD_ON mode
             log.debug(
-                    "Artifact {} rejected: no Vaadin-Package-Version manifest in ADD_ON mode",
+                    "Artifact {} will not be scanned: no Vaadin-Package-Version manifest in ADD_ON mode",
                     artifact.getId());
             return false;
         };
