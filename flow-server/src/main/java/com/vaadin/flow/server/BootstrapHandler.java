@@ -1563,9 +1563,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = DevBundleUtils.findBundleStatsJson(
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
-                "Frontend development bundle is expected to be in the project"
-                        + " or on the classpath, but not found."
-                        + " Add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev' to let Vaadin build the development bundle automatically.");
+                """
+                        Frontend development bundle is expected to be in the project or on the classpath, but not found.
+                        Add 'com.vaadin:vaadin-dev' dependency to let Vaadin re-use the pre-compiled development bundle
+                        or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                        Maven:
+                            <dependency>
+                                <groupId>com.vaadin</groupId>
+                                <artifactId>vaadin-dev</artifactId>
+                            </dependency>
+
+                        Gradle:
+                            dependencies {
+                                implementation('com.vaadin:vaadin-dev')
+                            }
+
+                        """);
         return JacksonUtils.readTree(statsJson);
     }
 

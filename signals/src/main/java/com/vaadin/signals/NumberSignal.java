@@ -148,6 +148,11 @@ public class NumberSignal extends ValueSignal<Double> {
      * @return the new readonly number signal, not <code>null</code>
      */
     public NumberSignal asReadonly() {
+        /*
+         * While this method could semantically be declared to return a less
+         * specific type that doesn't provide mutator methods, that would also
+         * remove access to e.g. the valueAsInt method.
+         */
         return withValidator(anything -> false);
     }
 
