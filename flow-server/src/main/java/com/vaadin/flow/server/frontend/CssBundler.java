@@ -169,7 +169,27 @@ public class CssBundler {
         return inlineImports(baseFolder, cssFile, new HashSet<>(),
                 BundleFor.STATIC_RESOURCES, contextPath, null);
     }
-
+    /**
+     * Internal implementation that can optionally skip URL rewriting.
+     *
+     * @param baseFolder
+     *            base folder used for resolving relative paths, e.g. imports
+     *            and url() references
+     * @param cssFile
+     *            the CSS file to process
+     * @param assetAliases
+     *            theme asset aliases (only used when rewriting URLs)
+     * @param bundleFor
+     *            defines a way how bundler resolves url(...), e.g. whether
+     *            {@link com.vaadin.flow.theme.Theme} location is used
+     *            ({@code src/main/frontend/themes/}) and whether to rewrite
+     *            url(...) references to VAADIN/themes paths
+     * @param contextPath
+     *            that url() are rewritten to and rebased onto
+     * @param nodeModulesFolder
+     *            the node_modules folder for resolving npm package imports. May
+     *            be null if node_modules resolution is not needed.
+     */
     private static String inlineImports(File baseFolder, File cssFile,
             Set<String> assetAliases, BundleFor bundleFor, String contextPath,
             File nodeModulesFolder) throws IOException {
