@@ -149,6 +149,7 @@ public class CssBundler {
         return inlineImports(themeFolder, cssFile,
                 getThemeAssetsAliases(themeJson), null, "", nodeModulesFolder);
     }
+
     /**
      * Inlines imports for CSS files located under public static resources (e.g.
      * META-INF/resources).
@@ -170,7 +171,8 @@ public class CssBundler {
     }
 
     private static String inlineImports(File baseFolder, File cssFile,
-            Set<String> assetAliases, BundleFor bundleFor, String contextPath, File nodeModulesFolder) throws IOException {
+            Set<String> assetAliases, BundleFor bundleFor, String contextPath,
+            File nodeModulesFolder) throws IOException {
 
         String content = Files.readString(cssFile.toPath());
         if (bundleFor == BundleFor.THEMES) {
@@ -202,7 +204,8 @@ public class CssBundler {
                 if (potentialFile != null && potentialFile.exists()) {
                     try {
                         return Matcher.quoteReplacement(inlineImports(
-                                baseFolder, potentialFile, assetAliases, bundleFor, contextPath, nodeModulesFolder));
+                                baseFolder, potentialFile, assetAliases,
+                                bundleFor, contextPath, nodeModulesFolder));
                     } catch (IOException e) {
                         getLogger().warn("Unable to inline import: {}",
                                 result.group());
