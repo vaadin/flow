@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +53,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class PublicResourcesLiveUpdater implements Closeable {
-
+    private final static Pattern THEME_URLS_PATTERN = Pattern
+            .compile(".*/(lumo|aura)/.+\\.css$");
     private final List<FileWatcher> watchers = new ArrayList<>();
     private final List<File> roots = new ArrayList<>();
     private final VaadinContext context;
@@ -156,7 +158,8 @@ public class PublicResourcesLiveUpdater implements Closeable {
 
     private boolean isVaadinThemeUrl(String url) {
         url = FrontendUtils.getUnixPath(new File(url).toPath());
-        return url.contains("lumo/lumo.css") || url.contains("aura/aura.css");
+        // all knows urls from Aura and Lumo classes
+        return THEME_URLS_PATTERN.matcher(url).matches();
     }
 
     private Logger getLogger() {
