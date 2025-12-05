@@ -29,7 +29,7 @@
 
       <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
         <version>${spring.boot.version}</version>
         <exclusions>
           <!-- Exclude logback as Selenium via netty otherwise logs excessively -->
