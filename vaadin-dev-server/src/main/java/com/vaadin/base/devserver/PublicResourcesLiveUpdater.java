@@ -170,7 +170,7 @@ public class PublicResourcesLiveUpdater implements Closeable {
 
     private boolean isVaadinThemeUrl(String url) {
         url = FrontendUtils.getUnixPath(new File(url).toPath());
-        // all knows urls from Aura and Lumo classes
+        // all known urls from Aura and Lumo classes
         return THEME_URLS_PATTERN.matcher(url).matches();
     }
 
