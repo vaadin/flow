@@ -75,8 +75,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return true if applicable class
      */
     private boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz)
+        boolean hasRouteAnnotation = clazz.isAnnotationPresent(Route.class);
+        if (hasRouteAnnotation && !Component.class.isAssignableFrom(clazz)) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "'%s' declares '@%s' but does not extend '%s'.",
+                    clazz.getCanonicalName(), Route.class.getSimpleName(),
+                    Component.class.getCanonicalName()));
+        }
+        return hasRouteAnnotation
                 && clazz.getAnnotation(Route.class).registerAtStartup();
     }
 

@@ -121,10 +121,27 @@ public class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Route("foo")
+    public static class NonComponent {
+
+    }
+
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
         initializer.validateRouteClasses(context,
                 Stream.of(RouteAndParentLayout.class));
+    }
+
+    @Test
+    public void validateRouteClasses_annotationOnNonComponentClass_throws() {
+        InvalidRouteConfigurationException exception = Assert.assertThrows(
+                InvalidRouteConfigurationException.class,
+                () -> initializer.validateRouteClasses(context,
+                        Stream.of(NonComponent.class)));
+        Assert.assertTrue(containsQuotedAnnotationName(exception.getMessage(),
+                Route.class));
+        Assert.assertTrue(exception.getMessage()
+                .contains("not extend '" + Component.class.getCanonicalName()));
     }
 
     @Test
