@@ -18,6 +18,7 @@ package com.vaadin.base.devserver;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,7 +55,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
  */
 public class PublicResourcesLiveUpdater implements Closeable {
     private final static Pattern THEME_URLS_PATTERN = Pattern
-            .compile(".*/(lumo|aura)/.+\\.css$");
+            .compile("^(.*/)?(lumo|aura)/.+\\.css$");
     private final List<FileWatcher> watchers = new ArrayList<>();
     private final List<File> roots = new ArrayList<>();
     private final VaadinContext context;
@@ -125,8 +126,8 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     return;
                 }
                 for (String url : activeUrls) {
-                    if (isVaadinThemeUrl(url)) {
-                        // ignore Aura and Lumo urls
+                    if (isVaadinThemeUrl(url) || isExternalUrl(url)) {
+                        // ignore external urls, and Aura and Lumo urls
                         continue;
                     }
                     String normalized = PublicStyleSheetBundler
@@ -154,6 +155,17 @@ public class PublicResourcesLiveUpdater implements Closeable {
         }, root);
         watcher.start();
         return watcher;
+    }
+
+    private boolean isExternalUrl(String url) {
+        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+            return false;
+        }
+        try {
+            return URI.create(url).isAbsolute();
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
     }
 
     private boolean isVaadinThemeUrl(String url) {

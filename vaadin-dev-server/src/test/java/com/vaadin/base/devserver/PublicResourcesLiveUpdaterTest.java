@@ -333,8 +333,10 @@ public class PublicResourcesLiveUpdaterTest {
 
             // Active URLs include two Lumo URLs and one regular URL
             Set<String> activeUrls = new HashSet<>(Arrays.asList(
-                    "/lumo/utility.css", "/lumo/presets/compact.css",
-                    "aura/aura.css", "/css/app.css"));
+                    "/lumo/utility.css", "lumo/utility.css",
+                    "/lumo/presets/compact.css", "lumo/presets/compact.css",
+                    "/aura/aura.css", "aura/aura.css", "/css/app.css",
+                    "http://localhost:8080/hello"));
             ActiveStyleSheetTracker tracker = Mockito
                     .mock(ActiveStyleSheetTracker.class);
             Mockito.when(tracker.getActiveUrls()).thenReturn(activeUrls);
@@ -374,9 +376,17 @@ public class PublicResourcesLiveUpdaterTest {
                 Mockito.verify(bundler, Mockito.never())
                         .bundle(eq("/lumo/utility.css"), anyString());
                 Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("lumo/utility.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
                         .bundle(eq("/lumo/presets/compact.css"), anyString());
                 Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("lumo/presets/compact.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
                         .bundle(eq("/aura/aura.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("aura/aura.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("http://localhost:8080/hello"), anyString());
             } finally {
                 updater.close();
             }
