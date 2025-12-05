@@ -27,6 +27,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.RouteUtil;
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.PWA;
 import com.vaadin.flow.server.PageConfigurator;
@@ -67,8 +68,14 @@ public abstract class AbstractRouteRegistryInitializer implements Serializable {
      * @return true if applicable class
      */
     private boolean isApplicableClass(Class<?> clazz) {
-        return clazz.isAnnotationPresent(Route.class)
-                && Component.class.isAssignableFrom(clazz)
+        boolean hasRouteAnnotation = clazz.isAnnotationPresent(Route.class);
+        if (hasRouteAnnotation && !Component.class.isAssignableFrom(clazz)) {
+            throw new InvalidRouteConfigurationException(String.format(
+                    "'%s' declares '@%s' but does not extend '%s'.",
+                    clazz.getCanonicalName(), Route.class.getSimpleName(),
+                    Component.class.getCanonicalName()));
+        }
+        return hasRouteAnnotation
                 && clazz.getAnnotation(Route.class).registerAtStartup();
     }
 

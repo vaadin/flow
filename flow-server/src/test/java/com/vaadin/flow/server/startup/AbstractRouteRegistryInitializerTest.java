@@ -11,6 +11,7 @@ package com.vaadin.flow.server.startup;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -48,10 +49,26 @@ public class AbstractRouteRegistryInitializerTest {
 
     }
 
+    @Route("foo")
+    public static class NonComponent {
+
+    }
+
     @Test(expected = InvalidRouteLayoutConfigurationException.class)
     public void routeAndParentLayout_notRouterLayout_throws() {
         initializer.validateRouteClasses(Stream.of(RouteAndParentLayout.class));
 
+    }
+
+    @Test
+    public void validateRouteClasses_annotationOnNonComponentClass_throws() {
+        InvalidRouteConfigurationException exception = Assert.assertThrows(
+                InvalidRouteConfigurationException.class, () -> initializer
+                        .validateRouteClasses(Stream.of(NonComponent.class)));
+        Assert.assertTrue(
+                exception.getMessage().contains(Route.class.getSimpleName()));
+        Assert.assertTrue(exception.getMessage()
+                .contains("not extend '" + Component.class.getCanonicalName()));
     }
 
     @Test

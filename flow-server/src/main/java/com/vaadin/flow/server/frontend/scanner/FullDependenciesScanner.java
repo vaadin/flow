@@ -23,6 +23,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.component.WebComponentExporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -465,13 +466,17 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .next();
             Class<? extends Annotation> routeAnnotationClass = getFinder()
                     .loadClass(Route.class.getName());
-            Class<? extends Annotation> routeLayoutClass = getFinder()
+            Class<?> routeLayoutClass = getFinder()
                     .loadClass(RouterLayout.class.getName());
+            Class<?> webComponentExporter = getFinder()
+                    .loadClass(WebComponentExporter.class.getName());
 
             if (!hopefullyCorrectPWAHolder
                     .isAnnotationPresent(routeAnnotationClass)
-                    && !routeLayoutClass
-                            .isAssignableFrom(hopefullyCorrectPWAHolder)) {
+                    && !(routeLayoutClass
+                            .isAssignableFrom(hopefullyCorrectPWAHolder)
+                            || webComponentExporter.isAssignableFrom(
+                                    hopefullyCorrectPWAHolder))) {
                 throw new IllegalStateException(
                         ERROR_INVALID_PWA_ANNOTATION + " but was found on "
                                 + hopefullyCorrectPWAHolder.getName());
