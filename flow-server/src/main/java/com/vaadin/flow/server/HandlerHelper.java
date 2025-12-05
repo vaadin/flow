@@ -157,14 +157,14 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
         resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
-        resources.add("/aura/**");
-        resources.add("/lumo/**");
         resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
         // These are always in the root of the app, not inside any url mapping
         List<String> rootResources = new ArrayList<>();
+        rootResources.add("/aura/**");
+        rootResources.add("/lumo/**");
         rootResources.add("/favicon.ico");
         publicResourcesRoot = rootResources
                 .toArray(new String[rootResources.size()]);
