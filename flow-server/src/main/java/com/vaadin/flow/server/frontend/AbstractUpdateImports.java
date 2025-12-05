@@ -664,10 +664,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 es6ImportPaths.add(originalModulePath);
             }
 
-            if (theme != null) {
-                handleImports(originalModulePath, theme, es6ImportPaths,
-                        visited);
-            }
+            handleImports(originalModulePath, theme, es6ImportPaths, visited);
         }
 
         if (!resourceNotFound.isEmpty()) {
@@ -970,14 +967,15 @@ abstract class AbstractUpdateImports implements Runnable {
                             // all
                             return null;
                         }
-                        return normalizePath(resolvedPath);
+                        return normalizePath(
+                                resolvedPath.replaceAll("\\\\", "/"));
                     }).filter(Objects::nonNull).collect(Collectors.toList()));
         }
         List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 
         for (String resolvedPath : resolvedPaths) {
-            if (resolvedPath.startsWith(theme.getBaseUrl())
-                    || resolvedPath.startsWith("./" + theme.getBaseUrl())) {
+            if (theme != null && (resolvedPath.startsWith(theme.getBaseUrl())
+                    || resolvedPath.startsWith("./" + theme.getBaseUrl()))) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
                         && importedFileExists(translatedPath)) {
