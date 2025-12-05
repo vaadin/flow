@@ -418,8 +418,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 getFinder(), PWA.class.getName());
         Class<? extends Annotation> routeAnnotationClass = getFinder()
                 .loadClass(Route.class.getName());
-        Class<? extends Annotation> routeLayoutClass = getFinder()
+        Class<?> routeLayoutClass = getFinder()
                 .loadClass(RouterLayout.class.getName());
+        Class<?> webComponentExporter = getFinder()
+                .loadClass(WebComponentExporter.class.getName());
 
         for (Class<?> hopefullyCorrectPWAHolder : getFinder()
                 .getAnnotatedClasses(PWA.class.getName())) {
@@ -427,8 +429,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             // a parent layout
             if (!hopefullyCorrectPWAHolder
                     .isAnnotationPresent(routeAnnotationClass)
-                    && !routeLayoutClass
-                            .isAssignableFrom(hopefullyCorrectPWAHolder)) {
+                    && !(routeLayoutClass
+                            .isAssignableFrom(hopefullyCorrectPWAHolder)
+                            || webComponentExporter.isAssignableFrom(
+                                    hopefullyCorrectPWAHolder))) {
                 throw new IllegalStateException(
                         ERROR_INVALID_PWA_ANNOTATION + " but was found on "
                                 + hopefullyCorrectPWAHolder.getName());
