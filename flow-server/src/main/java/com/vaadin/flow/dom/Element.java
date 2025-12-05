@@ -1634,11 +1634,11 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Serializable[] jsParameters;
+        Object[] jsParameters;
         if (arguments.length == 0) {
-            jsParameters = new Serializable[] { this };
+            jsParameters = new Object[] { this };
         } else {
-            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters = new Object[arguments.length + 1];
             jsParameters[0] = this;
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
