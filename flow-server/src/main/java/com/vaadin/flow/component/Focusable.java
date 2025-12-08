@@ -147,6 +147,25 @@ public interface Focusable<T extends Component>
     }
 
     /**
+     * Calls the <code>focus</code> function at the client using default focus
+     * options, making the component keyboard focused.
+     * <p>
+     * Uses default browser behavior, i.e.,
+     * {@link com.vaadin.flow.component.FocusOption.FocusVisible#DEFAULT} and
+     * {@link com.vaadin.flow.component.FocusOption.PreventScroll#DEFAULT}.
+     * <p>
+     * Note: this method is kept mainly for binary compatibility with the
+     * previous Vaadin versions.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
+     *      at MDN</a>
+     */
+    default void focus() {
+        focus(new FocusOption[0]);
+    }
+
+    /**
      * Calls the <code>blur</code> function at the client, making the component
      * lose keyboard focus.
      *
