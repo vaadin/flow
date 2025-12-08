@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
@@ -33,6 +32,7 @@ public class TransferProgressListenerView extends Div {
     static final String WHEN_START_ID = "for-servlet-resource-when-start";
     static final String ON_PROGRESS_ID = "for-servlet-resource-on-progress";
     static final String ON_ERROR_ID = "for-servlet-resource-on-error";
+    static final String ON_CALLBACK_ERROR_ID = "from-inputstream-on-callback-error";
     static final String ON_COMPLETE_ID = "for-servlet-resource-when-complete";
 
     public TransferProgressListenerView() {
@@ -99,5 +99,24 @@ public class TransferProgressListenerView extends Div {
         add(imageError);
         add(new Div("Error:"));
         add(forServletResourceOnError);
+
+        Div fromInputStreamOnCallbackError = new Div(
+                "File download onError status (callback error)...");
+        fromInputStreamOnCallbackError.setId(ON_CALLBACK_ERROR_ID);
+        errorDownloadHandler = DownloadHandler.fromInputStream(req -> {
+            throw new IOException("Simulated error");
+        }).whenComplete(success -> {
+            if (!success) {
+                fromInputStreamOnCallbackError.setText(
+                        "File download onError status: callback error");
+            }
+        });
+
+        imageError = new Image(errorDownloadHandler, "no-image");
+
+        add(imageError);
+        add(new Div("Error (callback):"));
+        add(fromInputStreamOnCallbackError);
+
     }
 }

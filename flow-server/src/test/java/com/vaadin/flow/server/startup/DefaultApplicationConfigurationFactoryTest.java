@@ -24,16 +24,22 @@ import java.net.URLStreamHandler;
 import java.nio.file.Files;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -159,13 +165,58 @@ public class DefaultApplicationConfigurationFactoryTest {
     @Test
     public void create_tokenFileWithPremiumFlag_premiumFlagIsPropagatedToDeploymentConfiguration()
             throws IOException {
+        assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+                Constants.PREMIUM_FEATURES, true);
+    }
+
+    @Test
+    public void create_tokenFileWithCommercialBannerFlag_commercialBannerFlagIsPropagatedToDeploymentConfiguration()
+            throws IOException {
+        assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+                Constants.COMMERCIAL_BANNER_TOKEN, true);
+    }
+
+    @Test
+    public void getMode_returnsLivereload_tailwindCssIsEnabled()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+        mockClassPathTokenFile(resourceProvider, "{}");
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        try (MockedStatic<FeatureFlags> flags = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            flags.when(() -> FeatureFlags.get(context))
+                    .thenReturn(featureFlags);
+
+            Assert.assertEquals("Should have bundle mode by default",
+                    Mode.DEVELOPMENT_BUNDLE, configuration.getMode());
+
+            Mockito.when(featureFlags
+                    .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS))
+                    .thenReturn(true);
+
+            Assert.assertEquals(
+                    "Should have livereload mode when TailwindCSS is enabled",
+                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
+                    configuration.getMode());
+        }
+    }
+
+    private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(
+            String attributeName, Object value) throws IOException {
         VaadinContext context = Mockito.mock(VaadinContext.class);
         VaadinConfig config = Mockito.mock(VaadinConfig.class);
 
         ResourceProvider resourceProvider = mockResourceProvider(config,
                 context);
 
-        String content = "{ \"" + Constants.PREMIUM_FEATURES + "\": true }";
+        String content = JacksonUtils.mapToJson(Map.of(attributeName, value))
+                .toString();
         mockClassPathTokenFile(resourceProvider, content);
 
         DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
@@ -173,9 +224,15 @@ public class DefaultApplicationConfigurationFactoryTest {
 
         List<String> propertyNames = Collections
                 .list(configuration.getPropertyNames());
-        Assert.assertTrue(propertyNames.contains(Constants.PREMIUM_FEATURES));
-        Assert.assertTrue(configuration
-                .getBooleanProperty(Constants.PREMIUM_FEATURES, false));
+        Assert.assertTrue(propertyNames.contains(attributeName));
+        if (value instanceof Boolean) {
+            Assert.assertTrue(
+                    configuration.getBooleanProperty(attributeName, false));
+        } else {
+            Assert.assertEquals(
+                    configuration.getStringProperty(attributeName, null),
+                    value.toString());
+        }
     }
 
     private void mockClassPathTokenFile(ResourceProvider resourceProvider,

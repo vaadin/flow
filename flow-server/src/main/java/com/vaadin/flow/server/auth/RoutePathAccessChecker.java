@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import java.util.Objects;
@@ -45,6 +44,9 @@ public class RoutePathAccessChecker implements NavigationAccessChecker {
 
     /**
      * Creates an instance for the given checker.
+     *
+     * @param accessPathChecker
+     *            the access path checker to use
      */
     public RoutePathAccessChecker(AccessPathChecker accessPathChecker) {
         this.accessPathChecker = Objects.requireNonNull(accessPathChecker,

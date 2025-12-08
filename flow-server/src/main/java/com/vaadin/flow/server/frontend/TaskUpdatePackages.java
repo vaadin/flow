@@ -20,29 +20,22 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.Platform;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.VersionsJsonConverter.JS_VERSION;
@@ -98,7 +91,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
             if (modified || npmVersionLockingUpdated) {
                 if (!packageJson.has("type") || !packageJson.get("type")
-                        .textValue().equals("module")) {
+                        .asString().equals("module")) {
                     packageJson.put("type", "module");
                     log().info(
                             """
@@ -120,6 +113,17 @@ public class TaskUpdatePackages extends NodeUpdater {
         ObjectNode overridesSection = getOverridesSection(packageJson);
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         ObjectNode fullPlatformDependencies = getFullPlatformDependencies();
+        // Clean platform overrides if override version less than new version.
+        for (String key : JacksonUtils.getKeys(fullPlatformDependencies)) {
+            if (overridesSection.has(key)
+                    && !overridesSection.get(key).asString().startsWith("$")
+                    && new FrontendVersion(overridesSection.get(key).asString())
+                            .isOlderThan(
+                                    new FrontendVersion(fullPlatformDependencies
+                                            .get(key).asString()))) {
+                overridesSection.remove(key);
+            }
+        }
         for (String dependency : JacksonUtils.getKeys(versionsJson)) {
             if (!overridesSection.has(dependency)
                     && shouldLockDependencyVersion(dependency, dependencies,
@@ -133,7 +137,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         for (String dependency : JacksonUtils.getKeys(overridesSection)) {
             if (!dependencies.has(dependency)
                     && !devDependencies.has(dependency) && overridesSection
-                            .get(dependency).textValue().startsWith("$")) {
+                            .get(dependency).asString().startsWith("$")) {
                 overridesSection.remove(dependency);
                 versionLockingUpdated = true;
             }
@@ -156,7 +160,7 @@ public class TaskUpdatePackages extends NodeUpdater {
                 .getKeys(fullPlatformDependencies)) {
             try {
                 FrontendVersion frontendVersion = new FrontendVersion(
-                        fullPlatformDependencies.get(dependency).textValue());
+                        fullPlatformDependencies.get(dependency).asString());
                 if ("SNAPSHOT".equals(frontendVersion.getBuildIdentifier())) {
                     continue;
                 }
@@ -190,8 +194,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = coreVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     platformDependencies);
         }
 
@@ -204,8 +207,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         try (InputStream content = vaadinVersionsResource.openStream()) {
             collectDependencies(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     platformDependencies);
         }
 
@@ -219,15 +221,15 @@ public class TaskUpdatePackages extends NodeUpdater {
                 continue;
             }
             if (value.has(NPM_NAME)) {
-                String npmName = value.get(NPM_NAME).textValue();
+                String npmName = value.get(NPM_NAME).asString();
                 if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
                     return;
                 }
                 String version;
                 if (value.has(NPM_VERSION)) {
-                    version = value.get(NPM_VERSION).textValue();
+                    version = value.get(NPM_VERSION).asString();
                 } else if (value.has(JS_VERSION)) {
-                    version = value.get(JS_VERSION).textValue();
+                    version = value.get(JS_VERSION).asString();
                 } else {
                     log().debug(
                             "dependency '{}' has no 'npmVersion'/'jsVersion'.",
@@ -243,8 +245,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
     private boolean shouldLockDependencyVersion(String dependency,
             JsonNode projectDependencies, JsonNode versionsJson) {
-        String platformDefinedVersion = versionsJson.get(dependency)
-                .textValue();
+        String platformDefinedVersion = versionsJson.get(dependency).asString();
 
         if (isInternalPseudoDependency(platformDefinedVersion)) {
             return false;
@@ -253,7 +254,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         if (projectDependencies.has(dependency)) {
             try {
                 new FrontendVersion(
-                        projectDependencies.get(dependency).textValue());
+                        projectDependencies.get(dependency).asString());
             } catch (Exception e) {
                 // Do not lock non-numeric versions, e.g. folder references
                 return false;
@@ -405,7 +406,9 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
-        doCleanUp = doCleanUp || (!enablePnpm && isPlatformVersionUpdated());
+        doCleanUp = doCleanUp || (!enablePnpm && FrontendUtils
+                .isPlatformVersionUpdated(finder, options.getNpmFolder(),
+                        options.getNodeModulesFolder()));
 
         // Remove obsolete devDependencies
         dependencyCollection = new ArrayList<>(
@@ -428,7 +431,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         }
 
         String oldHash = packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
-                .textValue();
+                .asString();
         String newHash = generatePackageJsonHash(packageJson);
         // update packageJson hash value, if no changes it will not be written
         ((ObjectNode) packageJson.get(VAADIN_DEP_KEY)).put(HASH_KEY, newHash);
@@ -480,7 +483,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         try {
             if (packageJsonDeps.has(pkg)) {
                 packageJsonVersion = new FrontendVersion(
-                        packageJsonDeps.get(pkg).textValue());
+                        packageJsonDeps.get(pkg).asString());
             }
         } catch (NumberFormatException e) {
             // Overridden to a file link in package.json, do not change
@@ -489,7 +492,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         try {
             if (vaadinDeps.has(pkg)) {
                 vaadinDepsVersion = new FrontendVersion(
-                        vaadinDeps.get(pkg).textValue());
+                        vaadinDeps.get(pkg).asString());
             }
         } catch (NumberFormatException e) {
             // Vaadin defines a non-numeric version. Not sure what the case
@@ -510,56 +513,6 @@ public class TaskUpdatePackages extends NodeUpdater {
         packageJsonDeps.put(pkg, platformPinnedVersion.getFullVersion());
         vaadinDeps.put(pkg, platformPinnedVersion.getFullVersion());
         return true;
-    }
-
-    /**
-     * Compares current platform version with the one last recorded as installed
-     * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform version recorder and node_modules exists, then platform is
-     * considered updated.
-     *
-     * @return {@code true} if the version has changed, {@code false} if not
-     * @throws IOException
-     *             when file reading fails
-     */
-    private boolean isPlatformVersionUpdated() throws IOException {
-        // if no record of current version is present, version is not
-        // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent()
-                && options.getNodeModulesFolder().exists()) {
-            JsonNode vaadinJsonContents = getVaadinJsonContents();
-            // If no record of previous version, version is considered updated
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
-                return true;
-            }
-            return !Objects.equals(vaadinJsonContents
-                    .get(NodeUpdater.VAADIN_VERSION).textValue(),
-                    platformVersion.get());
-        }
-        return false;
-    }
-
-    static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        if (coreVersionsResource == null) {
-            return Optional.empty();
-        }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonNode versionsJson = JacksonUtils.readTree(IOUtils
-                    .toString(vaadinVersionsStream, StandardCharsets.UTF_8));
-            if (versionsJson.has("platform")) {
-                return Optional.of(versionsJson.get("platform").textValue());
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(Platform.class)
-                    .error("Unable to determine version information", e);
-        }
-
-        return Optional.empty();
     }
 
     /**
@@ -607,7 +560,7 @@ public class TaskUpdatePackages extends NodeUpdater {
          */
         File packageLockFile = getPackageLockFile();
         if (packageLockFile.exists()) {
-            FileUtils.forceDelete(getPackageLockFile());
+            FileIOUtils.delete(getPackageLockFile());
         }
         return result;
     }
@@ -643,7 +596,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             String sortedDependencies = JacksonUtils.getKeys(dependencies)
                     .stream().sorted(String::compareToIgnoreCase)
                     .map(key -> String.format("\"%s\": \"%s\"", key,
-                            dependencies.get(key).textValue()))
+                            dependencies.get(key).asString()))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDependencies);
             hashContent.append("}");
@@ -657,7 +610,7 @@ public class TaskUpdatePackages extends NodeUpdater {
             String sortedDevDependencies = JacksonUtils.getKeys(devDependencies)
                     .stream().sorted(String::compareToIgnoreCase)
                     .map(key -> String.format("\"%s\": \"%s\"", key,
-                            devDependencies.get(key).textValue()))
+                            devDependencies.get(key).asString()))
                     .collect(Collectors.joining(",\n  "));
             hashContent.append(sortedDevDependencies);
             hashContent.append("}");

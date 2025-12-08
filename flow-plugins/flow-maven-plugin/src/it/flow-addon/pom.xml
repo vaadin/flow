@@ -17,7 +17,7 @@
     <properties>
         <vaadin.version>@project.version@</vaadin.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
@@ -108,6 +108,36 @@
                         <directory>${project.basedir}/src/main/beta-addon/resources</directory>
                     </resource>
                 </resources>
+            </build>
+        </profile>
+        <profile>
+            <id>commercial-addon</id>
+            <properties>
+                <custom.source.directory>src/main/commercial-addon/java</custom.source.directory>
+            </properties>
+            <build>
+                <finalName>commercial-addon-${project.version}</finalName>
+                <resources>
+                    <resource>
+                        <directory>${project.basedir}/src/main/commercial-addon/resources</directory>
+                    </resource>
+                </resources>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jar-plugin</artifactId>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                                </manifest>
+                                <manifestEntries>
+                                    <CvdlName>vaadin-commercial-component</CvdlName>
+                                </manifestEntries>
+                            </archive>
+                        </configuration>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>

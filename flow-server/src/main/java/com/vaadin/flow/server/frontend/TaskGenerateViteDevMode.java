@@ -15,13 +15,11 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Generate <code>vite-devmode.ts</code> if it is missing in frontend/generated
@@ -29,7 +27,6 @@ import org.apache.commons.io.IOUtils;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
 
@@ -62,7 +59,7 @@ public class TaskGenerateViteDevMode extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream devModeStream = getClass()
                 .getResourceAsStream(FrontendUtils.VITE_DEVMODE_TS)) {
-            return IOUtils.toString(devModeStream, UTF_8);
+            return StringUtil.toUTF8String(devModeStream);
         }
     }
 

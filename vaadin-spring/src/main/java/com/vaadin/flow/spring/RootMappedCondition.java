@@ -17,14 +17,14 @@ package com.vaadin.flow.spring;
 
 import java.lang.reflect.InvocationTargetException;
 
-import com.vaadin.flow.server.VaadinServlet;
-
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.web.servlet.DispatcherServlet;
+
+import com.vaadin.flow.server.VaadinServlet;
 
 /**
  * Condition to check whether the Vaadin servlet is mapped to the root

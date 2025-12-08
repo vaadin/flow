@@ -16,6 +16,7 @@
 package com.vaadin.flow.plugin.maven;
 
 import javax.inject.Inject;
+
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -31,13 +32,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.Mojo;
 import org.apache.maven.plugin.MojoExecution;
@@ -121,7 +119,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
-     * </p>
+     *
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
@@ -134,14 +132,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
      */
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
-
-    /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
-     */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -307,6 +297,20 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Parameter
     private FrontendScannerConfig frontendScanner;
 
+    /**
+     * Allows building a version of the application with a commercial banner
+     * when commercial components are used without a license key.
+     */
+    @Parameter(property = "vaadin."
+            + InitParameters.COMMERCIAL_WITH_BANNER, defaultValue = "false")
+    private boolean commercialWithBanner;
+
+    /**
+     * Skip the execution of this plugin.
+     */
+    @Parameter(property = "vaadin.skip", defaultValue = "false")
+    private boolean skip;
+
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
     private ClassFinder classFinder;
 
@@ -319,6 +323,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
+        if (skip) {
+            getLog().info("Skipping Vaadin build");
+            return;
+        }
+
         PluginDescriptor pluginDescriptor = mojoExecution.getMojoDescriptor()
                 .getPluginDescriptor();
         checkFlowCompatibility(pluginDescriptor);
@@ -570,11 +579,6 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     }
 
     @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
-    }
-
-    @Override
     public String nodeVersion() {
 
         return nodeVersion;
@@ -726,6 +730,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public boolean isCommercialBannerEnabled() {
+        return commercialWithBanner;
     }
 
     private void checkFlowCompatibility(PluginDescriptor pluginDescriptor) {

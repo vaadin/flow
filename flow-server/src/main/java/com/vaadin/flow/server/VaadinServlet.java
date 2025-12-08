@@ -19,6 +19,7 @@ import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRegistration;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -60,6 +61,7 @@ import com.vaadin.flow.shared.JsonConstants;
  * @author Vaadin Ltd
  * @since 1.0
  */
+@MultipartConfig
 public class VaadinServlet extends HttpServlet {
 
     public static final String INTERNAL_VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH = "VAADIN_SERVLET_VITE_DEV_MODE_FRONTEND_PATH";
@@ -290,6 +292,8 @@ public class VaadinServlet extends HttpServlet {
      * frameworks.
      *
      * @return the created deployment configuration
+     * @throws ServletException
+     *             if creating the deployment configuration fails
      */
     protected DeploymentConfiguration createDeploymentConfiguration()
             throws ServletException {

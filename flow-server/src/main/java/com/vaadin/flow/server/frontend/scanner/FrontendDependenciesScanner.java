@@ -22,8 +22,6 @@ import java.util.Set;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.PwaConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -33,7 +31,6 @@ import com.vaadin.flow.theme.ThemeDefinition;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface FrontendDependenciesScanner extends Serializable {
 
@@ -48,7 +45,6 @@ public interface FrontendDependenciesScanner extends Serializable {
         /**
          * Produces scanner implementation based on {@code allDependenciesScan}
          * value.
-         * <p>
          *
          * @param allDependenciesScan
          *            if {@code true} then full classpath scanning strategy is
@@ -95,6 +91,20 @@ public interface FrontendDependenciesScanner extends Serializable {
      * @return the `devDependencies` packages
      */
     Map<String, String> getDevPackages();
+
+    /**
+     * Get all npm package assets for the application.
+     *
+     * @return the npm packages assets
+     */
+    Map<String, List<String>> getAssets();
+
+    /**
+     * Get all npm packages assets needed only for development.
+     *
+     * @return the `dev` npm package assets
+     */
+    Map<String, List<String>> getDevAssets();
 
     /**
      * Get all ES6 modules needed for run the application. Modules that are

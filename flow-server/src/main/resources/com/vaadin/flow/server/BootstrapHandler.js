@@ -102,11 +102,7 @@ Please submit an issue to https://github.com/vaadin/flow-components/issues/new/c
         getConfig: getConfig
       };
       apps[appId] = app;
-      
-      if (!window.name) {
-        window.name =  appId + '-' + Math.random();
-      }
-  
+
       var widgetset = "client";
       if (!window.Vaadin.Flow.pendingStartup[widgetset]) {
         window.Vaadin.Flow.pendingStartup[widgetset] = {

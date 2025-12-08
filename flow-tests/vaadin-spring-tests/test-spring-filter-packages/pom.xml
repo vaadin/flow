@@ -14,30 +14,27 @@
 ~ License for the specific language governing permissions and limitations under
 ~ the License.
 -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-spring-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>vaadin-test-spring-filter-packages</artifactId>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<artifactId>vaadin-spring-tests</artifactId>
-		<groupId>com.vaadin</groupId>
-		<version>25.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>vaadin-test-spring-filter-packages</artifactId>
-	<name>The main module for a Spring boot package filter tests
-    </name>
+  <packaging>pom</packaging>
+  <name>The main module for a Spring boot package filter tests</name>
 
-	<packaging>pom</packaging>
-	<properties>
-		<maven.deploy.skip>true</maven.deploy.skip>
-	</properties>
-
-	<modules>
-		<module>lib-allowed</module>
-		<module>lib-blocked</module>
-		<module>lib-exclude</module>
-		<module>ui</module>
-		<module>allowed-ui</module>
-	</modules>
+  <modules>
+    <module>lib-allowed</module>
+    <module>lib-blocked</module>
+    <module>lib-exclude</module>
+    <module>ui</module>
+    <module>allowed-ui</module>
+  </modules>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
 </project>

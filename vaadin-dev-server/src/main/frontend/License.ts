@@ -1,4 +1,5 @@
-import { ServerMessage } from "./vaadin-dev-tools";
+import { ServerMessage } from './vaadin-dev-tools';
+import { preTrialStartFailed, showPreTrialSplashScreen, updateLicenseDownloadStatus } from './pre-trial-splash-screen';
 
 const noLicenseFallbackTimeout = 1000;
 
@@ -7,10 +8,18 @@ export interface Product {
   version: string;
 }
 
+export interface PreTrial {
+  trialName?: String;
+  trialState: String;
+  daysRemaining?: number;
+  daysRemainingUntilRenewal?: number;
+}
+
 export interface ProductAndMessage {
   message: string;
   messageHtml?: string;
   product: Product;
+  preTrial?: PreTrial;
 }
 
 export const findAll = (element: Element | ShadowRoot | Document, tags: string[]): Element[] => {
@@ -140,20 +149,52 @@ export const licenseCheckNoKey = (data: ProductAndMessage) => {
   }
 };
 
-export const handleLicenseMessage = (message:ServerMessage):boolean =>{
-if (message.command === 'license-check-ok') {
+export const handleLicenseMessage = (message: ServerMessage, bodyShadowRoot: ShadowRoot | null): boolean => {
+  if (message.command === 'license-check-ok') {
     licenseCheckOk(message.data);
     return true;
   } else if (message.command === 'license-check-failed') {
     licenseCheckFailed(message.data);
     return true;
   } else if (message.command === 'license-check-nokey') {
+    showPreTrialSplashScreen(bodyShadowRoot, message.data);
     licenseCheckNoKey(message.data);
     return true;
+  } else if (message.command === 'license-pretrial-started') {
+    console.debug('Pre-trial period started', message.data);
+    window.location.reload();
+    return true;
+  } else if (message.command === 'license-pretrial-expired') {
+    console.debug('Pre-trial period expired', message.data);
+    preTrialStartFailed(true, bodyShadowRoot);
+    return true;
+  } else if (message.command === 'license-pretrial-failed') {
+    console.debug('Pre-trial period start failed', message.data);
+    preTrialStartFailed(false, bodyShadowRoot);
+    return true;
+  } else if (message.command === 'license-download-completed') {
+    console.debug('License downloaded');
+    window.location.reload();
+    return true;
+  } else if (message.command === 'license-download-started') {
+    updateLicenseDownloadStatus('started', bodyShadowRoot);
+    return true;
+  } else if (message.command === 'license-download-failed') {
+    updateLicenseDownloadStatus('failed', bodyShadowRoot);
+    return true;
   }
-
   return false;
-}
+};
+
+export const startPreTrial = () => {
+  (window as any).Vaadin.devTools.startPreTrial();
+};
+export const tryAcquireLicense = () => {
+  const products = Object.values(productMissingLicense);
+  if (products.length > 0) {
+    (window as any).Vaadin.devTools.downloadLicense(products[0].product);
+  }
+};
 
 export const licenseInit = () => {
   // Process already registered elements

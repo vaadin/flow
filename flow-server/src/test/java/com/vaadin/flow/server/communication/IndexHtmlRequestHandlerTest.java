@@ -47,16 +47,20 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
+import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -70,9 +74,6 @@ import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWi
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
@@ -110,6 +111,7 @@ public class IndexHtmlRequestHandlerTest {
     @Before
     public void setUp() throws Exception {
 
+        UsageStatistics.resetEntries();
         mocks = new MockServletServiceSessionSetup();
         service = mocks.getService();
         session = mocks.getSession();
@@ -729,7 +731,7 @@ public class IndexHtmlRequestHandlerTest {
         assertEquals(1, bodyInlineElements.size());
 
         String entries = UsageStatistics.getEntries().map(entry -> {
-            JsonObject json = Json.createObject();
+            ObjectNode json = JacksonUtils.createObjectNode();
 
             json.put("is", entry.getName());
             json.put("version", entry.getVersion());
@@ -839,6 +841,117 @@ public class IndexHtmlRequestHandlerTest {
         Document document = Jsoup.parse(indexHtml);
 
         assertEquals("dark", document.head().parent().attr("theme"));
+    }
+
+    @ColorScheme(ColorScheme.Value.DARK)
+    public static class ClassWithDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_dark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+        assertEquals("color-scheme: dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.LIGHT_DARK)
+    public static class ClassWithLightDarkColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_apply_colorScheme_lightDark() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithLightDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("light-dark", document.head().parent().attr("theme"));
+        assertEquals("color-scheme: light dark;",
+                document.head().parent().attr("style"));
+    }
+
+    @ColorScheme(ColorScheme.Value.NORMAL)
+    public static class ClassWithNormalColorScheme
+            implements AppShellConfigurator {
+    }
+
+    @Test
+    public void should_not_apply_colorScheme_normal() throws IOException {
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithNormalColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        assertEquals("", document.head().parent().attr("theme"));
+        assertEquals("", document.head().parent().attr("style"));
+    }
+
+    @Test
+    public void should_append_colorScheme_to_existing_style()
+            throws IOException {
+        File projectRootFolder = temporaryFolder.newFolder();
+
+        // Create custom index.html with existing style attribute on html
+        // element
+        String indexHtmlWithStyle = """
+                <!DOCTYPE html>
+                <html style="--custom-prop: value;">
+                <head>
+                  <meta charset="UTF-8" />
+                  <meta name="viewport" content="width=device-width, initial-scale=1" />
+                </head>
+                <body>
+                  <div id="outlet"></div>
+                </body>
+                </html>
+                """;
+
+        File frontendDir = new File(projectRootFolder, "frontend");
+        frontendDir.mkdirs();
+        File indexHtml = new File(frontendDir, "index.html");
+        java.nio.file.Files.writeString(indexHtml.toPath(), indexHtmlWithStyle);
+
+        TestUtil.createStatsJsonStub(projectRootFolder);
+
+        deploymentConfiguration.setProductionMode(false);
+        deploymentConfiguration.setProjectFolder(projectRootFolder);
+
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        registry.setShell(ClassWithDarkColorScheme.class);
+        mocks.setAppShellRegistry(registry);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtmlOutput = responseOutput
+                .toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtmlOutput);
+
+        assertEquals("dark", document.head().parent().attr("theme"));
+        assertEquals("--custom-prop: value; color-scheme: dark;",
+                document.head().parent().attr("style"));
     }
 
     @Test
@@ -1250,6 +1363,70 @@ public class IndexHtmlRequestHandlerTest {
         Assert.assertFalse(verifier.test("5.5.5.5", "1.2.3.4,5.5.5.5"));
         Assert.assertTrue(verifier.test("1.2.3.4", null));
         Assert.assertTrue(verifier.test("5.6.7.8", "5.5.5.5,5.6.7.8"));
+    }
+
+    @Test
+    public void developmentMode_commercialBannerNeverApplied()
+            throws IOException {
+        assertHasCommercialBanner(false, false, true);
+        assertHasCommercialBanner(false, false, false);
+        assertHasCommercialBanner(false, false, null);
+    }
+
+    @Test
+    public void productionMode_commercialBannerEnabled_commercialBannerApplied()
+            throws IOException {
+        assertHasCommercialBanner(true, true, true);
+    }
+
+    @Test
+    public void productionMode_commercialBannerNotEnabled_commercialBannerNotApplied()
+            throws IOException {
+        assertHasCommercialBanner(false, true, false);
+        assertHasCommercialBanner(false, true, null);
+    }
+
+    private void assertHasCommercialBanner(boolean expectBanner,
+            boolean productionMode, Boolean commercialBannerFlag)
+            throws IOException {
+        if (!productionMode) {
+            File projectRootFolder = temporaryFolder.newFolder();
+            TestUtil.createIndexHtmlStub(projectRootFolder);
+            TestUtil.createStatsJsonStub(projectRootFolder);
+            deploymentConfiguration.setProjectFolder(projectRootFolder);
+        }
+        deploymentConfiguration.setProductionMode(productionMode);
+        if (commercialBannerFlag != null) {
+            deploymentConfiguration.setApplicationOrSystemProperty(
+                    Constants.COMMERCIAL_BANNER_TOKEN,
+                    Boolean.toString(commercialBannerFlag));
+        }
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+
+        Elements commercialBannerScript = document.head().select(
+                "script[type=\"module\"]:containsData(<vaadin-commercial-banner></vaadin-commercial-banner>)");
+        if (expectBanner) {
+            assertEquals(
+                    "Commercial banner should be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    1, commercialBannerScript.size());
+        } else {
+            assertTrue(
+                    "Commercial banner should not be applied in %s mode with commercial banner token %s"
+                            .formatted(
+                                    ((productionMode) ? "production"
+                                            : "development"),
+                                    commercialBannerFlag),
+                    commercialBannerScript.isEmpty());
+        }
     }
 
 }

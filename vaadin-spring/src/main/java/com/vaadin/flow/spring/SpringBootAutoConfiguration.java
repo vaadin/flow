@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.MultipartConfigElement;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -24,10 +26,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.AutoConfigureBefore;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.boot.webmvc.autoconfigure.WebMvcAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -38,8 +40,6 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
-
-import jakarta.servlet.MultipartConfigElement;
 
 /**
  * Spring boot auto-configuration class for Flow.
@@ -129,6 +129,9 @@ public class SpringBootAutoConfiguration {
         }
         registration.setLoadOnStartup(
                 configurationProperties.isLoadOnStartup() ? 1 : -1);
+
+        registration
+                .setMultipartConfig(new MultipartConfigElement((String) null));
         return registration;
     }
 

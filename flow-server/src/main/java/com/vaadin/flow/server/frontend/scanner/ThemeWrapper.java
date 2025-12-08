@@ -31,7 +31,6 @@ import com.vaadin.flow.theme.AbstractTheme;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 class ThemeWrapper implements AbstractTheme, Serializable {
     private final Serializable instance;

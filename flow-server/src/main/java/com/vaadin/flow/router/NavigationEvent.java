@@ -18,12 +18,9 @@ package com.vaadin.flow.router;
 import java.util.EventObject;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.JsonValue;
 
 /**
  * Event object with data related to navigation.

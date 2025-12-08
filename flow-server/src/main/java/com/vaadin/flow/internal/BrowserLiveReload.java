@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.internal;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.atmosphere.cpr.AtmosphereResource;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.server.communication.FragmentedMessageHolder;
 
@@ -99,9 +99,12 @@ public interface BrowserLiveReload extends FragmentedMessageHolder {
 
     /**
      * Request an update of the resource with the given path.
-     *
+     * <p>
+     * Path may start with the `context://` prefix, which indicates that the
+     * resource is located in the context root.
+     * 
      * @param path
-     *            the path of the file to update, relative to the servlet path
+     *            the path of the file to update, relative to the servlet path.
      * @param content
      *            the new content of the file
      */

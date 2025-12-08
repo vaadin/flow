@@ -17,19 +17,19 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.function.BiConsumer;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.Command;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-import elemental.json.impl.JreJsonNull;
 
 @Route("com.vaadin.flow.uitest.ui.HistoryView")
 public class HistoryView extends AbstractDivView {
@@ -55,11 +55,9 @@ public class HistoryView extends AbstractDivView {
             addStatus("New location: " + e.getLocation().getPath());
 
             e.getState().ifPresent(state -> {
-                if (state instanceof JsonObject) {
-                    JsonValue usr = ((JsonObject) state).get("usr");
-                    if (usr != null && !(usr instanceof JreJsonNull)) {
-                        addStatus("New state: " + usr.toJson());
-                    }
+                JsonNode usr = state.get("usr");
+                if (usr != null && !(usr instanceof NullNode)) {
+                    addStatus("New state: " + usr.toString());
                 }
             });
         });
@@ -82,14 +80,14 @@ public class HistoryView extends AbstractDivView {
     }
 
     private Element createStateButton(String text,
-            BiConsumer<JsonObject, String> stateUpdater) {
+            BiConsumer<ObjectNode, String> stateUpdater) {
         return createButton(text, e -> {
             String stateJsonString = stateJsonInput.getProperty("value", "");
-            JsonObject stateJson;
+            ObjectNode stateJson;
             if (stateJsonString.isEmpty()) {
                 stateJson = null;
             } else {
-                stateJson = Json.parse(stateJsonString);
+                stateJson = JacksonUtils.readTree(stateJsonString);
             }
 
             String location = locationInput.getProperty("value", "");

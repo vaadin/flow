@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
@@ -25,7 +24,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -42,6 +41,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 public class InputStreamDownloadHandlerTest {
+    private static final int SIMULATED_DOWNLOAD_SIZE = 165000;
+
     private VaadinRequest request;
     private VaadinResponse response;
     private VaadinSession session;
@@ -49,6 +50,7 @@ public class InputStreamDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -57,7 +59,7 @@ public class InputStreamDownloadHandlerTest {
         session = Mockito.mock(VaadinSession.class);
         service = Mockito.mock(VaadinService.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -92,7 +94,8 @@ public class InputStreamDownloadHandlerTest {
         }, new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                Assert.assertEquals(-1, context.contentLength());
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
+                        context.contentLength());
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onStart");
             }
@@ -101,7 +104,7 @@ public class InputStreamDownloadHandlerTest {
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
                 transferredBytesRecords.add(transferredBytes);
-                Assert.assertEquals(-1, totalBytes);
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, totalBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onProgress");
             }
@@ -109,8 +112,9 @@ public class InputStreamDownloadHandlerTest {
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                Assert.assertEquals(-1, context.contentLength());
-                Assert.assertEquals(165000, transferredBytes);
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE,
+                        context.contentLength());
+                Assert.assertEquals(SIMULATED_DOWNLOAD_SIZE, transferredBytes);
                 Assert.assertEquals("download", context.fileName());
                 invocations.add("onComplete");
             }
@@ -134,47 +138,27 @@ public class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    public void transferProgressListener_addListener_errorOccured_errorlistenerInvoked()
-            throws URISyntaxException, IOException {
+    public void transferProgressListener_addListener_errorOccurred_errorListenerInvoked()
+            throws IOException {
         DownloadEvent event = Mockito.mock(DownloadEvent.class);
         Mockito.when(event.getSession()).thenReturn(session);
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
                         Mockito.anyInt());
         Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
-        List<String> invocations = new ArrayList<>();
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
         DownloadHandler handler = DownloadHandler.fromInputStream(req -> {
-            // Simulate a download of 165000 bytes
             byte[] data = getBytes();
             ByteArrayInputStream inputStream = new ByteArrayInputStream(data);
             return new DownloadResponse(inputStream, "download",
                     "application/octet-stream", data.length);
-        }, new TransferProgressListener() {
-            @Override
-            public void onStart(TransferContext context) {
-                invocations.add("onStart");
-            }
-
-            @Override
-            public void onProgress(TransferContext context,
-                    long transferredBytes, long totalBytes) {
-                invocations.add("onProgress");
-            }
-
-            @Override
-            public void onComplete(TransferContext context,
-                    long transferredBytes) {
-                invocations.add("onComplete");
-            }
-
-            @Override
-            public void onError(TransferContext context, IOException reason) {
-                invocations.add("onError");
-                Assert.assertEquals("I/O exception", reason.getMessage());
-            }
+        }, transferListener).whenComplete((context, success) -> {
+            whenCompleteResult.set(success);
         });
 
         try {
@@ -182,7 +166,150 @@ public class InputStreamDownloadHandlerTest {
             Assert.fail("Expected an IOException to be thrown");
         } catch (Exception e) {
         }
-        Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Assert.assertEquals(List.of("onStart", "onError"),
+                transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackIOExceptionOccurred_errorListenerInvoked() {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
+        DownloadHandler handler = DownloadHandler.fromInputStream(req -> {
+            throw new IOException("I/O exception");
+        }, transferListener).whenComplete((context, success) -> {
+            whenCompleteResult.set(success);
+        });
+
+        try {
+            handler.handleDownloadRequest(event);
+            Assert.fail("Expected an IOException to be thrown");
+        } catch (Exception e) {
+        }
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackUncheckedExceptionOccurred_errorListenerInvoked() {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
+        DownloadHandler handler = DownloadHandler.fromInputStream(req -> {
+            throw new RuntimeException("I/O exception");
+        }, transferListener).whenComplete((context, success) -> {
+            whenCompleteResult.set(success);
+        });
+
+        try {
+            handler.handleDownloadRequest(event);
+            Assert.fail("Expected an exception to be thrown");
+        } catch (Exception e) {
+        }
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(RuntimeException.class));
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackResponseError_errorListenerInvoked()
+            throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener();
+        DownloadHandler handler = DownloadHandler.fromInputStream(
+                req -> DownloadResponse.error(500, "I/O exception"),
+                transferListener).whenComplete((context, success) -> {
+                    whenCompleteResult.set(success);
+                });
+
+        handler.handleDownloadRequest(event);
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(Mockito.any(IOException.class));
+    }
+
+    @Test
+    public void transferProgressListener_addListener_callbackResponseException_errorListenerInvoked()
+            throws IOException {
+        DownloadEvent event = Mockito.mock(DownloadEvent.class);
+        Mockito.when(event.getSession()).thenReturn(session);
+        Mockito.when(event.getResponse()).thenReturn(response);
+        Mockito.when(event.getOwningElement()).thenReturn(owner);
+        Mockito.when(event.getUI()).thenReturn(ui);
+        OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
+        Mockito.when(event.getOutputStream()).thenReturn(outputStreamMock);
+
+        AtomicReference<Boolean> whenCompleteResult = new AtomicReference<>();
+
+        RuntimeException responseException = new RuntimeException(
+                "runtime exception");
+        InvocationTrackingTransferProgressListener transferListener = new InvocationTrackingTransferProgressListener() {
+            @Override
+            public void onError(TransferContext context, IOException reason) {
+                invocations.add("onError");
+                Assert.assertEquals("Runtime exception", reason.getMessage());
+            }
+        };
+        DownloadHandler handler = DownloadHandler
+                .fromInputStream(req -> DownloadResponse.error(500,
+                        "Runtime exception", responseException),
+                        transferListener)
+                .whenComplete((context, success) -> {
+                    whenCompleteResult.set(success);
+                });
+
+        handler.handleDownloadRequest(event);
+        Assert.assertEquals(List.of("onError"), transferListener.invocations);
+        Assert.assertNotNull("Expected whenComplete to be invoked, but was not",
+                whenCompleteResult.get());
+        Assert.assertFalse(
+                "Expected whenComplete to be invoked with false result, but got true",
+                whenCompleteResult.get());
+        Mockito.verify(event).setException(responseException);
     }
 
     @Test
@@ -204,6 +331,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -230,6 +358,7 @@ public class InputStreamDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -297,7 +426,8 @@ public class InputStreamDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         InputStream stream = Mockito.mock(InputStream.class);
         Mockito.when(
                 stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
@@ -316,15 +446,64 @@ public class InputStreamDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"download\"");
+    }
+
+    @Test
+    public void contentLengthProvided_contentLengthHeaderSet()
+            throws IOException {
+        long expectedContentLength = 12345L;
+        InputStream stream = Mockito.mock(InputStream.class);
+        Mockito.when(
+                stream.read(Mockito.any(), Mockito.anyInt(), Mockito.anyInt()))
+                .thenReturn(-1);
+
+        InputStreamDownloadHandler handler = new InputStreamDownloadHandler(
+                event -> new DownloadResponse(stream, "report.pdf",
+                        "application/pdf", expectedContentLength));
+
+        DownloadEvent event = new DownloadEvent(request, response, session,
+                new Element("div"));
+
+        handler.handleDownloadRequest(event);
+
+        Mockito.verify(response).setContentLengthLong(expectedContentLength);
     }
 
     private static byte[] getBytes() {
-        // Simulate a download of 165000 bytes
-        byte[] data = new byte[165000];
+        byte[] data = new byte[SIMULATED_DOWNLOAD_SIZE];
         for (int i = 0; i < data.length; i++) {
             data[i] = (byte) (i % 256);
         }
         return data;
     }
+
+    private static class InvocationTrackingTransferProgressListener
+            implements TransferProgressListener {
+        final List<String> invocations = new ArrayList<>();
+
+        @Override
+        public void onStart(TransferContext context) {
+            invocations.add("onStart");
+        }
+
+        @Override
+        public void onProgress(TransferContext context, long transferredBytes,
+                long totalBytes) {
+            invocations.add("onProgress");
+        }
+
+        @Override
+        public void onComplete(TransferContext context, long transferredBytes) {
+            invocations.add("onComplete");
+        }
+
+        @Override
+        public void onError(TransferContext context, IOException reason) {
+            invocations.add("onError");
+            Assert.assertEquals("I/O exception", reason.getMessage());
+        }
+    }
+
 }

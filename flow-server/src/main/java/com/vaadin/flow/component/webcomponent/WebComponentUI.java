@@ -22,8 +22,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -172,16 +172,22 @@ public class WebComponentUI extends UI {
 
         if (!shouldBePreserved) {
             attachCreatedWebComponent(webComponentConfiguration.get(), event);
-        } else if (getInternals().getExtendedClientDetails() != null) {
-            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                    event, getComponentHash(event,
-                            getInternals().getExtendedClientDetails()));
         } else {
-            getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+            ExtendedClientDetails details = getInternals()
+                    .getExtendedClientDetails();
+            if (details.getWindowName() == null) {
+                getPage().retrieveExtendedClientDetails(
+                        extendedClientDetails -> {
+                            attachCachedOrCreatedWebComponent(
+                                    webComponentConfiguration.get(), event,
+                                    getComponentHash(event,
+                                            extendedClientDetails));
+                        });
+            } else {
                 attachCachedOrCreatedWebComponent(
                         webComponentConfiguration.get(), event,
-                        getComponentHash(event, extendedClientDetails));
-            });
+                        getComponentHash(event, details));
+            }
         }
     }
 

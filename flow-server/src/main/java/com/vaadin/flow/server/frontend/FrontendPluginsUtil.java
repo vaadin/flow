@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -21,15 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.io.FileUtils;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Utility class for frontend build plugins.
@@ -100,7 +97,7 @@ class FrontendPluginsUtil {
                 }
             }
         } else {
-            jsonString = FileUtils.readFileToString(jsonFile, UTF_8);
+            jsonString = Files.readString(jsonFile.toPath());
         }
         return JacksonUtils.readTree(jsonString);
     }

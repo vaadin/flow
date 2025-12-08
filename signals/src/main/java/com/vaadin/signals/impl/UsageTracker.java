@@ -17,6 +17,7 @@ package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 /**
@@ -63,12 +64,12 @@ public class UsageTracker {
                     }
                 }
 
-                private boolean onChange() {
+                private boolean onChange(boolean immediate) {
                     synchronized (lock) {
                         if (closed) {
                             return false;
                         }
-                        boolean listenToNext = listener.invoke();
+                        boolean listenToNext = listener.invoke(immediate);
                         if (!listenToNext) {
                             close();
                         }
@@ -132,15 +133,15 @@ public class UsageTracker {
         }
     };
 
-    private static final ThreadLocal<Collection<Usage>> currentTracker = new ThreadLocal<>();
+    private static final ThreadLocal<Consumer<Usage>> currentTracker = new ThreadLocal<>();
 
     private UsageTracker() {
         // Only static methods
     }
 
     /**
-     * Runs the given task while tracking all cases where a managed value is
-     * used. The task is run in a read-only transaction.
+     * Runs the given task while collecting all cases where a managed value is
+     * used.
      *
      * @param task
      *            the task to run, not <code>null</code>
@@ -150,14 +151,7 @@ public class UsageTracker {
     public static Usage track(Runnable task) {
         Collection<Usage> usages = new ArrayList<>();
 
-        Collection<Usage> previousTracker = currentTracker.get();
-        try {
-            currentTracker.set(usages);
-
-            Transaction.runInTransaction(task, Transaction.Type.READ_ONLY);
-        } finally {
-            currentTracker.set(previousTracker);
-        }
+        track(task, usages::add);
 
         int usageSize = usages.size();
         if (usageSize == 0) {
@@ -166,6 +160,30 @@ public class UsageTracker {
             return usages.iterator().next();
         } else {
             return new CombinedUsage(usages);
+        }
+    }
+
+    /**
+     * Runs the given task while reacting to all cases where a managed value is
+     * used.
+     *
+     * @param task
+     *            the task to run, not <code>null</code>
+     * @param tracker
+     *            a consumer that receives all usages as they happen, not
+     *            <code>null</code>
+     */
+    public static void track(Runnable task, Consumer<Usage> tracker) {
+        assert task != null;
+        assert tracker != null;
+
+        var previousTracker = currentTracker.get();
+        try {
+            currentTracker.set(tracker);
+
+            task.run();
+        } finally {
+            currentTracker.set(previousTracker);
         }
     }
 
@@ -180,7 +198,7 @@ public class UsageTracker {
      * @return the value returned from the supplier
      */
     public static <T> T untracked(Supplier<T> task) {
-        Collection<Usage> previousTracker = currentTracker.get();
+        var previousTracker = currentTracker.get();
         if (previousTracker == null) {
             return task.get();
         }
@@ -188,8 +206,7 @@ public class UsageTracker {
         try {
             currentTracker.remove();
 
-            // Run without transaction to bypass the read-only restriction
-            return Transaction.runWithoutTransaction(task);
+            return task.get();
         } finally {
             currentTracker.set(previousTracker);
         }
@@ -203,9 +220,9 @@ public class UsageTracker {
      *            the usage instance to register, not <code>null</code>
      */
     public static void registerUsage(Usage usage) {
-        Collection<Usage> tracker = currentTracker.get();
+        Consumer<Usage> tracker = currentTracker.get();
         assert tracker != null;
-        tracker.add(usage);
+        tracker.accept(usage);
     }
 
     /**

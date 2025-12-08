@@ -69,7 +69,6 @@
                 <configuration>
                     <pnpmEnable>false</pnpmEnable>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->

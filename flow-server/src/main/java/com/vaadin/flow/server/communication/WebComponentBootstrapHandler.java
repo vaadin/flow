@@ -30,15 +30,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -65,6 +65,7 @@ import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
+import static com.vaadin.flow.server.communication.IndexHtmlRequestHandler.addCommercialBanner;
 import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -162,6 +163,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
 
                 setupCss(head, context);
+
+                addCommercialBanner(deploymentConfiguration, document);
 
                 return document;
             } catch (IOException e) {
@@ -276,7 +279,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayNode tags = registry.getConfigurations().stream()
                 .map(conf -> JacksonUtils.createNode(conf.getTag()))
                 .collect(JacksonUtils.asArray());
-        config.put("webcomponents", tags);
+        config.set("webcomponents", tags);
 
         config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
 
@@ -438,7 +441,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             BootstrapHandler
                     .getStylesheetLinks(context, "document.css",
                             frontendDirectory)
-                    .forEach(link -> UI.getCurrent().getPage().executeJs(
+                    .forEach(link -> UI.getCurrentOrThrow().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             modifyPath(serviceUrl, link)));
         }

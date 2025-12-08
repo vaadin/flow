@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
@@ -24,7 +23,6 @@ import java.io.Serializable;
  * <p>
  * Use {@link VaadinService#setSystemMessagesProvider(SystemMessagesProvider)}
  * to customize.
- * </p>
  * <p>
  * The defaults defined in this class are:
  * <ul>

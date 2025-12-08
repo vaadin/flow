@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.spring.service;
 
 import java.util.Properties;
@@ -391,13 +389,15 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void init_multipleUnnamedTaskExecutors_throws() {
+    public void init_multipleUnnamedTaskExecutors_executorAccessed_throws() {
         contextRunner.withUserConfiguration(MultipleExecutorsConfig.class)
                 .run(context -> {
                     IllegalStateException error = assertThrows(
-                            IllegalStateException.class,
-                            () -> SpringInstantiatorTest.getService(context,
-                                    new Properties()));
+                            IllegalStateException.class, () -> {
+                                VaadinService service = SpringInstantiatorTest
+                                        .getService(context, new Properties());
+                                Executor executor = service.getExecutor();
+                            });
                     assertTrue(error.getMessage()
                             .contains("Multiple TaskExecutor beans found"));
                     assertTrue(error.getMessage()
@@ -408,13 +408,33 @@ public class SpringVaadinServiceExecutorTest {
     }
 
     @Test
-    public void init_multipleNamedTaskExecutors_throws() {
+    public void init_multipleUnnamedTaskExecutors_executorNotAccessed_doesntThrow() {
+        contextRunner.withUserConfiguration(MultipleExecutorsConfig.class)
+                .run(context -> {
+                    SpringInstantiatorTest.getService(context,
+                            new Properties());
+                });
+    }
+
+    @Test
+    public void init_multipleNamedTaskExecutors_executorNotAccessed_doesnThrow() {
+        contextRunner.withUserConfiguration(MultipleNamedExecutorsConfig.class)
+                .run(context -> {
+                    SpringInstantiatorTest.getService(context,
+                            new Properties());
+                });
+    }
+
+    @Test
+    public void init_multipleNamedTaskExecutors_executorAccessed_throws() {
         contextRunner.withUserConfiguration(MultipleNamedExecutorsConfig.class)
                 .run(context -> {
                     IllegalStateException error = assertThrows(
-                            IllegalStateException.class,
-                            () -> SpringInstantiatorTest.getService(context,
-                                    new Properties()));
+                            IllegalStateException.class, () -> {
+                                VaadinService service = SpringInstantiatorTest
+                                        .getService(context, new Properties());
+                                Executor executor = service.getExecutor();
+                            });
                     assertTrue(error.getMessage()
                             .contains("Multiple TaskExecutor beans found"));
                     assertTrue(error.getMessage()

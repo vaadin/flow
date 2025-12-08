@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.webcomponent;
 
 import java.util.Map;
@@ -141,8 +140,9 @@ public class WebComponentGeneratorTest {
                 "", null);
         // make sure that the test works on windows machines:
         module = module.replace("\r", "");
-        MatcherAssert.assertThat(module,
-                startsWith("class Tag extends HTMLElement {"));
+        MatcherAssert.assertThat(module, startsWith(
+                "import {applyCss} from 'Frontend/generated/css.generated.js';\n"
+                        + "\nclass Tag extends HTMLElement {"));
         MatcherAssert.assertThat(module, containsString("style.innerHTML = `\n" //
                 + "      :host {\n" //
                 + "        position: relative;\n" //

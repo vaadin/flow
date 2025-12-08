@@ -28,12 +28,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.flow.polymer2lit.FrontendConverter;
+import com.vaadin.flow.polymer2lit.ServerConverter;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
-import com.vaadin.flow.polymer2lit.FrontendConverter;
-import com.vaadin.flow.polymer2lit.ServerConverter;
 
 /**
  * A tool-independent implementation of a {@code convert-polymer} command that
@@ -196,7 +196,6 @@ public class ConvertPolymerCommand implements AutoCloseable {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
         settings.setNodeVersion(adapter.nodeVersion());
-        settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
         settings.setIgnoreVersionChecks(

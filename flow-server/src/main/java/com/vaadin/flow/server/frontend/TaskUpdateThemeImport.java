@@ -22,8 +22,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
@@ -41,7 +43,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskUpdateThemeImport
         extends AbstractFileGeneratorFallibleCommand {
@@ -75,6 +76,16 @@ public class TaskUpdateThemeImport
             if (themeImportFile.exists()) {
                 themeImportFile.delete();
                 themeImportFileDefinition.delete();
+            }
+
+            try {
+                writeIfChanged(
+                        new File(options.getFrontendGeneratedFolder(),
+                                "css.generated.d.ts"),
+                        "export declare const applyCss: (target: Node) => void;");
+            } catch (IOException e) {
+                throw new ExecutionFailedException(
+                        "Unable to write theme import file", e);
             }
             return;
         }
@@ -154,6 +165,25 @@ public class TaskUpdateThemeImport
                                         APPLICATION_THEME_ROOT).getPath()));
             }
         }
+        if (!options.getFeatureFlags()
+                .isEnabled(FeatureFlags.COMPONENT_STYLE_INJECTION)) {
+            File themeComponents = new File(existingAppThemeDirectories.get(0),
+                    "components");
+            if (themeComponents.exists() && themeComponents.isDirectory()
+                    && themeComponents.listFiles().length > 0) {
+                String styleFiles = Arrays.stream(themeComponents.listFiles())
+                        .map(File::getName)
+                        .filter(file -> file.endsWith(".css")
+                                || file.endsWith(".sass"))
+                        .collect(Collectors.joining("\n"));
+
+                getLogger().warn(
+                        "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}",
+                        themeName,
+                        FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
+                        styleFiles);
+            }
+        }
     }
 
     private List<String> getAppThemePossiblePaths(String themePath) {
@@ -173,5 +203,9 @@ public class TaskUpdateThemeImport
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);
+    }
+
+    Logger getLogger() {
+        return LoggerFactory.getLogger(TaskUpdateThemeImport.class);
     }
 }

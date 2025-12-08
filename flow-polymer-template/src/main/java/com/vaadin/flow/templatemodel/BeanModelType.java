@@ -25,16 +25,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * A model type corresponding to a Java bean type.
@@ -365,14 +363,14 @@ public class BeanModelType<T> implements ComplexModelType<T> {
         if (modelValue instanceof StateNode) {
             return TemplateModelProxyHandler
                     .createModelProxy((StateNode) modelValue, this);
-        } else if (modelValue instanceof JsonObject) {
+        } else if (modelValue instanceof ObjectNode) {
             throw new IllegalArgumentException(String.format(
                     "The stored model value '%s' "
                             + "is a JSON object. It looks like you have receieved a plain "
                             + "JSON from the client side and try to use it as a model. "
                             + "Check your model definition. Client side objects cannot be "
                             + "converted automatically to model bean instances. "
-                            + "Most likely you should use JsonValue type for your model property",
+                            + "Most likely you should use ValueNode type for your model property",
                     modelValue));
         } else {
             throw new IllegalArgumentException(String.format(
@@ -532,10 +530,10 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     }
 
     @Override
-    public JsonValue toJson() {
-        JsonObject json = Json.createObject();
+    public ObjectNode toJson() {
+        ObjectNode json = JacksonUtils.createObjectNode();
 
-        properties.forEach((name, property) -> json.put(name,
+        properties.forEach((name, property) -> json.set(name,
                 property.getType().toJson()));
 
         return json;

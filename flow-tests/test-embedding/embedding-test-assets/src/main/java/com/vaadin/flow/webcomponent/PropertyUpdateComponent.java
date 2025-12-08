@@ -13,19 +13,18 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import java.util.HashSet;
 import java.util.Set;
 
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.NativeButton;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import com.vaadin.flow.internal.JacksonUtils;
 
 @Tag("click-counter")
 public class PropertyUpdateComponent extends Div {
@@ -52,8 +51,8 @@ public class PropertyUpdateComponent extends Div {
                 numberListener -> numberListener.handleNumber(clickCounter));
     }
 
-    public JsonValue getNumberJson() {
-        JsonObject json = Json.createObject();
+    public BaseJsonNode getNumberJson() {
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("counter", clickCounter);
         return json;
     }

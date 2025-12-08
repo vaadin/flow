@@ -38,8 +38,9 @@ import org.gradle.internal.component.external.model.ModuleComponentArtifactIdent
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
-     * Whether we are running in productionMode or not. Defaults to false.
-     * Responds to the `-Pvaadin.productionMode` property.
+     * Whether we are running in productionMode or not. Defaults to true when
+     * run with `bootJar` or `bootBuildImage` task, otherwise false. Responds to
+     * the `-Pvaadin.productionMode` property.
      */
     public abstract val productionMode: Property<Boolean>
 
@@ -60,6 +61,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
      */
     public abstract val frontendOutputDirectory: Property<File>
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     * Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/resources/`.
+     */
+    public abstract val resourcesOutputDirectory: Property<File>
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -189,11 +198,6 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val nodeDownloadRoot: Property<String>
 
     /**
-     * Allow automatic update of node installed to alternate location. Default `false`
-     */
-    public abstract val nodeAutoUpdate: Property<Boolean>
-
-    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file. Defaults to `build/vaadin-generated` folder.
      *
@@ -313,6 +317,12 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      */
     public abstract val frontendIgnoreVersionChecks: Property<Boolean>
 
+    /**
+     * Allows building a version of the application with a commercial banner
+     * when commercial components are used without a license key.
+     */
+    public abstract val commercialWithBanner: Property<Boolean>
+
     public fun filterClasspath(
         @DelegatesTo(
             value = ClasspathFilter::class,
@@ -346,8 +356,11 @@ public class PluginEffectiveConfiguration(
     internal val projectName = project.name
 
     public val productionMode: Provider<Boolean> = extension.productionMode
-        .convention(false)
+        .convention(project.tasks.names.any { task ->
+            task.contains("bootJar") || task.contains("bootBuildImage")
+        })
         .overrideWithSystemPropertyFlag(project, "vaadin.productionMode")
+
 
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
@@ -389,6 +402,17 @@ public class PluginEffectiveConfiguration(
                 )
         )
 
+
+    public val resourcesOutputDirectory: Provider<File> =
+        extension.resourcesOutputDirectory.convention(
+            sourceSetName.map {
+                File(
+                    project.getBuildResourcesDir(it),
+                    Constants.META_INF + "resources/"
+                )
+            }
+        )
+
     public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
 
@@ -405,7 +429,7 @@ public class PluginEffectiveConfiguration(
     // and GradlePluginAdapter
     public val effectiveFrontendDirectory: Provider<File> =
         npmFolder.zip(frontendDirectory) { npmFolder, frontendDirectory ->
-            FrontendUtils.getLegacyFrontendFolderIfExists(
+            FrontendUtils.getFrontendFolder(
                 npmFolder,
                 frontendDirectory
             )
@@ -491,9 +515,6 @@ public class PluginEffectiveConfiguration(
 
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
         .convention(Platform.guess().nodeDownloadRoot)
-
-    public val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
-        .convention(false)
 
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory
@@ -593,6 +614,13 @@ public class PluginEffectiveConfiguration(
     public val npmExcludeWebComponents: Provider<Boolean> = extension
         .npmExcludeWebComponents.convention(false)
 
+    public val commercialWithBanner: Provider<Boolean> =
+        extension.commercialWithBanner.convention(false)
+            .overrideWithSystemPropertyFlag(
+                project,
+                "vaadin.${InitParameters.COMMERCIAL_WITH_BANNER}"
+            )
+
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
         FrontendToolsSettings(it.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
@@ -633,6 +661,7 @@ public class PluginEffectiveConfiguration(
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
             "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
+            "resourcesOutputDirectory=${resourcesOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +
@@ -654,7 +683,6 @@ public class PluginEffectiveConfiguration(
             "generatedTsFolder=${generatedTsFolder.get()}, " +
             "nodeVersion=${nodeVersion.get()}, " +
             "nodeDownloadRoot=${nodeDownloadRoot.get()}, " +
-            "nodeAutoUpdate=${nodeAutoUpdate.get()}, " +
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +
@@ -668,6 +696,7 @@ public class PluginEffectiveConfiguration(
             "cleanFrontendFiles=${cleanFrontendFiles.get()}," +
             "frontendExtraFileExtensions=${frontendExtraFileExtensions.get()}," +
             "npmExcludeWebComponents=${npmExcludeWebComponents.get()}" +
+            "commercialWithBanner=${commercialWithBanner.get()}" +
             ")"
 
     public companion object {

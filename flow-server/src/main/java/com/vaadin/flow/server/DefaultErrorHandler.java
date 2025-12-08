@@ -13,12 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.EOFException;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -55,6 +55,13 @@ import com.vaadin.flow.router.InvalidLocationException;
  */
 public class DefaultErrorHandler implements ErrorHandler {
 
+    public static final Set<String> SOCKET_EXCEPTIONS = Collections
+            .unmodifiableSet(Set.of(SocketException.class.getName(),
+                    SocketTimeoutException.class.getName(),
+                    EOFException.class.getName(),
+                    "org.eclipse.jetty.io.EofException",
+                    "org.apache.catalina.connector.ClientAbortException"));
+
     private final Set<String> ignoredExceptions;
     private final Set<String> routeConfigurationExceptions;
 
@@ -71,11 +78,7 @@ public class DefaultErrorHandler implements ErrorHandler {
     }
 
     public DefaultErrorHandler() {
-        this.ignoredExceptions = Set.of(SocketException.class.getName(),
-                SocketTimeoutException.class.getName(),
-                EOFException.class.getName(),
-                "org.eclipse.jetty.io.EofException",
-                "org.apache.catalina.connector.ClientAbortException");
+        this.ignoredExceptions = SOCKET_EXCEPTIONS;
         this.routeConfigurationExceptions = Set.of(
                 AmbiguousRouteConfigurationException.class.getName(),
                 InvalidRouteConfigurationException.class.getName(),
@@ -93,7 +96,8 @@ public class DefaultErrorHandler implements ErrorHandler {
             Marker marker = MarkerFactory.getMarker("INVALID_LOCATION");
             if (throwable instanceof InvalidLocationException) {
                 if (getLogger().isWarnEnabled(marker)) {
-                    getLogger().warn(marker, "", throwable);
+                    getLogger().warn(marker, "Invalid location: {}",
+                            throwable.getMessage(), throwable);
                 }
             } else {
                 if (routeConfigurationExceptions
@@ -102,7 +106,8 @@ public class DefaultErrorHandler implements ErrorHandler {
                     getLogger().error(throwable.getMessage());
                 } else {
                     // print the error on console
-                    getLogger().error("", throwable);
+                    getLogger().error("Unexpected error: {}",
+                            throwable.getMessage(), throwable);
                 }
             }
         }

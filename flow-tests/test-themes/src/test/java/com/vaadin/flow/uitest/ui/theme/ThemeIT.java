@@ -21,6 +21,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
@@ -154,6 +155,7 @@ public class ThemeIT extends ChromeBrowserTest {
     }
 
     @Test
+    @Ignore("Enable themeComponentStyles featureflag for component theme")
     public void componentThemeIsApplied() {
         open();
         TestBenchElement myField = $(TestBenchElement.class)
@@ -162,6 +164,18 @@ public class ThemeIT extends ChromeBrowserTest {
                 .attribute("part", "input-field").first();
         Assert.assertEquals("Polymer text field should have red background",
                 "rgba(255, 0, 0, 1)", input.getCssValue("background-color"));
+    }
+
+    @Test
+    public void componentThemeIsNotAppliedWhenNoFeatureFlag() {
+        open();
+        TestBenchElement myField = $(TestBenchElement.class)
+                .id(MY_COMPONENT_ID);
+        TestBenchElement input = myField.$("vaadin-input-container")
+                .attribute("part", "input-field").first();
+        Assert.assertEquals(
+                "Polymer text field should have transparent gray background",
+                "rgba(26, 57, 96, 0.1)", input.getCssValue("background-color"));
     }
 
     @Test
@@ -183,8 +197,7 @@ public class ThemeIT extends ChromeBrowserTest {
 
         Assert.assertEquals(
                 "Node assets should have been copied to 'themes/app-theme'",
-                getRootURL()
-                        + "/path/themes/app-theme/fortawesome/icons/snowflake.svg",
+                getRootURL() + "/path/assets/npm/icons/snowflake.svg",
                 $(ImageElement.class).id(SNOWFLAKE_ID).getAttribute("src"));
 
         open(getRootURL() + "/path/"

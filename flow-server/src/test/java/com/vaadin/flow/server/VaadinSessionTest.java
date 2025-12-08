@@ -15,6 +15,10 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.HttpSessionBindingEvent;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,27 +41,24 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.server.frontend.MockLogger;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
-import jakarta.servlet.http.HttpSessionBindingEvent;
-
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
 
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.ComponentTest.TestComponent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.communication.AtmospherePushConnection;
+import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-import org.slf4j.Logger;
 
 public class VaadinSessionTest {
 
@@ -73,6 +74,8 @@ public class VaadinSessionTest {
     public static class VaadinSessionWithMockLogger extends VaadinSession {
         public final MockLogger mockLogger = new MockLogger();
 
+        private DeploymentConfiguration config;
+
         public VaadinSessionWithMockLogger(VaadinService service) {
             super(service);
             mockLogger.includeStackTrace = true;
@@ -84,7 +87,11 @@ public class VaadinSessionTest {
         }
 
         @Override
-        protected void checkSetConfiguration() {
+        public DeploymentConfiguration getConfiguration() {
+            if (config == null) {
+                config = new MockDeploymentConfiguration();
+            }
+            return config;
         }
     }
 
@@ -142,11 +149,6 @@ public class VaadinSessionTest {
 
         session = new VaadinSessionWithMockLogger(mockService);
         mockService.storeSession(session, mockWrappedSession);
-
-        MockDeploymentConfiguration configuration = new MockDeploymentConfiguration();
-        session.lock();
-        session.setConfiguration(configuration);
-        session.unlock();
 
         ui = new UI();
         vaadinRequest = new VaadinServletRequest(
@@ -620,13 +622,11 @@ public class VaadinSessionTest {
         session.checkHasLock();
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
         session.mockLogger.clearLogs();
         session.checkHasLock();
         Assert.assertEquals("", session.mockLogger.getLogs());
 
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.ASSERT);
-        session.setConfiguration(configuration);
         session.checkHasLock();
     }
 
@@ -635,7 +635,8 @@ public class VaadinSessionTest {
         final MockDeploymentConfiguration configuration = (MockDeploymentConfiguration) session
                 .getConfiguration();
         configuration.setProductionMode(true);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -656,7 +657,8 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.THROW);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 
@@ -675,7 +677,8 @@ public class VaadinSessionTest {
                 .getConfiguration();
         configuration.setProductionMode(true);
         configuration.setLockCheckStrategy(SessionLockCheckStrategy.LOG);
-        session.setConfiguration(configuration);
+        session.lock();
+        session.refreshTransients(mockWrappedSession, mockService);
         session.unlock();
         Assume.assumeFalse(session.hasLock());
 

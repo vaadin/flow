@@ -1,13 +1,19 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.Map;
@@ -17,9 +23,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.StringNode;
 
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
@@ -30,6 +36,15 @@ import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
 import com.vaadin.signals.impl.SignalTree.Type;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SynchronousSignalTreeTest {
 
@@ -214,7 +229,7 @@ public class SynchronousSignalTreeTest {
 
         PendingCommit commit = tree.prepareCommit(new CommandsAndHandlers(
                 List.of(new SignalCommand.SetCommand(a, Id.ZERO,
-                        new TextNode("text")),
+                        new StringNode("text")),
                         new SignalCommand.IncrementCommand(b, Id.ZERO, 1)),
                 Map.of(a, aResult::set, b, bResult::set)));
 
@@ -263,7 +278,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return false;
         });
@@ -284,7 +299,7 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
             count.incrementAndGet();
             return true;
         });
@@ -304,7 +319,8 @@ public class SynchronousSignalTreeTest {
     void observe_cancelled_notInvoked() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Runnable canceler = tree.observeNextChange(Id.ZERO, Assertions::fail);
+        Runnable canceler = tree.observeNextChange(Id.ZERO,
+                immediate -> Assertions.fail());
         canceler.run();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
@@ -319,10 +335,10 @@ public class SynchronousSignalTreeTest {
         tree.commitSingleCommand(new SignalCommand.InsertCommand(child, Id.ZERO,
                 null, null, ListPosition.first()));
 
-        tree.observeNextChange(Id.ZERO, Assertions::fail);
+        tree.observeNextChange(Id.ZERO, immediate -> Assertions.fail());
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
-                child, new TextNode("value")));
+                child, new StringNode("value")));
     }
 
     @Test
@@ -331,8 +347,8 @@ public class SynchronousSignalTreeTest {
 
         AtomicInteger count = new AtomicInteger();
 
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(Id.ZERO, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(Id.ZERO, immediage -> {
                 count.incrementAndGet();
                 return false;
             });
@@ -356,8 +372,8 @@ public class SynchronousSignalTreeTest {
 
         Id childId = Id.random();
         AtomicInteger count = new AtomicInteger();
-        tree.observeNextChange(Id.ZERO, () -> {
-            tree.observeNextChange(childId, () -> {
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            tree.observeNextChange(childId, immediate2 -> {
                 count.incrementAndGet();
                 return false;
             });

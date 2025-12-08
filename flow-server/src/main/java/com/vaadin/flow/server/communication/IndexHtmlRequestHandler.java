@@ -28,10 +28,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Comment;
 import org.jsoup.nodes.DataNode;
@@ -40,10 +36,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -65,6 +65,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -177,7 +178,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
 
         addDevBundleTheme(indexDocument, context);
-        applyThemeVariant(indexDocument, context);
+        applyColorScheme(indexDocument, context);
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -201,6 +202,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // this invokes any custom listeners and should be run when the whole
         // page is constructed
         service.modifyIndexHtmlResponse(indexHtmlResponse);
+
+        addCommercialBanner(service.getDeploymentConfiguration(),
+                indexDocument);
 
         try {
             response.getOutputStream()
@@ -250,8 +254,36 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         }
     }
 
-    private void applyThemeVariant(Document indexDocument,
+    private void applyColorScheme(Document indexDocument,
             VaadinContext context) {
+        // Check for @ColorScheme annotation first
+        AppShellRegistry registry = AppShellRegistry.getInstance(context);
+        Class<?> shell = registry.getShell();
+        if (shell != null) {
+            ColorScheme colorSchemeAnnotation = shell
+                    .getAnnotation(ColorScheme.class);
+            if (colorSchemeAnnotation != null) {
+                ColorScheme.Value colorSchemeValue = colorSchemeAnnotation
+                        .value();
+                String themeValue = colorSchemeValue.getThemeValue();
+                if (!themeValue.isEmpty() && !themeValue.equals("normal")) {
+                    Element html = indexDocument.head().parent();
+                    html.attr("theme", themeValue);
+                    String colorSchemeStyle = "color-scheme: "
+                            + colorSchemeValue.getValue() + ";";
+                    String existingStyle = html.attr("style");
+                    if (existingStyle != null && !existingStyle.isBlank()) {
+                        html.attr("style",
+                                existingStyle.trim() + " " + colorSchemeStyle);
+                    } else {
+                        html.attr("style", colorSchemeStyle);
+                    }
+                }
+            }
+        }
+
+        // Also apply from deprecated @Theme variant attribute for backwards
+        // compatibility
         ThemeUtils.getThemeAnnotation(context).ifPresent(theme -> {
             String variant = theme.variant();
             if (!variant.isEmpty()) {
@@ -320,6 +352,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
     /**
      * Adds the needed overrides for the license checker to work when in
      * development mode.
+     *
+     * @param indexDocument
+     *            the document to add the license checker to
      */
     public static void addLicenseChecker(Document indexDocument) {
         // maybeCheck is invoked by the WC license checker
@@ -390,7 +425,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         Optional<Backend> maybeBackend = liveReload
                 .map(BrowserLiveReload::getBackend);
 
-        int liveReloadPort = Constants.SPRING_BOOT_DEFAULT_LIVE_RELOAD_PORT;
+        Integer liveReloadPort = null;
         VaadinContext context = service.getContext();
         if (context instanceof VaadinServletContext vaadinServletContext) {
             String customPort = (String) vaadinServletContext.getContext()
@@ -404,9 +439,13 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         devToolsConf.put("enable", config.isDevModeLiveReloadEnabled());
         devToolsConf.put("url",
                 BootstrapHandlerHelper.getPushURL(session, request));
+        devToolsConf.put("contextRelativePath",
+                service.getContextRootRelativePath(request));
         maybeBackend.ifPresent(
                 backend -> devToolsConf.put("backend", backend.toString()));
-        devToolsConf.put("liveReloadPort", liveReloadPort);
+        if (liveReloadPort != null) {
+            devToolsConf.put("liveReloadPort", liveReloadPort);
+        }
         if (isAllowedDevToolsHost(config, request)) {
             devToolsConf.put("token", DevToolsToken.getToken());
         }
@@ -417,9 +456,9 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         indexDocument.body().appendChild(new Element("vaadin-dev-tools"));
 
-        String pushUrl = BootstrapHandlerHelper.getServiceUrl(request) + "/"
-                + ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
-        addScriptSrc(indexDocument, pushUrl);
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        addScriptSrc(indexDocument, ApplicationConstants.VAADIN_PUSH_DEBUG_JS);
     }
 
     static boolean isAllowedDevToolsHost(AbstractConfiguration configuration,
@@ -499,7 +538,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
             String[] allowedHosts = hostsAllowed.split(",");
 
             for (String allowedHost : allowedHosts) {
-                if (FilenameUtils.wildcardMatch(remoteAddress,
+                if (FileIOUtils.wildcardMatch(remoteAddress,
                         allowedHost.trim())) {
                     return true;
                 }
@@ -630,6 +669,23 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
         // Workaround for https://github.com/vitejs/vite/issues/5142
         indexHtmlDocument.head().prepend(
                 "<script type='text/javascript'>window.JSCompiler_renameProperty = function(a) { return a;}</script>");
+    }
+
+    static void addCommercialBanner(DeploymentConfiguration config,
+            Document indexDocument) {
+        System.clearProperty("vaadin." + Constants.COMMERCIAL_BANNER_TOKEN);
+        if (config.isProductionMode() && config
+                .getBooleanProperty(Constants.COMMERCIAL_BANNER_TOKEN, false)) {
+            Element elm = new Element(SCRIPT);
+            elm.attr(SCRIPT_INITIAL, "");
+            elm.attr("type", "module");
+            elm.appendChild(new DataNode(
+                    """
+                            const root = document.body.attachShadow({ mode: 'closed' })
+                            root.innerHTML = '<slot></slot><vaadin-commercial-banner></vaadin-commercial-banner>'
+                            """));
+            indexDocument.head().insertChildren(0, elm);
+        }
     }
 
     // Holds parsed index.html to avoid re-parsing on every request in

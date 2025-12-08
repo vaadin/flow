@@ -12,12 +12,11 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.component;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -40,8 +39,9 @@ public class NpmPackageTest {
     public void testDummy() {
         Annotation[] annotations = TestComponent.class.getAnnotations();
 
-        Assert.assertEquals("NpmPackage is missing",
-                annotations[1].annotationType(), NpmPackage.class);
+        boolean found = Arrays.stream(annotations)
+                .anyMatch(a -> a.annotationType().equals(NpmPackage.class));
+        Assert.assertTrue("NpmPackage is missing", found);
     }
 
 }

@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -30,8 +32,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -155,12 +155,16 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
         resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
+        resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
         // These are always in the root of the app, not inside any url mapping
         List<String> rootResources = new ArrayList<>();
+        rootResources.add("/aura/**");
+        rootResources.add("/lumo/**");
         rootResources.add("/favicon.ico");
         publicResourcesRoot = rootResources
                 .toArray(new String[rootResources.size()]);
@@ -212,6 +216,11 @@ public class HandlerHelper implements Serializable {
 
     private static boolean isFrameworkInternalRequest(String servletMappingPath,
             String requestedPath, String requestTypeParameter) {
+        // Hilla push requests do not respect Vaadin servlet mapping
+        if (isHillaPush(requestedPath)) {
+            return true;
+        }
+
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
@@ -236,7 +245,8 @@ public class HandlerHelper implements Serializable {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
-        } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {
+        } else if (isDynamicResourceRequest(
+                requestedPathWithoutServletMapping.get())) {
             return true;
         }
 
@@ -250,6 +260,18 @@ public class HandlerHelper implements Serializable {
         return requestedPathWithoutServletMapping
                 .matches(StreamRequestHandler.DYN_RES_PREFIX
                         + "(\\d+)/([0-9a-z-]*)/upload");
+    }
+
+    private static boolean isDynamicResourceRequest(
+            String requestedPathWithoutServletMapping) {
+        // Check if the request is for any dynamic resource, including
+        // ElementRequestHandler requests without a specific postfix
+        // Reject paths with directory traversal attempts
+        if (HandlerHelper.isPathUnsafe(requestedPathWithoutServletMapping)) {
+            return false;
+        }
+        return requestedPathWithoutServletMapping
+                .startsWith(StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     private static boolean isHillaPush(
@@ -501,6 +523,8 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      * <p>
      * These paths are relative to a potential Vaadin mapping
+     *
+     * @return array of public resource path patterns
      */
     public static String[] getPublicResources() {
         return publicResources;
@@ -513,6 +537,8 @@ public class HandlerHelper implements Serializable {
      * <p>
      * These URLs are always relative to the root path and independent of any
      * Vaadin mapping
+     *
+     * @return array of public resource root path patterns
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
@@ -534,12 +560,14 @@ public class HandlerHelper implements Serializable {
      * URLs matching these patterns should be publicly available for
      * applications to work but might require a security context, i.e.
      * authentication information.
+     *
+     * @return array of public resource path patterns requiring security context
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
-                "/VAADIN/**", // This contains static bundle files which
-                              // typically do not need a security
-                              // context but also uploads go here
+                "/VAADIN/**" // This contains static bundle files which
+                             // typically do not need a security
+                             // context but also uploads go here
         };
     }
 

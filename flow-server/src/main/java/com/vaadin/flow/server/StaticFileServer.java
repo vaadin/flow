@@ -15,8 +15,9 @@
  */
 package com.vaadin.flow.server;
 
-import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import jakarta.servlet.ServletContext;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,9 +51,8 @@ import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 
-import jakarta.servlet.ServletContext;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * Handles sending of resources from the WAR root (web content) or
@@ -87,6 +87,10 @@ public class StaticFileServer implements StaticFileHandler {
     // from Java (e.g. new Image("themes/my-theme/...")
     public static final Pattern APP_THEME_ASSETS_PATTERN = Pattern
             .compile("^\\/themes\\/([\\s\\S]+?)\\/");
+
+    // Matches paths to npm asset files copies for NpmPackage(assets)
+    public static final Pattern NPM_ASSETS_PATTERN = Pattern
+            .compile("^\\/assets\\/");
 
     // Mapped uri is for the jar file
     static final Map<URI, Integer> openFileSystems = new HashMap<>();
@@ -311,6 +315,14 @@ public class StaticFileServer implements StaticFileHandler {
                 resourceUrl = findAssetInFrontendThemesOrDevBundle(
                         vaadinService,
                         filenameWithPath.replace(VAADIN_MAPPING, ""));
+            } else if (resourceUrl == null
+                    && NPM_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+                String assetInDevBundle = "/webapp/VAADIN/static/"
+                        + filenameWithPath.replaceFirst("^/", "");
+                resourceUrl = DevBundleUtils.findBundleFile(
+                        deploymentConfiguration.getProjectFolder(),
+                        deploymentConfiguration.getBuildFolder(),
+                        assetInDevBundle);
             }
         } else if (deploymentConfiguration
                 .getMode() == Mode.PRODUCTION_PRECOMPILED_BUNDLE
@@ -319,7 +331,8 @@ public class StaticFileServer implements StaticFileHandler {
                     .getThemeResourceFromPrecompiledProductionBundle(
                             filenameWithPath.replace(VAADIN_MAPPING, "")
                                     .replaceFirst("^/", ""));
-        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
+        } else if (APP_THEME_ASSETS_PATTERN.matcher(filenameWithPath).find()
+                || NPM_ASSETS_PATTERN.matcher(filenameWithPath).find()) {
             resourceUrl = vaadinService.getClassLoader()
                     .getResource(VAADIN_WEBAPP_RESOURCES + "VAADIN/static/"
                             + filenameWithPath.replaceFirst("^/", ""));
@@ -581,6 +594,7 @@ public class StaticFileServer implements StaticFileHandler {
         } else if (request.getPathInfo().startsWith("/" + VAADIN_MAPPING)
                 || APP_THEME_ASSETS_PATTERN.matcher(request.getPathInfo())
                         .find()
+                || NPM_ASSETS_PATTERN.matcher(request.getPathInfo()).find()
                 || request.getPathInfo().startsWith("/sw.js")) {
             return request.getPathInfo();
         }

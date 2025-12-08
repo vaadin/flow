@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import java.security.Principal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -33,6 +33,7 @@ import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationEvent;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.RouteData;
 import com.vaadin.flow.router.RouteNotFoundError;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -119,6 +120,27 @@ public class AnnotatedViewAccessCheckerTest {
         AccessCheckResult result = checkAccess(PermitAllView.class,
                 User.USER_NO_ROLES);
         Assert.assertEquals(AccessCheckResult.allow(), result);
+    }
+
+    @Test
+    public void loggedInNoRolesAccessToPermitAllViewWithNonAnnotatedParentDenied() {
+        NavigationContext context = setupNavigationContext(
+                AccessControlTestClasses.PermitAllWithEmptyParentView.class,
+                User.USER_NO_ROLES);
+
+        RouteData data = new RouteData(
+                Collections.singletonList(
+                        AccessControlTestClasses.NoPermitParent.class),
+                "permitall", Collections.emptyMap(),
+                AccessControlTestClasses.PermitAllWithEmptyParentView.class,
+                Collections.emptyList());
+        Router router = context.getRouter();
+        RouteRegistry registry = router.getRegistry();
+        Mockito.when(registry.getRegisteredRoutes())
+                .thenReturn(Collections.singletonList(data));
+
+        AccessCheckResult result = this.viewAccessChecker.check(context);
+        Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
     }
 
     @Test

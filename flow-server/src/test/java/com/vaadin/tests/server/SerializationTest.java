@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.tests.server;
 
 import java.io.ByteArrayInputStream;
@@ -33,9 +48,8 @@ import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.WrappedSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import static org.mockito.Mockito.withSettings;
 
 public class SerializationTest {
 
@@ -98,8 +112,6 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                Mockito.withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
         session.addUI(ui);
@@ -276,8 +288,6 @@ public class SerializationTest {
         // should be called by Flow internally as soon as the session has
         // been created.
         session.refreshTransients(null, vaadinService);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class,
-                withSettings().serializable()));
         MockUI ui = new MockUI(session);
         ui.doInit(null, 42, "foo");
         session.addUI(ui);
@@ -406,6 +416,13 @@ public class SerializationTest {
         public String getMainDivId(VaadinSession session,
                 VaadinRequest request) {
             return "main-div-id";
+        }
+
+        @Override
+        public DeploymentConfiguration getDeploymentConfiguration() {
+            MockDeploymentConfiguration config = new MockDeploymentConfiguration();
+            config.setProductionMode(productionMode);
+            return config;
         }
     }
 

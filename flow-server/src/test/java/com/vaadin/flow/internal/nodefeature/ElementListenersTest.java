@@ -18,6 +18,7 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -27,6 +28,9 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -34,12 +38,10 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -203,7 +205,7 @@ public class ElementListenersTest
 
     @Test
     public void eventDataInEvent() {
-        AtomicReference<JsonObject> eventDataReference = new AtomicReference<>();
+        AtomicReference<JsonNode> eventDataReference = new AtomicReference<>();
         ns.add("foo", e -> {
             Assert.assertNull(eventDataReference.get());
             eventDataReference.set(e.getEventData());
@@ -211,15 +213,15 @@ public class ElementListenersTest
 
         Assert.assertNull(eventDataReference.get());
 
-        JsonObject eventData = Json.createObject();
+        ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("baz", true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
 
-        JsonObject capturedJson = eventDataReference.get();
+        JsonNode capturedJson = eventDataReference.get();
         Assert.assertNotNull(capturedJson);
 
-        Assert.assertEquals(1, capturedJson.keys().length);
-        Assert.assertEquals("true", capturedJson.get("baz").toJson());
+        Assert.assertEquals(1, JacksonUtils.getKeys(capturedJson).size());
+        Assert.assertEquals("true", capturedJson.get("baz").toString());
     }
 
     @Test
@@ -373,15 +375,15 @@ public class ElementListenersTest
                 expressions.iterator().next());
 
         // child
-        final JsonObject eventData = Json.createObject();
+        final ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(child, capturedTarget.get());
 
         // nothing reported -> empty optional
-        listenerMap.fireEvent(
-                new DomEvent(parent, eventType, Json.createObject()));
+        listenerMap.fireEvent(new DomEvent(parent, eventType,
+                JacksonUtils.createObjectNode()));
         Assert.assertNull("no element should be reported",
                 capturedTarget.get());
 
@@ -425,15 +427,15 @@ public class ElementListenersTest
         Assert.assertEquals(1, expressions.size());
         Assert.assertEquals(key, expressions.iterator().next());
 
-        final JsonObject eventData = Json.createObject();
+        final ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(key, child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
         Assert.assertEquals(child,
                 capturedTarget.get().getEventDataElement(expression).get());
 
         // nothing reported -> empty optional
-        listenerMap.fireEvent(
-                new DomEvent(parent, eventType, Json.createObject()));
+        listenerMap.fireEvent(new DomEvent(parent, eventType,
+                JacksonUtils.createObjectNode()));
         Assert.assertFalse("no element should be reported", capturedTarget.get()
                 .getEventDataElement(expression).isPresent());
 
@@ -466,7 +468,7 @@ public class ElementListenersTest
         Assert.assertEquals(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 expressions.iterator().next());
 
-        final JsonObject eventData = Json.createObject();
+        final ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put(JsonConstants.MAP_STATE_NODE_EVENT_DATA,
                 child.getNode().getId());
         listenerMap.fireEvent(new DomEvent(parent, eventType, eventData));
@@ -485,10 +487,477 @@ public class ElementListenersTest
         ns.fireEvent(createEvent("foo"));
         Assert.assertEquals(0, eventCount.get());
 
-        JsonObject eventData = Json.createObject();
+        ObjectNode eventData = JacksonUtils.createObjectNode();
         eventData.put("filterKey", true);
         ns.fireEvent(new DomEvent(new Element("element"), "foo", eventData));
         Assert.assertEquals(1, eventCount.get());
+    }
+
+    @Test
+    public void testPreventDefaultWithFilter() {
+        // Test that preventDefault only applies to filtered events (see issue
+        // #22294)
+
+        // Create a listener with filter for space and enter keys
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
+        registration.preventDefault();
+
+        // Check that the event data includes preventDefault
+        Set<String> expressions = getExpressions("keydown");
+
+        // The expressions should include:
+        // 1. The filter expression for debouncing
+        // 2. The conditional preventDefault expression
+        Assert.assertTrue("Should have the filter expression", expressions
+                .contains("event.key === ' ' || event.key === 'Enter'"));
+
+        // After the fix, preventDefault should be conditional on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === ' ' || event.key === 'Enter') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testPreventDefaultWithoutFilter() {
+        // Test preventDefault without filter - should apply to all events
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.preventDefault();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Without a filter, preventDefault should apply to all events
+        Assert.assertTrue("Should have preventDefault expression",
+                expressions.contains("event.preventDefault()"));
+        Assert.assertEquals("Should only have preventDefault expression", 1,
+                expressions.size());
+    }
+
+    @Test
+    public void testPreventDefaultThenSetFilter() {
+        // Test that preventDefault becomes conditional even when filter is set
+        // after
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.preventDefault();
+        registration.setFilter("event.key === 'Escape'");
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional preventDefault based on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === 'Escape') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testSetFilterThenPreventDefault() {
+        // Test that preventDefault is conditional when filter is set before
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === 'Delete'");
+        registration.preventDefault();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional preventDefault based on the filter
+        Assert.assertTrue("Should have conditional preventDefault expression",
+                expressions.contains(
+                        "(event.key === 'Delete') && event.preventDefault()"));
+
+        // The unconditional preventDefault should NOT be present
+        Assert.assertFalse("Should NOT have unconditional preventDefault",
+                expressions.contains("event.preventDefault()"));
+    }
+
+    @Test
+    public void testStopPropagationWithFilter() {
+        // Test that stopPropagation only applies to filtered events
+
+        // Create a listener with filter for space and enter keys
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === ' ' || event.key === 'Enter'");
+        registration.stopPropagation();
+
+        // Check that the event data includes stopPropagation
+        Set<String> expressions = getExpressions("keydown");
+
+        // The expressions should include:
+        // 1. The filter expression for debouncing
+        // 2. The conditional stopPropagation expression
+        Assert.assertTrue("Should have the filter expression", expressions
+                .contains("event.key === ' ' || event.key === 'Enter'"));
+
+        // After the fix, stopPropagation should be conditional on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === ' ' || event.key === 'Enter') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testStopPropagationWithoutFilter() {
+        // Test stopPropagation without filter - should apply to all events
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Without a filter, stopPropagation should apply to all events
+        Assert.assertTrue("Should have stopPropagation expression",
+                expressions.contains("event.stopPropagation()"));
+        Assert.assertEquals("Should only have stopPropagation expression", 1,
+                expressions.size());
+    }
+
+    @Test
+    public void testStopPropagationThenSetFilter() {
+        // Test that stopPropagation becomes conditional even when filter is
+        // set after
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.stopPropagation();
+        registration.setFilter("event.key === 'Escape'");
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Escape') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testSetFilterThenStopPropagation() {
+        // Test that stopPropagation is conditional when filter is set before
+        DomListenerRegistration registration = ns.add("keydown", noOp);
+        registration.setFilter("event.key === 'Delete'");
+        registration.stopPropagation();
+
+        Set<String> expressions = getExpressions("keydown");
+
+        // Should have conditional stopPropagation based on the filter
+        Assert.assertTrue("Should have conditional stopPropagation expression",
+                expressions.contains(
+                        "(event.key === 'Delete') && event.stopPropagation()"));
+
+        // The unconditional stopPropagation should NOT be present
+        Assert.assertFalse("Should NOT have unconditional stopPropagation",
+                expressions.contains("event.stopPropagation()"));
+    }
+
+    @Test
+    public void testAddEventDataWithRecord() {
+        // Test that addEventData correctly extracts nested record structure
+        record EventDetails(int button, int clientX, int clientY) {
+        }
+        record MouseEventData(EventDetails event, String type) {
+        }
+
+        DomListenerRegistration registration = ns.add("click", noOp);
+        registration.addEventData(MouseEventData.class);
+
+        Set<String> expressions = getExpressions("click");
+
+        // Should have captured all nested fields
+        Assert.assertTrue("Should capture event.button",
+                expressions.contains("event.button"));
+        Assert.assertTrue("Should capture event.clientX",
+                expressions.contains("event.clientX"));
+        Assert.assertTrue("Should capture event.clientY",
+                expressions.contains("event.clientY"));
+        Assert.assertTrue("Should capture type", expressions.contains("type"));
+
+        // Should have exactly these 4 expressions
+        Assert.assertEquals("Should have 4 expressions", 4, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDataWithSimpleBean() {
+        // Test with a simple bean (non-record)
+        class SimpleEventData {
+            private String message;
+            private int code;
+
+            public String getMessage() {
+                return message;
+            }
+
+            public int getCode() {
+                return code;
+            }
+        }
+
+        DomListenerRegistration registration = ns.add("custom", noOp);
+        registration.addEventData(SimpleEventData.class);
+
+        Set<String> expressions = getExpressions("custom");
+
+        // Should have captured both fields
+        Assert.assertTrue("Should capture message",
+                expressions.contains("message"));
+        Assert.assertTrue("Should capture code", expressions.contains("code"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDetail() {
+        // Test that addEventDetail adds "event.detail" to expressions
+        DomListenerRegistration registration = ns.add("color-change", noOp);
+        registration.addEventDetail();
+
+        Set<String> expressions = getExpressions("color-change");
+
+        // Should have captured event.detail
+        Assert.assertTrue("Should capture event.detail",
+                expressions.contains("event.detail"));
+        Assert.assertEquals("Should have 1 expression", 1, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDetailChaining() {
+        // Test that addEventDetail can be chained with other methods
+        DomListenerRegistration registration = ns.add("custom-event", noOp);
+        registration.addEventDetail().addEventData("event.timestamp");
+
+        Set<String> expressions = getExpressions("custom-event");
+
+        // Should have both event.detail and event.timestamp
+        Assert.assertTrue("Should capture event.detail",
+                expressions.contains("event.detail"));
+        Assert.assertTrue("Should capture event.timestamp",
+                expressions.contains("event.timestamp"));
+        Assert.assertEquals("Should have 2 expressions", 2, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDetailWithClass() {
+        // Test that addEventDetail(Class) adds specific properties from
+        // event.detail
+        record RgbColor(int r, int g, int b) {
+        }
+
+        DomListenerRegistration registration = ns.add("color-change", noOp);
+        registration.addEventDetail(RgbColor.class);
+
+        Set<String> expressions = getExpressions("color-change");
+
+        // Should have captured all properties with event.detail prefix
+        Assert.assertTrue("Should capture event.detail.r",
+                expressions.contains("event.detail.r"));
+        Assert.assertTrue("Should capture event.detail.g",
+                expressions.contains("event.detail.g"));
+        Assert.assertTrue("Should capture event.detail.b",
+                expressions.contains("event.detail.b"));
+
+        // Should NOT have the entire event.detail
+        Assert.assertFalse("Should NOT capture entire event.detail",
+                expressions.contains("event.detail"));
+
+        // Should have exactly these 3 expressions
+        Assert.assertEquals("Should have 3 expressions", 3, expressions.size());
+    }
+
+    @Test
+    public void testAddEventDetailWithClassAndGetEventDetail() {
+        // Test full flow: addEventDetail(Class) and getEventDetail(Class)
+        record RgbColor(int r, int g, int b) {
+        }
+
+        Element element = new Element("div");
+        AtomicReference<RgbColor> capturedColor = new AtomicReference<>();
+        element.addEventListener("color-change",
+                e -> capturedColor.set(e.getEventDetail(RgbColor.class)))
+                .addEventDetail(RgbColor.class);
+
+        ElementListenerMap listenerMap = element.getNode()
+                .getFeature(ElementListenerMap.class);
+
+        // Verify the expressions are correct
+        Set<String> expressions = getExpressions(listenerMap, "color-change");
+        Assert.assertTrue("Should capture event.detail.r",
+                expressions.contains("event.detail.r"));
+        Assert.assertTrue("Should capture event.detail.g",
+                expressions.contains("event.detail.g"));
+        Assert.assertTrue("Should capture event.detail.b",
+                expressions.contains("event.detail.b"));
+
+        // Fire event with detail data
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.put("event.detail.r", 255);
+        eventData.put("event.detail.g", 128);
+        eventData.put("event.detail.b", 64);
+
+        listenerMap.fireEvent(new DomEvent(element, "color-change", eventData));
+
+        // Verify the data was captured correctly
+        RgbColor result = capturedColor.get();
+        Assert.assertNotNull("Should have captured color", result);
+        Assert.assertEquals("Red should be 255", 255, result.r());
+        Assert.assertEquals("Green should be 128", 128, result.g());
+        Assert.assertEquals("Blue should be 64", 64, result.b());
+    }
+
+    @Test
+    public void testAddEventDetailWithNestedClass() {
+        // Test that nested properties work correctly
+        record Position(int x, int y) {
+        }
+        record DragDetail(Position start, Position end) {
+        }
+
+        DomListenerRegistration registration = ns.add("drag", noOp);
+        registration.addEventDetail(DragDetail.class);
+
+        Set<String> expressions = getExpressions("drag");
+
+        // Should have captured all nested properties with event.detail prefix
+        Assert.assertTrue("Should capture event.detail.start.x",
+                expressions.contains("event.detail.start.x"));
+        Assert.assertTrue("Should capture event.detail.start.y",
+                expressions.contains("event.detail.start.y"));
+        Assert.assertTrue("Should capture event.detail.end.x",
+                expressions.contains("event.detail.end.x"));
+        Assert.assertTrue("Should capture event.detail.end.y",
+                expressions.contains("event.detail.end.y"));
+
+        // Should have exactly these 4 expressions
+        Assert.assertEquals("Should have 4 expressions", 4, expressions.size());
+    }
+
+    @Test
+    public void testGetEventDetailWithRecord() {
+        // Test getEventDetail with a Java record
+        record RgbColor(int r, int g, int b) {
+        }
+
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        ObjectNode detailData = JacksonUtils.createObjectNode();
+        detailData.put("r", 255);
+        detailData.put("g", 128);
+        detailData.put("b", 64);
+        eventData.set("event.detail", detailData);
+
+        DomEvent event = new DomEvent(new Element("element"), "color-change",
+                eventData);
+
+        RgbColor color = event.getEventDetail(RgbColor.class);
+
+        Assert.assertNotNull("Color should not be null", color);
+        Assert.assertEquals("Red should be 255", 255, color.r());
+        Assert.assertEquals("Green should be 128", 128, color.g());
+        Assert.assertEquals("Blue should be 64", 64, color.b());
+    }
+
+    public static class EventPayload {
+        private String message;
+        private int code;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public int getCode() {
+            return code;
+        }
+
+        public void setCode(int code) {
+            this.code = code;
+        }
+    }
+
+    @Test
+    public void testGetEventDetailWithBean() {
+        // Test getEventDetail with a regular bean class
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        ObjectNode detailData = JacksonUtils.createObjectNode();
+        detailData.put("message", "Hello World");
+        detailData.put("code", 42);
+        eventData.set("event.detail", detailData);
+
+        DomEvent event = new DomEvent(new Element("element"), "custom-event",
+                eventData);
+
+        EventPayload payload = event.getEventDetail(EventPayload.class);
+
+        Assert.assertNotNull("Payload should not be null", payload);
+        Assert.assertEquals("Message should match", "Hello World",
+                payload.getMessage());
+        Assert.assertEquals("Code should match", 42, payload.getCode());
+    }
+
+    @Test
+    public void testGetEventDetailWithTypeReference() {
+        // Test getEventDetail with TypeReference for generic types
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        tools.jackson.databind.node.ArrayNode detailArray = JacksonUtils
+                .createArrayNode();
+        detailArray.add("first");
+        detailArray.add("second");
+        detailArray.add("third");
+        eventData.set("event.detail", detailArray);
+
+        DomEvent event = new DomEvent(new Element("element"), "list-change",
+                eventData);
+
+        List<String> items = event
+                .getEventDetail(new TypeReference<List<String>>() {
+                });
+
+        Assert.assertNotNull("Items should not be null", items);
+        Assert.assertEquals("Should have 3 items", 3, items.size());
+        Assert.assertEquals("First item", "first", items.get(0));
+        Assert.assertEquals("Second item", "second", items.get(1));
+        Assert.assertEquals("Third item", "third", items.get(2));
+    }
+
+    @Test
+    public void testGetEventDetailReturnsNullWhenNotPresent() {
+        // Test that getEventDetail returns null when event.detail is not
+        // present
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+
+        DomEvent event = new DomEvent(new Element("element"), "event",
+                eventData);
+
+        record SomeData(String value) {
+        }
+        SomeData data = event.getEventDetail(SomeData.class);
+
+        Assert.assertNull("Should return null when event.detail not present",
+                data);
+    }
+
+    @Test
+    public void testGetEventDetailReturnsNullWhenNull() {
+        // Test that getEventDetail returns null when event.detail is null
+        ObjectNode eventData = JacksonUtils.createObjectNode();
+        eventData.set("event.detail", JacksonUtils.nullNode());
+
+        DomEvent event = new DomEvent(new Element("element"), "event",
+                eventData);
+
+        record SomeData(String value) {
+        }
+        SomeData data = event.getEventDetail(SomeData.class);
+
+        Assert.assertNull("Should return null when event.detail is null", data);
     }
 
     // Helper for accessing package private API from other tests
@@ -502,6 +971,7 @@ public class ElementListenersTest
     }
 
     private static DomEvent createEvent(String type) {
-        return new DomEvent(new Element("fake"), type, Json.createObject());
+        return new DomEvent(new Element("fake"), type,
+                JacksonUtils.createObjectNode());
     }
 }

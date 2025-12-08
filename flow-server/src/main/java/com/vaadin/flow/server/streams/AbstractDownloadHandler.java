@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.util.Optional;
@@ -39,7 +38,7 @@ public abstract class AbstractDownloadHandler<R extends AbstractDownloadHandler>
         return new TransferContext(transferEvent.getRequest(),
                 transferEvent.getResponse(), transferEvent.getSession(),
                 transferEvent.getFileName(), transferEvent.getOwningElement(),
-                transferEvent.getContentLength());
+                transferEvent.getContentLength(), transferEvent.getException());
     }
 
     protected String getContentType(String fileName, VaadinResponse response) {

@@ -17,15 +17,15 @@ package com.vaadin.flow.uitest.ui.scroll;
 
 import java.util.function.BiConsumer;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 import com.vaadin.flow.uitest.ui.AbstractDivView;
-import com.vaadin.flow.router.Route;
-
-import elemental.json.JsonValue;
 
 @Route(value = "com.vaadin.flow.uitest.ui.scroll.PushStateScrollView/:param?", layout = ViewTestLayout.class)
 public class PushStateScrollView extends AbstractDivView {
@@ -42,7 +42,7 @@ public class PushStateScrollView extends AbstractDivView {
     }
 
     private static Element createButton(String name,
-            BiConsumer<JsonValue, String> action) {
+            BiConsumer<ObjectNode, String> action) {
         String location = PushStateScrollView.class.getName() + "/" + name;
 
         Element button = ElementFactory.createButton(name);

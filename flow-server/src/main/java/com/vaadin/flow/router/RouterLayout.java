@@ -37,7 +37,6 @@ public interface RouterLayout extends HasElement {
      * {@code @Route} content, since it's handled separately by
      * {@link #removeRouterLayoutContent(HasElement)} which by default simply
      * removes the old content.
-     * </p>
      *
      * @param content
      *            the content component or {@code null} if the layout content is

@@ -14,51 +14,50 @@
   ~ License for the specific language governing permissions and limitations under
   ~ the License.
   -->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
 
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>flow-tests</artifactId>
-        <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+  <artifactId>test-embedding</artifactId>
+  <packaging>pom</packaging>
+  <name>Embedding Flow tests</name>
+  <description>Tests for embedding Flow</description>
 
-    <artifactId>test-embedding</artifactId>
-    <name>Embedding Flow tests</name>
-    <description>Tests for embedding Flow</description>
-    <packaging>pom</packaging>
+  <modules>
+    <!-- shared assets -->
+    <module>embedding-test-assets</module>
+    <!-- shared theme -->
+    <module>embedding-reusable-custom-theme</module>
+  </modules>
 
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
-    <modules>
-        <!-- shared assets -->
-        <module>embedding-test-assets</module>
-        <!-- shared theme -->
-        <module>embedding-reusable-custom-theme</module>
-    </modules>
+  <profiles>
+    <profile>
+      <id>run-tests</id>
+      <activation>
+        <property>
+          <name>!skipTests</name>
+        </property>
+      </activation>
+      <modules>
+        <!-- npm -->
+        <module>test-embedding-generic</module>
+        <module>test-embedding-theme-variant</module>
+        <module>test-embedding-production-mode</module>
 
-    <profiles>
-        <profile>
-            <id>run-tests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- npm -->
-                <module>test-embedding-generic</module>
-                <module>test-embedding-theme-variant</module>
-                <module>test-embedding-production-mode</module>
-
-                <!-- Custom theme tests -->
-                <module>test-embedding-application-theme</module>
-                <module>test-embedding-reusable-theme</module>
-            </modules>
-        </profile>
-    </profiles>
+        <!-- Custom theme tests -->
+        <module>test-embedding-application-theme</module>
+        <module>test-embedding-reusable-theme</module>
+        <module>test-embedding-style-containment</module>
+        <module>test-embedding-style-containment/pom-production.xml</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

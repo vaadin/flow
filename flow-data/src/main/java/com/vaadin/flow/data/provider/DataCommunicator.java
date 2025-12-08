@@ -35,6 +35,9 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -46,7 +49,7 @@ import com.vaadin.flow.function.SerializableComparator;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.NullOwner;
 import com.vaadin.flow.internal.Range;
@@ -55,15 +58,10 @@ import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 /**
  * DataProvider base class. This class is the base for all DataProvider
  * communication implementations. It uses data generators ({@link BiFunction}s)
- * to write {@link JsonObject}s representing each data object to be sent to the
+ * to write {@link ObjectNode}s representing each data object to be sent to the
  * client-side.
  *
  * @param <T>
@@ -79,7 +77,7 @@ public class DataCommunicator<T> implements Serializable {
 
     private final DataGenerator<T> dataGenerator;
     private final ArrayUpdater arrayUpdater;
-    private final SerializableConsumer<JsonArray> dataUpdater;
+    private final SerializableConsumer<ArrayNode> dataUpdater;
     private final StateNode stateNode;
 
     // Keys that can be discarded once some specific update id gets confirmed
@@ -93,7 +91,7 @@ public class DataCommunicator<T> implements Serializable {
     private DataKeyMapper<T> keyMapper = new KeyMapper<>();
 
     // The range of items that the client wants to have
-    private Range requestedRange = Range.between(0, 0);
+    private Range viewportRange = Range.between(0, 0);
 
     // Items that have been synced to the client and not yet passivated
     private int activeStart = 0;
@@ -281,7 +279,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode) {
+            SerializableConsumer<ArrayNode> dataUpdater, StateNode stateNode) {
         this(dataGenerator, arrayUpdater, dataUpdater, stateNode, true);
     }
 
@@ -309,7 +307,7 @@ public class DataCommunicator<T> implements Serializable {
      */
     public DataCommunicator(DataGenerator<T> dataGenerator,
             ArrayUpdater arrayUpdater,
-            SerializableConsumer<JsonArray> dataUpdater, StateNode stateNode,
+            SerializableConsumer<ArrayNode> dataUpdater, StateNode stateNode,
             boolean fetchEnabled) {
         this.dataGenerator = dataGenerator;
         this.arrayUpdater = arrayUpdater;
@@ -330,10 +328,24 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the requested range
      * @param length
      *            the end of the requested range
+     * @deprecated since 24.9 and will be removed in Vaadin 26. Use
+     *             {@link #setViewportRange(int, int)} instead.
      */
     public void setRequestedRange(int start, int length) {
-        requestedRange = computeRequestedRange(start, length);
+        viewportRange = computeViewportRange(start, length);
         requestFlush();
+    }
+
+    /**
+     * Sets the range of data to be sent to the client.
+     *
+     * @param start
+     *            the start of the viewport range
+     * @param length
+     *            the end of the viewport range
+     */
+    public void setViewportRange(int start, int length) {
+        setRequestedRange(start, length);
     }
 
     /**
@@ -344,7 +356,9 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the requested range
      * @param length
      *            the end of the requested range
-     * @return
+     * @return the computed requested range
+     * @deprecated since 24.9 and will be removed in Vaadin 26. Use
+     *             {@link #computeViewportRange(int, int)} instead.
      */
     protected final Range computeRequestedRange(int start, int length) {
         final int maximumAllowedItems = getMaximumAllowedItems();
@@ -356,6 +370,20 @@ public class DataCommunicator<T> implements Serializable {
                     length, maximumAllowedItems));
         }
         return Range.withLength(start, Math.min(length, maximumAllowedItems));
+    }
+
+    /**
+     * Computes the viewport range, limiting the number of requested items to a
+     * given threshold of ten pages.
+     *
+     * @param start
+     *            the start of the viewport range
+     * @param length
+     *            the end of the viewport range
+     * @return the computed viewport range
+     */
+    protected final Range computeViewportRange(int start, int length) {
+        return computeRequestedRange(start, length);
     }
 
     /**
@@ -701,7 +729,7 @@ public class DataCommunicator<T> implements Serializable {
         this.countCallback = null;
         definedSize = false;
         if (!skipCountIncreaseUntilReset
-                && requestedRange.getEnd() < itemCountEstimate) {
+                && viewportRange.getEnd() < itemCountEstimate) {
             sizeReset = true;
             requestFlush();
         }
@@ -781,7 +809,7 @@ public class DataCommunicator<T> implements Serializable {
              * estimated size. If there was a previous defined size used, then
              * that is kept until a reset occurs.
              */
-            if (requestedRange.contains(assumedSize - 1)) {
+            if (viewportRange.contains(assumedSize - 1)) {
                 requestFlush();
             }
         }
@@ -951,7 +979,7 @@ public class DataCommunicator<T> implements Serializable {
 
         // increase size estimate if the last page is being fetched,
         // or if the estimate is less than what is shown on client
-        while (requestedRange.getEnd() + pageSize > assumedSize) {
+        while (viewportRange.getEnd() + pageSize > assumedSize) {
             // by default adjust size by multiple of page size
             assumedSize += getItemCountEstimateIncrease();
         }
@@ -988,7 +1016,7 @@ public class DataCommunicator<T> implements Serializable {
             /*
              * Items limit value may not be necessarily multiply of page size,
              * and thus the pages count is rounded to closest smallest integer
-             * in order to overlap the requested range. Integer division is used
+             * in order to overlap the viewport range. Integer division is used
              * here for simplicity and to avoid double-int-double conversion.
              * Divisor minus one is placed on numerator part to ensure upwards
              * rounding.
@@ -997,7 +1025,7 @@ public class DataCommunicator<T> implements Serializable {
 
             if (limit > pageSize) {
                 /*
-                 * Requested range is split to several pages, and queried from
+                 * Viewport range is split to several pages, and queried from
                  * backend page by page
                  */
                 final Stream.Builder<T> streamBuilder = Stream.builder();
@@ -1196,7 +1224,7 @@ public class DataCommunicator<T> implements Serializable {
             // with undefined size, size estimate is checked when scrolling down
             updateUndefinedSize();
         }
-        effectiveRequested = requestedRange
+        effectiveRequested = viewportRange
                 .restrictTo(Range.withLength(0, assumedSize));
 
         resendEntireRange |= !(previousActive.intersects(effectiveRequested)
@@ -1243,7 +1271,7 @@ public class DataCommunicator<T> implements Serializable {
                 assumedSize = getDataProviderSize();
             } else {
                 // the end has been reached
-                assumedSize = requestedRange.getStart()
+                assumedSize = viewportRange.getStart()
                         + activation.getActiveKeys().size();
                 skipCountIncreaseUntilReset = true;
                 /*
@@ -1252,22 +1280,21 @@ public class DataCommunicator<T> implements Serializable {
                  * items have been changed in the backend (for example, applying
                  * the filter). Instead of returning 0 items to the client and
                  * letting it incrementally request for the previous pages,
-                 * we'll cancel this flush and tweak the requested range and
+                 * we'll cancel this flush and tweak the viewport range and
                  * flush again.
                  */
                 if (assumedSize != 0 && activation.getActiveKeys().isEmpty()) {
-                    int delta = requestedRange.length();
+                    int delta = viewportRange.length();
                     // Request the items from a bit behind the current range
                     // at the next call to backend, and check that the
-                    // requested
-                    // range doesn't intersect the 0 point.
-                    requestedRange = requestedRange.offsetBy(-delta)
+                    // viewport range doesn't intersect the 0 point.
+                    viewportRange = viewportRange.offsetBy(-delta)
                             .restrictTo(Range.withLength(0, assumedSize));
                     requestFlush(true); // to avoid recursiveness
                     return;
                 }
             }
-            effectiveRequested = requestedRange
+            effectiveRequested = viewportRange
                     .restrictTo(Range.withLength(0, assumedSize));
         }
 
@@ -1325,7 +1352,7 @@ public class DataCommunicator<T> implements Serializable {
             return;
         }
         dataUpdater.accept(updatedData.stream().map(this::generateJson)
-                .collect(JsonUtils.asArray()));
+                .collect(JacksonUtils.asArray()));
         updatedData.clear();
     }
 
@@ -1467,7 +1494,7 @@ public class DataCommunicator<T> implements Serializable {
         }
     }
 
-    private List<JsonValue> getJsonItems(Range range) {
+    private List<JsonNode> getJsonItems(Range range) {
         return range.stream()
                 .mapToObj(index -> activeKeyOrder.get(index - activeStart))
                 .map(keyMapper::get).map(this::generateJson)
@@ -1513,8 +1540,8 @@ public class DataCommunicator<T> implements Serializable {
         return new Activation(activeKeys, needsSizeRecheck);
     }
 
-    private JsonValue generateJson(T item) {
-        JsonObject json = Json.createObject();
+    private JsonNode generateJson(T item) {
+        ObjectNode json = JacksonUtils.createObjectNode();
         json.put("key", getKeyMapper().key(item));
         dataGenerator.generateData(item, json);
         return json;

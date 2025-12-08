@@ -13,13 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -28,14 +27,12 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.webcomponent.PropertyData;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
 
-import elemental.json.JsonObject;
-
 /**
  * Result of defining an embeddable web component using
  * {@link WebComponentExporter}. Provides all the necessary information to
  * generate the web component resources and constructs new
  * {@link WebComponentBinding} instances with
- * {@link #createWebComponentBinding(com.vaadin.flow.di.Instantiator, com.vaadin.flow.dom.Element, elemental.json.JsonObject)};
+ * {@link #createWebComponentBinding(com.vaadin.flow.di.Instantiator, com.vaadin.flow.dom.Element, JsonNode)};
  *
  * @param <C>
  *            type of the component being exported
@@ -93,34 +90,14 @@ public interface WebComponentConfiguration<C extends Component>
      *            element which acts as the root element for the exported
      *            {@code component} instance
      * @param newAttributeDefaults
-     *            {@link JsonObject} containing default overrides set by the
-     *            user defining the component on a web page. These defaults are
-     *            set using the web component's attributes.
+     *            {@link JsonNode} containing default overrides set by the user
+     *            defining the component on a web page. These defaults are set
+     *            using the web component's attributes.
      * @return web component binding which can be used by the web component host
      *         to communicate with the component it is hosting
      */
     WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
             Element element, JsonNode newAttributeDefaults);
-
-    /**
-     * Creates a new {@link WebComponentBinding} instance.
-     *
-     * @param instantiator
-     *            {@link com.vaadin.flow.di.Instantiator} used to construct
-     *            instances
-     * @param element
-     *            element which acts as the root element for the exported
-     *            {@code component} instance
-     * @param newAttributeDefaults
-     *            {@link JsonObject} containing default overrides set by the
-     *            user defining the component on a web page. These defaults are
-     *            set using the web component's attributes.
-     * @return web component binding which can be used by the web component host
-     *         to communicate with the component it is hosting
-     */
-    @Deprecated
-    WebComponentBinding<C> createWebComponentBinding(Instantiator instantiator,
-            Element element, JsonObject newAttributeDefaults);
 
     /**
      * Retrieves the tag name configured by the web component exporter.

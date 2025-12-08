@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.html;
 
-import java.io.IOException;
 import java.net.URI;
 
 import org.junit.After;

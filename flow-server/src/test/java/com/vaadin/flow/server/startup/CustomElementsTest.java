@@ -13,10 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.startup;
-
-import static org.hamcrest.CoreMatchers.is;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -30,6 +27,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
+
+import static org.hamcrest.CoreMatchers.is;
 
 /**
  * @author Vaadin Ltd

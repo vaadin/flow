@@ -66,6 +66,8 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ELEMENT_DATA);
         registerFeature(TextNodeMap.class, TextNodeMap::new,
                 NodeFeatures.TEXT_NODE);
+        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
+                NodeFeatures.TEXT_BINDING);
         registerFeature(ModelList.class, ModelList::new,
                 NodeFeatures.TEMPLATE_MODELLIST);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new,

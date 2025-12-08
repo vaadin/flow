@@ -23,8 +23,6 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -38,14 +36,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -65,7 +63,9 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.utils.FlowFileUtils;
 import com.vaadin.pro.licensechecker.BuildType;
 import com.vaadin.pro.licensechecker.LicenseChecker;
+import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.LocalSubscriptionKey;
+import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 import com.vaadin.pro.licensechecker.Product;
 
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
@@ -146,7 +146,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
@@ -166,7 +165,6 @@ public class BuildFrontendUtil {
                         getGeneratedFrontendDirectory(adapter))
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
-                .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
                 .withProductionMode(false).withReact(adapter.isReactEnabled())
@@ -175,7 +173,8 @@ public class BuildFrontendUtil {
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
                 .withFrontendIgnoreVersionChecks(
-                        adapter.isFrontendIgnoreVersionChecks());
+                        adapter.isFrontendIgnoreVersionChecks())
+                .setCopyAssets(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -209,7 +208,6 @@ public class BuildFrontendUtil {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
         settings.setNodeVersion(adapter.nodeVersion());
-        settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
         settings.setIgnoreVersionChecks(
@@ -360,7 +358,6 @@ public class BuildFrontendUtil {
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
@@ -372,7 +369,10 @@ public class BuildFrontendUtil {
                             adapter.frontendExtraFileExtensions())
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
-                    .withFrontendDependenciesScanner(frontendDependencies);
+                    .withFrontendDependenciesScanner(frontendDependencies)
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled())
+                    .withMetaInfResourcesDirectory(
+                            adapter.resourcesOutputDirectory());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -432,7 +432,6 @@ public class BuildFrontendUtil {
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
@@ -465,8 +464,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        return FrontendUtils.getLegacyFrontendFolderIfExists(
-                adapter.npmFolder(), adapter.frontendDirectory());
+        return FrontendUtils.getFrontendFolder(adapter.npmFolder(),
+                adapter.frontendDirectory());
     }
 
     /**
@@ -505,7 +504,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
         String tokenContent = "";
         File tokenFile = getTokenFile(adapter);
@@ -568,12 +566,7 @@ public class BuildFrontendUtil {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (adapter.requireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);
@@ -612,8 +605,15 @@ public class BuildFrontendUtil {
      * @param adapter
      *            the PluginAdapterBase
      * @param frontendDependencies
+     *            frontend dependencies scanner
      * @return {@literal true} if license validation is required because of the
      *         presence of commercial components, otherwise {@literal false}.
+     * @throws MissingLicenseKeyException
+     *             if commercial components are used in a commercial
+     *             banner-enabled build and no license key is present
+     * @throws LicenseException
+     *             if commercial components are used without a license and
+     *             commercial banner is not enabled
      */
     public static boolean validateLicenses(PluginAdapterBase adapter,
             FrontendDependenciesScanner frontendDependencies) {
@@ -652,21 +652,59 @@ public class BuildFrontendUtil {
         for (Product component : commercialComponents) {
             try {
                 LicenseChecker.checkLicense(component.getName(),
-                        component.getVersion(), BuildType.PRODUCTION);
-            } catch (Exception e) {
-                try {
-                    getLogger().debug(
-                            "License check for {} failed. Invalidating output",
-                            component);
+                        component.getVersion(), BuildType.PRODUCTION, null);
+            } catch (MissingLicenseKeyException ex) {
+                // Commercial product in use but no license key present,
+                // no need to check further.
+                // If a commercial banner build has been requested, just forward
+                // the exception and let the caller handle it. Otherwise fail
+                // immediately suggesting the commercial banner build.
+                String productsList = commercialComponents.stream()
+                        .map(product -> "* " + product.getName())
+                        .collect(Collectors.joining(System.lineSeparator()));
+                if (adapter.isCommercialBannerEnabled()) {
+                    throw new MissingLicenseKeyException(
+                            """
+                                    The application contains the unlicensed components listed below and is displaying a commercial banner.
+                                    %1$s
 
-                    FileUtils.deleteDirectory(outputFolder);
-                } catch (IOException e1) {
-                    getLogger().debug("Failed to remove {}", outputFolder);
+                                    Go to https://vaadin.com/pricing to obtain a license
+                                    """
+                                    .formatted(productsList));
                 }
+                invalidateOutput(component, outputFolder);
+                throw new LicenseException(String.format(
+                        """
+                                Commercial features require a subscription.
+                                Your application contains the following commercial components and no license was found:
+                                %1$s
+
+                                If you have an active subscription, please download the license key from https://vaadin.com/myaccount/licenses.
+                                Otherwise go to https://vaadin.com/pricing to obtain a license.
+
+                                You can also build a watermarked version of the application configuring
+                                the '%2$s' property of the Maven or Gradle plugin
+                                or run the build with the '-Dvaadin.%2$s' system parameter
+                                """,
+                        productsList, InitParameters.COMMERCIAL_WITH_BANNER));
+            } catch (Exception e) {
+                invalidateOutput(component, outputFolder);
                 throw e;
             }
         }
         return !commercialComponents.isEmpty();
+    }
+
+    private static void invalidateOutput(Product component, File outputFolder) {
+        try {
+            getLogger().debug(
+                    "License check for {} failed. Invalidating output",
+                    component);
+
+            FileUtils.deleteDirectory(outputFolder);
+        } catch (IOException e) {
+            getLogger().debug("Failed to remove {}", outputFolder);
+        }
     }
 
     private static Logger getLogger() {
@@ -687,8 +725,8 @@ public class BuildFrontendUtil {
                     continue;
                 }
                 final JsonNode cvdlModule = cvdlModules.get(key);
-                components.add(new Product(cvdlModule.get("name").textValue(),
-                        cvdlModule.get("version").textValue()));
+                components.add(new Product(cvdlModule.get("name").asString(),
+                        cvdlModule.get("version").asString()));
             }
         }
         return components;
@@ -770,9 +808,41 @@ public class BuildFrontendUtil {
      * @param licenseRequired
      *            {@literal true} if a license was required for the production
      *            build.
+     * @deprecated use
+     *             {@link #updateBuildFile(PluginAdapterBuild, boolean, boolean)}
+     *             instead
      */
+    @Deprecated(since = "24.9", forRemoval = true)
     public static void updateBuildFile(PluginAdapterBuild adapter,
             boolean licenseRequired) {
+        updateBuildFile(adapter, licenseRequired, false);
+    }
+
+    /**
+     * Updates the build info after the bundle has been built by build-frontend.
+     * <p>
+     * Removes the abstract folder paths as they should not be used for prebuilt
+     * bundles and ensures production mode is set to true.
+     *
+     * @param adapter
+     *            - the PluginAdapterBase.
+     * @param licenseRequired
+     *            {@literal true} if a license was required for the production
+     *            build.
+     * @param needsCommercialBanner
+     *            {@literal true} if a commercial banner should be applied to
+     *            the application at runtime.
+     */
+    public static void updateBuildFile(PluginAdapterBuild adapter,
+            boolean licenseRequired, boolean needsCommercialBanner) {
+        if (needsCommercialBanner && !adapter.isCommercialBannerEnabled()) {
+            throw new IllegalStateException(
+                    """
+                            Commercial banner is required for this build but has not been enabled in the Maven or Gradle plugin configuration. \
+                            This should never happen and is caused by a bug in the Vaadin plugin. \
+                            Please report the error at https://github.com/vaadin/flow/issues. \
+                            As a workaround, enable the commercial banner setting in the plugin configuration.""");
+        }
         File tokenFile = getTokenFile(adapter);
         if (!tokenFile.exists()) {
             adapter.logWarn(
@@ -809,21 +879,28 @@ public class BuildFrontendUtil {
             // license-server
             buildInfo.remove(Constants.PREMIUM_FEATURES);
             buildInfo.remove(Constants.DAU_TOKEN);
+            buildInfo.remove(Constants.COMMERCIAL_BANNER_TOKEN);
 
             buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, true);
             buildInfo.put(APPLICATION_IDENTIFIER,
                     adapter.applicationIdentifier());
+            boolean applyCommercialBanner = needsCommercialBanner
+                    && adapter.isCommercialBannerEnabled();
             if (licenseRequired) {
                 if (LocalSubscriptionKey.get() != null) {
                     adapter.logInfo("Daily Active User tracking enabled");
                     buildInfo.put(Constants.DAU_TOKEN, true);
                     checkLicenseCheckerAtRuntime(adapter);
                 }
+                if (applyCommercialBanner) {
+                    adapter.logInfo("Application commercial banner enabled");
+                    buildInfo.put(Constants.COMMERCIAL_BANNER_TOKEN, true);
+                }
             }
             if (isControlCenterAvailable(adapter.getClassFinder())
-                    && LicenseChecker.isValidLicense(
+                    && (applyCommercialBanner || LicenseChecker.isValidLicense(
                             "vaadin-commercial-cc-client", null,
-                            BuildType.PRODUCTION)) {
+                            BuildType.PRODUCTION))) {
                 adapter.logInfo("Premium Features are enabled");
                 buildInfo.put(Constants.PREMIUM_FEATURES, true);
             }

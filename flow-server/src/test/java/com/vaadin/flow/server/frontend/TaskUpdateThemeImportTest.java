@@ -12,10 +12,27 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
+import net.jcip.annotations.NotThreadSafe;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
+import org.mockito.Mockito;
+import org.slf4j.Logger;
+
+import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -23,23 +40,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_N
 import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_META_INF_RESOURCES;
 import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_STATIC_RESOURCES;
-
-import java.io.File;
-import java.io.IOException;
-
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
-
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.theme.AbstractTheme;
-import com.vaadin.flow.theme.ThemeDefinition;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class TaskUpdateThemeImportTest {
@@ -62,6 +62,7 @@ public class TaskUpdateThemeImportTest {
     private Class<? extends AbstractTheme> dummyThemeClass;
     private ThemeDefinition customTheme;
     private TaskUpdateThemeImport taskUpdateThemeImport;
+    private Logger logger;
 
     @Before
     public void setUp() throws IOException {
@@ -83,7 +84,15 @@ public class TaskUpdateThemeImportTest {
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
                 .withFrontendDirectory(frontendDirectory);
 
-        taskUpdateThemeImport = new TaskUpdateThemeImport(customTheme, options);
+        logger = Mockito.mock(Logger.class);
+
+        taskUpdateThemeImport = new TaskUpdateThemeImport(customTheme,
+                options) {
+            @Override
+            Logger getLogger() {
+                return logger;
+            }
+        };
     }
 
     @Test
@@ -435,4 +444,30 @@ public class TaskUpdateThemeImportTest {
                         CUSTOM_THEME_NAME)));
     }
 
+    @Test
+    public void runTaskWithTheme_noFeatureFlagSet_warningLogged()
+            throws Exception {
+
+        File themesDir = new File(frontendDirectory, APPLICATION_THEME_ROOT);
+        File aCustomThemeDir = new File(themesDir, CUSTOM_THEME_NAME);
+        File components = new File(aCustomThemeDir, "components");
+
+        boolean customThemeDirCreatedSuccessfully = components.mkdirs();
+
+        Assert.assertTrue(String.format(
+                "%s directory should be created at '%s%s/%s' but failed.",
+                CUSTOM_THEME_NAME, DEFAULT_FRONTEND_DIR, APPLICATION_THEME_ROOT,
+                CUSTOM_THEME_NAME), customThemeDirCreatedSuccessfully);
+
+        Files.writeString(new File(components, "vaadin-button.css").toPath(),
+                "{ .button-style: 2px; }");
+
+        taskUpdateThemeImport.execute();
+
+        Mockito.verify(logger, Mockito.atLeastOnce()).warn(
+                "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}",
+                CUSTOM_THEME_NAME,
+                FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
+                "vaadin-button.css");
+    }
 }

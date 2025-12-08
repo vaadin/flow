@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.UIInternals;
@@ -142,7 +140,6 @@ public class ErrorHandlerUtilTest {
         Mockito.when(vaadinService.getInstantiator())
                 .thenReturn(new DefaultInstantiator(vaadinService));
         internals.setSession(session);
-        session.setConfiguration(Mockito.mock(DeploymentConfiguration.class));
         Mockito.when(vaadinService.getRouter())
                 .thenReturn(Mockito.mock(Router.class));
 

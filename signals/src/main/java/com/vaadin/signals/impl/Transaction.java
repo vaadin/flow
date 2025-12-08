@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
 
 import java.util.HashMap;
@@ -19,33 +34,21 @@ import com.vaadin.signals.operations.TransactionOperation;
  */
 public abstract class Transaction {
     /**
+     * Creates a new transaction.
+     */
+    public Transaction() {
+    }
+
+    /**
      * A transaction that applies commands directly to the underlying tree
      * immediately rather than collecting them for an eventual commit operation.
      * Committing and rolling back are no-ops since all commands have already
      * been applied.
      */
     private static abstract class ImmediateTransaction extends Transaction {
-        private final boolean readonly;
-
-        /**
-         * Creates a new immediate transaction.
-         *
-         * @param readonly
-         *            <code>true</code> if the transaction should reject regular
-         *            writes
-         */
-        public ImmediateTransaction(boolean readonly) {
-            this.readonly = readonly;
-        }
-
         @Override
         public void include(SignalTree tree, SignalCommand command,
                 Consumer<CommandResult> resultHandler, boolean applyToTree) {
-            if (readonly() && tree.type() != SignalTree.Type.COMPUTED) {
-                throw new IllegalStateException(
-                        "Cannot make changes in a read-only transaction.");
-            }
-
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -59,11 +62,6 @@ public abstract class Transaction {
         @Override
         protected void rollback() {
             // nop
-        }
-
-        @Override
-        protected boolean readonly() {
-            return readonly;
         }
     }
 
@@ -80,8 +78,7 @@ public abstract class Transaction {
         private final Map<SignalTree, MutableTreeRevision> trees = new HashMap<>();
         private final Transaction outer;
 
-        public RepeatableReadTransaction(boolean readonly, Transaction outer) {
-            super(readonly);
+        public RepeatableReadTransaction(Transaction outer) {
             assert outer != null;
             this.outer = outer;
         }
@@ -117,7 +114,7 @@ public abstract class Transaction {
      * still expressed as a transaction so that transaction-aware logic doesn't
      * have to check whether a transaction is active.
      */
-    private static final Transaction ROOT = new ImmediateTransaction(false) {
+    private static final Transaction ROOT = new ImmediateTransaction() {
         @Override
         public TreeRevision read(SignalTree tree) {
             return tree.submitted();
@@ -136,9 +133,6 @@ public abstract class Transaction {
         STAGED {
             @Override
             Transaction create(Transaction outer) {
-                if (outer.readonly()) {
-                    throw new IllegalStateException();
-                }
                 return new StagedTransaction(outer);
             }
         },
@@ -150,23 +144,7 @@ public abstract class Transaction {
         WRITE_THROUGH {
             @Override
             Transaction create(Transaction outer) {
-                if (outer.readonly()) {
-                    throw new IllegalStateException();
-                }
-
-                return new RepeatableReadTransaction(false, outer);
-            }
-        },
-        /**
-         * A transaction that disallows regular write operations while offering
-         * repeatable reads. Writes to computed signal trees are still allowed
-         * since those are not user-originated write operations but just side
-         * effects of lazy evaluation.
-         */
-        READ_ONLY {
-            @Override
-            Transaction create(Transaction outer) {
-                return new RepeatableReadTransaction(true, outer);
+                return new RepeatableReadTransaction(outer);
             }
         };
 
@@ -415,15 +393,4 @@ public abstract class Transaction {
      * result handlers for those commands.
      */
     protected abstract void rollback();
-
-    /**
-     * Checks whether this is a read-only transaction. A read-only transaction
-     * only allows writes to computed signal trees since those are not
-     * user-originated write operations but just side effects of lazy
-     * evaluation.
-     *
-     * @return {@code false} if this transaction allows regular writes to the
-     *         underlying tree, {@code true} otherwise.
-     */
-    protected abstract boolean readonly();
 }

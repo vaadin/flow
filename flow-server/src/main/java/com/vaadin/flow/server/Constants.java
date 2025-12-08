@@ -47,6 +47,7 @@ public final class Constants implements Serializable {
     public static final String EXTERNAL_STATS_URL_TOKEN = "externalStatsUrl";
     public static final String DAU_TOKEN = "dau.enable";
     public static final String PREMIUM_FEATURES = "premiumFeatures.enable";
+    public static final String COMMERCIAL_BANNER_TOKEN = "commercialBanner.enable";
 
     public static final String POLYFILLS_DEFAULT_VALUE = "";
 
@@ -139,20 +140,26 @@ public final class Constants implements Serializable {
     public static final boolean GLOBAL_PNPM_DEFAULT = false;
 
     /**
-     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
-     */
-    public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
-
-    /**
      * The default value for
      * {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}.
      */
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
+     * The name of the environment variable that controls whether server-side
+     * usage statistics is enabled.
+     *
+     * Usage statistics are disabled if the environment variable is set to
+     * "false".
+     */
+    public static final String VAADIN_USAGE_STATS_ENABLED = "VAADIN_USAGE_STATS_ENABLED";
+
+    /**
      * The default value for whether usage statistics is enabled.
      */
-    public static final boolean DEFAULT_DEVMODE_STATS = true;
+    public static final boolean DEFAULT_DEVMODE_STATS = !"false"
+            .equalsIgnoreCase(
+                    System.getenv(Constants.VAADIN_USAGE_STATS_ENABLED));
 
     /**
      * Internal parameter which prevent validation for annotations which are

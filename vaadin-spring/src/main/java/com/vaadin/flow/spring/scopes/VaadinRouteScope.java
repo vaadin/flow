@@ -54,7 +54,6 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
  * @author Vaadin Ltd
- * @since
  *
  */
 public class VaadinRouteScope extends AbstractScope {
@@ -79,7 +78,7 @@ public class VaadinRouteScope extends AbstractScope {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
             String key = getUIStoreKey(ui);
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 ui.getPage().retrieveExtendedClientDetails(
                         det -> relocateStore(ui, key));
             }
@@ -120,10 +119,10 @@ public class VaadinRouteScope extends AbstractScope {
         private String getUIStoreKey(UI ui) {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 return "uid-" + ui.getUIId();
             } else {
-                return "win-" + getWindowName(ui);
+                return "win-" + details.getWindowName();
             }
         }
 
@@ -449,19 +448,11 @@ public class VaadinRouteScope extends AbstractScope {
     private static String getWindowName(UI ui) {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (details == null) {
-            return null;
-        }
         return details.getWindowName();
     }
 
     private static UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The route scope is not active");
-        }
-        return ui;
+        return UI.getCurrentOrThrow();
     }
 
     private static UI findPreservingUI(UI ui) {

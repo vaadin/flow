@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.spring.annotation;
 
 import java.lang.annotation.Documented;
@@ -46,9 +44,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
  * <li>Both an annotated bean and a bean with the name
  * {@code VaadinTaskExecutor} cannot exist simultaneously.</li>
  * </ul>
- * <p>
- * To prevent a custom executor from replacing the default one, consider setting
- * {@code @Bean(defaultCandidate=false)} on your bean definition.
  */
 @Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER,
         ElementType.TYPE, ElementType.ANNOTATION_TYPE })

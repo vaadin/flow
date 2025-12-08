@@ -4,6 +4,7 @@ import typescript from '@rollup/plugin-typescript';
 
 export default defineConfig({
   build: {
+    sourcemap: true,
     // Write output to resources to include it in Maven package
     outDir: 'src/main/resources/META-INF/frontend/vaadin-dev-tools',
     // Clear output directory
@@ -20,7 +21,7 @@ export default defineConfig({
       // Do not resolve the following imports, these modules
       // will be provided by the application that hosts the dev tools.
       external: [
-        /^construct-style-sheets-polyfill.*/,
+        /^construct-style-sheets-polyfill.*/, // not added by Flow since v25.
         /^lit.*/,
         /^@vaadin.*/,
       ]

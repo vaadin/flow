@@ -17,7 +17,6 @@ package com.vaadin.flow.server;
 
 import java.util.Locale;
 
-import jdk.jfr.ValueDescriptor;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;

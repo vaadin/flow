@@ -25,6 +25,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
+import org.apache.commons.io.IOUtils;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
+import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -41,6 +45,8 @@ import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class UpdateImportsWithByteCodeScannerTest
         extends AbstractUpdateImportsTest {
@@ -67,9 +73,9 @@ public class UpdateImportsWithByteCodeScannerTest
                 "import '@vaadin/vaadin-mixed-component/src/vaadin-something-else';");
         expectedJsModuleImports.add(
                 "import '@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js';");
+        expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
         expectedJsModuleImports.add("import 'jsmodule/h.js';");
         expectedJsModuleImports.add("import 'jsmodule/g.js';");
-        expectedJsModuleImports.add("import 'Frontend/local-p3-template.js';");
         expectedJsModuleImports.add("import '" + DepsTests.UI_IMPORT + "';");
         super.assertFullSortOrder(true, expectedJsModuleImports);
     }
@@ -294,6 +300,39 @@ public class UpdateImportsWithByteCodeScannerTest
     }
 
     @Test
+    public void cssImportFromAppShellAndThemeWork() throws Exception {
+        Class<?>[] testClasses = { ThemeCssImport.class, UI.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        Assert.assertNotNull(output);
+        Assert.assertEquals(4, output.size());
+
+        Optional<File> appShellFile = output.keySet().stream()
+                .filter(file -> file.getName().endsWith("app-shell-imports.js"))
+                .findAny();
+        Assert.assertTrue(appShellFile.isPresent());
+        List<String> appShellLines = output.get(appShellFile.get());
+
+        assertOnce(
+                "import { injectGlobalCss } from 'Frontend/generated/jar-resources/theme-util.js';",
+                appShellLines);
+        assertOnce("from 'Frontend/foo.css?inline';", appShellLines);
+        assertOnce("from 'lumo-css-import.css?inline';", appShellLines);
+
+        Optional<File> appShellDTsFile = output.keySet().stream().filter(
+                file -> file.getName().endsWith("app-shell-imports.d.ts"))
+                .findAny();
+        Assert.assertTrue(appShellDTsFile.isPresent());
+        List<String> appShellDTsLines = output.get(appShellDTsFile.get());
+        Assert.assertEquals(1, appShellDTsLines.size());
+        assertOnce("export {}", appShellDTsLines);
+    }
+
+    @Test
     public void cssInLazyChunkWorks() throws Exception {
         Class<?>[] testClasses = { FooCssImport.class, UI.class };
         ClassFinder classFinder = getClassFinder(testClasses);
@@ -303,7 +342,7 @@ public class UpdateImportsWithByteCodeScannerTest
         Map<File, List<String>> output = updater.getOutput();
 
         Assert.assertNotNull(output);
-        Assert.assertEquals(3, output.size());
+        Assert.assertEquals(5, output.size());
 
         Optional<File> chunkFile = findOptionalChunkFile(output);
         Assert.assertTrue(chunkFile.isPresent());
@@ -425,4 +464,44 @@ public class UpdateImportsWithByteCodeScannerTest
                 CHUNK_PATTERN.matcher(mainImportContent).results().count());
     }
 
+    // Test for https://github.com/vaadin/flow/issues/22656
+    @Test
+    public void onlyOneChunkForLazyViewsWithSameContent_generatedWebComponentsImports()
+            throws Exception {
+        createExpectedLazyImports();
+
+        Class<?>[] testClasses = { OtherView.class, CloneView.class };
+
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+        updater.run();
+
+        Map<File, List<String>> output = updater.getOutput();
+
+        File flowGeneratedImports = FrontendUtils
+                .getFlowGeneratedImports(frontendDirectory);
+
+        var ifList = output.get(flowGeneratedImports).stream()
+                .filter(line -> line.trim().startsWith("if (key === '")
+                        && line.trim().endsWith("') {"))
+                .toList();
+        var importChunkList = output.get(flowGeneratedImports).stream()
+                .filter(line -> line.trim()
+                        .startsWith("pending.push(import('./chunks/chunk-"))
+                .toList();
+
+        // verify that generated web components file contains expected imports
+        String generatedWebComponentsImports = IOUtils
+                .toString(FrontendUtils.getFlowGeneratedWebComponentsImports(
+                        options.getFrontendDirectory()).toURI(), UTF_8);
+
+        List<Matcher<String>> matchers = new ArrayList<>();
+        for (String ifLine : ifList) {
+            matchers.add(CoreMatchers.containsString(
+                    ifLine + "\n" + importChunkList.get(ifList.indexOf(ifLine))
+                            + "\n" + "  }"));
+        }
+        MatcherAssert.assertThat(generatedWebComponentsImports,
+                CoreMatchers.allOf(matchers.toArray(Matcher[]::new)));
+    }
 }

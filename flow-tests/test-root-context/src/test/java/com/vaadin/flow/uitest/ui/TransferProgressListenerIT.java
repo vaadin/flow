@@ -13,24 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-
-import static java.time.temporal.ChronoUnit.SECONDS;
 
 public class TransferProgressListenerIT extends AbstractStreamResourceIT {
 
@@ -46,6 +35,8 @@ public class TransferProgressListenerIT extends AbstractStreamResourceIT {
                 "File download whenComplete status: completed");
         waitForStatus(TransferProgressListenerView.ON_ERROR_ID,
                 "File download onError status: error");
+        waitForStatus(TransferProgressListenerView.ON_CALLBACK_ERROR_ID,
+                "File download onError status: callback error");
     }
 
     private void waitForStatus(String id, String status) {

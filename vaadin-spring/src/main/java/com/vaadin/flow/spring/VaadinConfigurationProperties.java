@@ -356,8 +356,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @return if servlet is loaded on startup
      */
@@ -370,8 +370,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
@@ -384,7 +384,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns if a browser should be launched on startup when in development
      * mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -408,7 +407,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns timout after which a browser should be launched again on startup
      * when in development mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -432,7 +430,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns whether class scan caching between reloads when using Spring Boot
      * DevTools should be enabled.
-     * <p>
      *
      * @return if class scan caching should be enabled
      */

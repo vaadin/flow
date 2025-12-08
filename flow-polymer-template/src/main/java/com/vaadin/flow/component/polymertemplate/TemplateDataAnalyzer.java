@@ -26,16 +26,16 @@ import org.jsoup.nodes.Element;
 import org.jsoup.nodes.Node;
 import org.jsoup.select.Elements;
 import org.jsoup.select.NodeVisitor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.component.template.internal.InjectableFieldConsumer;
 import com.vaadin.flow.component.template.internal.ParserData;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinService;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 /**
  * Template data analyzer which produces immutable data required for template
@@ -161,9 +161,9 @@ public class TemplateDataAnalyzer {
     static class SubTemplateData {
         private final String id;
         private final String tag;
-        private final JsonArray path;
+        private final JsonNode path;
 
-        SubTemplateData(String id, String tag, JsonArray path) {
+        SubTemplateData(String id, String tag, JsonNode path) {
             this.id = id;
             this.tag = tag;
             this.path = path;
@@ -177,7 +177,7 @@ public class TemplateDataAnalyzer {
             return tag;
         }
 
-        JsonArray getPath() {
+        JsonNode getPath() {
             return path;
         }
     }
@@ -299,12 +299,12 @@ public class TemplateDataAnalyzer {
             }
 
             String id = element.hasAttr("id") ? element.attr("id") : null;
-            JsonArray path = getPath(element, templateRoot);
+            ArrayNode path = getPath(element, templateRoot);
             addSubTemplate(id, tag, path);
         }
     }
 
-    private JsonArray getPath(org.jsoup.nodes.Element element,
+    private ArrayNode getPath(org.jsoup.nodes.Element element,
             org.jsoup.nodes.Element templateRoot) {
         List<Integer> path = new ArrayList<>();
         org.jsoup.nodes.Element current = element;
@@ -313,9 +313,9 @@ public class TemplateDataAnalyzer {
             path.add(indexOf(parent, current));
             current = parent;
         }
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArray();
         for (int i = 0; i < path.size(); i++) {
-            array.set(i, path.get(path.size() - i - 1));
+            array.add(path.get(path.size() - i - 1));
         }
         return array;
     }
@@ -367,7 +367,7 @@ public class TemplateDataAnalyzer {
         return isInsideTemplate(element.parent(), templateRoot);
     }
 
-    private void addSubTemplate(String id, String tag, JsonArray path) {
+    private void addSubTemplate(String id, String tag, ArrayNode path) {
         subTemplates.add(new SubTemplateData(id, tag, path));
     }
 

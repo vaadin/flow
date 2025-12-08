@@ -142,6 +142,11 @@ public final class NodeFeatures {
      */
     public static final int INERT_DATA = 26;
 
+    /**
+     * Id for {@link TextBindingFeature}.
+     */
+    public static final int TEXT_BINDING = 27;
+
     private NodeFeatures() {
         // Only static
     }

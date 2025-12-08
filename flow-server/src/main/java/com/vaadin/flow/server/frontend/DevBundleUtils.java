@@ -18,9 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +37,6 @@ public class DevBundleUtils {
 
     /**
      * Finds the given file inside the current development bundle.
-     * <p>
      *
      * @param projectDir
      *            the project root folder
@@ -49,6 +46,8 @@ public class DevBundleUtils {
      *            the file name inside the bundle
      * @return a URL referring to the file inside the bundle or {@code null} if
      *         the file was not found
+     * @throws IOException
+     *             if an I/O error occurs
      */
     public static URL findBundleFile(File projectDir, String buildFolder,
             String filename) throws IOException {
@@ -99,7 +98,7 @@ public class DevBundleUtils {
             return null;
         }
 
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+        return FileIOUtils.urlToString(statsJson);
     }
 
     private static Logger getLogger() {

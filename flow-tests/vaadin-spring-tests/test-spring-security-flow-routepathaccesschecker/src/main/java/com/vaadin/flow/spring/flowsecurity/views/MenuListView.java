@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import java.util.Comparator;
@@ -28,10 +27,8 @@ import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;
-import com.vaadin.flow.router.RouteConfiguration;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.auth.AnonymousAllowed;
 
 /**
  * Lists all accessible menu views collected with

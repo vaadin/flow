@@ -24,7 +24,6 @@ import com.vaadin.client.flow.model.UpdatableModelProperties;
 import com.vaadin.client.flow.nodefeature.MapProperty;
 import com.vaadin.client.flow.nodefeature.NodeMap;
 import com.vaadin.client.flow.reactive.Reactive;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.nodefeature.NodeFeatures;
 import com.vaadin.flow.internal.nodefeature.NodeProperties;
 
@@ -302,10 +301,12 @@ public class GwtExecuteJavaScriptElementUtilsTest extends ClientEngineTestBase {
                     }
                 });
 
-        JsonArray serializedChannel = Json.createArray();
-        serializedChannel.set(0, JsonCodec.RETURN_CHANNEL_TYPE);
-        serializedChannel.set(1, expectedNodeId);
-        serializedChannel.set(2, expectedChannelId);
+        // Create @v-return format
+        elemental.json.JsonObject serializedChannel = Json.createObject();
+        JsonArray channelArray = Json.createArray();
+        channelArray.set(0, expectedNodeId);
+        channelArray.set(1, expectedChannelId);
+        serializedChannel.put("@v-return", channelArray);
 
         JsonArray invocation = Json.createArray();
         // Assign channel as $0

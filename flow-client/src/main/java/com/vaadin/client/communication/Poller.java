@@ -16,6 +16,7 @@
 package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
+
 import com.vaadin.client.Registry;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.flow.component.PollEvent;

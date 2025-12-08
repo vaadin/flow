@@ -28,10 +28,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -63,6 +66,7 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.DEV;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VALUE;
 import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.VERSION;
@@ -85,7 +89,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
             + "ch\\.quos\\.logback\\b|"
             + "io\\.(fabric8\\.kubernetes)\\b|"
-            + "net\\.(sf|bytebuddy)\\b"
+            + "net\\.(sf|bytebuddy)\\b|"
+            + "tools\\.jackson\\b"
             + ").*|"
             + ".*(Exception)$"
             + ")");
@@ -96,6 +101,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private AbstractTheme themeInstance;
     private final HashMap<String, String> packages = new HashMap<>();
     private final HashMap<String, String> devPackages = new HashMap<>();
+    private final HashMap<String, List<String>> assets = new HashMap<>();
+    private final HashMap<String, List<String>> devAssets = new HashMap<>();
     private final Map<String, ClassInfo> visitedClasses = new HashMap<>();
 
     private PwaConfiguration pwaConfiguration;
@@ -119,10 +126,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             if (themeDefinition != null && themeDefinition.getTheme() != null) {
                 Class<? extends AbstractTheme> themeClass = themeDefinition
                         .getTheme();
-                if (!visitedClasses.containsKey(themeClass.getName())) {
-                    addInternalEntryPoint(themeClass);
-                    visitEntryPoint(entryPoints.get(themeClass.getName()));
-                }
+                addAppShellEntryPoint(themeClass);
+                visitEntryPoint(entryPoints.get(themeClass.getName()));
             }
             if (reactEnabled) {
                 computeReactClasses(finder);
@@ -179,6 +184,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private void aggregateEntryPointInformation() {
+        var activeTheme = themeDefinition != null
+                && themeDefinition.getTheme() != null;
         for (Entry<String, EntryPointData> entry : entryPoints.entrySet()) {
             EntryPointData entryPoint = entry.getValue();
             for (String className : entryPoint.reachableClasses) {
@@ -186,7 +193,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 entryPoint.getModules().addAll(classInfo.modules);
                 entryPoint.getModulesDevelopmentOnly()
                         .addAll(classInfo.modulesDevelopmentOnly);
-                entryPoint.getCss().addAll(classInfo.css);
+                if (classInfo.loadCss || activeTheme
+                        && entryPoint.getType() == EntryPointType.APP_SHELL) {
+                    entryPoint.getCss().addAll(classInfo.css);
+                }
                 entryPoint.getScripts().addAll(classInfo.scripts);
                 entryPoint.getScriptsDevelopmentOnly()
                         .addAll(classInfo.scriptsDevelopmentOnly);
@@ -196,7 +206,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     Set<String> collectReachableClasses(EntryPointData entryPointData) {
-        Set<String> classes = new HashSet<>();
+        Set<String> classes = new LinkedHashSet<>();
         collectReachableClasses(entryPointData.getName(), classes);
 
         return classes;
@@ -262,6 +272,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return devPackages;
     }
 
+    @Override
+    public Map<String, List<String>> getAssets() {
+        return assets;
+    }
+
+    @Override
+    public Map<String, List<String>> getDevAssets() {
+        return devAssets;
+    }
+
     /**
      * Get the PWA configuration of the application.
      *
@@ -303,6 +323,12 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     }
 
     private ChunkInfo getChunkInfo(EntryPointData data) {
+        if (data.getType() == EntryPointType.APP_SHELL) {
+            return ChunkInfo.APP_SHELL;
+        }
+        if (data.getType() == EntryPointType.WEB_COMPONENT) {
+            return ChunkInfo.WEB_COMPONENT;
+        }
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
         }
@@ -439,7 +465,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         for (Class<?> appShell : getFinder().getSubTypesOf(
                 getFinder().loadClass(AppShellConfigurator.class.getName()))) {
-            addInternalEntryPoint(appShell);
+            addAppShellEntryPoint(appShell);
         }
 
         try {
@@ -528,6 +554,10 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         return null;
     }
 
+    private void addAppShellEntryPoint(Class<?> entryPointClass) {
+        addEntryPoint(entryPointClass, EntryPointType.APP_SHELL, null, true);
+    }
+
     private void addInternalEntryPoint(Class<?> entryPointClass) {
         addEntryPoint(entryPointClass, EntryPointType.INTERNAL, null, true);
     }
@@ -558,20 +588,22 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
 
         // This really should check entry points and not all classes, but the
         // old behavior is retained.. for now..
-        List<ClassInfo> classesWithTheme = entryPoints.values().stream()
+        Map<ThemeData, ClassInfo> classesWithTheme = entryPoints.values()
+                .stream()
                 .flatMap(entryPoint -> entryPoint.reachableClasses.stream())
-                .map(className -> visitedClasses.get(className))
+                .map(visitedClasses::get)
                 // consider only entry points with theme information
-                .filter(this::hasThemeInfo).toList();
-        Set<ThemeData> themes = classesWithTheme.stream()
-                .map(classInfo -> classInfo.theme)
-                // Remove duplicates by returning a set
-                .collect(Collectors.toSet());
+                .filter(this::hasThemeInfo)
+                // Map on ThemeData to not get theme duplicates
+                .collect(Collectors.toMap(classInfo -> classInfo.theme,
+                        Function.identity(),
+                        (existing, replacement) -> existing));
 
-        if (themes.size() > 1) {
-            String names = classesWithTheme.stream()
-                    .map(data -> "found '" + getThemeDescription(data.theme)
-                            + "' in '" + data.className + "'")
+        if (classesWithTheme.size() > 1) {
+            String names = classesWithTheme.keySet().stream()
+                    .map(theme -> "found '" + getThemeDescription(theme)
+                            + "' in '" + classesWithTheme.get(theme).className
+                            + "'")
                     .collect(Collectors.joining("\n      "));
             throw new IllegalStateException(
                     "\n Multiple Theme configuration is not supported:\n      "
@@ -581,11 +613,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
         Class<? extends AbstractTheme> theme = null;
         String variant = "";
         String themeName = "";
-        if (themes.isEmpty()) {
-            theme = getDefaultTheme();
-        } else {
+        if (!classesWithTheme.isEmpty()) {
+            ThemeData themeData = classesWithTheme.keySet().iterator().next();
             // we have a proper theme or no-theme for the app
-            ThemeData themeData = themes.iterator().next();
             if (!themeData.isNotheme()) {
                 String themeClass = themeData.getThemeClass();
                 if (!themeData.getThemeName().isEmpty() && themeClass != null) {
@@ -597,7 +627,7 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 if (themeClass != null) {
                     theme = getFinder().loadClass(themeClass);
                 } else {
-                    theme = getDefaultTheme();
+                    theme = getLumoTheme();
                     if (theme == null) {
                         throw new IllegalStateException(
                                 "Lumo dependency needs to be available on the classpath when using a theme name.");
@@ -605,13 +635,16 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
                 }
                 themeName = themeData.getThemeName();
             }
+
+            // theme could be null when lumo is not found or when a NoTheme
+            // found
+            if (theme != null) {
+                themeDefinition = new ThemeDefinition(theme, variant,
+                        themeName);
+                themeInstance = new ThemeWrapper(theme);
+            }
         }
 
-        // theme could be null when lumo is not found or when a NoTheme found
-        if (theme != null) {
-            themeDefinition = new ThemeDefinition(theme, variant, themeName);
-            themeInstance = new ThemeWrapper(theme);
-        }
     }
 
     private String getThemeDescription(ThemeData theme) {
@@ -622,16 +655,6 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return theme.getThemeName();
         }
         return theme.getThemeClass();
-    }
-
-    /**
-     * Finds the default theme.
-     *
-     * @return Lumo
-     */
-    Class<? extends AbstractTheme> getDefaultTheme() throws IOException {
-        // No theme annotation found by the scanner
-        return getLumoTheme();
     }
 
     /**
@@ -663,11 +686,34 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             }
             Set<Boolean> devs = npmPackageVisitor.getValuesForKey(VALUE,
                     dependency, DEV);
+            List<String> npmAssets = npmPackageVisitor
+                    .getValuesForKey(VALUE, dependency, ASSETS).stream()
+                    .filter(Objects::nonNull)
+                    // map to String so '[]'
+                    .map(String::valueOf)
+                    // Remove empty arrays
+                    .filter(value -> !value.isBlank() && !"[]".equals(value))
+                    // Remove non array strings
+                    .filter(value -> value.startsWith("[")
+                            && value.endsWith("]"))
+                    // remove start '[' and trailing ']'
+                    .map(value -> value.substring(1, value.length() - 1))
+                    // split value pairs
+                    .map(value -> value.split(","))
+                    // break up array to stream of string
+                    .flatMap(Arrays::stream).toList();
             devs.forEach(dev -> {
                 if (dev != null && dev) {
                     devPackages.put(dependency, version);
                 } else {
                     packages.put(dependency, version);
+                }
+                if (!npmAssets.isEmpty()) {
+                    if (dev != null && dev) {
+                        addValues(devAssets, dependency, npmAssets);
+                    } else {
+                        addValues(assets, dependency, npmAssets);
+                    }
                 }
             });
         }
@@ -829,6 +875,15 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return;
         }
         ClassInfo info = new ClassInfo(className);
+        try {
+            if (AbstractTheme.class
+                    .isAssignableFrom(getFinder().loadClass(className))) {
+                info.loadCss = false;
+            }
+        } catch (ClassNotFoundException | NoClassDefFoundError ignore) { // NOSONAR
+            // NO-OP
+        }
+
         visitedClasses.put(className, info);
 
         URL url = getUrl(className);
@@ -887,6 +942,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return true;
         }
         if (theme.isNotheme()) {
+            return true;
+        }
+        if (theme.themeAnnotationPresent) {
             return true;
         }
 

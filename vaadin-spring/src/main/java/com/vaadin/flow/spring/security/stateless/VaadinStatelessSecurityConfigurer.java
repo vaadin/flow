@@ -15,7 +15,13 @@
  */
 package com.vaadin.flow.spring.security.stateless;
 
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
 import javax.crypto.SecretKey;
+
 import java.io.IOException;
 
 import com.nimbusds.jose.JWSAlgorithm;
@@ -23,10 +29,6 @@ import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.OctetSequenceKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.AuthenticationTrustResolver;
 import org.springframework.security.authentication.AuthenticationTrustResolverImpl;
 import org.springframework.security.config.Customizer;
@@ -37,6 +39,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
@@ -97,7 +100,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
-     * </p>
+     *
      * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
      * or {@link Customizer#withDefaults()} to accept the default values.
      *
@@ -106,6 +109,8 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @throws Exception
+     *             if an error occurs during configuration
      * @deprecated use
      *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
      *             instead.
@@ -120,7 +125,7 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
 
     @Override
     @SuppressWarnings("unchecked")
-    public void init(H http) throws Exception {
+    public void init(H http) {
 
         JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
                 new SerializedJwtSplitCookieRepository());
@@ -152,6 +157,12 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             CsrfTokenRequestHandler requestHandler = delegate::handle;
             csrf.csrfTokenRepository(csrfTokenRepository);
             csrf.csrfTokenRequestHandler(requestHandler);
+
+            // Disables removing CSRF token upon successful authentication,
+            // which happens in every request when using stateless JWT
+            // authentication.
+            csrf.sessionAuthenticationStrategy(
+                    new NullAuthenticatedSessionStrategy());
 
             http.getSharedObject(
                     VaadinSavedRequestAwareAuthenticationSuccessHandler.class)

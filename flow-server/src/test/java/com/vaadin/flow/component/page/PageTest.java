@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.component.page;
 
-import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,15 +30,14 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 public class PageTest {
 
@@ -56,7 +54,7 @@ public class PageTest {
 
         private String expression;
 
-        private Serializable firstParam;
+        private Object firstParam;
 
         public TestPage(UI ui) {
             super(ui);
@@ -64,7 +62,7 @@ public class PageTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             firstParam = parameters[0];
             count++;
@@ -86,79 +84,13 @@ public class PageTest {
     }
 
     @Test
-    public void retrieveExtendedClientDetails_twice_theSecondResultComesDifferentBeforeCachedValueIsSet() {
-        // given
-        final UI mockUI = new MockUI();
-        List<Runnable> invocations = new ArrayList<>();
-        final Page page = new Page(mockUI) {
-            @Override
-            public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
-                super.executeJs(expression, params);
-
-                return new PendingJavaScriptResult() {
-
-                    @Override
-                    public boolean cancelExecution() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean isSentToBrowser() {
-                        return false;
-                    }
-
-                    @Override
-                    public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
-                            SerializableConsumer<String> errorHandler) {
-                        final HashMap<String, String> params = new HashMap<>();
-                        params.put("v-sw", "2560");
-                        params.put("v-sh", "1450");
-                        params.put("v-tzo", "-270");
-                        params.put("v-rtzo", "-210");
-                        params.put("v-dstd", "60");
-                        params.put("v-dston", "true");
-                        params.put("v-tzid", "Asia/Tehran");
-                        params.put("v-curdate", "1555000000000");
-                        params.put("v-td", "false");
-                        if (invocations.isEmpty()) {
-                            params.put("v-wn", "ROOT-1234567-0.1234567");
-                        } else {
-                            params.put("v-wn", "foo");
-                        }
-                        invocations.add(() -> resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create)));
-                    }
-                };
-            }
-        };
-        final AtomicInteger callbackInvocations = new AtomicInteger();
-        final Page.ExtendedClientDetailsReceiver receiver = details -> {
-            callbackInvocations.incrementAndGet();
-        };
-
-        // when
-        page.retrieveExtendedClientDetails(receiver);
-        page.retrieveExtendedClientDetails(receiver);
-
-        // then : before cached value is set the second retrieve is requested
-        invocations.forEach(Runnable::run);
-
-        Assert.assertEquals(2, callbackInvocations.get());
-
-        Assert.assertEquals("ROOT-1234567-0.1234567", mockUI.getInternals()
-                .getExtendedClientDetails().getWindowName());
-    }
-
-    @Test
     public void retrieveExtendedClientDetails_twice_jsOnceAndCallbackTwice() {
         // given
-        final UI mockUI = new MockUI();
+        final MockUI mockUI = new MockUI();
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
 
                 return new PendingJavaScriptResult() {
@@ -175,7 +107,7 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
                         final HashMap<String, String> params = new HashMap<>();
                         params.put("v-sw", "2560");
@@ -188,12 +120,13 @@ public class PageTest {
                         params.put("v-curdate", "1555000000000");
                         params.put("v-td", "false");
                         params.put("v-wn", "ROOT-1234567-0.1234567");
-                        resultHandler.accept(
-                                JsonUtils.createObject(params, Json::create));
+                        resultHandler.accept(JacksonUtils.createObject(params,
+                                JacksonUtils::createNode));
                     }
                 };
             }
         };
+        mockUI.setPage(page);
         final AtomicInteger callbackInvocations = new AtomicInteger();
         final Page.ExtendedClientDetailsReceiver receiver = details -> {
             callbackInvocations.incrementAndGet();
@@ -217,7 +150,7 @@ public class PageTest {
         final Page page = new Page(mockUI) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... params) {
+                    Object... params) {
                 super.executeJs(expression, params);
                 Assert.assertEquals(
                         "Expected javascript for fetching location is wrong.",
@@ -237,10 +170,10 @@ public class PageTest {
 
                     @Override
                     public void then(
-                            SerializableConsumer<JsonValue> resultHandler,
+                            SerializableConsumer<JsonNode> resultHandler,
                             SerializableConsumer<String> errorHandler) {
-                        resultHandler.accept(
-                                Json.create("http://localhost:8080/home"));
+                        resultHandler.accept(JacksonUtils
+                                .createNode("http://localhost:8080/home"));
                     }
                 };
             }
@@ -318,17 +251,17 @@ public class PageTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -348,11 +281,11 @@ public class PageTest {
     @Test
     public void open_openInSameWindow_closeTheClientApplication() {
         AtomicReference<String> capture = new AtomicReference<>();
-        List<Serializable> params = new ArrayList<>();
+        List<Object> params = new ArrayList<>();
         Page page = new Page(new MockUI()) {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable[] parameters) {
+                    Object... parameters) {
                 capture.set(expression);
                 params.addAll(Arrays.asList(parameters));
                 return Mockito.mock(PendingJavaScriptResult.class);
@@ -366,5 +299,159 @@ public class PageTest {
 
         MatcherAssert.assertThat(capture.get(), CoreMatchers
                 .startsWith("if ($1 == '_self') this.stopApplication();"));
+    }
+
+    @Test
+    public void setColorScheme_setsStyleProperty() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                capturedParams.set(parameters);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setColorScheme(ColorScheme.Value.DARK);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue("Should set theme attribute",
+                js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue("Should set color-scheme property",
+                js.contains("style.colorScheme = $1"));
+        Object[] params = capturedParams.get();
+        Assert.assertEquals("Theme attribute should be 'dark'", "dark",
+                params[0]);
+        Assert.assertEquals("Color scheme property should be 'dark'", "dark",
+                params[1]);
+    }
+
+    @Test
+    public void setColorScheme_lightDark_setsCorrectValues() {
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        AtomicReference<Object[]> capturedParams = new AtomicReference<>();
+        MockUI mockUI = new MockUI();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                capturedParams.set(parameters);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setColorScheme(ColorScheme.Value.LIGHT_DARK);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue("Should set theme attribute",
+                js.contains("setAttribute('theme', $0)"));
+        Assert.assertTrue("Should set color-scheme property",
+                js.contains("style.colorScheme = $1"));
+        Object[] params = capturedParams.get();
+        Assert.assertEquals("Theme attribute should use hyphen", "light-dark",
+                params[0]);
+        Assert.assertEquals("Color scheme property should use space",
+                "light dark", params[1]);
+    }
+
+    @Test
+    public void setColorScheme_null_clearsProperty() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setColorScheme(null);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue("Should remove theme attribute",
+                js.contains("removeAttribute('theme')"));
+        Assert.assertTrue("Should clear inline style",
+                js.contains("style.colorScheme = ''"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    }
+
+    @Test
+    public void setColorScheme_normal_clearsProperty() {
+        MockUI mockUI = new MockUI();
+
+        AtomicReference<String> capturedExpression = new AtomicReference<>();
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                capturedExpression.set(expression);
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        page.setColorScheme(ColorScheme.Value.NORMAL);
+
+        String js = capturedExpression.get();
+        Assert.assertTrue(js.contains("style.colorScheme = ''"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    }
+
+    @Test
+    public void getColorScheme_returnsNormal_whenNotSet() {
+        Page page = new Page(new MockUI());
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+    }
+
+    @Test
+    public void getColorScheme_returnsCachedValue() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails with color scheme
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, "dark", null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI);
+        Assert.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
+    }
+
+    @Test
+    public void setColorScheme_updatesGetColorScheme() {
+        MockUI mockUI = new MockUI();
+        // Set up ExtendedClientDetails
+        ExtendedClientDetails details = new ExtendedClientDetails(mockUI, null,
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null);
+        mockUI.getInternals().setExtendedClientDetails(details);
+
+        Page page = new Page(mockUI) {
+            @Override
+            public PendingJavaScriptResult executeJs(String expression,
+                    Object... parameters) {
+                return Mockito.mock(PendingJavaScriptResult.class);
+            }
+        };
+
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+
+        page.setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals(ColorScheme.Value.DARK, page.getColorScheme());
+
+        page.setColorScheme(ColorScheme.Value.LIGHT);
+        Assert.assertEquals(ColorScheme.Value.LIGHT, page.getColorScheme());
+
+        page.setColorScheme(null);
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
+
+        page.setColorScheme(ColorScheme.Value.NORMAL);
+        Assert.assertEquals(ColorScheme.Value.NORMAL, page.getColorScheme());
     }
 }

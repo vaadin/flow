@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.notheme;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 public class NoThemeComponentIT extends ChromeBrowserTest {
 

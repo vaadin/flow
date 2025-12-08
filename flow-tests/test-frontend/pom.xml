@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow-tests</artifactId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>test-frontend</artifactId>
-    <name>Frontend build (npm + Webpack + Vite)</name>
-    <packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>test-frontend</artifactId>
+  <packaging>pom</packaging>
+  <name>Frontend build (npm + Webpack + Vite)</name>
 
-    <modules>
-        <!-- shared assets -->
-        <module>addon-with-templates</module>
-        <module>vite-test-assets</module>
-    </modules>
+  <modules>
+    <!-- shared assets -->
+    <module>addon-with-templates</module>
+    <module>vite-test-assets</module>
+  </modules>
 
-    <dependencies>
-    </dependencies>
+  <dependencies/>
 
-    <profiles>
-        <profile>
-            <id>run-tests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <!-- test modules -->
-                <module>vite-basics</module>
-                <module>vite-production</module>
-                <module>vite-production-custom-frontend</module>
-                <module>vite-context-path</module>
-                <module>vite-context-path/pom-production.xml</module>
-                <module>vite-pwa</module>
-                <module>vite-pwa-custom-offline-path</module>
-                <module>vite-pwa-custom-offline-path/pom-production.xml</module>
-                <module>vite-pwa-custom-sw</module>
-                <module>vite-pwa-disabled-offline</module>
-                <module>vite-pwa-disabled-offline/pom-production.xml</module>
-                <module>vite-pwa-production</module>
-                <module>vite-embedded</module>
-                <module>vite-embedded/pom-production.xml</module>
-                <!-- npm and pnpm dev mode and prod mode -->
-                <!-- run production build before dev build as dev build has npm i in thread -->
-                <module>vite-embedded-webcomponent-resync</module>
-                <module>vite-embedded-webcomponent-resync-ws</module>
-                <module>vite-embedded-webcomponent-resync-wsxhr</module>
-                <module>vite-embedded-webcomponent-resync-longpolling</module>
-                <module>test-npm</module>
-                <module>test-npm/pom-production.xml</module>
-                <module>test-pnpm</module>
-                <module>test-pnpm/pom-production.xml</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>bun</id>
-            <modules>
-                <module>test-bun</module>
-                <module>test-bun/pom-production.xml</module>
-            </modules>
-        </profile>
-    </profiles>
+  <profiles>
+    <profile>
+      <id>run-tests</id>
+      <activation>
+        <property>
+          <name>!skipTests</name>
+        </property>
+      </activation>
+      <modules>
+        <!-- test modules -->
+        <module>vite-basics</module>
+        <module>vite-production</module>
+        <module>vite-production-custom-frontend</module>
+        <module>vite-context-path</module>
+        <module>vite-context-path/pom-production.xml</module>
+        <module>vite-pwa</module>
+        <module>vite-pwa-custom-offline-path</module>
+        <module>vite-pwa-custom-offline-path/pom-production.xml</module>
+        <module>vite-pwa-custom-sw</module>
+        <module>vite-pwa-disabled-offline</module>
+        <module>vite-pwa-disabled-offline/pom-production.xml</module>
+        <module>vite-pwa-production</module>
+        <module>vite-embedded</module>
+        <module>vite-embedded/pom-production.xml</module>
+        <module>vite-embedded-no-theme</module>
+        <module>vite-embedded-no-theme/pom-production.xml</module>
+        <!-- npm and pnpm dev mode and prod mode -->
+        <!-- run production build before dev build as dev build has npm i in thread -->
+        <module>vite-embedded-webcomponent-resync</module>
+        <module>vite-embedded-webcomponent-resync-ws</module>
+        <module>vite-embedded-webcomponent-resync-wsxhr</module>
+        <module>vite-embedded-webcomponent-resync-longpolling</module>
+        <module>test-npm</module>
+        <module>test-npm/pom-production.xml</module>
+        <module>test-pnpm</module>
+        <module>test-pnpm/pom-production.xml</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>bun</id>
+      <modules>
+        <module>test-bun</module>
+        <module>test-bun/pom-production.xml</module>
+      </modules>
+    </profile>
+  </profiles>
 
 </project>

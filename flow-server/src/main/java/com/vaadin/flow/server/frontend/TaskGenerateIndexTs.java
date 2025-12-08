@@ -18,11 +18,10 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.util.Arrays;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
-
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
@@ -31,7 +30,6 @@ import com.vaadin.flow.server.Version;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>index.ts</code> if it is missing in frontend folder.
@@ -103,7 +101,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         }
         try (InputStream indexTsStream = getClass()
                 .getResourceAsStream(indexFile)) {
-            indexTemplate = IOUtils.toString(indexTsStream, UTF_8);
+            indexTemplate = StringUtil.toUTF8String(indexTsStream);
             if (options.isReactEnabled()) {
                 File routesTsx = new File(frontendDirectory,
                         FrontendUtils.ROUTES_TSX);
@@ -121,7 +119,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
     }
 
     private void cleanup() {
-        FileUtils.deleteQuietly(getGeneratedFile());
+        FileIOUtils.deleteFileQuietly(getGeneratedFile());
     }
 
     /**
@@ -143,7 +141,7 @@ public class TaskGenerateIndexTs extends AbstractTaskClientGenerator {
         String indexContent = null;
         String indexTemplate = null;
         try {
-            indexContent = IOUtils.toString(indexFileExist.toURI(), UTF_8);
+            indexContent = Files.readString(indexFileExist.toPath());
             indexTemplate = getFileContent();
         } catch (IOException e) {
             log().warn("Failed to read file content", e);

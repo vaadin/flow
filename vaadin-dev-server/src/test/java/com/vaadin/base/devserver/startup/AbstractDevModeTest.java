@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.base.devserver.startup;
 
 import jakarta.servlet.ServletContext;
@@ -50,6 +65,9 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        // Reset static node installation cache to ensure test isolation
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+
         Field firstMapping = VaadinServlet.class
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
@@ -70,11 +88,12 @@ public abstract class AbstractDevModeTest {
 
         vaadinContext = new VaadinServletContext(servletContext);
 
-        mockApplicationConfiguration(appConfig, enablePnpm);
-
         lookup = Mockito.mock(Lookup.class);
+        vaadinContext.setAttribute(Lookup.class, lookup);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+
+        mockApplicationConfiguration(appConfig, enablePnpm);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
@@ -121,6 +140,7 @@ public abstract class AbstractDevModeTest {
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
         Mockito.when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
@@ -134,7 +154,6 @@ public abstract class AbstractDevModeTest {
         Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
-        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
     }
 
     protected DevModeHandler getDevModeHandler() {

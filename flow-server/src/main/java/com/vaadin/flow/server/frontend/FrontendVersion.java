@@ -25,7 +25,6 @@ import java.util.regex.Pattern;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class FrontendVersion
         implements Serializable, Comparable<FrontendVersion> {

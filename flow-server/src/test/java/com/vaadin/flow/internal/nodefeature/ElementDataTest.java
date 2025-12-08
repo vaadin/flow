@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.util.ArrayList;
@@ -23,13 +22,12 @@ import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
     private final ElementData elementData = new StateNode(
@@ -50,7 +48,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
         Assert.assertNull("Tag should initially be null",
                 elementData.getPayload());
 
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
 
         Assert.assertEquals(object, elementData.getPayload());
@@ -74,7 +72,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
 
     @Test
     public void collectChanges_setPayloadOnly_onlyOneChanges() {
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
         List<NodeChange> changes = new ArrayList<>();
         elementData.collectChanges(changes::add);
@@ -90,7 +88,7 @@ public class ElementDataTest extends AbstractNodeFeatureTest<ElementData> {
 
     @Test
     public void collectChanges_setBothTagAndPayload_twoChanges() {
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         elementData.setPayload(object);
         elementData.setTag("foo");
 

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
@@ -6,6 +21,7 @@ import org.openqa.selenium.By;
 
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 
+import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.AFTERNAVCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ATTACHCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.BEFOREENTERCOUNTER_ID;
@@ -13,10 +29,8 @@ import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.BEFORELEAVECOUNT
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.DETACHCOUNTER_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.NAVIGATE_ID;
-import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.OPEN_MODALS_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_ID;
 import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteView.REFRESH_LAYOUTS_ID;
-import static com.vaadin.flow.uitest.ui.RefreshCurrentRouteLayout.ROUTER_LAYOUT_ID;
 
 public class RefreshCurrentRouteIT extends AbstractStreamResourceIT {
 

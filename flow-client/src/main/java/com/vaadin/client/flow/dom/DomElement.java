@@ -15,13 +15,14 @@
  */
 package com.vaadin.client.flow.dom;
 
+import jsinterop.annotations.JsProperty;
+import jsinterop.annotations.JsType;
+
 import com.vaadin.client.flow.collection.JsArray;
 
 import elemental.dom.Element;
 import elemental.dom.Node;
 import elemental.html.HTMLCollection;
-import jsinterop.annotations.JsProperty;
-import jsinterop.annotations.JsType;
 
 /**
  * Element that has all methods from

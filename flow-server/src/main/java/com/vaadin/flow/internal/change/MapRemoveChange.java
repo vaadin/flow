@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.change;
+
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.nodefeature.NodeMap;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * Change describing a value removed from a map.
@@ -58,7 +57,7 @@ public class MapRemoveChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         // Set the type before calling super to make the keys appear in a more
         // logical order
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_REMOVE);

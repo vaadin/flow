@@ -23,19 +23,17 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -44,11 +42,9 @@ import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
 import com.vaadin.flow.testcategory.SlowTests;
-import com.vaadin.flow.testutil.FrontendStubs;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 
 @NotThreadSafe
 @Category(SlowTests.class)
@@ -60,7 +56,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
     @Override
     @Before
-    public void setUp() throws IOException {
+    public void setUp() throws IOException, NoSuchFieldException {
         super.setUp();
 
         // create an empty package.json so as pnpm can be run without
@@ -115,21 +111,6 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         Assert.assertTrue(fakeFile.exists());
     }
 
-    @Override
-    public void runNpmInstall_vaadinHomeNodeIsAFolder_throws()
-            throws IOException, ExecutionFailedException {
-        exception.expectMessage(
-                "it's either not a file or not a 'node' executable.");
-        options.withHomeNodeExecRequired(true).withEnablePnpm(true)
-                .withNodeVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                .withNodeDownloadRoot(
-                        URI.create(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT));
-        options.withPostinstallPackages(POSTINSTALL_PACKAGES);
-
-        assertRunNpmInstallThrows_vaadinHomeNodeIsAFolder(
-                new TaskRunNpmInstall(getNodeUpdater(), options));
-    }
-
     @Test
     public void generateVersionsJson_userHasNoCustomVersions_platformIsMergedWithDevDeps()
             throws IOException {
@@ -156,7 +137,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         // Platform version takes precedence over dev deps
         Assert.assertEquals(PINNED_VERSION,
-                object.get("@vaadin/vaadin-overlay").textValue());
+                object.get("@vaadin/vaadin-overlay").asString());
     }
 
     @Test
@@ -229,10 +210,10 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
 
         Assert.assertEquals("Login version is the same for user and platform.",
                 loginVersion,
-                generatedVersions.get("@vaadin/vaadin-login").textValue());
+                generatedVersions.get("@vaadin/vaadin-login").asString());
         Assert.assertEquals("Notification version should use platform",
                 versionsNotificationVersion, generatedVersions
-                        .get("@vaadin/vaadin-notification").textValue());
+                        .get("@vaadin/vaadin-notification").asString());
     }
 
     @Test
@@ -331,35 +312,7 @@ public class TaskRunPnpmInstallTest extends TaskRunNpmInstallTest {
         JsonNode overlayPackage = JacksonUtils.readTree(FileUtils
                 .readFileToString(overlayPackageJson, StandardCharsets.UTF_8));
         Assert.assertEquals(customOverlayVersion,
-                overlayPackage.get("version").textValue());
-    }
-
-    @Test
-    public void runPnpmInstall_checkFolderIsAcceptableByNpm_throwsOnWindows()
-            throws ExecutionFailedException, IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-
-        // given
-        File npmCacheFolder = temporaryFolder.newFolder("Foo Bar");
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0")
-                .withCacheDir(npmCacheFolder.getAbsolutePath()).build();
-        createStubNode(nodeStub, npmStub, npmFolder.getAbsolutePath());
-
-        exception.expect(ExecutionFailedException.class);
-        exception.expectMessage(CoreMatchers.containsString(
-                "The path to npm cache contains whitespaces, and the currently installed npm version doesn't accept this."));
-
-        TaskRunNpmInstall task = createTask();
-        getNodeUpdater().modified = true;
-
-        // when
-        task.execute();
-
-        // then exception is thrown
+                overlayPackage.get("version").asString());
     }
 
     @Test

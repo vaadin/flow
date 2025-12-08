@@ -90,7 +90,7 @@ public interface WebStorage extends Serializable {
      *            the value
      */
     public static void setItem(Storage storage, String key, String value) {
-        setItem(UI.getCurrent(), storage, key, value);
+        setItem(UI.getCurrentOrThrow(), storage, key, value);
     }
 
     /**
@@ -132,7 +132,7 @@ public interface WebStorage extends Serializable {
      *            the key to be deleted
      */
     public static void removeItem(Storage storage, String key) {
-        removeItem(UI.getCurrent(), storage, key);
+        removeItem(UI.getCurrentOrThrow(), storage, key);
     }
 
     /**
@@ -165,7 +165,7 @@ public interface WebStorage extends Serializable {
      *            the storage
      */
     public static void clear(Storage storage) {
-        clear(UI.getCurrent(), storage);
+        clear(UI.getCurrentOrThrow(), storage);
     }
 
     /**
@@ -207,7 +207,7 @@ public interface WebStorage extends Serializable {
      *            available.
      */
     public static void getItem(Storage storage, String key, Callback callback) {
-        getItem(UI.getCurrent(), storage, key, callback);
+        getItem(UI.getCurrentOrThrow(), storage, key, callback);
     }
 
     /**
@@ -274,7 +274,7 @@ public interface WebStorage extends Serializable {
      */
     public static CompletableFuture<String> getItem(Storage storage,
             String key) {
-        return getItem(UI.getCurrent(), storage, key);
+        return getItem(UI.getCurrentOrThrow(), storage, key);
     }
 
     /**

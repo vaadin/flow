@@ -15,11 +15,6 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -29,9 +24,16 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ComputedSignalTest extends SignalTestBase {
 
@@ -94,18 +96,73 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
-    void callback_updateSignal_throws() {
+    void map_mapComputedSignal_valueIsMapped() {
         ValueSignal<String> source = new ValueSignal<>("value");
 
+        Signal<Integer> computed = Signal
+                .computed(() -> source.value().length());
+
+        Signal<Integer> doubled = computed.map(l -> l * 2);
+
+        assertEquals(10, doubled.value());
+    }
+
+    @Test
+    void map_mapMappedSignal_valueIsMapped() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+
+        Signal<Integer> computed = source.map(String::length);
+
+        Signal<Integer> doubled = computed.map(l -> l * 2);
+
+        assertEquals(10, doubled.value());
+    }
+
+    @Test
+    void map_countCallbackInvocations_invocationsAreNotCached() {
+        ValueSignal<String> source = new ValueSignal<>("value");
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<Integer> computed = source.map(value -> {
+            count.incrementAndGet();
+            return value.length();
+        });
+        assertEquals(0, count.get());
+
+        computed.value();
+        assertEquals(1, count.get());
+
+        computed.value();
+        assertEquals(2, count.get());
+    }
+
+    @Test
+    void not_booleanInputs_negatedOutputs() {
+        ValueSignal<Boolean> signal = new ValueSignal<>(Boolean.TRUE);
+        Signal<Boolean> negated = Signal.not(signal);
+
+        assertFalse(negated.value());
+
+        signal.value(false);
+        assertTrue(negated.value());
+
+        signal.value(null);
+        assertNull(negated.value());
+    }
+
+    @Test
+    void callback_updateOtherSignal_signalUpdated() {
+        ValueSignal<String> other = new ValueSignal<>("value");
+
         Signal<String> signal = Signal.computed((() -> {
-            assertThrows(IllegalStateException.class, () -> {
-                source.value("update");
-            });
+            other.value("update");
             return null;
         }));
 
         // Trigger running the callback
         signal.value();
+
+        assertEquals("update", other.value());
     }
 
     @Test
@@ -268,7 +325,8 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void unsuppotedOperations_runOperations_throws() {
-        Signal<Object> signal = Signal.computed(() -> null);
+        AbstractSignal<Object> signal = (AbstractSignal<Object>) Signal
+                .computed(() -> null);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peek();
@@ -277,6 +335,58 @@ public class ComputedSignalTest extends SignalTestBase {
         assertThrows(UnsupportedOperationException.class, () -> {
             signal.peekConfirmed();
         });
+    }
+
+    @Test
+    void lambda_computesValue_computedNotCached() {
+        ValueSignal<Integer> signal = new ValueSignal<>(1);
+
+        AtomicInteger count = new AtomicInteger();
+
+        Signal<Integer> doubled = () -> {
+            count.incrementAndGet();
+            return signal.value() * 2;
+        };
+
+        assertEquals(2, doubled.value());
+        assertEquals(1, count.intValue());
+
+        assertEquals(2, doubled.value());
+        assertEquals(2, count.intValue());
+
+        signal.value(3);
+        assertEquals(2, count.intValue());
+
+        assertEquals(6, doubled.value());
+        assertEquals(3, count.intValue());
+    }
+
+    @Test
+    void exceptionHandling_callbackThrows_rethrowWhenReading() {
+        ValueSignal<Boolean> shouldThrow = new ValueSignal<>(false);
+
+        AtomicInteger count = new AtomicInteger();
+        Signal<Boolean> computed = Signal.computed(() -> {
+            count.incrementAndGet();
+            if (shouldThrow.value()) {
+                throw new RuntimeException("Expected exception");
+            } else {
+                return shouldThrow.value();
+            }
+        });
+        assertFalse(computed.value());
+        assertEquals(1, count.get());
+
+        shouldThrow.value(true);
+        assertThrows(RuntimeException.class, () -> computed.value());
+        assertEquals(2, count.get());
+
+        assertThrows(RuntimeException.class, () -> computed.value());
+        assertEquals(2, count.get(), "Exception should be cached");
+
+        shouldThrow.value(false);
+        assertFalse(computed.value());
+        assertEquals(3, count.get());
     }
 
     private static boolean waitForGarbageCollection(WeakReference<?> ref) {

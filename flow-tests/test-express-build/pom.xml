@@ -1,54 +1,52 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>flow-tests</artifactId>
-        <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-tests</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
 
-    <artifactId>test-express-build</artifactId>
-    <name>Flow Express Build Tests</name>
-    <packaging>pom</packaging>
+  <artifactId>test-express-build</artifactId>
+  <packaging>pom</packaging>
+  <name>Flow Express Build Tests</name>
 
-    <properties>
-        <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
-    </properties>
+  <modules>
+    <module>test-dev-bundle</module>
+    <module>test-prod-bundle</module>
+    <module>test-flow-maven-plugin</module>
+    <module>frontend-add-on</module>
+    <module>java-add-on</module>
+    <module>test-reusable-theme-express-build</module>
+    <module>test-reusable-theme-no-assets</module>
+  </modules>
 
-    <modules>
-        <module>test-dev-bundle</module>
-        <module>test-prod-bundle</module>
-        <module>test-flow-maven-plugin</module>
-        <module>frontend-add-on</module>
-        <module>java-add-on</module>
-        <module>test-reusable-theme-express-build</module>
-        <module>test-reusable-theme-no-assets</module>
-    </modules>
+  <properties>
+    <vaadin.frontend.hotdeploy>false</vaadin.frontend.hotdeploy>
+  </properties>
 
-    <profiles>
-        <profile>
-            <id>run-tests</id>
-            <activation>
-                <property>
-                    <name>!skipTests</name>
-                </property>
-            </activation>
-            <modules>
-                <module>test-dev-bundle-no-plugin</module>
-                <module>test-prod-bundle-no-plugin</module>
-                <module>test-theme-dev-bundle</module>
-                <module>test-dev-bundle-frontend-add-on</module>
-                <module>test-dev-bundle-java-add-on</module>
-                <module>test-reusing-theme-express-build</module>
-                <module>test-parent-theme-express-build</module>
-                <module>test-parent-theme-prod</module>
-                <module>test-parent-theme-in-frontend</module>
-                <module>test-parent-theme-in-frontend-prod</module>
-                <module>test-embedding-express-build</module>
-                <module>test-theme-legacy-components-css-prod</module>
-            </modules>
-        </profile>
-    </profiles>
+  <profiles>
+    <profile>
+      <id>run-tests</id>
+      <activation>
+        <property>
+          <name>!skipTests</name>
+        </property>
+      </activation>
+      <modules>
+        <module>test-dev-bundle-no-plugin</module>
+        <module>test-prod-bundle-no-plugin</module>
+        <module>test-theme-dev-bundle</module>
+        <module>test-dev-bundle-frontend-add-on</module>
+        <module>test-dev-bundle-java-add-on</module>
+        <module>test-reusing-theme-express-build</module>
+        <module>test-parent-theme-express-build</module>
+        <module>test-parent-theme-prod</module>
+        <module>test-parent-theme-in-frontend</module>
+        <module>test-parent-theme-in-frontend-prod</module>
+        <module>test-embedding-express-build</module>
+        <module>test-theme-legacy-components-css-prod</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

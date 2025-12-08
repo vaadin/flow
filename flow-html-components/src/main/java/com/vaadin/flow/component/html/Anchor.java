@@ -27,10 +27,10 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.streams.AbstractDownloadHandler;
-import com.vaadin.flow.server.streams.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -119,10 +119,10 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given text content and a callback
      * that handles data download from the server to the client when clicking an
      * anchor.
-     * <p>
+     *
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
-     * <p>
+     *
      * For custom handlers the mode {@link AttachmentType#DOWNLOAD} will be set.
      *
      * @see #setHref(DownloadHandler)
@@ -145,10 +145,10 @@ public class Anchor extends HtmlContainer
      * Creates an anchor component with the given text content and a callback
      * that handles data download from the server to the client when clicking an
      * anchor.
-     * <p>
+     *
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
-     * <p>
+     *
      * LinkMode determines if the attribute `download` should be set or not.
      * {@link AttachmentType#DOWNLOAD} will set the download attribute, where as
      * {@link AttachmentType#INLINE} will remove it.
@@ -191,10 +191,10 @@ public class Anchor extends HtmlContainer
 
     /**
      * Sets the URL that this anchor links to.
-     * <p>
+     *
      * A disabled Anchor removes the attribute from the HTML element, but it is
      * stored (and reused when enabled again) in the server-side component.
-     * <p>
+     *
      * Use the method {@link #removeHref()} to remove the <b>href</b> attribute
      * instead of setting it to an empty string.
      *
@@ -242,7 +242,7 @@ public class Anchor extends HtmlContainer
      * Sets the URL that this anchor links to and that is bound to a given
      * {@link DownloadHandler} callback on the server for handling data download
      * from the server to the client when clicking an anchor.
-     * <p>
+     *
      * Sets the 'download' attribute for link when given a non-inline handler
      * implementing AbstractDownloadHandler.
      *
@@ -270,7 +270,7 @@ public class Anchor extends HtmlContainer
      * Sets the URL that this anchor links to and that is bound to a given
      * {@link DownloadHandler} callback on the server for handling data download
      * from the server to the client when clicking an anchor.
-     * <p>
+     *
      * LinkMode determines if the attribute `download` should be set or not.
      * {@link AttachmentType#DOWNLOAD} will set the download attribute, where as
      * {@link AttachmentType#INLINE} will remove it.
@@ -294,10 +294,10 @@ public class Anchor extends HtmlContainer
 
     /**
      * Set the download state of the anchor.
-     * <p>
+     *
      * {@code true} will add the download attribute making the anchor target to
      * be downloaded on click.
-     * <p>
+     *
      * {@code false} will remove the download attribute.
      *
      * @param download
@@ -336,6 +336,8 @@ public class Anchor extends HtmlContainer
     }
 
     /**
+     * Checks if this anchor should be ignored by the Vaadin router.
+     *
      * @return true if this anchor should be ignored by the Vaadin router and
      *         behave normally.
      */

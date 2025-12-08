@@ -36,10 +36,8 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.maven.artifact.Artifact;
-import org.apache.maven.artifact.DependencyResolutionRequiredException;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecution;
 import org.apache.maven.plugin.MojoExecutionException;
@@ -71,6 +69,7 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.utils.FlowFileUtils;
 
+import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -122,7 +121,7 @@ public class BuildDevBundleMojo extends AbstractMojo
      * mirror. Defaults to null which will cause the downloader to use
      * {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      * <p>
-     * </p>
+     *
      * Example: <code>"https://nodejs.org/dist/"</code>.
      */
     @Parameter(property = InitParameters.NODE_DOWNLOAD_ROOT)
@@ -135,14 +134,6 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
-
-    /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
-     */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
 
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
@@ -199,6 +190,14 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
@@ -415,11 +414,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
-    }
-
-    @Override
     public String nodeVersion() {
         return nodeVersion;
     }
@@ -540,6 +534,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     private static URLClassLoader createIsolatedClassLoader(

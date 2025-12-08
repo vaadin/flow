@@ -1,11 +1,26 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -17,20 +32,15 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeType;
 
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -174,16 +184,23 @@ public class ThemeValidationUtil {
 
             List<String> themeComponentsCssFiles = new ArrayList<>();
             for (Path dir : themeComponentsDirs) {
-                FileUtils.listFiles(dir.toFile(), new String[] { "css" }, true)
-                        .stream()
-                        .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
-                                hashesWithNoComponentCssMatches,
-                                frontendDirectory, themeFile))
-                        .map(f -> frontendDirectory.toPath()
-                                .relativize(f.toPath()).toString()
-                                .replaceAll("\\\\", "/"))
-                        .collect(Collectors
-                                .toCollection(() -> themeComponentsCssFiles));
+                try {
+                    FileIOUtils
+                            .listFiles(
+                                    dir.toFile(), new String[] { "css" }, true)
+                            .stream()
+                            .filter(themeFile -> isFrontendResourceChangedOrMissingInBundle(
+                                    hashesWithNoComponentCssMatches,
+                                    frontendDirectory, themeFile))
+                            .map(f -> frontendDirectory.toPath()
+                                    .relativize(f.toPath()).toString()
+                                    .replaceAll("\\\\", "/"))
+                            .collect(Collectors.toCollection(
+                                    () -> themeComponentsCssFiles));
+                } catch (IOException e) {
+                    throw new IllegalStateException(
+                            "Could not list theme CSS files in " + dir, e);
+                }
             }
             if (!themeComponentsCssFiles.isEmpty()) {
                 BundleValidationUtil.logChangedFiles(themeComponentsCssFiles,
@@ -274,7 +291,7 @@ public class ThemeValidationUtil {
             for (String themeJson : themeJsons) {
                 byte[] byteContent = jarContentsManager
                         .getFileContents(jarFileToLookup, themeJson);
-                String content = IOUtils.toString(byteContent, "UTF-8");
+                String content = StringUtil.toUTF8String(byteContent);
                 content = content.replaceAll("\\r\\n", "\n");
 
                 Matcher matcher = THEME_PATH_PATTERN.matcher(themeJson);
@@ -382,7 +399,7 @@ public class ThemeValidationUtil {
             final String contentHash;
             try {
                 contentHash = BundleValidationUtil.calculateHash(
-                        FileUtils.readFileToString(frontendResource,
+                        Files.readString(frontendResource.toPath(),
                                 StandardCharsets.UTF_8));
             } catch (IOException e) {
                 throw new UncheckedIOException(e);

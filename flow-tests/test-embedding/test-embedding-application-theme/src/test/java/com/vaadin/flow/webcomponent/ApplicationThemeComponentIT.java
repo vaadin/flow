@@ -18,16 +18,16 @@ package com.vaadin.flow.webcomponent;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.vaadin.flow.component.html.Div;
+import org.junit.Assert;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
+
 import com.vaadin.flow.component.html.testbench.DivElement;
 import com.vaadin.flow.component.html.testbench.H1Element;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import org.junit.Assert;
-import org.junit.Test;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 
 import static com.vaadin.flow.webcomponent.ThemedComponent.EMBEDDED_ID;
 import static com.vaadin.flow.webcomponent.ThemedComponent.HAND_ID;
@@ -232,8 +232,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
                 2l, getCommandExecutor().executeScript(
                         "return document.head.querySelectorAll('link[rel=stylesheet][href^=\"https://fonts.googleapis.com\"]').length"));
         Assert.assertEquals(
-                "Project contains 3 css injections to document and all should be hashed",
-                3l, getCommandExecutor().executeScript(
+                "Project contains 4 css injections to document and all should be hashed",
+                4l, getCommandExecutor().executeScript(
                         "return window.Vaadin.theme.injectedGlobalCss.length"));
     }
 
@@ -268,8 +268,8 @@ public class ApplicationThemeComponentIT extends ChromeBrowserTest {
         final DivElement element = $(DivElement.class).withId("cssimport")
                 .waitForFirst();
         Assert.assertEquals(
-                "CssImport styles (colors) should have been applied to elements in embedding page",
-                "rgba(255, 215, 0, 1)", element.getCssValue("color"));
+                "CssImport styles (colors) should not have been applied to elements outside embedded component",
+                "rgba(0, 0, 0, 1)", element.getCssValue("color"));
 
     }
 

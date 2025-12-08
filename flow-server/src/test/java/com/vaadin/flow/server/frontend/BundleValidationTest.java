@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -10,9 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -26,6 +38,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -97,7 +111,7 @@ public class BundleValidationTest {
 
     private MockedStatic<BundleValidationUtil> bundleUtils;
 
-    private MockedStatic<IOUtils> ioUtils;
+    private MockedStatic<FileIOUtils> ioUtils;
 
     private String bundleLocation;
 
@@ -119,7 +133,8 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
-        ioUtils = Mockito.mockStatic(IOUtils.class, Mockito.CALLS_REAL_METHODS);
+        ioUtils = Mockito.mockStatic(FileIOUtils.class,
+                Mockito.CALLS_REAL_METHODS);
     }
 
     @After
@@ -896,7 +911,7 @@ public class BundleValidationTest {
         ArrayNode bundleImports = (ArrayNode) stats.get(BUNDLE_IMPORTS);
         bundleImports.add("@polymer/paper-checkbox/paper-checkbox.js");
         bundleImports.add("@polymer/paper-input/paper-input.js");
-        bundleImports.add("@vaadin/grid/theme/lumo/vaadin-grid.js");
+        bundleImports.add("@vaadin/grid/src/vaadin-grid.js");
         bundleImports
                 .add("Frontend/generated/jar-resources/dndConnector-es6.js");
 
@@ -1473,7 +1488,8 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.css",
+                            "@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1495,7 +1511,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1518,13 +1534,11 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub(
-                """
-                        {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
-                        }
-                        """,
-                "my-theme");
+        createProjectThemeJsonStub("""
+                {
+                  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
+                }
+                """, "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1538,7 +1552,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -2359,7 +2373,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2399,7 +2413,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2471,7 +2485,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2501,13 +2515,157 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
                 depScanner, mode);
         Assert.assertTrue(
                 "Prod bundle build is expected when react is disabled and using otherwise default prod bundle.",
+                needsBuild);
+    }
+
+    @Test
+    public void commercialBannerBuild_commercialBannerComponentMissing_rebuildRequired() {
+        Assume.assumeTrue(mode.isProduction());
+        options.withCommercialBanner(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In commercial banner build mode, missing 'commercial-banner.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void commercialBannerBuild_commercialBannerComponentChanged_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withCommercialBanner(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        String oldCommercialBannerJS = defaultCommercialBannerJS.replace(
+                "vaadin-commercial-banner", "vaadin-commercial-banner-old");
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(oldCommercialBannerJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In commercial banner build mode, modified 'commercial-banner.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void commercialBannerBuild_commercialBannerComponentNotChanged_rebuildNotRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withCommercialBanner(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In commercial banner build mode, unmodified 'commercial-banner.js' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void nonCommercialBannerBuild_commercialBannerComponentPresent_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(mode.isProduction());
+        options.withCommercialBanner(false);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        File frontendGeneratedFolder = temporaryFolder.newFolder(
+                FrontendUtils.DEFAULT_FRONTEND_DIR, FrontendUtils.GENERATED);
+        File commercialBannerJS = new File(frontendGeneratedFolder,
+                FrontendUtils.COMMERCIAL_BANNER_JS);
+        commercialBannerJS.createNewFile();
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        FileUtils.write(commercialBannerJS, defaultCommercialBannerJS,
+                StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In non commercial banner build mode, presence of 'commercial-banner.js' should require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void developmentMode_commercialBannerComponentNotPresent_rebuildNotRequired() {
+        Assume.assumeTrue(!mode.isProduction());
+        options.withCommercialBanner(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        ObjectNode stats = getBasicStats();
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertFalse(
+                "In development mode, absence of 'commercial-banner.js' should not require bundling",
+                needsBuild);
+    }
+
+    @Test
+    public void developmentMode_commercialBannerComponentPresent_rebuildRequired()
+            throws IOException {
+        Assume.assumeTrue(!mode.isProduction());
+        options.withCommercialBanner(true);
+
+        final FrontendDependenciesScanner depScanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+
+        String defaultCommercialBannerJS = new String(getClass()
+                .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)
+                .readAllBytes(), StandardCharsets.UTF_8);
+        ObjectNode stats = getBasicStats();
+        ((ObjectNode) stats.get(FRONTEND_HASHES)).put(
+                FrontendUtils.GENERATED + FrontendUtils.COMMERCIAL_BANNER_JS,
+                BundleValidationUtil.calculateHash(defaultCommercialBannerJS));
+        setupFrontendUtilsMock(stats);
+
+        boolean needsBuild = BundleValidationUtil.needsBuild(options,
+                depScanner, mode);
+        Assert.assertTrue(
+                "In development mode, presence of 'commercial-banner.js' should require bundling",
                 needsBuild);
     }
 
