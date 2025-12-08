@@ -266,7 +266,8 @@ public class FocusableTest {
         // Check the parameters
         List<Object> params = invocations.getFirst().getInvocation()
                 .getParameters();
-        Assert.assertEquals("Should have exactly 1 parameter (the element)", 1,
-                params.size());
+        Assert.assertEquals(
+                "Should have exactly 1 parameter (the element node and wrapped parameter)",
+                2, params.size());
     }
 }
