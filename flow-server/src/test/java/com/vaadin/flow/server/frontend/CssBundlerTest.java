@@ -293,6 +293,24 @@ public class CssBundlerTest {
                 """, actualCss);
     }
 
+    @Test
+    public void ignoreCommentedRules() throws Exception {
+        File cssFile = writeCss("""
+                /*
+                @import url('a.css');
+                */
+                @import url('b.css');
+                /*@import url('c.css');*/
+                @import url('d.css');
+                """, "styles.css");
+        String output = CssBundler.inlineImportsForPublicResources(
+                cssFile.getParentFile(), cssFile, null);
+        Assert.assertFalse(output.contains("a.css"));
+        Assert.assertTrue(output.contains("b.css"));
+        Assert.assertFalse(output.contains("c.css"));
+        Assert.assertTrue(output.contains("d.css"));
+    }
+
     private boolean createThemeFile(String filename) throws IOException {
         File f = getThemeFile(filename);
         f.getParentFile().mkdirs();

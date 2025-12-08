@@ -2343,6 +2343,18 @@ public class ElementJacksonTest extends AbstractNodeTest {
     }
 
     @Test
+    public void callFunctionWithBean() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        SimpleBean bean = new SimpleBean();
+        element.callJsFunction("method", bean);
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "return $0.method($1)", element, bean);
+    }
+
+    @Test
     public void callFunctionOnProperty() {
         UI ui = new MockUI();
         Element element = ElementFactory.createDiv();
