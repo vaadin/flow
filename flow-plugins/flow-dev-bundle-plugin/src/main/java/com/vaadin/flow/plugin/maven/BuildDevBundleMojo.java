@@ -69,6 +69,7 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.utils.FlowFileUtils;
 
+import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -189,6 +190,14 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
@@ -525,6 +534,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     private static URLClassLoader createIsolatedClassLoader(

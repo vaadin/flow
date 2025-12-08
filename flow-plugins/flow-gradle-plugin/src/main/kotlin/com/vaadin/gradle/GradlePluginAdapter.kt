@@ -237,6 +237,9 @@ internal class GradlePluginAdapter private constructor(
     override fun frontendOutputDirectory(): File =
         config.frontendOutputDirectory.get()
 
+    override fun resourcesOutputDirectory(): File =
+        config.resourcesOutputDirectory.get()
+
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()
 

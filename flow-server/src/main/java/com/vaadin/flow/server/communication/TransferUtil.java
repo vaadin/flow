@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.streams.UploadCompleteEvent;
 import com.vaadin.flow.internal.streams.UploadStartEvent;
+import com.vaadin.flow.server.DefaultErrorHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -204,8 +205,15 @@ public final class TransferUtil {
                     .warn("File upload failed.", e);
             handler.responseHandled(new UploadResult(false, response, e));
         } catch (Exception e) {
-            LoggerFactory.getLogger(UploadHandler.class)
-                    .error("Exception during upload", e);
+            if (DefaultErrorHandler.SOCKET_EXCEPTIONS
+                    .contains(e.getClass().getName())) {
+                // Client aborted the upload, no need to log an error
+                LoggerFactory.getLogger(UploadHandler.class)
+                        .debug("Client aborted the upload", e);
+            } else {
+                LoggerFactory.getLogger(UploadHandler.class)
+                        .error("Exception during upload", e);
+            }
             handler.responseHandled(new UploadResult(false, response, e));
         }
     }

@@ -470,44 +470,6 @@ public class FrontendTools {
     }
 
     /**
-     * Checks whether the currently installed npm version accepts/properly
-     * processes the path to a given folder.
-     * <p>
-     * For example, the older versions of npm don't accept whitespaces in
-     * folders path.
-     *
-     * @param folder
-     *            the folder to check.
-     * @return <code>true</code>, if the current version of npm accepts the
-     *         given folder path, <code>false</code> if it causes issues.
-     */
-    boolean folderIsAcceptableByNpm(File folder) {
-        Objects.requireNonNull(folder);
-        boolean hidden = folder.isHidden()
-                || folder.getPath().contains(File.separator + ".");
-        if (!hidden && (!folder.exists() || !folder.isDirectory())) {
-            getLogger().warn(
-                    "Failed to check whether npm accepts the folder '{}', because the folder doesn't exist or not a directory",
-                    folder);
-            return true;
-        }
-
-        if (FrontendUtils.isWindows()
-                && folder.getAbsolutePath().matches(".*[\\s+].*")) {
-            try {
-                FrontendVersion foundNpmVersion = getNpmVersion();
-                // npm < 7.0.0 doesn't accept whitespaces in path
-                return foundNpmVersion
-                        .isEqualOrNewer(WHITESPACE_ACCEPTING_NPM_VERSION);
-            } catch (UnknownVersionException e) {
-                getLogger().warn("Error checking if npm accepts path '{}'",
-                        folder, e);
-            }
-        }
-        return true;
-    }
-
-    /**
      * Gives a file object representing path to the cache directory of currently
      * installed npm.
      *

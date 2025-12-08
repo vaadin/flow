@@ -30,12 +30,16 @@ import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -170,6 +174,37 @@ public class DefaultApplicationConfigurationFactoryTest {
             throws IOException {
         assertTokenAttributeIsPropagatedToDeploymentConfiguration(
                 Constants.COMMERCIAL_BANNER_TOKEN, true);
+    }
+
+    @Test
+    public void getMode_returnsLivereload_tailwindCssIsEnabled()
+            throws IOException {
+        VaadinContext context = Mockito.mock(VaadinContext.class);
+        VaadinConfig config = Mockito.mock(VaadinConfig.class);
+        ResourceProvider resourceProvider = mockResourceProvider(config,
+                context);
+        mockClassPathTokenFile(resourceProvider, "{}");
+        DefaultApplicationConfigurationFactory factory = new DefaultApplicationConfigurationFactory();
+        ApplicationConfiguration configuration = factory.create(context);
+
+        FeatureFlags featureFlags = Mockito.mock(FeatureFlags.class);
+        try (MockedStatic<FeatureFlags> flags = Mockito
+                .mockStatic(FeatureFlags.class)) {
+            flags.when(() -> FeatureFlags.get(context))
+                    .thenReturn(featureFlags);
+
+            Assert.assertEquals("Should have bundle mode by default",
+                    Mode.DEVELOPMENT_BUNDLE, configuration.getMode());
+
+            Mockito.when(featureFlags
+                    .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS))
+                    .thenReturn(true);
+
+            Assert.assertEquals(
+                    "Should have livereload mode when TailwindCSS is enabled",
+                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD,
+                    configuration.getMode());
+        }
     }
 
     private void assertTokenAttributeIsPropagatedToDeploymentConfiguration(

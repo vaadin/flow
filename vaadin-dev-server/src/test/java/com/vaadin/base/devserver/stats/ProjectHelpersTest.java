@@ -16,12 +16,10 @@
 package com.vaadin.base.devserver.stats;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -88,7 +86,7 @@ public class ProjectHelpersTest {
         // Check file
         File userFile = new File(System.getProperty("user.home"),
                 ".vaadin/userKey");
-        String fromFile = IOUtils.toString(new FileInputStream(userFile),
+        String fromFile = Files.readString(userFile.toPath(),
                 StandardCharsets.UTF_8);
         Assert.assertEquals("{\"key\":\"" + userKey + "\"}", fromFile);
 
