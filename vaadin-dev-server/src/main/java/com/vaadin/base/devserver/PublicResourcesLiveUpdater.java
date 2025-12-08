@@ -158,7 +158,8 @@ public class PublicResourcesLiveUpdater implements Closeable {
     }
 
     private boolean isExternalUrl(String url) {
-        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
+        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
             return false;
         }
         try {

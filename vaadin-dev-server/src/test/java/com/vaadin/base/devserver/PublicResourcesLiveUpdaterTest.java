@@ -336,6 +336,7 @@ public class PublicResourcesLiveUpdaterTest {
                     "/lumo/utility.css", "lumo/utility.css",
                     "/lumo/presets/compact.css", "lumo/presets/compact.css",
                     "/aura/aura.css", "aura/aura.css", "/css/app.css",
+                    "context://css/app.css", "base://css/app.css",
                     "http://localhost:8080/hello"));
             ActiveStyleSheetTracker tracker = Mockito
                     .mock(ActiveStyleSheetTracker.class);
@@ -358,9 +359,8 @@ public class PublicResourcesLiveUpdaterTest {
                     .thenReturn(bundler);
 
             // Start the updater watching the temp root
-            PublicResourcesLiveUpdater updater = new PublicResourcesLiveUpdater(
-                    List.of(root.getAbsolutePath()), ctx);
-            try {
+            try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                    List.of(root.getAbsolutePath()), ctx)) {
                 // Trigger a CSS change under the watched root
                 File changed = new File(root, "trigger.css");
                 Files.writeString(changed.toPath(), "body{}\n");
@@ -370,6 +370,10 @@ public class PublicResourcesLiveUpdaterTest {
                 Awaitility.await().untilAsserted(() -> {
                     Mockito.verify(bundler, Mockito.times(1))
                             .bundle(eq("/css/app.css"), anyString());
+                    Mockito.verify(bundler, Mockito.times(1))
+                            .bundle(eq("context://css/app.css"), anyString());
+                    Mockito.verify(bundler, Mockito.times(1))
+                            .bundle(eq("base://css/app.css"), anyString());
                 });
 
                 // Verify bundler.bundle was NEVER called for Lumo URLs
@@ -387,8 +391,6 @@ public class PublicResourcesLiveUpdaterTest {
                         .bundle(eq("aura/aura.css"), anyString());
                 Mockito.verify(bundler, Mockito.never())
                         .bundle(eq("http://localhost:8080/hello"), anyString());
-            } finally {
-                updater.close();
             }
         }
     }
