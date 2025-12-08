@@ -1286,16 +1286,16 @@ public class Element extends Node<Element> {
                     "setText is not allowed while a binding for text exists.");
         }
 
-        if (textContent == null) {
-            // Browsers work this way
-            textContent = "";
-        }
         setTextContent(textContent);
 
         return this;
     }
 
     private void setTextContent(String textContent) {
+        if (textContent == null) {
+            // Browsers work this way
+            textContent = "";
+        }
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
