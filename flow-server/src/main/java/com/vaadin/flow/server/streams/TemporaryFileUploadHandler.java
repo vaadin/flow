@@ -13,12 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
-
-import java.io.File;
-
-import com.vaadin.flow.function.SerializableBiConsumer;
 
 /**
  * Upload handler that stores the data into a temporary file. Stored temporary

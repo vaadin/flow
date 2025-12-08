@@ -15,23 +15,24 @@
  */
 package com.vaadin.signals;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.concurrent.ExecutionException;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.StringNode;
+
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.Result;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 public class TestUtil {
     public static SignalCommand writeRootValueCommand(String value) {
         return new SignalCommand.SetCommand(Id.random(), Id.ZERO,
-                new TextNode(value));
+                new StringNode(value));
     }
 
     public static SignalCommand writeRootValueCommand() {
@@ -84,7 +85,7 @@ public class TestUtil {
     /*
      * Helper to run package-private tree getter from tests in sub packages.
      */
-    public static SignalTree tree(Signal<?> signal) {
+    public static SignalTree tree(AbstractSignal<?> signal) {
         return signal.tree();
     }
 }

@@ -20,7 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,6 +28,9 @@ import com.vaadin.flow.component.HasValue;
 import com.vaadin.flow.data.binder.Binder.Binding;
 import com.vaadin.flow.data.binder.Binder.BindingBuilder;
 import com.vaadin.flow.data.binder.BindingValidationStatus.Status;
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
+import com.vaadin.flow.data.binder.testcomponents.TestTextField;
+import com.vaadin.flow.data.converter.StringToIntegerConverter;
 import com.vaadin.flow.tests.data.bean.Person;
 
 public class BinderValidationStatusTest
@@ -44,6 +46,7 @@ public class BinderValidationStatusTest
             @Override
             protected void handleError(HasValue<?, ?> field,
                     ValidationResult result) {
+                super.handleError(field, result);
                 componentErrors.put(field, result.getErrorMessage());
             }
 
@@ -127,7 +130,7 @@ public class BinderValidationStatusTest
     }
 
     @Test
-    public void bindingWithStatusLabel_defaultStatusHandlerIsReplaced() {
+    public void bindingWithStatusLabel_fieldInvalidStateIsSet() {
         TestLabel label = new TestLabel();
 
         Binding<Person, String> binding = binder.forField(nameField)
@@ -142,8 +145,9 @@ public class BinderValidationStatusTest
         // message
         binding.validate();
 
-        // default behavior should update component error for the nameField
-        Assert.assertNull(componentErrors.get(nameField));
+        // withStatusLabel updates both the label and the field's invalid state
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE,
+                componentErrors.get(nameField));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -478,6 +482,181 @@ public class BinderValidationStatusTest
         } else {
             Assert.assertEquals("none", label.getStyle().get("display"));
         }
+    }
+
+    // Tests for issue #21707: withStatusLabel should set field invalid state
+    @Test
+    public void withStatusLabel_validationError_setsFieldInvalidAndUpdatesLabel() {
+        TestLabel label = new TestLabel();
+
+        binder.forField(nameField).withValidator(notEmpty)
+                .withStatusLabel(label)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Both label and field invalid state should be updated
+        assertVisible(label, true);
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE, label.getText());
+        Assert.assertTrue(nameField.isInvalid());
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE,
+                componentErrors.get(nameField));
+    }
+
+    @Test
+    public void withStatusLabel_validValue_clearsFieldInvalidAndLabel() {
+        TestLabel label = new TestLabel();
+
+        binder.forField(nameField).withValidator(notEmpty)
+                .withStatusLabel(label)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        // First set invalid
+        nameField.setValue("");
+        binder.validate();
+        Assert.assertTrue(nameField.isInvalid());
+
+        // Then set valid
+        nameField.setValue("Valid");
+        binder.validate();
+
+        // Both label and field invalid state should be cleared
+        assertVisible(label, false);
+        Assert.assertEquals("", label.getText());
+        Assert.assertFalse(nameField.isInvalid());
+        Assert.assertNull(componentErrors.get(nameField));
+    }
+
+    @Test
+    public void withStatusLabel_customValidator_setsFieldInvalid() {
+        TestLabel label = new TestLabel();
+        String customError = "Must start with uppercase";
+
+        binder.forField(nameField)
+                .withValidator(value -> Character.isUpperCase(value.charAt(0)),
+                        customError)
+                .withStatusLabel(label)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("lowercase");
+        binder.validate();
+
+        // Field should be marked invalid with custom validator
+        Assert.assertTrue(nameField.isInvalid());
+        Assert.assertEquals(customError, componentErrors.get(nameField));
+        assertVisible(label, true);
+        Assert.assertEquals(customError, label.getText());
+    }
+
+    @Test
+    public void withStatusLabel_requiredField_setsFieldInvalid() {
+        TestLabel label = new TestLabel();
+
+        binder.forField(nameField).asRequired(EMPTY_ERROR_MESSAGE)
+                .withStatusLabel(label)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Required field validation should set field invalid
+        Assert.assertTrue(nameField.isInvalid());
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE,
+                componentErrors.get(nameField));
+        assertVisible(label, true);
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE, label.getText());
+    }
+
+    @Test
+    public void withStatusLabel_conversionError_setsFieldInvalid() {
+        TestLabel label = new TestLabel();
+        TestTextField ageField = new TestTextField();
+        String conversionError = "Must be a number";
+
+        binder.forField(ageField)
+                .withConverter(new StringToIntegerConverter(conversionError))
+                .withStatusLabel(label).bind(Person::getAge, Person::setAge);
+
+        ageField.setValue("not a number");
+        binder.validate();
+
+        // Conversion error should set field invalid
+        Assert.assertTrue(ageField.isInvalid());
+        assertVisible(label, true);
+        Assert.assertEquals(conversionError, label.getText());
+    }
+
+    @Test
+    public void withStatusLabel_multipleValidators_setsFieldInvalid() {
+        TestLabel label = new TestLabel();
+        String lengthError = "Must be at least 3 characters";
+
+        binder.forField(nameField).withValidator(notEmpty)
+                .withValidator(value -> value.length() >= 3, lengthError)
+                .withStatusLabel(label)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("ab");
+        binder.validate();
+
+        // Multiple validators should still set field invalid
+        Assert.assertTrue(nameField.isInvalid());
+        Assert.assertEquals(lengthError, componentErrors.get(nameField));
+        assertVisible(label, true);
+        Assert.assertEquals(lengthError, label.getText());
+    }
+
+    @Test
+    public void withValidationStatusHandler_customHandler_fieldInvalidNotSetAutomatically() {
+        AtomicReference<BindingValidationStatus<?>> statusCapture = new AtomicReference<>();
+
+        binder.forField(nameField).withValidator(notEmpty)
+                .withValidationStatusHandler(statusCapture::set)
+                .bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Custom handler gives full control - field invalid state should NOT
+        // be set automatically
+        Assert.assertFalse(nameField.isInvalid());
+        Assert.assertNull(componentErrors.get(nameField));
+
+        // But the handler should still receive the validation status
+        Assert.assertNotNull(statusCapture.get());
+        Assert.assertEquals(Status.ERROR, statusCapture.get().getStatus());
+        Assert.assertEquals(EMPTY_ERROR_MESSAGE,
+                statusCapture.get().getMessage().get());
+    }
+
+    @Test
+    public void withValidationStatusHandler_customHandler_canManuallySetFieldInvalid() {
+        binder.forField(nameField).withValidator(notEmpty)
+                .withValidationStatusHandler(status -> {
+                    // Custom handler that manually controls field invalid state
+                    if (status.isError()) {
+                        nameField.setInvalid(true);
+                    } else {
+                        nameField.setInvalid(false);
+                    }
+                }).bind(Person::getFirstName, Person::setFirstName);
+
+        nameField.setValue("");
+        binder.validate();
+
+        // Custom handler manually set the invalid state
+        Assert.assertTrue(nameField.isInvalid());
+        // But componentErrors should still be null because we're using custom
+        // handler
+        Assert.assertNull(componentErrors.get(nameField));
+
+        // Clear the error
+        nameField.setValue("Valid");
+        binder.validate();
+
+        // Custom handler should clear the invalid state
+        Assert.assertFalse(nameField.isInvalid());
     }
 
 }

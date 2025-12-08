@@ -31,6 +31,7 @@ import elemental.json.Json;
 import elemental.json.JsonArray;
 import elemental.json.JsonObject;
 
+import static com.vaadin.client.DependencyTestHelper.createDependencyJson;
 import static org.junit.Assert.assertEquals;
 
 /**
@@ -103,6 +104,24 @@ public class DependencyLoaderTest {
             resourceLoadListener
                     .onLoad(new ResourceLoadEvent(this, styleSheetContents));
         }
+
+        @Override
+        public void loadStylesheet(String stylesheetUrl,
+                ResourceLoadListener resourceLoadListener,
+                String dependencyId) {
+            loadingStyles.add(stylesheetUrl);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, stylesheetUrl));
+        }
+
+        @Override
+        public void inlineStyleSheet(String styleSheetContents,
+                ResourceLoadListener resourceLoadListener,
+                String dependencyId) {
+            loadingStyles.add(styleSheetContents);
+            resourceLoadListener
+                    .onLoad(new ResourceLoadEvent(this, styleSheetContents));
+        }
     }
 
     private final MockResourceLoader mockResourceLoader = new MockResourceLoader();
@@ -121,9 +140,9 @@ public class DependencyLoaderTest {
     public void loadStylesheet() {
         String TEST_URL = "http://foo.bar/baz";
 
-        new DependencyLoader(registry).loadDependencies(
-                createDependenciesMap(new Dependency(Dependency.Type.STYLESHEET,
-                        TEST_URL, LoadMode.EAGER).toJson()));
+        new DependencyLoader(registry)
+                .loadDependencies(createDependenciesMap(createDependencyJson(
+                        Dependency.Type.STYLESHEET, TEST_URL, LoadMode.EAGER)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingStyles);
@@ -133,9 +152,9 @@ public class DependencyLoaderTest {
     public void loadScript() {
         String TEST_URL = "http://foo.bar/baz.js";
 
-        new DependencyLoader(registry).loadDependencies(
-                createDependenciesMap(new Dependency(Dependency.Type.JAVASCRIPT,
-                        TEST_URL, LoadMode.EAGER).toJson()));
+        new DependencyLoader(registry)
+                .loadDependencies(createDependenciesMap(createDependencyJson(
+                        Dependency.Type.JAVASCRIPT, TEST_URL, LoadMode.EAGER)));
 
         assertEquals(Collections.singletonList(TEST_URL),
                 mockResourceLoader.loadingScripts);
@@ -148,12 +167,12 @@ public class DependencyLoaderTest {
         String TEST_CSS_URL = "https://x.yz/styles.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, TEST_JS_URL2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, TEST_CSS_URL,
-                        LoadMode.EAGER).toJson()));
+                createDependencyJson(Dependency.Type.JAVASCRIPT, TEST_JS_URL,
+                        LoadMode.EAGER),
+                createDependencyJson(Dependency.Type.JAVASCRIPT, TEST_JS_URL2,
+                        LoadMode.EAGER),
+                createDependencyJson(Dependency.Type.STYLESHEET, TEST_CSS_URL,
+                        LoadMode.EAGER)));
 
         assertEquals(Arrays.asList(TEST_JS_URL, TEST_JS_URL2),
                 mockResourceLoader.loadingScripts);
@@ -169,14 +188,14 @@ public class DependencyLoaderTest {
         String cssUrl2 = "/2.css";
 
         new DependencyLoader(registry).loadDependencies(createDependenciesMap(
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.JAVASCRIPT, jsUrl2,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl1,
-                        LoadMode.EAGER).toJson(),
-                new Dependency(Dependency.Type.STYLESHEET, cssUrl2,
-                        LoadMode.EAGER).toJson()));
+                createDependencyJson(Dependency.Type.JAVASCRIPT, jsUrl1,
+                        LoadMode.EAGER),
+                createDependencyJson(Dependency.Type.JAVASCRIPT, jsUrl2,
+                        LoadMode.EAGER),
+                createDependencyJson(Dependency.Type.STYLESHEET, cssUrl1,
+                        LoadMode.EAGER),
+                createDependencyJson(Dependency.Type.STYLESHEET, cssUrl2,
+                        LoadMode.EAGER)));
 
         assertEquals(
                 "jsUrl1 should come before jsUrl2, because it was added earlier",
@@ -246,8 +265,8 @@ public class DependencyLoaderTest {
 
     private JsonObject createInlineDependency(Dependency.Type dependencyType,
             String contents) {
-        JsonObject json = new Dependency(dependencyType, "", LoadMode.INLINE)
-                .toJson();
+        JsonObject json = createDependencyJson(dependencyType, "",
+                LoadMode.INLINE);
         json.remove(Dependency.KEY_URL);
         json.put(Dependency.KEY_CONTENTS, contents);
         return json;

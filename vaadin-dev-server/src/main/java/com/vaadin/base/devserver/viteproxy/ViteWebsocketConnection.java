@@ -15,6 +15,8 @@
  */
 package com.vaadin.base.devserver.viteproxy;
 
+import jakarta.websocket.CloseReason.CloseCodes;
+
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
@@ -28,7 +30,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Consumer;
 
-import jakarta.websocket.CloseReason.CloseCodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,6 +63,8 @@ public class ViteWebsocketConnection implements Listener {
      *            a callback to invoke when a message arrives.
      * @param onClose
      *            a callback to invoke if the connection to Vite is closed
+     * @param onConnectionFailure
+     *            a callback to invoke if the connection to Vite fails
      *
      */
     public ViteWebsocketConnection(int port, String path, String subProtocol,

@@ -13,15 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
+import tools.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StateNode;
-
-import elemental.json.JsonValue;
 
 /**
  * Map of basic element information.
@@ -65,6 +64,9 @@ public class ElementData extends NodeMap {
 
     /**
      * Sets the namespace of the element.
+     *
+     * @param namespace
+     *            the namespace to set
      */
     public void setNamespace(String namespace) {
         put(NodeProperties.NAMESPACE, namespace);
@@ -85,7 +87,7 @@ public class ElementData extends NodeMap {
      * @param payload
      *            the payload data
      */
-    public void setPayload(JsonValue payload) {
+    public void setPayload(BaseJsonNode payload) {
         put(NodeProperties.PAYLOAD, payload);
     }
 
@@ -113,9 +115,9 @@ public class ElementData extends NodeMap {
      *
      * @return the payload data of the element
      */
-    public JsonValue getPayload() {
+    public BaseJsonNode getPayload() {
         Serializable value = get(NodeProperties.PAYLOAD);
-        return value == null ? null : (JsonValue) value;
+        return value == null ? null : (BaseJsonNode) value;
     }
 
     @Override

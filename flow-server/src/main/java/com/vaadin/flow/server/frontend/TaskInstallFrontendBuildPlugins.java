@@ -19,14 +19,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
@@ -40,7 +40,6 @@ import static com.vaadin.flow.server.frontend.FrontendPluginsUtil.PLUGIN_TARGET;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
@@ -87,8 +86,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
         if (pluginTargetFolder.exists()
                 && new File(pluginTargetFolder, PACKAGE_JSON).exists()) {
-            String packageFile = FileUtils.readFileToString(
-                    new File(pluginTargetFolder, PACKAGE_JSON),
+            String packageFile = Files.readString(
+                    new File(pluginTargetFolder, PACKAGE_JSON).toPath(),
                     StandardCharsets.UTF_8);
             final JsonNode targetJson = JacksonUtils.readTree(packageFile);
             if (targetJson.has("update")
@@ -101,7 +100,7 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
         }
 
         // Create target folder if necessary
-        FileUtils.forceMkdir(pluginTargetFolder);
+        Files.createDirectories(pluginTargetFolder.toPath());
 
         // copy only files named in package.json { files }
         final JsonNode files = packageJson.get("files");
@@ -117,9 +116,8 @@ public class TaskInstallFrontendBuildPlugins implements FallibleCommand {
 
     private void copyIfNeeded(File targetFile, String sourceResource)
             throws IOException {
-        String content = IOUtils.toString(
-                FrontendPluginsUtil.getResourceUrl(sourceResource),
-                StandardCharsets.UTF_8);
+        String content = StringUtil.toUTF8String(
+                FrontendPluginsUtil.getResourceAsStream(sourceResource));
         FileIOUtils.writeIfChanged(targetFile, content);
     }
 

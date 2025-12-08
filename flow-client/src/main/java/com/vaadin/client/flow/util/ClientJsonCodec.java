@@ -16,17 +16,19 @@
 package com.vaadin.client.flow.util;
 
 import com.google.gwt.core.client.GWT;
+
 import com.vaadin.client.WidgetUtil;
 import com.vaadin.client.communication.ServerConnector;
 import com.vaadin.client.flow.StateNode;
 import com.vaadin.client.flow.StateTree;
 import com.vaadin.client.flow.collection.JsArray;
 import com.vaadin.client.flow.collection.JsCollections;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
 
 import elemental.dom.Node;
 import elemental.json.Json;
 import elemental.json.JsonArray;
+import elemental.json.JsonObject;
 import elemental.json.JsonType;
 import elemental.json.JsonValue;
 
@@ -43,8 +45,8 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value as a {@link StateNode} encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)} if it's possible. Otherwise
-     * returns {@code null}.
+     * {@link JacksonCodec#encodeWithTypeInfo(Object)} if it's possible.
+     * Otherwise returns {@code null}.
      * <p>
      * It does the same as {@link #decodeWithTypeInfo(StateTree, JsonValue)} for
      * the encoded json value if the encoded object is a {@link StateNode}
@@ -59,21 +61,21 @@ public class ClientJsonCodec {
      * @return the decoded state node if any
      */
     public static StateNode decodeStateNode(StateTree tree, JsonValue json) {
-        if (json.getType() == JsonType.ARRAY) {
-            JsonArray array = (JsonArray) json;
-            int typeId = (int) array.getNumber(0);
-            switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
+        if (json.getType() == JsonType.OBJECT) {
+            // Check for @v-node format
+            JsonValue nodeIdValue = ((JsonObject) json).get("@v-node");
+            if (nodeIdValue != null) {
+                if (nodeIdValue.getType() != JsonType.NUMBER) {
+                    throw new IllegalArgumentException(
+                            "@v-node value must be a number, got "
+                                    + nodeIdValue.getType() + " in "
+                                    + json.toJson());
+                }
+                int nodeId = (int) nodeIdValue.asNumber();
                 return tree.getNode(nodeId);
             }
-            case JsonCodec.ARRAY_TYPE:
-            case JsonCodec.RETURN_CHANNEL_TYPE:
-                return null;
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported complex type in " + array.toJson());
-            }
+
+            return null;
         } else {
             return null;
         }
@@ -81,7 +83,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithTypeInfo(Object)}.
+     * {@link JacksonCodec#encodeWithTypeInfo(Object)}.
      *
      * @param tree
      *            the state tree to use for resolving nodes and elements
@@ -90,25 +92,54 @@ public class ClientJsonCodec {
      * @return the decoded value
      */
     public static Object decodeWithTypeInfo(StateTree tree, JsonValue json) {
-        if (json.getType() == JsonType.ARRAY) {
-            JsonArray array = (JsonArray) json;
-            int typeId = (int) array.getNumber(0);
-            switch (typeId) {
-            case JsonCodec.NODE_TYPE: {
-                int nodeId = (int) array.getNumber(1);
+        if (json.getType() == JsonType.OBJECT) {
+            JsonObject jsonObject = (JsonObject) json;
+            // Check for @v-node format
+            JsonValue nodeIdValue = jsonObject.get("@v-node");
+            if (nodeIdValue != null) {
+                if (nodeIdValue.getType() != JsonType.NUMBER) {
+                    throw new IllegalArgumentException(
+                            "@v-node value must be a number, got "
+                                    + nodeIdValue.getType() + " in "
+                                    + json.toJson());
+                }
+                int nodeId = (int) nodeIdValue.asNumber();
                 Node domNode = tree.getNode(nodeId).getDomNode();
                 return domNode;
             }
-            case JsonCodec.ARRAY_TYPE:
-                return jsonArrayAsJsArray(array.getArray(1));
-            case JsonCodec.RETURN_CHANNEL_TYPE:
-                return createReturnChannelCallback((int) array.getNumber(1),
-                        (int) array.getNumber(2),
+
+            // Check for @v-return format
+            JsonValue returnArray = jsonObject.get("@v-return");
+            if (returnArray != null) {
+                if (returnArray.getType() != JsonType.ARRAY) {
+                    throw new IllegalArgumentException(
+                            "@v-return value must be an array, got "
+                                    + returnArray.getType() + " in "
+                                    + json.toJson());
+                }
+                JsonArray array = (JsonArray) returnArray;
+                if (array.length() < 2) {
+                    throw new IllegalArgumentException(
+                            "@v-return array must have at least 2 elements, got "
+                                    + array.length() + " in " + json.toJson());
+                }
+                int returnNodeId = (int) array.getNumber(0);
+                int channelId = (int) array.getNumber(1);
+                return createReturnChannelCallback(returnNodeId, channelId,
                         tree.getRegistry().getServerConnector());
-            default:
-                throw new IllegalArgumentException(
-                        "Unsupported complex type in " + array.toJson());
             }
+
+            // Check for unknown @v- types
+            for (String key : jsonObject.keys()) {
+                if (key.startsWith("@v-")) {
+                    throw new IllegalArgumentException("Unsupported @v type '"
+                            + key + "' in " + json.toJson());
+                }
+            }
+
+            return decodeObjectWithTypeInfo(tree, jsonObject);
+        } else if (json.getType() == JsonType.ARRAY) {
+            return decodeArrayWithTypeInfo(tree, (JsonArray) json);
         } else {
             return decodeWithoutTypeInfo(json);
         }
@@ -125,7 +156,7 @@ public class ClientJsonCodec {
 
     /**
      * Decodes a value encoded on the server using
-     * {@link JsonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
+     * {@link JacksonCodec#encodeWithoutTypeInfo(Object)}. This is a no-op in
      * compiled JavaScript since the JSON representation can be used as-is, but
      * some special handling is needed for tests running in the JVM.
      *
@@ -186,22 +217,32 @@ public class ClientJsonCodec {
     }
 
     /**
-     * Converts a JSON array to a JS array. This is a no-op in compiled
-     * JavaScript, but needs special handling for tests running in the JVM.
-     *
-     * @param jsonArray
-     *            the JSON array to convert
-     * @return the converted JS array
+     * Recursively decodes a JSON object, processing any nested @v references.
+     * Returns a native JS object that can store decoded values including DOM
+     * elements.
      */
-    public static JsArray<Object> jsonArrayAsJsArray(JsonArray jsonArray) {
-        JsArray<Object> jsArray;
-        if (GWT.isScript()) {
-            jsArray = WidgetUtil.crazyJsCast(jsonArray);
-        } else {
-            jsArray = JsCollections.array();
-            for (int i = 0; i < jsonArray.length(); i++) {
-                jsArray.push(decodeWithoutTypeInfo(jsonArray.get(i)));
-            }
+    private static JsonObject decodeObjectWithTypeInfo(StateTree tree,
+            JsonObject jsonObject) {
+
+        for (String key : jsonObject.keys()) {
+            JsonValue orignalValue = jsonObject.get(key);
+            Object decoded = decodeWithTypeInfo(tree, orignalValue);
+            JsonValue newValue = WidgetUtil.crazyJsoCast(decoded);
+            jsonObject.put(key, newValue);
+        }
+        return jsonObject;
+    }
+
+    /**
+     * Recursively decodes a JSON array, processing any nested @v references.
+     */
+    private static JsArray<Object> decodeArrayWithTypeInfo(StateTree tree,
+            JsonArray jsonArray) {
+        JsArray<Object> jsArray = JsCollections.array();
+        for (int i = 0; i < jsonArray.length(); i++) {
+            JsonValue originalValue = jsonArray.get(i);
+            Object decoded = decodeWithTypeInfo(tree, originalValue);
+            jsArray.push(decoded);
         }
         return jsArray;
     }

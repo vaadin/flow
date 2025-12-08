@@ -15,10 +15,11 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.flow.server.VaadinContext;
-
 import jakarta.servlet.ServletContext;
+
 import java.util.Set;
+
+import com.vaadin.flow.server.VaadinContext;
 
 /**
  * Applies this initializer to the given {@link VaadinContext}.
@@ -30,7 +31,6 @@ import java.util.Set;
  * {@link ClassLoaderAwareServletContainerInitializer#onStartup(Set, ServletContext)})</li>
  * </ul>
  *
- * @since
  *
  * @see ClassLoaderAwareServletContainerInitializer
  * @see VaadinServletContextStartupInitializer

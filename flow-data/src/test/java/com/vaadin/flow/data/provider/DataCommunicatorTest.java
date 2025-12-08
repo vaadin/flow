@@ -40,6 +40,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -56,8 +57,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
 public class DataCommunicatorTest {
@@ -149,7 +148,7 @@ public class DataCommunicatorTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
                 lastSet = Range.withLength(start, items.size());
             }
 

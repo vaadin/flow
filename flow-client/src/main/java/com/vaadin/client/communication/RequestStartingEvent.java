@@ -15,8 +15,9 @@
  */
 package com.vaadin.client.communication;
 
-import com.google.gwt.event.shared.EventHandler;
 import com.google.web.bindery.event.shared.Event;
+
+import com.google.gwt.event.shared.EventHandler;
 
 /**
  * Event fired when a request starts.

@@ -50,7 +50,6 @@ public interface Registration extends Serializable {
      *            not <code>null</code>
      * @return a registration that will invoke the command once, not
      *         <code>null</code>
-     * @since
      */
     @GwtIncompatible("Command is not in a package available to GWT")
     static Registration once(Command command) {
@@ -75,7 +74,6 @@ public interface Registration extends Serializable {
      *            the registrations to remove, not <code>null</code>
      * @return a registration that removes all provided registrations, not
      *         <code>null</code>
-     * @since
      */
     static Registration combine(Registration... registrations) {
         Objects.requireNonNull(registrations);
@@ -92,6 +90,8 @@ public interface Registration extends Serializable {
      * collection to avoid {@link ConcurrentModificationException} if a listener
      * or other callback may trigger adding or removing registrations.
      *
+     * @param <T>
+     *            the type of the item in the collection
      * @param collection
      *            the collection to which the item should be added and removed,
      *            not <code>null</code>
@@ -99,7 +99,6 @@ public interface Registration extends Serializable {
      *            the item to add and remove
      * @return a registration that will remove the item from the collection, not
      *         <code>null</code>
-     * @since
      */
     static <T> Registration addAndRemove(Collection<T> collection, T item) {
         collection.add(item);

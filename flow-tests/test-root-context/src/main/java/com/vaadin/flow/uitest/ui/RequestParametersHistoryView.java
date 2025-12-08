@@ -17,8 +17,8 @@ package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
 
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.router.AfterNavigationEvent;
 import com.vaadin.flow.router.AfterNavigationObserver;
 import com.vaadin.flow.router.Route;

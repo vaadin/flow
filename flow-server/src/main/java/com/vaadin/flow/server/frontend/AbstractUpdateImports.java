@@ -62,6 +62,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 
 /**
  * Common logic for generate import file JS content.
@@ -94,6 +95,8 @@ abstract class AbstractUpdateImports implements Runnable {
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
 
+    private static final String TAILWIND_IMPORT = "./" + TAILWIND_CSS;
+
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
             + "%n" + "registerStyles('%s', $css_%1$d%s);";
@@ -118,6 +121,8 @@ abstract class AbstractUpdateImports implements Runnable {
     final File generatedFlowImports;
     final File generatedFlowWebComponentImports;
     private final File generatedFlowDefinitions;
+    final File appShellImports;
+    final File appShellDefinitions;
     private File chunkFolder;
 
     private final GeneratedFilesSupport generatedFilesSupport;
@@ -141,6 +146,12 @@ abstract class AbstractUpdateImports implements Runnable {
         generatedFlowDefinitions = new File(
                 generatedFlowImports.getParentFile(),
                 FrontendUtils.IMPORTS_D_TS_NAME);
+        var generatedFolder = FrontendUtils
+                .getFrontendGeneratedFolder(options.getFrontendDirectory());
+        appShellImports = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_NAME);
+        appShellDefinitions = new File(generatedFolder,
+                FrontendUtils.APP_SHELL_IMPORTS_D_TS_NAME);
 
         generatedFlowWebComponentImports = FrontendUtils
                 .getFlowGeneratedWebComponentsImports(
@@ -160,8 +171,8 @@ abstract class AbstractUpdateImports implements Runnable {
 
         Map<File, List<String>> output = process(css, javascript);
         writeOutput(output);
-        writeWebComponentImports(
-                filterWebComponentImports(output.get(generatedFlowImports)));
+        writeWebComponentImports(filterWebComponentImports(
+                mergeWebComponentOutputLines(output)));
 
         getLogger().debug("Imports and chunks update took {} ms.",
                 TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start));
@@ -250,6 +261,18 @@ abstract class AbstractUpdateImports implements Runnable {
         }
     }
 
+    private List<String> mergeWebComponentOutputLines(
+            Map<File, List<String>> outputFiles) {
+        List<String> merged = new ArrayList<>();
+        merged.addAll(outputFiles.getOrDefault(appShellImports,
+                Collections.emptyList()));
+        merged.addAll(outputFiles.getOrDefault(generatedFlowWebComponentImports,
+                Collections.emptyList()));
+        merged.addAll(outputFiles.getOrDefault(generatedFlowImports,
+                Collections.emptyList()));
+        return merged.stream().distinct().toList();
+    }
+
     private void writeWebComponentImports(List<String> lines) {
         if (lines != null) {
             try {
@@ -276,6 +299,7 @@ abstract class AbstractUpdateImports implements Runnable {
     private Map<File, List<String>> process(Map<ChunkInfo, List<CssData>> css,
             Map<ChunkInfo, List<String>> javascript) {
         getLogger().debug("Start sorting imports to lazy and eager.");
+        int cssLineOffset = 0;
         long start = System.nanoTime();
 
         Map<File, List<String>> files = new HashMap<>();
@@ -284,6 +308,11 @@ abstract class AbstractUpdateImports implements Runnable {
         List<String> eagerJavascript = new ArrayList<>();
         Map<ChunkInfo, List<String>> lazyCss = new LinkedHashMap<>();
         List<CssData> eagerCssData = new ArrayList<>();
+        List<CssData> appShellCssData = new ArrayList<>();
+        List<CssData> webComponentCssData = new ArrayList<>();
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            appShellCssData.add(new CssData(TAILWIND_IMPORT, null, null, null));
+        }
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -296,12 +325,20 @@ abstract class AbstractUpdateImports implements Runnable {
             boolean hasThemeFor = entry.getValue().stream()
                     .anyMatch(cssData -> cssData.getThemefor() != null);
             if (isLazyRoute(entry.getKey()) && !hasThemeFor) {
-                List<String> cssLines = getCssLines(entry.getValue());
+                List<String> cssLines = getCssLines(entry.getValue(),
+                        cssLineOffset);
+                cssLineOffset += cssLines.size();
                 if (!cssLines.isEmpty()) {
                     lazyCss.put(entry.getKey(), cssLines);
                 }
             } else {
-                eagerCssData.addAll(entry.getValue());
+                if (entry.getKey().equals(ChunkInfo.APP_SHELL)) {
+                    appShellCssData.addAll(entry.getValue());
+                } else if (entry.getKey().equals(ChunkInfo.WEB_COMPONENT)) {
+                    webComponentCssData.addAll(entry.getValue());
+                } else {
+                    eagerCssData.addAll(entry.getValue());
+                }
             }
         }
 
@@ -315,8 +352,8 @@ abstract class AbstractUpdateImports implements Runnable {
             start = System.nanoTime();
 
             chunkLoader.add("");
-            chunkLoader.add("const loadOnDemand = (key) => {");
-            chunkLoader.add("  const pending = [];");
+            chunkLoader.add("const loadOnDemand = (key) => {" + "\n"
+                    + "  const pending = [];");
             Set<ChunkInfo> mergedChunkKeys = merge(lazyJavascript.keySet(),
                     lazyCss.keySet());
             Set<String> processedChunkHashes = new HashSet<>(
@@ -347,11 +384,13 @@ abstract class AbstractUpdateImports implements Runnable {
                         .map(BundleUtils::getChunkId)
                         .map(hash -> String.format("key === '%s'", hash))
                         .collect(Collectors.joining(" || "));
-                chunkLoader.add(String.format("  if (%s) {", ifClauses));
-                chunkLoader.add(String.format(
-                        "    pending.push(import('./chunks/%s'));",
-                        chunkFilename));
-                chunkLoader.add("  }");
+                String codeBlock = String.format("  if (%s) {", ifClauses)
+                        + "\n"
+                        + String.format(
+                                "    pending.push(import('./chunks/%s'));",
+                                chunkFilename)
+                        + "\n" + "  }";
+                chunkLoader.add(codeBlock);
 
                 boolean chunkNotExist = processedChunkHashes
                         .add(chunkContentHash);
@@ -361,8 +400,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 }
             }
 
-            chunkLoader.add("  return Promise.all(pending);");
-            chunkLoader.add("}");
+            chunkLoader.add("  return Promise.all(pending);" + "\n" + "}");
             chunkLoader.add("");
 
             getLogger().debug("Lazy chunks generation took {} ms.",
@@ -372,16 +410,33 @@ abstract class AbstractUpdateImports implements Runnable {
                     "const loadOnDemand = (key) => { return Promise.resolve(0); }");
         }
 
+        List<String> appShellLines = new ArrayList<>();
+        List<String> appShellCssLines = getCssLines(appShellCssData,
+                cssLineOffset);
+        cssLineOffset += appShellCssLines.size();
+        if (!appShellCssLines.isEmpty()) {
+            appShellLines.add(IMPORT_INJECT);
+            appShellLines.addAll(appShellCssLines);
+        }
+        files.put(appShellImports, appShellLines);
+        files.put(appShellDefinitions, Collections.singletonList("export {}"));
+
         List<String> mainLines = new ArrayList<>();
 
         // Convert eager CSS data to JS and deduplicate it
-        List<String> mainCssLines = getCssLines(eagerCssData);
+        List<String> mainCssLines = getCssLines(eagerCssData, cssLineOffset);
+        cssLineOffset += mainCssLines.size();
         if (!mainCssLines.isEmpty()) {
             mainLines.add(IMPORT_INJECT);
             mainLines.add(THEMABLE_MIXIN_IMPORT);
             mainLines.addAll(mainCssLines);
         }
         mainLines.addAll(getModuleLines(eagerJavascript));
+
+        if (!webComponentCssData.isEmpty()) {
+            files.put(generatedFlowWebComponentImports,
+                    getCssLines(webComponentCssData, cssLineOffset));
+        }
 
         // Move all imports to the top
         List<String> copy = new ArrayList<>(mainLines);
@@ -470,12 +525,12 @@ abstract class AbstractUpdateImports implements Runnable {
      *            the CSS import data
      * @return the JS statements needed to import and apply the CSS data
      */
-    protected List<String> getCssLines(List<CssData> css) {
+    private List<String> getCssLines(List<CssData> css, int startOffset) {
         List<String> lines = new ArrayList<>();
 
         Set<String> cssNotFound = new HashSet<>();
         LinkedHashSet<CssData> allCss = new LinkedHashSet<>(css);
-        int i = 0;
+        int i = startOffset;
         for (CssData cssData : allCss) {
             if (!addCssLines(lines, cssData, i)) {
                 cssNotFound.add(cssData.getValue());
@@ -500,8 +555,12 @@ abstract class AbstractUpdateImports implements Runnable {
                                 + "then make sure it's correctly configured (e.g. set '%s' property)",
                         FrontendUtils.PARAM_FRONTEND_DIR);
             }
-            throw new IllegalStateException(
-                    notFoundMessage(cssNotFound, prefix, suffix));
+
+            boolean needsNodeModules = options.isFrontendHotdeploy()
+                    || options.isBundleBuild();
+            if (getLogger().isInfoEnabled() && needsNodeModules) {
+                getLogger().info(notFoundMessage(cssNotFound, prefix, suffix));
+            }
         }
         return lines;
     }
@@ -557,9 +616,9 @@ abstract class AbstractUpdateImports implements Runnable {
 
     }
 
-    protected <T> List<String> merge(Map<T, List<String>> css) {
+    protected <T> List<String> merge(Map<T, List<String>> outputFiles) {
         List<String> result = new ArrayList<>();
-        css.forEach((key, value) -> result.addAll(value));
+        outputFiles.forEach((key, value) -> result.addAll(value));
         return result;
     }
 
@@ -996,8 +1055,15 @@ abstract class AbstractUpdateImports implements Runnable {
     }
 
     private String normalizePath(String path) {
+        boolean startsWithDotSlash = path.startsWith("./");
         File file = new File(path);
-        return file.toPath().normalize().toString().replace("\\", "/");
+        String normalized = file.toPath().normalize().toString().replace("\\",
+                "/");
+        // Preserve the './' prefix if it was originally present
+        if (startsWithDotSlash && !normalized.startsWith("./")) {
+            normalized = "./" + normalized;
+        }
+        return normalized;
     }
 
     private String normalizeImportPath(String path) {

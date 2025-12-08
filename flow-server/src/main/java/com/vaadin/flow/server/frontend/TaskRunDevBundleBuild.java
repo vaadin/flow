@@ -20,15 +20,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -74,7 +78,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "Read more [about Vaadin development mode](https://vaadin.com/docs/next/flow/configuration/development-mode#precompiled-bundle).";
     //@formatter:on
 
-    private final String README_NOT_CREATED;
+    public static final String VAADIN_JSON = "vaadin.json";
 
     private final Options options;
 
@@ -86,25 +90,42 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
      */
     TaskRunDevBundleBuild(Options options) {
         this.options = options;
-        README_NOT_CREATED = "Failed to create a README file in "
-                + options.getBuildDirectoryName() + "/"
-                + Constants.DEV_BUNDLE_LOCATION;
+        getLogger().info(
+                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
     }
 
     @Override
     public void execute() throws ExecutionFailedException {
-        getLogger().info(
-                "Creating a new development mode bundle. This can take a while but will only run when the project setup is changed, addons are added or frontend files are modified");
-
         runFrontendBuildTool("Vite", "vite", "vite", "build");
 
         copyPackageLockToBundleFolder();
+        addVaadinVersionToDevBundle();
 
         addReadme();
+
+        // Copy npm assets after devBundle vite as it clears the target
+        // directory
+        new TaskCopyNpmAssetsFiles(options).execute();
+
+        if (options.isCompressBundle()) {
+            DevBundleUtils.compressBundle(options.getNpmFolder(),
+                    getDevBundleFolderInTarget());
+        }
     }
 
     private static Logger getLogger() {
         return LoggerFactory.getLogger(TaskRunDevBundleBuild.class);
+    }
+
+    private File getDevBundleFolderInTarget() {
+        return new File(
+                new File(options.getNpmFolder(),
+                        options.getBuildDirectoryName()),
+                Constants.DEV_BUNDLE_LOCATION);
+    }
+
+    private File getDevBundleFolderInSrc() {
+        return new File(options.getNpmFolder(), Constants.BUNDLE_LOCATION);
     }
 
     private void runFrontendBuildTool(String toolName, String packageName,
@@ -118,7 +139,6 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
@@ -142,12 +162,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (options.isRequireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);
@@ -212,20 +227,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 process.destroyForcibly();
             }
         }
-        if (options.isCompressBundle()) {
-            DevBundleUtils.compressBundle(options.getNpmFolder(),
-                    new File(
-                            new File(options.getNpmFolder(),
-                                    options.getBuildDirectoryName()),
-                            Constants.DEV_BUNDLE_LOCATION));
-        }
     }
 
     private void copyPackageLockToBundleFolder() {
-        File devBundleFolder = new File(
-                new File(options.getNpmFolder(),
-                        options.getBuildDirectoryName()),
-                Constants.DEV_BUNDLE_LOCATION);
+        File devBundleFolder = getDevBundleFolderInTarget();
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
         String packageLockFile = options.isEnablePnpm()
@@ -236,11 +241,35 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 packageLockFile);
         if (packageLockJson.exists()) {
             try {
-                FileUtils.copyFile(packageLockJson,
-                        new File(devBundleFolder, packageLockFile));
+                Files.copy(packageLockJson.toPath(),
+                        new File(devBundleFolder, packageLockFile).toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 getLogger().error("Failed to copy '" + packageLockFile + "' to "
-                        + Constants.DEV_BUNDLE_LOCATION, e);
+                        + getDevBundleFolderInTarget(), e);
+            }
+        }
+    }
+
+    private void addVaadinVersionToDevBundle() {
+        File devBundleFolder = getDevBundleFolderInTarget();
+        assert devBundleFolder.exists() : "No dev-bundle folder created";
+
+        Optional<String> vaadinVersion = FrontendUtils
+                .getVaadinVersion(options.getClassFinder());
+        if (vaadinVersion.isPresent()) {
+            ObjectNode vaadinObject = JacksonUtils.createObjectNode();
+            vaadinObject.put("version", vaadinVersion.get());
+
+            try {
+                Files.writeString(
+                        new File(devBundleFolder, VAADIN_JSON).toPath(),
+                        vaadinObject.toPrettyString(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                getLogger().error(
+                        "Failed to write vaadin version to '"
+                                + new File(devBundleFolder, VAADIN_JSON) + "'",
+                        e);
             }
         }
     }
@@ -249,24 +278,27 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         if (!options.isCompressBundle()) {
             return;
         }
-        File devBundleFolder = new File(options.getNpmFolder(),
-                Constants.BUNDLE_LOCATION);
-        assert devBundleFolder.exists();
+        File devBundleFolder = getDevBundleFolderInSrc();
+
+        // Ensure the directory exists
+        if (!devBundleFolder.exists()) {
+            devBundleFolder.mkdirs();
+        }
+
+        File readme = new File(devBundleFolder, "README.md");
+        if (readme.exists()) {
+            return;
+        }
 
         try {
-            File readme = new File(devBundleFolder, "README.md");
-            if (readme.exists()) {
-                return;
-            }
             boolean created = readme.createNewFile();
             if (created) {
-                FileUtils.writeStringToFile(readme, README,
-                        StandardCharsets.UTF_8);
+                Files.writeString(readme.toPath(), README);
             } else {
-                getLogger().warn(README_NOT_CREATED);
+                getLogger().warn("Failed to create " + readme);
             }
         } catch (Exception e) {
-            getLogger().error(README_NOT_CREATED, e);
+            getLogger().error("Failed to create " + readme, e);
         }
     }
 }

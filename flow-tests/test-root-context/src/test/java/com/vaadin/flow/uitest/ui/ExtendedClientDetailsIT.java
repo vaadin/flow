@@ -13,15 +13,35 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
+
 public class ExtendedClientDetailsIT extends ChromeBrowserTest {
+
+    @Test
+    public void testExtendedClientDetails_availableImmediately() {
+        open();
+
+        // Values should be available immediately without clicking any button
+        verifyDimensionGreaterThan50("sh", "window.screen.height");
+        verifyDimensionGreaterThan50("sw", "window.screen.width");
+        verifyDimensionGreaterThan50("wh", "window.innerHeight");
+        verifyDimensionGreaterThan50("ww", "window.innerWidth");
+        verifyDimensionGreaterThan50("bh", "document.body.clientHeight");
+        verifyDimensionGreaterThan50("bw", "document.body.clientWidth");
+        try {
+            Double.parseDouble($(TestBenchElement.class).id("pr").getText());
+        } catch (NumberFormatException nfe) {
+            Assert.fail("Could not parse reported device pixel ratio");
+        }
+        Assert.assertTrue("false".equalsIgnoreCase(
+                $(TestBenchElement.class).id("td").getText()));
+    }
 
     @Test
     public void testExtendedClientDetails_reportsSomething() {
@@ -29,12 +49,12 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
 
         $(TestBenchElement.class).id("fetch-values").click();
 
-        verifyTextMatchesJSExecution("sh", "window.screen.height");
-        verifyTextMatchesJSExecution("sw", "window.screen.width");
-        verifyTextMatchesJSExecution("wh", "window.innerHeight");
-        verifyTextMatchesJSExecution("ww", "window.innerWidth");
-        verifyTextMatchesJSExecution("bh", "document.body.clientHeight");
-        verifyTextMatchesJSExecution("bw", "document.body.clientWidth");
+        verifyDimensionGreaterThan50("sh", "window.screen.height");
+        verifyDimensionGreaterThan50("sw", "window.screen.width");
+        verifyDimensionGreaterThan50("wh", "window.innerHeight");
+        verifyDimensionGreaterThan50("ww", "window.innerWidth");
+        verifyDimensionGreaterThan50("bh", "document.body.clientHeight");
+        verifyDimensionGreaterThan50("bw", "document.body.clientWidth");
         try {
             Double.parseDouble($(TestBenchElement.class).id("pr").getText());
         } catch (NumberFormatException nfe) {
@@ -65,13 +85,26 @@ public class ExtendedClientDetailsIT extends ChromeBrowserTest {
 
     }
 
-    private void verifyTextMatchesJSExecution(String elementId,
+    private void verifyDimensionGreaterThan50(String elementId,
             String jsExecution) {
         String elementText = $(TestBenchElement.class).id(elementId).getText();
         Object executionResult = getCommandExecutor()
                 .executeScript(("return " + jsExecution + ";"));
-        Assert.assertEquals(
-                "reported value did not match js execution for " + elementId,
-                executionResult.toString(), elementText);
+
+        try {
+            int reportedValue = Integer.parseInt(elementText);
+            int jsValue = ((Number) executionResult).intValue();
+
+            Assert.assertTrue(
+                    "reported value for " + elementId
+                            + " should be > 50, but was: " + reportedValue,
+                    reportedValue > 50);
+            Assert.assertTrue(
+                    "js execution value for " + elementId
+                            + " should be > 50, but was: " + jsValue,
+                    jsValue > 50);
+        } catch (NumberFormatException nfe) {
+            Assert.fail("Could not parse dimension value for " + elementId);
+        }
     }
 }

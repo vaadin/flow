@@ -13,23 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.IntNode;
+import tools.jackson.databind.node.NumericNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.webcomponent.PropertyConfigurationImpl;
 import com.vaadin.flow.server.webcomponent.WebComponentBinding;
-
-import elemental.json.JsonValue;
 
 /**
  * Acts as a proxy to the web component root onto which the exporter
@@ -80,47 +80,6 @@ public final class WebComponent<C extends Component> implements Serializable {
                 "Parameter " + "'webComponentWrapper' must not be null!");
         this.binding = binding;
         this.componentHost = componentHost;
-    }
-
-    /**
-     * Fires a custom event on the client-side originating from the web
-     * component with custom event data. This event does not bubble in the DOM
-     * hierarchy.
-     *
-     * @param eventName
-     *            name of the event, not null
-     * @param objectData
-     *            data the event should carry. This data is placed as the {@code
-     *         detail} property of the event, nullable
-     * @see #fireEvent(String, JsonValue, EventOptions) for full set of options
-     */
-    @Deprecated
-    public void fireEvent(String eventName, JsonValue objectData) {
-        fireEvent(eventName, objectData, BASIC_OPTIONS);
-    }
-
-    /**
-     * Fires a custom event on the client-side originating from the web
-     * component with custom event data. Allows modifying the default event
-     * behavior with {@link EventOptions}.
-     *
-     * @param eventName
-     *            name of the event, not null
-     * @param objectData
-     *            data the event should carry. This data is placed as the {@code
-     *         detail} property of the event, nullable
-     * @param options
-     *            event options for {@code bubbles}, {@code cancelable}, and
-     *            {@code
-     *         composed} flags, not null
-     * @throws NullPointerException
-     *             if either {@code eventName} or {@code options} is
-     *             {@code null}
-     */
-    @Deprecated
-    public void fireEvent(String eventName, JsonValue objectData,
-            EventOptions options) {
-        fireEvent(eventName, JacksonUtils.mapElemental(objectData), options);
     }
 
     /**
@@ -265,18 +224,21 @@ public final class WebComponent<C extends Component> implements Serializable {
         } else if (value instanceof Boolean) {
             componentHost.executeJs(UPDATE_PROPERTY, propertyName,
                     (Boolean) value);
+        } else if (value instanceof IntNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).intValue());
+        } else if (value instanceof NumericNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).doubleValue());
         } else if (value instanceof ValueNode) {
+            componentHost.executeJs(UPDATE_PROPERTY, propertyName,
+                    ((ValueNode) value).asString());
+        } else if (value instanceof BaseJsonNode) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow
             // that expected behavior.
-            componentHost.executeJs(String.format(UPDATE_PROPERTY_FORMAT,
-                    ((ValueNode) value).toString()), propertyName);
-        } else if (value instanceof JsonValue) {
-            // this gets around executeJavaScript limitation.
-            // Since properties can take JSON values, this was needed to allow
-            // that expected behavior.
-            componentHost.executeJs(String.format(UPDATE_PROPERTY_FORMAT,
-                    ((JsonValue) value).toJson()), propertyName);
+            componentHost.executeJs(
+                    String.format(UPDATE_PROPERTY_FORMAT, value), propertyName);
         }
     }
 }

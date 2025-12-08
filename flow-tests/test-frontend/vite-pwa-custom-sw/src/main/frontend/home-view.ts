@@ -11,7 +11,7 @@ export class HomeView extends HTMLElement {
       const p = document.createElement('p');
       p.textContent = text;
       this.querySelector('output')!.appendChild(p);
-    }
+    };
   }
 
   disconnectedCallback() {

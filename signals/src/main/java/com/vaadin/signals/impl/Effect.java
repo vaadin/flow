@@ -15,11 +15,13 @@
  */
 package com.vaadin.signals.impl;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.vaadin.signals.SignalEnvironment;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback
@@ -30,11 +32,11 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * based the signals read during the most recent invocation.
  */
 public class Effect {
-    private final Executor dispatcher = SignalEnvironment
-            .asynchronousDispatcher();
+    private static final ThreadLocal<LinkedList<Effect>> activeEffects = ThreadLocal
+            .withInitial(() -> new LinkedList<>());
 
-    private Usage dependencies;
-    private Runnable registration;
+    private final Executor dispatcher;
+    private final List<Runnable> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
     private Runnable action;
@@ -42,38 +44,112 @@ public class Effect {
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 
     /**
-     * Creates a signal effect with the given action. The action is run when the
-     * effect is created and is subsequently run again whenever there's a change
-     * to any signal value that was read during the last invocation.
+     * Creates a signal effect with the given action and the default dispatcher.
+     * The action is run when the effect is created and is subsequently run
+     * again whenever there's a change to any signal value that was read during
+     * the last invocation.
+     *
+     * @see SignalEnvironment#getDefaultEffectDispatcher()
      *
      * @param action
      *            the action to use, not <code>null</code>
      */
     public Effect(Runnable action) {
-        assert action != null;
-        this.action = action;
+        this(action, SignalEnvironment.getDefaultEffectDispatcher());
+    }
 
-        revalidate();
+    /**
+     * Creates a signal effect with the given action and a custom dispatcher.
+     * The action is run when the effect is created and is subsequently run
+     * again whenever there's a change to any signal value that was read during
+     * the last invocation. The dispatcher can be used to make sure changes are
+     * evaluated asynchronously or with some specific context available. The
+     * action itself needs to be synchronous to be able to track changes.
+     *
+     * @param action
+     *            the action to use, not <code>null</code>
+     * @param dispatcher
+     *            the dispatcher to use when handling changes, not
+     *            <code>null</code>
+     */
+    public Effect(Runnable action, Executor dispatcher) {
+        assert action != null;
+        this.action = () -> {
+            try {
+                action.run();
+            } catch (Exception e) {
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        e);
+            } catch (Error e) {
+                Thread thread = Thread.currentThread();
+                thread.getUncaughtExceptionHandler().uncaughtException(thread,
+                        new Error(
+                                "Uncaught error from effect. The effect will no longer be active.",
+                                e));
+                dispose();
+            }
+        };
+
+        assert dispatcher != null;
+        this.dispatcher = dispatcher;
+
+        dispatcher.execute(() -> {
+            synchronized (this) {
+                revalidate();
+            }
+        });
     }
 
     private void revalidate() {
-        assert registration == null;
+        assert registrations.isEmpty();
 
         if (action == null) {
             // closed
             return;
         }
 
-        dependencies = UsageTracker.track(action);
-        registration = dependencies.onNextChange(() -> {
-            scheduleInvalidate();
-            return false;
-        });
+        activeEffects.get().add(this);
+        try {
+            UsageTracker.track(action, usage -> {
+                registrations.add(usage.onNextChange(this::onDependencyChange));
+            });
+        } finally {
+            Effect removed = activeEffects.get().removeLast();
+            assert removed == this;
+        }
+    }
+
+    private boolean onDependencyChange(boolean immediate) {
+        /*
+         * Detect loops by checking if the same effect is already active on this
+         * thread. Don't check for immediate updates since an immediate update
+         * doesn't run on the same thread that caused the change.
+         */
+        if (!immediate && activeEffects.get().contains(this)) {
+            dispose();
+            throw new IllegalStateException(
+                    "Infinite loop detected between effect updates. This effect is deactivated.");
+        }
+
+        scheduleInvalidate();
+        return false;
     }
 
     private void scheduleInvalidate() {
         if (invalidateScheduled.compareAndSet(false, true)) {
-            dispatcher.execute(this::invalidate);
+            var inheritedActive = new LinkedList<>(activeEffects.get());
+
+            dispatcher.execute(() -> {
+                var oldActive = activeEffects.get();
+                activeEffects.set(inheritedActive);
+
+                try {
+                    invalidate();
+                } finally {
+                    activeEffects.set(oldActive);
+                }
+            });
         }
     }
 
@@ -86,10 +162,8 @@ public class Effect {
     }
 
     private void clearRegistrations() {
-        if (registration != null) {
-            registration.run();
-            registration = null;
-        }
+        registrations.forEach(Runnable::run);
+        registrations.clear();
     }
 
     /**
@@ -99,6 +173,6 @@ public class Effect {
     public synchronized void dispose() {
         clearRegistrations();
         action = null;
-        dependencies = null;
     }
+
 }

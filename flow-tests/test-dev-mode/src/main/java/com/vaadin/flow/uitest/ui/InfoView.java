@@ -83,7 +83,7 @@ public class InfoView extends Div {
 
         info("Browser", browser.stream().collect(Collectors.joining(", ")));
 
-        info("User-agent", webBrowser.getBrowserApplication());
+        info("User-agent", webBrowser.getUserAgent());
         info("Browser major", webBrowser.getBrowserMajorVersion());
         info("Browser minor", webBrowser.getBrowserMinorVersion());
         info("Locale", webBrowser.getLocale());

@@ -15,8 +15,10 @@
  */
 package com.vaadin.flow.server.startup;
 
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
-import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
+import jakarta.servlet.ServletContextEvent;
+import jakarta.servlet.ServletContextListener;
+import jakarta.servlet.annotation.HandlesTypes;
+import jakarta.servlet.annotation.WebListener;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
@@ -30,8 +32,10 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
@@ -46,10 +50,8 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.theme.NoTheme;
 import com.vaadin.flow.theme.Theme;
 
-import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletContextListener;
-import jakarta.servlet.annotation.HandlesTypes;
-import jakarta.servlet.annotation.WebListener;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_NO_SHELL;
+import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA;
 
 /**
  * Servlet initializer visiting {@link AppShellConfigurator} configuration.
@@ -60,8 +62,9 @@ import jakarta.servlet.annotation.WebListener;
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class,
-        NoTheme.class })
+        BodySize.class, PageTitle.class, Push.class, ColorScheme.class,
+        Theme.class, NoTheme.class, StyleSheet.class,
+        StyleSheet.Container.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

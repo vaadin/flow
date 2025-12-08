@@ -178,20 +178,29 @@ function handleThemes(themeName, themesFolder, options, logger) {
 
 function getThemeProperties(themeFolder, options) {
   const themePropertyFile = resolve(themeFolder, 'theme.json');
-  let lastIndexOf = options.projectStaticOutput.lastIndexOf("classes");
-  let outputFolder = options.projectStaticOutput.substring(0, lastIndexOf+"classes".length);
-  let featureFlags = resolve(outputFolder, "vaadin-featureflags.properties");
+  let outputFolder;
+  if (options.javaResourceFolder) {
+    // Use the explicit javaResourceFolder if provided
+    outputFolder = options.javaResourceFolder;
+  } else {
+    // Fallback to the old logic for backwards compatibility
+    let lastIndexOf = options.projectStaticOutput.lastIndexOf('classes');
+    outputFolder = options.projectStaticOutput.substring(0, lastIndexOf + 'classes'.length);
+  }
+  let featureFlags = resolve(outputFolder, 'vaadin-featureflags.properties');
 
-  let componentFeature = existsSync(featureFlags) ? /themeComponentStyles(\s+)?=(\s+)?true/.test(readFileSync(featureFlags, { encoding: 'utf8' })) : false;
+  let componentFeature = existsSync(featureFlags)
+    ? /themeComponentStyles(\s+)?=(\s+)?true/.test(readFileSync(featureFlags, { encoding: 'utf8' }))
+    : false;
   if (!existsSync(themePropertyFile)) {
     return {
-      "autoInjectComponents": componentFeature
+      autoInjectComponents: componentFeature
     };
   }
   const themePropertyFileAsString = readFileSync(themePropertyFile);
   if (themePropertyFileAsString.length === 0) {
     return {
-      "autoInjectComponents": componentFeature
+      autoInjectComponents: componentFeature
     };
   }
   let themeJson = JSON.parse(themePropertyFileAsString);
@@ -219,7 +228,7 @@ function extractThemeName(frontendGeneratedFolder) {
     // read theme name from the 'generated/theme.js' as there we always
     // mark the used theme for webpack to handle.
     let themeFile = readFileSync(generatedThemeFile, { encoding: 'utf8' });
-    if(!nameRegex.test(themeFile)) {
+    if (!nameRegex.test(themeFile)) {
       return '';
     }
     const themeName = nameRegex.exec(themeFile)[1];

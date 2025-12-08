@@ -15,6 +15,24 @@
  */
 package com.vaadin.flow.i18n;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
@@ -23,20 +41,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
-
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
 
@@ -182,26 +186,26 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     private Map<String, String[]> getChunkData() {
         if (chunkData == null) {
             chunkData = new HashMap<>();
-            var chunkResource = classLoader.getResource(CHUNK_RESOURCE);
+            URL chunkResource = classLoader.getResource(CHUNK_RESOURCE);
 
             if (chunkResource != null) {
-                try {
-                    var json = JacksonUtils.getMapper().readTree(chunkResource);
+                try (InputStream chunkStream = chunkResource.openStream()) {
+                    var json = JacksonUtils.getMapper().readTree(chunkStream);
                     var chunksNode = json.get("chunks");
 
                     if (chunksNode != null && chunksNode.isObject()) {
-                        var fieldNames = chunksNode.fieldNames();
+                        Collection<String> fieldNames = chunksNode
+                                .propertyNames();
 
-                        while (fieldNames.hasNext()) {
-                            var chunkName = fieldNames.next();
-                            var keysNode = chunksNode.get(chunkName)
+                        for (String chunkName : fieldNames) {
+                            JsonNode keysNode = chunksNode.get(chunkName)
                                     .get("keys");
 
                             if (keysNode != null && keysNode.isArray()) {
-                                var keys = new String[keysNode.size()];
+                                String[] keys = new String[keysNode.size()];
 
                                 for (int i = 0; i < keysNode.size(); i++) {
-                                    keys[i] = keysNode.get(i).asText();
+                                    keys[i] = keysNode.get(i).asString();
                                 }
 
                                 chunkData.put(chunkName, keys);

@@ -75,11 +75,20 @@ import java.lang.annotation.Target;
  * @see AbstractTheme
  * @see NoTheme
  * @since 1.0
+ * @deprecated As of Vaadin 25, this annotation is deprecated. The theming
+ *             system has been reworked to use
+ *             {@link com.vaadin.flow.component.dependency.StyleSheet} to load
+ *             one or more stylesheets from public static resources locations or
+ *             {@link com.vaadin.flow.component.dependency.CssImport} to load
+ *             one or more stylesheets from a {@code src/main/frontend/} folder
+ *             and use mechanisms native to HTML, CSS and React (e.g.
+ *             {@code @import url("morestyles.css")} in CSS).
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 @Documented
+@Deprecated(since = "25.0")
 public @interface Theme {
 
     /**
@@ -91,15 +100,23 @@ public @interface Theme {
 
     /**
      * The theme variant, if any.
+     * <p>
+     * <b>Deprecated:</b> Use {@link com.vaadin.flow.component.page.ColorScheme}
+     * annotation instead to set the color scheme for the application.
      *
      * @return the theme variant
+     * @deprecated Use {@link com.vaadin.flow.component.page.ColorScheme}
+     *             annotation instead
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     String variant() default "";
 
     /**
      * The name of the theme to use.
      *
      * If this is not specified will default to Lumo.
+     *
+     * @return the theme name
      */
     String value() default "";
 }

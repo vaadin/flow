@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.plugin.maven;
 
@@ -22,8 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -35,6 +32,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
@@ -279,7 +278,7 @@ public class CleanFrontendMojoTest {
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException, MojoExecutionException {
         ObjectNode json = createInitialPackageJson();
-        json.put("dependencies", JacksonUtils.createObjectNode());
+        json.set("dependencies", JacksonUtils.createObjectNode());
         ((ObjectNode) json.get("dependencies")).put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();

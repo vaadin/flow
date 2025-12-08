@@ -18,8 +18,6 @@ package com.vaadin.flow.server.frontend.scanner;
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.vaadin.flow.theme.AbstractTheme;
-
 /**
  * A container for Theme information when scanning the class path. It overrides
  * equals and hashCode in order to use HashSet to eliminate duplicates.
@@ -33,6 +31,7 @@ final class ThemeData implements Serializable {
     String variant = "";
     String themeName = "";
     boolean notheme;
+    boolean themeAnnotationPresent;
 
     ThemeData(String themeClass, String variant, String themeName) {
         this.themeClass = themeClass;
@@ -72,6 +71,7 @@ final class ThemeData implements Serializable {
         }
         ThemeData that = (ThemeData) other;
         return notheme == that.notheme
+                && themeAnnotationPresent == that.themeAnnotationPresent
                 && Objects.equals(themeClass, that.themeClass)
                 && Objects.equals(themeName, that.themeName);
     }
@@ -81,12 +81,14 @@ final class ThemeData implements Serializable {
         // We might need to add variant when we wanted to fail in the
         // case of same theme class with different variant, which was
         // right in v13
-        return Objects.hash(themeClass, notheme, themeName);
+        return Objects.hash(themeClass, notheme, themeName,
+                themeAnnotationPresent);
     }
 
     @Override
     public String toString() {
-        return " notheme: " + notheme + "\n themeClass:" + themeClass
+        return " notheme: " + notheme + "\n themeAnnotationPresent: "
+                + themeAnnotationPresent + "\n themeClass:" + themeClass
                 + "\n variant: " + variant + "\n themeName: " + themeName;
     }
 }

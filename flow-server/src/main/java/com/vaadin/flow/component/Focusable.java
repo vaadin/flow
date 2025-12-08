@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.dom.Element;
 
 /**
@@ -100,20 +102,48 @@ public interface Focusable<T extends Component>
     /**
      * Calls the <code>focus</code> function at the client, making the component
      * keyboard focused.
+     * <p>
+     * This method can be called with no arguments for default browser behavior,
+     * or with one or more {@link FocusOption} values to control focus behavior:
+     * <ul>
+     * <li>{@link FocusOption.FocusVisible} - controls whether the focus ring is
+     * visible</li>
+     * <li>{@link FocusOption.PreventScroll} - controls whether the browser
+     * scrolls to the element</li>
+     * </ul>
+     * <p>
+     * Examples:
      *
+     * <pre>
+     * component.focus(); // Default behavior
+     * component.focus(PreventScroll.ENABLED); // Focus without scrolling
+     * component.focus(FocusVisible.VISIBLE, PreventScroll.ENABLED); // Both
+     *                                                               // options
+     * </pre>
+     * <p>
+     * Note: The {@code focusVisible} option is experimental and may not be
+     * supported in all browsers. When not specified, the browser decides
+     * whether to show the focus ring based on accessibility heuristics (e.g.,
+     * keyboard vs mouse interaction).
+     *
+     * @param options
+     *            zero or more focus options
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
      *      at MDN</a>
      */
-    default void focus() {
-        /*
-         * Use setTimeout to call the focus function only after the element is
-         * attached, and after the initial rendering cycle, so webcomponents can
-         * be ready by the time when the function is called.
-         */
+    default void focus(FocusOption... options) {
         Element element = getElement();
-        // Using $0 since "this" won't work inside the function
-        element.executeJs("setTimeout(function(){$0.focus()},0)", element);
+        ObjectNode json = FocusOption.buildOptions(options);
+
+        if (json == null) {
+            // No options, call focus() without arguments
+            element.executeJs("setTimeout(function(){$0.focus()},0)", element);
+        } else {
+            // Call focus with options object passed as parameter
+            element.executeJs("setTimeout(function(){$0.focus($1)},0)", element,
+                    json);
+        }
     }
 
     /**

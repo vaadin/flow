@@ -1,14 +1,9 @@
-import {PolymerElement,html} from '@polymer/polymer/polymer-element.js';
+import { LitElement, html } from 'lit';
 
-class MyButton extends PolymerElement {
-
-    static get template() {
-        return html`<button>Click me</button>`;
-    }
-
-    static get is() {
-          return 'my-button';
-    }
+class MyButton extends LitElement {
+  render() {
+    return html`<button>Click me</button>`;
+  }
 }
 
-customElements.define(MyButton.is, MyButton);
+customElements.define('my-button', MyButton);

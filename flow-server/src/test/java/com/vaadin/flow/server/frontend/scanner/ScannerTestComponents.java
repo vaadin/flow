@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.server.frontend.scanner;
 
@@ -167,7 +166,8 @@ public class ScannerTestComponents {
 
     @Route(value = "", layout = RouterLayout1.class)
     @JsModule("./view-1.js")
-    @NpmPackage(value = "@foo/first-view", version = "0.0.1")
+    @NpmPackage(value = "@foo/first-view", version = "0.0.1", assets = {
+            "first:assets" })
     public static class FirstView extends View0 {
         Component1 component1;
 

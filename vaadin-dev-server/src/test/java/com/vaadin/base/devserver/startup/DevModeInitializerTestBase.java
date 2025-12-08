@@ -1,12 +1,29 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.base.devserver.startup;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletRegistration;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,10 +33,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinServlet;
@@ -65,7 +82,10 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     public void setup() throws Exception {
         super.setup();
 
+        // Create stub npm (but not node - use real system node)
+        // The stub npm needs to be in baseDir/node/ for compatibility
         createStubNode(false, true, baseDir);
+
         devServerConfigFile = createStubDevServer(baseDir);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
@@ -112,10 +132,13 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
-        FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
-                "UTF-8");
-        devServerConfigFile.createNewFile();
-        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
+        Files.writeString(mainPackageFile.toPath(),
+                getInitalPackageJson().toString(), StandardCharsets.UTF_8);
+        // Create a minimal valid vite.config.ts that exports an empty
+        // configuration
+        Files.writeString(devServerConfigFile.toPath(), "export default {}\n",
+                StandardCharsets.UTF_8);
+        Files.createDirectories(new File(baseDir, "src/main/java").toPath());
 
         devModeStartupListener = new DevModeStartupListener();
     }
@@ -129,11 +152,11 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         ObjectNode packageJson = JacksonUtils.createObjectNode();
         ObjectNode vaadinPackages = JacksonUtils.createObjectNode();
 
-        vaadinPackages.put("dependencies", JacksonUtils.createObjectNode());
+        vaadinPackages.set("dependencies", JacksonUtils.createObjectNode());
         ObjectNode defaults = (ObjectNode) vaadinPackages.get("dependencies");
         defaults.put("@polymer/polymer", "3.2.0");
 
-        vaadinPackages.put("devDependencies", JacksonUtils.createObjectNode());
+        vaadinPackages.set("devDependencies", JacksonUtils.createObjectNode());
         defaults = (ObjectNode) vaadinPackages.get("devDependencies");
         defaults.put("webpack", "4.30.0");
         defaults.put("webpack-cli", "3.3.0");
@@ -145,7 +168,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
         vaadinPackages.put("hash", "");
 
-        packageJson.put("vaadin", vaadinPackages);
+        packageJson.set("vaadin", vaadinPackages);
 
         return packageJson;
     }

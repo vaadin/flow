@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import java.security.Principal;
@@ -61,9 +60,51 @@ public final class NavigationContext {
     private final Predicate<String> roleChecker;
 
     private final boolean errorHandling;
+    private final boolean navigating;
 
     /**
      * Creates a new navigation context instance.
+     *
+     * @param router
+     *            the router that triggered the change, not {@literal null}
+     * @param navigationTarget
+     *            navigation target class, not {@literal null}
+     * @param location
+     *            the requested location, not {@literal null}
+     * @param parameters
+     *            route parameters, not {@literal null}
+     * @param principal
+     *            the principal of the user
+     * @param roleChecker
+     *            a function that can answer if a user has a given role
+     * @param errorHandling
+     *            {@literal true} if the current navigation is related to an
+     *            error handling phase, {@literal false} for a regular
+     *            navigation to a target view
+     * @param navigating
+     *            {@literal true} if the navigation is ongoing, {@literal false}
+     *            if not (e.g. during access checks outside of navigation)
+     */
+    public NavigationContext(Router router, Class<?> navigationTarget,
+            Location location, RouteParameters parameters, Principal principal,
+            Predicate<String> roleChecker, boolean errorHandling,
+            boolean navigating) {
+        this.router = Objects.requireNonNull(router, "router must no be null");
+        this.navigationTarget = Objects.requireNonNull(navigationTarget,
+                "navigationTarget must no be null");
+        this.location = Objects.requireNonNull(location,
+                "location must no be null");
+        this.parameters = Objects.requireNonNull(parameters,
+                "parameters must no be null");
+        this.roleChecker = Objects.requireNonNull(roleChecker,
+                "roleChecker must no be null");
+        this.principal = principal;
+        this.errorHandling = errorHandling;
+        this.navigating = navigating;
+    }
+
+    /**
+     * Creates a new navigation context instance for ongoing navigation.
      *
      * @param router
      *            the router that triggered the change, not {@literal null}
@@ -85,17 +126,8 @@ public final class NavigationContext {
     public NavigationContext(Router router, Class<?> navigationTarget,
             Location location, RouteParameters parameters, Principal principal,
             Predicate<String> roleChecker, boolean errorHandling) {
-        this.router = Objects.requireNonNull(router, "router must no be null");
-        this.navigationTarget = Objects.requireNonNull(navigationTarget,
-                "navigationTarget must no be null");
-        this.location = Objects.requireNonNull(location,
-                "location must no be null");
-        this.parameters = Objects.requireNonNull(parameters,
-                "parameters must no be null");
-        this.roleChecker = Objects.requireNonNull(roleChecker,
-                "roleChecker must no be null");
-        this.principal = principal;
-        this.errorHandling = errorHandling;
+        this(router, navigationTarget, location, parameters, principal,
+                roleChecker, errorHandling, true);
     }
 
     /**
@@ -182,6 +214,17 @@ public final class NavigationContext {
      */
     public boolean isErrorHandling() {
         return errorHandling;
+    }
+
+    /**
+     * Gets if navigation is ongoing or not. If not, navigation context is not
+     * expected to produce access denial warnings in the logs eagerly.
+     * 
+     * @return {@literal true} if the navigation is ongoing, {@literal false} if
+     *         not
+     */
+    public boolean isNavigating() {
+        return navigating;
     }
 
     /**

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -10,8 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.After;
@@ -25,6 +38,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -96,7 +111,7 @@ public class BundleValidationTest {
 
     private MockedStatic<BundleValidationUtil> bundleUtils;
 
-    private MockedStatic<IOUtils> ioUtils;
+    private MockedStatic<FileIOUtils> ioUtils;
 
     private String bundleLocation;
 
@@ -118,7 +133,8 @@ public class BundleValidationTest {
                 Mockito.CALLS_REAL_METHODS);
         bundleUtils = Mockito.mockStatic(BundleValidationUtil.class,
                 Mockito.CALLS_REAL_METHODS);
-        ioUtils = Mockito.mockStatic(IOUtils.class, Mockito.CALLS_REAL_METHODS);
+        ioUtils = Mockito.mockStatic(FileIOUtils.class,
+                Mockito.CALLS_REAL_METHODS);
     }
 
     @After
@@ -1472,7 +1488,8 @@ public class BundleValidationTest {
         createProjectThemeJsonStub(
                 """
                         {
-                          "importCss": ["@fortawesome/fontawesome-free/css/all.css"],
+                          "importCss": ["@fortawesome/fontawesome-free/css/all.css",
+                            "@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1494,7 +1511,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -1517,13 +1534,11 @@ public class BundleValidationTest {
     public void themeJsonUpdates_bundleHaveAllEntriesAndMore_noBundleRebuild()
             throws IOException {
         createPackageJsonStub(BLANK_PACKAGE_JSON_WITH_HASH);
-        createProjectThemeJsonStub(
-                """
-                        {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"]
-                        }
-                        """,
-                "my-theme");
+        createProjectThemeJsonStub("""
+                {
+                  "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"]
+                }
+                """, "my-theme");
 
         final FrontendDependenciesScanner depScanner = Mockito
                 .mock(FrontendDependenciesScanner.class);
@@ -1537,7 +1552,7 @@ public class BundleValidationTest {
         ((ObjectNode) stats.get(THEME_JSON_CONTENTS)).put(bundleLocation,
                 """
                         {
-                          "lumoImports": ["typography", "color", "spacing", "badge", "utility"],
+                          "importCss": ["@vaadin/vaadin-lumo-styles/utility.css"],
                           "assets": {
                             "line-awesome": {
                               "dist/line-awesome/css/**": "line-awesome/dist/line-awesome/css",
@@ -2358,7 +2373,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(DEV_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2398,7 +2413,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2470,7 +2485,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,
@@ -2500,7 +2515,7 @@ public class BundleValidationTest {
         Mockito.when(
                 finder.getResource(PROD_BUNDLE_JAR_PATH + "config/stats.json"))
                 .thenReturn(url);
-        ioUtils.when(() -> IOUtils.toString(url, StandardCharsets.UTF_8))
+        ioUtils.when(() -> FileIOUtils.urlToString(url))
                 .thenReturn(stats.toString());
 
         boolean needsBuild = BundleValidationUtil.needsBuild(options,

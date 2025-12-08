@@ -13,10 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.dnd;
 
 import java.util.concurrent.atomic.AtomicReference;
+
+import org.junit.Assert;
+import org.junit.Test;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -25,8 +27,6 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dnd.internal.DndUtil;
 import com.vaadin.flow.router.RouterLink;
-import org.junit.Assert;
-import org.junit.Test;
 
 public class DropTargetTest extends AbstractDnDUnitTest {
 

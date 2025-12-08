@@ -57,7 +57,7 @@ public interface PluginAdapterBase {
     /**
      * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
-     * @return {@link boolean}
+     * @return true if eager server load should happen
      */
     boolean eagerServerLoad();
 
@@ -192,13 +192,6 @@ public interface PluginAdapterBase {
      *             - Could not build a URI from nodeDownloadRoot().
      */
     URI nodeDownloadRoot() throws URISyntaxException;
-
-    /**
-     * Whether the alternative node may be auto-updated or not.
-     *
-     * @return {@code true} to update node if older than default
-     */
-    boolean nodeAutoUpdate();
 
     /**
      * The node.js version to be used when node.js is installed automatically by

@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import org.junit.Assert;
-import org.junit.Test;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import org.junit.Assert;
+import org.junit.Test;
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 

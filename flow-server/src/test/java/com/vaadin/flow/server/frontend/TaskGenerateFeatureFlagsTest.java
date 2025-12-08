@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-
 import java.io.File;
 
 import org.junit.Assert;
@@ -33,6 +31,8 @@ import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+
+import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 public class TaskGenerateFeatureFlagsTest {
 

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -32,7 +31,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,6 +62,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
             TaskGenerateReactFiles.class,
+            TaskGenerateTailwindCss.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
             TaskGenerateCommercialBanner.class,
@@ -80,6 +79,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateEndpoint.class,
             TaskCopyFrontendFiles.class,
             TaskCopyLocalFrontendFiles.class,
+            TaskCopyNpmAssetsFiles.class,
             TaskGeneratePWAIcons.class,
             TaskUpdateSettingsFile.class,
             TaskUpdateVite.class,
@@ -89,6 +89,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
+            TaskProcessStylesheetCss.class,
             TaskCleanFrontendFiles.class,
             TaskRemoveOldFrontendGeneratedFiles.class
         ));
@@ -144,6 +145,8 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateCommercialBanner(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
+                // Process @StyleSheet CSS files (minify and inline @imports)
+                commands.add(new TaskProcessStylesheetCss(options));
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
                 // able to
@@ -186,7 +189,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(
                             new TaskGenerateWebComponentBootstrap(options));
                     webComponentTags = webComponents.stream().map(
-                            webComponentPath -> FilenameUtils.removeExtension(
+                            webComponentPath -> FileIOUtils.removeExtension(
                                     webComponentPath.getName()))
                             .collect(Collectors.toSet());
                     UsageStatistics.markAsUsed(
@@ -249,6 +252,11 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskCopyLocalFrontendFiles(options));
         }
 
+        if (commands.stream()
+                .noneMatch(TaskRunDevBundleBuild.class::isInstance)) {
+            commands.add(new TaskCopyNpmAssetsFiles(options));
+        }
+
         String themeName = "";
         PwaConfiguration pwa;
         if (frontendDependencies != null) {
@@ -289,6 +297,9 @@ public class NodeTasks implements FallibleCommand {
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             commands.add(new TaskGenerateReactFiles(options));
+            if (FrontendUtils.isTailwindCssEnabled(options)) {
+                commands.add(new TaskGenerateTailwindCss(options));
+            }
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));
             }

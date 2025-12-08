@@ -21,7 +21,8 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal.NodeSignalState;
@@ -50,7 +51,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * methods to get an instance of that specific type that you can use for
  * applying some specific operation.
  */
-public class NodeSignal extends Signal<NodeSignalState> {
+public class NodeSignal extends AbstractSignal<NodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.
@@ -321,7 +322,8 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the target list location, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAt(Signal<?> node, ListPosition at) {
+    public SignalOperation<Void> adoptAt(AbstractSignal<?> node,
+            ListPosition at) {
         return submit(new SignalCommand.AdoptAtCommand(Id.random(), id(),
                 node.id(), Objects.requireNonNull(at)));
     }
@@ -338,7 +340,7 @@ public class NodeSignal extends Signal<NodeSignalState> {
      *            the key to use, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> adoptAs(Signal<?> signal, String key) {
+    public SignalOperation<Void> adoptAs(AbstractSignal<?> signal, String key) {
         return submit(new SignalCommand.AdoptAsCommand(Id.random(), id(),
                 signal.id(), Objects.requireNonNull(key)));
     }

@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.DomEvent;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.MockVaadinServletService;
@@ -66,8 +67,6 @@ import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
 import com.vaadin.tests.util.TestUtil;
-
-import elemental.json.Json;
 
 public class ComponentTest {
 
@@ -1427,7 +1426,8 @@ public class ComponentTest {
     }
 
     private DomEvent createEvent(String type, Component component) {
-        return new DomEvent(component.getElement(), type, Json.createObject());
+        return new DomEvent(component.getElement(), type,
+                JacksonUtils.createObjectNode());
     }
 
     private void assertDependency(Dependency.Type type, String url,
@@ -1983,6 +1983,69 @@ public class ComponentTest {
 
         assertPendingJs(
                 "scrollIntoView({\"behavior\":\"smooth\",\"block\":\"end\",\"inline\":\"center\"})");
+    }
+
+    @Test
+    public void scrollIntoView_withBehaviorEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"");
+    }
+
+    @Test
+    public void scrollIntoView_withBlockEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Block.END);
+
+        assertScrollIntoViewWithParams("\"block\":\"end\"");
+    }
+
+    @Test
+    public void scrollIntoView_withInlineEnum() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"inline\":\"center\"");
+    }
+
+    @Test
+    public void scrollIntoView_withMultipleOptions() {
+        EnabledDiv div = new EnabledDiv();
+        testUI.add(div);
+        div.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+                ScrollIntoViewOption.Block.END,
+                ScrollIntoViewOption.Inline.CENTER);
+
+        assertScrollIntoViewWithParams("\"behavior\":\"smooth\"",
+                "\"block\":\"end\"", "\"inline\":\"center\"");
+    }
+
+    private void assertScrollIntoViewWithParams(String... expectedJsonParts) {
+        testUI.getInternals().getStateTree()
+                .runExecutionsBeforeClientResponse();
+        List<PendingJavaScriptInvocation> pendingJs = testUI.getInternals()
+                .dumpPendingJavaScriptInvocations();
+        Assert.assertEquals(1, pendingJs.size());
+        JavaScriptInvocation inv = pendingJs.get(0).getInvocation();
+
+        // Verify it uses parameter passing
+        String expression = inv.getExpression();
+        MatcherAssert.assertThat(expression,
+                CoreMatchers.containsString("$0.scrollIntoView($1)"));
+
+        // Verify parameters contain expected JSON parts
+        List<Object> params = inv.getParameters();
+        Assert.assertTrue("Should have at least 2 parameters",
+                params.size() >= 2);
+        String paramJson = params.get(1).toString();
+        for (String expectedPart : expectedJsonParts) {
+            MatcherAssert.assertThat(paramJson,
+                    CoreMatchers.containsString(expectedPart));
+        }
     }
 
     @Test

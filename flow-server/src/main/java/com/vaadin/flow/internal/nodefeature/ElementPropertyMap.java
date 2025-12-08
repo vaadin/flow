@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -30,13 +29,16 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.PropertyChangeEvent;
 import com.vaadin.flow.dom.PropertyChangeListener;
 import com.vaadin.flow.function.SerializablePredicate;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.ValueSignal;
 
 /**
  * Map for element property values.
@@ -83,7 +85,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      *            the value to store
      * @return a runnable for firing the deferred change event
      * @exception PropertyChangeDeniedException
-     *                if the property change is disallowed
+     *                if the property change is disallowed due to the property
+     *                not being set as synchronized, or the signal bound to the
+     *                property is not a ValueSignal and can not thus be updated
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
             throws PropertyChangeDeniedException {
@@ -111,6 +115,42 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      */
     public void setProperty(String name, Serializable value) {
         setProperty(name, value, true);
+    }
+
+    @Override
+    protected Serializable get(String key) {
+        Serializable value = super.get(key);
+        if (value instanceof SignalBinding) {
+            return ((SignalBinding) value).value();
+        } else {
+            return value;
+        }
+    }
+
+    @Override
+    public void setPropertyFromSignal(String name, Object value) {
+        assert !forbiddenProperties.contains(name)
+                : "Forbidden property name: " + name;
+
+        Serializable valueToSet;
+        if (value == null) {
+            valueToSet = JacksonUtils.nullNode();
+        } else if (value instanceof String || value instanceof Number
+                || value instanceof Boolean || value instanceof BaseJsonNode) {
+            valueToSet = (Serializable) value;
+        } else if (value instanceof List) {
+            // List type conversion (return type ArrayNode)
+            valueToSet = JacksonUtils.listToJson((List<?>) value);
+        } else {
+            // Map and Bean/Object types conversion (return type ObjectNode)
+            valueToSet = JacksonUtils.beanToJson(value);
+        }
+
+        Serializable oldValue = get(name);
+        boolean valueChanged = !Objects.equals(oldValue, valueToSet);
+        if (valueChanged) {
+            setProperty(name, valueToSet, true);
+        }
     }
 
     /**
@@ -493,9 +533,9 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * Here is the logic flow:
      *
      * <pre>
-
-
-
+    
+    
+    
                              +--------------------------------+
                              |                                |
                              | allowUpdateFromClient  is false|
@@ -568,6 +608,23 @@ public class ElementPropertyMap extends AbstractPropertyMap {
 
         }
 
-        return putWithDeferredChangeEvent(key, value, false);
+        PutResult putResult = null;
+        if (hasSignal(key)) {
+            SignalBinding binding = (SignalBinding) super.get(key);
+            putResult = putWithDeferredChangeEvent(key, new SignalBinding(
+                    binding.signal(), binding.registration(), value), false);
+            if (binding.signal() instanceof ValueSignal valueSignal) {
+                valueSignal.value(value);
+            } else {
+                throw new PropertyChangeDeniedException(String.format(
+                        "Signal bound to property '%s' is not a ValueSignal, "
+                                + "cannot update its value from the client.",
+                        key));
+            }
+        } else {
+            putResult = putWithDeferredChangeEvent(key, value, false);
+        }
+
+        return putResult;
     }
 }

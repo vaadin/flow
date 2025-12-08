@@ -13,14 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.webcomponent;
 
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.EventOptions;
 import com.vaadin.flow.component.webcomponent.WebComponent;
-
-import elemental.json.Json;
+import com.vaadin.flow.internal.JacksonUtils;
 
 public class FireEventExporter
         extends WebComponentExporter<FireEventComponent> {
@@ -33,14 +31,14 @@ public class FireEventExporter
     public void configureInstance(WebComponent<FireEventComponent> webComponent,
             FireEventComponent component) {
         component.setSumConsumer(number -> webComponent
-                .fireEvent("sum-calculated", Json.create(number)));
+                .fireEvent("sum-calculated", JacksonUtils.createNode(number)));
         component.setErrorConsumer(err -> webComponent
-                .fireEvent("sum" + "-error", Json.create(err)));
+                .fireEvent("sum" + "-error", JacksonUtils.createNode(err)));
 
         component.setButtonConsumer(optionsType -> {
             EventOptions options = createEventOptions(optionsType);
             webComponent.fireEvent("button-event",
-                    Json.create(optionsType.name()), options);
+                    JacksonUtils.createNode(optionsType.name()), options);
         });
     }
 

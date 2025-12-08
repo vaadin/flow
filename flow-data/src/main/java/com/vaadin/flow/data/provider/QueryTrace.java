@@ -22,6 +22,10 @@ import java.util.List;
  * Allows to trace {@link Query#getOffset()}, {@link Query#getLimit()},
  * {@link Query#getPage()} and {@link Query#getPageSize()} method calls.
  *
+ * @param <T>
+ *            the bean type
+ * @param <F>
+ *            the filter type
  * @author Vaadin Ltd
  * @since 1.0
  *

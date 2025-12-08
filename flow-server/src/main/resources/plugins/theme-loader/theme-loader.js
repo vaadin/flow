@@ -30,4 +30,4 @@ export default function (source, map) {
 
   source = rewriteCssUrls(source, handledResourceFolder, themeFolder, logger, options);
   this.callback(null, source, map);
-};
+}

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.startup;
 
 import java.util.function.Consumer;
@@ -32,6 +31,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.communication.IndexHtmlResponse;
 import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.Capabilities;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
@@ -75,11 +75,13 @@ public class BaseLicenseCheckerServiceInitListenerTest {
             listener.serviceInit(event);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
-                            eq(PRODUCT_VERSION), isNull(BuildType.class)));
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)));
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
-                            any(Consumer.class), anyInt()), never());
+                            any(Consumer.class), anyInt(),
+                            any(Capabilities.class)), never());
         }
     }
 
@@ -93,7 +95,8 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                     "Invalid or missing license");
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
-                            eq(PRODUCT_VERSION), isNull(BuildType.class)))
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)))
                     .thenThrow(checkerException);
 
             LicenseException exception = Assert.assertThrows(
@@ -102,7 +105,8 @@ public class BaseLicenseCheckerServiceInitListenerTest {
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
-                            any(Consumer.class), anyInt()), never());
+                            any(Consumer.class), anyInt(),
+                            any(Capabilities.class)), never());
 
         }
     }
@@ -116,17 +120,18 @@ public class BaseLicenseCheckerServiceInitListenerTest {
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
-                            any(Consumer.class), eq(0)))
+                            any(Consumer.class), eq(0),
+                            any(Capabilities.class)))
                     .then(i -> {
                         i.<Consumer<String>> getArgument(3).accept("URL");
                         return null;
                     });
 
             listener.serviceInit(event);
-            licenseChecker.verify(
-                    () -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
-                            eq(PRODUCT_VERSION), isNull(BuildType.class)),
-                    never());
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
 
             var indexHtmlRequestListeners = event
                     .getAddedIndexHtmlRequestListeners().toList();
@@ -157,26 +162,28 @@ public class BaseLicenseCheckerServiceInitListenerTest {
                 .mockStatic(LicenseChecker.class)) {
             licenseChecker.when(() -> LicenseChecker.checkLicense(anyString(),
                     anyString(), isNull(BuildType.class), any(Consumer.class),
-                    eq(0))).then(i -> {
+                    eq(0), any(Capabilities.class))).then(i -> {
                         i.<Consumer<String>> getArgument(3).accept("URL");
                         return null;
                     });
 
             listener.serviceInit(event);
-            licenseChecker.verify(
-                    () -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
-                            eq(PRODUCT_VERSION), isNull(BuildType.class)),
-                    never());
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
             new BaseLicenseCheckerServiceInitListener("productB", "1.0.0") {
             }.serviceInit(event);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq("productB"),
-                            eq("1.0.0"), isNull(BuildType.class)), never());
+                            eq("1.0.0"), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
             new BaseLicenseCheckerServiceInitListener("productC", "2.4.6") {
             }.serviceInit(event);
             licenseChecker
                     .verify(() -> LicenseChecker.checkLicense(eq("productC"),
-                            eq("2.4.6"), isNull(BuildType.class)), never());
+                            eq("2.4.6"), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
 
             var indexHtmlRequestListeners = event
                     .getAddedIndexHtmlRequestListeners().toList();
@@ -214,16 +221,17 @@ public class BaseLicenseCheckerServiceInitListenerTest {
             licenseChecker
                     .when(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
                             eq(PRODUCT_VERSION), isNull(BuildType.class),
-                            any(Consumer.class), eq(0)))
+                            any(Consumer.class), eq(0),
+                            any(Capabilities.class)))
                     .thenThrow(checkerException);
 
             LicenseException exception = Assert.assertThrows(
                     LicenseException.class, () -> listener.serviceInit(event));
             Assert.assertSame(checkerException, exception);
-            licenseChecker.verify(
-                    () -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
-                            eq(PRODUCT_VERSION), isNull(BuildType.class)),
-                    never());
+            licenseChecker
+                    .verify(() -> LicenseChecker.checkLicense(eq(PRODUCT_NAME),
+                            eq(PRODUCT_VERSION), any(Capabilities.class),
+                            isNull(BuildType.class)), never());
 
         }
     }

@@ -1,11 +1,8 @@
-
-import { LitElement, html } from "lit";
+import { LitElement, html } from 'lit';
 
 export class AnchorInTemplate extends LitElement {
   render() {
-    return html`
-        <a href="" download id="anchor">Download</a>
-    `;
+    return html` <a href="" download id="anchor">Download</a> `;
   }
 }
-customElements.define("anchor-in-template", AnchorInTemplate);
+customElements.define('anchor-in-template', AnchorInTemplate);

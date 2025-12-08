@@ -36,14 +36,14 @@ import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.zeroturnaround.exec.InvalidExitValueException;
 import org.zeroturnaround.exec.ProcessExecutor;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -146,7 +146,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
@@ -166,7 +165,6 @@ public class BuildFrontendUtil {
                         getGeneratedFrontendDirectory(adapter))
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
-                .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
                 .withProductionMode(false).withReact(adapter.isReactEnabled())
@@ -175,7 +173,8 @@ public class BuildFrontendUtil {
                 .withNpmExcludeWebComponents(
                         adapter.isNpmExcludeWebComponents())
                 .withFrontendIgnoreVersionChecks(
-                        adapter.isFrontendIgnoreVersionChecks());
+                        adapter.isFrontendIgnoreVersionChecks())
+                .setCopyAssets(false);
 
         // Copy jar artifact contents in TaskCopyFrontendFiles
         options.copyResources(adapter.getJarFiles());
@@ -209,7 +208,6 @@ public class BuildFrontendUtil {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
         settings.setNodeVersion(adapter.nodeVersion());
-        settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
         settings.setIgnoreVersionChecks(
@@ -360,7 +358,6 @@ public class BuildFrontendUtil {
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
@@ -373,7 +370,9 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled())
+                    .withMetaInfResourcesDirectory(
+                            adapter.resourcesOutputDirectory());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -433,7 +432,6 @@ public class BuildFrontendUtil {
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
@@ -466,8 +464,8 @@ public class BuildFrontendUtil {
      * @return correct folder or legacy folder if not user defined
      */
     public static File getFrontendDirectory(PluginAdapterBase adapter) {
-        return FrontendUtils.getLegacyFrontendFolderIfExists(
-                adapter.npmFolder(), adapter.frontendDirectory());
+        return FrontendUtils.getFrontendFolder(adapter.npmFolder(),
+                adapter.frontendDirectory());
     }
 
     /**
@@ -506,7 +504,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
         String tokenContent = "";
         File tokenFile = getTokenFile(adapter);
@@ -569,12 +566,7 @@ public class BuildFrontendUtil {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (adapter.requireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);
@@ -733,8 +725,8 @@ public class BuildFrontendUtil {
                     continue;
                 }
                 final JsonNode cvdlModule = cvdlModules.get(key);
-                components.add(new Product(cvdlModule.get("name").textValue(),
-                        cvdlModule.get("version").textValue()));
+                components.add(new Product(cvdlModule.get("name").asString(),
+                        cvdlModule.get("version").asString()));
             }
         }
         return components;

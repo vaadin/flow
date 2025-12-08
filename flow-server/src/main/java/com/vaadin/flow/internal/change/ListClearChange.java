@@ -17,11 +17,11 @@ package com.vaadin.flow.internal.change;
 
 import java.io.Serializable;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * Change describing a clear operation in a {@link NodeList list} node feature.
@@ -54,7 +54,7 @@ public class ListClearChange<T extends Serializable>
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_CLEAR);
         super.populateJson(json, constantPool);
     }

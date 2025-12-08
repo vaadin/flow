@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.i18n;
 
 import java.io.File;
@@ -33,7 +32,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mock;
 import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
@@ -209,14 +207,17 @@ public class DefaultInstantiatorI18NTest {
     }
 
     @Test
-    public void translate_withoutInstantiator_throwsIllegalStateException() {
+    public void translate_withoutProvider_returnsKey() {
         VaadinService service = Mockito.mock(VaadinService.class);
         VaadinService.setCurrent(service);
 
-        Assert.assertThrows(
-                "Should throw exception without Instantiator in VaadinService",
-                IllegalStateException.class,
-                () -> I18NProvider.translate("foo.bar"));
+        DefaultInstantiator defaultInstantiator = new DefaultInstantiator(
+                service);
+        Mockito.when(service.getInstantiator()).thenReturn(defaultInstantiator);
+
+        Assert.assertEquals(
+                "Should return the key with !{}! to show no translation available",
+                "!{foo.bar}!", I18NProvider.translate("foo.bar"));
     }
 
     @Test

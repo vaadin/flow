@@ -13,13 +13,12 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver.stats;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 class JsonHelpers {
 
@@ -57,7 +56,7 @@ class JsonHelpers {
 
         for (final JsonNode p : arrayNode) {
             if (p != null && p.has(idField)
-                    && id.equals(p.get(idField).asText())) {
+                    && id.equals(p.get(idField).asString())) {
                 return (ObjectNode) p;
             }
         }

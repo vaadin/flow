@@ -41,7 +41,6 @@ public interface ConnectionStateHandler {
      * <p>
      * This allows, for instance, a servlet filter to redirect the application
      * to a custom login page when the session expires. For example:
-     * </p>
      *
      * <pre>
      * if (sessionExpired) {

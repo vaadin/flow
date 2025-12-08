@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -29,13 +28,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -78,7 +76,7 @@ public class TaskUpdateSettingsFileTest {
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 options, "theme", new PwaConfiguration());
         updateSettings.execute();
-        JsonObject settingsJson = readSettingsFile();
+        JsonNode settingsJson = readSettingsFile();
         assertPathsMatchProjectFolder(settingsJson);
     }
 
@@ -88,21 +86,21 @@ public class TaskUpdateSettingsFileTest {
         TaskUpdateSettingsFile updateSettings = new TaskUpdateSettingsFile(
                 options, "theme", new PwaConfiguration());
         updateSettings.execute();
-        JsonObject settingsJson = readSettingsFile();
+        JsonNode settingsJson = readSettingsFile();
         assertPathsMatchProjectFolder(settingsJson);
     }
 
-    private JsonObject readSettingsFile() throws IOException {
+    private JsonNode readSettingsFile() throws IOException {
         File settings = new File(temporaryFolder.getRoot(),
                 "target/" + DEV_SETTINGS_FILE);
-        JsonObject settingsJson = Json.parse(
+        JsonNode settingsJson = JacksonUtils.readTree(
                 IOUtils.toString(settings.toURI(), StandardCharsets.UTF_8));
         return settingsJson;
     }
 
-    private void assertPathsMatchProjectFolder(JsonObject json) {
+    private void assertPathsMatchProjectFolder(JsonNode json) {
         ABSOLUTE_PATH_ENTRIES.forEach(key -> {
-            String path = json.getString(key);
+            String path = json.get(key).asString();
             Assert.assertTrue(
                     "Expected '" + key + "' to have an absolute path matching "
                             + temporaryFolder.getRoot().getPath() + ", but was "

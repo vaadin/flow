@@ -13,16 +13,14 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
+
+import java.io.PrintWriter;
+import java.io.Serializable;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.slf4j.Logger;
 import org.slf4j.Marker;
-
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
 
 public class MockLogger implements Logger, Serializable {
 

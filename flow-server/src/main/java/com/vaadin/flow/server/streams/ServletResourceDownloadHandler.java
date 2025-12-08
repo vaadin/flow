@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
@@ -24,6 +23,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a servlet resource for client download.
@@ -76,6 +76,7 @@ public class ServletResourceDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinService service = downloadEvent.getRequest().getService();
         VaadinResponse response = downloadEvent.getResponse();
         if (service instanceof VaadinServletService servletService) {
@@ -85,11 +86,10 @@ public class ServletResourceDownloadHandler
                 String resourceName = getUrlPostfix();
                 downloadEvent
                         .setContentType(getContentType(resourceName, response));
-                if (!isInline()) {
-                    downloadEvent.setFileName(resourceName);
+                if (isInline()) {
+                    downloadEvent.inline(resourceName);
                 } else {
-                    downloadEvent.getResponse().setHeader("Content-Disposition",
-                            "inline");
+                    downloadEvent.setFileName(resourceName);
                 }
                 TransferUtil.transfer(inputStream, outputStream,
                         getTransferContext(downloadEvent), getListeners());
@@ -97,6 +97,7 @@ public class ServletResourceDownloadHandler
                 // Set status before output is closed (see #8740)
                 response.setStatus(
                         HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+                downloadEvent.setException(ioe);
                 notifyError(downloadEvent, ioe);
                 throw ioe;
             }

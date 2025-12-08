@@ -15,17 +15,6 @@
  */
 package com.vaadin.viteapp;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import org.junit.Assert;
-import org.junit.Assume;
-import org.junit.Test;
-import org.junit.Before;
-import org.openqa.selenium.By;
-import org.openqa.selenium.JavascriptExecutor;
-
-import com.vaadin.flow.testutil.ChromeDeviceTest;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -34,6 +23,17 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+
+import org.junit.Assert;
+import org.junit.Assume;
+import org.junit.Before;
+import org.junit.Test;
+import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
+import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
     private static final Path SW_APP_TS_PATH = Path.of("src", "main",
@@ -99,8 +99,8 @@ public class MainIT extends ChromeDeviceTest {
                 StandardCharsets.UTF_8);
     }
 
-    private static JsonObject readJsonFromUrl(String url) throws IOException {
-        return Json.parse(readStringFromUrl(url));
+    private static ObjectNode readJsonFromUrl(String url) throws IOException {
+        return JacksonUtils.readTree(readStringFromUrl(url));
     }
 
     private static byte[] readAllBytes(InputStream inputStream)
@@ -116,9 +116,10 @@ public class MainIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(
+        ObjectNode stats = readJsonFromUrl(
                 getRootURL() + "?v-r=init&location=");
-        return stats.getObject("appConfig").getBoolean("productionMode");
+        return ((ObjectNode) stats.get("appConfig")).get("productionMode")
+                .asBoolean();
     }
 
 }

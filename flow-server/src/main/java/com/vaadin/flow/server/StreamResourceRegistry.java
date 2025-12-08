@@ -124,7 +124,7 @@ public class StreamResourceRegistry implements Serializable {
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler) {
         return registerResource(elementRequestHandler,
-                UI.getCurrent().getElement());
+                UI.getCurrentOrThrow().getElement());
     }
 
     /**

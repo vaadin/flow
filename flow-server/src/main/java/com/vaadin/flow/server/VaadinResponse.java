@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
+
+import jakarta.servlet.http.Cookie;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-
-import jakarta.servlet.http.Cookie;
 
 import com.vaadin.flow.internal.CurrentInstance;
 
@@ -69,6 +68,17 @@ public interface VaadinResponse {
      * @see jakarta.servlet.http.HttpServletResponse#setHeader(String, String)
      */
     void setHeader(String name, String value);
+
+    /**
+     * Checks if a response header with the given name has been set.
+     *
+     * @param name
+     *            the name of the header
+     * @return {@code true} if the header has been set, {@code false} otherwise
+     *
+     * @see jakarta.servlet.http.HttpServletResponse#containsHeader(String)
+     */
+    boolean containsHeader(String name);
 
     /**
      * Properly formats a timestamp as a date header. If the header had already

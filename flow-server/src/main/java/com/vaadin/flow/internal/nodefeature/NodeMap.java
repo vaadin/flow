@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -32,7 +31,9 @@ import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
+import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
+import com.vaadin.signals.Signal;
 
 /**
  * A state node feature that structures data as a map.
@@ -144,6 +145,10 @@ public abstract class NodeMap extends NodeFeature {
         public Stream<Serializable> streamValues() {
             return super.values().stream();
         }
+    }
+
+    public record SignalBinding(Signal<?> signal, Registration registration,
+            Serializable value) implements Serializable {
     }
 
     private Values values;
@@ -424,6 +429,9 @@ public abstract class NodeMap extends NodeFeature {
             } else if (containsNow
                     && producePutChange(key, containedEarlier, value)) {
                 Object currentValue = values.get(key);
+                if (currentValue instanceof SignalBinding binding) {
+                    currentValue = binding.value();
+                }
                 // New or changed value
                 collector.accept(new MapPutChange(this, key, currentValue));
                 hasChanges = true;
@@ -511,7 +519,8 @@ public abstract class NodeMap extends NodeFeature {
      *            whether the value was already earlier in the map
      * @param newValue
      *            the new value for the {@code key}
-     * @return
+     * @return {@code true} if a change should be produced, {@code false}
+     *         otherwise
      */
     protected boolean producePutChange(String key, boolean hadValueEarlier,
             Serializable newValue) {

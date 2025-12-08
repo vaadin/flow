@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.binder;
 
 import java.io.Serializable;
@@ -1417,14 +1416,14 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertTrue(binder.isValid());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void isValidTest_unbound_binder_throws_with_bean_level_validation() {
+    @Test
+    public void isValidTest_unbound_binder_passes_with_bean_level_validation() {
         binder.forField(nameField).bind(Person::getFirstName,
                 Person::setFirstName);
         binder.withValidator(Validator.from(
                 person -> !person.getFirstName().equals("fail bean validation"),
                 ""));
-        binder.isValid();
+        Assert.assertTrue(binder.isValid());
     }
 
     @Test
@@ -1746,20 +1745,22 @@ public class BinderTest extends BinderTestBase<Binder<Person>, Person> {
         Assert.assertFalse(binder.validate().isOk());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void beanvalidation_isValid_throws_with_readBean() {
+    @Test
+    public void beanvalidation_isValid_passes_with_readBean() {
         TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+        binder.withValidator(Validator.alwaysFail("fail"));
 
         binder.readBean(item);
 
         Assert.assertTrue(binder.isValid());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void beanvalidation_validate_throws_with_readBean() {
+    @Test
+    public void beanvalidation_validate_passes_with_readBean() {
         TestTextField lastNameField = new TestTextField();
         setBeanValidationFirstNameNotEqualsLastName(nameField, lastNameField);
+        binder.withValidator(Validator.alwaysFail("fail"));
 
         binder.readBean(item);
 

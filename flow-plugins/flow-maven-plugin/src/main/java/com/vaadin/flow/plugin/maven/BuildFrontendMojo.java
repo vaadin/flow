@@ -48,6 +48,8 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 
+import static com.vaadin.flow.server.Constants.META_INF;
+
 /**
  * Goal that builds the frontend bundle.
  *
@@ -66,7 +68,7 @@ import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
  *
  * @since 2.0
  */
-@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PROCESS_CLASSES)
+@Mojo(name = "build-frontend", requiresDependencyResolution = ResolutionScope.COMPILE_PLUS_RUNTIME, defaultPhase = LifecyclePhase.PREPARE_PACKAGE)
 public class BuildFrontendMojo extends FlowModeAbstractMojo
         implements PluginAdapterBuild {
 
@@ -136,10 +138,24 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
     private boolean cleanFrontendFiles;
 
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
+
     @Override
     protected void executeInternal()
             throws MojoExecutionException, MojoFailureException {
         long start = System.nanoTime();
+
+        if (!BuildFrontendUtil.getTokenFile(this).exists()) {
+            // if not prepare-frontend token file exists propagate build info
+            // to token file
+            File tokenFile = BuildFrontendUtil.propagateBuildInfo(this);
+        }
 
         Options options = new Options(null, getClassFinder(), npmFolder())
                 .withFrontendDirectory(frontendDirectory())
@@ -268,6 +284,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean compressBundle() {
         return true;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     @Override

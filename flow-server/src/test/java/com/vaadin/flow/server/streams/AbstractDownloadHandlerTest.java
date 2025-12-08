@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayInputStream;
@@ -43,8 +42,8 @@ import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.TransferUtil;
 import com.vaadin.flow.shared.Registration;
 
 public class AbstractDownloadHandlerTest {
@@ -62,6 +61,7 @@ public class AbstractDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private ByteArrayOutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException {
@@ -69,7 +69,7 @@ public class AbstractDownloadHandlerTest {
         response = Mockito.mock(VaadinResponse.class);
         session = Mockito.mock(VaadinSession.class);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -90,6 +90,7 @@ public class AbstractDownloadHandlerTest {
             public void handleDownloadRequest(DownloadEvent event) {
             }
         };
+
         mockContext = Mockito.mock(TransferContext.class);
         Mockito.when(mockContext.contentLength()).thenReturn(TOTAL_BYTES);
         listener = Mockito.mock(TransferProgressListener.class);
@@ -200,6 +201,7 @@ public class AbstractDownloadHandlerTest {
         Assert.assertTrue(successAtomic.get());
         Assert.assertEquals("Hello",
                 outputStream.toString(StandardCharsets.UTF_8));
+        Assert.assertNull(downloadEvent.getException());
 
         OutputStream outputStreamError = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("Test error")).when(outputStreamError)
@@ -210,6 +212,7 @@ public class AbstractDownloadHandlerTest {
 
         customHandler.handleDownloadRequest(downloadEvent);
         Assert.assertFalse(successAtomic.get());
+        Assert.assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -253,6 +256,7 @@ public class AbstractDownloadHandlerTest {
         Assert.assertEquals(response, context.response());
         Assert.assertEquals(1024, context.contentLength());
         Assert.assertEquals("test.txt", context.fileName());
+        Assert.assertNull(event.getException());
     }
 
     @Test

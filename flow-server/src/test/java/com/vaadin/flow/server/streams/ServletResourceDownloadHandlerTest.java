@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
+
+import jakarta.servlet.ServletContext;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -25,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.servlet.ServletContext;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,6 +52,7 @@ public class ServletResourceDownloadHandlerTest {
     private DownloadEvent downloadEvent;
     private OutputStream outputStream;
     private Element owner;
+    private UI ui;
 
     @Before
     public void setUp() throws IOException, URISyntaxException {
@@ -72,7 +73,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(servletContext.getResourceAsStream(Mockito.anyString()))
                 .thenReturn(stream);
 
-        UI ui = Mockito.mock(UI.class);
+        ui = Mockito.mock(UI.class);
         // run the command immediately
         Mockito.doAnswer(invocation -> {
             Command command = invocation.getArgument(0);
@@ -143,6 +144,7 @@ public class ServletResourceDownloadHandlerTest {
                 transferredBytesRecords.stream().mapToLong(Long::longValue)
                         .toArray());
         Mockito.verify(response).setContentType("application/octet-stream");
+        Assert.assertNull(downloadEvent.getException());
     }
 
     @Test
@@ -153,6 +155,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(downloadEvent.getSession()).thenReturn(session);
         Mockito.when(downloadEvent.getResponse()).thenReturn(response);
         Mockito.when(downloadEvent.getOwningElement()).thenReturn(owner);
+        Mockito.when(downloadEvent.getUI()).thenReturn(ui);
         OutputStream outputStreamMock = Mockito.mock(OutputStream.class);
         Mockito.doThrow(new IOException("I/O exception")).when(outputStreamMock)
                 .write(Mockito.any(byte[].class), Mockito.anyInt(),
@@ -194,6 +197,8 @@ public class ServletResourceDownloadHandlerTest {
         } catch (Exception e) {
         }
         Assert.assertEquals(List.of("onStart", "onError"), invocations);
+        Mockito.verify(downloadEvent)
+                .setException(Mockito.any(IOException.class));
     }
 
     @Test
@@ -207,6 +212,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -229,6 +235,7 @@ public class ServletResourceDownloadHandlerTest {
         Mockito.when(event.getResponse()).thenReturn(response);
         Mockito.when(event.getOwningElement()).thenReturn(owner);
         Mockito.when(event.getOutputStream()).thenReturn(outputStream);
+        Mockito.when(event.getUI()).thenReturn(ui);
         Mockito.when(response.getOutputStream()).thenReturn(outputStream);
         Mockito.when(response.getService()).thenReturn(service);
         Mockito.when(service.getMimeType(Mockito.anyString()))
@@ -241,7 +248,8 @@ public class ServletResourceDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline() throws IOException {
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
+            throws IOException {
         DownloadHandler handler = DownloadHandler
                 .forServletResource(PATH_TO_FILE, "my-download.bin").inline();
 
@@ -254,6 +262,7 @@ public class ServletResourceDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"my-download.bin\"");
     }
 }

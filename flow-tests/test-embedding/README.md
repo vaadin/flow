@@ -39,3 +39,31 @@ be implemented. Its method `assertThatThemedComponentWasChosen` is used to
 validate that the embedded component being tested has the correct theme 
 applied. See modules `test-embedding-generic` and 
 `test-embedding-generic-compatibility` for examples.
+ 
+### Note on static webapp html file usage
+
+- DO NOT create a file named web-component.html in src/main/webapp/
+- The file web-component.html is reserved and auto-generated in src/main/frontend/web-component.html by the Vaadin build
+  process
+- If you create a manual web-component.html in the webapp folder, it will be served directly by the servlet container,
+  bypassing Vite's transformation pipeline
+- This prevents the automatic injection of vaadin-web-component.ts, which initializes the Flow client and sets up
+  required APIs like window.Vaadin.Flow.registerWidgetset
+- Result: Your embedded web components will fail to connect to the server with errors like
+  $wnd.Vaadin.Flow.registerWidgetset is not a function
+
+Correct approach:
+- Use index.html or any other name for your main HTML files in src/main/webapp/
+- Let Vaadin generate src/main/frontend/web-component.html automatically during the build
+- Access your embedded web components through the URLs served by the Vaadin servlet, which will properly transform the
+  auto-generated web-component.html
+
+File structure:
+src/main/
+├── frontend/
+│   └── web-component.html        ← Auto-generated, includes proper initialization
+├── webapp/
+│   └── index.html                ← Your custom HTML (use any name except web-component.html)
+└── java/
+    └── com/example/
+    └── MyComponentExporter.java

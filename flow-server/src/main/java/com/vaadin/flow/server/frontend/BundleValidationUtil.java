@@ -1,9 +1,25 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -17,12 +33,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -281,6 +296,8 @@ public final class BundleValidationUtil {
      *
      * @param jarPath
      *            JAR path where bunlde to check is located
+     * @param finder
+     *            the class finder to use for locating resources
      * @return {@code true} if bundle stats.json is found
      */
     public static boolean hasJarBundle(String jarPath, ClassFinder finder) {
@@ -307,8 +324,7 @@ public final class BundleValidationUtil {
         if (packageJsonFile.exists()) {
             try {
                 final ObjectNode packageJson = JacksonUtils
-                        .readTree(FileUtils.readFileToString(packageJsonFile,
-                                StandardCharsets.UTF_8));
+                        .readTree(Files.readString(packageJsonFile.toPath()));
                 cleanOldPlatformDependencies(packageJson);
                 return getDefaultPackageJson(options, frontendDependencies,
                         packageJson);
@@ -701,8 +717,9 @@ public final class BundleValidationUtil {
                 getLogger().info("No file found for '{}'", projectImport);
                 return false;
             }
-            String frontendFileContent = FileUtils
-                    .readFileToString(frontendFile, StandardCharsets.UTF_8);
+
+            String frontendFileContent = Files
+                    .readString(frontendFile.toPath());
             compareFrontendHashes(frontendHashes, faultyContent, projectImport,
                     frontendFileContent);
         }
@@ -735,8 +752,7 @@ public final class BundleValidationUtil {
         if (indexHtml.exists()) {
             final JsonNode frontendHashes = statsJson
                     .get(FRONTEND_HASHES_STATS_KEY);
-            String frontendFileContent = FileUtils.readFileToString(indexHtml,
-                    StandardCharsets.UTF_8);
+            String frontendFileContent = Files.readString(indexHtml.toPath());
             List<String> faultyContent = new ArrayList<>();
             compareFrontendHashes(frontendHashes, faultyContent,
                     FrontendUtils.INDEX_HTML, frontendFileContent);
@@ -848,8 +864,7 @@ public final class BundleValidationUtil {
                 File frontendFile = new File(frontendDirectory, filePath);
                 if (frontendFile.exists()) {
                     final String hash = calculateHash(
-                            FileUtils.readFileToString(frontendFile,
-                                    StandardCharsets.UTF_8));
+                            Files.readString(frontendFile.toPath()));
                     if (!expectedHash.equals(hash)) {
                         changed.add(filePath);
                     }
@@ -956,15 +971,14 @@ public final class BundleValidationUtil {
             return true;
         }
         try {
-            String content = FileUtils.readFileToString(needsBuildFile,
-                    StandardCharsets.UTF_8.name());
+            String content = Files.readString(needsBuildFile.toPath());
             return Boolean.parseBoolean(content);
         } catch (IOException e) {
             getLogger().error(
                     "Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
-            FileUtils.deleteQuietly(needsBuildFile);
+            FileIOUtils.deleteFileQuietly(needsBuildFile);
         }
     }
 
@@ -974,10 +988,10 @@ public final class BundleValidationUtil {
                 Constants.NEEDS_BUNDLE_BUILD_FILE);
         File targetDir = needsBuildFile.getParentFile();
         if (!targetDir.exists()) {
-            FileUtils.forceMkdir(targetDir);
+            targetDir.mkdirs();
         }
-        FileUtils.write(needsBuildFile, Boolean.toString(needsBundle),
-                StandardCharsets.UTF_8.name());
+        Files.writeString(needsBuildFile.toPath(),
+                Boolean.toString(needsBundle));
     }
 
     private static Logger getLogger() {

@@ -18,17 +18,16 @@ package com.vaadin.flow.server.communication.rpc;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.internal.nodefeature.AttachExistingElementFeature;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class AttachExistingElementRpcHandlerTest {
 
@@ -37,7 +36,7 @@ public class AttachExistingElementRpcHandlerTest {
         AttachExistingElementRpcHandler handler = new AttachExistingElementRpcHandler();
 
         int requestedId = 1;
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, -1);
         object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");
@@ -71,7 +70,7 @@ public class AttachExistingElementRpcHandlerTest {
 
         int requestedId = 1;
         int index = 2;
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");
@@ -110,7 +109,7 @@ public class AttachExistingElementRpcHandlerTest {
         int requestedId = 1;
         int assignedId = 2;
         int index = 3;
-        JsonObject object = Json.createObject();
+        ObjectNode object = JacksonUtils.createObjectNode();
         object.put(JsonConstants.RPC_ATTACH_REQUESTED_ID, requestedId);
         object.put(JsonConstants.RPC_ATTACH_ASSIGNED_ID, assignedId);
         object.put(JsonConstants.RPC_ATTACH_TAG_NAME, "div");

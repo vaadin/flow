@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -9,9 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
@@ -20,10 +32,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
@@ -120,7 +136,9 @@ public class BundleUtilsTest {
 
     @Test
     public void packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
+        Options options = new Options(Mockito.mock(Lookup.class), finder,
                 temporaryFolder.getRoot()).withBuildDirectory("target");
 
         File packageLockFile = temporaryFolder
@@ -332,7 +350,9 @@ public class BundleUtilsTest {
 
     @Test
     public void pnpm_packageLockExists_nothingIsCopied() throws IOException {
-        Options options = new Options(Mockito.mock(Lookup.class),
+        ClassFinder finder = Mockito.mock(ClassFinder.class);
+        Mockito.when(finder.getResource(Mockito.anyString())).thenReturn(null);
+        Options options = new Options(Mockito.mock(Lookup.class), finder,
                 temporaryFolder.getRoot()).withBuildDirectory("target")
                 .withEnablePnpm(true);
 

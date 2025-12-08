@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
@@ -21,6 +20,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Abstract class for file upload handler.
@@ -55,6 +56,7 @@ public abstract class AbstractFileUploadHandler<R extends AbstractFileUploadHand
     public void handleUploadRequest(UploadEvent event) throws IOException {
         UploadMetadata metadata = new UploadMetadata(event.getFileName(),
                 event.getContentType(), event.getFileSize());
+        setTransferUI(event.getUI());
         File file;
         try {
             file = fileFactory.createFile(metadata);

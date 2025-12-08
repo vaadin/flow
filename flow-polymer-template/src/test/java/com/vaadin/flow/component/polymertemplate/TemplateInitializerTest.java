@@ -8,13 +8,11 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.is;
-
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Assert;
@@ -31,7 +29,8 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 
 /**
  * @author Vaadin Ltd

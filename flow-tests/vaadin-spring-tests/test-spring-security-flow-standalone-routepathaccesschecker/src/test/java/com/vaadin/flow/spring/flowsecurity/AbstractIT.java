@@ -19,7 +19,6 @@ import org.junit.After;
 import org.junit.Assert;
 import org.openqa.selenium.WebDriver;
 
-import com.vaadin.flow.component.login.testbench.LoginFormElement;
 import com.vaadin.flow.component.login.testbench.LoginOverlayElement;
 import com.vaadin.flow.spring.test.AbstractSpringTest;
 import com.vaadin.testbench.TestBenchElement;
@@ -93,8 +92,7 @@ public abstract class AbstractIT extends AbstractSpringTest {
     protected void login(String username, String password) {
         assertLoginViewShown();
 
-        LoginFormElement form = $(LoginOverlayElement.class).first()
-                .getLoginForm();
+        LoginOverlayElement form = $(LoginOverlayElement.class).first();
         form.getUsernameField().setValue(username);
         form.getPasswordField().setValue(password);
         form.submit();

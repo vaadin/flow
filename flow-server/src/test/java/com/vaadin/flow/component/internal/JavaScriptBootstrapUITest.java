@@ -1,6 +1,20 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,7 +57,6 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.router.internal.NavigationStateRendererTest;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -450,8 +463,8 @@ public class JavaScriptBootstrapUITest {
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
@@ -466,7 +479,7 @@ public class JavaScriptBootstrapUITest {
             boolean reactEnabled = ui.getSession().getConfiguration()
                     .isReactEnabled();
 
-            final Serializable[] execValues = execArg.getValue();
+            final Object[] execValues = execArg.getValue();
             if (reactEnabled) {
                 assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
                 assertEquals(1, execValues.length);
@@ -509,8 +522,8 @@ public class JavaScriptBootstrapUITest {
         Page page = mockPage();
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
@@ -521,7 +534,7 @@ public class JavaScriptBootstrapUITest {
         boolean reactEnabled = ui.getSession().getConfiguration()
                 .isReactEnabled();
 
-        final Serializable[] execValues = execArg.getValue();
+        final Object[] execValues = execArg.getValue();
         if (reactEnabled) {
             assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
         } else {

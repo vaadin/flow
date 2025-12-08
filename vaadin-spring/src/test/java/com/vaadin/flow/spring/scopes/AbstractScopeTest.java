@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.spring.scopes;
 
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -34,10 +33,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.server.DefaultDeploymentConfiguration;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;

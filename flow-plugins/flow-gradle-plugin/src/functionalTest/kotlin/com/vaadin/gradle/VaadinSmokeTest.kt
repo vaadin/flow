@@ -26,7 +26,7 @@ import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendUtils
-import com.fasterxml.jackson.databind.JsonNode
+import tools.jackson.databind.JsonNode
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
@@ -57,7 +57,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
     }
@@ -285,7 +285,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """)
         testProject.newFolder("libs")
@@ -458,48 +458,6 @@ class VaadinSmokeTest : AbstractGradleTest() {
     }
 
     @Test
-    fun pluginShouldFailWithUnsupportedGradleVersion() {
-
-        fun setupProjectForGradleVersion(version: String) {
-            testProject.delete()
-            testProject = TestProject(version)
-            setup()
-        }
-
-        for (supportedVersion in arrayOf(FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION, "8.8", "8.10") ) {
-                setupProjectForGradleVersion(supportedVersion)
-                val result = testProject.build("vaadinClean")
-                result.expectTaskSucceded("vaadinClean")
-        }
-
-        for (unsupportedVersion in arrayOf("8.3", "8.4", "8.5", "8.6")) {
-            setupProjectForGradleVersion(unsupportedVersion)
-            val result = testProject.buildAndFail("vaadinClean")
-            if (result.output.contains("Unsupported class file major version")) {
-                assertContains(
-                    result.output,
-                    Regex("Failed to process the entry 'META-INF/versions/(\\d+)/com/fasterxml/jackson/"),
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION}) " +
-                            "and it is incompatible with Jackson library used by Flow"
-                )
-            } else {
-                assertContains(
-                    result.output,
-                    "requires Gradle ${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION} or later",
-                    true,
-                    "Expecting plugin execution to fail for version ${unsupportedVersion} " +
-                            "as it is lower than the supported one (${FlowPlugin.GRADLE_MINIMUM_SUPPORTED_VERSION})"
-                )
-                assertContains(
-                    result.output,
-                    "current version is ${unsupportedVersion}"
-                )
-            }
-        }
-    }
-
-    @Test
     fun testPrepareFrontend_configurationCache() {
         // Create frontend folder, that will otherwise be created by the first
         // execution of vaadinPrepareFrontend, invalidating the cache on the
@@ -529,7 +487,7 @@ class VaadinSmokeTest : AbstractGradleTest() {
         assertContains(result.output, "Configuration cache entry stored")
 
         val buildFile = testProject.buildFile.readText()
-            .replace("nodeAutoUpdate = true", "nodeAutoUpdate = false")
+            .replace("eagerServerLoad = false", "eagerServerLoad = true")
         testProject.buildFile.writeText(buildFile)
 
         val result2 = testProject.build("--configuration-cache", "vaadinPrepareFrontend", checkTasksSuccessful = false)

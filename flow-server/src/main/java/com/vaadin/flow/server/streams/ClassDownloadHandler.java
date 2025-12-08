@@ -13,18 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UncheckedIOException;
 
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a class resource.
@@ -90,6 +88,7 @@ public class ClassDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         if (clazz.getResource(resourceName) == null) {
             LoggerFactory.getLogger(ClassDownloadHandler.class)
                     .warn("No resource found for '{}'", resourceName);
@@ -103,11 +102,10 @@ public class ClassDownloadHandler
             String resourceName = getUrlPostfix();
             downloadEvent.setContentType(
                     getContentType(resourceName, downloadEvent.getResponse()));
-            if (!isInline()) {
-                downloadEvent.setFileName(resourceName);
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.setFileName(resourceName);
             }
             TransferUtil.transfer(inputStream, outputStream,
                     getTransferContext(downloadEvent), getListeners());
@@ -115,6 +113,7 @@ public class ClassDownloadHandler
             // Set status before output is closed (see #8740)
             downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            downloadEvent.setException(ioe);
             notifyError(downloadEvent, ioe);
             throw ioe;
         }

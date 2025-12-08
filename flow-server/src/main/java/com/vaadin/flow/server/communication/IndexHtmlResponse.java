@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
-import com.vaadin.flow.component.UI;
+import java.util.Optional;
+
 import org.jsoup.nodes.Document;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
-
-import java.util.Optional;
 
 /**
  * This represents the state of a Index HTML response being generated. The Index

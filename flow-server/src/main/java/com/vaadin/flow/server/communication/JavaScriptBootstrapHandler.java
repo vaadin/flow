@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -22,11 +21,14 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
@@ -138,6 +140,11 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         return pathInfo == null || "".equals(pathInfo) || "/".equals(pathInfo);
     }
 
+    private static Logger getLogger() {
+        return LoggerFactory
+                .getLogger(JavaScriptBootstrapHandler.class.getName());
+    }
+
     protected String getRequestUrl(VaadinRequest request) {
         return ((VaadinServletRequest) request).getRequestURL().toString();
     }
@@ -164,7 +171,38 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         config.put("requestURL", requestURL);
 
+        // Parse browser details from request parameters and store in UI
+        extractAndStoreBrowserDetails(request, context.getUI());
+
         return context;
+    }
+
+    /**
+     * Extracts browser details from the request JSON parameter and stores them
+     * in the UI's internals as ExtendedClientDetails.
+     *
+     * @param request
+     *            the request containing browser details as JSON parameter
+     * @param ui
+     *            the UI instance to store the details in
+     */
+    private void extractAndStoreBrowserDetails(VaadinRequest request, UI ui) {
+        // Extract browser details JSON parameter from request
+        // This is sent by the client in the v-r=init request
+        String browserDetailsJson = request.getParameter("v-browserDetails");
+
+        if (browserDetailsJson != null && !browserDetailsJson.isEmpty()) {
+            try {
+                JsonNode json = JacksonUtils.readTree(browserDetailsJson);
+                ExtendedClientDetails details = ExtendedClientDetails
+                        .fromJson(ui, json);
+                ui.getInternals().setExtendedClientDetails(details);
+            } catch (Exception e) {
+                // Log and continue without browser details
+                getLogger().debug(
+                        "Failed to parse browser details from init request", e);
+            }
+        }
     }
 
     @Override
@@ -278,19 +316,19 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
 
         ObjectNode appConfig = context.getApplicationParameters();
 
-        appConfig.put("productionMode",
+        appConfig.set("productionMode",
                 JacksonUtils.createNode(productionMode));
         appConfig.put("appId", context.getAppId());
-        appConfig.put("uidl", getInitialUidl(context.getUI()));
-        initial.put("appConfig", appConfig);
+        appConfig.set("uidl", getInitialUidl(context.getUI()));
+        initial.set("appConfig", appConfig);
 
         if (context.getPushMode().isEnabled()) {
             initial.put("pushScript", getPushScript(context));
         }
         if (!session.getConfiguration().isProductionMode()) {
-            initial.put("stats", getStats());
+            initial.set("stats", getStats());
         }
-        initial.put("errors", getErrors(request.getService()));
+        initial.set("errors", getErrors(request.getService()));
 
         return initial;
     }

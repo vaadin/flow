@@ -43,7 +43,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskUpdateThemeImport
         extends AbstractFileGeneratorFallibleCommand {
@@ -172,10 +171,17 @@ public class TaskUpdateThemeImport
                     "components");
             if (themeComponents.exists() && themeComponents.isDirectory()
                     && themeComponents.listFiles().length > 0) {
+                String styleFiles = Arrays.stream(themeComponents.listFiles())
+                        .map(File::getName)
+                        .filter(file -> file.endsWith(".css")
+                                || file.endsWith(".sass"))
+                        .collect(Collectors.joining("\n"));
+
                 getLogger().warn(
-                        "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be used.",
+                        "Theme '{}' contains component styles, but the '{}' feature flag is not set, so component styles will not be applied for\n{}",
                         themeName,
-                        FeatureFlags.COMPONENT_STYLE_INJECTION.getId());
+                        FeatureFlags.COMPONENT_STYLE_INJECTION.getId(),
+                        styleFiles);
             }
         }
     }

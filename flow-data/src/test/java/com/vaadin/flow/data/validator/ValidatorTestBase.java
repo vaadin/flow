@@ -17,15 +17,15 @@ package com.vaadin.flow.data.validator;
 
 import java.util.Locale;
 
-import com.vaadin.flow.data.binder.Binder;
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Before;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
 import com.vaadin.flow.data.binder.ValueContext;
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 
 public class ValidatorTestBase {
 

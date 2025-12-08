@@ -16,12 +16,13 @@
 package com.vaadin.flow.dom.impl;
 
 import java.io.ObjectStreamException;
-import java.util.Collections;
+import java.util.List;
 
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextNodeMap;
 
 /**
@@ -52,7 +53,7 @@ public class BasicTextElementStateProvider
         assert text != null;
 
         StateNode node = new StateNode(
-                Collections.singletonList(TextNodeMap.class),
+                List.of(TextNodeMap.class, TextBindingFeature.class),
                 ComponentMapping.class, ReturnChannelMap.class);
         node.getFeature(TextNodeMap.class).setText(text);
 

@@ -18,9 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +87,7 @@ public class ProdBundleUtils {
             return null;
         }
 
-        return IOUtils.toString(statsJson, StandardCharsets.UTF_8);
+        return FileIOUtils.urlToString(statsJson);
     }
 
     private static Logger getLogger() {

@@ -1,20 +1,20 @@
 @import url('https://fonts.googleapis.com/css?family=Itim');
 
 :host {
-    width: 1200px;
-    height: 600px;
-    display: block;
-    background-image: url("./img/bg.jpg");
+  width: 1200px;
+  height: 600px;
+  display: block;
+  background-image: url('./img/bg.jpg');
 }
 
 span {
-    font-family: "Ostrich";
+  font-family: 'Ostrich';
 }
 
 .internal {
-    color: green;
+  color: green;
 }
 
 vaadin-text-field::part(input-field) {
-    background: red;
+  background: red;
 }

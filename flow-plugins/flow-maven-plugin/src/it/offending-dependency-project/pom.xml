@@ -14,7 +14,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.release>17</maven.compiler.release>
+        <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
         <maven.compiler.target>${maven.compiler.release}</maven.compiler.target>
         <maven.test.skip>true</maven.test.skip>
@@ -34,11 +34,11 @@
             <artifactId>flow-client</artifactId>
             <version>${flow.version}</version>
         </dependency>
-        <!-- commons-io 2.6 is incompatible with Flow plugin -->
+        <!-- old license checker is not compatible with Flow plugin -->
         <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.6</version>
+            <groupId>com.vaadin</groupId>
+            <artifactId>license-checker</artifactId>
+            <version>1.13.5</version>
         </dependency>
     </dependencies>
 

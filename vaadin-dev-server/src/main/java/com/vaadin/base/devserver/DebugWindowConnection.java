@@ -26,14 +26,13 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.base.devserver.stats.DevModeUsageStatistics;
 import com.vaadin.experimental.FeatureFlags;
@@ -43,13 +42,13 @@ import com.vaadin.flow.server.DevToolsToken;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.communication.AtmospherePushConnection.FragmentedMessage;
 import com.vaadin.pro.licensechecker.BuildType;
+import com.vaadin.pro.licensechecker.Capabilities;
+import com.vaadin.pro.licensechecker.Capability;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.PreTrial;
 import com.vaadin.pro.licensechecker.PreTrialCreationException;
 import com.vaadin.pro.licensechecker.PreTrialLicenseValidationException;
 import com.vaadin.pro.licensechecker.Product;
-
-import elemental.json.JsonObject;
 
 /**
  * {@link BrowserLiveReload} implementation class.
@@ -215,10 +214,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
         }
 
         send(resource, "serverInfo", new ServerInfo());
-        send(resource, "featureFlags", new FeatureFlagMessage(FeatureFlags
-                .get(context).getFeatures().stream()
-                .filter(feature -> !feature.equals(FeatureFlags.EXAMPLE))
-                .collect(Collectors.toList())));
+        send(resource, "featureFlags", new FeatureFlagMessage(
+                FeatureFlags.get(context).getFeatures()));
 
     }
 
@@ -254,18 +251,6 @@ public class DebugWindowConnection implements BrowserLiveReload {
     @Override
     public boolean isLiveReload(AtmosphereResource resource) {
         return getRef(resource) != null;
-    }
-
-    /**
-     * Broadcasts the given message to all connected clients.
-     *
-     * @param msg
-     *            the message to broadcast
-     * @deprecated Use {@link #broadcast(ObjectNode)} instead.
-     */
-    @Deprecated
-    public void broadcast(JsonObject msg) {
-        this.broadcast(JacksonUtils.readTree(msg.toJson()));
     }
 
     /**
@@ -316,11 +301,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
             return;
         }
         JsonNode json = JacksonUtils.readTree(message);
-        String command = json.get("command").textValue();
+        String command = json.get("command").asString();
         JsonNode data = json.get("data");
         if ("setFeature".equals(command)) {
             FeatureFlags.get(context).setEnabled(
-                    data.get("featureId").textValue(),
+                    data.get("featureId").asString(),
                     data.get("enabled").booleanValue());
         } else if ("reportTelemetry".equals(command)) {
             DevModeUsageStatistics.handleBrowserData(data);
@@ -349,8 +334,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleLicenseCheck(AtmosphereResource resource,
             JsonNode data) {
-        String name = data.get("name").textValue();
-        String version = data.get("version").textValue();
+        String name = data.get("name").asString();
+        String version = data.get("version").asString();
         Product product = new Product(name, version);
         PreTrial preTrial = null;
         String command = null;
@@ -358,8 +343,11 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
         try {
             LicenseChecker.checkLicense(product.getName(), product.getVersion(),
-                    BuildType.DEVELOPMENT, null);
+                    BuildType.DEVELOPMENT, null,
+                    Capabilities.of(Capability.PRE_TRIAL));
         } catch (PreTrialLicenseValidationException e) {
+            DevModeUsageStatistics
+                    .collectEvent("pre-trial/" + product.getName());
             errorMessage = e.getMessage();
             preTrial = e.getPreTrial();
             command = "license-check-nokey";
@@ -378,8 +366,8 @@ public class DebugWindowConnection implements BrowserLiveReload {
 
     private void handleLicenseKeyDownload(AtmosphereResource resource,
             JsonNode data) {
-        String name = data.get("name").textValue();
-        String version = data.get("version").textValue();
+        String name = data.get("name").asString();
+        String version = data.get("version").asString();
         Product product = new Product(name, version);
 
         LicenseChecker.checkLicenseAsync(product.getName(),
@@ -392,10 +380,12 @@ public class DebugWindowConnection implements BrowserLiveReload {
             JsonNode data) {
         try {
             PreTrial preTrial = LicenseChecker.startPreTrial();
+            DevModeUsageStatistics.collectEvent("pre-trial/activated");
             send(resource, "license-pretrial-started", preTrial);
         } catch (PreTrialCreationException.Expired ex) {
             send(resource, "license-pretrial-expired", null);
         } catch (Exception ex) {
+            DevModeUsageStatistics.collectEvent("pre-trial/activation-failed");
             send(resource, "license-pretrial-failed", null);
         }
     }
