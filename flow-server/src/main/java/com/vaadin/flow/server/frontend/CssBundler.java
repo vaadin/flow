@@ -204,6 +204,7 @@ public class CssBundler {
             content = rewriteCssUrlsForStaticResources(baseFolder, cssFile,
                     contextPath, content);
         }
+        content = StringUtil.removeComments(content, true);
         List<String> unhandledImports = new ArrayList<>();
         Matcher importMatcher = IMPORT_PATTERN.matcher(content);
         content = importMatcher.replaceAll(result -> {
