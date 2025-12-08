@@ -290,8 +290,9 @@ public class HasStyleTest {
         HasStyleComponent component = new HasStyleComponent();
 
         for (ColorScheme.Value value : ColorScheme.Value.values()) {
-            if (value == ColorScheme.Value.NORMAL) {
-                continue; // NORMAL clears the property
+            if (value == ColorScheme.Value.NORMAL
+                    || value == ColorScheme.Value.SYSTEM) {
+                continue; // NORMAL clears the property, SYSTEM sets LIGHT_DARK
             }
             component.getStyle().setColorScheme(value);
             Assert.assertEquals("Roundtrip failed for " + value, value,
