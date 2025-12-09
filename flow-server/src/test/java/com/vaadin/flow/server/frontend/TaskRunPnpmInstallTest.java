@@ -37,7 +37,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;

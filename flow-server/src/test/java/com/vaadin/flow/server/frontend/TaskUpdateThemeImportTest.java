@@ -30,7 +30,6 @@ import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
