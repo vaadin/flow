@@ -48,6 +48,10 @@ import org.slf4j.LoggerFactory;
  */
 public class FileIOUtils {
 
+    private FileIOUtils() {
+        // Utils only
+    }
+
     /**
      * Deletes file if it exists and eats exceptions.
      *
@@ -57,7 +61,7 @@ public class FileIOUtils {
      *            to be deleted
      * @return true if succeeded
      */
-    static boolean deleteFileQuietly(File file) {
+    public static boolean deleteFileQuietly(File file) {
         if (file == null) {
             return false;
         }
@@ -78,7 +82,7 @@ public class FileIOUtils {
      * @return string from the content
      * @throws IOException
      */
-    static String urlToString(URL url) throws IOException {
+    public static String urlToString(URL url) throws IOException {
         try (InputStream input = url.openStream()) {
             return StringUtil.toUTF8String(input);
         }
@@ -182,7 +186,7 @@ public class FileIOUtils {
      *
      * @return the user's home directory
      */
-    static File getUserDirectory() {
+    public static File getUserDirectory() {
         return new File(System.getProperty("user.home"));
     }
 
@@ -200,7 +204,7 @@ public class FileIOUtils {
      * @throws IOException
      *             if an I/O error occurs
      */
-    static List<File> listFiles(File directory, String[] extensions,
+    public static List<File> listFiles(File directory, String[] extensions,
             boolean recursive) throws IOException {
         List<File> result = new ArrayList<>();
         if (!directory.isDirectory()) {
@@ -241,7 +245,7 @@ public class FileIOUtils {
      * @throws IOException
      *             if an I/O error occurs
      */
-    static boolean contentEquals(InputStream input1, InputStream input2)
+    public static boolean contentEquals(InputStream input1, InputStream input2)
             throws IOException {
         return Arrays.equals(input1.readAllBytes(), input2.readAllBytes());
     }
@@ -252,7 +256,7 @@ public class FileIOUtils {
      * @param closeable
      *            the resource to close
      */
-    static void closeQuietly(AutoCloseable closeable) {
+    public static void closeQuietly(AutoCloseable closeable) {
         if (closeable != null) {
             try {
                 closeable.close();
@@ -309,17 +313,13 @@ public class FileIOUtils {
      * @throws IOException
      *             if an I/O error occurs
      */
-    static boolean isEmptyDirectory(Path directory) throws IOException {
+    public static boolean isEmptyDirectory(Path directory) throws IOException {
         if (!Files.isDirectory(directory)) {
             return false;
         }
         try (Stream<Path> stream = Files.list(directory)) {
             return stream.findAny().isEmpty();
         }
-    }
-
-    private FileIOUtils() {
-        // Utils only
     }
 
     /**
