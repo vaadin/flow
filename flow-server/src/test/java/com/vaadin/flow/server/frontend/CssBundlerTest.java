@@ -293,6 +293,24 @@ public class CssBundlerTest {
                 """, actualCss);
     }
 
+    @Test
+    public void ignoreCommentedRules() throws Exception {
+        File cssFile = writeCss("""
+                /*
+                @import url('a.css');
+                */
+                @import url('b.css');
+                /*@import url('c.css');*/
+                @import url('d.css');
+                """, "styles.css");
+        String output = CssBundler.inlineImportsForPublicResources(
+                cssFile.getParentFile(), cssFile, null);
+        Assert.assertFalse(output.contains("a.css"));
+        Assert.assertTrue(output.contains("b.css"));
+        Assert.assertFalse(output.contains("c.css"));
+        Assert.assertTrue(output.contains("d.css"));
+    }
+
     private boolean createThemeFile(String filename) throws IOException {
         File f = getThemeFile(filename);
         f.getParentFile().mkdirs();
@@ -343,5 +361,151 @@ public class CssBundlerTest {
         File file = getThemeFile("theme.json");
         FileUtils.writeStringToFile(file, jsonObject.toString(),
                 StandardCharsets.UTF_8);
+    }
+
+    @Test
+    public void minifyCss_removesComments() {
+        String css = "/* comment */ .class { color: red; }";
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".class{color:red}", result);
+    }
+
+    @Test
+    public void minifyCss_doesNotRemoveContentComment() {
+        String css = """
+                .selector {
+                  content: "/* not a comment, should not remove */";
+                }
+                """;
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(
+                ".selector{content:\"/* not a comment,should not remove */\"}",
+                result);
+    }
+
+    @Test
+    public void minifyCss_removesMultilineComments() {
+        String css = """
+                /* This is a
+                   multiline comment */
+                .class { color: red; }
+                """;
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".class{color:red}", result);
+    }
+
+    @Test
+    public void minifyCss_collapsesWhitespace() {
+        String css = ".class   {   color:   red;   }";
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".class{color:red}", result);
+    }
+
+    @Test
+    public void minifyCss_removesTrailingSemicolons() {
+        String css = ".class { color: red; }";
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".class{color:red}", result);
+    }
+
+    @Test
+    public void minifyCss_handlesMultipleRules() {
+        String css = """
+                .class1 { color: red; }
+                .class2 { background: blue; }
+                """;
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".class1{color:red}.class2{background:blue}",
+                result);
+    }
+
+    @Test
+    public void minifyCss_preservesSelectorsWithCombinators() {
+        String css = ".parent > .child { color: red; }";
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(".parent>.child{color:red}", result);
+    }
+
+    @Test
+    public void minifyCss_handlesEmptyInput() {
+        Assert.assertEquals("", CssBundler.minifyCss(""));
+        Assert.assertEquals("", CssBundler.minifyCss("   "));
+        Assert.assertEquals("", CssBundler.minifyCss("/* only comment */"));
+    }
+
+    @Test
+    public void inlineImports_resolvesNodeModulesImport() throws IOException {
+        // Create a node_modules structure
+        File nodeModules = new File(themesFolder, "node_modules");
+        File packageDir = new File(nodeModules, "some-package");
+        packageDir.mkdirs();
+
+        // Create CSS in node_modules
+        File nodeModulesCss = new File(packageDir, "styles.css");
+        FileUtils.writeStringToFile(nodeModulesCss,
+                ".from-node-modules { color: blue; }", StandardCharsets.UTF_8);
+
+        // Create main CSS that imports from node_modules
+        writeCss("@import 'some-package/styles.css';\n.main { color: red; }",
+                "styles.css");
+
+        String result = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), null, nodeModules);
+
+        Assert.assertTrue("Should start with node_modules CSS inlined",
+                result.startsWith(".from-node-modules { color: blue; }"));
+        Assert.assertTrue("Should contain main CSS",
+                result.contains(".main { color: red; }"));
+    }
+
+    @Test
+    public void inlineImports_prefersRelativeOverNodeModules()
+            throws IOException {
+        // Create a node_modules structure
+        File nodeModules = new File(themesFolder, "node_modules");
+        File packageDir = new File(nodeModules, "local");
+        packageDir.mkdirs();
+
+        // Create CSS in node_modules
+        File nodeModulesCss = new File(packageDir, "styles.css");
+        FileUtils.writeStringToFile(nodeModulesCss,
+                ".from-node-modules { color: blue; }", StandardCharsets.UTF_8);
+
+        // Create local CSS with same relative path
+        File localDir = new File(themeFolder, "local");
+        localDir.mkdirs();
+        File localCss = new File(localDir, "styles.css");
+        FileUtils.writeStringToFile(localCss, ".from-local { color: green; }",
+                StandardCharsets.UTF_8);
+
+        // Create main CSS that imports using relative path
+        writeCss("@import 'local/styles.css';\n.main { color: red; }",
+                "styles.css");
+
+        String result = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), null, nodeModules);
+
+        // Should prefer relative path over node_modules
+        Assert.assertTrue("Should start with local CSS inlined",
+                result.startsWith(".from-local { color: green; }"));
+        Assert.assertFalse("Should not contain node_modules CSS",
+                result.contains(".from-node-modules"));
+    }
+
+    @Test
+    public void inlineImports_handlesNullNodeModulesFolder()
+            throws IOException {
+        writeCss("@import 'nonexistent/styles.css';\n.main { color: red; }",
+                "styles.css");
+
+        // Should not throw when nodeModulesFolder is null
+        String result = CssBundler.inlineImports(themeFolder,
+                getThemeFile("styles.css"), null, null);
+
+        // Unresolved import should be preserved at top
+        Assert.assertTrue("Should preserve unresolved import",
+                result.contains("@import 'nonexistent/styles.css'"));
+        Assert.assertTrue("Should contain main CSS",
+                result.contains(".main { color: red; }"));
     }
 }
