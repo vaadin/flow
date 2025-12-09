@@ -225,6 +225,27 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void copiedJarResources_containsImport_importFollowedAndAdded()
+            throws IOException {
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/sub/example-import.js");
+        var resource = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/ExampleConnector.js");
+        Files.writeString(resource.toPath(),
+                "import \"./sub/example-import.js\";");
+        updater.run();
+
+        List<String> flowImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowImports));
+
+        Assert.assertTrue(flowImports.contains(
+                "import 'Frontend/generated/jar-resources/ExampleConnector.js';"));
+        Assert.assertTrue(flowImports.contains(
+                "import 'Frontend/generated/jar-resources/sub/example-import.js';"));
+
+    }
+
+    @Test
     public void getModuleLines_npmPackagesDontExist_logExplanation() {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
