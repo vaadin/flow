@@ -23,7 +23,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 
