@@ -29,7 +29,7 @@
 
   <modules>
     <module>flow</module>
-    <module>flow-archive-extractor</module>
+    <module>flow-build-tools</module>
     <module>flow-server</module>
     <module>flow-react</module>
     <module>flow-polymer-template</module>
