@@ -227,8 +227,8 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @Test
     public void copiedJarResources_containsImport_importFollowedAndAdded()
             throws IOException {
-        Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
-                UI.class, AllEagerAppConf.class,
+        // No theme annotation should be available for this
+        Class<?>[] testClasses = { UI.class, AllEagerAppConf.class,
                 NodeTestComponents.ReferenceView.class,
                 NodeTestComponents.VaadinBowerComponent.class };
         ClassFinder classFinder = getClassFinder(testClasses);
