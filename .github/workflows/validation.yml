@@ -73,7 +73,7 @@ jobs:
           echo "matrix-unit=$(./scripts/computeMatrix.js unit-tests --parallel=2 current module args)" >> $GITHUB_OUTPUT
       - name: Compile and Install Flow
         run: |
-          cmd="mvn install -B -ntp -DskipTests"
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Save workspace
         run: |
@@ -125,7 +125,7 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-          cmd="mvn install -B -ntp -DskipTests"
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
@@ -199,7 +199,7 @@ jobs:
         if: ${{ github.run_attempt > 1 }}
         run: |
           ./scripts/computeMatrix.js set-version --version=999.99-SNAPSHOT
-          cmd="mvn install -B -ntp -DskipTests"
+          cmd="mvn install -B -ntp -DskipTests  -pl \!flow-plugins/flow-gradle-plugin"
           eval $cmd -T 2C -q || eval $cmd
       - name: Set TB License
         run: |
