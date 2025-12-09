@@ -17,6 +17,7 @@ package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
 
+import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.Mojo;
@@ -39,10 +40,10 @@ import com.vaadin.pro.licensechecker.OfflineKeyValidator;
  * @since 25.0
  */
 @Mojo(name = "download-offline-license", requiresProject = false)
-public class DownloadOfflineLicenseMojo extends FlowModeAbstractMojo {
+public class DownloadOfflineLicenseMojo extends AbstractMojo {
 
     @Override
-    protected void executeInternal()
+    public void execute()
             throws MojoExecutionException, MojoFailureException {
         try {
             MachineId machineId = new MachineId();
