@@ -37,6 +37,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.ClientCallableAotProcessor;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 
 import jakarta.servlet.MultipartConfigElement;
@@ -61,6 +62,11 @@ public class SpringBootAutoConfiguration {
     @Bean
     static VaadinBeanFactoryInitializationAotProcessor flowBeanFactoryInitializationAotProcessor() {
         return new VaadinBeanFactoryInitializationAotProcessor();
+    }
+
+    @Bean
+    static ClientCallableAotProcessor flowClientCallableFactoryInitializationAotProcessor() {
+        return new ClientCallableAotProcessor();
     }
 
     /**
