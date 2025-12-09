@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
@@ -23,6 +22,7 @@ import java.io.OutputStream;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for use with a given File that will be read and written as
@@ -73,15 +73,15 @@ public class FileDownloadHandler
     @Override
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
+        setTransferUI(downloadEvent.getUI());
         VaadinResponse response = downloadEvent.getResponse();
         try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
             String resourceName = getUrlPostfix();
-            if (!isInline()) {
-                downloadEvent.setFileName(resourceName);
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
             } else {
-                downloadEvent.getResponse().setHeader("Content-Disposition",
-                        "inline");
+                downloadEvent.setFileName(resourceName);
             }
             downloadEvent
                     .setContentType(getContentType(resourceName, response));

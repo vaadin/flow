@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
@@ -23,6 +22,7 @@ import java.io.UncheckedIOException;
 
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving an input stream for client download.
@@ -49,6 +49,7 @@ public class InputStreamDownloadHandler
     public void handleDownloadRequest(DownloadEvent downloadEvent)
             throws IOException {
         VaadinResponse response = downloadEvent.getResponse();
+        setTransferUI(downloadEvent.getUI());
         DownloadResponse download;
         try {
             download = callback.complete(downloadEvent);
@@ -88,12 +89,12 @@ public class InputStreamDownloadHandler
                 ? getContentType(downloadName, response)
                 : download.getContentType();
         downloadEvent.setContentType(contentType);
+        downloadEvent.setContentLength(download.getContentLength());
 
-        if (!isInline()) {
-            downloadEvent.setFileName(downloadName);
+        if (isInline()) {
+            downloadEvent.inline(downloadName);
         } else {
-            downloadEvent.getResponse().setHeader("Content-Disposition",
-                    "inline");
+            downloadEvent.setFileName(downloadName);
         }
 
         try (OutputStream outputStream = downloadEvent.getOutputStream();

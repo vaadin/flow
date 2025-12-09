@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui.theme;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.theme.Theme;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme(value = "app-theme")
@@ -28,5 +27,6 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME, assets = {
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
+@StyleSheet("context://aura/fake-aura.css")
 public class AppShell implements AppShellConfigurator {
 }

@@ -21,7 +21,8 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal.NodeSignalState;

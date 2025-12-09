@@ -22,17 +22,14 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
-import java.util.function.Function;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.util.UUID;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.component.internal.DependencyList;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.dom.DomListenerRegistration;
@@ -87,6 +84,49 @@ public class Page implements Serializable {
     }
 
     /**
+     * Sets the color scheme for the page.
+     * <p>
+     * The color scheme is applied via both a theme attribute and the
+     * color-scheme CSS property on the html element. The theme attribute allows
+     * CSS to target different color schemes (e.g.,
+     * {@code html[theme~="dark"]}), while the color-scheme property ensures
+     * browser UI adaptation works even for custom themes that don't define
+     * their own color-scheme CSS rules.
+     *
+     * @param colorScheme
+     *            the color scheme to set (e.g., ColorScheme.Value.DARK,
+     *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
+     */
+    public void setColorScheme(ColorScheme.Value colorScheme) {
+        if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
+            executeJs("""
+                    document.documentElement.removeAttribute('theme');
+                    document.documentElement.style.colorScheme = '';
+                    """);
+            getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
+        } else {
+            executeJs("""
+                    document.documentElement.setAttribute('theme', $0);
+                    document.documentElement.style.colorScheme = $1;
+                    """, colorScheme.getThemeValue(), colorScheme.getValue());
+            getExtendedClientDetails().setColorScheme(colorScheme);
+        }
+    }
+
+    /**
+     * Gets the color scheme for the page.
+     * <p>
+     * Note that this method returns the server-side cached value and will not
+     * detect color scheme changes made directly via JavaScript or browser
+     * developer tools.
+     *
+     * @return the color scheme value, never {@code null}
+     */
+    public ColorScheme.Value getColorScheme() {
+        return getExtendedClientDetails().getColorScheme();
+    }
+
+    /**
      * Adds the given style sheet to the page and ensures that it is loaded
      * successfully.
      * <p>
@@ -108,9 +148,10 @@ public class Page implements Serializable {
      *
      * @param url
      *            the URL to load the style sheet from, not <code>null</code>
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url) {
-        addStyleSheet(url, LoadMode.EAGER);
+    public Registration addStyleSheet(String url) {
+        return addStyleSheet(url, LoadMode.EAGER);
     }
 
     /**
@@ -135,9 +176,30 @@ public class Page implements Serializable {
      * @param loadMode
      *            determines dependency load mode, refer to {@link LoadMode} for
      *            details
+     * @return a registration object that can be used to remove the style sheet
      */
-    public void addStyleSheet(String url, LoadMode loadMode) {
-        addDependency(new Dependency(Type.STYLESHEET, url, loadMode));
+    public Registration addStyleSheet(String url, LoadMode loadMode) {
+        DependencyList dependencyList = ui.getInternals().getDependencyList();
+
+        // Check if dependency already exists with this URL
+        Dependency existing = dependencyList.getDependencyByUrl(url,
+                Type.STYLESHEET);
+        String dependencyId;
+
+        if (existing != null && existing.getId() != null) {
+            // Reuse the existing dependency's ID for duplicates
+            dependencyId = existing.getId();
+        } else {
+            // Create new ID for new dependencies
+            dependencyId = UUID.randomUUID().toString();
+        }
+
+        Dependency dependency = new Dependency(Type.STYLESHEET, url, loadMode,
+                dependencyId);
+        dependencyList.add(dependency);
+
+        // Return Registration for removal
+        return () -> ui.getInternals().removeStyleSheet(dependencyId);
     }
 
     /**
@@ -245,18 +307,21 @@ public class Page implements Serializable {
      * it becomes available. If no return value handler is registered, the
      * return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * The given parameters will be available to the expression as variables
-     * named <code>$0</code>, <code>$1</code>, and so on. Supported parameter
-     * types are:
+     * named <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link com.fasterxml.jackson.databind.node.BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link tools.jackson.databind.node.BaseJsonNode} (sent as-is without
+     * additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -272,7 +337,7 @@ public class Page implements Serializable {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
                 parameters);
 
@@ -282,6 +347,24 @@ public class Page implements Serializable {
         ui.getInternals().addJavaScriptInvocation(execution);
 
         return execution;
+    }
+
+    /**
+     * Executes the given JavaScript expression in the browser.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to execute
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
     }
 
     /**
@@ -362,7 +445,6 @@ public class Page implements Serializable {
      * window.open call in the client. This means that special values such as
      * "_blank", "_self", "_top", "_parent" have special meaning. An empty or
      * <code>null</code> window name is also a special case.
-     * </p>
      * <p>
      * "", null and "_self" as {@code windowName} all causes the URL to be
      * opened in the current window, replacing any old contents. For
@@ -373,20 +455,16 @@ public class Page implements Serializable {
      * into an inconsistent state if the window content is not completely
      * replaced e.g., if the URL is downloaded instead of displayed in the
      * browser.
-     * </p>
      * <p>
      * "_blank" as {@code windowName} causes the URL to always be opened in a
      * new window or tab (depends on the browser and browser settings).
-     * </p>
      * <p>
      * "_top" and "_parent" as {@code windowName} works as specified by the HTML
      * standard.
-     * </p>
      * <p>
      * Any other {@code windowName} will open the URL in a window with that
      * name, either by opening a new window/tab in the browser or by replacing
      * the contents of an existing window with that name.
-     * </p>
      *
      * @param url
      *            the URL to open.
@@ -442,75 +520,51 @@ public class Page implements Serializable {
     }
 
     /**
+     * Gets the extended client details, such as screen resolution and time zone
+     * information.
+     * <p>
+     * Browser details are automatically collected and sent during UI
+     * initialization, making them immediately available. In normal operation,
+     * this method returns complete details right after the UI is created.
+     * <p>
+     * If details are not yet available, this method returns a placeholder
+     * instance with default values (dimensions set to -1). If you need to fetch
+     * the actual values in such cases, use
+     * {@link ExtendedClientDetails#refresh(SerializableConsumer)} to explicitly
+     * retrieve updated values from the browser.
+     * <p>
+     * To refresh the cached values with updated data from the browser at any
+     * time, use {@link ExtendedClientDetails#refresh(SerializableConsumer)}.
+     *
+     * @return the extended client details (never {@code null})
+     */
+    public ExtendedClientDetails getExtendedClientDetails() {
+        return ui.getInternals().getExtendedClientDetails();
+    }
+
+    /**
      * Obtain extended client side details, such as time screen and time zone
      * information, via callback. If already obtained, the callback is called
      * directly. Otherwise, a client-side roundtrip will be carried out.
      *
      * @param receiver
      *            the callback to which the details are provided
+     * @deprecated Use {@link #getExtendedClientDetails()} to get the cached
+     *             details, or
+     *             {@link ExtendedClientDetails#refresh(SerializableConsumer)}
+     *             to refresh the cached values.
      */
+    @Deprecated
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        final ExtendedClientDetails cachedDetails = ui.getInternals()
-                .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            receiver.receiveDetails(cachedDetails);
-            return;
+        ExtendedClientDetails details = getExtendedClientDetails();
+        if (details.getScreenWidth() != -1) {
+            // Already fetched and complete, call receiver immediately
+            receiver.receiveDetails(details);
+        } else {
+            // Placeholder with default values, trigger refresh
+            details.refresh(receiver::receiveDetails);
         }
-        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-        final SerializableConsumer<JsonNode> resultHandler = json -> {
-            handleExtendedClientDetailsResponse(json);
-            receiver.receiveDetails(
-                    ui.getInternals().getExtendedClientDetails());
-        };
-        final SerializableConsumer<String> errorHandler = err -> {
-            throw new RuntimeException("Unable to retrieve extended "
-                    + "client details. JS error is '" + err + "'");
-        };
-        executeJs(js).then(resultHandler, errorHandler);
-    }
-
-    private void handleExtendedClientDetailsResponse(JsonNode json) {
-        ExtendedClientDetails cachedDetails = ui.getInternals()
-                .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            return;
-        }
-        if (!(json instanceof ObjectNode)) {
-            throw new RuntimeException("Expected a JSON object");
-        }
-        final ObjectNode jsonObj = (ObjectNode) json;
-
-        // Note that JSON returned is a plain string -> string map, the actual
-        // parsing of the fields happens in ExtendedClient's constructor. If a
-        // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
-            final JsonNode jsValue = jsonObj.get(key);
-            if (jsValue != null
-                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
-                return jsValue.asText();
-            } else {
-                return null;
-            }
-        };
-        ui.getInternals()
-                .setExtendedClientDetails(new ExtendedClientDetails(
-                        getStringElseNull.apply("v-sw"),
-                        getStringElseNull.apply("v-sh"),
-                        getStringElseNull.apply("v-ww"),
-                        getStringElseNull.apply("v-wh"),
-                        getStringElseNull.apply("v-bw"),
-                        getStringElseNull.apply("v-bh"),
-                        getStringElseNull.apply("v-tzo"),
-                        getStringElseNull.apply("v-rtzo"),
-                        getStringElseNull.apply("v-dstd"),
-                        getStringElseNull.apply("v-dston"),
-                        getStringElseNull.apply("v-tzid"),
-                        getStringElseNull.apply("v-curdate"),
-                        getStringElseNull.apply("v-td"),
-                        getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn"),
-                        getStringElseNull.apply("v-np")));
     }
 
     /**
@@ -521,7 +575,7 @@ public class Page implements Serializable {
      * proxy between the client and the server.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return window.location.href}.
      * <p>
      * <em>NOTE: </em> the URL is not escaped, use {@link URL#toURI()} to escape
@@ -554,7 +608,7 @@ public class Page implements Serializable {
      * request and passed to the callback.
      * <p>
      * In case you need more control over the execution you can use
-     * {@link #executeJs(String, Serializable...)} by passing
+     * {@link #executeJs(String, Object...)} by passing
      * {@code return document.dir}.
      *
      * @param callback

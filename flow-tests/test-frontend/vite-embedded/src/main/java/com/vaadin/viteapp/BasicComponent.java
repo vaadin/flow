@@ -15,9 +15,9 @@
  */
 package com.vaadin.viteapp;
 
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
 

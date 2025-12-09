@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
@@ -43,7 +42,6 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class TaskUpdateThemeImport
         extends AbstractFileGeneratorFallibleCommand {

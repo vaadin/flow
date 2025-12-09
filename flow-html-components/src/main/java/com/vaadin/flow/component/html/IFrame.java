@@ -15,20 +15,19 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
+import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
-import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
-
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * Component representing a <code>&lt;iframe&gt;</code> element.
@@ -140,7 +139,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Creates a new iframe with download handler callback that provides a
      * resource from server.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -184,7 +183,7 @@ public class IFrame extends HtmlComponent implements HasAriaLabel {
     /**
      * Sets the source of the iframe with a source URL with the URL of the given
      * {@link DownloadHandler} callback.
-     * <p>
+     *
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other

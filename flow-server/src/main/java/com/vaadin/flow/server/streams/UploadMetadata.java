@@ -13,13 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 /**
  * Metadata for successful upload.
  * <p>
  * The fileName and contentType will only be available for multipart uploads.
+ *
+ * @param fileName
+ *            the name of the uploaded file
+ * @param contentType
+ *            the content type of the uploaded file
+ * @param contentLength
+ *            the length of the uploaded content in bytes
  */
 public record UploadMetadata(String fileName, String contentType,
         long contentLength) {

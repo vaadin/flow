@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +50,6 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
 
@@ -114,6 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
+            startWatchingPublicResourcesFolders(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -163,6 +164,29 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
+        }
+    }
+
+    // package-private for testing
+    void startWatchingPublicResourcesFolders(VaadinContext context,
+            ApplicationConfiguration config) {
+        try {
+            File projectFolder = config.getProjectFolder();
+            File resourceFolder = config.getJavaResourceFolder();
+            List<String> locations = Stream.concat(Stream
+                    .of("META-INF/resources", "resources", "static", "public")
+                    .map(location -> new File(resourceFolder, location)),
+                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    .filter(root -> root.exists() && root.isDirectory())
+                    .filter(File::exists)
+                    .map(staticResourceFolder -> FrontendUtils
+                            .getUnixPath(staticResourceFolder.toPath()))
+                    .toList();
+            registerWatcherShutdownCommand(
+                    new PublicResourcesLiveUpdater(locations, context));
+        } catch (Exception e) {
+            getLogger().error(
+                    "Failed to start live-reload for public CSS resources", e);
         }
     }
 

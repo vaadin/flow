@@ -11,8 +11,8 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -30,7 +30,6 @@ import com.vaadin.flow.templatemodel.ModelType;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 // This is OSGi specific annotation for the class which may be used without
 // OSGi. But RetentionPolicy.CLASS used for the annotation makes it safe to use

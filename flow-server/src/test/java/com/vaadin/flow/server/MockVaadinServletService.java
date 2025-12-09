@@ -17,11 +17,13 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletException;
 
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 
 import org.mockito.Mockito;
+import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.di.Lookup;
@@ -175,4 +177,13 @@ public class MockVaadinServletService extends VaadinServletService {
         }
     }
 
+    @Override
+    OfVirtual defaultExecutorFactory() {
+        return super.defaultExecutorFactory()
+                .uncaughtExceptionHandler((t, e) -> {
+                    LoggerFactory.getLogger(getClass()).error(
+                            "An uncaught exception occurred in thread {}",
+                            t.getName(), e);
+                });
+    }
 }

@@ -13,26 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.converter;
+
+import java.util.UUID;
 
 import com.vaadin.flow.data.binder.ErrorMessageProvider;
 import com.vaadin.flow.data.binder.Result;
 import com.vaadin.flow.data.binder.ValueContext;
 
-import java.util.UUID;
-
 /**
  * A converter that converts from {@link String} to {@link UUID} and back.
  * <p>
  * Leading and trailing white spaces are ignored when converting from a String.
- * </p>
  * <p>
  * The String representation uses the canonical format of 32-characters with a
  * hyphen to separate each of five groups of hexadecimal digits as defined in:
  * RFC 4122: A Universally Unique IDentifier (UUID) URN Namespace
  * http://www.ietf.org/rfc/rfc4122.txt
- * </p>
  *
  * @author Vaadin Ltd
  */

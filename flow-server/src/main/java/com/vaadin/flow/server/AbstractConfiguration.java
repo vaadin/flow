@@ -20,8 +20,8 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.server.frontend.BundleUtils;
-import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
@@ -31,7 +31,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XS
  * servlet level,...).
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface AbstractConfiguration extends Serializable {
@@ -183,6 +182,35 @@ public interface AbstractConfiguration extends Serializable {
      */
     default String getBuildFolder() {
         return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
+    }
+
+    /**
+     * Returns a folder inside build folder, where the built tool places
+     * project's resources.
+     * <p>
+     * Only available in development mode.
+     * <p>
+     * For Maven this is typically {@code target/classes/} and for Gradle -
+     * {@code build/resources/main/}.
+     *
+     * @return the folder inside build folder where resources are placed, or
+     *         {@code null} if the project folder is unknown.
+     */
+    default File getOutputResourceFolder() {
+        File projectFolder = getProjectFolder();
+        if (projectFolder == null) {
+            return null;
+        }
+        String buildFolderName = getBuildFolder();
+        File buildFolder = new File(projectFolder, buildFolderName);
+        File gradleOutputResources = new File(buildFolder, "resources/main/");
+        if (gradleOutputResources.exists()) {
+            // Gradle
+            return gradleOutputResources;
+        } else {
+            // Maven
+            return new File(buildFolder, "classes/");
+        }
     }
 
     /**

@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>flow-test-multi-war</artifactId>
-        <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-test-multi-war-bundle</artifactId>
-    <name>Bundle testing multiple war deployment</name>
-    <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-    </properties>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-test-multi-war</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-multi-war-bundle</artifactId>
+  <packaging>war</packaging>
+  <name>Bundle testing multiple war deployment</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+  </properties>
 
-    <dependencies></dependencies>
+  <dependencies/>
 
-    <build>
-        <plugins>
-            <!-- Run jetty before ITs -->
-            <plugin>
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-maven-plugin</artifactId>
-                <configuration>
-                    <!-- Use war output directory to get the webpack files -->
-                    <webAppConfig>
-                        <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
-                    </webAppConfig>
-                    <webApp>
-                        <contextPath>/</contextPath>
-                    </webApp>
-                    <contextHandlers>
-                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
-                            <war>${project.parent.basedir}${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</war>
-                            <contextPath>/test-war1</contextPath>
-                        </contextHandler>
-                        <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
-                            <war>${project.parent.basedir}${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</war>
-                            <contextPath>/test-war2</contextPath>
-                        </contextHandler>
-                    </contextHandlers>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+  <build>
+    <plugins>
+      <!-- Run jetty before ITs -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+        <configuration>
+          <!-- Use war output directory to get the webpack files -->
+          <webAppConfig>
+            <allowDuplicateFragmentNames>true</allowDuplicateFragmentNames>
+          </webAppConfig>
+          <webApp>
+            <contextPath>/</contextPath>
+          </webApp>
+          <contextHandlers>
+            <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
+              <war>${project.parent.basedir}${file.separator}test-war1${file.separator}target${file.separator}flow-test-multi-war1.war</war>
+              <contextPath>/test-war1</contextPath>
+            </contextHandler>
+            <contextHandler implementation="org.eclipse.jetty.ee10.maven.plugin.MavenWebAppContext">
+              <war>${project.parent.basedir}${file.separator}test-war2${file.separator}target${file.separator}flow-test-multi-war2.war</war>
+              <contextPath>/test-war2</contextPath>
+            </contextHandler>
+          </contextHandlers>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

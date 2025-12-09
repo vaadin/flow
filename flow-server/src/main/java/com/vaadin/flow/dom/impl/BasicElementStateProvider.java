@@ -24,7 +24,7 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
@@ -53,9 +53,12 @@ import com.vaadin.flow.internal.nodefeature.PolymerEventListenerMap;
 import com.vaadin.flow.internal.nodefeature.PolymerServerEventHandlers;
 import com.vaadin.flow.internal.nodefeature.ReturnChannelMap;
 import com.vaadin.flow.internal.nodefeature.ShadowRootData;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which stores data for basic elements, i.e. elements which are
@@ -85,7 +88,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
             PolymerServerEventHandlers.class, ClientCallableHandlers.class,
             PolymerEventListenerMap.class, ShadowRootData.class,
             AttachExistingElementFeature.class, VirtualChildrenList.class,
-            ReturnChannelMap.class, InertData.class };
+            ReturnChannelMap.class, InertData.class, TextBindingFeature.class };
 
     private BasicElementStateProvider() {
         // Not meant to be sub classed and only once instance should ever exist
@@ -189,7 +192,16 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
 
         getAttributeFeature(node).set(attribute, value);
+    }
 
+    @Override
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
+        assert attribute != null;
+        assert attribute.equals(attribute.toLowerCase(Locale.ENGLISH));
+
+        getAttributeFeature(owner.getNode()).bindSignal(owner, attribute,
+                signal);
     }
 
     @Override
@@ -270,7 +282,24 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeature(node).setProperty(name, value, emitChange);
+        ElementPropertyMap propertyFeature = getPropertyFeature(node);
+
+        if (propertyFeature.hasSignal(name)) {
+            throw new BindingActiveException(String.format(
+                    "setProperty is not allowed while a binding for the property '%s' exists.",
+                    name));
+        }
+
+        propertyFeature.setProperty(name, value, emitChange);
+    }
+
+    @Override
+    public void bindPropertySignal(Element owner, String name,
+            Signal<?> signal) {
+        assert owner != null;
+        assert name != null;
+
+        getPropertyFeature(owner.getNode()).bindSignal(owner, name, signal);
     }
 
     @Override
@@ -278,8 +307,14 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         assert node != null;
         assert name != null;
 
-        getPropertyFeatureIfInitialized(node)
-                .ifPresent(feature -> feature.removeProperty(name));
+        getPropertyFeatureIfInitialized(node).ifPresent(propertyMap -> {
+            if (propertyMap.hasSignal(name)) {
+                throw new BindingActiveException(String.format(
+                        "removeProperty is not allowed while a binding for the property '%s' exists.",
+                        name));
+            }
+            propertyMap.removeProperty(name);
+        });
     }
 
     @Override
@@ -367,7 +402,7 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
         boolean visitDescendants;
         if (payload instanceof JsonNode) {
             JsonNode object = (JsonNode) payload;
-            String type = object.get(NodeProperties.TYPE).asText();
+            String type = object.get(NodeProperties.TYPE).asString();
             if (NodeProperties.IN_MEMORY_CHILD.equals(type)) {
                 visitDescendants = visitor
                         .visit(NodeVisitor.ElementType.VIRTUAL, element);

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.data.provider.hierarchy;
 
 import org.junit.Assert;
@@ -89,21 +104,27 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
     }
 
     @Test
-    public void changeViewportRangeBackAndForth_noLongerVisibleKeysRemoved() {
+    public void changeViewportRangeBackAndForth_noLongerVisibleKeysRemovedAfterConfirmation() {
         populateTreeData(treeData, 100, 2);
         dataCommunicator.expand(new Item("Item 0"));
+
         dataCommunicator.setViewportRange(0, 4);
         fakeClientCommunication();
-
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
         Assert.assertTrue(keyMapper.has(new Item("Item 0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
         Assert.assertTrue(keyMapper.has(new Item("Item 1")));
         Assert.assertFalse(keyMapper.has(new Item("Item 2")));
 
-        dataCommunicator.setViewportRange(2, 4);
-        fakeClientCommunication();
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
+        dataCommunicator.setViewportRange(2, 4);
+        fakeClientCommunication(); // not confirmed yet
+        Assert.assertTrue(keyMapper.has(new Item("Item 0")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
+
+        dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
         Assert.assertFalse(keyMapper.has(new Item("Item 0")));
         Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
@@ -111,9 +132,14 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         Assert.assertTrue(keyMapper.has(new Item("Item 2")));
         Assert.assertTrue(keyMapper.has(new Item("Item 3")));
 
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
 
+        dataCommunicator.setViewportRange(0, 4);
+        fakeClientCommunication(); // not confirmed yet
+        Assert.assertTrue(keyMapper.has(new Item("Item 2")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 3")));
+
+        dataCommunicator.confirmUpdate(captureArrayUpdateId()); // confirmed
         Assert.assertTrue(keyMapper.has(new Item("Item 0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
         Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
@@ -128,19 +154,13 @@ public class HierarchicalDataCommunicatorKeyGenerationTest
         dataCommunicator.expand(new Item("Item 0"));
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertTrue(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
-
-        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-0")));
+        Assert.assertTrue(keyMapper.has(new Item("Item 0-1")));
 
         dataCommunicator.collapse(new Item("Item 0"));
         fakeClientCommunication();
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-0")));
-        Assert.assertFalse(
-                dataCommunicator.getKeyMapper().has(new Item("Item 0-1")));
+        Assert.assertFalse(keyMapper.has(new Item("Item 0-0")));
+        Assert.assertFalse(keyMapper.has(new Item("Item 0-1")));
     }
 
     @Test

@@ -1,13 +1,27 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.Map;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -15,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.data.provider.ArrayUpdater;
@@ -95,7 +110,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     protected void assertArrayUpdateItems(String property, String... expected) {
         Assert.assertEquals(Arrays.asList(expected),
                 captureArrayUpdateItems().values().stream()
-                        .map((item) -> item.get(property).asText()).toList());
+                        .map((item) -> item.get(property).asString()).toList());
     }
 
     /**
@@ -110,7 +125,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
         Assert.assertEquals(expected, captureArrayUpdateItems().entrySet()
                 .stream().collect(Collectors.toMap(//
                         (entry) -> entry.getKey(),
-                        (entry) -> entry.getValue().get(property).asText())));
+                        (entry) -> entry.getValue().get(property).asString())));
     }
 
     protected void assertArrayUpdateRange(int start, int length) {
@@ -128,7 +143,7 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
     }
 
     protected void assertArrayUpdateSize(int size) {
-        Mockito.verify(arrayUpdater, Mockito.times(1)).startUpdate(size);
+        Mockito.verify(arrayUpdater).startUpdate(size);
     }
 
     @SuppressWarnings("unchecked")
@@ -150,6 +165,12 @@ abstract public class AbstractHierarchicalDataCommunicatorTest {
             }
         }
         return result;
+    }
+
+    protected int captureArrayUpdateId() {
+        var argumentCaptor = ArgumentCaptor.forClass(Integer.class);
+        Mockito.verify(arrayUpdate).commit(argumentCaptor.capture());
+        return argumentCaptor.getValue();
     }
 
     protected int captureArrayUpdateSize() {

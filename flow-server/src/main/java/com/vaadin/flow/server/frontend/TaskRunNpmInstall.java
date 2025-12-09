@@ -15,11 +15,15 @@
  */
 package com.vaadin.flow.server.frontend;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -27,16 +31,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
+import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
@@ -149,11 +153,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 packageUpdater.log().warn("No vaadin object in package.json");
                 return;
             }
-            final String hash = vaadin.get(HASH_KEY).textValue();
+            final String hash = vaadin.get(HASH_KEY).asString();
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
-            TaskUpdatePackages.getVaadinVersion(packageUpdater.finder)
+            FrontendUtils.getVaadinVersion(packageUpdater.finder)
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
             updates.put(PROJECT_FOLDER,
                     options.getNpmFolder().getAbsolutePath());
@@ -186,16 +190,16 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     .getVaadinJsonContents();
             if (nodeModulesVaadinJson.has(HASH_KEY)) {
                 final JsonNode packageJson = packageUpdater.getPackageJson();
-                if (!nodeModulesVaadinJson.get(HASH_KEY).textValue()
+                if (!nodeModulesVaadinJson.get(HASH_KEY).asString()
                         .equals(packageJson.get(VAADIN_DEP_KEY).get(HASH_KEY)
-                                .textValue())) {
+                                .asString())) {
                     return true;
                 }
 
                 if (nodeModulesVaadinJson.has(PROJECT_FOLDER)
                         && !options.getNpmFolder().getAbsolutePath()
                                 .equals(nodeModulesVaadinJson
-                                        .get(PROJECT_FOLDER).textValue())) {
+                                        .get(PROJECT_FOLDER).asString())) {
                     return true;
                 }
 
@@ -225,12 +229,10 @@ public class TaskRunNpmInstall implements FallibleCommand {
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         if (options.isEnablePnpm()) {
             try {
@@ -248,12 +250,11 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
         try {
             if (options.isRequireHomeNodeExec()) {
-                tools.forceAlternativeNodeExecutable();
+                tools.getNodeExecutable();
             }
             if (options.isEnableBun()) {
                 npmExecutable = tools.getBunExecutable();
             } else if (options.isEnablePnpm()) {
-                validateInstalledNpm(tools);
                 npmExecutable = tools.getPnpmExecutable();
             } else {
                 npmExecutable = tools.getNpmExecutable();
@@ -483,7 +484,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 ".npmrc");
         boolean shouldWrite;
         if (npmrcFile.exists()) {
-            List<String> lines = FileUtils.readLines(npmrcFile,
+            List<String> lines = Files.readAllLines(npmrcFile.toPath(),
                     StandardCharsets.UTF_8);
             if (lines.stream().anyMatch(line -> line
                     .contains("NOTICE: this is an auto-generated file"))) {
@@ -509,7 +510,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     throw new IOException(
                             "Couldn't find template npmrc in the classpath");
                 }
-                FileUtils.copyInputStreamToFile(content, npmrcFile);
+                Files.copy(content, npmrcFile.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
                 packageUpdater.log().debug("Generated pnpm configuration: '{}'",
                         npmrcFile);
             }
@@ -517,6 +519,8 @@ public class TaskRunNpmInstall implements FallibleCommand {
     }
 
     private void cleanUp() throws ExecutionFailedException {
+        verifyPackageLockAndClean();
+
         if (!options.getNodeModulesFolder().exists()) {
             return;
         }
@@ -544,6 +548,53 @@ public class TaskRunNpmInstall implements FallibleCommand {
         }
     }
 
+    /**
+     * Check the lockfile lockversion to see if it is compatible with the used
+     * npm version. If the lockfile is too old delete it.
+     */
+    protected void verifyPackageLockAndClean() {
+        File packageLockFile = packageUpdater.getPackageLockFile();
+        if (!options.isEnablePnpm() && packageLockFile.exists()) {
+            boolean removeLockfile = false;
+            try (BufferedReader br = new BufferedReader(
+                    new FileReader(packageLockFile))) {
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (line.contains("\"lockfileVersion\"")) {
+                        int lockfileVersion = getLockfileVersion(line);
+                        removeLockfile = lockfileVersion != 3;
+                        break;
+                    }
+                }
+            } catch (IOException e) {
+                // NO-OP
+                packageUpdater.log()
+                        .debug("Failed to read the package-lock.json file.", e);
+            }
+            if (removeLockfile) {
+                packageUpdater.log().info(
+                        "Removing package-lock.json as it has the wrong lockfileVersion.");
+                try {
+                    FileIOUtils.delete(packageLockFile);
+                } catch (IOException e) {
+                    // NO-OP
+                    packageUpdater.log().warn(
+                            "Exception handling the package-lock.json file.",
+                            e);
+                }
+            }
+        }
+    }
+
+    private static int getLockfileVersion(String line) {
+        Matcher matcher = Pattern.compile("\"lockfileVersion\"\\s*:\\s*(\\d+)")
+                .matcher(line);
+        if (matcher.find()) {
+            return Integer.parseInt(matcher.group(1));
+        }
+        return -1;
+    }
+
     private void deleteNodeModules(File nodeModulesFolder)
             throws ExecutionFailedException {
         try {
@@ -556,23 +607,6 @@ public class TaskRunNpmInstall implements FallibleCommand {
                     + "'. Please remove it manually.");
             throw new ExecutionFailedException(
                     "Exception removing node_modules. Please remove it manually.");
-        }
-    }
-
-    private void validateInstalledNpm(FrontendTools tools)
-            throws IllegalStateException {
-        File npmCacheDir = null;
-        try {
-            npmCacheDir = tools.getNpmCacheDir();
-        } catch (FrontendUtils.CommandExecutionException
-                | IllegalStateException e) {
-            packageUpdater.log().warn("Failed to get npm cache directory", e);
-        }
-
-        if (npmCacheDir != null
-                && !tools.folderIsAcceptableByNpm(npmCacheDir)) {
-            throw new IllegalStateException(
-                    String.format(NPM_VALIDATION_FAIL_MESSAGE));
         }
     }
 }

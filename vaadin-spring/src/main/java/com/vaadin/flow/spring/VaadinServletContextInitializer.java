@@ -65,6 +65,7 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.router.HasErrorParameter;
+import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouteConfiguration;
@@ -75,7 +76,6 @@ import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
-import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.server.startup.AbstractRouteRegistryInitializer;
 import com.vaadin.flow.server.startup.AnnotationValidator;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -116,14 +116,14 @@ public class VaadinServletContextInitializer
      */
     private static final List<String> DEFAULT_SCAN_NEVER = Stream.of("antlr",
             "cglib", "ch/quos/logback", "commons-codec", "commons-fileupload",
-            "commons-io", "commons-logging", "com/fasterxml", "com/google",
-            "com/h2database", "com/helger", "com/vaadin/external/atmosphere",
-            "com/vaadin/webjar", "junit", "net/bytebuddy", "org/apache",
-            "org/aspectj", "org/bouncycastle", "org/dom4j", "org/easymock",
-            "org/eclipse/persistence", "org/hamcrest", "org/hibernate",
-            "org/javassist", "org/jboss", "org/jsoup", "org/seleniumhq",
-            "org/slf4j", "org/atmosphere", "org/springframework",
-            "org/webjars/bowergithub", "org/yaml",
+            "commons-io", "commons-logging", "com/fasterxml", "tools/jackson",
+            "com/google", "com/h2database", "com/helger",
+            "com/vaadin/external/atmosphere", "com/vaadin/webjar", "junit",
+            "net/bytebuddy", "org/apache", "org/aspectj", "org/bouncycastle",
+            "org/dom4j", "org/easymock", "org/eclipse/persistence",
+            "org/hamcrest", "org/hibernate", "org/javassist", "org/jboss",
+            "org/jsoup", "org/seleniumhq", "org/slf4j", "org/atmosphere",
+            "org/springframework", "org/webjars/bowergithub", "org/yaml",
 
             "java/", "javax/", "javafx/", "com/sun/", "oracle/deploy",
             "oracle/javafx", "oracle/jrockit", "oracle/jvm", "oracle/net",
@@ -134,8 +134,8 @@ public class VaadinServletContextInitializer
 
             "com/vaadin/external/gwt", "javassist/", "io/methvin",
             "com/github/javaparser", "oshi/", "io/micrometer", "jakarta/",
-            "com/nimbusds", "elemental/util", "elemental/json",
-            "org/reflections", "org/aopalliance", "org/objectweb",
+            "com/nimbusds", "elemental/util", "org/reflections",
+            "org/aopalliance", "org/objectweb",
 
             "com/vaadin/hilla", "com/vaadin/copilot")
             .collect(Collectors.toList());
@@ -526,11 +526,23 @@ public class VaadinServletContextInitializer
             devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
             if (devModeHandlerManager == null) {
                 throw new RuntimeException(
-                        "no DevModeHandlerManager implementation found but "
-                                + "but dev server enabled. Either disable by "
-                                + "setting vaadin.frontend.hotdeploy=false (and "
-                                + "run the build-frontend maven goal) or "
-                                + "include the vaadin-dev-server dependency");
+                        """
+                                'vaadin-dev-server' not found, but dev server is enabled.
+                                Either disable by setting vaadin.frontend.hotdeploy=false (and run the build-frontend maven goal)
+                                or add 'com.vaadin:vaadin-dev' dependency or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                                Maven:
+                                    <dependency>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-dev</artifactId>
+                                    </dependency>
+
+                                Gradle:
+                                    dependencies {
+                                        implementation('com.vaadin:vaadin-dev')
+                                    }
+
+                                """);
             }
             if (devModeHandlerManager.getDevModeHandler() != null) {
                 /*

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import java.io.File;
@@ -23,6 +22,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -85,7 +85,7 @@ public final class Reflector {
     /**
      * Gets a {@link Reflector} instance usable with the caller class loader.
      * <p>
-     * </p>
+     *
      * Reflector instances are cached in Maven plugin context, but instances
      * might be associated to the plugin class loader, thus not working with
      * classes loaded by the isolated class loader. This method returns the
@@ -171,7 +171,7 @@ public final class Reflector {
      * Creates a copy of the given Flow mojo, loading classes the isolated
      * classloader.
      * <p>
-     * </p>
+     *
      * Loads the given mojo class from the isolated class loader and then
      * creates a new instance for it and fills all field copying values from the
      * original mojo. The input mojo must have a public no-args constructor.
@@ -200,7 +200,7 @@ public final class Reflector {
     /**
      * Gets a new {@link Reflector} instance for the current Mojo execution.
      * <p>
-     * </p>
+     *
      * An isolated class loader is created based on project and plugin
      * dependencies, with the first ones having precedence over the seconds. The
      * maven.api class realm is used as parent classloader, allowing usage of
@@ -401,15 +401,33 @@ public final class Reflector {
 
         @Override
         public Enumeration<URL> getResources(String name) throws IOException {
+            List<URL> allResources = new ArrayList<>();
+
+            // Collect resources from all classloaders
             Enumeration<URL> resources = super.getResources(name);
-            if (!resources.hasMoreElements() && delegate != null) {
+            while (resources.hasMoreElements()) {
+                allResources.add(resources.nextElement());
+            }
+
+            if (delegate != null) {
                 resources = delegate.getResources(name);
+                while (resources.hasMoreElements()) {
+                    URL url = resources.nextElement();
+                    if (!allResources.contains(url)) {
+                        allResources.add(url);
+                    }
+                }
             }
-            if (!resources.hasMoreElements()) {
-                resources = ClassLoader.getPlatformClassLoader()
-                        .getResources(name);
+
+            resources = ClassLoader.getPlatformClassLoader().getResources(name);
+            while (resources.hasMoreElements()) {
+                URL url = resources.nextElement();
+                if (!allResources.contains(url)) {
+                    allResources.add(url);
+                }
             }
-            return resources;
+
+            return Collections.enumeration(allResources);
         }
     }
 

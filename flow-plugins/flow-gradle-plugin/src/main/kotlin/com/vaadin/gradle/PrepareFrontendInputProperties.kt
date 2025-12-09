@@ -50,6 +50,13 @@ internal class PrepareFrontendInputProperties(
             .absolutePath
 
     @Input
+    @Optional
+    fun getResourcesOutputDirectory(): Provider<String> =
+        config.resourcesOutputDirectory
+            .filterExists()
+            .absolutePath
+
+    @Input
     fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
@@ -124,9 +131,6 @@ internal class PrepareFrontendInputProperties(
 
     @Input
     fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
-
-    @Input
-    fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
 
     @Input
     fun getProjectBuildDir(): Provider<String> = config.projectBuildDir

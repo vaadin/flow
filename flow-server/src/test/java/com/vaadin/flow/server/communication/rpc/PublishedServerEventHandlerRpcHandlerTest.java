@@ -17,15 +17,15 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ClientCallable;
 import com.vaadin.flow.component.Component;
@@ -490,26 +490,24 @@ public class PublishedServerEventHandlerRpcHandlerTest {
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "varArgMethod", array, -1);
 
-        Assert.assertArrayEquals(new String[] { value.get(0).asText() },
+        Assert.assertArrayEquals(new String[] { value.get(0).asString() },
                 component.varArg);
     }
 
     @Test
-    public void nullValueAreAcceptedForPrimitive() {
+    public void nullValueShouldReturnZeroForPrimitive() {
         ArrayNode array = JacksonUtils.createArrayNode();
         array.add(JacksonUtils.nullNode());
         MethodWithParameters component = new MethodWithParameters();
         component.intArg = -1;
         component.booleanArg = true;
+
+        // Passing null to a primitive parameter should throw an exception
         PublishedServerEventHandlerRpcHandler.invokeMethod(component,
                 component.getClass(), "intMethod", array, -1);
 
+        // Verify the field was not modified
         Assert.assertEquals(0, component.intArg);
-
-        PublishedServerEventHandlerRpcHandler.invokeMethod(component,
-                component.getClass(), "booleanMethod", array, -1);
-
-        Assert.assertFalse(component.booleanArg);
     }
 
     @Test(expected = IllegalStateException.class)

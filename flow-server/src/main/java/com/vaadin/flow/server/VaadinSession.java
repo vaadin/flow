@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpSession;
@@ -148,6 +147,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         resourceRegistry = createStreamResourceRegistry();
     }
 
+    final protected void applyLockStrategy(SessionLockCheckStrategy strategy) {
+        this.sessionLockCheckStrategy = Objects.requireNonNull(strategy);
+    }
+
     /**
      * Creates the StreamResourceRegistry for this session.
      *
@@ -241,6 +244,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the total time spent servicing requests in this session.
+     *
      * @return The total time spent servicing requests in this session, in
      *         milliseconds.
      */
@@ -263,6 +268,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the time spent servicing the last request in this session.
+     *
      * @return The time spent servicing the last request in this session, in
      *         milliseconds.
      */

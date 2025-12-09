@@ -17,7 +17,79 @@ package com.vaadin.flow.dom;
 
 import java.io.Serializable;
 import java.util.stream.Stream;
-import static com.vaadin.flow.dom.ElementConstants.*;
+
+import com.vaadin.flow.component.page.ColorScheme;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
+
+import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_ITEMS;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_ALIGN_SELF;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND_COLOR;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND_POSITION;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BACKGROUND_SIZE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER_BOTTOM;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER_LEFT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER_RADIUS;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER_RIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BORDER_TOP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BOTTOM;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BOX_SHADOW;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_BOX_SIZING;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_CLEAR;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_COLOR;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_COLOR_SCHEME;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_CURSOR;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_DISPLAY;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FILTER;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLEX_BASIS;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLEX_DIRECTION;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLEX_GROW;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLEX_SHRINK;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLEX_WRAP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FLOAT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FONT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FONT_SIZE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_FONT_WEIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_GAP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_HEIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_JUSTIFY_CONTENT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_LEFT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_LINE_HEIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_BOTTOM;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_INLINE_END;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_INLINE_START;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_LEFT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_RIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MARGIN_TOP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MAX_HEIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MAX_WIDTH;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MIN_HEIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_MIN_WIDTH;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_OPACITY;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_OUTLINE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_OVERFLOW;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_PADDING;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_PADDING_BOTTOM;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_PADDING_LEFT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_PADDING_RIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_PADDING_TOP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_POSITION;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_RIGHT;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_ROTATE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_SCALE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TEXT_ALIGN;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TEXT_DECORATION;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TOP;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TRANSFORM;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TRANSFORM_ORIGIN;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_TRANSITION;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_VISIBILITY;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_WHITE_SPACE;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_WIDTH;
+import static com.vaadin.flow.dom.ElementConstants.STYLE_Z_INDEX;
 
 /**
  * Provides inline styles for {@link Element}s.
@@ -30,13 +102,19 @@ public interface Style extends Serializable {
     /**
      * Gets the value of the given style property.
      * <p>
-     * Note that the name should be in camelCase and not dash-separated, i.e.
-     * use "fontFamily" and not "font-family"
+     * Note that the name should be in camelCase and not dash-separated, i.e.,
+     * use "fontFamily" and not "font-family".
+     * <p>
+     * When a style property is bound to a signal with
+     * {@link #bind(String, Signal)}, this method returns the value of the
+     * latest signal applied for the given style property name while the element
+     * was in the attached state.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @return the style property value, or <code>null</code> if the style
      *         property has not been set
+     * @see #bind(String, Signal)
      */
     String get(String name);
 
@@ -45,6 +123,9 @@ public interface Style extends Serializable {
      * <p>
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
+     * <p>
+     * While a signal binding for a specific style name is active, any attempt
+     * to manually set that same style throws a {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
@@ -52,6 +133,7 @@ public interface Style extends Serializable {
      *            the style property value (if <code>null</code>, the property
      *            will be removed)
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style set(String name, String value);
 
@@ -60,17 +142,26 @@ public interface Style extends Serializable {
      * <p>
      * Both camelCased (e.g. <code>fontFamily</code>) and dash-separated (e.g.
      * <code>font-family</code> versions are supported.
+     * <p>
+     * While a signal binding for a specific style name is active, any attempt
+     * to manually remove that same style throws a
+     * {@link BindingActiveException}.
      *
      * @param name
      *            the style property name as camelCase, not <code>null</code>
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style remove(String name);
 
     /**
      * Removes all set style properties.
+     * <p>
+     * This method silently clears all style signal bindings (unsubscribe and
+     * forget recorded values) in addition to clearing style values.
      *
      * @return this style instance
+     * @see #bind(String, Signal)
      */
     Style clear();
 
@@ -94,10 +185,58 @@ public interface Style extends Serializable {
      * Note that this always returns the name as camelCased, e.g.
      * <code>fontFamily</code> even if it has been set as dash-separated
      * (<code>font-family</code>).
+     * <p>
+     * Includes names of the style properties bound with the signals while the
+     * element was in the attached state.
      *
      * @return a stream of defined style property names
+     * @see #bind(String, Signal)
      */
     Stream<String> getNames();
+
+    /**
+     * Binds the given style property to the provided string signal and keeps
+     * the style property value synchronized with the signal.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given style property. When unbinding, the current presence of the
+     * style property is left unchanged.
+     * <p>
+     * When a binding is in place, the style signal mirrors
+     * {@code signal.value()}. If the signal value is {@code null}, the style
+     * property is removed; otherwise it is set to the string value.
+     * <p>
+     * The binding effect is active only while the owner element is in the
+     * attached state. While the owner is in the detached state, updates from
+     * the signal have no effect.
+     * <p>
+     * While a binding for a specific style name is active, any attempt to bind
+     * another signal for the same name throws a {@link BindingActiveException}.
+     * <p>
+     * Name handling follows the same rules as {@link #set(String, String)}:
+     * both camelCase and dash-separated names are supported and normalized in
+     * the same way.
+     *
+     * @param name
+     *            the style property name, not {@code null}
+     * @param signal
+     *            the signal that provides the style signal; {@code null}
+     *            removes an existing binding for the given name
+     * @return this style instance
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #set(String, String)
+     * @see #remove(String)
+     * @see #clear()
+     * @see #get(String)
+     * @see #getNames()
+     *
+     * @since 25.0
+     */
+    default Style bind(String name, Signal<String> signal) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    };
 
     /**
      * Sets the <code>background</code> property.
@@ -288,6 +427,35 @@ public interface Style extends Serializable {
      */
     default Style setColor(String value) {
         return set(STYLE_COLOR, value);
+    }
+
+    /**
+     * Sets the <code>color-scheme</code> property.
+     * <p>
+     * The color scheme affects how the browser renders UI elements and allows
+     * the component to adapt to system color scheme preferences.
+     *
+     * @param value
+     *            the color scheme value (if <code>null</code> or NORMAL, the
+     *            property will be removed)
+     * @return this style instance
+     */
+    default Style setColorScheme(ColorScheme.Value value) {
+        if (value == null || value == ColorScheme.Value.NORMAL) {
+            return remove(STYLE_COLOR_SCHEME);
+        } else {
+            return set(STYLE_COLOR_SCHEME, value.getValue());
+        }
+    }
+
+    /**
+     * Gets the <code>color-scheme</code> property.
+     *
+     * @return the color scheme value, or NORMAL if not set
+     */
+    default ColorScheme.Value getColorScheme() {
+        String value = get(STYLE_COLOR_SCHEME);
+        return ColorScheme.Value.fromString(value);
     }
 
     /**

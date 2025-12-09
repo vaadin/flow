@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -208,6 +223,28 @@ public class HandlerHelperTest {
     }
 
     @Test
+    public void isFrameworkInternalRequest_dynamicResourceUrl_withoutPostfix() {
+        // Test for ElementRequestHandler requests without URL postfix
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
+    public void isFrameworkInternalRequest_dynamicResourceUrl_withCustomPostfix() {
+        // Test for ElementRequestHandler requests with custom postfix
+        VaadinServletRequest request = createVaadinRequest(
+                "VAADIN/dynamic/resource/1/e83d6b6d-2b75-4960-8922-5431f4a23e49/custom.pdf",
+                "", null);
+
+        Assert.assertTrue(HandlerHelper.isFrameworkInternalRequest("/*",
+                request.getHttpServletRequest()));
+    }
+
+    @Test
     public void isFrameworkInternalRequest_hillaPushUrl() {
         VaadinServletRequest request = createVaadinRequest("HILLA/push", "",
                 null);
@@ -397,13 +434,16 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-1334x750.png");
         expected.add("/icons/icon-640x1136.png");
         expected.add("/icons/icon-1136x640.png");
+        expected.add("/styles.css");
         expected.add("/themes/**");
+        expected.add("/assets/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
         Assert.assertEquals(expected, actual);
 
-        Set<String> expectedRoot = Set.of("/favicon.ico");
+        Set<String> expectedRoot = Set.of("/favicon.ico", "/aura/**",
+                "/lumo/**");
 
         Set<String> actualRoot = new HashSet<>();
         Collections.addAll(actualRoot, HandlerHelper.getPublicResourcesRoot());

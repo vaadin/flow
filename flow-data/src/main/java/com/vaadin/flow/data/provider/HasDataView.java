@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.provider;
 
 import java.io.Serializable;
@@ -30,7 +29,6 @@ import java.io.Serializable;
  *            filter type
  * @param <V>
  *            DataView type
- * @since
  */
 public interface HasDataView<T, F, V extends DataView<T>> extends Serializable {
 

@@ -28,14 +28,17 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import org.jsoup.nodes.Document;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
+import com.vaadin.flow.component.ScrollIntoViewOption;
 import com.vaadin.flow.component.ScrollOptions;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
@@ -47,8 +50,8 @@ import com.vaadin.flow.dom.impl.CustomAttribute;
 import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.Command;
@@ -56,6 +59,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.ElementRequestHandler;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an element in the DOM.
@@ -242,6 +247,56 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to a given attribute and keeps the
+     * attribute value synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
+     * <p>
+     * Same rules applies for the attribute name and value from the bound Signal
+     * as in {@link #setAttribute(String, String)}.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set or remove
+     * attribute value manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Binding style or class attribute to a Signal is not supported.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindAttribute("mol", signal);
+     * signal.value("42"); // The element now has attribute mol="42"
+     * </pre>
+     *
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setAttribute(String, String)
+     */
+    public void bindAttribute(String attribute, Signal<String> signal) {
+        String validAttribute = validateAttribute(attribute);
+
+        Optional<CustomAttribute> customAttribute = CustomAttribute
+                .get(validAttribute);
+        if (customAttribute.isPresent()) {
+            throw new UnsupportedOperationException(
+                    "Binding style or class attribute to a Signal is not supported.");
+        } else {
+            getStateProvider().bindAttributeSignal(this, validAttribute,
+                    signal);
+        }
+    }
+
+    /**
      * Sets the given attribute to the given value.
      * <p>
      * Attribute names are considered case insensitive and all names will be
@@ -269,7 +324,10 @@ public class Element extends Node<Element> {
      * @return this element
      */
     public Element setAttribute(String attribute, String value) {
-        String lowerCaseAttribute = validateAttribute(attribute, value);
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
+        String lowerCaseAttribute = validateAttribute(attribute);
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -320,7 +378,6 @@ public class Element extends Node<Element> {
      * This is a convenience method to register a {@link StreamResource}
      * instance into the session and use the registered resource URI as an
      * element attribute.
-     * <p>
      *
      * @see #setAttribute(String, String)
      *
@@ -332,7 +389,10 @@ public class Element extends Node<Element> {
      */
     public Element setAttribute(String attribute,
             AbstractStreamResource resource) {
-        String lowerCaseAttribute = validateAttribute(attribute, resource);
+        String lowerCaseAttribute = validateAttribute(attribute);
+        if (resource == null) {
+            throw new IllegalArgumentException("Value cannot be null");
+        }
 
         Optional<CustomAttribute> customAttribute = CustomAttribute
                 .get(lowerCaseAttribute);
@@ -356,7 +416,6 @@ public class Element extends Node<Element> {
      * This is a convenience method to register a {@link ElementRequestHandler}
      * instance into the session and use the registered resource URI as an
      * element attribute.
-     * <p>
      *
      * @see #setAttribute(String, String)
      *
@@ -790,6 +849,52 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the given property and keeps the
+     * property value synchronized with the signal value while the element is in
+     * attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
+     * <p>
+     * Same rules apply for the property name and value from the bound Signal as
+     * in {@link #setProperty(String, String)}.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the property
+     * value manually throws {@link BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Supported data types for the signal are the same as for the various
+     * {@code setProperty} methods in this class: {@link String},
+     * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
+     * (bean), {@link List} and {@link Map}. Typed Lists and Maps are not
+     * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
+     * {@code Signal<Map<?,?>}.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindProperty("mol", signal);
+     * signal.value("42"); // The element now has property mol="42"
+     * </pre>
+     *
+     * @param name
+     *            the name of the property
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setProperty(String, String)
+     */
+    public void bindProperty(String name, Signal<?> signal) {
+        verifySetPropertyName(name);
+
+        getStateProvider().bindPropertySignal(this, name, signal);
+    }
+
+    /**
      * Adds a property change listener which is triggered when the property's
      * value is updated on the server side.
      * <p>
@@ -887,10 +992,6 @@ public class Element extends Node<Element> {
     public String getProperty(String name, String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
-            return defaultValue;
-        } else if (value instanceof JsonNode) {
-            return ((JsonNode) value).toString();
-        } else if (value instanceof NullNode) {
             return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
@@ -1032,6 +1133,81 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Gets the value of the given property, deserialized as the given type.
+     * This method supports arbitrary bean types through Jackson
+     * deserialization.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * MyDto dto = element.getPropertyBean("userData", MyDto.class);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param type
+     *            the class to deserialize the property value to, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, Class<T> type) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                type);
+    }
+
+    /**
+     * Gets the value of the given property, deserialized as the type specified
+     * by the {@link TypeReference}. This method supports generic types such as
+     * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
+     * TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
+     * };
+     * List&lt;MyDto&gt; dtos = element.getPropertyBean("userList", typeRef);
+     * </pre>
+     * <p>
+     * Note that properties changed on the server are updated on the client but
+     * changes made on the client side are not reflected back to the server
+     * unless configured using
+     * {@link #addPropertyChangeListener(String, String, PropertyChangeListener)}
+     * or {@link DomListenerRegistration#synchronizeProperty(String)}.
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param name
+     *            the property name, not <code>null</code>
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the property value deserialized as the given type, or
+     *         <code>null</code> if not set
+     */
+    public <T> T getPropertyBean(String name, TypeReference<T> typeReference) {
+        Serializable raw = getPropertyRaw(name);
+        if (raw == null || raw instanceof NullNode) {
+            return null;
+        }
+        return com.vaadin.flow.internal.JacksonCodec.decodeAs((JsonNode) raw,
+                typeReference);
+    }
+
+    /**
      * Removes the given property.
      * <p>
      * Note that properties changed on the server are updated on the client but
@@ -1099,35 +1275,89 @@ public class Element extends Node<Element> {
      *            the text content to set, <code>null</code> is interpreted as
      *            an empty string
      * @return this element
+     * @throws BindingActiveException
+     *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+        if (feature.hasBinding()) {
+            throw new BindingActiveException(
+                    "setText is not allowed while a binding for text exists.");
+        }
+
+        setTextContent(textContent);
+
+        return this;
+    }
+
+    private void setTextContent(String textContent) {
         if (textContent == null) {
             // Browsers work this way
             textContent = "";
         }
-
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
             if (textContent.isEmpty()) {
                 removeAllChildren();
             } else {
-                setTextContent(textContent);
+                Element child;
+                if (getChildCount() == 1 && getChild(0).isTextNode()) {
+                    child = getChild(0).setText(textContent);
+                } else {
+                    child = createText(textContent);
+                }
+                removeAllChildren();
+                appendChild(child);
             }
         }
-
-        return this;
     }
 
-    private void setTextContent(String textContent) {
-        Element child;
-        if (getChildCount() == 1 && getChild(0).isTextNode()) {
-            child = getChild(0).setText(textContent);
+    /**
+     * Binds a {@link Signal}'s value to the text content of this element and
+     * keeps the text content synchronized with the signal value while the
+     * element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound to an attribute, any attempt to set the text
+     * content manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindText(signal);
+     * signal.value("text"); // The element text content is set to "text"
+     * </pre>
+     *
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setText(String)
+     */
+    public void bindText(Signal<String> signal) {
+        TextBindingFeature feature = getNode()
+                .getFeature(TextBindingFeature.class);
+
+        if (signal == null) {
+            feature.removeBinding();
         } else {
-            child = createText(textContent);
+            if (feature.hasBinding() && getNode().isAttached()) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(this, signal,
+                    (element, value) -> setTextContent(value));
+            feature.setBinding(registration, signal);
         }
-        removeAllChildren();
-        appendChild(child);
     }
 
     /**
@@ -1237,7 +1467,7 @@ public class Element extends Node<Element> {
         return getStateProvider().getComponent(getNode());
     }
 
-    private String validateAttribute(String attribute, Object value) {
+    private String validateAttribute(String attribute) {
         if (attribute == null) {
             throw new IllegalArgumentException(ATTRIBUTE_NAME_CANNOT_BE_NULL);
         }
@@ -1247,10 +1477,6 @@ public class Element extends Node<Element> {
             throw new IllegalArgumentException(String.format(
                     "Attribute \"%s\" is not a valid attribute name",
                     lowerCaseAttribute));
-        }
-
-        if (value == null) {
-            throw new IllegalArgumentException("Value cannot be null");
         }
         return lowerCaseAttribute;
     }
@@ -1380,26 +1606,26 @@ public class Element extends Node<Element> {
      * registered, the return value will be ignored.
      * <p>
      * The function will be called after all pending DOM updates have completed,
-     * at the same time that {@link Page#executeJs(String, Serializable...)}
-     * calls are invoked.
+     * at the same time that {@link Page#executeJs(String, Object...)} calls are
+     * invoked.
      * <p>
      * If the element is not attached or not visible, the function call will be
      * deferred until the element is attached and visible.
-     *
-     * @see JsonCodec JsonCodec for supported argument types
      *
      * @param functionName
      *            the name of the function to call, may contain dots to indicate
      *            a function on a property.
      * @param arguments
-     *            the arguments to pass to the function. Must be of a type
-     *            supported by the communication mechanism, as defined by
-     *            {@link JsonCodec}
+     *            the arguments to pass to the function. All types supported by
+     *            Jackson for JSON serialization are supported. Special cases:
+     *            {@link Element} instances (will be sent as DOM element
+     *            references to the browser if attached when invoked, or as
+     *            <code>null</code> if not attached).
      * @return a pending result that can be used to get a return value from the
      *         execution
      */
     public PendingJavaScriptResult callJsFunction(String functionName,
-            Serializable... arguments) {
+            Object... arguments) {
         assert functionName != null;
         assert !functionName.startsWith(".")
                 : "Function name should not start with a dot";
@@ -1408,17 +1634,36 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Serializable[] jsParameters;
+        Object[] jsParameters;
         if (arguments.length == 0) {
-            jsParameters = new Serializable[] { this };
+            jsParameters = new Object[] { this };
         } else {
-            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters = new Object[arguments.length + 1];
             jsParameters[0] = this;
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
 
         return scheduleJavaScriptInvocation("return $0." + functionName + "("
                 + paramPlaceholderString + ")", jsParameters);
+    }
+
+    /**
+     * Calls the given JavaScript function with this element as
+     * <code>this</code> and the given arguments.
+     *
+     * @deprecated Use {@link #callJsFunction(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param functionName
+     *            the name of the function to call
+     * @param arguments
+     *            the arguments to pass to the function
+     * @return a pending result that can be used to get a return value from the
+     *         execution
+     */
+    @Deprecated
+    public PendingJavaScriptResult callJsFunction(String functionName,
+            Serializable[] arguments) {
+        return callJsFunction(functionName, (Object[]) arguments);
     }
 
     // When updating JavaDocs here, keep in sync with Page.executeJavaScript
@@ -1434,19 +1679,21 @@ public class Element extends Node<Element> {
      * value once it becomes available. If no return value handler is
      * registered, the return value will be ignored.
      * <p>
+     * Return values from JavaScript can be automatically deserialized into Java
+     * objects. All types supported by Jackson for JSON deserialization are
+     * supported as return values, including custom bean classes.
+     * <p>
      * This element will be available to the expression as <code>this</code>.
      * The given parameters will be available as variables named
-     * <code>$0</code>, <code>$1</code>, and so on. Supported parameter types
-     * are:
+     * <code>$0</code>, <code>$1</code>, and so on. All types supported by
+     * Jackson for JSON serialization are supported as parameters. Special
+     * cases:
      * <ul>
-     * <li>{@link String}
-     * <li>{@link Integer}
-     * <li>{@link Double}
-     * <li>{@link Boolean}
-     * <li>{@link BaseJsonNode}
-     * <li>{@link Element} (will be sent as <code>null</code> if the server-side
-     * element instance is not attached when the invocation is sent to the
-     * client)
+     * <li>{@link Element} (will be sent as a DOM element reference to the
+     * browser if the server-side element instance is attached when the
+     * invocation is sent to the client, or as <code>null</code> if not
+     * attached)
+     * <li>{@link BaseJsonNode} (sent as-is without additional wrapping)
      * </ul>
      * Note that the parameter variables can only be used in contexts where a
      * JavaScript variable can be used. You should for instance do
@@ -1465,15 +1712,15 @@ public class Element extends Node<Element> {
      *         the expression
      */
     public PendingJavaScriptResult executeJs(String expression,
-            Serializable... parameters) {
+            Object... parameters) {
 
         // Add "this" as the last parameter
-        Serializable[] wrappedParameters;
+        Object[] wrappedParameters;
         if (parameters.length == 0) {
-            wrappedParameters = new Serializable[] { this };
+            wrappedParameters = new Object[] { this };
         } else {
-            wrappedParameters = Arrays.copyOf(parameters, parameters.length + 1,
-                    Serializable[].class);
+            wrappedParameters = Arrays.copyOf(parameters,
+                    parameters.length + 1);
             wrappedParameters[parameters.length] = this;
         }
 
@@ -1485,8 +1732,27 @@ public class Element extends Node<Element> {
                 wrappedParameters);
     }
 
+    /**
+     * Asynchronously runs the given JavaScript expression in the browser in the
+     * context of this element.
+     *
+     * @deprecated Use {@link #executeJs(String, Object...)} instead. This
+     *             method exists only for binary compatibility.
+     * @param expression
+     *            the JavaScript expression to invoke
+     * @param parameters
+     *            parameters to pass to the expression
+     * @return a pending result that can be used to get a value returned from
+     *         the expression
+     */
+    @Deprecated
+    public PendingJavaScriptResult executeJs(String expression,
+            Serializable[] parameters) {
+        return executeJs(expression, (Object[]) parameters);
+    }
+
     private PendingJavaScriptResult scheduleJavaScriptInvocation(
-            String expression, Serializable[] parameters) {
+            String expression, Object[] parameters) {
         StateNode node = getNode();
 
         JavaScriptInvocation invocation = new JavaScriptInvocation(expression,
@@ -1614,19 +1880,57 @@ public class Element extends Node<Element> {
 
     /**
      * Executes the similarly named DOM method on the client side.
+     * <p>
+     * This method can be called with no arguments for default browser behavior,
+     * or with one or more {@link ScrollIntoViewOption} values to control
+     * scrolling behavior:
+     * <ul>
+     * <li>{@link ScrollIntoViewOption.Behavior} - controls whether scrolling is
+     * instant or smooth</li>
+     * <li>{@link ScrollIntoViewOption.Block} - controls vertical alignment of
+     * the element</li>
+     * <li>{@link ScrollIntoViewOption.Inline} - controls horizontal alignment
+     * of the element</li>
+     * </ul>
+     * <p>
+     * Examples:
      *
+     * <pre>
+     * element.scrollIntoView(); // Default behavior
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH); // Smooth
+     *                                                               // scrolling
+     * element.scrollIntoView(ScrollIntoViewOption.Block.END); // Scroll to
+     *                                                         // bottom
+     * element.scrollIntoView(ScrollIntoViewOption.Behavior.SMOOTH,
+     *         ScrollIntoViewOption.Block.END,
+     *         ScrollIntoViewOption.Inline.CENTER); // All options
+     * </pre>
+     *
+     * @param options
+     *            zero or more scroll options
+     * @return the element
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
-     * @return the element
      */
-    public Element scrollIntoView() {
-        return scrollIntoView(null);
+    public Element scrollIntoView(ScrollIntoViewOption... options) {
+        ObjectNode json = ScrollIntoViewOption.buildOptions(options);
+
+        // Use setTimeout to work on newly created elements
+        if (json == null) {
+            executeJs("setTimeout(function(){$0.scrollIntoView()},0)", this);
+        } else {
+            executeJs("setTimeout(function(){$0.scrollIntoView($1)},0)", this,
+                    json);
+        }
+
+        return getSelf();
     }
 
     /**
      * Executes the similarly named DOM method on the client side.
      *
+     * @deprecated Use {@link #scrollIntoView(ScrollIntoViewOption...)} instead
      * @see <a href=
      *      "https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView">Mozilla
      *      docs</a>
@@ -1634,6 +1938,7 @@ public class Element extends Node<Element> {
      *            the scroll options to pass to the method
      * @return the element
      */
+    @Deprecated(since = "25.0", forRemoval = true)
     public Element scrollIntoView(ScrollOptions scrollOptions) {
         // for an unknown reason, needs to be called deferred to work on a newly
         // created element

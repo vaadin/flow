@@ -22,6 +22,7 @@ import java.util.stream.Stream;
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.Node;
 import com.vaadin.flow.dom.NodeVisitor;
 import com.vaadin.flow.dom.PropertyChangeListener;
@@ -37,6 +38,7 @@ import com.vaadin.flow.internal.nodefeature.ShadowRootHost;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Signal;
 
 /**
  * Implementation which handles shadow root nodes.
@@ -96,6 +98,12 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void bindAttributeSignal(Element owner, String attribute,
+            Signal<String> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setAttribute(StateNode node, String attribute,
             AbstractStreamResource resource) {
         throw new UnsupportedOperationException();
@@ -135,6 +143,12 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     @Override
     public void setProperty(StateNode node, String name, Serializable value,
             boolean emitChange) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void bindPropertySignal(Element owner, String name,
+            Signal<?> signal) {
         throw new UnsupportedOperationException();
     }
 

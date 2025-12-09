@@ -13,16 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.change;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.NumericNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
+import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
@@ -91,30 +90,30 @@ public class MapPutChange extends NodeFeatureChange {
         super.populateJson(json, constantPool);
 
         if (value instanceof StateNode node) {
-            json.put(JsonConstants.CHANGE_PUT_NODE_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_NODE_VALUE,
                     JacksonUtils.createNode(node.getId()));
         } else if (value instanceof ObjectNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(node, constantPool));
         } else if (value instanceof NullNode) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE, (NullNode) value);
+            json.set(JsonConstants.CHANGE_PUT_VALUE, (NullNode) value);
         } else if (value instanceof NumericNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(node, constantPool));
         } else if (value instanceof BooleanNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(node, constantPool));
-        } else if (value instanceof TextNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+        } else if (value instanceof StringNode node) {
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(node, constantPool));
         } else if (value instanceof ValueNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(node, constantPool));
         } else if (value instanceof ArrayNode node) {
-            json.put(JsonConstants.CHANGE_PUT_VALUE, (ArrayNode) JacksonCodec
+            json.set(JsonConstants.CHANGE_PUT_VALUE, (ArrayNode) JacksonCodec
                     .encodeWithConstantPool(node, constantPool));
         } else {
-            json.put(JsonConstants.CHANGE_PUT_VALUE,
+            json.set(JsonConstants.CHANGE_PUT_VALUE,
                     JacksonCodec.encodeWithConstantPool(value, constantPool));
         }
     }

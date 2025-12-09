@@ -32,7 +32,6 @@ import com.vaadin.flow.internal.StringUtil;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see LitTemplateParser
  */
@@ -78,7 +77,7 @@ public final class BundleLitParser {
      * <p>
      * <code>return[\s]*html[\s]*(\`)</code> finds the return statement
      * <p>
-     * </p>
+     *
      * <code>([\s\S]*?)</code> captures all text until we encounter the end
      * character with <code>\1;}</code> e.g. <code>';}</code>
      */

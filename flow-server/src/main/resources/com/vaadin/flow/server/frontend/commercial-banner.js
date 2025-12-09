@@ -92,7 +92,6 @@ class VaadinCommercialBanner extends HTMLElement {
       this.remove();
     });
   }
-
 }
 
 // Register the custom element

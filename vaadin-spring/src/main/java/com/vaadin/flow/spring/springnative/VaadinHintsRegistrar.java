@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.springnative;
 
 import java.util.HashSet;
@@ -15,13 +30,14 @@ import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.type.filter.RegexPatternTypeFilter;
 
 import com.vaadin.flow.di.LookupInitializer;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
-import org.springframework.core.type.filter.RegexPatternTypeFilter;
+import com.vaadin.flow.shared.ui.Dependency;
 
 /**
  * Registers runtime hints for Spring 3 native support.
@@ -35,7 +51,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 .forEach(cls -> ref.registerType(cls, MemberCategory.values()));
 
         // Bundles, build info etc
-        hints.resources().registerPattern("META-INF/VAADIN/*");
+        hints.resources().registerPattern("META-INF/VAADIN/**");
         hints.resources().registerPattern("vaadin-i18n/*");
         hints.resources().registerPattern("vaadin-featureflags.properties");
 
@@ -56,8 +72,8 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
 
         // Flow server resources like BootstrapHandler.js and
         // RouteNotFoundError_prod.html
-        hints.resources().registerPattern("com/vaadin/flow/server/*");
-        hints.resources().registerPattern("com/vaadin/flow/router/*");
+        hints.resources().registerPattern("com/vaadin/flow/server/**");
+        hints.resources().registerPattern("com/vaadin/flow/router/**");
     }
 
     private void registerResourceIfPresent(RuntimeHints hints, String path) {
@@ -114,12 +130,12 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 "org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler$SupplierCsrfToken",
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter",
                 "org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestWrapper",
-                "com.fasterxml.jackson.databind.ser.std.ToStringSerializer",
+                "tools.jackson.databind.ser.std.ToStringSerializer",
                 DefaultErrorHandler.class.getName(), MenuData.class.getName(),
                 AvailableViewInfo.class.getName(),
                 AvailableViewInfo.DetailDeserializer.class.getName(),
                 AvailableViewInfo.DetailSerializer.class.getName(),
-                RouteParamType.class.getName() };
+                RouteParamType.class.getName(), Dependency.class.getName() };
     }
 
 }

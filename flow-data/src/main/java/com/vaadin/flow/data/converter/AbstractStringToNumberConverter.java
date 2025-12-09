@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.converter;
 
 import java.text.NumberFormat;
@@ -31,7 +30,6 @@ import com.vaadin.flow.data.binder.ValueContext;
  * space.
  * <p>
  * Override and overwrite {@link #getFormat(Locale)} to use a different format.
- * </p>
  *
  * @param <T>
  *            the converter number type

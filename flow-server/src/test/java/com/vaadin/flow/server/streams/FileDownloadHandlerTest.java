@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.ByteArrayOutputStream;
@@ -240,7 +239,7 @@ public class FileDownloadHandlerTest {
     }
 
     @Test
-    public void handleSetToInline_contentTypeIsInline()
+    public void handleSetToInline_contentDispositionIsInlineWithFilename()
             throws IOException, URISyntaxException {
         URL resource = getClass().getClassLoader().getResource(PATH_TO_FILE);
         DownloadHandler handler = DownloadHandler
@@ -256,6 +255,7 @@ public class FileDownloadHandlerTest {
 
         handler.handleDownloadRequest(event);
 
-        Mockito.verify(response).setHeader("Content-Disposition", "inline");
+        Mockito.verify(response).setHeader("Content-Disposition",
+                "inline; filename=\"my-download.bin\"");
     }
 }

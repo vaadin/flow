@@ -30,14 +30,14 @@ import java.util.Map;
 import java.util.stream.DoubleStream;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.DoubleNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.DoubleNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class JacksonUtilsTest {
     ObjectMapper mapper = JacksonUtils.getMapper();
@@ -129,11 +129,6 @@ public class JacksonUtilsTest {
                 .collect(JacksonUtils.asArray());
     }
 
-    private ArrayNode createNumberArray(double... items) {
-        return DoubleStream.of(items).mapToObj(mapper::valueToTree)
-                .map(obj -> (DoubleNode) obj).collect(JacksonUtils.asArray());
-    }
-
     @Test
     public void collectEmptyStream() {
         Stream<JsonNode> jsonValueStream = Stream.empty();
@@ -197,7 +192,7 @@ public class JacksonUtilsTest {
                 mapper.nullNode());
 
         Assert.assertEquals(2, array.size());
-        Assert.assertEquals("string", array.get(0).asText());
+        Assert.assertEquals("string", array.get(0).asString());
         Assert.assertTrue(array.get(1).isNull());
     }
 
@@ -224,7 +219,7 @@ public class JacksonUtilsTest {
 
         Assert.assertEquals(2, JacksonUtils.getKeys(object).size());
         Assert.assertEquals(3, object.get("integer").asInt(), 0);
-        Assert.assertEquals("foo", object.get("string").asText());
+        Assert.assertEquals("foo", object.get("string").asString());
     }
 
     @Test
@@ -346,7 +341,7 @@ public class JacksonUtilsTest {
     @Test
     public void simpleBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new SimpleBean());
-        Assert.assertEquals("value", json.get("string").asText());
+        Assert.assertEquals("value", json.get("string").asString());
         Assert.assertEquals(1.0, json.get("number").asDouble(), 0.0);
         Assert.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
         Assert.assertEquals(4.56, json.get("dbl").asDouble(), 0.0);
@@ -355,9 +350,9 @@ public class JacksonUtilsTest {
     @Test
     public void nestedBeanToJson() {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
-        Assert.assertEquals("parent", json.get("parentValue").asText());
+        Assert.assertEquals("parent", json.get("parentValue").asString());
         JsonNode child = json.get("child");
-        Assert.assertEquals("child", child.get("childValue").asText());
+        Assert.assertEquals("child", child.get("childValue").asString());
     }
 
     @Test
@@ -366,23 +361,32 @@ public class JacksonUtilsTest {
         ObjectNode json = JacksonUtils.beanToJson(bean);
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
                 JacksonUtils.jsonEquals(
-                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.get("zonedDateTime").asInt(), 0);
+                ZonedDateTime.parse(json.get("zonedDateTime").asString())
+                        .toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.get("sqlDate").asLong(), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.get("date").asLong(), 0);
-        Assert.assertEquals(10.0, json.get("duration").asLong(), 0);
+                bean.date.getTime(),
+                ZonedDateTime.parse(json.get("date").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
+        Assert.assertEquals(10.0,
+                Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
     @Test
@@ -407,10 +411,10 @@ public class JacksonUtilsTest {
         JsonNode childBeanMap = json.get("childBeanMap");
         JsonNode firstChild = childBeanMap.get("First");
         Assert.assertEquals("firstChildValue",
-                firstChild.get("childValue").asText());
+                firstChild.get("childValue").asString());
         JsonNode secondChild = childBeanMap.get("Second");
         Assert.assertEquals("secondChildValue",
-                secondChild.get("childValue").asText());
+                secondChild.get("childValue").asString());
 
         JsonNode integerList = json.get("integerList");
         Assert.assertEquals(3, integerList.get(0).asInt(), 0);
@@ -419,9 +423,9 @@ public class JacksonUtilsTest {
 
         JsonNode childBeanList = json.get("childBeanList");
         Assert.assertEquals("firstChildValue",
-                childBeanList.get(0).get("childValue").asText());
+                childBeanList.get(0).get("childValue").asString());
         Assert.assertEquals("secondChildValue",
-                childBeanList.get(1).get("childValue").asText());
+                childBeanList.get(1).get("childValue").asString());
     }
 
     @Test
@@ -435,8 +439,8 @@ public class JacksonUtilsTest {
         list.add(bean2);
         ArrayNode json = JacksonUtils.listToJson(list);
 
-        Assert.assertEquals("bean1", json.get(0).get("string").asText());
-        Assert.assertEquals("bean2", json.get(1).get("string").asText());
+        Assert.assertEquals("bean1", json.get(0).get("string").asString());
+        Assert.assertEquals("bean2", json.get(1).get("string").asString());
     }
 
     @Test
@@ -451,8 +455,8 @@ public class JacksonUtilsTest {
         map.put("two", bean2);
         ObjectNode json = JacksonUtils.mapToJson(map);
 
-        Assert.assertEquals("bean1", json.get("one").get("string").asText());
-        Assert.assertEquals("bean2", json.get("two").get("string").asText());
+        Assert.assertEquals("bean1", json.get("one").get("string").asString());
+        Assert.assertEquals("bean2", json.get("two").get("string").asString());
     }
 
     public record Person(String name, double age, boolean canSwim) {
@@ -474,14 +478,14 @@ public class JacksonUtilsTest {
     }
 
     @Test
-    public void toFileJson() throws JsonProcessingException {
+    public void toFileJson() throws JacksonException {
         ObjectNode json = JacksonUtils.beanToJson(new ParentBean());
         Assert.assertEquals("""
                 {
-                  "parentValue": "parent",
                   "child": {
                     "childValue": "child"
-                  }
+                  },
+                  "parentValue": "parent"
                 }""", JacksonUtils.toFileJson(json).replace("\r\n", "\n"));
 
     }

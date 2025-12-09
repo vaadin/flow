@@ -18,7 +18,6 @@ package com.vaadin.flow.webcomponent;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @NpmPackage(value = "@fortawesome/fontawesome-free", version = TestVersion.FONTAWESOME)

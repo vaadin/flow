@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
@@ -26,9 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -36,6 +33,7 @@ import org.atmosphere.cpr.AtmosphereResourceEvent;
 import org.atmosphere.cpr.AtmosphereResourceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.BrowserLiveReload;
@@ -169,7 +167,7 @@ public class PushHandler {
                     SynchronizedRequestHandler.getRequestBody(reader),
                     vaadinRequest);
             connection.push(false);
-        } catch (JsonParseException | JsonMappingException e) {
+        } catch (JacksonException e) {
             getLogger().error("Error writing JSON to response", e);
             // Refresh on client side
             sendRefreshAndDisconnect(resource);
@@ -666,8 +664,9 @@ public class PushHandler {
                 return;
             }
 
-            String msg = IOUtils.toString(reader);
-            liveReload.get().onMessage(resource, msg);
+            StringWriter writer = new StringWriter();
+            reader.transferTo(writer);
+            liveReload.get().onMessage(resource, writer.toString());
         } catch (IOException e) {
             getLogger().error(
                     "Unable to read contents of debug connection message", e);

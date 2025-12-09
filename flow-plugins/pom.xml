@@ -1,34 +1,34 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-	<parent>
-		<groupId>com.vaadin</groupId>
-		<artifactId>flow-project</artifactId>
-		<version>25.0-SNAPSHOT</version>
-	</parent>
-	<artifactId>flow-plugins</artifactId>
-	<packaging>pom</packaging>
-	<name>Flow Plugins</name>
-	<description>Container for flow plugins</description>
-	<modules>
-		<module>flow-plugin-base</module>
-		<module>flow-maven-plugin</module>
-		<module>flow-dev-bundle-plugin</module>
-	</modules>
-	<properties>
-		<bnd.skip>true</bnd.skip>
-		<testListener></testListener>
-	</properties>
-	<profiles>
-		<profile>
-			<id>gradle</id>
-			<activation>
-				<jdk>(,18]</jdk>
-			</activation>
-			<modules>
-				<module>flow-gradle-plugin</module>
-			</modules>
-		</profile>
-	</profiles>
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-project</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-plugins</artifactId>
+  <packaging>pom</packaging>
+  <name>Flow Plugins</name>
+  <description>Container for flow plugins</description>
+  <modules>
+    <module>flow-plugin-base</module>
+    <module>flow-maven-plugin</module>
+    <module>flow-dev-bundle-plugin</module>
+  </modules>
+  <properties>
+    <bnd.skip>true</bnd.skip>
+    <testListener/>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
+  <profiles>
+    <profile>
+      <id>gradle</id>
+      <activation>
+        <jdk>(,22]</jdk>
+      </activation>
+      <modules>
+        <module>flow-gradle-plugin</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>

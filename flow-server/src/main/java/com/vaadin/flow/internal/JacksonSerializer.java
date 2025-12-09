@@ -32,11 +32,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.JsonSerializable;
 
@@ -89,7 +89,7 @@ public final class JacksonSerializer {
 
             if (type.isRecord()) {
                 for (RecordComponent rc : type.getRecordComponents()) {
-                    json.put(rc.getName(),
+                    json.set(rc.getName(),
                             toJson(rc.getAccessor().invoke(bean)));
                 }
             } else {
@@ -100,7 +100,7 @@ public final class JacksonSerializer {
                     }
                     Method reader = pd.getReadMethod();
                     if (reader != null) {
-                        json.put(pd.getName(), toJson(reader.invoke(bean)));
+                        json.set(pd.getName(), toJson(reader.invoke(bean)));
                     }
                 }
             }
@@ -338,7 +338,7 @@ public final class JacksonSerializer {
     private static Optional<?> tryToConvertFromSimpleType(Class<?> type,
             JsonNode json) {
         if (type.isAssignableFrom(String.class)) {
-            return Optional.of(json.asText());
+            return Optional.of(json.asString());
         }
         if (type.isAssignableFrom(int.class)
                 || type.isAssignableFrom(Integer.class)) {
@@ -362,15 +362,15 @@ public final class JacksonSerializer {
         }
         if (type.isAssignableFrom(char.class)
                 || type.isAssignableFrom(Character.class)) {
-            return Optional.of(json.asText().charAt(0));
+            return Optional.of(json.asString().charAt(0));
         }
         if (type.isAssignableFrom(Boolean.class)
                 || type.isAssignableFrom(boolean.class)) {
             return Optional.of(json.asBoolean());
         }
         if (type.isEnum()) {
-            return Optional.of(
-                    Enum.valueOf((Class<? extends Enum>) type, json.asText()));
+            return Optional.of(Enum.valueOf((Class<? extends Enum>) type,
+                    json.asString()));
         }
         if (JsonNode.class.isAssignableFrom(type)) {
             return Optional.of(json);

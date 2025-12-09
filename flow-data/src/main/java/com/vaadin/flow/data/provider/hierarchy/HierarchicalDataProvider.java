@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.DataProvider;
@@ -315,6 +316,54 @@ public interface HierarchicalDataProvider<T, F> extends DataProvider<T, F> {
      * @return whether the given item has children
      */
     public boolean hasChildren(T item);
+
+    /**
+     * Gets the parent item for the given item.
+     *
+     * @param item
+     *            the item for which to retrieve the parent item for
+     * @return parent item for the given item or {@code null} if the item is a
+     *         root item
+     * @throws UnsupportedOperationException
+     *             if not implemented
+     */
+    default T getParent(T item) {
+        throw new UnsupportedOperationException(
+                "The getParent method is not implemented for this data provider");
+    }
+
+    /**
+     * Gets the index of a given item based on the given hierarchical query.
+     * <p>
+     * This method must be implemented in accordance with the selected hierarchy
+     * type, see {@link #getHierarchyFormat()} and {@link HierarchyFormat}.
+     * <ul>
+     * <li>If {@link HierarchyFormat#FLATTENED} is used, it should be
+     * implemented to return the index in the entire flattened tree.
+     * <li>If {@link HierarchyFormat#NESTED} is used, it should be implemented
+     * to return the index within the given parent item.
+     * </ul>
+     * <p>
+     * This method has a default implementation for in-memory data providers.
+     *
+     * @param item
+     *            the item to get the index for
+     * @param query
+     *            given query to request data with
+     * @return the index of the provided item or -1 if not found
+     * @throws UnsupportedOperationException
+     *             if not implemented
+     */
+    default int getItemIndex(T item, HierarchicalQuery<T, F> query) {
+        if (isInMemory()) {
+            Objects.requireNonNull(item, "Item cannot be null");
+            Objects.requireNonNull(query, "Query cannot be null");
+            return fetchChildren(query).map(this::getId).toList()
+                    .indexOf(getId(item));
+        }
+        throw new UnsupportedOperationException(
+                "The getItemIndex method is not implemented for this data provider");
+    }
 
     /**
      * Gets the depth of a given item in the hierarchy, starting from zero

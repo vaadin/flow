@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.plugin.maven;
 
@@ -37,8 +36,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
@@ -63,6 +60,8 @@ import org.junit.Test;
 import org.junit.function.ThrowingRunnable;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -150,6 +149,7 @@ public class BuildFrontendMojoTest {
                 "flow_resources");
 
         defaultJavaSource = new File(".", "src/test/java");
+        File defaultJavaResource = new File(".", "src/test/resources");
         openApiJsonFile = new File(npmFolder,
                 "target/classes/com/vaadin/hilla/openapi.json");
         generatedTsFolder = new File(npmFolder, "src/main/frontend/generated");
@@ -186,6 +186,8 @@ public class BuildFrontendMojoTest {
                         "src/main/resources/application.properties"));
         ReflectionUtils.setVariableValueInObject(mojo, "javaSourceFolder",
                 defaultJavaSource);
+        ReflectionUtils.setVariableValueInObject(mojo, "javaResourceFolder",
+                defaultJavaResource);
         ReflectionUtils.setVariableValueInObject(mojo, "generatedTsFolder",
                 generatedTsFolder);
         ReflectionUtils.setVariableValueInObject(mojo, "nodeVersion",
@@ -672,11 +674,11 @@ public class BuildFrontendMojoTest {
     }
 
     @Test
-    public void noTokenFile_noTokenFileShouldBeCreated()
+    public void noTokenFile_tokenFileShouldBeCreated()
             throws MojoExecutionException, MojoFailureException {
         mojo.execute();
 
-        Assert.assertFalse(tokenFile.exists());
+        Assert.assertTrue(tokenFile.exists());
     }
 
     @Test

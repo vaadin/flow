@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.DomEvent;
@@ -50,7 +50,7 @@ public class EventRpcHandler extends AbstractRpcInvocationHandler {
         assert invocationJson.has(JsonConstants.RPC_EVENT_TYPE);
 
         String eventType = invocationJson.get(JsonConstants.RPC_EVENT_TYPE)
-                .asText();
+                .asString();
 
         JsonNode eventData = invocationJson.get(JsonConstants.RPC_EVENT_DATA);
         if (eventData == null) {

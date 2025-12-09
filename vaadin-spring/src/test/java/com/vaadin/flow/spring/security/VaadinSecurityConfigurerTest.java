@@ -1,10 +1,26 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.security;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.util.List;
 import java.util.Map;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +72,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.hilla.FileRouterRequestUtil;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
@@ -102,6 +119,9 @@ class VaadinSecurityConfigurerTest {
     @MockitoBean
     private EndpointRequestUtil endpointRequestUtil;
 
+    @MockitoBean
+    private FileRouterRequestUtil fileRouterRequestUtil;
+
     @BeforeEach
     void setUp() {
         var authManagerBuilder = new AuthenticationManagerBuilder(postProcessor)
@@ -119,7 +139,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void withDefaults_chainHasDefaultFilters() throws Exception {
+    void withDefaults_chainHasDefaultFilters() {
         var filters = http.with(configurer, Customizer.withDefaults()).build()
                 .getFilters();
 
@@ -130,7 +150,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void loginViewClass_chainHasAuthenticationFilter() throws Exception {
+    void loginViewClass_chainHasAuthenticationFilter() {
         var filters = http.with(configurer, c -> {
             c.loginView(TestLoginView.class);
         }).build().getFilters();
@@ -140,7 +160,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void loginViewString_chainHasAuthenticationFilter() throws Exception {
+    void loginViewString_chainHasAuthenticationFilter() {
         var filters = http.with(configurer, c -> {
             c.loginView("/login");
         }).build().getFilters();
@@ -150,7 +170,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void oauth2LoginPage_chainHasAuthenticationFilter() throws Exception {
+    void oauth2LoginPage_chainHasAuthenticationFilter() {
         var filters = http.with(configurer, c -> {
             c.oauth2LoginPage("/oauth2/login");
         }).build().getFilters();
@@ -161,7 +181,7 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     void logoutSuccessHandler_handlerIsConfigured(
-            @Mock LogoutSuccessHandler handler) throws Exception {
+            @Mock LogoutSuccessHandler handler) {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
         SecurityContextHolder.getContext().setAuthentication(auth);
         var request = new MockHttpServletRequest("POST", "/logout");
@@ -179,8 +199,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void addLogoutHandler_handlerIsAdded(@Mock LogoutHandler handler)
-            throws Exception {
+    void addLogoutHandler_handlerIsAdded(@Mock LogoutHandler handler) {
         var auth = new UsernamePasswordAuthenticationToken("user", "password");
         SecurityContextHolder.getContext().setAuthentication(auth);
         var request = new MockHttpServletRequest("POST", "/logout");
@@ -198,7 +217,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void anyRequest_authorizeRuleIsConfigured() throws Exception {
+    void anyRequest_authorizeRuleIsConfigured() {
         var auth = new AnonymousAuthenticationToken("key", "user",
                 List.of(new SimpleGrantedAuthority("ROLE_ANONYMOUS")));
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -219,7 +238,7 @@ class VaadinSecurityConfigurerTest {
     @ParameterizedTest
     @ValueSource(booleans = { true, false })
     void enableNavigationAccessControl_navigationAccessControlIsConfigured(
-            boolean enableNavigationAccessControl) throws Exception {
+            boolean enableNavigationAccessControl) {
         http.with(configurer, c -> {
             c.enableNavigationAccessControl(enableNavigationAccessControl);
         }).build();
@@ -230,7 +249,7 @@ class VaadinSecurityConfigurerTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    void disableDefaultConfigurers_configurersAreNotApplied() throws Exception {
+    void disableDefaultConfigurers_configurersAreNotApplied() {
         http.with(configurer, c -> {
             c.enableCsrfConfiguration(false);
             c.enableLogoutConfiguration(false);
@@ -249,7 +268,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void requestCache_customRulesAreApplied() throws Exception {
+    void requestCache_customRulesAreApplied() {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
         requestCache.ignoreRequests(PathPatternRequestMatcher.withDefaults()
@@ -266,7 +285,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void loginView_requestCacheApplied() throws Exception {
+    void loginView_requestCacheApplied() {
         VaadinDefaultRequestCache requestCache = applicationContext
                 .getBean(VaadinDefaultRequestCache.class);
 
@@ -285,7 +304,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void hillaAnonymousEndpointRequest_arePermitted() throws Exception {
+    void hillaAnonymousEndpointRequest_arePermitted() {
         try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
                 .mockStatic(EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
@@ -315,7 +334,7 @@ class VaadinSecurityConfigurerTest {
     }
 
     @Test
-    void hillaEndpointRequest_areAuthenticated() throws Exception {
+    void hillaEndpointRequest_areAuthenticated() {
         try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
                 .mockStatic(EndpointRequestUtil.class)) {
             endpointRequestUtilMockedStatic
@@ -330,6 +349,37 @@ class VaadinSecurityConfigurerTest {
             request.setPathInfo(path);
 
             Mockito.when(endpointRequestUtil.isEndpointRequest(request))
+                    .thenReturn(true);
+
+            var filters = http.with(configurer, Customizer.withDefaults())
+                    .build().getFilters();
+
+            assertThat(filters)
+                    .filteredOn(AuthorizationFilter.class::isInstance)
+                    .singleElement()
+                    .satisfies(filter -> assertThatCode(
+                            () -> filter.doFilter(request, response, chain))
+                            .doesNotThrowAnyException());
+        }
+    }
+
+    @Test
+    void hilla_checkAllowedRoutes() {
+        try (MockedStatic<EndpointRequestUtil> endpointRequestUtilMockedStatic = Mockito
+                .mockStatic(EndpointRequestUtil.class)) {
+            endpointRequestUtilMockedStatic
+                    .when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+
+            var auth = new TestingAuthenticationToken("user", "password",
+                    List.of(new SimpleGrantedAuthority("ROLE_USER")));
+            SecurityContextHolder.getContext().setAuthentication(auth);
+            var path = "/hilla-view";
+            var request = new MockHttpServletRequest("POST", path);
+            request.setPathInfo(path);
+
+            // Simulate usage of Hilla API, providing file-router request info
+            Mockito.when(fileRouterRequestUtil.isAnonymousRoute(request))
                     .thenReturn(true);
 
             var filters = http.with(configurer, Customizer.withDefaults())

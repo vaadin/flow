@@ -13,12 +13,10 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -26,7 +24,6 @@ import java.util.TreeMap;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Element;
 import org.jsoup.safety.Safelist;
@@ -36,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
@@ -105,7 +103,7 @@ public abstract class AbstractRouteNotFoundError extends Component {
     private static String readHtmlFile(String templateName) {
         try (InputStream stream = RouteNotFoundError.class
                 .getResourceAsStream(templateName)) {
-            return IOUtils.toString(stream, StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(stream);
         } catch (IOException e) {
             LoggerFactory.getLogger(AbstractRouteNotFoundError.class)
                     .error("Unable to read " + templateName, e);

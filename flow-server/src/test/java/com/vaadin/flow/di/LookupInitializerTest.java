@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.di;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import jakarta.servlet.ServletException;
 
 import java.io.IOException;
@@ -42,6 +41,7 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.LookupInitializer.AppShellPredicateImpl;
 import com.vaadin.flow.di.LookupInitializer.ResourceProviderImpl;

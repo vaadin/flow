@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.BufferedWriter;
@@ -23,6 +22,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -43,23 +43,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
@@ -611,13 +608,8 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
-     * Creates a default executor instance to use with this service.
-     * <p>
-     * This default implementation creates a thread pool executor with a custom
-     * thread factory to generate daemon threads. It uses a core pool size of 8,
-     * an unbounded maximum pool size, and a keep-alive time of 60 seconds for
-     * idle threads. The thread pool grows dynamically as required, and idle
-     * core threads are allowed to time out.
+     * Creates a default executor instance to use with this service. This
+     * default implementation creates a virtual tread executor.
      * <p>
      * A custom {@link VaadinService} implementation can override this method to
      * provide its own ad-hoc executor tailored to specific environments like
@@ -637,42 +629,17 @@ public abstract class VaadinService implements Serializable {
      */
     protected Executor createDefaultExecutor() {
         this.defaultExecutorInUse = true;
-        int corePoolSize = 8;
-        int keepAliveTimeSec = 60;
+        ThreadFactory namedVirtualThreadFactory = defaultExecutorFactory()
+                .factory();
+        return Executors.newThreadPerTaskExecutor(namedVirtualThreadFactory);
+    }
 
-        class VaadinThreadFactory implements ThreadFactory {
-            private final AtomicInteger threadNumber = new AtomicInteger(0);
-
-            @Override
-            public Thread newThread(Runnable runnable) {
-                int threadNumber = this.threadNumber.incrementAndGet();
-                if (threadNumber == 1) {
-                    getLogger().info(
-                            "The application is using Vaadin's default ThreadPoolExecutor "
-                                    + "(pool size = {}, keep alive time = {} seconds). "
-                                    + "A custom executor with an appropriate thread pool "
-                                    + "can be provided registering a {}.",
-                            corePoolSize, keepAliveTimeSec,
-                            VaadinServiceInitListener.class.getSimpleName());
-                }
-                Thread thread = new Thread(runnable,
-                        "VaadinTaskExecutor-thread-" + threadNumber);
-                // Thread marked as daemon to prevent task execution to block
-                // JVM shutdown
-                thread.setDaemon(true);
-                thread.setPriority(Thread.NORM_PRIORITY);
-                return thread;
-            }
-        }
-        // Defaults taken from Spring Boot configuration
-        // org.springframework.boot.autoconfigure.task.TaskExecutionProperties.Pool
-        ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-                corePoolSize, Integer.MAX_VALUE, keepAliveTimeSec,
-                TimeUnit.SECONDS, new LinkedBlockingQueue<>(),
-                new VaadinThreadFactory());
-        // Enables dynamic growing and shrinking of the pool.
-        threadPoolExecutor.allowCoreThreadTimeOut(true);
-        return threadPoolExecutor;
+    /*
+     * Package private to allow overriding with an uncaught exception handler in
+     * tests
+     */
+    OfVirtual defaultExecutorFactory() {
+        return Thread.ofVirtual().name("VaadinTaskExecutor-thread-", 1);
     }
 
     /**
@@ -704,16 +671,13 @@ public abstract class VaadinService implements Serializable {
 
     /**
      * Creates and configures a default instance of {@link ObjectMapper}. The
-     * configured {@link ObjectMapper} includes the registration of the
-     * {@link JavaTimeModule} to handle serialization and deserialization of
-     * Java time API objects.
+     * configured {@link ObjectMapper} handle serialization and deserialization
+     * of Java time API objects.
      *
      * @return the configured {@link ObjectMapper} instance
      */
     protected ObjectMapper createDefaultObjectMapper() {
-        ObjectMapper objectMapper = new ObjectMapper();
-        objectMapper.registerModule(new JavaTimeModule());
-        return objectMapper;
+        return JacksonUtils.getMapper();
     }
 
     /**
@@ -793,7 +757,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * By default, the {@link DefaultSystemMessagesProvider} which always
      * provides the built-in default {@link SystemMessages} is used.
-     * </p>
      *
      * @return the system messages provider; not <code>null</code>
      * @see #setSystemMessagesProvider(SystemMessagesProvider)
@@ -954,7 +917,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Handles locking of the session internally to avoid creation of duplicate
      * sessions by two threads simultaneously.
-     * </p>
      *
      * @param request
      *            the request to get a vaadin service session for.
@@ -1017,7 +979,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * This method uses the wrapped session instead of VaadinSession to be able
      * to lock even before the VaadinSession has been initialized.
-     * </p>
      *
      * @param wrappedSession
      *            The wrapped session
@@ -1230,6 +1191,7 @@ public abstract class VaadinService implements Serializable {
                                 .getSessionLockCheckStrategy()
                         : SessionLockCheckStrategy.THROW;
         assert sessionLockCheckStrategy != null;
+        session.applyLockStrategy(sessionLockCheckStrategy);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1251,17 +1213,17 @@ public abstract class VaadinService implements Serializable {
             Optional<Locale> foundLocale = LocaleUtil
                     .getExactLocaleMatch(request, providedLocales);
 
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isEmpty()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
 
-            // Set locale by match found in I18N provider, first provided locale
-            // or else leave as default locale
+            // Set locale by match found in I18N provider, locale provided by
+            // I18nProvider.getDefaultLocale or else leave as default locale
             if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
-                session.setLocale(providedLocales.get(0));
+                session.setLocale(provider.getDefaultLocale());
             }
         }
     }
@@ -1372,7 +1334,6 @@ public abstract class VaadinService implements Serializable {
      * The application developer can also use this method to define the current
      * instances outside the normal request handling, e.g. when initiating
      * custom background threads.
-     * </p>
      *
      * @param request
      *            the Vaadin request to set as the current request, or
@@ -1853,7 +1814,6 @@ public abstract class VaadinService implements Serializable {
      * expiration event if it implements {@link SessionExpiredHandler}. If no
      * request handler handles session expiration a default expiration message
      * will be written.
-     * </p>
      *
      * @param request
      *            The incoming request

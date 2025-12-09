@@ -23,15 +23,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BooleanNode;
-import com.fasterxml.jackson.databind.node.NullNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BooleanNode;
+import tools.jackson.databind.node.NullNode;
+import tools.jackson.databind.node.NumericNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.StringNode;
 
 /**
  * Tests for the {@link JacksonSerializer}.
@@ -296,8 +296,8 @@ public class JacksonSerializerTest {
     public void serializeBasicTypes_returnJsonBasicTypes() {
         JsonNode json = JacksonSerializer.toJson("someString");
         Assert.assertTrue("The JsonNode should be instanceof JsonString",
-                json instanceof TextNode);
-        Assert.assertEquals("someString", json.asText());
+                json instanceof StringNode);
+        Assert.assertEquals("someString", json.asString());
 
         json = JacksonSerializer.toJson(0);
         Assert.assertTrue("The JsonNode should be instanceof JsonNumber",
@@ -336,8 +336,8 @@ public class JacksonSerializerTest {
 
         json = JacksonSerializer.toJson(SomeEnum.SOME_VALUE_1);
         Assert.assertTrue("The JsonNode should be instanceof JsonString",
-                json instanceof TextNode);
-        Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), json.asText());
+                json instanceof StringNode);
+        Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(), json.asString());
     }
 
     @Test
@@ -374,7 +374,7 @@ public class JacksonSerializerTest {
         // char is a different case, it is a string at the json
         Assert.assertTrue(object.has("charProperty"));
         Assert.assertEquals((char) 0,
-                object.get("charProperty").asText().charAt(0));
+                object.get("charProperty").asString().charAt(0));
 
         bean = JacksonSerializer.toObject(ObjectWithSimpleTypes.class, json);
         Assert.assertNotNull(bean);
@@ -406,7 +406,7 @@ public class JacksonSerializerTest {
 
         JsonNode object = json;
         Assert.assertEquals("someProperty",
-                object.get("stringProperty").asText());
+                object.get("stringProperty").asString());
         Assert.assertEquals(1, object.get("intProperty").intValue(), PRECISION);
         Assert.assertEquals(2, object.get("integerProperty").intValue(),
                 PRECISION);
@@ -431,11 +431,12 @@ public class JacksonSerializerTest {
         Assert.assertEquals(true, object.get("booleanProperty").booleanValue());
         Assert.assertEquals(false,
                 object.get("booleanObjectProperty").booleanValue());
-        Assert.assertEquals('c', object.get("charProperty").asText().charAt(0));
+        Assert.assertEquals('c',
+                object.get("charProperty").asString().charAt(0));
         Assert.assertEquals('C',
-                object.get("characterProperty").asText().charAt(0));
+                object.get("characterProperty").asString().charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                object.get("enumProperty").asText());
+                object.get("enumProperty").asString());
 
         bean = JacksonSerializer.toObject(ObjectWithSimpleTypes.class, json);
         Assert.assertNotNull(bean);
@@ -522,7 +523,7 @@ public class JacksonSerializerTest {
         Assert.assertNotNull("The object1 should be not be null", object);
 
         Assert.assertEquals("someProperty",
-                object.get("stringProperty").asText());
+                object.get("stringProperty").asString());
         Assert.assertEquals(1, object.get("intProperty").intValue(), PRECISION);
         Assert.assertEquals(2, object.get("integerProperty").intValue(),
                 PRECISION);
@@ -547,17 +548,18 @@ public class JacksonSerializerTest {
         Assert.assertEquals(true, object.get("booleanProperty").booleanValue());
         Assert.assertEquals(false,
                 object.get("booleanObjectProperty").booleanValue());
-        Assert.assertEquals('c', object.get("charProperty").asText().charAt(0));
+        Assert.assertEquals('c',
+                object.get("charProperty").asString().charAt(0));
         Assert.assertEquals('C',
-                object.get("characterProperty").asText().charAt(0));
+                object.get("characterProperty").asString().charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                object.get("enumProperty").asText());
+                object.get("enumProperty").asString());
 
         object = json.get("object2");
         Assert.assertNotNull("The object2 should be not be null", object);
 
         Assert.assertEquals("someOtherProperty",
-                object.get("stringProperty").asText());
+                object.get("stringProperty").asString());
         Assert.assertEquals(10, object.get("intProperty").intValue(),
                 PRECISION);
         Assert.assertEquals(20, object.get("integerProperty").intValue(),
@@ -583,15 +585,16 @@ public class JacksonSerializerTest {
         Assert.assertEquals(true, object.get("booleanProperty").booleanValue());
         Assert.assertEquals(false,
                 object.get("booleanObjectProperty").booleanValue());
-        Assert.assertEquals('d', object.get("charProperty").asText().charAt(0));
+        Assert.assertEquals('d',
+                object.get("charProperty").asString().charAt(0));
         Assert.assertEquals('D',
-                object.get("characterProperty").asText().charAt(0));
+                object.get("characterProperty").asString().charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_1.name(),
-                object.get("enumProperty").asText());
+                object.get("enumProperty").asString());
 
         object = json.get("record");
         Assert.assertNotNull("The record should be not be null", object);
-        Assert.assertEquals("someone", object.get("name").asText());
+        Assert.assertEquals("someone", object.get("name").asString());
         Assert.assertEquals(42, object.get("age").intValue(), PRECISION);
     }
 
@@ -700,8 +703,8 @@ public class JacksonSerializerTest {
 
         JsonNode jsonObject = json;
         ArrayNode array = (ArrayNode) jsonObject.get("listOfStrings");
-        Assert.assertEquals("string1", array.get(0).asText());
-        Assert.assertEquals("string2", array.get(1).asText());
+        Assert.assertEquals("string1", array.get(0).asString());
+        Assert.assertEquals("string2", array.get(1).asString());
 
         array = (ArrayNode) jsonObject.get("setOfIntegers");
         Assert.assertEquals(3, array.get(0).intValue(), PRECISION);
@@ -745,11 +748,11 @@ public class JacksonSerializerTest {
         Assert.assertNotNull(nestedRecord);
         Assert.assertNotNull(nestedObject);
 
-        Assert.assertEquals("someone", nestedRecord.get("name").asText());
+        Assert.assertEquals("someone", nestedRecord.get("name").asString());
         Assert.assertEquals(42, nestedRecord.get("age").intValue(), PRECISION);
 
         Assert.assertEquals("someProperty",
-                nestedObject.get("stringProperty").asText());
+                nestedObject.get("stringProperty").asString());
         Assert.assertEquals(1, nestedObject.get("intProperty").intValue(),
                 PRECISION);
         Assert.assertEquals(2, nestedObject.get("integerProperty").intValue(),
@@ -777,11 +780,11 @@ public class JacksonSerializerTest {
         Assert.assertFalse(
                 nestedObject.get("booleanObjectProperty").asBoolean());
         Assert.assertEquals('c',
-                nestedObject.get("charProperty").asText().charAt(0));
+                nestedObject.get("charProperty").asString().charAt(0));
         Assert.assertEquals('C',
-                nestedObject.get("characterProperty").asText().charAt(0));
+                nestedObject.get("characterProperty").asString().charAt(0));
         Assert.assertEquals(SomeEnum.SOME_VALUE_2.name(),
-                nestedObject.get("enumProperty").asText());
+                nestedObject.get("enumProperty").asString());
 
         mainRecord = JacksonSerializer.toObject(RecordWithRecordAndObject.class,
                 json);

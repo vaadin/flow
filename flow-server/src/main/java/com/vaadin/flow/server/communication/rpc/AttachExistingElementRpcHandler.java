@@ -17,7 +17,7 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.ChildElementConsumer;
 import com.vaadin.flow.dom.Element;
@@ -63,7 +63,7 @@ public class AttachExistingElementRpcHandler
         int assignedId = invocationJson
                 .get(JsonConstants.RPC_ATTACH_ASSIGNED_ID).intValue();
         String tag = invocationJson.get(JsonConstants.RPC_ATTACH_TAG_NAME)
-                .asText();
+                .asString();
         int index = invocationJson.get(JsonConstants.RPC_ATTACH_INDEX)
                 .intValue();
 

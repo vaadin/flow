@@ -15,16 +15,15 @@
  */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
 
 /**
  * Decodes a {@link JsonNode} with {@link JsonNodeType#STRING} type to
  * {@link Enum} subclass type.
  * <p>
  * This decoder is applicable to any {@link JsonNode} which is
- * {@link com.fasterxml.jackson.databind.node.TextNode} and any {@link Enum}
- * subclass
+ * {@link tools.jackson.databind.node.StringNode} and any {@link Enum} sublcass
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
@@ -43,7 +42,7 @@ public class StringToEnumDecoder implements RpcDecoder {
     @Override
     public <T> T decode(JsonNode value, Class<T> type)
             throws RpcDecodeException {
-        String stringValue = value.asText();
+        String stringValue = value.asString();
         Enum<?> result = Enum.valueOf((Class<? extends Enum>) type,
                 stringValue);
         return type.cast(result);

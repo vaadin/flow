@@ -15,21 +15,21 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.internal.StringUtil;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * Generate <code>tsconfig.json</code> if it is missing in project folder.
@@ -56,7 +56,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
     private static final String TSCONFIG_JSON_OLDER_VERSIONS_TEMPLATE = "tsconfig-%s.json";
     private static final String[] tsconfigVersions = { "latest", "v23.3.0.1",
             "v23.3.0", "v23.2", "v23.1", "v22", "v14", "osgi", "v23.3.4",
-            "v23.3.4-hilla", "es2020" };
+            "v23.3.4-hilla", "es2020", "es2022" };
 
     static final String ERROR_MESSAGE = """
 
@@ -98,7 +98,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         }
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
-            String config = IOUtils.toString(tsConfStream, UTF_8);
+            String config = StringUtil.toUTF8String(tsConfStream);
 
             config = config.replaceAll("%FRONTEND%",
                     options.getNpmFolder().toPath()
@@ -122,7 +122,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         try {
             File projectTsconfig = new File(options.getNpmFolder(),
                     TSCONFIG_JSON);
-            String current = FileUtils.readFileToString(projectTsconfig,
+            String current = Files.readString(projectTsconfig.toPath(),
                     StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
             if (isOlder(currentEsVersion, esVersion)) {
@@ -155,7 +155,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getEsTargetVersion(String tsConfig) {
         JsonNode parsed = parseTsConfig(tsConfig);
-        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).textValue();
+        return parsed.get(COMPILER_OPTIONS).get(ES_TARGET_VERSION).asString();
     }
 
     private ObjectNode parseTsConfig(String tsConfig) {
@@ -179,8 +179,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             // Project's TS config
             File projectTsConfigFile = new File(
                     options.getNpmFolder().getPath(), TSCONFIG_JSON);
-            String projectTsConfigAsString = FileUtils
-                    .readFileToString(projectTsConfigFile, UTF_8);
+            String projectTsConfigAsString = Files
+                    .readString(projectTsConfigFile.toPath(), UTF_8);
 
             ObjectNode projectTsConfigContent;
             try {
@@ -243,10 +243,10 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
 
     private String getConfigVersion(JsonNode projectTsConfigContent) {
         if (projectTsConfigContent.has(VERSION)) {
-            return projectTsConfigContent.get(VERSION).textValue();
+            return projectTsConfigContent.get(VERSION).asString();
         }
         if (projectTsConfigContent.has(OLD_VERSION_KEY)) {
-            return projectTsConfigContent.get(OLD_VERSION_KEY).textValue();
+            return projectTsConfigContent.get(OLD_VERSION_KEY).asString();
         }
         return null;
     }

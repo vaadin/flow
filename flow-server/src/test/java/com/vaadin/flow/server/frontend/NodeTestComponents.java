@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.util.Collections;
@@ -139,6 +137,12 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
     @JsModule("@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js")
     public static class TranslatedImports extends Component {
 
+    }
+
+    @Route()
+    public static class ReferenceView extends Component {
+        // References the bower component for bytecode scanner.
+        VaadinBowerComponent vaadinBowerComponent;
     }
 
     @JsModule("./common-js-file.js")

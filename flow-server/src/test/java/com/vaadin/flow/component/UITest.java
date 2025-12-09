@@ -13,13 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -94,6 +88,11 @@ import com.vaadin.flow.server.frontend.MockLogger;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 public class UITest {
 
@@ -1030,6 +1029,37 @@ public class UITest {
     }
 
     @Test
+    public void getCurrentOrThrow_withCurrentUI_returnsUI() {
+        UI ui = createTestUI();
+        UI.setCurrent(ui);
+
+        UI result = UI.getCurrentOrThrow();
+
+        assertSame("getCurrentOrThrow should return the current UI", ui,
+                result);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void getCurrentOrThrow_withoutCurrentUI_throws() {
+        CurrentInstance.clearAll();
+        UI.getCurrentOrThrow();
+    }
+
+    @Test
+    public void getCurrentOrThrow_withoutCurrentUI_throwsWithHelpfulMessage() {
+        CurrentInstance.clearAll();
+        try {
+            UI.getCurrentOrThrow();
+            Assert.fail("Should have thrown IllegalStateException");
+        } catch (IllegalStateException e) {
+            assertTrue("Exception message should mention UI context",
+                    e.getMessage().contains("UI context"));
+            assertTrue("Exception message should mention UI.access()",
+                    e.getMessage().contains("UI.access()"));
+        }
+    }
+
+    @Test
     public void csrfToken_differentUIs_shouldBeUnique() {
         String token1 = new UI().getCsrfToken();
         String token2 = new UI().getCsrfToken();
@@ -1219,6 +1249,20 @@ public class UITest {
 
         Assert.assertFalse(
                 "Setting modal to false should have removed all modality",
+                fixture.ui.hasModalComponent());
+    }
+
+    @Test
+    public void modalVisualComponent_addedAndRemoved_hasModalReturnsCorrectValue() {
+        final TestFixture fixture = new TestFixture();
+        Assert.assertTrue("Fixture should have set a modal component",
+                fixture.ui.hasModalComponent());
+
+        fixture.ui.setChildComponentModal(fixture.modalComponent,
+                ModalityMode.VISUAL);
+
+        Assert.assertFalse(
+                "Setting modal to VISUAL should have removed all server side modality",
                 fixture.ui.hasModalComponent());
     }
 

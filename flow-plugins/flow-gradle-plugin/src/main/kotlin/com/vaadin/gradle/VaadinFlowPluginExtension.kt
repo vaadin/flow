@@ -38,8 +38,9 @@ import org.gradle.internal.component.external.model.ModuleComponentArtifactIdent
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
-     * Whether we are running in productionMode or not. Defaults to false.
-     * Responds to the `-Pvaadin.productionMode` property.
+     * Whether we are running in productionMode or not. Defaults to true when
+     * run with `bootJar` or `bootBuildImage` task, otherwise false. Responds to
+     * the `-Pvaadin.productionMode` property.
      */
     public abstract val productionMode: Property<Boolean>
 
@@ -60,6 +61,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
      */
     public abstract val frontendOutputDirectory: Property<File>
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     * Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/resources/`.
+     */
+    public abstract val resourcesOutputDirectory: Property<File>
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -187,11 +196,6 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Example: `"https://nodejs.org/dist/"`.
      */
     public abstract val nodeDownloadRoot: Property<String>
-
-    /**
-     * Allow automatic update of node installed to alternate location. Default `false`
-     */
-    public abstract val nodeAutoUpdate: Property<Boolean>
 
     /**
      * Defines the output directory for generated non-served resources, such as
@@ -352,8 +356,11 @@ public class PluginEffectiveConfiguration(
     internal val projectName = project.name
 
     public val productionMode: Provider<Boolean> = extension.productionMode
-        .convention(false)
+        .convention(project.tasks.names.any { task ->
+            task.contains("bootJar") || task.contains("bootBuildImage")
+        })
         .overrideWithSystemPropertyFlag(project, "vaadin.productionMode")
+
 
     public val sourceSetName: Property<String> = extension.sourceSetName
         .convention("main")
@@ -393,6 +400,17 @@ public class PluginEffectiveConfiguration(
                         )
                     }
                 )
+        )
+
+
+    public val resourcesOutputDirectory: Provider<File> =
+        extension.resourcesOutputDirectory.convention(
+            sourceSetName.map {
+                File(
+                    project.getBuildResourcesDir(it),
+                    Constants.META_INF + "resources/"
+                )
+            }
         )
 
     public val npmFolder: Provider<File> = extension.npmFolder
@@ -497,9 +515,6 @@ public class PluginEffectiveConfiguration(
 
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
         .convention(Platform.guess().nodeDownloadRoot)
-
-    public val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
-        .convention(false)
 
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory
@@ -646,6 +661,7 @@ public class PluginEffectiveConfiguration(
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
             "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
+            "resourcesOutputDirectory=${resourcesOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +
@@ -667,7 +683,6 @@ public class PluginEffectiveConfiguration(
             "generatedTsFolder=${generatedTsFolder.get()}, " +
             "nodeVersion=${nodeVersion.get()}, " +
             "nodeDownloadRoot=${nodeDownloadRoot.get()}, " +
-            "nodeAutoUpdate=${nodeAutoUpdate.get()}, " +
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +

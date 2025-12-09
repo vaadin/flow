@@ -17,10 +17,10 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentTest.TestComponent;
 import com.vaadin.flow.component.UI;
@@ -87,7 +87,7 @@ public class EventRpcHandlerTest {
         message.put(JsonConstants.RPC_EVENT_TYPE, eventType);
 
         if (eventData != null) {
-            message.put(JsonConstants.RPC_EVENT_DATA, eventData);
+            message.set(JsonConstants.RPC_EVENT_DATA, eventData);
         }
 
         return message;

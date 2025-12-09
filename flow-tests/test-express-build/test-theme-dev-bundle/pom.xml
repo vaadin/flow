@@ -1,84 +1,84 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <parent>
-        <artifactId>test-express-build</artifactId>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>test-express-build</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-test-theme-dev-bundle</artifactId>
+
+  <packaging>war</packaging>
+  <name>Flow tests for custom theme in express build mode</name>
+  <properties>
+    <maven.deploy.skip>true</maven.deploy.skip>
+    <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>vaadin-dev-server</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>test-dev-bundle</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-common</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-lumo</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Run flow plugin to build frontend -->
+      <plugin>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <modelVersion>4.0.0</modelVersion>
-    <artifactId>flow-test-theme-dev-bundle</artifactId>
-    <name>Flow tests for custom theme in express build mode</name>
-
-    <packaging>war</packaging>
-    <properties>
-        <maven.deploy.skip>true</maven.deploy.skip>
-        <vaadin.devmode.liveReload.enabled>true</vaadin.devmode.liveReload.enabled>
-    </properties>
-
-    <dependencies>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>vaadin-dev-server</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>test-dev-bundle</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-common</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.vaadin</groupId>
-            <artifactId>flow-test-lumo</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <!-- Run flow plugin to build frontend -->
-            <plugin>
-                <groupId>com.vaadin</groupId>
-                <artifactId>flow-maven-plugin</artifactId>
-            </plugin>
-            <!-- Run jetty before integration tests, and stop after -->
-            <plugin>
-                <groupId>org.eclipse.jetty.ee10</groupId>
-                <artifactId>jetty-ee10-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <artifactId>maven-clean-plugin</artifactId>
-                <configuration>
-                    <filesets>
-                        <fileset>
-                            <directory>${project.basedir}</directory>
-                            <includes>
-                                <include>package*.json</include>
-                                <include>vite.*.ts</include>
-                                <include>types.d.ts</include>
-                                <include>tsconfig.json</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>${project.basedir}/node_modules</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </fileset>
-                        <fileset>
-                            <directory>${project.basedir}/src/main/bundles</directory>
-                            <includes>
-                                <include>**</include>
-                            </includes>
-                        </fileset>
-                    </filesets>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
+        <artifactId>flow-maven-plugin</artifactId>
+      </plugin>
+      <!-- Run jetty before integration tests, and stop after -->
+      <plugin>
+        <groupId>org.eclipse.jetty.ee10</groupId>
+        <artifactId>jetty-ee10-maven-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <artifactId>maven-clean-plugin</artifactId>
+        <configuration>
+          <filesets>
+            <fileset>
+              <directory>${project.basedir}</directory>
+              <includes>
+                <include>package*.json</include>
+                <include>vite.*.ts</include>
+                <include>types.d.ts</include>
+                <include>tsconfig.json</include>
+              </includes>
+            </fileset>
+            <fileset>
+              <directory>${project.basedir}/node_modules</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+            </fileset>
+            <fileset>
+              <directory>${project.basedir}/src/main/bundles</directory>
+              <includes>
+                <include>**</include>
+              </includes>
+            </fileset>
+          </filesets>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
 </project>

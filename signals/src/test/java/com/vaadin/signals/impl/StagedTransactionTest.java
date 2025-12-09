@@ -1,12 +1,19 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,8 +28,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.node.StringNode;
 
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
@@ -32,6 +39,14 @@ import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.StagedTransaction.ResultCollector;
 import com.vaadin.signals.impl.Transaction.Type;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class StagedTransactionTest {
     /*
@@ -330,7 +345,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -347,7 +362,7 @@ public class StagedTransactionTest {
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -358,7 +373,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -371,13 +386,13 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).textValue(),
+                    TestUtil.readTransactionRootValue(tree).asString(),
                     "Should take inner transaction changes into account");
         });
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -396,12 +411,12 @@ public class StagedTransactionTest {
                     TestUtil.writeRootValueCommand("unexpected"));
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -422,12 +437,12 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("unexpected",
-                    TestUtil.readTransactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -438,7 +453,7 @@ public class StagedTransactionTest {
         var operation = Transaction.runInTransaction(() -> {
             Transaction.getCurrent().include(tree,
                     new SignalCommand.ValueCondition(Id.random(), Id.ZERO,
-                            new TextNode("expected")),
+                            new StringNode("expected")),
                     null);
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("update"), null);
@@ -449,7 +464,7 @@ public class StagedTransactionTest {
         tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirmSubmitted();
 
@@ -470,12 +485,12 @@ public class StagedTransactionTest {
         });
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("unexpected")));
 
         assertEquals("unexpected",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirmSubmitted();
 
@@ -506,7 +521,7 @@ public class StagedTransactionTest {
             Transaction.getCurrent().include(tree,
                     TestUtil.writeRootValueCommand("observer"), null);
 
-            String value = TestUtil.readTransactionRootValue(tree).asText();
+            String value = TestUtil.readTransactionRootValue(tree).asString();
             valueInObserver.set(value);
 
             return false;
@@ -519,7 +534,7 @@ public class StagedTransactionTest {
 
         assertEquals("observer", valueInObserver.get());
         assertEquals("observer",
-                TestUtil.readConfirmedRootValue(tree).asText());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test

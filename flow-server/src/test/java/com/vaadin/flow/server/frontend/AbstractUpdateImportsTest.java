@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -30,7 +28,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -46,7 +43,6 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
-import org.mockito.internal.util.collections.Sets;
 import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
@@ -65,6 +61,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.DepsTests;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.AbstractTheme;
+import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockOptions;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
@@ -104,6 +101,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     @CssImport("./foo.css")
     public static class FooCssImport2 extends Component {
 
+    }
+
+    @Theme(themeClass = LumoTest.class)
+    @CssImport("./foo.css")
+    public static class ThemeCssImport implements AppShellConfigurator {
     }
 
     protected File tmpRoot;
@@ -223,6 +225,34 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
     }
 
     @Test
+    public void copiedJarResources_containsImport_importFollowedAndAdded()
+            throws IOException {
+        // No theme annotation should be available for this
+        Class<?>[] testClasses = { UI.class, AllEagerAppConf.class,
+                NodeTestComponents.ReferenceView.class,
+                NodeTestComponents.VaadinBowerComponent.class };
+        ClassFinder classFinder = getClassFinder(testClasses);
+        updater = new UpdateImports(getScanner(classFinder), options);
+
+        createExpectedImport(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/sub/example-import.js");
+        var resource = resolveImportFile(frontendDirectory, nodeModulesPath,
+                "./generated/jar-resources/ExampleConnector.js");
+        Files.writeString(resource.toPath(),
+                "import \"./sub/example-import.js\";");
+        updater.run();
+
+        List<String> flowImports = new ArrayList<>(
+                updater.getOutput().get(updater.generatedFlowImports));
+
+        Assert.assertTrue(flowImports.contains(
+                "import 'Frontend/generated/jar-resources/ExampleConnector.js';"));
+        Assert.assertTrue(flowImports.contains(
+                "import 'Frontend/generated/jar-resources/sub/example-import.js';"));
+
+    }
+
+    @Test
     public void getModuleLines_npmPackagesDontExist_logExplanation() {
         boolean atLeastOneRemoved = false;
         for (String imprt : getExpectedImports()) {
@@ -251,10 +281,11 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             updater.run();
             Assert.fail("Execute should have failed with missing file");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(),
-                    CoreMatchers
-                            .containsString(getFormattedFrontendErrorMessage(
-                                    Sets.newSet(fooFileName))));
+            assertThat(e.getMessage(), CoreMatchers.allOf(
+                    CoreMatchers.containsString(
+                            "Failed to find the following files:"),
+                    CoreMatchers.containsString(fooFileName), CoreMatchers
+                            .containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -292,9 +323,12 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             updater.run();
             Assert.fail("Execute should have failed with missing files");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), CoreMatchers
-                    .containsString(getFormattedFrontendErrorMessage(
-                            Sets.newSet(localTemplateFileName, fooFileName))));
+            assertThat(e.getMessage(), CoreMatchers.allOf(
+                    CoreMatchers.containsString(
+                            "Failed to find the following files:"),
+                    CoreMatchers.containsString(localTemplateFileName),
+                    CoreMatchers.containsString(fooFileName), CoreMatchers
+                            .containsString(getFrontendErrorMessageSuffix())));
         }
 
     }
@@ -306,10 +340,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 resolveImportFile(directory, directory, fileName).delete());
     }
 
-    private String getFormattedFrontendErrorMessage(
-            Set<String> resourcesNotFound) {
-        String prefix = "Failed to find the following files: ";
-
+    private String getFrontendErrorMessageSuffix() {
         String suffix = String.format("%n  Locations searched were:"
                 + "%n      - `%s` in this project"
                 + "%n      - `%s` in included JARs"
@@ -322,8 +353,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                 Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT,
                 FrontendUtils.PARAM_FRONTEND_DIR);
 
-        return String.format("%n%n  %s%n      - %s%n  %s%n%n", prefix,
-                String.join("\n      - ", resourcesNotFound), suffix);
+        return suffix;
     }
 
     @Test
@@ -353,12 +383,6 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines.add(
                 "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
         expectedLines.add(
-                "import \\$cssFromFile_\\d from 'Frontend/foo.css\\?inline';");
-        expectedLines.add(
-                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';");
-        expectedLines.add(
-                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
-        expectedLines.add(
                 "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
         expectedLines.add(
                 "addCssBlock\\(`<style include=\"bar\">\\$\\{\\$css_\\d\\}</style>`\\);");
@@ -376,7 +400,22 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
         expectedLines
                 .add("import 'Frontend/generated/flow/generated-modules-bar';");
 
+        // AppShell and @Theme CSS imports are expected to be generated in
+        // the dedicated file.
+        List<String> expectedAppShellImports = List.of(
+                "import \\$cssFromFile_\\d from 'lumo-css-import.css\\?inline';",
+                "injectGlobalCss\\(\\$cssFromFile_\\d.toString\\(\\), 'CSSImport end', document\\);");
+
         updater.run();
+
+        List<String> appShellImports = updater.getOutput()
+                .get(updater.appShellImports);
+        String appShellOutput = String.join("\n", appShellImports);
+        for (String line : expectedAppShellImports) {
+            Assert.assertTrue(
+                    "\n" + line + " IS NOT FOUND IN: \n" + appShellImports,
+                    Pattern.compile(line).matcher(appShellOutput).find());
+        }
 
         List<String> mergedOutput = updater.getMergedOutput();
         String outputString = String.join("\n", mergedOutput);
@@ -407,8 +446,10 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
                         + "' folder: 'vaadin-mixed-component/src/vaadin-mixed-component.js'"));
 
         // Using regex match because of the ➜ character in TC
-        MatcherAssert.assertThat(output, CoreMatchers.containsString(
-                "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component"));
+        MatcherAssert.assertThat(output,
+                CoreMatchers.allOf(CoreMatchers.containsString(
+                        "Failed to find the following imports in the `node_modules` tree:"),
+                        CoreMatchers.containsString("unresolved/component")));
 
         MatcherAssert.assertThat(output,
                 CoreMatchers.not(CoreMatchers.containsString(

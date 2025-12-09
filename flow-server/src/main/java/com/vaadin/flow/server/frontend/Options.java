@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -8,8 +23,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
@@ -105,8 +120,6 @@ public class Options implements Serializable {
     private URI nodeDownloadRoot = URI
             .create(Platform.guess().getNodeDownloadRoot());
 
-    private boolean nodeAutoUpdate = false;
-
     private Lookup lookup;
 
     /**
@@ -119,6 +132,11 @@ public class Options implements Serializable {
      * The resource folder for java resources.
      */
     private File javaResourceFolder;
+
+    /**
+     * META-INF/resources directory.
+     */
+    private File resourcesDirectory;
 
     /**
      * Additional npm packages to run postinstall for.
@@ -461,6 +479,10 @@ public class Options implements Serializable {
     /**
      * Setting this to {@code true} will force a build of the production build
      * even if there is a default production bundle that could be used.
+     *
+     * @param forceProductionBuild
+     *            true to force production build
+     * @return the builder, for chaining
      */
     public Options withForceProductionBuild(boolean forceProductionBuild) {
         this.forceProductionBuild = forceProductionBuild;
@@ -552,6 +574,7 @@ public class Options implements Serializable {
      *
      * @param frontendIgnoreVersionChecks
      *            {@code true} to ignore node/npm tool version checks
+     * @return the builder, for chaining
      */
     public Options withFrontendIgnoreVersionChecks(
             boolean frontendIgnoreVersionChecks) {
@@ -598,19 +621,6 @@ public class Options implements Serializable {
      */
     public boolean isBundleBuild() {
         return bundleBuild;
-    }
-
-    /**
-     * Sets whether it is fine to automatically update the alternate node
-     * installation if installed version is older than the current default.
-     *
-     * @param update
-     *            true to update alternate node when used
-     * @return the builder
-     */
-    public Options setNodeAutoUpdate(boolean update) {
-        this.nodeAutoUpdate = update;
-        return this;
     }
 
     /**
@@ -773,6 +783,7 @@ public class Options implements Serializable {
     /**
      * @deprecated used internally only for testing, to be removed without a
      *             replacement.
+     * @return true if npm files should be cleaned, false otherwise
      */
     @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
@@ -829,10 +840,6 @@ public class Options implements Serializable {
 
     public URI getNodeDownloadRoot() {
         return nodeDownloadRoot;
-    }
-
-    public boolean isNodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     /**
@@ -932,7 +939,7 @@ public class Options implements Serializable {
      * Sets whether generated files from a previous execution that are no more
      * created should be removed.
      * <p>
-     * </p>
+     *
      * By default, the odl generated files are preserved.
      *
      * @param clean
@@ -1088,5 +1095,26 @@ public class Options implements Serializable {
             return true;
         }
         return copyAssets;
+    }
+
+    /**
+     * Set where the META-INF/resources files are copied by the build.
+     *
+     * @param resourcesDirectory
+     *            META-INF resources directory
+     * @return this builder
+     */
+    public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
+        this.resourcesDirectory = resourcesDirectory;
+        return this;
+    }
+
+    /**
+     * Get the resources directory if defined.
+     *
+     * @return META-INF resources directory
+     */
+    public File getMetaInfResourcesDirectory() {
+        return resourcesDirectory;
     }
 }

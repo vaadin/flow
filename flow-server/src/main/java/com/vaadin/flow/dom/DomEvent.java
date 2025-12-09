@@ -21,8 +21,12 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonCodec;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
@@ -76,7 +80,7 @@ public class DomEvent extends EventObject {
         if (jsonValue == null) {
             return DebouncePhase.LEADING;
         } else {
-            return DebouncePhase.forIdentifier(jsonValue.asText());
+            return DebouncePhase.forIdentifier(jsonValue.asString());
         }
     }
 
@@ -158,6 +162,54 @@ public class DomEvent extends EventObject {
     }
 
     /**
+     * Gets the event data deserialized as the given type. This method supports
+     * arbitrary bean types through Jackson deserialization.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * MyDto dto = domEvent.getEventData(MyDto.class);
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param type
+     *            the class to deserialize the event data to, not
+     *            <code>null</code>
+     * @return the event data deserialized as the given type
+     * @see DomListenerRegistration#addEventData(String)
+     */
+    public <T> T getEventData(Class<T> type) {
+        return JacksonCodec.decodeAs(eventData, type);
+    }
+
+    /**
+     * Gets the event data deserialized as the type specified by the
+     * {@link TypeReference}. This method supports generic types such as
+     * {@code List<MyBean>} and {@code Map<String, MyBean>} through Jackson's
+     * TypeReference mechanism.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * TypeReference&lt;List&lt;MyDto&gt;&gt; typeRef = new TypeReference&lt;List&lt;MyDto&gt;&gt;() {
+     * };
+     * List&lt;MyDto&gt; dtos = domEvent.getEventData(typeRef);
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the event data deserialized as the given type
+     * @see DomListenerRegistration#addEventData(String)
+     */
+    public <T> T getEventData(TypeReference<T> typeReference) {
+        return JacksonCodec.decodeAs(eventData, typeReference);
+    }
+
+    /**
      * Gets the debounce phase for which this event is fired. This is used
      * internally to only deliver the event to the appropriate listener in cases
      * where there are multiple listeners for the same event with different
@@ -220,5 +272,119 @@ public class DomEvent extends EventObject {
                             + eventDataExpression,
                     true));
         }
+    }
+
+    /**
+     * Gets the {@code event.detail} property from the event, deserialized as
+     * the given type. This method supports arbitrary bean types and Java
+     * records through Jackson deserialization.
+     * <p>
+     * The {@code event.detail} property must have been included in the event
+     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * record RgbColor(int r, int g, int b) {
+     * }
+     *
+     * element.addEventListener("color-change", e -&gt; {
+     *     RgbColor color = e.getEventDetail(RgbColor.class);
+     *     System.out.println("R: " + color.r() + ", G: " + color.g() + ", B: "
+     *             + color.b());
+     * }).addEventDetail();
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param type
+     *            the class to deserialize the event detail to, not
+     *            <code>null</code>
+     * @return the event detail deserialized as the given type, or
+     *         <code>null</code> if event detail is not present or is null
+     * @see DomListenerRegistration#addEventDetail()
+     */
+    public <T> T getEventDetail(Class<T> type) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(detailNode, type);
+    }
+
+    /**
+     * Gets the {@code event.detail} property from the event, deserialized as
+     * the type specified by the {@link TypeReference}. This method supports
+     * generic types such as {@code List<MyBean>} and
+     * {@code Map<String, MyBean>} through Jackson's TypeReference mechanism.
+     * <p>
+     * The {@code event.detail} property must have been included in the event
+     * data using {@link DomListenerRegistration#addEventDetail()}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * element.addEventListener("list-change", e -&gt; {
+     *     List&lt;String&gt; items = e
+     *             .getEventDetail(new TypeReference&lt;List&lt;String&gt;&gt;() {
+     *             });
+     *     System.out.println("Items: " + items);
+     * }).addEventDetail();
+     * </pre>
+     *
+     * @param <T>
+     *            the type to deserialize to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return the event detail deserialized as the given type, or
+     *         <code>null</code> if event detail is not present or is null
+     * @see DomListenerRegistration#addEventDetail()
+     */
+    public <T> T getEventDetail(TypeReference<T> typeReference) {
+        JsonNode detailNode = getDetailNode();
+        if (detailNode == null) {
+            return null;
+        }
+        return JacksonCodec.decodeAs(detailNode, typeReference);
+    }
+
+    /**
+     * Gets or reconstructs the event.detail node from event data. Handles two
+     * cases:
+     * <ul>
+     * <li>Case 1: event.detail sent as a complete object
+     * <li>Case 2: event.detail properties sent individually (e.g.,
+     * event.detail.r, event.detail.g)
+     * </ul>
+     *
+     * @return the detail node, or null if no detail data is present
+     */
+    private JsonNode getDetailNode() {
+        JsonNode detailNode = eventData.get("event.detail");
+        if (detailNode != null && !detailNode.isNull()) {
+            // Case 1: event.detail sent as a complete object
+            return detailNode;
+        }
+
+        // Case 2: event.detail properties sent individually
+        boolean hasDetailProperties = JacksonUtils.getKeys(eventData).stream()
+                .anyMatch(key -> key.startsWith("event.detail."));
+
+        if (!hasDetailProperties) {
+            return null;
+        }
+
+        // Reconstruct the detail object from individual properties by
+        // stripping the "event.detail." prefix
+        ObjectNode detailObject = JacksonUtils.createObjectNode();
+        JacksonUtils.getKeys(eventData).forEach(key -> {
+            if (key.startsWith("event.detail.")) {
+                String propertyName = key.substring("event.detail.".length());
+                detailObject.set(propertyName, eventData.get(key));
+            }
+        });
+
+        return detailObject;
     }
 }

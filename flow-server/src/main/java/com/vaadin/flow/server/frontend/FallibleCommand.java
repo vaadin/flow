@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.server.ExecutionFailedException;
-
 /**
  * A generic command which may fail.
  * <p>
@@ -26,7 +24,6 @@ import com.vaadin.flow.server.ExecutionFailedException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface FallibleCommand {
 

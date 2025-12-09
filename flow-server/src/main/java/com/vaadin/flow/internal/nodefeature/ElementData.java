@@ -13,13 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.internal.StateNode;
@@ -66,6 +64,9 @@ public class ElementData extends NodeMap {
 
     /**
      * Sets the namespace of the element.
+     *
+     * @param namespace
+     *            the namespace to set
      */
     public void setNamespace(String namespace) {
         put(NodeProperties.NAMESPACE, namespace);

@@ -15,8 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;

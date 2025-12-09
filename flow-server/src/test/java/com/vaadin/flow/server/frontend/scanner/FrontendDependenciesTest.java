@@ -103,7 +103,7 @@ public class FrontendDependenciesTest {
         FrontendDependencies dependencies = new FrontendDependencies(
                 classFinder, false, null, true);
 
-        Assert.assertEquals("UI, AppShell should be found", 2,
+        Assert.assertEquals("UI, AppShell should be found", 3,
                 dependencies.getEntryPoints().size());
 
         AbstractTheme theme = dependencies.getTheme();
@@ -209,6 +209,30 @@ public class FrontendDependenciesTest {
                 dependencies.getThemeDefinition().getTheme());
         Assert.assertEquals("Faulty variant received", "dark",
                 dependencies.getThemeDefinition().getVariant());
+    }
+
+    @Test
+    public void defaultThemeAnnotation_getsLumoAsTheme() {
+        Mockito.when(classFinder.getSubTypesOf(AppShellConfigurator.class))
+                .thenReturn(
+                        Collections.singleton(DefaultThemeAnnotation.class));
+
+        FrontendDependencies dependencies = new FrontendDependencies(
+                classFinder, false, null, true);
+
+        AbstractTheme theme = dependencies.getTheme();
+        Assert.assertNotNull(
+                "Theme should be found for @Theme with default values", theme);
+
+        ThemeDefinition themeDefinition = dependencies.getThemeDefinition();
+        Assert.assertNotNull("ThemeDefinition should be filled",
+                themeDefinition);
+        Assert.assertEquals("Should default to Lumo theme", FakeLumo.class,
+                themeDefinition.getTheme());
+        Assert.assertEquals("Variant should be empty", "",
+                themeDefinition.getVariant());
+        Assert.assertEquals("Theme name should be empty", "",
+                themeDefinition.getName());
     }
 
     @Test
@@ -552,6 +576,10 @@ public class FrontendDependenciesTest {
 
     @Theme(variant = "dark")
     public static class ThemeVariantOnly implements AppShellConfigurator {
+    }
+
+    @Theme
+    public static class DefaultThemeAnnotation implements AppShellConfigurator {
     }
 
     @JsModule("reference.js")

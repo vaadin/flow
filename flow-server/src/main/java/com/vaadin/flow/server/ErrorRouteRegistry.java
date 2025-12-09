@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.Serializable;
@@ -25,7 +24,6 @@ import com.vaadin.flow.router.internal.ErrorTargetEntry;
  * Interface class for RouteRegistries that can be used to request for error
  * navigation views for Exceptions.
  *
- * @since
  */
 public interface ErrorRouteRegistry extends Serializable {
     /**

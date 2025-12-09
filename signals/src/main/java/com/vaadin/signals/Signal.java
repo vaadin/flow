@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals;
 
 import java.util.Objects;
@@ -49,6 +64,21 @@ public interface Signal<T> {
      * @return the signal value
      */
     T value();
+
+    /**
+     * Reads the value without setting up any dependencies. This method returns
+     * the same value as {@link #value()} but without creating a dependency when
+     * used inside a transaction, effect or computed signal.
+     *
+     * @return the signal value
+     */
+    default T peek() {
+        /*
+         * Subclasses are encouraged to use an approach with less overhead than
+         * what this very generic implementation can do.
+         */
+        return untracked(() -> value());
+    }
 
     /**
      * Creates a simple computed signal based on a mapper function that is
@@ -114,6 +144,20 @@ public interface Signal<T> {
      */
     static <T> Signal<T> computed(Supplier<T> computation) {
         return new ComputedSignal<>(computation);
+    }
+
+    /**
+     * Crates a new computed signal containing the negation of the provided
+     * boolean-valued signal. <code>null</code> values are preserved as
+     * <code>null</code>.
+     * 
+     * @param signal
+     *            the boolean-valued signal to negate, not <code>null</code>
+     * @return the negated signal, not <code>null</code>
+     */
+    static Signal<Boolean> not(Signal<Boolean> signal) {
+        return Objects.requireNonNull(signal)
+                .map(value -> value == null ? null : !value);
     }
 
     /**

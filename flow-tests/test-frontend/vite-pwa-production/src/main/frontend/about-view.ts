@@ -1,6 +1,6 @@
 class AboutView extends HTMLElement {
   connectedCallback() {
-    this.innerHTML = `<h1>About Page</h1>`
+    this.innerHTML = `<h1>About Page</h1>`;
   }
 }
 

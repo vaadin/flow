@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -24,10 +23,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -115,6 +114,18 @@ public class NodeMapTest
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
         Assert.assertEquals(KEY, removeChange.getKey());
+    }
+
+    @Test
+    public void testCollectChange_withSignalBinding() {
+        // Signal and Registration instances are irrelevant in this test.
+        nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value"));
+        List<NodeChange> putChanges = collectChanges(nodeMap);
+
+        Assert.assertEquals(1, putChanges.size());
+        MapPutChange putChange = (MapPutChange) putChanges.get(0);
+        Assert.assertEquals(KEY, putChange.getKey());
+        Assert.assertEquals("value", putChange.getValue());
     }
 
     @Test

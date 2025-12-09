@@ -17,12 +17,19 @@ package com.vaadin.flow.internal;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 
 import com.vaadin.flow.server.RequestHandler;
 
+/**
+ * Request handler for development mode, providing proxy capabilities to the
+ * development server and access to compilation output.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public interface DevModeHandler extends RequestHandler {
 
     /**

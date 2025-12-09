@@ -13,18 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.webcomponent;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.IntNode;
-import com.fasterxml.jackson.databind.node.NumericNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.IntNode;
+import tools.jackson.databind.node.NumericNode;
+import tools.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ValueNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.dom.Element;
@@ -233,7 +232,7 @@ public final class WebComponent<C extends Component> implements Serializable {
                     ((ValueNode) value).doubleValue());
         } else if (value instanceof ValueNode) {
             componentHost.executeJs(UPDATE_PROPERTY, propertyName,
-                    ((ValueNode) value).asText());
+                    ((ValueNode) value).asString());
         } else if (value instanceof BaseJsonNode) {
             // this gets around executeJavaScript limitation.
             // Since properties can take JSON values, this was needed to allow

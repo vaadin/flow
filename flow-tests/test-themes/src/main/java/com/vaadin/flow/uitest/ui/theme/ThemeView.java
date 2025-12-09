@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui.theme;
 
 import com.vaadin.flow.component.UI;
@@ -62,7 +61,7 @@ public class ThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         // Test npm asset
-        Image snowFlake = new Image("VAADIN/static/npm/icons/snowflake.svg",
+        Image snowFlake = new Image("assets/npm/icons/snowflake.svg",
                 "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);

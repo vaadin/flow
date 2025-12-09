@@ -33,11 +33,11 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
@@ -356,7 +356,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the requested range
      * @param length
      *            the end of the requested range
-     * @return
+     * @return the computed requested range
      * @deprecated since 24.9 and will be removed in Vaadin 26. Use
      *             {@link #computeViewportRange(int, int)} instead.
      */
@@ -380,6 +380,7 @@ public class DataCommunicator<T> implements Serializable {
      *            the start of the viewport range
      * @param length
      *            the end of the viewport range
+     * @return the computed viewport range
      */
     protected final Range computeViewportRange(int start, int length) {
         return computeRequestedRange(start, length);

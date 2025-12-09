@@ -13,17 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.webcomponent;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.NullNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.NullNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
@@ -43,8 +42,8 @@ import com.vaadin.flow.internal.JacksonCodec;
  * @since 2.0
  *
  * @see WebComponentConfiguration#createWebComponentBinding(com.vaadin.flow.di.Instantiator,
- *      com.vaadin.flow.dom.Element, com.fasterxml.jackson.databind.JsonNode) to
- *      create {@code WebComponentBindings}
+ *      com.vaadin.flow.dom.Element, tools.jackson.databind.JsonNode) to create
+ *      {@code WebComponentBindings}
  */
 public final class WebComponentBinding<C extends Component>
         implements Serializable {

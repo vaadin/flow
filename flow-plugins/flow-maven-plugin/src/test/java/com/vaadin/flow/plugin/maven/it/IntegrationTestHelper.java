@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven.it;
 
 import java.io.IOException;
@@ -36,7 +35,7 @@ public class IntegrationTestHelper {
      * Checks that javascript modules has been found during production build and
      * correctly imported into the generated bundle.
      * <p>
-     * </p>
+     *
      * Helper for {@literal src/it/frontend-scanner-tuning-project} test. It
      * expects that the test projects copies frontend generated import file and
      * chunks into {@code importsDir} folder, and checks if the import statement
@@ -68,7 +67,7 @@ public class IntegrationTestHelper {
      *         └── generated-flow-imports.js
      * </pre>
      * <p>
-     * </p>
+     *
      *
      * Example invocation:
      *

@@ -26,7 +26,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_PREFIX;
  * Provides a configuration based on string properties.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public abstract class AbstractPropertyConfiguration

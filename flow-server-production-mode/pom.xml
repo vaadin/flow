@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>com.vaadin</groupId>
-        <artifactId>flow-project</artifactId>
-        <version>25.0-SNAPSHOT</version>
-    </parent>
-    <artifactId>flow-server-production-mode</artifactId>
-    <name>Flow Server Production Mode</name>
-    <packaging>jar</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.vaadin</groupId>
+    <artifactId>flow-project</artifactId>
+    <version>25.0-SNAPSHOT</version>
+  </parent>
+  <artifactId>flow-server-production-mode</artifactId>
+  <packaging>jar</packaging>
+  <name>Flow Server Production Mode</name>
 
-    <description>
-    This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is
+  <description>This is a wrapper project for the web-fragment.xml file that sets productionMode=true. When this jar is
     added to the classpath of a web application, it will run in production mode automatically. This is better
     used in conjunction with the compilation and minification of resources for production deployment. See
     the documentation about ES5 compilation and resource minification at
     https://vaadin.com/docs/v10/flow/web-components/tutorial-webcomponents-es5.html for more
-    information.
-    </description>
+    information.</description>
+
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
 
 </project>

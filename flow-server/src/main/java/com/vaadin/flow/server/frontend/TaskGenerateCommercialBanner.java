@@ -19,9 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.apache.commons.io.IOUtils;
-
-import static java.nio.charset.StandardCharsets.UTF_8;
+import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Generate <code>commercial-banner.js</code> if it is missing in
@@ -63,7 +61,7 @@ public class TaskGenerateCommercialBanner extends AbstractTaskClientGenerator {
     protected String getFileContent() throws IOException {
         try (InputStream content = getClass()
                 .getResourceAsStream(FrontendUtils.COMMERCIAL_BANNER_JS)) {
-            return IOUtils.toString(content, UTF_8);
+            return StringUtil.toUTF8String(content);
         }
     }
 

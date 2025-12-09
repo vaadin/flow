@@ -19,7 +19,6 @@ package com.vaadin.flow.server;
  * A factory to create a {@link StaticFileHandler}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface StaticFileHandlerFactory {

@@ -42,23 +42,26 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -66,9 +69,7 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendTools.INSTALL_NODE_LOCALLY;
 import static java.lang.String.format;
-import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
  * A class for static methods and definitions that might be used in different
@@ -85,7 +86,7 @@ public class FrontendUtils {
     /**
      * Default folder for the node related content. It's the base directory for
      * {@link Constants#PACKAGE_JSON} and {@link FrontendUtils#NODE_MODULES}.
-     *
+     * <p>
      * By default it's the project root folder.
      */
     public static final String DEFAULT_NODE_DIR = "./";
@@ -111,7 +112,7 @@ public class FrontendUtils {
     /**
      * Path of the folder containing application frontend source files, it needs
      * to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default it is <code>/src/main/frontend</code> in the project folder.
      */
     public static final String DEFAULT_FRONTEND_DIR = DEFAULT_NODE_DIR
@@ -120,7 +121,7 @@ public class FrontendUtils {
     /**
      * Path of the old folder containing application frontend source files, it
      * needs to be relative to the {@link FrontendUtils#DEFAULT_NODE_DIR}
-     *
+     * <p>
      * By default the old folder is <code>/frontend</code> in the project
      * folder.
      */
@@ -148,6 +149,11 @@ public class FrontendUtils {
      * has a JavaScript version of a custom service worker file already.
      */
     public static final String SERVICE_WORKER_SRC_JS = "sw.js";
+
+    /**
+     * The styles.css file that is the suggested style sheet for theming.
+     */
+    public static final String DEFAULT_STYLES_CSS = "styles.css";
 
     /**
      * The folder inside the 'generated' folder where frontend resources from
@@ -188,6 +194,18 @@ public class FrontendUtils {
 
     public static final String THEME_IMPORTS_D_TS_NAME = "theme.d.ts";
     public static final String THEME_IMPORTS_NAME = "theme.js";
+
+    /**
+     * The name of the file that contains application shell imports, such as
+     * style imports for the theme.
+     */
+    public static final String APP_SHELL_IMPORTS_NAME = "app-shell-imports.js";
+
+    /**
+     * The TypeScript definitions for the
+     * {@link FrontendUtils#APP_SHELL_IMPORTS_NAME}
+     */
+    public static final String APP_SHELL_IMPORTS_D_TS_NAME = "app-shell-imports.d.ts";
 
     /**
      * File name of the bootstrap file that is generated in frontend
@@ -252,6 +270,11 @@ public class FrontendUtils {
     public static final String ROUTES_JS = "routes.js";
 
     /**
+     * File name of the Tailwind CSS framework integration entrypoint.
+     */
+    public static final String TAILWIND_CSS = "tailwind.css";
+
+    /**
      * Default generated path for generated frontend files.
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
@@ -260,7 +283,7 @@ public class FrontendUtils {
     /**
      * A parameter for overriding the {@link FrontendUtils#DEFAULT_FRONTEND_DIR}
      * folder.
-     *
+     * <p>
      * NOTE: For internal use only.
      */
     public static final String PARAM_FRONTEND_DIR = "vaadin.frontend.folder";
@@ -324,15 +347,6 @@ public class FrontendUtils {
 
     public static final String DISABLE_CHECK = "%nYou can disable the version check using -D%s=true";
 
-    private static final String TOO_OLD = "%n%n======================================================================================================"
-            + "%nYour installed '%s' version (%s) is too old. Supported versions are %d.%d+" //
-            + "%nPlease install a new one either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
-            + DISABLE_CHECK //
-            + "%n======================================================================================================%n";
-
     // Proxy config properties keys (for both system properties and environment
     // variables) can be either fully upper case or fully lower case
     static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
@@ -392,8 +406,8 @@ public class FrontendUtils {
     public static String streamToString(InputStream inputStream) {
         String ret = "";
         try (InputStream handledStream = inputStream) {
-            return IOUtils.toString(handledStream, StandardCharsets.UTF_8)
-                    .replaceAll("\\R", System.lineSeparator());
+            return StringUtil.toUTF8String(handledStream).replaceAll("\\R",
+                    System.lineSeparator());
         } catch (IOException exception) {
             // ignore exception on close()
             getLogger().warn("Couldn't close template input stream", exception);
@@ -484,7 +498,6 @@ public class FrontendUtils {
      *         found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getIndexHtmlContent(VaadinService service)
             throws IOException {
@@ -507,7 +520,6 @@ public class FrontendUtils {
      *         not found.
      * @throws IOException
      *             on error when reading file
-     *
      */
     public static String getWebComponentHtmlContent(VaadinService service)
             throws IOException {
@@ -534,7 +546,7 @@ public class FrontendUtils {
 
             return content != null ? streamToString(content) : null;
         } finally {
-            IOUtils.closeQuietly(content);
+            FileIOUtils.closeQuietly(content);
         }
     }
 
@@ -643,35 +655,36 @@ public class FrontendUtils {
      * @return frontend directory to use
      */
     public static File getFrontendFolder(File projectRoot, File frontendDir) {
-        File legacyDir = new File(projectRoot, LEGACY_FRONTEND_DIR);
-
-        if (legacyDir.exists()) {
-            boolean configParamPointsToLegacyDir = legacyDir.toPath().toString()
-                    .replace("./", "").equals(frontendDir.toPath().toString());
-            if (configParamPointsToLegacyDir) {
-                if (new File(projectRoot, DEFAULT_FRONTEND_DIR).exists()) {
-                    getLogger().warn(
-                            "This project has both default ({}) frontend directory"
-                                    + " and legacy ({})- frontend directory present, and "
-                                    + "'frontendDirectory' parameter points to the legacy directory."
-                                    + "\n\nDefault frontend directory will be ignored.",
-                            DEFAULT_FRONTEND_DIR, LEGACY_FRONTEND_DIR);
-                }
-                return frontendDir;
-            } else {
-                throw new RuntimeException(
-                        "This project has a legacy fronted directory ("
-                                + LEGACY_FRONTEND_DIR
-                                + ") frontend directory present, but no 'frontendDirectory' "
-                                + "configuration parameter set. "
-                                + "Please set the parameter or move the legacy directory contents "
-                                + "to the default frontend folder ("
-                                + DEFAULT_FRONTEND_DIR + ").");
+        if (!frontendDir.exists() && frontendDir.toPath()
+                .endsWith(DEFAULT_FRONTEND_DIR.substring(2))) {
+            File legacy = new File(projectRoot, LEGACY_FRONTEND_DIR);
+            if (legacy.exists()) {
+                return legacy;
             }
         }
-
-        // Legacy dir does not exist. Use default or custom-set dir.
         return frontendDir;
+    }
+
+    /**
+     * Check for existence of legacy frontend folder and log a warning if it is
+     * present.
+     *
+     * @param projectRoot
+     *            project's root directory
+     */
+    public static void checkLegacyFrontendFolder(Path projectRoot) {
+        if (new File(projectRoot.toString(), LEGACY_FRONTEND_DIR).exists()) {
+            getLogger().warn(
+                    "This project has a legacy frontend directory ({}) "
+                            + "present and it will be used as a fallback. "
+                            + "Support for the legacy directory will be removed "
+                            + "in a future release. Please move its contents to "
+                            + "the default frontend directory ({}), or delete it "
+                            + "if its contents are not needed in the project. "
+                            + "Also remove 'frontendDirectory' parameter that "
+                            + "points to the legacy directory, if present.",
+                    LEGACY_FRONTEND_DIR, DEFAULT_FRONTEND_DIR);
+        }
     }
 
     /**
@@ -705,6 +718,8 @@ public class FrontendUtils {
      *
      * @param jarImport
      *            jar file to get (no resource folder should be added)
+     * @param finder
+     *            the class finder to use for locating the resource
      * @return resource as String or {@code null} if not found
      */
     public static String getJarResourceString(String jarImport,
@@ -743,18 +758,11 @@ public class FrontendUtils {
         return new File(frontendDirectory, GENERATED);
     }
 
-    private static String buildTooOldString(String tool, String version,
-            int supportedMajor, int supportedMinor) {
-        return String.format(TOO_OLD, tool, version, supportedMajor,
-                supportedMinor, PARAM_IGNORE_VERSION_CHECKS);
-    }
-
     /**
      * Get directory where project's frontend files are located.
      *
      * @param configuration
      *            the current deployment configuration
-     *
      * @return {@link #DEFAULT_FRONTEND_DIR} or value of
      *         {@link #PARAM_FRONTEND_DIR} if it is set.
      */
@@ -786,17 +794,6 @@ public class FrontendUtils {
      */
     public static String getUnixPath(Path source) {
         return source.toString().replaceAll("\\\\", "/");
-    }
-
-    static void validateToolVersion(String tool, FrontendVersion toolVersion,
-            FrontendVersion supported) {
-        if (toolVersion.isEqualOrNewer(supported)) {
-            return;
-        }
-
-        throw new IllegalStateException(buildTooOldString(tool,
-                toolVersion.getFullVersion(), supported.getMajorVersion(),
-                supported.getMinorVersion()));
     }
 
     /**
@@ -955,14 +952,14 @@ public class FrontendUtils {
 
     /**
      * Reads input and error stream from the give process asynchronously.
-     *
+     * <p>
      * The method returns a {@link CompletableFuture} that is completed when
      * both the streams are consumed.
-     *
+     * <p>
      * Streams are converted into strings and wrapped into a {@link Pair},
      * mapping input stream into {@link Pair#getFirst()} and error stream into
      * {@link Pair#getSecond()}.
-     *
+     * <p>
      * This method should be mainly used to avoid that {@link Process#waitFor()}
      * hangs indefinitely on some operating systems because process streams are
      * not consumed. See https://github.com/vaadin/flow/issues/15339 for an
@@ -1008,7 +1005,7 @@ public class FrontendUtils {
      * @return a vaadin home directory
      */
     public static File getVaadinHomeDirectory() {
-        File home = FileUtils.getUserDirectory();
+        File home = FileIOUtils.getUserDirectory();
         if (!home.exists()) {
             throw new IllegalStateException("The user directory '"
                     + home.getAbsolutePath() + "' doesn't exist");
@@ -1030,7 +1027,7 @@ public class FrontendUtils {
             }
         }
         try {
-            FileUtils.forceMkdir(vaadinFolder);
+            Files.createDirectories(vaadinFolder.toPath());
             return vaadinFolder;
         } catch (IOException exception) {
             throw new UncheckedIOException(
@@ -1108,7 +1105,7 @@ public class FrontendUtils {
             return null;
         }
         try {
-            final String versionString = sourceJson.get(pkg).textValue();
+            final String versionString = sourceJson.get(pkg).asString();
             return new FrontendVersion(pkg, versionString);
         } catch (ClassCastException classCastException) { // NOSONAR
             LoggerFactory.getLogger(FrontendVersion.class).warn(
@@ -1259,6 +1256,8 @@ public class FrontendUtils {
      * Gets the servlet path (excluding the context path) for the servlet used
      * for serving the VAADIN frontend bundle.
      *
+     * @param servletContext
+     *            the servlet context
      * @return the path to the servlet used for the frontend bundle. Empty for a
      *         /* mapping, otherwise always starts with a slash but never ends
      *         with a slash
@@ -1337,8 +1336,7 @@ public class FrontendUtils {
         File indexTs = new File(frontendDirectory, FrontendUtils.INDEX_TS);
         if (indexTs.exists()) {
             try {
-                String indexTsContent = IOUtils.toString(indexTs.toURI(),
-                        UTF_8);
+                String indexTsContent = Files.readString(indexTs.toPath());
                 indexTsContent = StringUtil.removeComments(indexTsContent);
                 result = !indexTsContent.contains("@vaadin/router");
             } catch (IOException e) {
@@ -1372,7 +1370,7 @@ public class FrontendUtils {
                 Collection<Path> views = FileIOUtils.getFilesByPattern(
                         viewsDirectory.toPath(), "**/*.{js,jsx,ts,tsx}");
                 for (Path view : views) {
-                    String viewContent = IOUtils.toString(view.toUri(), UTF_8);
+                    String viewContent = Files.readString(view);
                     viewContent = StringUtil.removeComments(viewContent);
                     if (!viewContent.isBlank()) {
                         return true;
@@ -1391,8 +1389,8 @@ public class FrontendUtils {
             File routesFile = new File(frontendDirectory, fileName);
             if (routesFile.exists()) {
                 try {
-                    String routesTsContent = IOUtils
-                            .toString(routesFile.toURI(), UTF_8);
+                    String routesTsContent = Files
+                            .readString(routesFile.toPath());
                     return isRoutesContentUsingHillaViews(routesTsContent);
                 } catch (IOException e) {
                     getLogger().error(
@@ -1404,8 +1402,7 @@ public class FrontendUtils {
         File routesFile = new File(frontendDirectory, FrontendUtils.ROUTES_TSX);
         if (routesFile.exists()) {
             try {
-                String routesTsContent = IOUtils.toString(routesFile.toURI(),
-                        UTF_8);
+                String routesTsContent = Files.readString(routesFile.toPath());
                 return isRoutesTsxContentUsingHillaViews(routesTsContent);
             } catch (IOException e) {
                 getLogger().error(
@@ -1422,6 +1419,8 @@ public class FrontendUtils {
      * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
      * used to get the frontend directory.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @return {@code true} if Hilla is available and Hilla views are used,
      *         {@code false} otherwise
      */
@@ -1437,6 +1436,8 @@ public class FrontendUtils {
      * used to get the frontend directory. Given class finder is used to check
      * the presence of Hilla in a classpath.
      *
+     * @param frontendDirectory
+     *            the frontend directory
      * @param classFinder
      *            class finder to check the presence of Hilla endpoint class
      * @return {@code true} if Hilla is available and Hilla views are used,
@@ -1501,6 +1502,8 @@ public class FrontendUtils {
     /**
      * Is the React module available in the classpath.
      *
+     * @param options
+     *            the build options
      * @return true if the React module is available, false otherwise
      */
     public static boolean isReactModuleAvailable(Options options) {
@@ -1521,6 +1524,151 @@ public class FrontendUtils {
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());
+    }
+
+    /**
+     * Checks if integration with Tailwind CSS framework is enabled.
+     *
+     * @param options
+     *            the build options
+     * @return true if Tailwind CSS integration is enabled, false otherwise
+     */
+    public static boolean isTailwindCssEnabled(Options options) {
+        return options.getFeatureFlags()
+                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered as staying on the same version.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @param buildDirectory
+     *            project build directory, to find dev-bundle folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules, File buildDirectory)
+            throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent()) {
+            JsonNode vaadinJsonContents = getBundleVaadinContent(
+                    buildDirectory);
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)
+                    && nodeModules.exists()) {
+                // Check for vaadin version from installed node_modules
+                vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            }
+            // If no record of previous version, version is considered same
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return false;
+            }
+            FrontendVersion jsonVersion = new FrontendVersion(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString());
+            FrontendVersion platformsVersion = new FrontendVersion(
+                    platformVersion.get());
+            return jsonVersion.getMajorVersion() != platformsVersion
+                    .getMajorVersion();
+        }
+        return false;
+    }
+
+    private static JsonNode getBundleVaadinContent(File buildDirectory)
+            throws IOException {
+        JsonNode vaadinJsonContents;
+        File vaadinJsonFile = new File(
+                new File(buildDirectory, Constants.DEV_BUNDLE_LOCATION),
+                TaskRunDevBundleBuild.VAADIN_JSON);
+        if (!vaadinJsonFile.exists()) {
+            return JacksonUtils.createObjectNode();
+        }
+        String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                StandardCharsets.UTF_8);
+        vaadinJsonContents = JacksonUtils.readTree(fileContent);
+        return vaadinJsonContents;
+    }
+
+    /**
+     * Compares current platform version with the one last recorded as installed
+     * in node_modules/.vaadin/vaadin_version. In case there was no existing
+     * platform version recorder and node_modules exists, then platform is
+     * considered updated.
+     *
+     * @param finder
+     *            project execution class finder
+     * @param npmFolder
+     *            npm root folder
+     * @param nodeModules
+     *            node_modules folder
+     * @return {@code true} if the version has changed, {@code false} if not
+     * @throws IOException
+     *             when file reading fails
+     */
+    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
+            File npmFolder, File nodeModules) throws IOException {
+        // if no record of current version is present, version is not
+        // considered updated
+        Optional<String> platformVersion = getVaadinVersion(finder);
+        if (platformVersion.isPresent() && nodeModules.exists()) {
+            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
+            // If no record of previous version, version is considered updated
+            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
+                return true;
+            }
+            return !Objects.equals(vaadinJsonContents
+                    .get(NodeUpdater.VAADIN_VERSION).asString(),
+                    platformVersion.get());
+        }
+        return false;
+    }
+
+    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
+        URL coreVersionsResource = finder
+                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
+
+        if (coreVersionsResource == null) {
+            return Optional.empty();
+        }
+        try (InputStream vaadinVersionsStream = coreVersionsResource
+                .openStream()) {
+            final JsonNode versionsJson = JacksonUtils
+                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
+            if (versionsJson.has("platform")) {
+                return Optional.of(versionsJson.get("platform").asString());
+            }
+        } catch (Exception e) {
+            LoggerFactory.getLogger(Platform.class)
+                    .error("Unable to determine version information", e);
+        }
+
+        return Optional.empty();
+    }
+
+    static File getVaadinJsonFile(File npmFolder) {
+        return new File(new File(npmFolder, NODE_MODULES),
+                NodeUpdater.VAADIN_JSON);
+    }
+
+    static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
+        File vaadinJsonFile = getVaadinJsonFile(npmFolder);
+        if (vaadinJsonFile.exists()) {
+            String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                    StandardCharsets.UTF_8);
+            return JacksonUtils.readTree(fileContent);
+        } else {
+            return JacksonUtils.createObjectNode();
+        }
     }
 
 }

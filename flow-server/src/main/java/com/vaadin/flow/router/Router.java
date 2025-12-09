@@ -19,6 +19,9 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
 
+import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
@@ -33,9 +36,6 @@ import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import org.slf4j.LoggerFactory;
 
 /**
  * The router takes care of serving content when the user navigates within a

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -25,14 +24,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.internal.FileIOUtils;
+
 /**
  * A helper for tasks to handle generated files.
  * <p>
- * </p>
  * Allow to write file on disk only if the content has not changed. Generated
  * files are tracked and can be fetched by post-processing tasks.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  */
 public final class GeneratedFilesSupport {

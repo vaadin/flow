@@ -37,7 +37,6 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 import org.apache.commons.compress.utils.Lists;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -49,14 +48,13 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.SerializableSupplier;
-import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.testcategory.SlowTests;
-import com.vaadin.flow.testutil.FrontendStubs;
 
-import static com.vaadin.flow.server.frontend.FrontendTools.NPM_BIN_PATH;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.not;
@@ -65,8 +63,6 @@ import static org.junit.Assert.assertEquals;
 @NotThreadSafe
 @Category(SlowTests.class)
 public class FrontendToolsTest {
-
-    private static final String SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED = "20.0.0";
 
     public static final String DEFAULT_NODE = FrontendUtils.isWindows()
             ? "node\\node.exe"
@@ -96,18 +92,25 @@ public class FrontendToolsTest {
     private FrontendToolsSettings settings;
 
     @Before
-    public void setup() throws IOException {
+    public void setup() throws Exception {
+        // Reset static state to ensure clean test isolation
+        resetFrontendToolsNodeCache();
         baseDir = tmpDir.newFolder().getAbsolutePath();
         vaadinHomeDir = tmpDir.newFolder().getAbsolutePath();
         settings = new FrontendToolsSettings(baseDir, () -> vaadinHomeDir);
         tools = new FrontendTools(settings);
+        ReflectTools.setJavaFieldValue(tools,
+                FrontendTools.class.getDeclaredField("activeNodeInstallation"),
+                null);
     }
 
     @Test
     public void installNode_NodeIsInstalledToTargetDirectory()
             throws FrontendUtils.UnknownVersionException {
-        String nodeExecutable = tools
-                .installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
+        // Force alternative node to install and set up activeNodeInstallation
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+        String nodeExecutable = tools.getNodeExecutable();
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -120,12 +123,9 @@ public class FrontendToolsTest {
                         .getFullVersion(),
                 node.getFullVersion());
 
-        settings.setBaseDir(vaadinHomeDir);
-        settings.setAlternativeDirGetter(null);
-
-        FrontendTools newTools = new FrontendTools(settings);
+        // Now test npm with the installed node
         List<String> npmVersionCommand = new ArrayList<>(
-                newTools.getNpmExecutable());
+                tools.getNpmExecutable());
         npmVersionCommand.add("--version");
         FrontendVersion npm = FrontendUtils.getVersion("npm",
                 npmVersionCommand);
@@ -152,120 +152,13 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
-            throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(false);
-        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                () -> tools.getNodeExecutable());
-
-        Assert.assertEquals(
-                "Locate Node version: Node version updated even if it should not have been touched.",
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                updatedNodeVersion.getFullVersion());
-    }
-
-    @Test
-    public void nodeIsBeingLocated_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
-            throws FrontendUtils.UnknownVersionException {
-        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                () -> tools.getNodeExecutable());
-
-        Assert.assertEquals(
-                "Locate Node version: Node version was not auto updated.",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                updatedNodeVersion.getFullVersion());
-    }
-
-    @Test
-    public void nodeIsBeingLocated_unsupportedNodeInstalled_defaultNodeVersionInstalledToAlternativeDirectory()
-            throws FrontendUtils.UnknownVersionException, IOException {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        // Unsupported node version
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(tools.getNodeExecutable());
-        nodeVersionCommand.add("--version");
-        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-
-        Assert.assertEquals(
-                "Locate unsupported Node version: Default Node version was not used.",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                usedNodeVersion.getFullVersion());
-    }
-
-    @Test
-    public void nodeIsBeingLocated_unsupportedNodeInstalled_fallbackToNodeInstalledToAlternativeDirectory()
-            throws IOException, FrontendUtils.UnknownVersionException {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        // Unsupported node version
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NODE).withVersion("8.9.3").build();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo.none();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        tools.installNode(FrontendTools.DEFAULT_NODE_VERSION, null);
-
-        List<String> nodeVersionCommand = new ArrayList<>();
-        nodeVersionCommand.add(tools.getNodeExecutable());
-        nodeVersionCommand.add("--version");
-        FrontendVersion usedNodeVersion = FrontendUtils.getVersion("node",
-                nodeVersionCommand);
-
-        Assert.assertEquals(
-                "Locate unsupported Node version: Expecting Node in alternative directory to be used, but was not.",
-                FrontendTools.DEFAULT_NODE_VERSION.replace("v", ""),
-                usedNodeVersion.getFullVersion());
-    }
-
-    @Test
     public void forceAlternativeDirectory_updateTooOldNode_NodeInstalledToTargetDirectoryIsUpdated()
             throws FrontendUtils.UnknownVersionException {
         FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                "7.7.3", () -> tools.forceAlternativeNodeExecutable());
+                "7.7.3", () -> tools.getNodeExecutable());
 
         Assert.assertEquals(
                 "Failed to update the old Node version when alternative directory forced",
-                new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
-                        .getFullVersion(),
-                updatedNodeVersion.getFullVersion());
-    }
-
-    @Test
-    public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateFalse_NodeNotUpdated()
-            throws FrontendUtils.UnknownVersionException {
-        settings.setAutoUpdate(false);
-        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                () -> tools.forceAlternativeNodeExecutable());
-
-        Assert.assertEquals(
-                "Force alternative directory: Node version updated even if it should not have been touched.",
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                updatedNodeVersion.getFullVersion());
-    }
-
-    @Test
-    public void forceAlternativeDirectory_supportedNodeInstalled_autoUpdateTrue_NodeUpdated()
-            throws FrontendUtils.UnknownVersionException {
-        FrontendVersion updatedNodeVersion = getUpdatedAlternativeNodeVersion(
-                SUPPORTED_NODE_BUT_OLDER_THAN_AUTOINSTALLED,
-                () -> tools.forceAlternativeNodeExecutable());
-
-        Assert.assertEquals(
-                "Force alternative directory: Node version was not auto updated.",
                 new FrontendVersion(FrontendTools.DEFAULT_NODE_VERSION)
                         .getFullVersion(),
                 updatedNodeVersion.getFullVersion());
@@ -279,7 +172,9 @@ public class FrontendToolsTest {
         tools = new FrontendTools(settings);
 
         String toBeInstalled = "v" + oldNodeVersion;
-        String nodeExecutable = tools.installNode(toBeInstalled, null);
+        String nodeExecutable = FrontendToolsTestHelper.installNode(
+                new File(vaadinHomeDir), tools.getProxies(), toBeInstalled,
+                null);
         Assert.assertNotNull(nodeExecutable);
 
         List<String> nodeVersionCommand = new ArrayList<>();
@@ -323,6 +218,9 @@ public class FrontendToolsTest {
                 zipOutputStream.putNextEntry(
                         new ZipEntry(prefix + "/node_modules/npm/bin/npm.cmd"));
                 zipOutputStream.closeEntry();
+                zipOutputStream.putNextEntry(new ZipEntry(
+                        prefix + "/node_modules/npm/bin/npm-cli.js"));
+                zipOutputStream.closeEntry();
             }
         } else {
             try (OutputStream fo = Files.newOutputStream(tempArchive);
@@ -343,6 +241,11 @@ public class FrontendToolsTest {
                         new File(prefix + "/lib/node_modules/npm/bin/npm.cmd"),
                         prefix + "/lib/node_modules/npm/bin/npm.cmd"));
                 o.closeArchiveEntry();
+                o.putArchiveEntry(o.createArchiveEntry(
+                        new File(prefix
+                                + "/lib/node_modules/npm/bin/npm-cli.js"),
+                        prefix + "/lib/node_modules/npm/bin/npm-cli.js"));
+                o.closeArchiveEntry();
             }
         }
     }
@@ -356,7 +259,9 @@ public class FrontendToolsTest {
         String nodeExecutable = installNodeToTempFolder();
         Assert.assertNotNull(nodeExecutable);
 
-        String npmInstallPath = NPM_BIN_PATH + "npm";
+        // Check npm in version-specific directory
+        String npmInstallPath = getVersionedNpmBinPath(
+                FrontendTools.DEFAULT_NODE_VERSION) + "npm";
 
         Assert.assertTrue("npm should have been copied to node_modules",
                 new File(vaadinHomeDir, npmInstallPath).exists());
@@ -365,19 +270,26 @@ public class FrontendToolsTest {
     @Test
     public void installNodeFromFileSystem_ForceAlternativeNodeExecutableInstallsToTargetDirectory()
             throws Exception {
+        String testVersion = "v12.10.0";
+        String npmPath = getVersionedNpmBinPath(testVersion) + "npm";
         Assert.assertFalse("npm should not yet be present",
-                new File(vaadinHomeDir, NPM_BIN_PATH + "npm").exists());
+                new File(vaadinHomeDir, npmPath).exists());
 
         settings.setNodeDownloadRoot(new File(baseDir).toURI());
-        settings.setNodeVersion("v12.10.0");
+        settings.setNodeVersion(testVersion);
+        settings.setForceAlternativeNode(true);
         tools = new FrontendTools(settings);
-        prepareNodeDownloadableZipAt(baseDir, "v12.10.0");
-        tools.forceAlternativeNodeExecutable();
-
-        String npmInstallPath = NPM_BIN_PATH + "npm";
+        prepareNodeDownloadableZipAt(baseDir, testVersion);
+        tools.getNodeExecutable();
 
         Assert.assertTrue("npm should have been copied to node_modules",
-                new File(vaadinHomeDir, npmInstallPath).exists());
+                new File(vaadinHomeDir, npmPath).exists());
+    }
+
+    private String getVersionedNpmBinPath(String nodeVersion) {
+        return FrontendUtils.isWindows()
+                ? "node-" + nodeVersion + "/node_modules/npm/bin/"
+                : "node-" + nodeVersion + "/lib/node_modules/npm/bin/";
     }
 
     @Test
@@ -386,29 +298,29 @@ public class FrontendToolsTest {
         createStubNode(true, true, vaadinHomeDir);
 
         // Validate the global node to be applicable for testing.
-        Pair<String, String> nodeCommands;
-        if (FrontendUtils.isWindows()) {
-            nodeCommands = new Pair<>("node.exe", "node/node.exe");
+        String nodeCommand = FrontendUtils.isWindows() ? "node.exe" : "node";
+        File file = frontendToolsLocator.tryLocateTool(nodeCommand)
+                .orElse(null);
+        if (file == null) {
+            LoggerFactory.getLogger(FrontendToolsTest.class)
+                    .info("No global node found, skipping test");
+            return;
         } else {
-            nodeCommands = new Pair<>("node", "node/node");
+            LoggerFactory.getLogger(FrontendToolsTest.class)
+                    .info("Found global node {}", file.getAbsolutePath());
         }
-        File file = new File(baseDir, nodeCommands.getSecond());
-        if (!file.exists()) {
-            file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
-                    .orElse(null);
-            List<String> versionCommand = Lists.newArrayList();
-            versionCommand.add(file.getAbsolutePath());
-            versionCommand.add("--version"); // NOSONAR
-            final FrontendVersion installedNodeVersion = FrontendUtils
-                    .getVersion("node", versionCommand);
-            if (installedNodeVersion
-                    .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
-                LoggerFactory.getLogger(FrontendToolsTest.class).info(
-                        "Global version of node is {} which is older than the supported version {}",
-                        installedNodeVersion.getFullVersion(),
-                        FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion());
-                return;
-            }
+        List<String> versionCommand = Lists.newArrayList();
+        versionCommand.add(file.getAbsolutePath());
+        versionCommand.add("--version"); // NOSONAR
+        final FrontendVersion installedNodeVersion = FrontendUtils
+                .getVersion("node", versionCommand);
+        if (installedNodeVersion
+                .isOlderThan(FrontendTools.SUPPORTED_NODE_VERSION)) {
+            LoggerFactory.getLogger(FrontendToolsTest.class).info(
+                    "Global version of node is {} which is older than the supported version {}",
+                    installedNodeVersion.getFullVersion(),
+                    FrontendTools.SUPPORTED_NODE_VERSION.getFullVersion());
+            return;
         }
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
@@ -420,13 +332,15 @@ public class FrontendToolsTest {
                 not(containsString(vaadinHomeDir)));
         assertThat(tools.getNodeExecutable(), not(containsString(baseDir)));
 
-        assertEquals(4, tools.getNpmExecutable().size());
-        assertThat(tools.getNpmExecutable().get(0), containsString("npm"));
-        assertThat(tools.getNpmExecutable().get(1),
-                containsString("--no-update-notifier"));
+        // Running npm using node and npm-cli.js script by default
+        assertEquals(5, tools.getNpmExecutable().size());
+        assertThat(tools.getNpmExecutable().get(0), containsString("node"));
+        assertThat(tools.getNpmExecutable().get(1), containsString("npm"));
         assertThat(tools.getNpmExecutable().get(2),
-                containsString("--no-audit"));
+                containsString("--no-update-notifier"));
         assertThat(tools.getNpmExecutable().get(3),
+                containsString("--no-audit"));
+        assertThat(tools.getNpmExecutable().get(4),
                 containsString("--scripts-prepend-node-path=true"));
     }
 
@@ -466,14 +380,22 @@ public class FrontendToolsTest {
         Assert.assertTrue(file.exists());
     }
 
-    @Test(expected = IllegalStateException.class)
-    public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_throws()
-            throws IOException {
-        File node = new File(vaadinHomeDir,
-                FrontendUtils.isWindows() ? "node/node.exe" : "node/node");
+    @Test
+    public void ensureNodeExecutableInHome_vaadinHomeNodeIsAFolder_reinstallsOrSelectsOtherVersion()
+            throws IOException, FrontendUtils.UnknownVersionException {
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+        // Create a folder where the node binary should be (versioned path)
+        String version = FrontendTools.DEFAULT_NODE_VERSION;
+        String nodePath = FrontendUtils.isWindows()
+                ? "node-" + version + "/node.exe"
+                : "node-" + version + "/bin/node";
+        File node = new File(vaadinHomeDir, nodePath);
         FileUtils.forceMkdir(node);
 
-        tools.forceAlternativeNodeExecutable();
+        tools.getNodeExecutable();
+        Assert.assertEquals(FrontendTools.DEFAULT_NODE_VERSION,
+                "v" + tools.getNodeVersion().getFullVersion());
     }
 
     @Test
@@ -655,35 +577,27 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void should_useProjectNodeFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        createStubNode(true, true, baseDir);
-
-        assertNodeCommand(() -> baseDir);
-    }
-
-    @Test
-    public void should_useProjectNpmFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
-        createStubNode(false, true, baseDir);
-
-        assertNpmCommand(() -> baseDir);
-    }
-
-    @Test
     public void forceHomeNode_useHomeNpmFirst() throws Exception {
-        Assume.assumeFalse(
-                "Skipping test on windows until a fake node.exe that isn't caught by Window defender can be created.",
-                FrontendUtils.isWindows());
         settings.setForceAlternativeNode(true);
+        settings.setNodeDownloadRoot(new File(baseDir).toPath().toUri());
         tools = new FrontendTools(settings);
 
-        createStubNode(true, true, vaadinHomeDir);
-        assertNpmCommand(() -> vaadinHomeDir);
+        // Install node to vaadin home dir using the test helper
+        prepareNodeDownloadableZipAt(baseDir,
+                FrontendTools.DEFAULT_NODE_VERSION);
+        String nodeExecutable = FrontendToolsTestHelper.installNode(
+                new File(vaadinHomeDir), tools.getProxies(),
+                FrontendTools.DEFAULT_NODE_VERSION,
+                new File(baseDir).toPath().toUri());
+        Assert.assertNotNull(nodeExecutable);
+
+        // Verify that node and npm from vaadin home are being used
+        assertThat(tools.getNodeExecutable(), containsString("node"));
+        assertThat(tools.getNodeExecutable(), containsString(vaadinHomeDir));
+        List<String> npmExecutable = tools.getNpmExecutable();
+        assertThat(npmExecutable.get(0), containsString(vaadinHomeDir));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(FrontendTools.DEFAULT_NODE_VERSION)));
     }
 
     @Test
@@ -758,123 +672,6 @@ public class FrontendToolsTest {
     }
 
     @Test
-    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_falseForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertFalse(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npmCacheDirWithWhitespaces_trueForNonWindows()
-            throws IOException {
-        Assume.assumeFalse(
-                "This test is for the rest of OS rather than Windows, since "
-                        + "the issue with whitespaces in directories processed by npm, "
-                        + "is not reproduced on them",
-                FrontendUtils.isWindows());
-
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npmCacheNoWhitespaces_trueForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-
-        // given
-        // dir with no whitespaces
-        File npmCacheDir = tmpDir.newFolder("FooBar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Old npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("6.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
-    public void folderIsAcceptableByNpm_npm7_trueForWindows()
-            throws IOException {
-        Assume.assumeTrue("This test is only for Windows, since the issue with "
-                + "whitespaces in npm processed directories reproduces only on "
-                + "Windows", FrontendUtils.isWindows());
-
-        // given
-        // dir with whitespaces
-        File npmCacheDir = tmpDir.newFolder("Foo  Bar");
-
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        // Acceptable npm version
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withVersion("7.0.0").build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        // when
-        boolean accepted = tools.folderIsAcceptableByNpm(npmCacheDir);
-
-        // then
-        Assert.assertTrue(accepted);
-    }
-
-    @Test
-    public void getNpmCacheDir_returnsCorrectPath()
-            throws IOException, FrontendUtils.CommandExecutionException {
-        FrontendStubs.ToolStubInfo nodeStub = FrontendStubs.ToolStubInfo.none();
-        FrontendStubs.ToolStubInfo npmStub = FrontendStubs.ToolStubInfo
-                .builder(FrontendStubs.Tool.NPM).withCacheDir("/foo/bar")
-                .build();
-        createStubNode(nodeStub, npmStub, baseDir);
-
-        File npmCacheDir = tools.getNpmCacheDir();
-
-        Assert.assertNotNull(npmCacheDir);
-        String npmCachePath = npmCacheDir.getPath();
-
-        Assert.assertEquals("foo/bar",
-                npmCachePath
-                        .substring(FilenameUtils.getPrefixLength(npmCachePath))
-                        .replace("\\", "/"));
-    }
-
-    @Test
     public void getViteExecutable_returnsCorrectPath()
             throws IOException, FrontendUtils.CommandExecutionException {
         var projectDir = tmpDir.newFolder();
@@ -888,7 +685,7 @@ public class FrontendToolsTest {
                 }
                 """.getBytes());
         Files.createDirectories(
-                projectDir.toPath().resolve("node_modules/vite/"));
+                projectDir.toPath().resolve("node_modules/vite/bin/"));
         var vitePackageJson = Files.createFile(
                 projectDir.toPath().resolve("node_modules/vite/package.json"));
 
@@ -901,32 +698,43 @@ public class FrontendToolsTest {
                   }
                 }
                 """.getBytes());
+        // Create the actual vite.js file for toRealPath() to work
+        Files.createFile(
+                projectDir.toPath().resolve("node_modules/vite/bin/vite.js"));
         var vite = tools.getNpmPackageExecutable("vite", "vite", projectDir);
-        Assert.assertEquals(
-                projectDir.toPath().resolve("node_modules/vite/bin/vite.js"),
-                vite);
+        // Use toRealPath() to handle symlinks (e.g., /var -> /private/var on
+        // macOS)
+        Assert.assertEquals(projectDir.toPath()
+                .resolve("node_modules/vite/bin/vite.js").toRealPath(),
+                vite.toRealPath());
     }
 
-    private void assertNpmCommand(Supplier<String> path) throws IOException {
+    private void assertNpmCommand(Supplier<String> path)
+            throws IOException, FrontendUtils.UnknownVersionException {
         createStubNode(false, true, vaadinHomeDir);
 
         assertThat(tools.getNodeExecutable(), containsString("node"));
 
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString("node"));
-        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(tools.getNodeVersion().getFullVersion())));
         assertThat(npmExecutable.get(1), containsString(path.get()));
     }
 
-    private void assertNodeCommand(Supplier<String> path) throws IOException {
+    private void assertNodeCommand(Supplier<String> path)
+            throws IOException, FrontendUtils.UnknownVersionException {
         createStubNode(true, true, vaadinHomeDir);
 
-        assertThat(tools.getNodeExecutable(), containsString(DEFAULT_NODE));
+        assertThat(tools.getNodeExecutable(), containsString(
+                getDefaultNode(tools.getNodeVersion().getFullVersion())));
         assertThat(tools.getNodeExecutable(), containsString(path.get()));
         List<String> npmExecutable = tools.getNpmExecutable();
         assertThat(npmExecutable.get(0), containsString(path.get()));
-        assertThat(npmExecutable.get(0), containsString(DEFAULT_NODE));
-        assertThat(npmExecutable.get(1), containsString(NPM_CLI_STRING));
+        assertThat(npmExecutable.get(0), containsString(
+                getDefaultNode(tools.getNodeVersion().getFullVersion())));
+        assertThat(npmExecutable.get(1), containsString(
+                getNpmCliString(tools.getNodeVersion().getFullVersion())));
     }
 
     private void assertFaultyNpmVersion(FrontendVersion version) {
@@ -954,7 +762,8 @@ public class FrontendToolsTest {
     }
 
     private String installNodeToTempFolder() {
-        return tools.installNode(FrontendTools.DEFAULT_NODE_VERSION,
+        return FrontendToolsTestHelper.installNode(new File(vaadinHomeDir),
+                tools.getProxies(), FrontendTools.DEFAULT_NODE_VERSION,
                 new File(baseDir).toPath().toUri());
     }
 
@@ -979,4 +788,17 @@ public class FrontendToolsTest {
     private String getCommand(String name) {
         return FrontendUtils.isWindows() ? name + ".cmd" : name;
     }
+
+    private String getDefaultNode(String nodeVersion) {
+        return FrontendUtils.isWindows() ? "node-" + nodeVersion + "\\node.exe"
+                : "node-" + nodeVersion + "/node";
+    }
+
+    private String getNpmCliString(String nodeVersion) {
+        return FrontendUtils.isWindows()
+                ? "node-" + nodeVersion + "\\node_modules\\npm\\bin\\npm-cli.js"
+                : "node-" + nodeVersion
+                        + "/lib/node_modules/npm/bin/npm-cli.js";
+    }
+
 }

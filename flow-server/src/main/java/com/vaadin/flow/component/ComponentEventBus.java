@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -59,6 +59,9 @@ public class ComponentEventBus implements Serializable {
     /**
      * Pairs a component-level listener for its DOM listener registration, if
      * the event-type is annotated with {@link DomEvent}.
+     *
+     * @param <T>
+     *            the component event type
      */
     private static class ListenerWrapper<T extends ComponentEvent<?>>
             implements Serializable {

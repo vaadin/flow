@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals;
 
 import java.util.Objects;
@@ -5,10 +20,10 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
+
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult;
 import com.vaadin.signals.impl.SignalTree;
@@ -41,7 +56,6 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     private static final ObjectMapper OBJECT_MAPPER;
     static {
         OBJECT_MAPPER = new ObjectMapper();
-        OBJECT_MAPPER.registerModule(new JavaTimeModule());
     }
 
     /**
@@ -121,13 +135,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return value;
     }
 
-    /**
-     * Reads the value without setting up any dependencies. This method returns
-     * the same value as {@link #value()} but without creating a dependency when
-     * used inside a transaction, effect or computed signal.
-     *
-     * @return the signal value
-     */
+    @Override
     public T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }
@@ -200,6 +208,17 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      */
     protected abstract Object usageChangeValue(Data data);
 
+    /**
+     * Checks if the given command is valid according to this signal's
+     * validator. Condition commands are always considered valid, transaction
+     * commands are valid if all nested commands are valid, and other commands
+     * are validated using the configured validator.
+     *
+     * @param command
+     *            the command to validate, not <code>null</code>
+     * @return <code>true</code> if the command is valid, <code>false</code>
+     *         otherwise
+     */
     boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
@@ -510,7 +529,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     protected static <T> T fromJson(JsonNode value, Class<T> targetType) {
         try {
             return OBJECT_MAPPER.treeToValue(value, targetType);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             throw new RuntimeException(e);
         }
     }

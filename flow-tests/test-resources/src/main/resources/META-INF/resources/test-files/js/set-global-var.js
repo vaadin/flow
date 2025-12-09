@@ -1,1 +1,1 @@
-window.globalVar = "Set by set-global-var.js";
+window.globalVar = 'Set by set-global-var.js';

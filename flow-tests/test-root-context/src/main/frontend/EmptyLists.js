@@ -1,18 +1,18 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 class EmptyList extends PolymerElement {
   static get is() {
-    return 'empty-list'
+    return 'empty-list';
   }
 
   static get template() {
     return html`
-       <ul>
+      <ul>
         <template is="dom-repeat" items="[[items]]">
-            <li class="item">[[item.label]]</li>
+          <li class="item">[[item.label]]</li>
         </template>
-    </ul>
+      </ul>
     `;
   }
 }

@@ -13,14 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.hotswap;
 
 import java.util.Set;
 
 import com.vaadin.flow.server.VaadinService;
 
-/*
+/**
  * Event fired when hotswap has been completed.
  */
 public class HotswapCompleteEvent {

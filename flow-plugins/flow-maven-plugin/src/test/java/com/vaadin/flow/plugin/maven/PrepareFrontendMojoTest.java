@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.plugin.maven;
 
@@ -20,12 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -38,6 +32,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.plugin.TestUtils;
@@ -46,19 +41,15 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.impl.JsonUtil;
-
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertContainsPackage;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.assertNotContainingPackages;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.getPackageJson;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
-import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
-import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
+import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class PrepareFrontendMojoTest {
@@ -141,7 +132,7 @@ public class PrepareFrontendMojoTest {
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
-        JsonObject buildInfo = JsonUtil.parse(json);
+        ObjectNode buildInfo = JacksonUtils.readTree(json);
         Assert.assertNull("Default HotDeploy token should not be available",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
@@ -159,27 +150,29 @@ public class PrepareFrontendMojoTest {
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
-        JsonObject buildInfo = JsonUtil.parse(json);
+        ObjectNode buildInfo = JacksonUtils.readTree(json);
+        Assert.assertNotNull("HotDeploy should be written",
+                buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertTrue("HotDeploy should be enabled",
-                buildInfo.getBoolean(FRONTEND_HOTDEPLOY));
+                buildInfo.get(FRONTEND_HOTDEPLOY).booleanValue());
     }
 
     @Test
     public void existingTokenFile_defaultFrontendHotdeployShouldBeRemoved()
             throws IOException, MojoExecutionException, MojoFailureException {
 
-        JsonObject initialBuildInfo = Json.createObject();
+        ObjectNode initialBuildInfo = JacksonUtils.createObjectNode();
         initialBuildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         initialBuildInfo.put(FRONTEND_HOTDEPLOY, true);
         org.apache.commons.io.FileUtils.forceMkdir(tokenFile.getParentFile());
         org.apache.commons.io.FileUtils.write(tokenFile,
-                JsonUtil.stringify(initialBuildInfo, 2) + "\n", "UTF-8");
+                initialBuildInfo.toPrettyString() + "\n", "UTF-8");
 
         mojo.execute();
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, "UTF-8");
-        JsonObject buildInfo = JsonUtil.parse(json);
+        ObjectNode buildInfo = JacksonUtils.readTree(json);
         Assert.assertNull("Default hotdeploy should not be added",
                 buildInfo.get(FRONTEND_HOTDEPLOY));
         Assert.assertNotNull("productionMode token should be available",
@@ -194,21 +187,33 @@ public class PrepareFrontendMojoTest {
 
         String json = org.apache.commons.io.FileUtils
                 .readFileToString(tokenFile, StandardCharsets.UTF_8);
-        JsonObject buildInfo = JsonUtil.parse(json);
+        ObjectNode buildInfo = JacksonUtils.readTree(json);
 
-        Assert.assertFalse(
+        Assert.assertTrue(
                 InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
                         + "should have been written",
-                buildInfo.getBoolean(
-                        InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+                buildInfo.has(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM));
+        Assert.assertFalse(
+                InitParameters.SERVLET_PARAMETER_ENABLE_PNPM
+                        + "should have been disabled",
+                buildInfo.get(InitParameters.SERVLET_PARAMETER_ENABLE_PNPM)
+                        .booleanValue());
+
         Assert.assertTrue(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
                         + "should have been written",
-                buildInfo.getBoolean(
-                        InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+                buildInfo.has(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE));
+        Assert.assertTrue(
+                InitParameters.REQUIRE_HOME_NODE_EXECUTABLE
+                        + "should have been enabled",
+                buildInfo.get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
+                        .booleanValue());
 
-        Assert.assertFalse(buildInfo.hasKey(
-                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
+        Assert.assertFalse(
+                InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE
+                        + "should not have been written",
+                buildInfo.has(
+                        InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE));
     }
 
     @Test
@@ -233,7 +238,6 @@ public class PrepareFrontendMojoTest {
         if (!oldFile.createNewFile()) {
             Assert.fail("Failed to generate old.js in Frontend/generated/flow");
         }
-        ;
 
         mojo.execute();
         Assert.assertTrue("Missing generated folder",

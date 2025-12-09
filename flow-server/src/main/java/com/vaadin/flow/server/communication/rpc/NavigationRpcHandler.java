@@ -17,8 +17,8 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
@@ -55,7 +55,7 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
             BaseJsonNode state = (BaseJsonNode) invocationJson
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
-                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).asText();
+                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).asString();
             boolean triggeredByLink = invocationJson
                     .has(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink

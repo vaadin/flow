@@ -15,12 +15,6 @@
  */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -34,6 +28,12 @@ import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class ComputedSignalTest extends SignalTestBase {
 
@@ -134,6 +134,20 @@ public class ComputedSignalTest extends SignalTestBase {
 
         computed.value();
         assertEquals(2, count.get());
+    }
+
+    @Test
+    void not_booleanInputs_negatedOutputs() {
+        ValueSignal<Boolean> signal = new ValueSignal<>(Boolean.TRUE);
+        Signal<Boolean> negated = Signal.not(signal);
+
+        assertFalse(negated.value());
+
+        signal.value(false);
+        assertTrue(negated.value());
+
+        signal.value(null);
+        assertNull(negated.value());
     }
 
     @Test

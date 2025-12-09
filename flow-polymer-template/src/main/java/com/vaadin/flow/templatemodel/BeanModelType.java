@@ -24,10 +24,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.node.ValueNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -535,7 +533,7 @@ public class BeanModelType<T> implements ComplexModelType<T> {
     public ObjectNode toJson() {
         ObjectNode json = JacksonUtils.createObjectNode();
 
-        properties.forEach((name, property) -> json.put(name,
+        properties.forEach((name, property) -> json.set(name,
                 property.getType().toJson()));
 
         return json;

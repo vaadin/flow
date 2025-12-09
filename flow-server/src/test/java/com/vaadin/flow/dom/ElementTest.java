@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.dom;
 
 import java.io.ByteArrayInputStream;
@@ -29,14 +44,14 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.DoubleStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
@@ -140,6 +155,11 @@ public class ElementTest extends AbstractNodeTest {
         // ignore shadow root methods
         ignore.add("attachShadow");
         ignore.add("getShadowRoot");
+
+        // ignore signal binding methods
+        ignore.add("bindProperty");
+        ignore.add("bindAttribute");
+        ignore.add("bindText");
 
         assertMethodsReturnType(Element.class, ignore);
     }
@@ -626,7 +646,7 @@ public class ElementTest extends AbstractNodeTest {
 
         element.setPropertyBean("p", new SimpleBean());
         ObjectNode json = (ObjectNode) element.getPropertyRaw("p");
-        Assert.assertEquals("value", json.get("string").asText());
+        Assert.assertEquals("value", json.get("string").asString());
         Assert.assertEquals(1.0, json.get("number").doubleValue(), 0.0);
         Assert.assertEquals(2.3f, json.get("flt").floatValue(), 0.0);
         Assert.assertEquals(4.56, json.get("dbl").doubleValue(), 0.0);
@@ -640,8 +660,8 @@ public class ElementTest extends AbstractNodeTest {
         list.add(bean2);
         element.setPropertyList("p", list);
         ArrayNode jsonArray = (ArrayNode) element.getPropertyRaw("p");
-        Assert.assertEquals("bean1", jsonArray.get(0).get("string").asText());
-        Assert.assertEquals("bean2", jsonArray.get(1).get("string").asText());
+        Assert.assertEquals("bean1", jsonArray.get(0).get("string").asString());
+        Assert.assertEquals("bean2", jsonArray.get(1).get("string").asString());
 
         Map<String, SimpleBean> map = new HashMap<>();
         map.put("one", bean1);
@@ -649,9 +669,9 @@ public class ElementTest extends AbstractNodeTest {
         element.setPropertyMap("p", map);
         JsonNode jsonObject = (JsonNode) element.getPropertyRaw("p");
         Assert.assertEquals("bean1",
-                jsonObject.get("one").get("string").asText());
+                jsonObject.get("one").get("string").asString());
         Assert.assertEquals("bean2",
-                jsonObject.get("two").get("string").asText());
+                jsonObject.get("two").get("string").asString());
     }
 
     @Test
@@ -694,23 +714,32 @@ public class ElementTest extends AbstractNodeTest {
         JsonNode json = (JsonNode) element.getPropertyRaw("bean");
 
         Assert.assertTrue("LocalTime not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(10, 23, 55),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("10:23:55"),
                         json.get("localTime")));
         Assert.assertTrue("LocalDate not serialized as expected",
-                JacksonUtils.jsonEquals(createNumberArray(2024, 6, 26),
+                JacksonUtils.jsonEquals(JacksonUtils.createNode("2024-06-26"),
                         json.get("localDate")));
         Assert.assertTrue("LocalDateTime not serialized as expected",
                 JacksonUtils.jsonEquals(
-                        createNumberArray(2024, 6, 26, 10, 23, 55),
+                        JacksonUtils.createNode("2024-06-26T10:23:55"),
                         json.get("localDateTime")));
         Assert.assertEquals("ZonedDateTime not serialized as expected",
                 bean.zonedDateTime.toEpochSecond(),
-                json.get("zonedDateTime").intValue(), 0);
+                ZonedDateTime.parse(json.get("zonedDateTime").asString())
+                        .toEpochSecond(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.sqlDate.getTime(), json.get("sqlDate").longValue(), 0);
+                bean.sqlDate.getTime(),
+                ZonedDateTime.parse(json.get("sqlDate").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
         Assert.assertEquals("ZonedDateTime not serialized as expected",
-                bean.date.getTime(), json.get("date").longValue(), 0);
-        Assert.assertEquals(10.0, json.get("duration").doubleValue(), 0);
+                bean.date.getTime(),
+                ZonedDateTime.parse(json.get("date").asString()).toInstant()
+                        .toEpochMilli(),
+                0);
+        Assert.assertEquals(10.0,
+                Duration.parse(json.get("duration").asString()).toSeconds(), 0);
     }
 
     private static Element createPropertyAssertElement(Object value) {
@@ -2549,17 +2578,17 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void executeJavaScript_delegatesToExecJs() {
         AtomicReference<String> invokedExpression = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 String oldExpression = invokedExpression.getAndSet(expression);
                 Assert.assertNull("There should be no old expression",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(parameters);
+                Object[] oldParams = invokedParams.getAndSet(parameters);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2578,7 +2607,7 @@ public class ElementTest extends AbstractNodeTest {
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult executeJs(String expression,
-                    Serializable... parameters) {
+                    Object... parameters) {
                 Serializable[] wrappedParameters;
                 if (parameters.length == 0) {
                     wrappedParameters = new Serializable[] { this };
@@ -2597,17 +2626,17 @@ public class ElementTest extends AbstractNodeTest {
     @Test
     public void callFunction_delegatesToCallJsFunction() {
         AtomicReference<String> invokedFuction = new AtomicReference<>();
-        AtomicReference<Serializable[]> invokedParams = new AtomicReference<>();
+        AtomicReference<Object[]> invokedParams = new AtomicReference<>();
 
         Element element = new Element("div") {
             @Override
             public PendingJavaScriptResult callJsFunction(String functionName,
-                    Serializable... arguments) {
+                    Object... arguments) {
                 String oldExpression = invokedFuction.getAndSet(functionName);
                 Assert.assertNull("There should be no old function name",
                         oldExpression);
 
-                Serializable[] oldParams = invokedParams.getAndSet(arguments);
+                Object[] oldParams = invokedParams.getAndSet(arguments);
                 Assert.assertNull("There should be no old params", oldParams);
 
                 return null;
@@ -2632,7 +2661,7 @@ public class ElementTest extends AbstractNodeTest {
         Assert.assertEquals(child, parent.getChild(index));
     }
 
-    private void assertPendingJs(UI ui, String js, Serializable... arguments) {
+    private void assertPendingJs(UI ui, String js, Object... arguments) {
         List<PendingJavaScriptInvocation> pendingJs = ui.getInternals()
                 .dumpPendingJavaScriptInvocations();
         JavaScriptInvocation expected = new JavaScriptInvocation(js, arguments);

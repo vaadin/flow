@@ -19,8 +19,8 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +33,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -290,9 +289,9 @@ public class FullDependenciesScannerTest {
         FrontendDependenciesScanner scanner = setUpAnnotationScanner(
                 JavaScript.class);
 
-        DepsTests.assertImports(scanner.getScripts(), "javascript/a.js",
-                "javascript/b.js", "javascript/c.js",
-                "experimental-Connector.js", "ExampleConnector.js");
+        DepsTests.assertImports(scanner.getScripts(),
+                "experimental-Connector.js", "javascript/a.js",
+                "javascript/b.js", "javascript/c.js", "ExampleConnector.js");
 
         Set<String> visitedClasses = scanner.getClasses();
         Assert.assertTrue(
@@ -468,6 +467,7 @@ public class FullDependenciesScannerTest {
     private Set<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> annotationType) {
         Class<?>[] classes = NodeTestComponents.class.getDeclaredClasses();
+        Arrays.sort(classes, Comparator.comparing(Class::getName));
         Set<Class<?>> result = new LinkedHashSet<>();
         for (Class<?> clazz : classes) {
             if (clazz.getAnnotationsByType(annotationType).length > 0) {

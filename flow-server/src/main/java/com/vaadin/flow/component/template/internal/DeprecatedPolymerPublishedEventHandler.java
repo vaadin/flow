@@ -18,7 +18,7 @@ package com.vaadin.flow.component.template.internal;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 
@@ -28,7 +28,6 @@ import com.vaadin.flow.component.Component;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @deprecated Polymer template support is deprecated - we recommend you to use
  *             {@code LitTemplate} instead. Read more details from <a href=

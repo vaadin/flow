@@ -13,10 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.vaadin.flow.dom.Element;
@@ -24,6 +22,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_COUNT_MAX;
 import static com.vaadin.flow.server.Constants.DEFAULT_FILE_SIZE_MAX;
@@ -97,7 +96,7 @@ public interface UploadHandler extends ElementRequestHandler {
      * stored for this specific handler registration.
      * <p>
      * After upload of all files is done the method
-     * {@link #responseHandled(boolean, VaadinResponse)} will be called.
+     * {@link #responseHandled(UploadResult)} will be called.
      *
      * @param event
      *            upload event containing the necessary data for getting the
@@ -118,16 +117,16 @@ public interface UploadHandler extends ElementRequestHandler {
      * If you want custom exception handling and to set the return code,
      * implement this method and overwrite the default functionality.
      *
-     * @param success
-     *            is there was no exception thrown for upload
-     * @param response
-     *            the response object for the upload request
+     * @param result
+     *            the result of the upload operation containing success status,
+     *            response object, and any exception that occurred
      */
-    default void responseHandled(boolean success, VaadinResponse response) {
-        if (success) {
-            response.setStatus(HttpStatusCode.OK.getCode());
+    default void responseHandled(UploadResult result) {
+        if (result.success()) {
+            result.response().setStatus(HttpStatusCode.OK.getCode());
         } else {
-            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            result.response()
+                    .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
         }
     }
 

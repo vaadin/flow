@@ -25,6 +25,12 @@ public class CancelableOperation<T> extends SignalOperation<T> {
     private volatile boolean cancelled = false;
 
     /**
+     * Creates a new cancelable operation.
+     */
+    public CancelableOperation() {
+    }
+
+    /**
      * Cancels this operation. Note that there's still a possibility that the
      * operation will be successfully resolved rather than canceled if
      * resolution and cancel happen concurrently.

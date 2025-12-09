@@ -18,14 +18,17 @@ package com.vaadin.flow.spring;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.beans.factory.SmartInitializingSingleton;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.core.GrantedAuthorityDefaults;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
@@ -40,6 +43,7 @@ import com.vaadin.flow.spring.security.NavigationAccessControlInitializer;
 import com.vaadin.flow.spring.security.RequestUtil;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
+import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategy;
 import com.vaadin.flow.spring.security.VaadinDefaultRequestCache;
 import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
 
@@ -49,7 +53,7 @@ import com.vaadin.flow.spring.security.VaadinRolePrefixHolder;
  * @author Vaadin Ltd
  *
  */
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 @ConditionalOnClass(WebSecurityCustomizer.class)
 @EnableConfigurationProperties(VaadinConfigurationProperties.class)
 public class SpringSecurityAutoConfiguration {
@@ -68,6 +72,8 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control initializer available for
      * security configuration.
      *
+     * @param accessControl
+     *            the navigation access control
      * @return the default navigation access control initializer
      */
     @Bean
@@ -80,6 +86,10 @@ public class SpringSecurityAutoConfiguration {
      * Makes the default navigation access control available for security
      * configuration.
      *
+     * @param accessCheckerList
+     *            the list of navigation access checkers
+     * @param configurer
+     *            the navigation access control configurer
      * @return the default navigation access control.
      */
     @Bean
@@ -95,11 +105,11 @@ public class SpringSecurityAutoConfiguration {
      * <p>
      * The default configurer only enables annotated view access checker. It is
      * disabled by default for backward compatibility, and it will be enabled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity}.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer}.
      * <p>
      * A custom bean can be provided to override default configuration or to
      * configure navigation access control instance when used without
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity},
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer},
      *
      * @return the default configurer for navigation access control.
      */
@@ -202,5 +212,17 @@ public class SpringSecurityAutoConfiguration {
     @ConditionalOnMissingBean
     AuthenticationContext authenticationContext() {
         return new AuthenticationContext();
+    }
+
+    @Bean
+    @ConditionalOnMissingBean
+    SecurityContextHolderStrategy vaadinAwareSecurityContextHolderStrategy() {
+        return new VaadinAwareSecurityContextHolderStrategy();
+    }
+
+    @Bean
+    SmartInitializingSingleton securityContextHolderStrategyInitializer(
+            SecurityContextHolderStrategy strategy) {
+        return () -> SecurityContextHolder.setContextHolderStrategy(strategy);
     }
 }

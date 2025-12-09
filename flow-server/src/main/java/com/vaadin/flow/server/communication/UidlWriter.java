@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
@@ -21,7 +20,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -33,13 +31,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Composite;
@@ -52,6 +48,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -61,7 +58,6 @@ import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.SystemMessages;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -85,19 +81,15 @@ public class UidlWriter implements Serializable {
      */
     public static class ResolveContext implements Serializable {
         private VaadinService service;
-        private WebBrowser browser;
 
         /**
          * Creates a new context.
          *
          * @param service
          *            the service which is resolving
-         * @param browser
-         *            the browser
          */
-        public ResolveContext(VaadinService service, WebBrowser browser) {
+        public ResolveContext(VaadinService service) {
             this.service = Objects.requireNonNull(service);
-            this.browser = Objects.requireNonNull(browser);
         }
 
         /**
@@ -107,15 +99,6 @@ public class UidlWriter implements Serializable {
          */
         public VaadinService getService() {
             return service;
-        }
-
-        /**
-         * Gets the browser info used for resolving.
-         *
-         * @return the browser
-         */
-        public WebBrowser getBrowser() {
-            return browser;
         }
 
     }
@@ -169,7 +152,17 @@ public class UidlWriter implements Serializable {
         encodeChanges(ui, stateChanges);
 
         populateDependencies(response, uiInternals.getDependencyList(),
-                new ResolveContext(service, session.getBrowser()));
+                new ResolveContext(service));
+
+        // Add stylesheet removals to response
+        Set<String> stylesheetRemovals = uiInternals
+                .getPendingStyleSheetRemovals();
+        if (!stylesheetRemovals.isEmpty()) {
+            ArrayNode removals = JacksonUtils.createArrayNode();
+            stylesheetRemovals.forEach(removals::add);
+            response.set("stylesheetRemovals", removals);
+            uiInternals.clearPendingStyleSheetRemovals();
+        }
 
         if (uiInternals.getConstantPool().hasNewConstants()) {
             response.set("constants",
@@ -182,11 +175,11 @@ public class UidlWriter implements Serializable {
         List<PendingJavaScriptInvocation> executeJavaScriptList = uiInternals
                 .dumpPendingJavaScriptInvocations();
         if (!executeJavaScriptList.isEmpty()) {
-            response.put(JsonConstants.UIDL_KEY_EXECUTE,
+            response.set(JsonConstants.UIDL_KEY_EXECUTE,
                     encodeExecuteJavaScriptList(executeJavaScriptList));
         }
         if (service.getDeploymentConfiguration().isRequestTiming()) {
-            response.put("timings", createPerformanceData(ui));
+            response.set("timings", createPerformanceData(ui));
         }
 
         // Get serverSyncId after all changes has been computed, as push may
@@ -227,15 +220,8 @@ public class UidlWriter implements Serializable {
 
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> {
-                        try {
-                            response.set(loadMode.name(),
-                                    JacksonUtils.getMapper()
-                                            .readTree(dependencies.toString()));
-                        } catch (JsonProcessingException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    .forEach((loadMode, dependencies) -> response
+                            .set(loadMode.name(), dependencies));
         }
         dependencyList.clearPendingSendToClient();
     }
@@ -253,8 +239,8 @@ public class UidlWriter implements Serializable {
 
     private static ObjectNode dependencyToJson(Dependency dependency,
             ResolveContext context) {
-        ObjectNode dependencyJson = JacksonUtils
-                .mapElemental(dependency.toJson());
+        ObjectNode dependencyJson = JacksonUtils.getMapper()
+                .valueToTree(dependency);
         if (dependency.getLoadMode() == LoadMode.INLINE) {
             dependencyJson.put(Dependency.KEY_CONTENTS,
                     getDependencyContents(dependency.getUrl(), context));
@@ -267,8 +253,7 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
                 context)) {
-            return IOUtils.toString(inlineResourceStream,
-                    StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(inlineResourceStream);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);
