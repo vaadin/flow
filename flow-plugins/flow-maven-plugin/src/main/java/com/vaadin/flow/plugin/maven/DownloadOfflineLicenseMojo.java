@@ -43,8 +43,7 @@ import com.vaadin.pro.licensechecker.OfflineKeyValidator;
 public class DownloadOfflineLicenseMojo extends AbstractMojo {
 
     @Override
-    public void execute()
-            throws MojoExecutionException, MojoFailureException {
+    public void execute() throws MojoExecutionException, MojoFailureException {
         try {
             MachineId machineId = new MachineId();
             String offlineUrl = OfflineKeyValidator.getOfflineUrl(machineId);
