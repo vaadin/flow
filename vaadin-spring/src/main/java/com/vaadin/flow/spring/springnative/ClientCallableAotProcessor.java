@@ -31,7 +31,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.aot.hint.MemberCategory;
+import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
 import org.springframework.aot.hint.ReflectionHints;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
@@ -112,11 +112,12 @@ public class ClientCallableAotProcessor
                 "Found @ClientCallable types to register for reflection: {}",
                 usedTypes);
         return (generationContext, beanFactoryInitializationCode) -> {
-            usedTypes.forEach(type -> {
-                ReflectionHints reflectionHints = generationContext
-                        .getRuntimeHints().reflection();
-                reflectionHints.registerType(type, MemberCategory.values());
-            });
+            // Recursively register all types that require reflection hints
+            BindingReflectionHintsRegistrar registrar = new BindingReflectionHintsRegistrar();
+            ReflectionHints reflectionHints = generationContext
+                    .getRuntimeHints().reflection();
+            registrar.registerReflectionHints(reflectionHints,
+                    usedTypes.toArray(new Class[0]));
         };
     }
 

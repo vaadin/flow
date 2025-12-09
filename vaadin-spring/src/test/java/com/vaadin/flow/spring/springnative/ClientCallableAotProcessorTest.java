@@ -66,9 +66,6 @@ class ClientCallableAotProcessorTest {
                 .rejects(hints);
         assertThat(RuntimeHintsPredicates.reflection().onType(int.class))
                 .as("Primitive should not be registered").rejects(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onType(String.class))
-                .as("String should not be registered (java.* package)")
-                .rejects(hints);
     }
 
     @Test
@@ -94,9 +91,6 @@ class ClientCallableAotProcessorTest {
                 .rejects(hints);
         assertThat(RuntimeHintsPredicates.reflection().onType(int.class))
                 .as("Primitive should not be registered").rejects(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onType(String.class))
-                .as("String should not be registered (java.* package)")
-                .rejects(hints);
     }
 
     @Test
@@ -161,6 +155,9 @@ class ClientCallableAotProcessorTest {
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection().onType(OtherDto.class))
                 .as("OtherDto should be registered when used as parameter")
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onType(NestedDto.class))
+                .as("NestedDto should be registered when used as member of return or parameter type")
                 .accepts(hints);
     }
 
@@ -462,7 +459,7 @@ class ClientCallableAotProcessorTest {
 
     public static class ComplexDto {
         private String id;
-        private SimpleDto nested;
+        private NestedDto nested;
 
         public String getId() {
             return id;
@@ -472,11 +469,11 @@ class ClientCallableAotProcessorTest {
             this.id = id;
         }
 
-        public SimpleDto getNested() {
+        public NestedDto getNested() {
             return nested;
         }
 
-        public void setNested(SimpleDto nested) {
+        public void setNested(NestedDto nested) {
             this.nested = nested;
         }
     }
