@@ -44,6 +44,7 @@ import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.component.webcomponent.WebComponentConfiguration;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.InvalidCustomElementNameException;
 import com.vaadin.flow.server.MockInstantiator;
 import com.vaadin.flow.server.VaadinContext;
@@ -189,6 +190,14 @@ public class WebComponentConfigurationRegistryInitializerTest {
     }
 
     @Test
+    public void jacksonPropertyRegistration_doesNotCauseIssues()
+            throws ServletException {
+        initializer.process(
+                Collections.singleton(JacksonPropertyExporter.class),
+                servletContext);
+    }
+
+    @Test
     public void duplicatePropertyRegistrationBetweenParentAndChild_doesNotCauseIssues()
             throws ServletException {
         initializer.process(Collections.singleton(ExtendingExporter.class),
@@ -319,6 +328,22 @@ public class WebComponentConfigurationRegistryInitializerTest {
             super("tag-2");
             addProperty(DUPLICATE_PROPERTY_NAME, "two");
             addProperty(DUPLICATE_PROPERTY_NAME, "four");
+        }
+
+        @Override
+        public void configureInstance(WebComponent<MyComponent> webComponent,
+                MyComponent component) {
+
+        }
+    }
+
+    public static class JacksonPropertyExporter
+            extends WebComponentExporter<MyComponent> {
+
+        public JacksonPropertyExporter() {
+            super("tag-2");
+            addProperty("property",
+                    JacksonUtils.createObjectNode().put("foo", "bar"));
         }
 
         @Override
