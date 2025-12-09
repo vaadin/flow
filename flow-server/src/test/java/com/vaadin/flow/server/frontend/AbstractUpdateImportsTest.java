@@ -229,6 +229,7 @@ public abstract class AbstractUpdateImportsTest extends NodeUpdateTestUtil {
             throws IOException {
         Class<?>[] testClasses = { FooCssImport.class, FooCssImport2.class,
                 UI.class, AllEagerAppConf.class,
+                NodeTestComponents.ReferenceView.class,
                 NodeTestComponents.VaadinBowerComponent.class };
         ClassFinder classFinder = getClassFinder(testClasses);
         updater = new UpdateImports(getScanner(classFinder), options);
