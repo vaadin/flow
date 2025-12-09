@@ -40,7 +40,6 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
