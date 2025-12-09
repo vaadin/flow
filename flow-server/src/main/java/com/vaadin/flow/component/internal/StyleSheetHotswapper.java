@@ -521,7 +521,7 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         }
     }
 
-    private static String normalizeStylesheetUrl(String url) {
+    static String normalizeStylesheetUrl(String url) {
         if (url == null || url.isBlank()) {
             return null;
         }
@@ -529,6 +529,10 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)) {
             url = url.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
+        }
+        if (url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+            url = url.substring(
+                    ApplicationConstants.BASE_PROTOCOL_PREFIX.length());
         }
         if (url.startsWith("/")) {
             url = url.substring(1);

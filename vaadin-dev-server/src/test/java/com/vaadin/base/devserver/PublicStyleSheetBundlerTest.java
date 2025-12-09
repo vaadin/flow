@@ -109,9 +109,37 @@ public class PublicStyleSheetBundlerTest {
     }
 
     @Test
+    public void bundle_supportsBaseProtocol() throws IOException {
+        File project = temporaryFolder.newFolder("project2_base");
+        File publicRoot = new File(project, "src/main/resources/public");
+        assertTrue(publicRoot.mkdirs());
+
+        Files.writeString(new File(publicRoot, "imported.css").toPath(),
+                ".im{b:1;}", StandardCharsets.UTF_8);
+        Files.writeString(new File(publicRoot, "main.css").toPath(),
+                "@import './imported.css';\n.m{c:2;}", StandardCharsets.UTF_8);
+
+        PublicStyleSheetBundler bundler = PublicStyleSheetBundler
+                .forResourceLocations(java.util.List.of(publicRoot));
+
+        Optional<String> bundled = bundler.bundle("base://main.css", "");
+        assertTrue(bundled.isPresent());
+        String result = normalizeWhitespace(bundled.get());
+        assertTrue(result.contains(".im{b:1;}"));
+        assertTrue(result.contains(".m{c:2;}"));
+        assertTrue(result.indexOf(".im{b:1;}") < result.indexOf(".m{c:2;}"));
+    }
+
+    @Test
     public void normalize_contextProtocol_isStripped() {
         assertEquals("css/app.css",
                 PublicStyleSheetBundler.normalizeUrl("context://css/app.css"));
+    }
+
+    @Test
+    public void normalize_baseProtocol_isStripped() {
+        assertEquals("css/app.css",
+                PublicStyleSheetBundler.normalizeUrl("base://css/app.css"));
     }
 
     @Test

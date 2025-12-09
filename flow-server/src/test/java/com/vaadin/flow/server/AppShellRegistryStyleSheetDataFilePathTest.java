@@ -33,6 +33,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
     @StyleSheet("/absolute.css")
     @StyleSheet("./relative/path.css")
     @StyleSheet("context://from-context.css")
+    @StyleSheet("base://from-base.css")
     @StyleSheet("https://cdn.example.com/remote.css")
     public static class MyShell implements AppShellConfigurator {
     }
@@ -68,7 +69,7 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         registry.modifyIndexHtml(document, request);
 
         List<Element> links = document.head().select("link[rel=stylesheet]");
-        Assert.assertEquals(4, links.size());
+        Assert.assertEquals(5, links.size());
 
         // 1) Absolute path: href preserved, data-file-path drops leading '/'
         Element abs = links.get(0);
@@ -87,8 +88,14 @@ public class AppShellRegistryStyleSheetDataFilePathTest {
         Assert.assertEquals("/ctx/from-context.css", ctx.attr("href"));
         Assert.assertEquals("from-context.css", ctx.attr("data-file-path"));
 
-        // 4) Remote http(s) URL unchanged, data-file-path remains original
-        Element remote = links.get(3);
+        // 4) base:// should resolve to "" in href, and
+        // data-file-path strips base protocol prefix
+        Element base = links.get(3);
+        Assert.assertEquals("from-base.css", base.attr("href"));
+        Assert.assertEquals("from-base.css", base.attr("data-file-path"));
+
+        // 5) Remote http(s) URL unchanged, data-file-path remains original
+        Element remote = links.get(4);
         Assert.assertEquals("https://cdn.example.com/remote.css",
                 remote.attr("href"));
         Assert.assertEquals("https://cdn.example.com/remote.css",

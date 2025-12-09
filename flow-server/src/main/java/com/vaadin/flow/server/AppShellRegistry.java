@@ -266,8 +266,10 @@ public class AppShellRegistry implements Serializable {
         String contextPath = request.getContextPath();
         if (!contextPath.isEmpty()) {
             String contextProtocol = ApplicationConstants.CONTEXT_PROTOCOL_PREFIX;
-            if (!lower.startsWith(contextProtocol)) {
-                // Prepend context protocol so URL is resolved with context path
+            if (!lower.startsWith(contextProtocol) && !lower
+                    .startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+                // Prepend context protocol so URL is resolved with a context
+                // path
                 href = contextProtocol + href;
             }
         }
@@ -389,6 +391,11 @@ public class AppShellRegistry implements Serializable {
                     source = source.substring(
                             ApplicationConstants.CONTEXT_PROTOCOL_PREFIX
                                     .length());
+                }
+                if (source.startsWith(
+                        ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+                    source = source.substring(
+                            ApplicationConstants.BASE_PROTOCOL_PREFIX.length());
                 }
                 return source;
             });

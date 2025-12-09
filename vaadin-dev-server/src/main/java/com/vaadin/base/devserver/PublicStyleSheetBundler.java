@@ -114,6 +114,10 @@ public final class PublicStyleSheetBundler {
             url = url.substring(
                     ApplicationConstants.CONTEXT_PROTOCOL_PREFIX.length());
         }
+        if (url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+            url = url.substring(
+                    ApplicationConstants.BASE_PROTOCOL_PREFIX.length());
+        }
         if (url.startsWith("/")) {
             url = url.substring(1);
         }

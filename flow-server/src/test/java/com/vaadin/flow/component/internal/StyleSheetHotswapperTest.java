@@ -63,6 +63,18 @@ import static org.mockito.Mockito.verify;
 
 public class StyleSheetHotswapperTest {
 
+    @Test
+    public void normalizeStylesheetUrl_stripsBaseAndContextAndPrefixes() {
+        Assert.assertEquals("css/app.css", StyleSheetHotswapper
+                .normalizeStylesheetUrl("context://css/app.css"));
+        Assert.assertEquals("css/app.css", StyleSheetHotswapper
+                .normalizeStylesheetUrl("base://css/app.css"));
+        Assert.assertEquals("css/app.css",
+                StyleSheetHotswapper.normalizeStylesheetUrl("/css/app.css"));
+        Assert.assertEquals("css/app.css",
+                StyleSheetHotswapper.normalizeStylesheetUrl("./css/app.css"));
+    }
+
     private StyleSheetHotswapper hotswapper;
     private MockVaadinServletService service;
     private VaadinSession session;
