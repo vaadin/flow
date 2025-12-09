@@ -22,6 +22,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.open.OSUtils;
 
 public class FileIOUtilsTest {

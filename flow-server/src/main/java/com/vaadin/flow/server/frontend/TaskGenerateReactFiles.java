@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Layout;
@@ -36,7 +37,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
 
-import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
+import static com.vaadin.flow.internal.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
