@@ -27,7 +27,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

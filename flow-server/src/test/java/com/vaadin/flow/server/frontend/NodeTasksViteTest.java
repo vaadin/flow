@@ -35,7 +35,6 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;

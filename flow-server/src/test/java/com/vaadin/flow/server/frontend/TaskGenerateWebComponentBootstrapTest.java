@@ -25,7 +25,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;

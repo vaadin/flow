@@ -28,7 +28,6 @@ import java.util.Set;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
