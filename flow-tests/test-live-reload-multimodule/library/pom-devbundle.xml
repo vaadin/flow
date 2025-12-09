@@ -6,7 +6,7 @@
     <parent>
         <artifactId>flow-test-live-reload-multimodule-devbundle</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
         <relativePath>../../test-live-reload-multimodule-devbundle/pom.xml</relativePath>
     </parent>
     <artifactId>flow-test-live-reload-multimodule-library-devbundle</artifactId>
