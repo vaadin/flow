@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
     </parent>
     <artifactId>vite-pwa-disabled-offline-production</artifactId>
     <name>Vite PWA app with disabled offline (production mode)</name>

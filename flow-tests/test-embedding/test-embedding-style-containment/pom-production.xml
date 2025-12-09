@@ -22,7 +22,7 @@
     <parent>
         <groupId>com.vaadin</groupId>
         <artifactId>test-embedding</artifactId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>test-embedding-style-containment-production</artifactId>

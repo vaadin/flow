@@ -42,7 +42,7 @@ mvn vaadin:convert-polymer
 To convert a project that is based on Vaadin < 24, use the full Maven goal:
 
 ```bash
-mvn com.vaadin:vaadin-maven-plugin:25.0-SNAPSHOT:convert-polymer
+mvn com.vaadin:vaadin-maven-plugin:25.1-SNAPSHOT:convert-polymer
 ```
 
 Or, in the case of using Gradle, add the following to `build.gradle`:
@@ -50,7 +50,7 @@ Or, in the case of using Gradle, add the following to `build.gradle`:
 ```gradle
 buildscript {
   repositories {
-    classpath 'com.vaadin:flow-gradle-plugin:25.0-SNAPSHOT'
+    classpath 'com.vaadin:flow-gradle-plugin:25.1-SNAPSHOT'
   }
 }
 ```
