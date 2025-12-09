@@ -34,7 +34,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
 
 import static com.vaadin.flow.internal.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;

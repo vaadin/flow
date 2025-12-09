@@ -32,8 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FileIOUtils;
-import com.vaadin.flow.server.ExecutionFailedException;
-
 /**
  * Deletes old files from frontend generated folder.
  * <p>
