@@ -18,6 +18,8 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
@@ -37,6 +40,7 @@ import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
 
@@ -291,6 +295,103 @@ public class PublicResourcesLiveUpdaterTest {
             Awaitility.await().untilAsserted(() -> {
                 Mockito.verifyNoInteractions(liveReload);
             });
+        }
+    }
+
+    @Test
+    public void vaadinThemeUrls_areNotBundled_whenCssChangesDetected()
+            throws Exception {
+        // Prepare a temp directory to watch
+        File root = temporaryFolder.newFolder("watched-root");
+
+        // Mocks for Vaadin context and configuration (dev mode)
+        VaadinContext ctx = Mockito.mock(VaadinContext.class);
+        ApplicationConfiguration config = Mockito
+                .mock(ApplicationConfiguration.class);
+        Mockito.when(config.isProductionMode()).thenReturn(false);
+
+        // Mock BrowserLiveReload plumbing via Lookup
+        Lookup lookup = Mockito.mock(Lookup.class);
+        BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
+        BrowserLiveReloadAccessor accessor = Mockito
+                .mock(BrowserLiveReloadAccessor.class);
+        Mockito.when(accessor.getLiveReload(ctx)).thenReturn(liveReload);
+        Mockito.when(lookup.lookup(BrowserLiveReloadAccessor.class))
+                .thenReturn(accessor);
+        Mockito.when(ctx.getAttribute(eq(Lookup.class))).thenReturn(lookup);
+
+        // Mock Static: ApplicationConfiguration.get(context)
+        try (MockedStatic<ApplicationConfiguration> appConfig = Mockito
+                .mockStatic(ApplicationConfiguration.class);
+                // Mock Static:
+                // PublicStyleSheetBundler.forResourceLocations(...)
+                MockedStatic<PublicStyleSheetBundler> bundlerStatic = Mockito
+                        .mockStatic(PublicStyleSheetBundler.class)) {
+
+            appConfig.when(() -> ApplicationConfiguration.get(Mockito.any()))
+                    .thenReturn(config);
+
+            // Active URLs include two Lumo URLs and one regular URL
+            Set<String> activeUrls = new HashSet<>(Arrays.asList(
+                    "/lumo/utility.css", "lumo/utility.css",
+                    "/lumo/presets/compact.css", "lumo/presets/compact.css",
+                    "/aura/aura.css", "aura/aura.css", "/css/app.css",
+                    "context://css/app.css", "base://css/app.css",
+                    "http://localhost:8080/hello"));
+            ActiveStyleSheetTracker tracker = Mockito
+                    .mock(ActiveStyleSheetTracker.class);
+            Mockito.when(tracker.getActiveUrls()).thenReturn(activeUrls);
+            // Ensure context returns our tracker for attribute-based access
+            Mockito.when(ctx.getAttribute(
+                    Mockito.eq(ActiveStyleSheetTracker.class), Mockito.any()))
+                    .thenReturn(tracker);
+
+            // Bundler mock
+            PublicStyleSheetBundler bundler = Mockito
+                    .mock(PublicStyleSheetBundler.class);
+            // Return some Optional content for non-Lumo URLs to allow
+            // liveReload.update
+            Mockito.when(bundler.bundle(anyString(), anyString()))
+                    .thenReturn(Optional.of("css"));
+            bundlerStatic
+                    .when(() -> PublicStyleSheetBundler
+                            .forResourceLocations(Mockito.anyList()))
+                    .thenReturn(bundler);
+
+            // Start the updater watching the temp root
+            try (PublicResourcesLiveUpdater ignored = new PublicResourcesLiveUpdater(
+                    List.of(root.getAbsolutePath()), ctx)) {
+                // Trigger a CSS change under the watched root
+                File changed = new File(root, "trigger.css");
+                Files.writeString(changed.toPath(), "body{}\n");
+
+                // Wait until the non-Lumo URL is processed (bundled at least
+                // once)
+                Awaitility.await().untilAsserted(() -> {
+                    Mockito.verify(bundler, Mockito.times(1))
+                            .bundle(eq("/css/app.css"), anyString());
+                    Mockito.verify(bundler, Mockito.times(1))
+                            .bundle(eq("context://css/app.css"), anyString());
+                    Mockito.verify(bundler, Mockito.times(1))
+                            .bundle(eq("base://css/app.css"), anyString());
+                });
+
+                // Verify bundler.bundle was NEVER called for Lumo URLs
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("/lumo/utility.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("lumo/utility.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("/lumo/presets/compact.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("lumo/presets/compact.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("/aura/aura.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("aura/aura.css"), anyString());
+                Mockito.verify(bundler, Mockito.never())
+                        .bundle(eq("http://localhost:8080/hello"), anyString());
+            }
         }
     }
 }
