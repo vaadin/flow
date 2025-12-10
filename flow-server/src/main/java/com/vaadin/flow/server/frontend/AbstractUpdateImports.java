@@ -47,6 +47,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.server.Constants;
@@ -58,11 +59,10 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.theme.AbstractTheme;
 
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
 
 /**
  * Common logic for generate import file JS content.
@@ -95,7 +95,8 @@ abstract class AbstractUpdateImports implements Runnable {
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
 
-    private static final String TAILWIND_IMPORT = "./" + TAILWIND_JS;
+    private static final String TAILWIND_IMPORT = "./"
+            + FrontendUtils.TAILWIND_JS;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -415,7 +416,7 @@ abstract class AbstractUpdateImports implements Runnable {
             appShellLines.add(IMPORT_INJECT);
             appShellLines.addAll(appShellCssLines);
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             appShellLines.add(String.format(IMPORT_TEMPLATE, TAILWIND_IMPORT));
         }
         files.put(appShellImports, appShellLines);

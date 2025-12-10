@@ -32,10 +32,12 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
+import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;

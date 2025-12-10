@@ -39,11 +39,12 @@ import org.slf4j.Logger;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.util.SharedUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.commandToString;
+import static com.vaadin.flow.internal.FrontendUtils.commandToString;
 import static com.vaadin.flow.server.frontend.NodeUpdater.HASH_KEY;
 import static com.vaadin.flow.server.frontend.NodeUpdater.PROJECT_FOLDER;
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;
@@ -157,7 +158,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
 
             final Map<String, String> updates = new HashMap<>();
             updates.put(HASH_KEY, hash);
-            FrontendUtils.getVaadinVersion(packageUpdater.finder)
+            FrontendBuildUtils.getVaadinVersion(packageUpdater.finder)
                     .ifPresent(s -> updates.put(VAADIN_VERSION, s));
             updates.put(PROJECT_FOLDER,
                     options.getNpmFolder().getAbsolutePath());

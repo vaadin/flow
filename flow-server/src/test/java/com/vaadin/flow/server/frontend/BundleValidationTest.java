@@ -43,6 +43,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
@@ -55,10 +56,10 @@ import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 import static com.vaadin.flow.server.Constants.PROD_BUNDLE_JAR_PATH;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 
 @RunWith(Parameterized.class)
 public class BundleValidationTest {
@@ -104,7 +105,7 @@ public class BundleValidationTest {
 
     private Map<String, String> jarResources = new HashMap<>();
 
-    private MockedStatic<FrontendUtils> frontendUtils;
+    private MockedStatic<FrontendBuildUtils> frontendBuildUtils;
 
     private MockedStatic<DevBundleUtils> devBundleUtils;
 
@@ -126,7 +127,7 @@ public class BundleValidationTest {
         options.withProductionMode(mode.isProduction());
         bundleLocation = mode.isProduction() ? Constants.PROD_BUNDLE_NAME
                 : Constants.DEV_BUNDLE_NAME;
-        frontendUtils = Mockito.mockStatic(FrontendUtils.class,
+        frontendBuildUtils = Mockito.mockStatic(FrontendBuildUtils.class,
                 Mockito.CALLS_REAL_METHODS);
         devBundleUtils = Mockito.mockStatic(DevBundleUtils.class,
                 Mockito.CALLS_REAL_METHODS);
@@ -140,7 +141,7 @@ public class BundleValidationTest {
 
     @After
     public void teardown() {
-        frontendUtils.close();
+        frontendBuildUtils.close();
         devBundleUtils.close();
         prodBundleUtils.close();
         bundleUtils.close();
@@ -1002,8 +1003,8 @@ public class BundleValidationTest {
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        frontendUtils
-                .when(() -> FrontendUtils.getJarResourceString(
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.eq("TodoTemplate.js"),
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
@@ -1053,8 +1054,8 @@ public class BundleValidationTest {
         devBundleUtils.when(() -> DevBundleUtils
                 .getDevBundleFolder(Mockito.any(), Mockito.any()))
                 .thenReturn(temporaryFolder.getRoot());
-        frontendUtils
-                .when(() -> FrontendUtils.getJarResourceString(
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.eq("TodoTemplate.js"),
                         Mockito.any(ClassFinder.class)))
                 .thenReturn(fileContent);
@@ -2427,8 +2428,8 @@ public class BundleValidationTest {
     public void defaultProdBundleExists_noCompressedProdBundleFileAndWithVersionsJsonExclusions_noBuildRequired()
             throws IOException {
         Assume.assumeTrue(mode.isProduction());
-        frontendUtils
-                .when(() -> FrontendUtils.isReactModuleAvailable(Mockito.any()))
+        frontendBuildUtils.when(
+                () -> FrontendBuildUtils.isReactModuleAvailable(Mockito.any()))
                 .thenAnswer(q -> true);
 
         File packageJson = new File(temporaryFolder.getRoot(), "package.json");
@@ -2721,8 +2722,8 @@ public class BundleValidationTest {
                             temporaryFolder.getRoot(), "target"))
                     .thenAnswer(q -> stats.toString());
         }
-        frontendUtils
-                .when(() -> FrontendUtils.getJarResourceString(
+        frontendBuildUtils
+                .when(() -> FrontendBuildUtils.getJarResourceString(
                         Mockito.anyString(), Mockito.any(ClassFinder.class)))
                 .thenAnswer(q -> jarResources.get(q.getArgument(0)));
     }

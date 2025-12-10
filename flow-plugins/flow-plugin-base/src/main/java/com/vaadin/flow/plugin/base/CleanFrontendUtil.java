@@ -24,9 +24,10 @@ import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 
 /**
  * Utility class for cleaning the frontend files to a clean state.
@@ -61,7 +62,7 @@ public class CleanFrontendUtil {
      */
     public static void runCleaning(PluginAdapterBase adapter,
             CleanOptions options) throws CleanFrontendException {
-        if (FrontendUtils.isHillaUsed(adapter.frontendDirectory(),
+        if (FrontendBuildUtils.isHillaUsed(adapter.frontendDirectory(),
                 adapter.getClassFinder())) {
             options.withRemovePackageLock(false).withRemoveNodeModules(false);
         }
