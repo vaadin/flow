@@ -3,37 +3,40 @@ on:
   push:
     branches: [main, '24.9', '24.8', '24.7', '23.6']
   workflow_dispatch:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened]
+    branches: [main, '24.9', '24.8', '24.7', '23.6']
 permissions:
   contents: read
 concurrency:
   group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
-  HEAD_REF: ${{ github.head_ref }}
-  REF_NAME: ${{ github.ref_name }}
-  BASE_REF: ${{ github.event.pull_request.base.ref }}
-  HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-  PR_NUMBER: ${{ github.event.number }}
-  JAVA_VERSION: '21'
+  _HEAD_REF: ${{ github.head_ref }}
+  _REF_NAME: ${{ github.ref_name }}
+  _BASE_REF: ${{ github.event.pull_request.base.ref }}
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+  _PR_NUMBER: ${{ github.event.number }}
+  # PRs use github.base_ref, pushes use github.ref_name
+  JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
 jobs:
   build:
+    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     timeout-minutes: 30
     runs-on: ubuntu-24.04
-    # Environment requires approval for PRs from forks (configure in repo settings)
-    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
     steps:
-      - run: echo "Concurrency Group = ${HEAD_REF:-$REF_NAME}"
+      - run: echo "Concurrency Group = ${_HEAD_REF:-$_REF_NAME}"
       - name: Check secrets
         run: |
           [ -z "${{secrets.TB_LICENSE}}" ] \
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
+        with:
+          ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '24.9.0'
@@ -78,9 +81,10 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-24.04
-    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{env._HEAD_SHA}}
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -143,9 +147,10 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-24.04
-    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{env._HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '24.9.0'
@@ -234,6 +239,8 @@ jobs:
           name: tests-output
           pattern: tests-output-*
       - uses: actions/checkout@v4
+        with:
+          ref: ${{env._HEAD_SHA}}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
@@ -257,7 +264,8 @@ jobs:
           echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
           exit 1
   api-diff-labeling:
-    if: github.event_name == 'pull_request'
+    environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
+    if: github.event_name == 'pull_request_target'
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     permissions:
@@ -266,6 +274,8 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{env._HEAD_SHA}}
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
@@ -284,8 +294,8 @@ jobs:
           restore-keys: ${{ runner.os }}-maven-
       - name: Checkout base branch for API comparison
         run: |
-          echo "Checking out base branch: ${{ env.BASE_REF }}"
-          git clone --depth 1 --branch ${{ env.BASE_REF }} ${{ github.event.repository.clone_url }} ../base-build
+          echo "Checking out base branch: ${{ env._BASE_REF }}"
+          git clone --depth 1 --branch ${{ env._BASE_REF }} ${{ github.event.repository.clone_url }} ../base-build
       - name: Determine base version
         id: base-version
         working-directory: ../base-build
@@ -296,7 +306,7 @@ jobs:
       - name: Build base version locally
         working-directory: ../base-build
         run: |
-          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env.BASE_REF }}"
+          echo "Building base version ${{ steps.base-version.outputs.BASE_API_VERSION }} from branch ${{ env._BASE_REF }}"
           echo "Running in $(pwd)"
           mvn clean install -B -ntp -DskipTests
       - name: Use temporary flow version for PR
@@ -355,7 +365,7 @@ jobs:
           echo "Discovered version change: ${version_change}"
 
           # Get current labels
-          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels --jq '.[].name')
+          current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env._PR_NUMBER }}/labels --jq '.[].name')
 
           # Check if version change label already exists
           if echo "${current_labels}" | grep -q "+${version_change}"; then
@@ -367,12 +377,12 @@ jobs:
               for tlabel in '+0.0.1' '+0.1.0' '+1.0.0'; do
                   if echo "${current_labels}" | grep -q "${tlabel}" && [[ "${version_change}" != "${tlabel##+}" ]]; then
                       echo "Removing label ${tlabel}"
-                      gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels/"${tlabel}" -X DELETE || true
+                      gh api repos/${{ github.repository }}/issues/${{ env._PR_NUMBER }}/labels/"${tlabel}" -X DELETE || true
                   fi
               done
 
               # Add new version label
-              gh api repos/${{ github.repository }}/issues/${{ env.PR_NUMBER }}/labels \
+              gh api repos/${{ github.repository }}/issues/${{ env._PR_NUMBER }}/labels \
                 -f labels[]="+${version_change}" \
                 --method POST
           fi
