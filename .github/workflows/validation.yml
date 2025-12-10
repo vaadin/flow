@@ -3,12 +3,12 @@ on:
   push:
     branches: [main, '24.9', '24.8', '24.7']
   workflow_dispatch:
-  pull_request_target:
-    types: [opened, synchronize, reopened, edited]
+  pull_request:
+    types: [opened, synchronize, reopened]
 permissions:
   contents: read
 concurrency:
-  group: ${{ github.head_ref }} || ${{ github.ref_name }}
+  group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 env:
   HEAD_REF: ${{ github.head_ref }}
@@ -20,6 +20,8 @@ jobs:
   build:
     timeout-minutes: 30
     runs-on: ubuntu-24.04
+    # Environment requires approval for PRs from forks (configure in repo settings)
+    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     outputs:
       matrix-unit: ${{ steps.set-matrix.outputs.matrix-unit }}
       matrix-it: ${{ steps.set-matrix.outputs.matrix-it }}
@@ -44,8 +46,6 @@ jobs:
             && echo "🚫 **TB_LICENSE** is not defined, check that **${{github.repository}}** repo has a valid secret" \
             | tee -a $GITHUB_STEP_SUMMARY && exit 1 || exit 0
       - uses: actions/checkout@v4
-        with:
-          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -90,6 +90,7 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-unit)}}
     runs-on: ubuntu-24.04
+    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -156,10 +157,9 @@ jobs:
       fail-fast: false
       matrix: ${{fromJson(needs.build.outputs.matrix-it)}}
     runs-on: ubuntu-24.04
+    environment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{env.HEAD_SHA}}
       - uses: actions/setup-node@v4
         with:
           node-version: '22.14.0'
@@ -248,8 +248,6 @@ jobs:
           name: tests-output
           pattern: tests-output-*
       - uses: actions/checkout@v4
-        with:
-          ref: ${{env.HEAD_SHA}}
       - uses: actions/download-artifact@v4
         with:
           name: tests-output
@@ -273,7 +271,7 @@ jobs:
             echo "🚫 THERE ARE TEST MODULES WITH FAILURES or BEEN CANCELLED" | tee -a $GITHUB_STEP_SUMMARY
             exit 1
   api-diff-labeling:
-    if: github.event_name == 'pull_request_target'
+    if: github.event_name == 'pull_request'
     timeout-minutes: 10
     runs-on: ubuntu-24.04
     permissions:
@@ -282,8 +280,6 @@ jobs:
       pull-requests: write
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{env.HEAD_SHA}}
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
