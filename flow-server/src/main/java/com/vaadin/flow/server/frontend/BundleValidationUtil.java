@@ -755,15 +755,32 @@ public final class BundleValidationUtil {
                     .get(FRONTEND_HASHES_STATS_KEY);
             String frontendFileContent = Files.readString(indexHtml.toPath());
             List<String> faultyContent = new ArrayList<>();
-            compareFrontendHashes(frontendHashes, faultyContent,
-                    FrontendUtils.INDEX_HTML, frontendFileContent);
+            String frontendFileContentHash = compareFrontendHashes(
+                    frontendHashes, faultyContent, FrontendUtils.INDEX_HTML,
+                    frontendFileContent);
             if (!faultyContent.isEmpty()) {
                 logChangedFiles(faultyContent,
                         "Detected changed content for frontend files:");
+                logOldIndexHtmlWarning(frontendFileContentHash);
                 return true;
             }
         }
         return false;
+    }
+
+    private static void logOldIndexHtmlWarning(String frontendFileContentHash) {
+        // Detecting and warning about old default index.html content based on
+        // hash calculated for older index.html contents (23.x,24.x).
+        if (List.of(
+                "49a6fa3fd70a6c36f32cd5389611b54611413fd6f8c430745bd3e0dd8c5a86c9",
+                "9134a82f3ebcc72d303b78b843ba17b973fb5a7f5cfcd8868566a4d234cc7782",
+                "c939e4dd2e34a02be02d8682215130119a8666ee3ed2f8f78de527464bffcfaf",
+                "fa38cdf6d106b713195d7c56537443f8fa282607e4636a8e6c1da56f675135b1",
+                "59ab33ffe4cdd1aa96ee4e03da8d99248ca89b9ea70d84cf2016787f29687472")
+                .contains(frontendFileContentHash)) {
+            getLogger().warn(
+                    "index.html matches the old Vaadin default. Update it to the latest by removing old and rebuild.");
+        }
     }
 
     private static boolean indexFileAddedOrDeleted(Options options,
@@ -879,7 +896,7 @@ public final class BundleValidationUtil {
         return false;
     }
 
-    private static void compareFrontendHashes(JsonNode frontendHashes,
+    private static String compareFrontendHashes(JsonNode frontendHashes,
             List<String> faultyContent, String frontendFilePath,
             String frontendFileContent) {
         final String contentHash = calculateHash(frontendFileContent);
@@ -890,6 +907,7 @@ public final class BundleValidationUtil {
             getLogger().info("No hash info for '{}'", frontendFilePath);
             faultyContent.add(frontendFilePath);
         }
+        return contentHash;
     }
 
     public static String calculateHash(String fileContent) {
