@@ -3,6 +3,8 @@ name: Formatter
 on:
   pull_request:
     types: [opened, synchronize, reopened]
+    # spotless available in 25.x
+    branches: [main]
 
 # Cancel previous runs if a new one is triggered
 concurrency:
