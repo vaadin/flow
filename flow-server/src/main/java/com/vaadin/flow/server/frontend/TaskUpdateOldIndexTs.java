@@ -23,9 +23,9 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**

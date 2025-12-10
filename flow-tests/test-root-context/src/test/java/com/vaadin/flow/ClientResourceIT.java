@@ -23,7 +23,7 @@ import java.net.URL;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class ClientResourceIT extends ChromeBrowserTest {

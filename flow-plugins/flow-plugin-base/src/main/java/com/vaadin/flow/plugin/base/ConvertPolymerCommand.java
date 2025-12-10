@@ -28,12 +28,12 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 /**
  * A tool-independent implementation of a {@code convert-polymer} command that

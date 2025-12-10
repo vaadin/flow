@@ -35,6 +35,7 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -45,7 +46,6 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class CleanFrontendMojoTest {
     @Rule
@@ -115,7 +115,8 @@ public class CleanFrontendMojoTest {
     @Test
     public void should_removeNodeModulesFolder()
             throws MojoFailureException, MojoExecutionException {
-        final File nodeModules = new File(projectBase, NODE_MODULES);
+        final File nodeModules = new File(projectBase,
+                FrontendUtils.NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
         mojo.execute();
@@ -127,7 +128,8 @@ public class CleanFrontendMojoTest {
     public void should_notRemoveNodeModulesFolder_hilla()
             throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
-        final File nodeModules = new File(projectBase, NODE_MODULES);
+        final File nodeModules = new File(projectBase,
+                FrontendUtils.NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
         mojo.execute();

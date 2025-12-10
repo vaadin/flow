@@ -43,6 +43,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -84,7 +86,7 @@ public final class BundleValidationUtil {
         try {
             boolean needsBuild;
             if (mode.isProduction()) {
-                if (options.isForceProductionBuild() || FrontendUtils
+                if (options.isForceProductionBuild() || FrontendBuildUtils
                         .isHillaUsed(options.getFrontendDirectory(),
                                 options.getClassFinder())) {
                     if (options.isForceProductionBuild()) {
@@ -359,8 +361,8 @@ public final class BundleValidationUtil {
 
             Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
                     options.getClassFinder(),
-                    options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options),
+                    options.isReactEnabled() && FrontendBuildUtils
+                            .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents())
                     .exclude(applicationDependencies);
 
@@ -701,7 +703,7 @@ public final class BundleValidationUtil {
         List<String> faultyContent = new ArrayList<>();
 
         for (String jarImport : jarImports) {
-            final String jarResourceString = FrontendUtils
+            final String jarResourceString = FrontendBuildUtils
                     .getJarResourceString(jarImport, options.getClassFinder());
             if (jarResourceString == null) {
                 getLogger().info("No file found for '{}'", jarImport);

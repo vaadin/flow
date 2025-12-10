@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import jakarta.servlet.ServletContext;
 
@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.LinkOption;
 import java.nio.file.Path;
@@ -47,29 +46,17 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.internal.FileIOUtils;
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.Platform;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
-import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
-import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static java.lang.String.format;
 
@@ -356,9 +343,9 @@ public class FrontendUtils {
 
     // Proxy config properties keys (for both system properties and environment
     // variables) can be either fully upper case or fully lower case
-    static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
-    static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
-    static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
+    public static final String SYSTEM_NOPROXY_PROPERTY_KEY = "NOPROXY";
+    public static final String SYSTEM_HTTPS_PROXY_PROPERTY_KEY = "HTTPS_PROXY";
+    public static final String SYSTEM_HTTP_PROXY_PROPERTY_KEY = "HTTP_PROXY";
 
     public static final String YELLOW = "\u001b[38;5;111m%s\u001b[0m";
 
@@ -735,34 +722,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Get resource from JAR package.
-     *
-     * @param jarImport
-     *            jar file to get (no resource folder should be added)
-     * @param finder
-     *            the class finder to use for locating the resource
-     * @return resource as String or {@code null} if not found
-     */
-    public static String getJarResourceString(String jarImport,
-            ClassFinder finder) {
-        URL resource = finder
-                .getResource(RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
-        if (resource == null) {
-            resource = finder.getResource(
-                    COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT + "/" + jarImport);
-        }
-
-        if (resource == null) {
-            return null;
-        }
-        try (InputStream frontendContent = resource.openStream()) {
-            return FrontendUtils.streamToString(frontendContent);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /**
      * Get the front-end resources folder. This is where the contents of JAR
      * dependencies are copied to.
      *
@@ -897,7 +856,7 @@ public class FrontendUtils {
         }
     }
 
-    protected static FrontendVersion getVersion(String tool,
+    public static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         String output;
         try {
@@ -1069,7 +1028,7 @@ public class FrontendUtils {
      * @throws IOException
      *             if parsing fails
      */
-    static String parseVersionString(String output) throws IOException {
+    public static String parseVersionString(String output) throws IOException {
         Optional<String> lastOuput = Stream.of(output.split("\n"))
                 .filter(line -> !line.matches("^[ ]*$"))
                 .reduce((first, second) -> second);
@@ -1452,26 +1411,6 @@ public class FrontendUtils {
                 && isHillaViewsUsed(frontendDirectory);
     }
 
-    /**
-     * Checks if Hilla is available and Hilla views are used in the project
-     * based on what is in routes.ts or routes.tsx file.
-     * {@link FrontendUtils#getProjectFrontendDir(AbstractConfiguration)} can be
-     * used to get the frontend directory. Given class finder is used to check
-     * the presence of Hilla in a classpath.
-     *
-     * @param frontendDirectory
-     *            the frontend directory
-     * @param classFinder
-     *            class finder to check the presence of Hilla endpoint class
-     * @return {@code true} if Hilla is available and Hilla views are used,
-     *         {@code false} otherwise
-     */
-    public static boolean isHillaUsed(File frontendDirectory,
-            ClassFinder classFinder) {
-        return EndpointRequestUtil.isHillaAvailable(classFinder)
-                && isHillaViewsUsed(frontendDirectory);
-    }
-
     private static boolean isRoutesContentUsingHillaViews(
             String routesContent) {
         routesContent = StringUtil.removeComments(routesContent);
@@ -1523,23 +1462,6 @@ public class FrontendUtils {
     }
 
     /**
-     * Is the React module available in the classpath.
-     *
-     * @param options
-     *            the build options
-     * @return true if the React module is available, false otherwise
-     */
-    public static boolean isReactModuleAvailable(Options options) {
-        try {
-            options.getClassFinder().loadClass(
-                    "com.vaadin.flow.component.react.ReactAdapterComponent");
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
-
-    /**
      * Get all available client routes in a distinct list of route paths.
      *
      * @return a list of available client routes
@@ -1547,151 +1469,6 @@ public class FrontendUtils {
     public static List<String> getClientRoutes() {
         return MenuRegistry.getClientRoutes(false,
                 VaadinService.getCurrent().getDeploymentConfiguration());
-    }
-
-    /**
-     * Checks if integration with Tailwind CSS framework is enabled.
-     *
-     * @param options
-     *            the build options
-     * @return true if Tailwind CSS integration is enabled, false otherwise
-     */
-    public static boolean isTailwindCssEnabled(Options options) {
-        return options.getFeatureFlags()
-                .isEnabled(CoreFeatureFlagProvider.TAILWIND_CSS);
-    }
-
-    /**
-     * Compares current platform version with the one last recorded as installed
-     * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform version recorder and node_modules exists, then platform is
-     * considered as staying on the same version.
-     *
-     * @param finder
-     *            project execution class finder
-     * @param npmFolder
-     *            npm root folder
-     * @param nodeModules
-     *            node_modules folder
-     * @param buildDirectory
-     *            project build directory, to find dev-bundle folder
-     * @return {@code true} if the version has changed, {@code false} if not
-     * @throws IOException
-     *             when file reading fails
-     */
-    protected static boolean isPlatformMajorVersionUpdated(ClassFinder finder,
-            File npmFolder, File nodeModules, File buildDirectory)
-            throws IOException {
-        // if no record of current version is present, version is not
-        // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent()) {
-            JsonNode vaadinJsonContents = getBundleVaadinContent(
-                    buildDirectory);
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)
-                    && nodeModules.exists()) {
-                // Check for vaadin version from installed node_modules
-                vaadinJsonContents = getVaadinJsonContents(npmFolder);
-            }
-            // If no record of previous version, version is considered same
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
-                return false;
-            }
-            FrontendVersion jsonVersion = new FrontendVersion(vaadinJsonContents
-                    .get(NodeUpdater.VAADIN_VERSION).asString());
-            FrontendVersion platformsVersion = new FrontendVersion(
-                    platformVersion.get());
-            return jsonVersion.getMajorVersion() != platformsVersion
-                    .getMajorVersion();
-        }
-        return false;
-    }
-
-    private static JsonNode getBundleVaadinContent(File buildDirectory)
-            throws IOException {
-        JsonNode vaadinJsonContents;
-        File vaadinJsonFile = new File(
-                new File(buildDirectory, Constants.DEV_BUNDLE_LOCATION),
-                TaskRunDevBundleBuild.VAADIN_JSON);
-        if (!vaadinJsonFile.exists()) {
-            return JacksonUtils.createObjectNode();
-        }
-        String fileContent = Files.readString(vaadinJsonFile.toPath(),
-                StandardCharsets.UTF_8);
-        vaadinJsonContents = JacksonUtils.readTree(fileContent);
-        return vaadinJsonContents;
-    }
-
-    /**
-     * Compares current platform version with the one last recorded as installed
-     * in node_modules/.vaadin/vaadin_version. In case there was no existing
-     * platform version recorder and node_modules exists, then platform is
-     * considered updated.
-     *
-     * @param finder
-     *            project execution class finder
-     * @param npmFolder
-     *            npm root folder
-     * @param nodeModules
-     *            node_modules folder
-     * @return {@code true} if the version has changed, {@code false} if not
-     * @throws IOException
-     *             when file reading fails
-     */
-    protected static boolean isPlatformVersionUpdated(ClassFinder finder,
-            File npmFolder, File nodeModules) throws IOException {
-        // if no record of current version is present, version is not
-        // considered updated
-        Optional<String> platformVersion = getVaadinVersion(finder);
-        if (platformVersion.isPresent() && nodeModules.exists()) {
-            JsonNode vaadinJsonContents = getVaadinJsonContents(npmFolder);
-            // If no record of previous version, version is considered updated
-            if (!vaadinJsonContents.has(NodeUpdater.VAADIN_VERSION)) {
-                return true;
-            }
-            return !Objects.equals(vaadinJsonContents
-                    .get(NodeUpdater.VAADIN_VERSION).asString(),
-                    platformVersion.get());
-        }
-        return false;
-    }
-
-    protected static Optional<String> getVaadinVersion(ClassFinder finder) {
-        URL coreVersionsResource = finder
-                .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
-
-        if (coreVersionsResource == null) {
-            return Optional.empty();
-        }
-        try (InputStream vaadinVersionsStream = coreVersionsResource
-                .openStream()) {
-            final JsonNode versionsJson = JacksonUtils
-                    .readTree(StringUtil.toUTF8String(vaadinVersionsStream));
-            if (versionsJson.has("platform")) {
-                return Optional.of(versionsJson.get("platform").asString());
-            }
-        } catch (Exception e) {
-            LoggerFactory.getLogger(Platform.class)
-                    .error("Unable to determine version information", e);
-        }
-
-        return Optional.empty();
-    }
-
-    static File getVaadinJsonFile(File npmFolder) {
-        return new File(new File(npmFolder, NODE_MODULES),
-                NodeUpdater.VAADIN_JSON);
-    }
-
-    static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
-        File vaadinJsonFile = getVaadinJsonFile(npmFolder);
-        if (vaadinJsonFile.exists()) {
-            String fileContent = Files.readString(vaadinJsonFile.toPath(),
-                    StandardCharsets.UTF_8);
-            return JacksonUtils.readTree(fileContent);
-        } else {
-            return JacksonUtils.createObjectNode();
-        }
     }
 
 }

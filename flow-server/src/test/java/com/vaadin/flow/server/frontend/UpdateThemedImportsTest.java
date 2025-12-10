@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -41,9 +42,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
