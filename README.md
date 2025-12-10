@@ -14,10 +14,8 @@ Since [Vaadin platform 23.0](https://github.com/vaadin/platform), Flow major and
 
 | Branch | [Platform Version](https://github.com/vaadin/platform/releases)         | [Flow Version](https://github.com/vaadin/flow/releases) |
 |--------|-------------------------------------------------------------------------|---------------------------------------------------------|
-| 1.0    | 10 (Commercial support)                                                 | 1.0                                                     |
-| 2.11   | 14.12 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.11                                                    |
-| 23.5   | 23.5 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.5                                                    |
-| 24.5   | 24.5 (maintained minor release, Java 17+, Jakarta EE 10, Spring-boot 3) | 24.5                                                    |
-| 24.6   | 24.6 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.6                                                    |
-| 24.7   | 24.7 (pre-release, Java 17+, Jakarta EE 10, Spring-boot 3)              | 24.7                                                    |
-| main   | 24.8 (Vaadin 24.8 preparations)                                         | 24.8                                                    |
+| 2.12   | 14.13 (LATEST commercial with Java 8+ support and Servlet 3)            | 2.12                                                    |
+| 23.6   | 23.6 (LATEST commercial with Java 11+ support and Servlet 3)            | 23.6                                                    |
+| 24.8   | 24.8 (maintained minor release, Java 17+, Jakarta EE 10, Spring-boot 3) | 24.8                                                    |
+| 24.9   | 24.9 (LATEST release, Java 17+, Jakarta EE 10, Spring-boot 3)           | 24.9                                                    |
+| main   | 25.0 (Vaadin 25.0 preparations, Java 21+, Jakarta EE 11, Spring-boot 4) | 25.0                                                    |
