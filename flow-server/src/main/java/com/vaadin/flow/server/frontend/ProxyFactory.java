@@ -24,6 +24,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 
 /**
