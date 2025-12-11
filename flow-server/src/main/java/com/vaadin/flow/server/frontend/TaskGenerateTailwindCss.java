@@ -66,9 +66,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
                 TAILWIND_CUSTOM_CSS);
         if (customCssFile.exists()) {
             String relativeCustomPath = options.getFrontendGeneratedFolder()
-                    .toPath().relativize(options.getFrontendDirectory().toPath()
-                            .resolve(TAILWIND_CUSTOM_CSS))
-                    .toString();
+                    .toPath().relativize(customCssFile.toPath()).toString();
             // Use forward slash as a separator
             relativeCustomPath = relativeCustomPath.replace(File.separator,
                     "/");
