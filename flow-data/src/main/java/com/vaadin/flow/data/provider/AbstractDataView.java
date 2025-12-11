@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -152,6 +153,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<T> getItems(int offset, int limit) {
+        return dataProviderSupplier.get().fetch(
+                new Query(offset, limit, Collections.emptyList(), null, null));
     }
 
     @Override

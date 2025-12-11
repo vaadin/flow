@@ -112,6 +112,24 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
                 .fetch(getQueryForAllItems());
     }
 
+    @SuppressWarnings("unchecked")
+    @Override
+    public Stream<T> getItems(int offset, int limit) {
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            int count = verifiedDataCommunicator.getItemCount();
+            if (offset >= count) {
+                return Stream.empty();
+            }
+            int effectiveLimit = Math.min(limit, count - offset);
+            return verifiedDataCommunicator.getDataProvider()
+                    .fetch(verifiedDataCommunicator.buildQuery(offset,
+                            effectiveLimit));
+        }
+        return verifiedDataCommunicator.getDataProvider()
+                .fetch(verifiedDataCommunicator.buildQuery(offset, limit));
+    }
+
     @Override
     protected Class<?> getSupportedDataProviderType() {
         return BackEndDataProvider.class;

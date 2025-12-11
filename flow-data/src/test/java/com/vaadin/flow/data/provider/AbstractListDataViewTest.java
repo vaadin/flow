@@ -1386,6 +1386,23 @@ public class AbstractListDataViewTest {
         }
     }
 
+    @Test
+    public void getItems_withOffsetAndLimit_subsetReturned() {
+        // items: first, middle, last
+        Stream<String> stream = dataView.getItems(1, 1);
+        Assert.assertEquals("middle", stream.findFirst().orElse(null));
+    }
+
+    @Test
+    public void getItems_withOffsetAndLimit_largerLimit_returnsAvailable() {
+        // items: first, middle, last
+        Stream<String> stream = dataView.getItems(1, 10);
+        List<String> list = stream.collect(Collectors.toList());
+        Assert.assertEquals(2, list.size());
+        Assert.assertEquals("middle", list.get(0));
+        Assert.assertEquals("last", list.get(1));
+    }
+
     private Collection<Item> getTestItems() {
         return new ArrayList<>(Arrays.asList(new Item(1L, "value1", "descr1"),
                 new Item(2L, "value2", "descr2"),
