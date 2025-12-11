@@ -33,6 +33,7 @@ import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassInfoList;
 import io.github.classgraph.ScanResult;
+import nonapi.io.github.classgraph.utils.VersionFinder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,35 +104,41 @@ public class ReflectionsClassFinder implements ClassFinder {
         // Configure ClassGraph scanner with provided URLs
         ClassGraph classGraph = new ClassGraph()
                 .overrideClasspath((Object[]) urls).addClassLoader(classLoader)
-                .enableClassInfo().enableAnnotationInfo().enableMemoryMapping()
+                .enableClassInfo().enableAnnotationInfo()
                 .ignoreClassVisibility() // Scan non-public classes
                 .filterClasspathElements(
                         path -> !path.endsWith("module-info.class"));
 
+        if (VersionFinder.JAVA_MAJOR_VERSION < 24) {
+            // Not available on Java 24+ currently, because of the deprecation
+            // of the Unsafe API
+            classGraph.enableMemoryMapping();
+        }
+
         // Scan and extract all data, then close immediately
         int classCount;
         try (ScanResult scanResult = classGraph.scan()) {
-            classCount = scanResult.getAllClasses().size();
+            ClassInfoList allClasses = scanResult.getAllClasses();
+            classCount = allClasses.size();
 
             // Extract scanned packages
-            this.scannedPackages = scanResult.getAllClasses().stream()
+            this.scannedPackages = allClasses.stream()
                     .map(classInfo -> extractPackageName(classInfo.getName()))
                     .filter(pkg -> !pkg.isEmpty()).collect(Collectors.toSet());
 
             // Pre-cache all annotated classes
-            this.annotatedClassCache = buildAnnotatedClassCache(scanResult);
+            this.annotatedClassCache = buildAnnotatedClassCache(allClasses);
 
             // Pre-cache all subtype relationships
-            this.subtypeCache = buildSubtypeCache(scanResult);
+            this.subtypeCache = buildSubtypeCache(allClasses);
+
         } // scanResult automatically closed here
 
-        if (LOGGER.isDebugEnabled()) {
-            long duration = System.currentTimeMillis() - startTime;
-            LOGGER.debug(
-                    "ClassFinder initialized: {} classes scanned, {} annotation types cached, {} subtype relationships cached, took {}ms",
-                    classCount, annotatedClassCache.size(), subtypeCache.size(),
-                    duration);
-        }
+        long duration = System.currentTimeMillis() - startTime;
+        LOGGER.info(
+                "ClassFinder initialized: {} urls, {} classes scanned, {} annotation types cached, {} subtype relationships cached, took {}ms",
+                urls.length, classCount, annotatedClassCache.size(),
+                subtypeCache.size(), duration);
     }
 
     @Override
@@ -244,11 +251,11 @@ public class ReflectionsClassFinder implements ClassFinder {
      * class name -> Set of annotated class names
      */
     private Map<String, Set<String>> buildAnnotatedClassCache(
-            ScanResult scanResult) {
+            ClassInfoList allClasses) {
         Map<String, Set<String>> cache = new HashMap<>();
 
         // Get all classes with any annotation
-        for (ClassInfo classInfo : scanResult.getAllClasses()) {
+        for (ClassInfo classInfo : allClasses) {
             for (AnnotationInfo annotationInfo : classInfo
                     .getAnnotationInfo()) {
                 String annotationName = annotationInfo.getName();
@@ -264,11 +271,12 @@ public class ReflectionsClassFinder implements ClassFinder {
      * Builds cache of all subtype relationships. Maps parent class/interface
      * name -> Set of subclass/implementor names
      */
-    private Map<String, Set<String>> buildSubtypeCache(ScanResult scanResult) {
+    private Map<String, Set<String>> buildSubtypeCache(
+            ClassInfoList allClasses) {
         Map<String, Set<String>> cache = new HashMap<>();
 
         // For each scanned class, register it under all its supertypes
-        for (ClassInfo classInfo : scanResult.getAllClasses()) {
+        for (ClassInfo classInfo : allClasses) {
             String className = classInfo.getName();
 
             // Register under all superclasses
