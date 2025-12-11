@@ -21,23 +21,19 @@ import java.io.InputStream;
 
 import com.vaadin.flow.internal.StringUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
 
 /**
- * Generate <code>tailwind.css</code> if it is missing in the generated frontend
- * folder.
+ * Generate <code>tailwind.js</code> wrapper if it is missing in the generated
+ * frontend folder.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 25.0
  */
-public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
+public class TaskGenerateTailwindJs extends AbstractTaskClientGenerator {
 
-    private static final String RELATIVE_SOURCE_PATH_MARKER = "#relativeSourcePath#";
-
-    private String relativeSourcePath;
-
-    private final File tailwindCss;
+    private final File tailwindJs;
 
     /**
      * Create a task to generate <code>tailwind.css</code> integration file.
@@ -45,30 +41,23 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
      * @param options
      *            the task options
      */
-    TaskGenerateTailwindCss(Options options) {
-        tailwindCss = new File(options.getFrontendGeneratedFolder(),
-                TAILWIND_CSS);
-        relativeSourcePath = options.getFrontendGeneratedFolder().toPath()
-                .relativize(options.getNpmFolder().toPath().resolve("src"))
-                .toString();
-        // Use forward slash as a separator
-        relativeSourcePath = relativeSourcePath.replace(File.separator, "/");
+    TaskGenerateTailwindJs(Options options) {
+        tailwindJs = new File(options.getFrontendGeneratedFolder(),
+                TAILWIND_JS);
     }
 
     @Override
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
-                .getResourceAsStream(TAILWIND_CSS)) {
+                .getResourceAsStream(TAILWIND_JS)) {
             var template = StringUtil.toUTF8String(indexStream);
-            template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
-                    relativeSourcePath);
             return template;
         }
     }
 
     @Override
     protected File getGeneratedFile() {
-        return tailwindCss;
+        return tailwindJs;
     }
 
     @Override
