@@ -21,14 +21,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
@@ -84,7 +84,7 @@ public class TaskPrepareProdBundle implements FallibleCommand {
             }
             for (File theme : localThemes) {
                 try {
-                    FileUtils.copyDirectory(theme,
+                    FileIOUtils.copyDirectory(theme,
                             new File(target, theme.getName()));
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -129,11 +129,11 @@ public class TaskPrepareProdBundle implements FallibleCommand {
         try {
             File statsJsonFile = new File(options.getResourceOutputDirectory(),
                     "config/stats.json");
-            ObjectNode statsJsonContent = JacksonUtils.readTree(FileUtils
-                    .readFileToString(statsJsonFile, StandardCharsets.UTF_8));
+            ObjectNode statsJsonContent = JacksonUtils
+                    .readTree(Files.readString(statsJsonFile.toPath(),
+                            StandardCharsets.UTF_8));
             statsJsonContent.put("pre-compiled", true);
-            FileUtils.write(statsJsonFile, statsJsonContent + "\n",
-                    StandardCharsets.UTF_8.name());
+            Files.writeString(statsJsonFile.toPath(), statsJsonContent + "\n");
         } catch (IOException e) {
             throw new ExecutionFailedException(
                     "Couldn't access stats.json file", e);

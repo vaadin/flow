@@ -1,8 +1,10 @@
 name: Formatter
 
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, synchronize, reopened]
+    # spotless available in 25.x
+    branches: [main]
 
 # Cancel previous runs if a new one is triggered
 concurrency:
@@ -18,11 +20,7 @@ permissions:
   issues: write
 
 jobs:
-  check-permissions:
-    uses: ./.github/workflows/check-permissions.yml
-
   formatter:
-    needs: check-permissions
     name: Verify Java code format
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -31,7 +29,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
 
       - name: Set up JDK
@@ -45,7 +42,7 @@ jobs:
         id: formatter
         run: |
           echo "Running formatter..."
-          mvn -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
+          mvn -ntp -B -q spotless:apply -P benchmark 2>&1 | grep -v null || true
 
           # Check for modified files
           files=$(git status --porcelain | awk '{print $2}')
@@ -71,7 +68,6 @@ jobs:
           retention-days: 30
 
       - name: Find existing comment
-        if: steps.formatter.outputs.modified != '0'
         uses: peter-evans/find-comment@v3
         id: find-comment
         with:

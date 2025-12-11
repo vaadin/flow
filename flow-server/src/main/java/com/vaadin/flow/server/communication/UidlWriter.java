@@ -20,7 +20,6 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumMap;
@@ -32,10 +31,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -51,6 +48,7 @@ import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.change.NodeAttachChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ComponentMapping;
@@ -222,15 +220,8 @@ public class UidlWriter implements Serializable {
 
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> {
-                        try {
-                            response.set(loadMode.name(),
-                                    JacksonUtils.getMapper()
-                                            .readTree(dependencies.toString()));
-                        } catch (JacksonException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    .forEach((loadMode, dependencies) -> response
+                            .set(loadMode.name(), dependencies));
         }
         dependencyList.clearPendingSendToClient();
     }
@@ -262,8 +253,7 @@ public class UidlWriter implements Serializable {
             ResolveContext context) {
         try (InputStream inlineResourceStream = getInlineResourceStream(url,
                 context)) {
-            return IOUtils.toString(inlineResourceStream,
-                    StandardCharsets.UTF_8);
+            return StringUtil.toUTF8String(inlineResourceStream);
         } catch (IOException e) {
             throw new IllegalStateException(String
                     .format(COULD_NOT_READ_URL_CONTENTS_ERROR_MESSAGE, url), e);

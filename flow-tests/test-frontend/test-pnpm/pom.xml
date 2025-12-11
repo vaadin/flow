@@ -78,7 +78,6 @@
         <artifactId>flow-maven-plugin</artifactId>
         <configuration>
           <requireHomeNodeExec>true</requireHomeNodeExec>
-          <nodeAutoUpdate>true</nodeAutoUpdate>
           <pnpmEnable>true</pnpmEnable>
         </configuration>
       </plugin>

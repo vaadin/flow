@@ -43,6 +43,8 @@ public class FrontendScannerConfig {
 
     static final Predicate<Artifact> DEFAULT_FILTER = withDefaults()::shouldScan;
 
+    static final Predicate<Artifact> DEV_EXCLUSION_FILTER = devExclusions()::shouldScan;
+
     private final boolean silent;
 
     private boolean enabled = true;
@@ -204,6 +206,18 @@ public class FrontendScannerConfig {
         FrontendScannerConfig out = new FrontendScannerConfig(true);
         out.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("com.vaadin", "*"));
+        setupDefaultExclusions(out);
+        return out;
+    }
+
+    private static FrontendScannerConfig devExclusions() {
+        FrontendScannerConfig out = new FrontendScannerConfig(true);
+        out.addInclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
+        setupDefaultExclusions(out);
+        return out;
+    }
+
+    private static void setupDefaultExclusions(FrontendScannerConfig out) {
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin.external.gw", "*"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
@@ -212,7 +226,22 @@ public class FrontendScannerConfig {
                 "open"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "license-checker"));
-        return out;
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "flow-archive-extractor"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "ui-tests"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external", "gentyref"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external.atmosphere", "atmosphere-runtime"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev-server"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev-bundle"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "copilot"));
     }
 
     @Override

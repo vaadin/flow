@@ -22,6 +22,8 @@ import java.util.Set;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.page.ColorScheme;
+
 public class HasStyleTest {
 
     @Tag("div")
@@ -221,6 +223,88 @@ public class HasStyleTest {
     public void removeClassNames_removeNullClassName_throws() {
         HasStyleComponent component = new HasStyleComponent();
         component.addClassNames(null, null);
+    }
+
+    @Test
+    public void setColorScheme_setsInlineStyleProperty() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        component.getStyle().setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals("dark",
+                component.getElement().getStyle().get("color-scheme"));
+
+        component.getStyle().setColorScheme(ColorScheme.Value.LIGHT);
+        Assert.assertEquals("light",
+                component.getElement().getStyle().get("color-scheme"));
+
+        component.getStyle().setColorScheme(ColorScheme.Value.LIGHT_DARK);
+        Assert.assertEquals("light dark",
+                component.getElement().getStyle().get("color-scheme"));
+    }
+
+    @Test
+    public void getColorScheme_retrievesSetValue() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        component.getStyle().setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals(ColorScheme.Value.DARK,
+                component.getStyle().getColorScheme());
+
+        component.getStyle().setColorScheme(ColorScheme.Value.LIGHT);
+        Assert.assertEquals(ColorScheme.Value.LIGHT,
+                component.getStyle().getColorScheme());
+    }
+
+    @Test
+    public void setColorScheme_nullClearsProperty() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        component.getStyle().setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals("dark",
+                component.getElement().getStyle().get("color-scheme"));
+
+        component.getStyle().setColorScheme(null);
+        Assert.assertNull(
+                component.getElement().getStyle().get("color-scheme"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL,
+                component.getStyle().getColorScheme());
+    }
+
+    @Test
+    public void setColorScheme_normalClearsProperty() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        component.getStyle().setColorScheme(ColorScheme.Value.DARK);
+        Assert.assertEquals("dark",
+                component.getElement().getStyle().get("color-scheme"));
+
+        component.getStyle().setColorScheme(ColorScheme.Value.NORMAL);
+        Assert.assertNull(
+                component.getElement().getStyle().get("color-scheme"));
+        Assert.assertEquals(ColorScheme.Value.NORMAL,
+                component.getStyle().getColorScheme());
+    }
+
+    @Test
+    public void colorScheme_roundtripWorks() {
+        HasStyleComponent component = new HasStyleComponent();
+
+        for (ColorScheme.Value value : ColorScheme.Value.values()) {
+            if (value == ColorScheme.Value.NORMAL
+                    || value == ColorScheme.Value.SYSTEM) {
+                continue; // NORMAL clears the property, SYSTEM sets LIGHT_DARK
+            }
+            component.getStyle().setColorScheme(value);
+            Assert.assertEquals("Roundtrip failed for " + value, value,
+                    component.getStyle().getColorScheme());
+        }
+    }
+
+    @Test
+    public void getColorScheme_notSet_returnsNormal() {
+        HasStyleComponent component = new HasStyleComponent();
+        Assert.assertEquals(ColorScheme.Value.NORMAL,
+                component.getStyle().getColorScheme());
     }
 
     private void assertClasses(HasStyleComponent c, String... expectedClasses) {

@@ -13,9 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server;
-
-import com.vaadin.flow.server.frontend.FallibleCommand;
+package com.vaadin.flow.server.frontend;
 
 /**
  * Thrown by {@link FallibleCommand} if it's unable to complete its execution.

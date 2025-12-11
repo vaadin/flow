@@ -58,8 +58,8 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
@@ -69,6 +69,7 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.utils.FlowFileUtils;
 
+import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
@@ -134,14 +135,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
-    /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
-     */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
@@ -197,6 +190,14 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
@@ -413,11 +414,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     }
 
     @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
-    }
-
-    @Override
     public String nodeVersion() {
         return nodeVersion;
     }
@@ -538,6 +534,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     private static URLClassLoader createIsolatedClassLoader(

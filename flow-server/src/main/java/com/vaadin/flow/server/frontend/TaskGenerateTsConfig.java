@@ -20,14 +20,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.internal.StringUtil;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -98,7 +98,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         }
         try (InputStream tsConfStream = getClass()
                 .getResourceAsStream(fileName)) {
-            String config = IOUtils.toString(tsConfStream, UTF_8);
+            String config = StringUtil.toUTF8String(tsConfStream);
 
             config = config.replaceAll("%FRONTEND%",
                     options.getNpmFolder().toPath()
@@ -122,7 +122,7 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
         try {
             File projectTsconfig = new File(options.getNpmFolder(),
                     TSCONFIG_JSON);
-            String current = FileUtils.readFileToString(projectTsconfig,
+            String current = Files.readString(projectTsconfig.toPath(),
                     StandardCharsets.UTF_8);
             String currentEsVersion = getEsTargetVersion(current);
             if (isOlder(currentEsVersion, esVersion)) {
@@ -179,8 +179,8 @@ public class TaskGenerateTsConfig extends AbstractTaskClientGenerator {
             // Project's TS config
             File projectTsConfigFile = new File(
                     options.getNpmFolder().getPath(), TSCONFIG_JSON);
-            String projectTsConfigAsString = FileUtils
-                    .readFileToString(projectTsConfigFile, UTF_8);
+            String projectTsConfigAsString = Files
+                    .readString(projectTsConfigFile.toPath(), UTF_8);
 
             ObjectNode projectTsConfigContent;
             try {

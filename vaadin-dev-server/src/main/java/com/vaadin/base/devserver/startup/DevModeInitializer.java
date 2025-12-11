@@ -48,7 +48,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,11 +63,11 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -535,12 +534,13 @@ public class DevModeInitializer implements Serializable {
 
                 String relativePath = (String) getPathNameRelativeToMethod
                         .invoke(child, jarVirtualFile);
-                InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child);
-                ZipEntry zipEntry = new ZipEntry(relativePath);
-                zipOutputStream.putNextEntry(zipEntry);
-                IOUtils.copy(inputStream, zipOutputStream);
-                zipOutputStream.closeEntry();
+                try (InputStream inputStream = (InputStream) openStreamMethod
+                        .invoke(child)) {
+                    ZipEntry zipEntry = new ZipEntry(relativePath);
+                    zipOutputStream.putNextEntry(zipEntry);
+                    inputStream.transferTo(zipOutputStream);
+                    zipOutputStream.closeEntry();
+                }
             }
         }
     }

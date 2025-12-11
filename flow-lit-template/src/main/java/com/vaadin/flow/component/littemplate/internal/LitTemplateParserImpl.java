@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FilenameUtils;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,6 +38,7 @@ import com.vaadin.flow.component.littemplate.LitTemplateParser;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
@@ -158,7 +158,7 @@ public class LitTemplateParserImpl implements LitTemplateParser {
      * @return true if dependency file matches the tag name.
      */
     private boolean dependencyHasTagName(Dependency dependency, String tag) {
-        String url = FilenameUtils.removeExtension(dependency.getUrl())
+        String url = FileIOUtils.removeExtension(dependency.getUrl())
                 .toLowerCase(Locale.ENGLISH);
         return url.endsWith("/" + tag);
     }

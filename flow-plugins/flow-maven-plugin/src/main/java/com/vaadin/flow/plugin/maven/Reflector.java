@@ -29,7 +29,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -302,26 +302,26 @@ public final class Reflector {
                     scannerConfig);
         }
         Predicate<Artifact> shouldScan = scannerConfig == null
-                ? artifact -> true
+                ? FrontendScannerConfig.DEV_EXCLUSION_FILTER
                 : FrontendScannerConfig.DEFAULT_FILTER
                         .or(scannerConfig::shouldScan);
 
         record FilterableArtifact(Artifact artifact, boolean scan) {
         }
 
-        Map<String, FilterableArtifact> projectDependencies = new HashMap<>(
-                project.getArtifacts().stream()
-                        // Exclude all maven artifacts to prevent class loading
-                        // clash
-                        // with maven.api class realm
-                        .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
-                                .contains(artifact.getGroupId()))
-                        .filter(Reflector::isProductionDependency)
-                        .map(artifact -> new FilterableArtifact(artifact,
-                                shouldScan.test(artifact)))
-                        .collect(Collectors.toMap(
-                                item -> keyMapper.apply(item.artifact),
-                                Function.identity())));
+        Map<String, FilterableArtifact> projectDependencies = project
+                .getArtifacts().stream()
+                // Exclude all maven artifacts to prevent class loading
+                // clash
+                // with maven.api class realm
+                .filter(artifact -> !DEPENDENCIES_GROUP_EXCLUSIONS
+                        .contains(artifact.getGroupId()))
+                .filter(Reflector::isProductionDependency)
+                .map(artifact -> new FilterableArtifact(artifact,
+                        shouldScan.test(artifact)))
+                .collect(Collectors.toMap(
+                        item -> keyMapper.apply(item.artifact),
+                        Function.identity(), (a, b) -> a, LinkedHashMap::new));
 
         if (mojoExecution != null) {
 

@@ -63,6 +63,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
     public abstract val frontendOutputDirectory: Property<File>
 
     /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     * Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/resources/`.
+     */
+    public abstract val resourcesOutputDirectory: Property<File>
+
+    /**
      * The folder where `package.json` file is located. Default is project root
      * dir.
      */
@@ -188,11 +196,6 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Example: `"https://nodejs.org/dist/"`.
      */
     public abstract val nodeDownloadRoot: Property<String>
-
-    /**
-     * Allow automatic update of node installed to alternate location. Default `false`
-     */
-    public abstract val nodeAutoUpdate: Property<Boolean>
 
     /**
      * Defines the output directory for generated non-served resources, such as
@@ -399,6 +402,17 @@ public class PluginEffectiveConfiguration(
                 )
         )
 
+
+    public val resourcesOutputDirectory: Provider<File> =
+        extension.resourcesOutputDirectory.convention(
+            sourceSetName.map {
+                File(
+                    project.getBuildResourcesDir(it),
+                    Constants.META_INF + "resources/"
+                )
+            }
+        )
+
     public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
 
@@ -501,9 +515,6 @@ public class PluginEffectiveConfiguration(
 
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
         .convention(Platform.guess().nodeDownloadRoot)
-
-    public val nodeAutoUpdate: Property<Boolean> = extension.nodeAutoUpdate
-        .convention(false)
 
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory
@@ -650,6 +661,7 @@ public class PluginEffectiveConfiguration(
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
             "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
+            "resourcesOutputDirectory=${resourcesOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +
@@ -671,7 +683,6 @@ public class PluginEffectiveConfiguration(
             "generatedTsFolder=${generatedTsFolder.get()}, " +
             "nodeVersion=${nodeVersion.get()}, " +
             "nodeDownloadRoot=${nodeDownloadRoot.get()}, " +
-            "nodeAutoUpdate=${nodeAutoUpdate.get()}, " +
             "resourceOutputDirectory=${resourceOutputDirectory.get()}, " +
             "projectBuildDir=${projectBuildDir.get()}, " +
             "postinstallPackages=${postinstallPackages.get()}, " +

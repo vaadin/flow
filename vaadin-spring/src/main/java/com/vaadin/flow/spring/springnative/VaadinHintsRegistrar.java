@@ -37,6 +37,7 @@ import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.internal.DefaultErrorHandler;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
+import com.vaadin.flow.shared.ui.Dependency;
 
 /**
  * Registers runtime hints for Spring 3 native support.
@@ -134,7 +135,7 @@ public class VaadinHintsRegistrar implements RuntimeHintsRegistrar {
                 AvailableViewInfo.class.getName(),
                 AvailableViewInfo.DetailDeserializer.class.getName(),
                 AvailableViewInfo.DetailSerializer.class.getName(),
-                RouteParamType.class.getName() };
+                RouteParamType.class.getName(), Dependency.class.getName() };
     }
 
 }

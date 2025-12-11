@@ -19,12 +19,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
 
-import org.apache.commons.io.FileUtils;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.UsageStatistics;
@@ -262,8 +261,7 @@ public class AbstractConfigurationFactory implements Serializable {
             if (location != null) {
                 File tokenFile = new File(location);
                 if (tokenFile != null && tokenFile.canRead()) {
-                    json = FileUtils.readFileToString(tokenFile,
-                            StandardCharsets.UTF_8);
+                    json = Files.readString(tokenFile.toPath());
                 }
             }
             return json;

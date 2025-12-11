@@ -17,19 +17,18 @@ package com.vaadin.flow;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 @Route("com.vaadin.flow.StateView")
@@ -54,8 +53,8 @@ public class StateView extends Div {
         }
         String packageJson = null;
         try {
-            packageJson = FileUtils.readFileToString(
-                    new File(baseDir, "package.json"), StandardCharsets.UTF_8);
+            packageJson = Files
+                    .readString(baseDir.toPath().resolve("package.json"));
             log.info("Read package.json from {}", baseDir.getPath());
         } catch (IOException e) {
             log.error("Could not read package.json", e);

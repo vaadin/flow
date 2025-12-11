@@ -20,6 +20,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -30,9 +32,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.IOUtils;
+import com.vaadin.flow.internal.FileIOUtils;
 
 /**
  * Shared code for managing contents of jar files.
@@ -167,7 +167,7 @@ public class JarContentsManager {
         }
 
         try (InputStream entryStream = jarFile.getInputStream(entry)) {
-            return IOUtils.toByteArray(entryStream);
+            return entryStream.readAllBytes();
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to get entry '%s' contents from jar file '%s'",
@@ -299,14 +299,13 @@ public class JarContentsManager {
 
     private boolean isFileIncluded(ZipEntry file, String... pathExclusions) {
         String filePath = file.getName();
-        return Stream.of(pathExclusions)
-                .noneMatch(exclusionRule -> FilenameUtils
-                        .wildcardMatch(filePath, exclusionRule));
+        return Stream.of(pathExclusions).noneMatch(exclusionRule -> FileIOUtils
+                .wildcardMatch(filePath, exclusionRule));
     }
 
     private boolean includeFile(ZipEntry file, String... pathInclusions) {
         String filePath = file.getName();
-        return Stream.of(pathInclusions).anyMatch(inclusionRule -> FilenameUtils
+        return Stream.of(pathInclusions).anyMatch(inclusionRule -> FileIOUtils
                 .wildcardMatch(filePath, inclusionRule));
     }
 
@@ -322,8 +321,9 @@ public class JarContentsManager {
             if (!target.exists()
                     || !hasSameContent(jarFile.getInputStream(jarEntry),
                             target)) {
-                FileUtils.copyInputStreamToFile(
-                        jarFile.getInputStream(jarEntry), target);
+                Files.createDirectories(target.toPath().getParent());
+                Files.copy(jarFile.getInputStream(jarEntry), target.toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             }
             return relativePath;
         } catch (IOException e) {
@@ -337,9 +337,9 @@ public class JarContentsManager {
             throws IOException {
         try (InputStream existingContentStream = new FileInputStream(
                 existingContent)) {
-            return IOUtils.contentEquals(jarContent, existingContentStream);
+            return FileIOUtils.contentEquals(jarContent, existingContentStream);
         } finally {
-            IOUtils.closeQuietly(jarContent);
+            FileIOUtils.closeQuietly(jarContent);
         }
     }
 

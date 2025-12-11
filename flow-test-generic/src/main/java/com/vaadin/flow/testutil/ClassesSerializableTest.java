@@ -60,6 +60,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     @SuppressWarnings("WeakerAccess")
     protected Stream<String> getExcludedPatterns() {
         return Stream.of(
+                "com\\.vaadin\\.frontendtools\\.installer\\.DefaultArchiveExtractor",
+                "com\\.vaadin\\.frontendtools\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
                 "com\\.vaadin\\.flow\\.internal\\.BeanUtil\\$LazyValidationAvailability",
                 ".*\\.fileupload2\\..*", ".*\\.slf4j\\..*",
@@ -89,6 +91,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.base\\.devserver\\.NamedDaemonThreadFactory",
                 "com\\.vaadin\\.base\\.devserver\\.IdeIntegration",
                 "com\\.vaadin\\.base\\.devserver\\.OpenInCurrentIde.*",
+                "com\\.vaadin\\.base\\.devserver\\.PublicResourcesLiveUpdater",
+                "com\\.vaadin\\.base\\.devserver\\.PublicStyleSheetBundler",
                 "com\\.vaadin\\.base\\.devserver\\.RestartMonitor",
                 "com\\.vaadin\\.base\\.devserver\\.ThemeLiveUpdater",
                 "com\\.vaadin\\.base\\.devserver\\.editor..*",
@@ -113,7 +117,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.component\\.PropertyDescriptors(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.Shortcuts",
                 "com\\.vaadin\\.flow\\.component\\.dnd\\.osgi\\.DndConnectorResource",
-                "com\\.vaadin\\.flow\\.component\\.dependency\\.StyleSheetHotswapper",
+                "com\\.vaadin\\.flow\\.component\\.internal\\.StyleSheetHotswapper(\\$.*)?",
                 "com\\.vaadin\\.flow\\.component\\.internal\\.DeadlockDetectingCompletableFuture",
                 "com\\.vaadin\\.flow\\.function\\.VaadinApplicationInitializationBootstrap",
                 "com\\.vaadin\\.flow\\.hotswap\\.Hotswap.*Event(\\$.*)?",
@@ -264,8 +268,6 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 "com\\.vaadin\\.flow\\.linker\\.ClientEngineLinker\\$Script",
 
                 // Node downloader classes
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultArchiveExtractor",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.DefaultFileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.FileDownloader(\\$.*)?",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.installer\\.NodeInstaller",

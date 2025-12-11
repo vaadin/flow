@@ -29,7 +29,7 @@
 
       <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
         <version>${spring.boot.version}</version>
         <exclusions>
           <!-- Exclude logback as Selenium via netty otherwise logs excessively -->
@@ -175,7 +175,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-jar-plugin</artifactId>
-          <version>3.4.2</version>
+          <version>3.5.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -316,6 +316,7 @@
         <module>test-spring-security-flow-standalone-routepathaccesschecker</module>
         <module>test-spring-security-flow-routepathaccesschecker</module>
         <module>test-spring-security-flow-themes-contextpath</module>
+        <module>test-spring-security-flow-themes-urlmapping</module>
 
         <module>test-spring-boot-only-prepare</module>
         <module>test-spring-white-list</module>

@@ -17,13 +17,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.Arrays;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
@@ -59,12 +57,12 @@ public class TaskUpdateOldIndexTs implements FallibleCommand {
     private void modifyImportsIfNeeded(File indexFile) {
         try {
 
-            String content = FileUtils.readFileToString(indexFile, UTF_8);
+            String content = Files.readString(indexFile.toPath(), UTF_8);
             String updated = content.replaceFirst(
                     "(['\"])../target/frontend/generated-flow-imports",
                     "$1Frontend/generated/flow/generated-flow-imports.js");
             if (!updated.equals(content)) {
-                FileUtils.write(indexFile, updated, UTF_8);
+                Files.writeString(indexFile.toPath(), updated);
             }
         } catch (IOException e) {
             getLogger().error("Unable to read or update " + indexFile, e);

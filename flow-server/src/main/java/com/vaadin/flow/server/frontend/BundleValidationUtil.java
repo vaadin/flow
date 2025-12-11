@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -32,7 +33,6 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -42,6 +42,7 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.WebComponentExporterFactory;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -324,8 +325,7 @@ public final class BundleValidationUtil {
         if (packageJsonFile.exists()) {
             try {
                 final ObjectNode packageJson = JacksonUtils
-                        .readTree(FileUtils.readFileToString(packageJsonFile,
-                                StandardCharsets.UTF_8));
+                        .readTree(Files.readString(packageJsonFile.toPath()));
                 cleanOldPlatformDependencies(packageJson);
                 return getDefaultPackageJson(options, frontendDependencies,
                         packageJson);
@@ -718,8 +718,9 @@ public final class BundleValidationUtil {
                 getLogger().info("No file found for '{}'", projectImport);
                 return false;
             }
-            String frontendFileContent = FileUtils
-                    .readFileToString(frontendFile, StandardCharsets.UTF_8);
+
+            String frontendFileContent = Files
+                    .readString(frontendFile.toPath());
             compareFrontendHashes(frontendHashes, faultyContent, projectImport,
                     frontendFileContent);
         }
@@ -752,18 +753,34 @@ public final class BundleValidationUtil {
         if (indexHtml.exists()) {
             final JsonNode frontendHashes = statsJson
                     .get(FRONTEND_HASHES_STATS_KEY);
-            String frontendFileContent = FileUtils.readFileToString(indexHtml,
-                    StandardCharsets.UTF_8);
+            String frontendFileContent = Files.readString(indexHtml.toPath());
             List<String> faultyContent = new ArrayList<>();
-            compareFrontendHashes(frontendHashes, faultyContent,
-                    FrontendUtils.INDEX_HTML, frontendFileContent);
+            String frontendFileContentHash = compareFrontendHashes(
+                    frontendHashes, faultyContent, FrontendUtils.INDEX_HTML,
+                    frontendFileContent);
             if (!faultyContent.isEmpty()) {
                 logChangedFiles(faultyContent,
                         "Detected changed content for frontend files:");
+                logOldIndexHtmlWarning(frontendFileContentHash);
                 return true;
             }
         }
         return false;
+    }
+
+    private static void logOldIndexHtmlWarning(String frontendFileContentHash) {
+        // Detecting and warning about old default index.html content based on
+        // hash calculated for older index.html contents (23.x,24.x).
+        if (List.of(
+                "49a6fa3fd70a6c36f32cd5389611b54611413fd6f8c430745bd3e0dd8c5a86c9",
+                "9134a82f3ebcc72d303b78b843ba17b973fb5a7f5cfcd8868566a4d234cc7782",
+                "c939e4dd2e34a02be02d8682215130119a8666ee3ed2f8f78de527464bffcfaf",
+                "fa38cdf6d106b713195d7c56537443f8fa282607e4636a8e6c1da56f675135b1",
+                "59ab33ffe4cdd1aa96ee4e03da8d99248ca89b9ea70d84cf2016787f29687472")
+                .contains(frontendFileContentHash)) {
+            getLogger().warn(
+                    "index.html matches the old Vaadin default. Update it to the latest by removing old and rebuild.");
+        }
     }
 
     private static boolean indexFileAddedOrDeleted(Options options,
@@ -865,8 +882,7 @@ public final class BundleValidationUtil {
                 File frontendFile = new File(frontendDirectory, filePath);
                 if (frontendFile.exists()) {
                     final String hash = calculateHash(
-                            FileUtils.readFileToString(frontendFile,
-                                    StandardCharsets.UTF_8));
+                            Files.readString(frontendFile.toPath()));
                     if (!expectedHash.equals(hash)) {
                         changed.add(filePath);
                     }
@@ -880,7 +896,7 @@ public final class BundleValidationUtil {
         return false;
     }
 
-    private static void compareFrontendHashes(JsonNode frontendHashes,
+    private static String compareFrontendHashes(JsonNode frontendHashes,
             List<String> faultyContent, String frontendFilePath,
             String frontendFileContent) {
         final String contentHash = calculateHash(frontendFileContent);
@@ -891,6 +907,7 @@ public final class BundleValidationUtil {
             getLogger().info("No hash info for '{}'", frontendFilePath);
             faultyContent.add(frontendFilePath);
         }
+        return contentHash;
     }
 
     public static String calculateHash(String fileContent) {
@@ -973,15 +990,14 @@ public final class BundleValidationUtil {
             return true;
         }
         try {
-            String content = FileUtils.readFileToString(needsBuildFile,
-                    StandardCharsets.UTF_8.name());
+            String content = Files.readString(needsBuildFile.toPath());
             return Boolean.parseBoolean(content);
         } catch (IOException e) {
             getLogger().error(
                     "Failed to read re-bundle checker result from file", e);
             return true;
         } finally {
-            FileUtils.deleteQuietly(needsBuildFile);
+            FileIOUtils.deleteFileQuietly(needsBuildFile);
         }
     }
 
@@ -991,10 +1007,10 @@ public final class BundleValidationUtil {
                 Constants.NEEDS_BUNDLE_BUILD_FILE);
         File targetDir = needsBuildFile.getParentFile();
         if (!targetDir.exists()) {
-            FileUtils.forceMkdir(targetDir);
+            targetDir.mkdirs();
         }
-        FileUtils.write(needsBuildFile, Boolean.toString(needsBundle),
-                StandardCharsets.UTF_8.name());
+        Files.writeString(needsBuildFile.toPath(),
+                Boolean.toString(needsBundle));
     }
 
     private static Logger getLogger() {

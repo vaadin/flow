@@ -120,8 +120,6 @@ public class Options implements Serializable {
     private URI nodeDownloadRoot = URI
             .create(Platform.guess().getNodeDownloadRoot());
 
-    private boolean nodeAutoUpdate = false;
-
     private Lookup lookup;
 
     /**
@@ -134,6 +132,11 @@ public class Options implements Serializable {
      * The resource folder for java resources.
      */
     private File javaResourceFolder;
+
+    /**
+     * META-INF/resources directory.
+     */
+    private File resourcesDirectory;
 
     /**
      * Additional npm packages to run postinstall for.
@@ -621,19 +624,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets whether it is fine to automatically update the alternate node
-     * installation if installed version is older than the current default.
-     *
-     * @param update
-     *            true to update alternate node when used
-     * @return the builder
-     */
-    public Options setNodeAutoUpdate(boolean update) {
-        this.nodeAutoUpdate = update;
-        return this;
-    }
-
-    /**
      * Set the java resources folder to be checked for feature file.
      * <p>
      * Needed for plugin execution.
@@ -850,10 +840,6 @@ public class Options implements Serializable {
 
     public URI getNodeDownloadRoot() {
         return nodeDownloadRoot;
-    }
-
-    public boolean isNodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     /**
@@ -1109,5 +1095,26 @@ public class Options implements Serializable {
             return true;
         }
         return copyAssets;
+    }
+
+    /**
+     * Set where the META-INF/resources files are copied by the build.
+     *
+     * @param resourcesDirectory
+     *            META-INF resources directory
+     * @return this builder
+     */
+    public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
+        this.resourcesDirectory = resourcesDirectory;
+        return this;
+    }
+
+    /**
+     * Get the resources directory if defined.
+     *
+     * @return META-INF resources directory
+     */
+    public File getMetaInfResourcesDirectory() {
+        return resourcesDirectory;
     }
 }

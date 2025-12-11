@@ -32,7 +32,7 @@ import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
@@ -173,7 +173,6 @@ public class GenerateNpmBOMMojo extends FlowModeAbstractMojo {
                         .withFrontendGeneratedFolder(generatedTsFolder())
                         .withNodeVersion(nodeVersion())
                         .withNodeDownloadRoot(nodeDownloadRoot())
-                        .setNodeAutoUpdate(nodeAutoUpdate())
                         .withHomeNodeExecRequired(requireHomeNodeExec())
                         .setJavaResourceFolder(javaResourceFolder())
                         .withProductionMode(productionMode)

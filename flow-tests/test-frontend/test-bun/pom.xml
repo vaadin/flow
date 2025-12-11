@@ -45,6 +45,7 @@
                         <fileset>
                             <directory>${project.basedir}</directory>
                             <includes>
+                                <include>bun.lock*</include>
                                 <include>package.json</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
@@ -74,7 +75,6 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->
