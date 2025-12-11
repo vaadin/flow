@@ -157,7 +157,13 @@ public abstract class AbstractDataView<T> implements DataView<T> {
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
-    public Stream<T> getItems(int offset, int limit) {
+    public Stream<T> getItems(final int offset, final int limit) {
+        if (offset < 0) {
+            throw new IndexOutOfBoundsException("Offset must be non-negative");
+        }
+        if (limit < 0) {
+            throw new IndexOutOfBoundsException("Limit must be non-negative");
+        }
         return dataProviderSupplier.get().fetch(
                 new Query(offset, limit, Collections.emptyList(), null, null));
     }

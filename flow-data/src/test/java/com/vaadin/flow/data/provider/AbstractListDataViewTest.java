@@ -1412,4 +1412,20 @@ public class AbstractListDataViewTest {
     @Tag("test-component")
     private static class TestComponent extends Component {
     }
+
+    @Test
+    public void getItems_withNegativeOffset_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Offset must be non-negative");
+
+        dataView.getItems(-1, 10);
+    }
+
+    @Test
+    public void getItems_withNegativeLimit_throwsException() {
+        exceptionRule.expect(IndexOutOfBoundsException.class);
+        exceptionRule.expectMessage("Limit must be non-negative");
+
+        dataView.getItems(0, -1);
+    }
 }
