@@ -6,12 +6,6 @@ Vaadin Flow
 
 **For instructions about developing web applications with Vaadin Flow**, please refer to [the starter packs for Vaadin 10 with Flow](https://vaadin.com/start) or [the documentation](https://vaadin.com/docs/v10/flow/Overview.html).
 
-To contribute, first refer to [Contribution Guide](/CONTRIBUTING.md)
-for general instructions and requirements for contributing code to Flow.
-
-Flow EAP discussion in Gitter IM at https://gitter.im/vaadin-flow/Lobby
-
-Instructions on how to set up a working environment for developing the Flow project follow below.
 
 `master` branch is the latest version that will at some point be released in the [Vaadin platform](https://github.com/vaadin/platform). See other branches for other framework versions:
 * 1.0 branch is Vaadin 10 LTS (Flow version 1.0)
