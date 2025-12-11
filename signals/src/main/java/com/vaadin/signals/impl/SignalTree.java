@@ -24,6 +24,8 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
@@ -300,7 +302,7 @@ public abstract class SignalTree {
      *            confirmed, not <code>null</code> to ignore the result
      */
     public void commitSingleCommand(SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            @Nullable Consumer<CommandResult> resultHandler) {
         assert command != null;
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,

@@ -17,6 +17,8 @@ package com.vaadin.signals.operations;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * An operation triggered on a signal instance. The result will be populated
  * when the operation has been confirmed. The type of the result depends on the
@@ -51,7 +53,7 @@ public class SignalOperation<T> {
      * @param value
      *            the result value
      */
-    public static record Result<T>(T value) implements ResultOrError<T> {
+    public record Result<T>(@Nullable T value) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return true;
@@ -66,7 +68,7 @@ public class SignalOperation<T> {
      * @param reason
      *            the error reason message
      */
-    public static record Error<T>(String reason) implements ResultOrError<T> {
+    public record Error<T>(String reason) implements ResultOrError<T> {
         @Override
         public boolean successful() {
             return false;

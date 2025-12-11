@@ -21,6 +21,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
@@ -55,7 +57,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            id of the node to insert immediately before, or
      *            <code>null</code> to not define a constraint
      */
-    public record ListPosition(Id after, Id before) {
+    public record ListPosition(@Nullable Id after, @Nullable Id before) {
         /**
          * Gets the insertion position that corresponds to the beginning of the
          * list.
@@ -174,11 +176,11 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     }
 
     private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+        return new ValueSignal<>(tree(), childId, validator(), elementType);
     }
 
     @Override
-    protected List<ValueSignal<T>> extractValue(Data data) {
+    protected List<ValueSignal<T>> extractValue(@Nullable Data data) {
         if (data == null) {
             return List.of();
         } else {
@@ -388,7 +390,9 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
 
     @Override
     public String toString() {
-        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+        List<ValueSignal<T>> list = Objects.requireNonNullElseGet(peek(),
+                List::of);
+        return list.stream().map(ValueSignal::peek).map(Objects::toString)
                 .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 

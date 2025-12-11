@@ -32,6 +32,7 @@ import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
@@ -91,14 +92,14 @@ public class MutableTreeRevision extends TreeRevision {
          * methods to optionally set a result while also returning a regular
          * value.
          */
-        private CommandResult result;
+        private @Nullable CommandResult result;
 
         /**
          * Child results are collected for transactions and applied at the end
          * since the result of earlier operations might change if a later
          * operation is rejected.
          */
-        private Map<Id, CommandResult> subCommandResults;
+        private @Nullable Map<Id, CommandResult> subCommandResults;
 
         public TreeManipulator(SignalCommand command) {
             this.command = command;
@@ -113,7 +114,7 @@ public class MutableTreeRevision extends TreeRevision {
             setResult(CommandResult.fail(reason));
         }
 
-        private Id resolveAlias(Id nodeId) {
+        private @Nullable Id resolveAlias(@Nullable Id nodeId) {
             Node dataOrAlias = updatedNodes.get(nodeId);
             if (dataOrAlias == null) {
                 dataOrAlias = nodes().get(nodeId);
@@ -156,7 +157,7 @@ public class MutableTreeRevision extends TreeRevision {
             });
         }
 
-        private JsonNode value(Id nodeId) {
+        private @Nullable JsonNode value(Id nodeId) {
             return data(nodeId).map(Data::value).orElse(null);
         }
 
@@ -193,7 +194,7 @@ public class MutableTreeRevision extends TreeRevision {
                     .map(children -> children.get(key));
         }
 
-        private boolean isSameNode(Id a, Id b) {
+        private boolean isSameNode(@Nullable Id a, @Nullable Id b) {
             return Objects.equals(resolveAlias(a), resolveAlias(b));
         }
 
@@ -823,7 +824,7 @@ public class MutableTreeRevision extends TreeRevision {
      *            ignore results
      */
     public void apply(SignalCommand command,
-            BiConsumer<Id, CommandResult> resultCollector) {
+            @Nullable BiConsumer<Id, CommandResult> resultCollector) {
         CommandResult result = data(command.targetNodeId()).map(data -> {
             TreeManipulator manipulator = new TreeManipulator(command);
             var opResult = manipulator.handleCommand(command);

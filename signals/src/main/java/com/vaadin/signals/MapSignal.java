@@ -23,6 +23,8 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.SignalTree;
@@ -78,11 +80,12 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     }
 
     private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+        return new ValueSignal<>(tree(), childId, validator(), elementType);
     }
 
     @Override
-    protected Map<String, ValueSignal<T>> extractValue(Data data) {
+    protected @Nullable Map<String, ValueSignal<T>> extractValue(
+            @Nullable Data data) {
         if (data == null) {
             return Map.of();
         } else {
@@ -186,7 +189,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     }
 
     private SignalOperation<Void> submitKeyCondition(String key,
-            Id expectedChildId) {
+            @Nullable Id expectedChildId) {
         return submit(new SignalCommand.KeyCondition(Id.random(), id(), key,
                 expectedChildId));
     }
@@ -317,7 +320,9 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
 
     @Override
     public String toString() {
-        return peek().entrySet().stream()
+        Map<String, ValueSignal<T>> map = Objects.requireNonNullElseGet(peek(),
+                Map::of);
+        return map.entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue().value())
                 .collect(Collectors.joining(", ", "MapSignal[", "]"));
     }

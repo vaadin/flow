@@ -21,6 +21,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.signals.ListSignal.ListPosition;
@@ -124,7 +125,7 @@ public sealed interface SignalCommand {
      * @param expectedValue
      *            the expected value
      */
-    public record ValueCondition(Id commandId, Id targetNodeId,
+    record ValueCondition(Id commandId, Id targetNodeId,
             JsonNode expectedValue) implements ConditionCommand {
     }
 
@@ -142,7 +143,7 @@ public sealed interface SignalCommand {
      *            the list position to use for optionally checking whether the
      *            child has the expected siblings
      */
-    public record PositionCondition(Id commandId, Id targetNodeId, Id childId,
+    record PositionCondition(Id commandId, Id targetNodeId, Id childId,
             ListPosition position) implements ConditionCommand {
     }
 
@@ -162,8 +163,8 @@ public sealed interface SignalCommand {
      *            any child is present, or <code>Id.ZERO</code> to test that no
      *            child is present
      */
-    public record KeyCondition(Id commandId, Id targetNodeId, String key,
-            Id expectedChild) implements ConditionCommand {
+    record KeyCondition(Id commandId, Id targetNodeId, String key,
+            @Nullable Id expectedChild) implements ConditionCommand {
     }
 
     /**
@@ -179,7 +180,7 @@ public sealed interface SignalCommand {
      *            the expected id of the command that last updated this node,
      *            not <code>null</code>
      */
-    public record LastUpdateCondition(Id commandId, Id targetNodeId,
+    record LastUpdateCondition(Id commandId, Id targetNodeId,
             Id expectedLastUpdate) implements ConditionCommand {
     }
 
@@ -199,7 +200,7 @@ public sealed interface SignalCommand {
      * @param key
      *            key to adopt the node as, not <code>null</code>
      */
-    public record AdoptAsCommand(Id commandId, Id targetNodeId, Id childId,
+    record AdoptAsCommand(Id commandId, Id targetNodeId, Id childId,
             String key) implements KeyCommand {
     }
 
@@ -219,7 +220,7 @@ public sealed interface SignalCommand {
      * @param position
      *            the list insert position to insert into, not <code>null</code>
      */
-    public record AdoptAtCommand(Id commandId, Id targetNodeId, Id childId,
+    record AdoptAtCommand(Id commandId, Id targetNodeId, Id childId,
             ListPosition position) implements SignalCommand {
     }
 
@@ -237,7 +238,7 @@ public sealed interface SignalCommand {
      * @param delta
      *            a double value to increment by
      */
-    public record IncrementCommand(Id commandId, Id targetNodeId,
+    record IncrementCommand(Id commandId, Id targetNodeId,
             double delta) implements SignalCommand {
     }
 
@@ -250,7 +251,7 @@ public sealed interface SignalCommand {
      * @param targetNodeId
      *            id of the node to update, not <code>null</code>
      */
-    public record ClearCommand(Id commandId,
+    record ClearCommand(Id commandId,
             Id targetNodeId) implements SignalCommand {
     }
 
@@ -265,7 +266,7 @@ public sealed interface SignalCommand {
      * @param key
      *            the key to remove, not <code>null</code>
      */
-    public record RemoveByKeyCommand(Id commandId, Id targetNodeId,
+    record RemoveByKeyCommand(Id commandId, Id targetNodeId,
             String key) implements KeyCommand {
     }
 
@@ -284,7 +285,7 @@ public sealed interface SignalCommand {
      * @param value
      *            the value to set
      */
-    public record PutCommand(Id commandId, Id targetNodeId, String key,
+    record PutCommand(Id commandId, Id targetNodeId, String key,
             JsonNode value) implements ValueCommand, KeyCommand {
     }
 
@@ -308,8 +309,8 @@ public sealed interface SignalCommand {
      * @param value
      *            the value to set if a mapping didn't already exist
      */
-    public record PutIfAbsentCommand(Id commandId, Id targetNodeId,
-            Id scopeOwner, String key, JsonNode value)
+    record PutIfAbsentCommand(Id commandId, Id targetNodeId,
+            @Nullable Id scopeOwner, String key, @Nullable JsonNode value)
             implements
                 ValueCommand,
                 KeyCommand,
@@ -334,7 +335,7 @@ public sealed interface SignalCommand {
      * @param position
      *            the list insert position, not <code>null</code>
      */
-    record InsertCommand(Id commandId, Id targetNodeId, Id scopeOwner,
+    record InsertCommand(Id commandId, Id targetNodeId, @Nullable Id scopeOwner,
             JsonNode value, ListSignal.ListPosition position)
             implements
                 ValueCommand,

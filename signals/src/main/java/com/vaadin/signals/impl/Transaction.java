@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
@@ -36,7 +38,7 @@ public abstract class Transaction {
     /**
      * Creates a new transaction.
      */
-    public Transaction() {
+    protected Transaction() {
     }
 
     /**
@@ -45,10 +47,11 @@ public abstract class Transaction {
      * Committing and rolling back are no-ops since all commands have already
      * been applied.
      */
-    private static abstract class ImmediateTransaction extends Transaction {
+    private abstract static class ImmediateTransaction extends Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+                @Nullable Consumer<CommandResult> resultHandler,
+                boolean applyToTree) {
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -90,7 +93,8 @@ public abstract class Transaction {
 
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+                @Nullable Consumer<CommandResult> resultHandler,
+                boolean applyToTree) {
             // Update the read revision first so that change observers can read
             // the updated value
             getOrCreateReadRevision(tree).apply(command, null);
@@ -346,7 +350,8 @@ public abstract class Transaction {
      *            repeatable-read revision
      */
     protected abstract void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean applyToTree);
+            @Nullable Consumer<CommandResult> resultHandler,
+            boolean applyToTree);
 
     /**
      * Includes the given command to the given tree in the context of this
