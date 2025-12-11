@@ -22,6 +22,7 @@ import java.util.Objects;
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.NullNode;
 
@@ -45,8 +46,7 @@ public sealed interface Node {
      * An empty data node without parent, scope owner, value or children and the
      * initial last update id.
      */
-    public static final Data EMPTY = new Data(null, Id.ZERO, null, null,
-            List.of(), Map.of());
+    Data EMPTY = new Data(null, Id.ZERO, null, null, List.of(), Map.of());
 
     /**
      * A node alias. An alias node allows multiple signal ids to reference the
@@ -55,7 +55,7 @@ public sealed interface Node {
      * @param target
      *            the id of the alias target, not <code>null</code>
      */
-    public record Alias(Id target) implements Node {
+    record Alias(Id target) implements Node {
     }
 
     /**
@@ -88,8 +88,8 @@ public sealed interface Node {
      *            a sequenced map from key to child id, or an empty map if the
      *            node has no map children
      */
-    public record Data(Id parent, Id lastUpdate, Id scopeOwner, JsonNode value,
-            List<Id> listChildren,
+    record Data(@Nullable Id parent, Id lastUpdate, @Nullable Id scopeOwner,
+            @Nullable JsonNode value, List<Id> listChildren,
             Map<String, Id> mapChildren) implements Node {
         /**
          * Creates a new data node.

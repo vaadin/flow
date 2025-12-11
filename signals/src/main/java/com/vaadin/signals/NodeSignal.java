@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.signals.ListSignal.ListPosition;
@@ -57,8 +58,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * child nodes.
      */
     public static class NodeSignalState {
-        private final JsonNode value;
-        private final NodeSignal parent;
+        private final @Nullable JsonNode value;
+        private final @Nullable NodeSignal parent;
         private final List<NodeSignal> listChildren;
         private final Map<String, NodeSignal> mapChildren;
 
@@ -69,8 +70,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          * @param value
          *            the JSON value, or <code>null</code> if there is no value
          * @param parent
-         *            the parent node, nor <code>null</code> for the value of
-         *            the root node
+         *            the parent node, or <code>null</code> for the value of the
+         *            root node
          * @param listChildren
          *            a list of children accessed by order, or an empty list if
          *            there are no list children. Not <code>null</code>.
@@ -78,8 +79,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *            a map of children access by key, or an empty map if there
          *            are no map children. Not <code>null</code>.
          */
-        public NodeSignalState(JsonNode value, NodeSignal parent,
-                List<NodeSignal> listChildren,
+        public NodeSignalState(@Nullable JsonNode value,
+                @Nullable NodeSignal parent, List<NodeSignal> listChildren,
                 Map<String, NodeSignal> mapChildren) {
             this.value = value;
             this.parent = parent;
@@ -96,7 +97,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *            the value type, not <code>null</code>
          * @return the value, or <code>null</code> if there is no value
          */
-        public <T> T value(Class<T> valueType) {
+        public <T> @Nullable T value(Class<T> valueType) {
             return fromJson(value, valueType);
         }
 
@@ -105,7 +106,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *
          * @return the parent node, or <code>null</code> for the root node
          */
-        public NodeSignal parent() {
+        public @Nullable NodeSignal parent() {
             return parent;
         }
 
@@ -157,7 +158,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
     }
 
     @Override
-    protected NodeSignalState extractValue(Data data) {
+    protected @Nullable NodeSignalState extractValue(@Nullable Data data) {
         if (data == null) {
             return null;
         }
@@ -253,8 +254,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<NodeSignal> insertChildWithValue(Object value,
-            ListPosition at) {
+    public InsertOperation<NodeSignal> insertChildWithValue(
+            @Nullable Object value, ListPosition at) {
         return submitInsert(new SignalCommand.InsertCommand(Id.random(), id(),
                 null, toJson(value), at), this::child);
     }

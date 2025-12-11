@@ -18,6 +18,8 @@ package com.vaadin.signals.impl;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
@@ -40,7 +42,7 @@ public sealed interface CommandResult {
      * @param newNode
      *            the new node instance or null if the command removed the node
      */
-    record NodeModification(Node oldNode, Node newNode) {
+    record NodeModification(@Nullable Node oldNode, @Nullable Node newNode) {
     }
 
     /**

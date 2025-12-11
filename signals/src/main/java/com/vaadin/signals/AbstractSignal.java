@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
@@ -94,7 +95,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the data node, or <code>null</code> if there is no node for this
      *         signal in the revision
      */
-    protected Data data(TreeRevision revision) {
+    protected @Nullable Data data(TreeRevision revision) {
         return revision.data(id()).orElse(null);
     }
 
@@ -106,12 +107,12 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the data node, or <code>null</code> if there is no node for this
      *         signal in the transaction
      */
-    protected Data data(Transaction transaction) {
+    protected @Nullable Data data(Transaction transaction) {
         return data(transaction.read(tree()));
     }
 
     @Override
-    public T value() {
+    public @Nullable T value() {
         Transaction transaction = Transaction.getCurrent();
         Data data = data(transaction);
 
@@ -142,7 +143,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the signal value
      */
-    public T peek() {
+    public @Nullable T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }
 
@@ -153,7 +154,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the confirmed signal value
      */
-    public T peekConfirmed() {
+    public @Nullable T peekConfirmed() {
         return extractValue(data(tree().confirmed()));
     }
 
@@ -196,7 +197,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            if the node doesn't exist in the tree
      * @return the signal value
      */
-    protected abstract T extractValue(Data data);
+    protected abstract @Nullable T extractValue(@Nullable Data data);
 
     /**
      * Gets a reference value that will be used to determine whether a
@@ -212,7 +213,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return a reference value to use for validity checks, may be
      *         <code>null</code>
      */
-    protected abstract Object usageChangeValue(Data data);
+    protected abstract @Nullable Object usageChangeValue(Data data);
 
     /**
      * Checks if the given command is valid according to this signal's
@@ -257,7 +258,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the provided operation, for chaining
      */
     protected <R, O extends SignalOperation<R>> O submit(SignalCommand command,
-            Function<CommandResult.Accept, R> resultConverter, O operation) {
+            Function<CommandResult.Accept, @Nullable R> resultConverter,
+            O operation) {
         // Remove is issued through the parent but targets the child
         assert command instanceof SignalCommand.RemoveCommand
                 || id().equals(command.targetNodeId());
@@ -343,7 +345,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the created operation instance, not <code>null</code>
      */
     protected <R> SignalOperation<R> submit(SignalCommand command,
-            Function<CommandResult.Accept, R> resultConverter) {
+            Function<CommandResult.Accept, @Nullable R> resultConverter) {
         return submit(command, resultConverter, new SignalOperation<R>());
     }
 
@@ -514,7 +516,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the object to convert to JSON
      * @return the converted JSON node, not <code>null</code>
      */
-    protected static JsonNode toJson(Object value) {
+    protected static JsonNode toJson(@Nullable Object value) {
         return OBJECT_MAPPER.valueToTree(value);
     }
 
@@ -532,7 +534,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the target type, not <code>null</code>
      * @return the converted Java instance
      */
-    protected static <T> T fromJson(JsonNode value, Class<T> targetType) {
+    protected static <T> @Nullable T fromJson(@Nullable JsonNode value,
+            Class<T> targetType) {
         try {
             return OBJECT_MAPPER.treeToValue(value, targetType);
         } catch (JacksonException e) {
@@ -547,12 +550,17 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @param <T>
      *            the Java object type
      * @param node
-     *            the signal node to read the value from, not <code>null</code>
+     *            the signal node to read the value from, or <code>null</code>
      * @param valueType
      *            the type to convert to, not <code>null</code>
-     * @return the converted Java instance
+     * @return the converted Java instance, or <code>null</code> if the node is
+     *         <code>null</code>
      */
-    protected static <T> T nodeValue(Node node, Class<T> valueType) {
+    protected static <T> @Nullable T nodeValue(@Nullable Node node,
+            Class<T> valueType) {
+        if (node == null) {
+            return null;
+        }
         assert node instanceof Data;
 
         return fromJson(((Data) node).value(), valueType);

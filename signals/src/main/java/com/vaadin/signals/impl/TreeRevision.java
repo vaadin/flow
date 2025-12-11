@@ -23,6 +23,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
@@ -107,7 +109,7 @@ public abstract class TreeRevision {
      * @return an optional containing the corresponding data node, or an empty
      *         optional of there is no node with the given id
      */
-    public Optional<Data> data(Id id) {
+    public Optional<Data> data(@Nullable Id id) {
         Node node = nodes.get(id);
         if (node instanceof Data data) {
             return Optional.of(data);

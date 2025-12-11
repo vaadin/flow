@@ -25,6 +25,8 @@ import java.util.Map.Entry;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
@@ -52,7 +54,7 @@ public class StagedTransaction extends Transaction {
         private final Consumer<ResultOrError<Void>> resultHandler;
         private final Object lock = new Object();
 
-        private Boolean state = null;
+        private @Nullable Boolean state = null;
 
         public ResultCollector(Collection<?> dependencies,
                 Consumer<ResultOrError<Void>> resultHandler) {
@@ -218,8 +220,11 @@ public class StagedTransaction extends Transaction {
     private CommandsAndHandlers createChange(SignalTree tree,
             ResultCollector collector) {
         Id txId = Id.random();
-
-        CommandsAndHandlers change = openTrees.get(tree).staged;
+        TreeState treeState = openTrees.get(tree);
+        if (treeState == null) {
+            throw new IllegalStateException("Tree not open");
+        }
+        CommandsAndHandlers change = treeState.staged;
 
         HashMap<Id, Consumer<CommandResult>> handlers = new HashMap<>(
                 change.getResultHandlers());
@@ -245,7 +250,8 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean applyToTree) {
+            @Nullable Consumer<CommandResult> resultHandler,
+            boolean applyToTree) {
         if (committing) {
             outer.include(tree, command, resultHandler, applyToTree);
             return;

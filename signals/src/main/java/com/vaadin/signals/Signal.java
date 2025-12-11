@@ -19,6 +19,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.impl.ComputedSignal;
 import com.vaadin.signals.impl.Effect;
 import com.vaadin.signals.impl.Transaction;
@@ -63,6 +65,7 @@ public interface Signal<T> {
      *
      * @return the signal value
      */
+    @Nullable
     T value();
 
     /**
@@ -82,7 +85,7 @@ public interface Signal<T> {
      *            the mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    default <C> Signal<C> map(Function<T, C> mapper) {
+    default <C> Signal<C> map(Function<@Nullable T, @Nullable C> mapper) {
         return () -> mapper.apply(value());
     }
 

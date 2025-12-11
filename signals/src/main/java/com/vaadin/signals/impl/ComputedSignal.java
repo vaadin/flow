@@ -19,6 +19,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
@@ -56,7 +57,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     private final Supplier<T> computation;
 
     private int dependentCount = 0;
-    private Runnable dependencyRegistration;
+    private @Nullable Runnable dependencyRegistration;
 
     /**
      * Creates a new computed signal with the provided compute callback.
@@ -125,8 +126,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                      * external listeners.
                      */
                     if (--dependentCount == 0) {
-                        dependencyRegistration.run();
-                        dependencyRegistration = null;
+                        if (dependencyRegistration != null) {
+                            dependencyRegistration.run();
+                            dependencyRegistration = null;
+                        }
                     }
                 }
             }
@@ -172,7 +175,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         };
     }
 
-    private ComputedState getValidState(Data data) {
+    private ComputedState getValidState(@Nullable Data data) {
         ComputedState state = readState(data);
 
         if (state == null || state.dependencies.hasChanges()) {
@@ -196,7 +199,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
         return state;
     }
 
-    private static ComputedState readState(Data data) {
+    private static @Nullable ComputedState readState(@Nullable Data data) {
         if (data == null) {
             return null;
         }
@@ -215,7 +218,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected T extractValue(Data data) {
+    protected @Nullable T extractValue(@Nullable Data data) {
         ComputedState state = getValidState(data);
 
         if (state.exception != null) {
@@ -228,8 +231,12 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected Object usageChangeValue(Data data) {
-        return extractState(data.value()).value;
+    protected @Nullable Object usageChangeValue(Data data) {
+        JsonNode value = data.value();
+        if (value == null) {
+            return null;
+        }
+        return extractState(value).value;
     }
 
     @Override

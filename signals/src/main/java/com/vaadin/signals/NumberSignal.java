@@ -164,7 +164,8 @@ public class NumberSignal extends ValueSignal<Double> {
      * @return the computed signal, not <code>null</code>
      */
     public <C> Signal<C> mapIntValue(IntFunction<C> mapper) {
-        return map(doubleValue -> mapper.apply(doubleValue.intValue()));
+        return map(doubleValue -> mapper
+                .apply(doubleValue != null ? doubleValue.intValue() : 0));
     }
 
     @Override

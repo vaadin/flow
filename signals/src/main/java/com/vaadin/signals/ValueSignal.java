@@ -21,6 +21,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
@@ -98,7 +100,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> value(T value) {
+    public SignalOperation<T> value(@Nullable T value) {
         assert value == null || valueType.isInstance(value);
 
         return submit(
@@ -108,7 +110,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected T extractValue(Data data) {
+    protected @Nullable T extractValue(@Nullable Data data) {
         if (data == null) {
             return null;
         } else {
@@ -117,7 +119,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
     }
 
     @Override
-    protected Object usageChangeValue(Data data) {
+    protected @Nullable Object usageChangeValue(Data data) {
         return data.value();
     }
 
@@ -135,7 +137,8 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      *            the new value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> replace(T expectedValue, T newValue) {
+    public SignalOperation<Void> replace(@Nullable T expectedValue,
+            @Nullable T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
         var set = new SignalCommand.SetCommand(Id.random(), id(),
@@ -169,7 +172,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      *            the value update callback, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public CancelableOperation<T> update(UnaryOperator<T> updater) {
+    public CancelableOperation<T> update(UnaryOperator<@Nullable T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
         tryUpdate(updater, operation);
@@ -177,7 +180,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
         return operation;
     }
 
-    private void tryUpdate(UnaryOperator<T> updater,
+    private void tryUpdate(UnaryOperator<@Nullable T> updater,
             CancelableOperation<T> operation) {
         if (operation.isCancelled()) {
             operation.result().cancel(false);
@@ -219,7 +222,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      *            the expected value
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyValue(T expectedValue) {
+    public SignalOperation<Void> verifyValue(@Nullable T expectedValue) {
         return submit(new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue)));
     }
