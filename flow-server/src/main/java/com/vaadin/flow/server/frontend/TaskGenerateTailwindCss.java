@@ -27,6 +27,10 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
  * Generate <code>tailwind.css</code> if it is missing in the generated frontend
  * folder.
  * <p>
+ * If a <code>tailwind-custom.css</code> file exists in the frontend folder, it
+ * will be imported into the generated file, allowing users to add custom
+ * Tailwind CSS directives such as {@code @theme} blocks.
+ * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @since 25.0
@@ -34,8 +38,11 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
     private static final String RELATIVE_SOURCE_PATH_MARKER = "#relativeSourcePath#";
+    private static final String CUSTOM_IMPORT_MARKER = "#customImport#";
+    private static final String TAILWIND_CUSTOM_CSS = "tailwind-custom.css";
 
     private String relativeSourcePath;
+    private String customImportReplacement;
 
     private final File tailwindCss;
 
@@ -53,6 +60,22 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
                 .toString();
         // Use forward slash as a separator
         relativeSourcePath = relativeSourcePath.replace(File.separator, "/");
+
+        // Check if custom Tailwind CSS file exists
+        File customCssFile = new File(options.getFrontendDirectory(),
+                TAILWIND_CUSTOM_CSS);
+        if (customCssFile.exists()) {
+            String relativeCustomPath = options.getFrontendGeneratedFolder()
+                    .toPath().relativize(options.getFrontendDirectory().toPath()
+                            .resolve(TAILWIND_CUSTOM_CSS))
+                    .toString();
+            // Use forward slash as a separator
+            relativeCustomPath = relativeCustomPath.replace(File.separator,
+                    "/");
+            customImportReplacement = "@import '" + relativeCustomPath + "';\n";
+        } else {
+            customImportReplacement = "";
+        }
     }
 
     @Override
@@ -62,6 +85,8 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
             var template = StringUtil.toUTF8String(indexStream);
             template = template.replace(RELATIVE_SOURCE_PATH_MARKER,
                     relativeSourcePath);
+            template = template.replace(CUSTOM_IMPORT_MARKER,
+                    customImportReplacement);
             return template;
         }
     }

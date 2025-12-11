@@ -37,21 +37,27 @@ public class TaskGenerateTailwindCssTest {
 
     private File npmFolder;
     private File frontendGeneratedFolder;
+    private File frontendFolder;
     private TaskGenerateTailwindCss taskGenerateTailwindCss;
 
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        frontendGeneratedFolder = new File(npmFolder, "src/frontend-generated");
+        File srcFolder = new File(npmFolder, "src");
+        srcFolder.mkdirs();
+        frontendFolder = new File(srcFolder, "frontend");
+        frontendFolder.mkdirs();
+        frontendGeneratedFolder = new File(frontendFolder, "generated");
         frontendGeneratedFolder.mkdirs();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
         taskGenerateTailwindCss = new TaskGenerateTailwindCss(options);
     }
 
     @Test
     public void should_haveCorrectFileContent() throws Exception {
-        verifyTailwindCss(taskGenerateTailwindCss.getFileContent());
+        verifyTailwindCss(taskGenerateTailwindCss.getFileContent(), false);
     }
 
     @Test
@@ -60,7 +66,7 @@ public class TaskGenerateTailwindCssTest {
         taskGenerateTailwindCss.execute();
         Assert.assertEquals("Should have correct tailwind.css file path",
                 tailwindcss, taskGenerateTailwindCss.getGeneratedFile());
-        verifyTailwindCss(getTailwindCssFileContent());
+        verifyTailwindCss(getTailwindCssFileContent(), false);
         Assert.assertTrue(
                 "Should generate tailwind.css in the frontend generated folder",
                 taskGenerateTailwindCss.shouldGenerate());
@@ -79,15 +85,95 @@ public class TaskGenerateTailwindCssTest {
                 taskGenerateTailwindCss.getFileContent(), tailwindCssContent);
     }
 
-    private void verifyTailwindCss(String tailwindCssContent) {
+    @Test
+    public void should_notIncludeCustomImport_whenCustomFileDoesNotExist()
+            throws Exception {
+        String content = taskGenerateTailwindCss.getFileContent();
+        verifyTailwindCss(content, false);
+        Assert.assertFalse(
+                "Should not contain custom import when file doesn't exist",
+                content.contains("tailwind-custom.css"));
+    }
+
+    @Test
+    public void should_includeCustomImport_whenCustomFileExists()
+            throws Exception {
+        // Create custom CSS file in the src/frontend folder (parent of
+        // generated folder)
+        File customCss = new File(frontendFolder, "tailwind-custom.css");
+        Files.writeString(customCss.toPath(),
+                "@theme { --color-my-theme: red; }");
+
+        // Recreate task to pick up the custom file
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        String content = task.getFileContent();
+        verifyTailwindCss(content, true);
+        Assert.assertTrue("Should contain custom import when file exists",
+                content.contains("@import '../tailwind-custom.css';"));
+    }
+
+    @Test
+    public void should_useForwardSlashes_inCustomImportPath() throws Exception {
+        // Create custom CSS file
+        File customCss = new File(frontendFolder, "tailwind-custom.css");
+        Files.writeString(customCss.toPath(),
+                "@theme { --color-my-theme: red; }");
+
+        // Recreate task to pick up the custom file
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        String content = task.getFileContent();
+        Assert.assertTrue("Should use forward slashes in import path",
+                content.contains("@import '../tailwind-custom.css';"));
+        Assert.assertFalse("Should not contain backslashes in import path",
+                content.contains("\\"));
+    }
+
+    @Test
+    public void should_generateTailwindCssWithCustomImport() throws Exception {
+        // Create custom CSS file
+        File customCss = new File(frontendFolder, "tailwind-custom.css");
+        Files.writeString(customCss.toPath(),
+                "@theme { --color-my-theme: red; }");
+
+        // Recreate task to pick up the custom file
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        File tailwindcss = new File(frontendGeneratedFolder, TAILWIND_CSS);
+        task.execute();
+        String tailwindCssContent = Files.readString(tailwindcss.toPath());
+        verifyTailwindCss(tailwindCssContent, true);
+    }
+
+    private void verifyTailwindCss(String tailwindCssContent,
+            boolean shouldHaveCustomImport) {
         Assert.assertTrue("Should have tailwindcss/theme.css import",
                 tailwindCssContent
                         .contains("@import 'tailwindcss/theme.css';\n"));
         Assert.assertTrue("Should have tailwindcss/utilities.css import",
                 tailwindCssContent
                         .contains("@import 'tailwindcss/utilities.css';\n"));
-        Assert.assertTrue("Should have correct @source directive",
-                tailwindCssContent.contains("@source \"..\";\n"));
+        // The @source path is relative from generated folder to src folder
+        Assert.assertTrue(
+                "Should have @source directive. Content: " + tailwindCssContent,
+                tailwindCssContent.contains("@source"));
+        if (shouldHaveCustomImport) {
+            Assert.assertTrue("Should have custom import", tailwindCssContent
+                    .contains("@import '../tailwind-custom.css';"));
+        } else {
+            Assert.assertFalse("Should not have custom import",
+                    tailwindCssContent.contains("tailwind-custom.css"));
+        }
     }
 
     private String getTailwindCssFileContent() throws IOException {
