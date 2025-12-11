@@ -18,8 +18,10 @@ package com.vaadin.signals.impl;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
+import com.vaadin.signals.function.TransactionTask;
+import com.vaadin.signals.function.ValueSupplier;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
@@ -48,7 +50,7 @@ public abstract class Transaction {
     private static abstract class ImmediateTransaction extends Transaction {
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+                CommandResultHandler resultHandler, boolean applyToTree) {
             if (applyToTree) {
                 tree.commitSingleCommand(command, resultHandler);
             }
@@ -90,7 +92,7 @@ public abstract class Transaction {
 
         @Override
         public void include(SignalTree tree, SignalCommand command,
-                Consumer<CommandResult> resultHandler, boolean applyToTree) {
+                CommandResultHandler resultHandler, boolean applyToTree) {
             // Update the read revision first so that change observers can read
             // the updated value
             getOrCreateReadRevision(tree).apply(command, null);
@@ -205,7 +207,7 @@ public abstract class Transaction {
      *         <code>null</code>
      */
     public static <T> TransactionOperation<T> runInTransaction(
-            Supplier<T> transactionTask) {
+            ValueSupplier<T> transactionTask) {
         return runInTransaction(transactionTask, Type.STAGED);
     }
 
@@ -224,13 +226,13 @@ public abstract class Transaction {
      *         <code>null</code>
      */
     public static <T> TransactionOperation<T> runInTransaction(
-            Supplier<T> transactionTask, Type transactionType) {
+            ValueSupplier<T> transactionTask, Type transactionType) {
         Transaction outer = getCurrent();
 
         Transaction inner = transactionType.create(outer);
         currentTransaction.set(inner);
         try {
-            T value = transactionTask.get();
+            T value = transactionTask.supply();
             TransactionOperation<T> op = new TransactionOperation<>(value);
 
             inner.commit(op.result()::complete);
@@ -249,9 +251,9 @@ public abstract class Transaction {
         }
     }
 
-    private static Supplier<Void> asSupplier(Runnable runnable) {
+    private static ValueSupplier<Void> asSupplier(TransactionTask task) {
         return () -> {
-            runnable.run();
+            task.execute();
             return null;
         };
     }
@@ -271,7 +273,7 @@ public abstract class Transaction {
      * @return the operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
-            Runnable transactionTask, Type transactionType) {
+            TransactionTask transactionTask, Type transactionType) {
         return runInTransaction(asSupplier(transactionTask), transactionType);
     }
 
@@ -288,7 +290,7 @@ public abstract class Transaction {
      * @return the operation object, not <code>null</code>
      */
     public static TransactionOperation<Void> runInTransaction(
-            Runnable transactionTask) {
+            TransactionTask transactionTask) {
         return runInTransaction(asSupplier(transactionTask));
     }
 
@@ -303,12 +305,12 @@ public abstract class Transaction {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T runWithoutTransaction(Supplier<T> task) {
+    public static <T> T runWithoutTransaction(ValueSupplier<T> task) {
         Transaction previousTransaction = currentTransaction.get();
         try {
             currentTransaction.set(null);
 
-            return task.get();
+            return task.supply();
         } finally {
             currentTransaction.set(previousTransaction);
         }
@@ -321,7 +323,7 @@ public abstract class Transaction {
      * @param task
      *            the task to run, not <code>null</code>
      */
-    public static void runWithoutTransaction(Runnable task) {
+    public static void runWithoutTransaction(TransactionTask task) {
         runWithoutTransaction(asSupplier(task));
     }
 
@@ -346,7 +348,7 @@ public abstract class Transaction {
      *            repeatable-read revision
      */
     protected abstract void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean applyToTree);
+            CommandResultHandler resultHandler, boolean applyToTree);
 
     /**
      * Includes the given command to the given tree in the context of this
@@ -365,7 +367,7 @@ public abstract class Transaction {
      *            ignore the result
      */
     public void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            CommandResultHandler resultHandler) {
         include(tree, command, resultHandler, true);
     }
 

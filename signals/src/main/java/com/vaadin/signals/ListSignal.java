@@ -18,8 +18,9 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import com.vaadin.signals.function.CommandValidator;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
@@ -168,7 +169,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the element type, not <code>null</code>
      */
     protected ListSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> elementType) {
+            CommandValidator validator, Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -349,7 +350,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new list signal that uses the validator, not <code>null</code>
      */
-    public ListSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public ListSignal<T> withValidator(CommandValidator validator) {
         return new ListSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }

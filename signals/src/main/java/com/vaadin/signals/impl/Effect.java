@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.SignalEnvironment;
 
 /**
@@ -36,7 +38,7 @@ public class Effect {
             .withInitial(() -> new LinkedList<>());
 
     private final Executor dispatcher;
-    private final List<Runnable> registrations = new ArrayList<>();
+    private final List<CleanupCallback> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
     private Runnable action;
@@ -54,7 +56,7 @@ public class Effect {
      * @param action
      *            the action to use, not <code>null</code>
      */
-    public Effect(Runnable action) {
+    public Effect(EffectAction action) {
         this(action, SignalEnvironment.getDefaultEffectDispatcher());
     }
 
@@ -72,11 +74,11 @@ public class Effect {
      *            the dispatcher to use when handling changes, not
      *            <code>null</code>
      */
-    public Effect(Runnable action, Executor dispatcher) {
+    public Effect(EffectAction action, Executor dispatcher) {
         assert action != null;
         this.action = () -> {
             try {
-                action.run();
+                action.execute();
             } catch (Exception e) {
                 Thread thread = Thread.currentThread();
                 thread.getUncaughtExceptionHandler().uncaughtException(thread,
@@ -162,7 +164,7 @@ public class Effect {
     }
 
     private void clearRegistrations() {
-        registrations.forEach(Runnable::run);
+        registrations.forEach(CleanupCallback::cleanup);
         registrations.clear();
     }
 

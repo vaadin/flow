@@ -16,9 +16,13 @@
 package com.vaadin.signals;
 
 import java.util.Objects;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.EffectAction;
+import com.vaadin.signals.function.SignalComputation;
+import com.vaadin.signals.function.SignalMapper;
+import com.vaadin.signals.function.TransactionTask;
+import com.vaadin.signals.function.ValueSupplier;
 import com.vaadin.signals.impl.ComputedSignal;
 import com.vaadin.signals.impl.Effect;
 import com.vaadin.signals.impl.Transaction;
@@ -34,12 +38,12 @@ import com.vaadin.signals.operations.TransactionOperation;
  * the signals used during invocation. The callback will be run again whenever
  * there's a change to any of the signal instances used in the previous
  * invocation. Detection is based on running {@link #value()}.
- * {@link #untracked(Supplier)} can be used to read the value within an effect
+ * {@link #untracked(ValueSupplier)} can be used to read the value within an effect
  * without registering a dependency.
  * <p>
  * This interface can be used for creating simple computed signals as a lambda
  * function that uses other signals. This kind of signal is more limited than
- * {@link #computed(Supplier)} since it doesn't cache its value.
+ * {@link #computed(SignalComputation)} since it doesn't cache its value.
  *
  * @param <T>
  *            the signal value type
@@ -97,8 +101,8 @@ public interface Signal<T> {
      *            the mapper function to use, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    default <C> Signal<C> map(Function<T, C> mapper) {
-        return () -> mapper.apply(value());
+    default <C> Signal<C> map(SignalMapper<T, C> mapper) {
+        return () -> mapper.map(value());
     }
 
     /*
@@ -117,7 +121,7 @@ public interface Signal<T> {
      * @return a callback used to close the effect so that it no longer listens
      *         to signal changes, not <code>null</code>
      */
-    static Runnable effect(Runnable action) {
+    static CleanupCallback effect(EffectAction action) {
         Effect effect = new Effect(Objects.requireNonNull(action));
         return effect::dispose;
     }
@@ -142,7 +146,7 @@ public interface Signal<T> {
      *            the computation callback, not <code>null</code>
      * @return the computed signal, not <code>null</code>
      */
-    static <T> Signal<T> computed(Supplier<T> computation) {
+    static <T> Signal<T> computed(SignalComputation<T> computation) {
         return new ComputedSignal<>(computation);
     }
 
@@ -183,7 +187,7 @@ public interface Signal<T> {
      *         the eventual result
      */
     static <T> TransactionOperation<T> runInTransaction(
-            Supplier<T> transactionTask) {
+            ValueSupplier<T> transactionTask) {
         return Transaction.runInTransaction(transactionTask);
     }
 
@@ -198,7 +202,7 @@ public interface Signal<T> {
      * The result of the operation will be set based on whether the transaction
      * was successfully committed once the status is confirmed.
      *
-     * @see Signal#runInTransaction(Supplier)
+     * @see Signal#runInTransaction(ValueSupplier)
      *
      * @param transactionTask
      *            the runnable to run, not <code>null</code>
@@ -206,7 +210,7 @@ public interface Signal<T> {
      *         the eventual result
      */
     static TransactionOperation<Void> runInTransaction(
-            Runnable transactionTask) {
+            TransactionTask transactionTask) {
         return Transaction.runInTransaction(transactionTask);
     }
 
@@ -221,7 +225,7 @@ public interface Signal<T> {
      *            the supplier to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T runWithoutTransaction(Supplier<T> task) {
+    static <T> T runWithoutTransaction(ValueSupplier<T> task) {
         return Transaction.runWithoutTransaction(task);
     }
 
@@ -232,7 +236,7 @@ public interface Signal<T> {
      * @param task
      *            the task to run, not <code>null</code>
      */
-    static void runWithoutTransaction(Runnable task) {
+    static void runWithoutTransaction(TransactionTask task) {
         Transaction.runWithoutTransaction(task);
     }
 
@@ -248,7 +252,7 @@ public interface Signal<T> {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    static <T> T untracked(Supplier<T> task) {
+    static <T> T untracked(ValueSupplier<T> task) {
         /*
          * Note that there's no Runnable overload since the whole point of
          * untracked is to read values.

@@ -21,7 +21,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
@@ -30,8 +29,21 @@ import com.vaadin.signals.SignalCommand;
  * A list of signal commands together with their result handlers.
  */
 public class CommandsAndHandlers {
+    /**
+     * Handles the result of a signal command execution.
+     */
+    @FunctionalInterface
+    public interface CommandResultHandler {
+        /**
+         * Handles the result of a command execution.
+         *
+         * @param result
+         *            the command result, not <code>null</code>
+         */
+        void handle(CommandResult result);
+    }
     private final List<SignalCommand> commands = new ArrayList<>();
-    private final Map<Id, Consumer<CommandResult>> resultHandlers = new HashMap<>();
+    private final Map<Id, CommandResultHandler> resultHandlers = new HashMap<>();
 
     /**
      * Creates a new empty command list.
@@ -49,7 +61,7 @@ public class CommandsAndHandlers {
      *            the result handlers to use, not <code>null</code>
      */
     public CommandsAndHandlers(List<SignalCommand> commands,
-            Map<Id, Consumer<CommandResult>> resultHandlers) {
+            Map<Id, CommandResultHandler> resultHandlers) {
         this.commands.addAll(commands);
         this.resultHandlers.putAll(resultHandlers);
     }
@@ -65,7 +77,7 @@ public class CommandsAndHandlers {
      *            result handler
      */
     public CommandsAndHandlers(SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            CommandResultHandler resultHandler) {
         assert command != null;
         commands.add(command);
         if (resultHandler != null) {
@@ -113,10 +125,10 @@ public class CommandsAndHandlers {
             if (command instanceof SignalCommand.TransactionCommand tx) {
                 notifyResultHandlers(results, tx.commands());
             }
-            Consumer<CommandResult> handler = resultHandlers
+            CommandResultHandler handler = resultHandlers
                     .remove(command.commandId());
             if (handler != null) {
-                handler.accept(results.get(command.commandId()));
+                handler.handle(results.get(command.commandId()));
             }
         }
     }
@@ -135,7 +147,7 @@ public class CommandsAndHandlers {
      *
      * @return an unmodifiable map of result handlers, not <code>null</code>
      */
-    public Map<Id, Consumer<CommandResult>> getResultHandlers() {
+    public Map<Id, CommandResultHandler> getResultHandlers() {
         return Collections.unmodifiableMap(resultHandlers);
     }
 

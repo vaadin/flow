@@ -20,9 +20,10 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.ValueModifier;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
@@ -38,7 +39,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * multiple threads.
  * <p>
  * The signal can also be used with mutable values in which case no thread
- * safety is provided. Mutations must be done through {@link #modify(Consumer)}
+ * safety is provided. Mutations must be done through {@link #modify(ValueModifier)}
  * to ensure dependents are informed after the modification is applied.
  * <p>
  * Reference signals can't be used inside signal transactions.
@@ -108,7 +109,7 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
             }
 
             @Override
-            public Runnable onNextChange(TransientListener listener) {
+            public CleanupCallback onNextChange(TransientListener listener) {
                 lock.lock();
                 try {
                     if (hasChanges()) {
@@ -224,14 +225,14 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
      */
     @Override
     public synchronized CancelableOperation<T> update(
-            UnaryOperator<T> updater) {
+            SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock.lock();
         try {
             checkPreconditions();
 
             T oldValue = this.value;
-            T newValue = updater.apply(oldValue);
+            T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setAndNotify(newValue);
             }
@@ -255,12 +256,12 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
      * exception can be thrown either from this method or from the other invoked
      * method. This can happen even if the other method is safe for concurrent
      * use.
-     * 
+     *
      * @param modifier
      *            a callback that receives the current value to modify, not
      *            <code>null</code>
      */
-    public void modify(Consumer<T> modifier) {
+    public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 
         if (!lock.tryLock()) {
@@ -276,7 +277,7 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
 
         boolean completed = false;
         try {
-            modifier.accept(value);
+            modifier.modify(value);
 
             completed = true;
         } finally {
