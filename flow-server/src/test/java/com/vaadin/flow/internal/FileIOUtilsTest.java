@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.net.URL;

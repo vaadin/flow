@@ -94,6 +94,7 @@ public class SpringClassesSerializableTest extends ClassesSerializableTest {
                 "com\\.vaadin\\.flow\\.spring\\.VaadinConfigurationProperties",
                 "com\\.vaadin\\.flow\\.spring\\.SpringDevToolsPortHandler",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.AtmosphereHintsRegistrar",
+                "com\\.vaadin\\.flow\\.spring\\.springnative\\.ClientCallableAotProcessor",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinBeanFactoryInitializationAotProcessor\\$Marker",
                 "com\\.vaadin\\.flow\\.spring\\.springnative\\.VaadinHintsRegistrar",

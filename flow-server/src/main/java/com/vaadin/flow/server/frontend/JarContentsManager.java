@@ -32,6 +32,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 
+import com.vaadin.flow.internal.FileIOUtils;
+
 /**
  * Shared code for managing contents of jar files.
  * <p>
