@@ -77,7 +77,6 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <jsinterop.version>1.0.2</jsinterop.version>
         <sonar.java.source>17</sonar.java.source>
-        <sonar.analysis.mode>preview</sonar.analysis.mode>
         <sonar.issuesReport.console.enable>true</sonar.issuesReport.console.enable>
         <sonar.issuesReport.html.enable>true</sonar.issuesReport.html.enable>
 
@@ -733,7 +732,6 @@
                 <sonar.organization>vaadin</sonar.organization>
                 <sonar.host.url>https://sonarcloud.io</sonar.host.url>
                 <!-- override properties for legacy sonar instance -->
-                <sonar.analysis.mode/>
                 <sonar.issuesReport.console.enable/>
                 <sonar.issuesReport.html.enable/>
             </properties>
