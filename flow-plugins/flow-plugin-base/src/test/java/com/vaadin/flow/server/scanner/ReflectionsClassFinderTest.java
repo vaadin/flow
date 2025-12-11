@@ -34,12 +34,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.ArgumentMatchers;
-import org.mockito.MockedStatic;
-import org.mockito.Mockito;
-import org.reflections.Reflections;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.dependency.NpmPackage;
@@ -125,27 +119,62 @@ public class ReflectionsClassFinderTest {
     }
 
     @Test
-    public void reflections_notExistingDirectory_warningMessageNotLogged()
-            throws Exception {
+    public void notExistingDirectory_noExceptionThrown() throws Exception {
         Path notExistingDir = Files.createTempDirectory("test")
                 .resolve(Path.of("target", "classes"));
-        Logger logger = LoggerFactory.getLogger("mockLogger");
-        Logger spy = Mockito.spy(logger);
-        Logger mocked = Mockito.mock(Logger.class);
-        try (MockedStatic<LoggerFactory> mockStatic = Mockito
-                .mockStatic(LoggerFactory.class)) {
-            mockStatic
-                    .when(() -> LoggerFactory
-                            .getLogger(ArgumentMatchers.any(Class.class)))
-                    .thenReturn(mocked);
-            mockStatic.when(() -> LoggerFactory.getLogger(Reflections.class))
-                    .thenReturn(spy);
-            Logger x = LoggerFactory.getLogger(ReflectionsClassFinder.class);
-            new ReflectionsClassFinder(notExistingDir.toUri().toURL());
-            Mockito.verify(spy, Mockito.never()).warn(ArgumentMatchers.contains(
-                    "could not create Vfs.Dir from url. ignoring the exception and continuing"),
-                    ArgumentMatchers.any(Exception.class));
-        }
+        // ClassGraph should handle non-existing directories gracefully
+        ReflectionsClassFinder finder = new ReflectionsClassFinder(
+                notExistingDir.toUri().toURL());
+        // Verify scan completed successfully (returns empty set, not null)
+        Set<Class<?>> result = finder.getAnnotatedClasses(NpmPackage.class);
+        Assert.assertNotNull(
+                "Scan should complete even with non-existing directory",
+                result);
+    }
+
+    @Test
+    public void getAnnotatedClasses_findsRepeatableAnnotations()
+            throws Exception {
+        // When a @Repeatable annotation is used multiple times, Java wraps
+        // them in the container annotation. The finder should detect this and
+        // find classes annotated with the container when searching for the
+        // repeatable annotation.
+        URL moduleUrl = createRepeatableAnnotationTestModule();
+        ClassLoader classLoader = new URLClassLoader(new URL[] { moduleUrl },
+                Thread.currentThread().getContextClassLoader());
+        ReflectionsClassFinder finder = new ReflectionsClassFinder(classLoader,
+                moduleUrl);
+
+        Set<Class<?>> result = finder.getAnnotatedClasses(NpmPackage.class);
+
+        Class<?> testClass = classLoader.loadClass(
+                "com.vaadin.flow.test.repeatable.ComponentWithMultipleNpmPackages");
+
+        Assert.assertTrue(
+                "Should find class with repeatable NpmPackage annotations through container",
+                result.contains(testClass));
+    }
+
+    private URL createRepeatableAnnotationTestModule() throws IOException {
+        String pkg = "com.vaadin.flow.test.repeatable";
+        String className = "ComponentWithMultipleNpmPackages";
+        String classSource = String.format("package %s;\n\n"
+                + "import com.vaadin.flow.component.dependency.NpmPackage;\n"
+                + "import com.vaadin.flow.component.Component;\n\n"
+                + "@NpmPackage(value = \"@vaadin/test-package-1\", version = \"1.0.0\")\n"
+                + "@NpmPackage(value = \"@vaadin/test-package-2\", version = \"2.0.0\")\n"
+                + "@NpmPackage(value = \"@vaadin/test-package-3\", version = \"3.0.0\")\n"
+                + "public class %s extends Component {\n}\n", pkg, className);
+
+        File sources = externalModules.newFolder("repeatable-test/src");
+        File sourcePkg = externalModules
+                .newFolder("repeatable-test/src/" + pkg.replace('.', '/'));
+        File buildDir = externalModules.newFolder("repeatable-test/target");
+
+        Path sourceFile = sourcePkg.toPath().resolve(className + ".java");
+        Files.writeString(sourceFile, classSource, StandardCharsets.UTF_8);
+        compile(sourceFile.toFile(), sources, buildDir);
+        return buildDir.toURI().toURL();
     }
 
     private <X extends Class<?>> List<String> toList(Set<X> classes) {
