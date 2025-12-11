@@ -22,28 +22,32 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javassist.bytecode.ClassFile;
 
-import org.reflections.Configuration;
-import org.reflections.Reflections;
-import org.reflections.scanners.Scanner;
-import org.reflections.util.ClasspathHelper;
-import org.reflections.util.ConfigurationBuilder;
-import org.reflections.util.NameHelper;
-import org.reflections.util.QueryBuilder;
-import org.reflections.vfs.Vfs;
+import io.github.classgraph.AnnotationInfo;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ClassInfo;
+import io.github.classgraph.ClassInfoList;
+import io.github.classgraph.ScanResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
- * A class finder using org.reflections.
+ * A class finder using io.github.classgraph.
+ * <p>
+ * This implementation uses the ClassGraph library for fast classpath scanning.
+ * ClassGraph parses bytecode directly without loading classes, making it
+ * significantly faster than reflection-based approaches.
+ * <p>
+ * Note: Despite the class name, this implementation uses ClassGraph library,
+ * not the org.reflections library. The class name is maintained for backward
+ * compatibility.
  *
  * @since 2.0
  */
@@ -52,7 +56,12 @@ public class ReflectionsClassFinder implements ClassFinder {
             .getLogger(ReflectionsClassFinder.class);
     private final transient ClassLoader classLoader;
 
-    private final transient Reflections reflections;
+    // Cache all discovered classes by annotation
+    private final transient Map<String, Set<String>> annotatedClassCache;
+    // Cache all discovered subclasses by parent type
+    private final transient Map<String, Set<String>> subtypeCache;
+    // Scanned packages for filtering
+    private final transient Set<String> scannedPackages;
 
     /**
      * Constructor.
@@ -65,30 +74,63 @@ public class ReflectionsClassFinder implements ClassFinder {
                 Thread.currentThread().getContextClassLoader()), urls);
     }
 
+    /**
+     * Constructor with explicit class loader.
+     *
+     * @param classLoader
+     *            the class loader to use for loading classes
+     * @param urls
+     *            the list of urls for finding classes
+     */
     public ReflectionsClassFinder(ClassLoader classLoader, URL... urls) {
         this.classLoader = classLoader;
-        ConfigurationBuilder configurationBuilder = new ConfigurationBuilder()
-                .addClassLoaders(classLoader).setExpandSuperTypes(false)
-                .addUrls(urls);
+        long startTime = System.currentTimeMillis();
 
-        ConfigurationBuilder.DEFAULT_SCANNERS
-                .forEach(configurationBuilder::addScanners);
-        configurationBuilder.addScanners(PackageScanner.INSTANCE);
-        configurationBuilder
-                .setInputsFilter(resourceName -> resourceName.endsWith(".class")
-                        && !resourceName.endsWith("module-info.class"));
+        // When URLs are empty or null, it means scan nothing (isolation mode)
+        // Initialize with empty caches instead of scanning
+        if (urls == null || urls.length == 0) {
+            this.scannedPackages = Collections.emptySet();
+            this.annotatedClassCache = Collections.emptyMap();
+            this.subtypeCache = Collections.emptyMap();
 
-        // Adding the custom URL type handler at the end, as a last resort to
-        // prevent warning messages on server logs
-        // Vfs.getDefaultUrlTypes() gets the internal mutable collection
-        List<Vfs.UrlType> defaultUrlTypes = Vfs.getDefaultUrlTypes();
-        if (!defaultUrlTypes.contains(IGNORE_NOT_HANDLED_FILES)) {
-            defaultUrlTypes.add(IGNORE_NOT_HANDLED_FILES);
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(
+                        "ClassFinder initialized with empty scan URLs: 0 classes scanned");
+            }
+            return;
         }
-        try {
-            reflections = new LoggingReflections(configurationBuilder);
-        } finally {
-            defaultUrlTypes.remove(IGNORE_NOT_HANDLED_FILES);
+
+        // Configure ClassGraph scanner with provided URLs
+        ClassGraph classGraph = new ClassGraph()
+                .overrideClasspath((Object[]) urls).addClassLoader(classLoader)
+                .enableClassInfo().enableAnnotationInfo().enableMemoryMapping()
+                .ignoreClassVisibility() // Scan non-public classes
+                .filterClasspathElements(
+                        path -> !path.endsWith("module-info.class"));
+
+        // Scan and extract all data, then close immediately
+        int classCount;
+        try (ScanResult scanResult = classGraph.scan()) {
+            classCount = scanResult.getAllClasses().size();
+
+            // Extract scanned packages
+            this.scannedPackages = scanResult.getAllClasses().stream()
+                    .map(classInfo -> extractPackageName(classInfo.getName()))
+                    .filter(pkg -> !pkg.isEmpty()).collect(Collectors.toSet());
+
+            // Pre-cache all annotated classes
+            this.annotatedClassCache = buildAnnotatedClassCache(scanResult);
+
+            // Pre-cache all subtype relationships
+            this.subtypeCache = buildSubtypeCache(scanResult);
+        } // scanResult automatically closed here
+
+        if (LOGGER.isDebugEnabled()) {
+            long duration = System.currentTimeMillis() - startTime;
+            LOGGER.debug(
+                    "ClassFinder initialized: {} classes scanned, {} annotation types cached, {} subtype relationships cached, took {}ms",
+                    classCount, annotatedClassCache.size(), subtypeCache.size(),
+                    duration);
         }
     }
 
@@ -96,10 +138,23 @@ public class ReflectionsClassFinder implements ClassFinder {
     public Set<Class<?>> getAnnotatedClasses(
             Class<? extends Annotation> clazz) {
         Set<Class<?>> classes = new LinkedHashSet<>();
-        classes.addAll(reflections.getTypesAnnotatedWith(clazz, true));
-        classes.addAll(getAnnotatedByRepeatedAnnotation(clazz));
-        return sortedByClassName(classes);
 
+        // Get directly annotated classes from cache
+        Set<String> classNames = annotatedClassCache
+                .getOrDefault(clazz.getName(), Collections.emptySet());
+
+        for (String className : classNames) {
+            try {
+                classes.add(classLoader.loadClass(className));
+            } catch (Throwable e) {
+                LOGGER.debug("Can't load class {}", className, e);
+            }
+        }
+
+        // Handle @Repeatable annotations
+        classes.addAll(getAnnotatedByRepeatedAnnotation(clazz));
+
+        return sortedByClassName(classes);
     }
 
     private Set<Class<?>> getAnnotatedByRepeatedAnnotation(
@@ -107,8 +162,19 @@ public class ReflectionsClassFinder implements ClassFinder {
         Repeatable repeatableAnnotation = annotationClass
                 .getAnnotation(Repeatable.class);
         if (repeatableAnnotation != null) {
-            return reflections
-                    .getTypesAnnotatedWith(repeatableAnnotation.value(), true);
+            Set<Class<?>> classes = new LinkedHashSet<>();
+            Set<String> classNames = annotatedClassCache.getOrDefault(
+                    repeatableAnnotation.value().getName(),
+                    Collections.emptySet());
+
+            for (String className : classNames) {
+                try {
+                    classes.add(classLoader.loadClass(className));
+                } catch (Throwable e) {
+                    LOGGER.debug("Can't load class {}", className, e);
+                }
+            }
+            return classes;
         }
         return Collections.emptySet();
     }
@@ -120,14 +186,20 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     @Override
     public boolean shouldInspectClass(String className) {
-        if (!reflections
-                .get(PackageScanner.INSTANCE
-                        .of(PackageScanner.extractPackageName(className)))
-                .isEmpty()) {
+        String packageName = extractPackageName(className);
+        if (scannedPackages.contains(packageName)) {
             return classLoader.getResource(
                     className.replace('.', '/') + ".class") != null;
         }
         return false;
+    }
+
+    private static String extractPackageName(String className) {
+        int dot = className.lastIndexOf('.');
+        if (dot != -1) {
+            return className.substring(0, dot);
+        }
+        return "";
     }
 
     @SuppressWarnings("unchecked")
@@ -138,7 +210,22 @@ public class ReflectionsClassFinder implements ClassFinder {
 
     @Override
     public <T> Set<Class<? extends T>> getSubTypesOf(Class<T> type) {
-        return sortedByClassName(reflections.getSubTypesOf(type));
+        Set<String> subtypeNames = subtypeCache.getOrDefault(type.getName(),
+                Collections.emptySet());
+
+        Set<Class<? extends T>> classes = new LinkedHashSet<>();
+        for (String className : subtypeNames) {
+            try {
+                @SuppressWarnings("unchecked")
+                Class<? extends T> clazz = (Class<? extends T>) classLoader
+                        .loadClass(className);
+                classes.add(clazz);
+            } catch (Throwable e) {
+                LOGGER.debug("Can't load class {}", className, e);
+            }
+        }
+
+        return sortedByClassName(classes);
     }
 
     @Override
@@ -152,109 +239,53 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
-    private static class LoggingReflections extends Reflections {
+    /**
+     * Builds cache of all classes grouped by their annotations. Maps annotation
+     * class name -> Set of annotated class names
+     */
+    private Map<String, Set<String>> buildAnnotatedClassCache(
+            ScanResult scanResult) {
+        Map<String, Set<String>> cache = new HashMap<>();
 
-        LoggingReflections(Configuration configuration) {
-            super(configuration);
-        }
-
-        // Classloading errors may cause the frontend-build to fail, but
-        // without any useful information.
-        // Copy-pasting the super method, with addition of exception logging
-        // to help in troubleshooting build issues
-        @Override
-        public Class<?> forClass(String typeName, ClassLoader... loaders) {
-            if (primitiveNames.contains(typeName)) {
-                return primitiveTypes.get(primitiveNames.indexOf(typeName));
-            } else {
-                String type;
-                if (typeName.contains("[")) {
-                    int i = typeName.indexOf("[");
-                    type = typeName.substring(0, i);
-                    String array = typeName.substring(i).replace("]", "");
-                    if (primitiveNames.contains(type)) {
-                        type = primitiveDescriptors
-                                .get(primitiveNames.indexOf(type));
-                    } else {
-                        type = "L" + type + ";";
-                    }
-                    type = array + type;
-                } else {
-                    type = typeName;
-                }
-
-                for (ClassLoader classLoader : ClasspathHelper
-                        .classLoaders(loaders)) {
-                    if (type.contains("[")) {
-                        try {
-                            return Class.forName(type, false, classLoader);
-                        } catch (Throwable ignored) {
-                            LOGGER.debug("Can't find class {}", type, ignored);
-                        }
-                    }
-                    try {
-                        return classLoader.loadClass(type);
-                    } catch (Throwable ignored) {
-                        LOGGER.debug("Can't load class {}", type, ignored);
-                    }
-                }
-                return null;
+        // Get all classes with any annotation
+        for (ClassInfo classInfo : scanResult.getAllClasses()) {
+            for (AnnotationInfo annotationInfo : classInfo
+                    .getAnnotationInfo()) {
+                String annotationName = annotationInfo.getName();
+                cache.computeIfAbsent(annotationName,
+                        k -> new LinkedHashSet<>()).add(classInfo.getName());
             }
         }
+
+        return cache;
     }
 
-    private static final Vfs.UrlType IGNORE_NOT_HANDLED_FILES = new Vfs.UrlType() {
+    /**
+     * Builds cache of all subtype relationships. Maps parent class/interface
+     * name -> Set of subclass/implementor names
+     */
+    private Map<String, Set<String>> buildSubtypeCache(ScanResult scanResult) {
+        Map<String, Set<String>> cache = new HashMap<>();
 
-        public boolean matches(URL url) {
-            // This handler is the last one to be checked.
-            // Valid "file:" URLs should have already been handled by default
-            // URL type handlers.
-            return "file".equals(url.getProtocol());
-        }
+        // For each scanned class, register it under all its supertypes
+        for (ClassInfo classInfo : scanResult.getAllClasses()) {
+            String className = classInfo.getName();
 
-        public Vfs.Dir createDir(final URL url) {
-            LOGGER.debug(
-                    "Class finder cannot scan {} URL. Probably pointing to a not existing folder.",
-                    url);
-            return new Vfs.Dir() {
-                @Override
-                public String getPath() {
-                    return url.getPath().replace("\\", "/");
-                }
-
-                @Override
-                public Iterable<Vfs.File> getFiles() {
-                    return Collections.emptyList();
-                }
-            };
-        }
-    };
-
-    private static class PackageScanner
-            implements Scanner, QueryBuilder, NameHelper {
-
-        private final static PackageScanner INSTANCE = new PackageScanner();
-
-        @Override
-        public List<Map.Entry<String, String>> scan(ClassFile classFile) {
-            String packageName = extractPackageName(classFile.getName());
-            if (!packageName.isEmpty()) {
-                return List.of(entry(packageName, packageName));
+            // Register under all superclasses
+            ClassInfoList superclasses = classInfo.getSuperclasses();
+            for (ClassInfo superclass : superclasses) {
+                cache.computeIfAbsent(superclass.getName(),
+                        k -> new LinkedHashSet<>()).add(className);
             }
-            return List.of();
-        }
 
-        @Override
-        public String index() {
-            return "PackageScanner";
-        }
-
-        static String extractPackageName(String className) {
-            int dot = className.lastIndexOf('.');
-            if (dot != -1) {
-                return className.substring(0, dot);
+            // Register under all implemented interfaces
+            ClassInfoList interfaces = classInfo.getInterfaces();
+            for (ClassInfo iface : interfaces) {
+                cache.computeIfAbsent(iface.getName(),
+                        k -> new LinkedHashSet<>()).add(className);
             }
-            return "";
         }
+
+        return cache;
     }
 }
