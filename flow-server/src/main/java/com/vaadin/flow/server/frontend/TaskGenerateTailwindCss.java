@@ -37,7 +37,7 @@ public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
     private String relativeSourcePath;
 
-    private File tailwindCss;
+    private final File tailwindCss;
 
     /**
      * Create a task to generate <code>tailwind.css</code> integration file.

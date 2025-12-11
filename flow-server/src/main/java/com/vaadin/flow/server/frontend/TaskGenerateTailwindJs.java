@@ -33,7 +33,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
  */
 public class TaskGenerateTailwindJs extends AbstractTaskClientGenerator {
 
-    private File tailwindJs;
+    private final File tailwindJs;
 
     /**
      * Create a task to generate <code>tailwind.css</code> integration file.
