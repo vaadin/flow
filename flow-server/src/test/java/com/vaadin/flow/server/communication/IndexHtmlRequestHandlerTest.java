@@ -68,6 +68,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.AppShellWithPWA;
 import com.vaadin.flow.server.startup.VaadinAppShellInitializerTest.MyAppShellWithConfigurator;
@@ -1427,6 +1428,42 @@ public class IndexHtmlRequestHandlerTest {
                                     commercialBannerFlag),
                     commercialBannerScript.isEmpty());
         }
+    }
+
+    @Test
+    public void should_add_ff140_class_for_firefox_140() throws IOException {
+        WebBrowser webBrowser = Mockito.mock(WebBrowser.class);
+        Mockito.when(webBrowser.isFirefox()).thenReturn(true);
+        Mockito.when(webBrowser.getBrowserMajorVersion()).thenReturn(140);
+        Mockito.when(session.getBrowser()).thenReturn(webBrowser);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+        Element html = document.getElementsByTag("html").get(0);
+
+        assertTrue("Firefox 140 should have ff140 class",
+                html.hasClass("ff140"));
+    }
+
+    @Test
+    public void should_not_add_ff140_class_for_chrome() throws IOException {
+        WebBrowser webBrowser = Mockito.mock(WebBrowser.class);
+        Mockito.when(webBrowser.isFirefox()).thenReturn(false);
+        Mockito.when(webBrowser.getBrowserMajorVersion()).thenReturn(120);
+        Mockito.when(session.getBrowser()).thenReturn(webBrowser);
+
+        indexHtmlRequestHandler.synchronizedHandleRequest(session,
+                createVaadinRequest("/"), response);
+
+        String indexHtml = responseOutput.toString(StandardCharsets.UTF_8);
+        Document document = Jsoup.parse(indexHtml);
+        Element html = document.getElementsByTag("html").get(0);
+
+        assertFalse("Chrome should not have ff140 class",
+                html.hasClass("ff140"));
     }
 
 }

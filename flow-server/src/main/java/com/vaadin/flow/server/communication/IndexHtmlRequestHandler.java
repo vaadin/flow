@@ -66,6 +66,7 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.WebBrowser;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -179,6 +180,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
         addDevBundleTheme(indexDocument, context);
         applyColorScheme(indexDocument, context);
+        applyBrowserSpecificClasses(indexDocument, session);
 
         if (config.isDevToolsEnabled()) {
             addDevTools(indexDocument, config, session, request);
@@ -290,6 +292,27 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
                 indexDocument.head().parent().attr("theme", variant);
             }
         });
+    }
+
+    /**
+     * Adds browser-specific CSS classes to the html element. Currently adds
+     * "ff140" class for Firefox 140.x versions.
+     *
+     * @param indexDocument
+     *            the document to modify
+     * @param session
+     *            the Vaadin session containing browser information
+     */
+    private void applyBrowserSpecificClasses(Document indexDocument,
+            VaadinSession session) {
+        WebBrowser browser = session.getBrowser();
+
+        Element html = indexDocument.head().parent();
+
+        // Check for Firefox 140.x
+        if (browser.isFirefox() && browser.getBrowserMajorVersion() == 140) {
+            html.addClass("ff140");
+        }
     }
 
     private void addStyleTagReferences(Document indexDocument,
