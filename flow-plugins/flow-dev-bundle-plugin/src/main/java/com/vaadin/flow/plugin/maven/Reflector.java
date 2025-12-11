@@ -56,7 +56,7 @@ public final class Reflector {
             "org.eclipse.sisu");
     // Dependency required by the plugin but not provided by Flow at runtime
     private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
-            "org.reflections:reflections:jar",
+            "io.github.classgraph:classgraph:jar",
             "org.zeroturnaround:zt-exec:jar");
     private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
             Artifact.SCOPE_COMPILE_PLUS_RUNTIME);
