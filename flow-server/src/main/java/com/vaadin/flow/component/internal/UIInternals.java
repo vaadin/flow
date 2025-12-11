@@ -76,6 +76,7 @@ import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
+import com.vaadin.flow.router.internal.AbstractNavigationStateRenderer;
 import com.vaadin.flow.router.internal.AfterNavigationHandler;
 import com.vaadin.flow.router.internal.BeforeEnterHandler;
 import com.vaadin.flow.router.internal.BeforeLeaveHandler;
@@ -738,6 +739,8 @@ public class UIInternals implements Serializable {
         addJavaScriptInvocation(pendingTitleUpdateCanceler);
 
         this.title = title;
+        AbstractNavigationStateRenderer.updatePreservedChainTitle(getUI(),
+                title);
     }
 
     private String generateTitleScript() {

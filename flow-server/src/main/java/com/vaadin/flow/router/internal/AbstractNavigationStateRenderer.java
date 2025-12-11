@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router.internal;
 
+import java.io.Serializable;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -38,7 +39,6 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.ExtendedClientDetails;
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.internal.menu.MenuRegistry;
@@ -256,9 +256,9 @@ public abstract class AbstractNavigationStateRenderer
     private boolean populateChain(ArrayList<HasElement> chain,
             boolean preserveOnRefreshTarget, NavigationEvent event) {
         if (preserveOnRefreshTarget && !event.isForceInstantiation()) {
-            final Optional<ArrayList<HasElement>> maybeChain = getPreservedChain(
+            final Optional<PreservedViewData> maybePreserved = getPreservedChain(
                     event);
-            if (maybeChain.isEmpty()) {
+            if (maybePreserved.isEmpty()) {
                 // We're returning because the preserved chain is not ready to
                 // be used as is, and requires client data requested within
                 // `getPreservedChain`. Once the data is retrieved from the
@@ -266,7 +266,14 @@ public abstract class AbstractNavigationStateRenderer
                 // `NavigationEvent` argument.
                 return true;
             }
-            chain.addAll(maybeChain.get());
+
+            final PreservedViewData preservedData = maybePreserved.get();
+            chain.addAll(preservedData.chain);
+
+            // Restore title if available
+            if (!chain.isEmpty() && preservedData.title != null) {
+                event.getUI().getInternals().setTitle(preservedData.title);
+            }
 
             // If partialMatch is set to true check if the cache contains a
             // chain and possibly request extended details to get window name
@@ -986,7 +993,7 @@ public abstract class AbstractNavigationStateRenderer
      * If the chain is missing and needs to be created this method returns an
      * {@link Optional} wrapping an empty {@link ArrayList}.
      */
-    private Optional<ArrayList<HasElement>> getPreservedChain(
+    private Optional<PreservedViewData> getPreservedChain(
             NavigationEvent event) {
         final Location location = event.getLocation();
         final UI ui = event.getUI();
@@ -1004,18 +1011,19 @@ public abstract class AbstractNavigationStateRenderer
             }
         } else {
             final String windowName = details.getWindowName();
-            final Optional<ArrayList<HasElement>> maybePreserved = getPreservedChain(
+            final Optional<PreservedViewData> maybePreserved = getPreservedChain(
                     session, windowName, event.getLocation());
             if (maybePreserved.isPresent()) {
                 // Re-use preserved chain for this route
-                ArrayList<HasElement> chain = maybePreserved.get();
-                disconnectElements(chain, ui);
+                PreservedViewData data = maybePreserved.get();
+                disconnectElements(data.chain, ui);
 
-                return Optional.of(chain);
+                return Optional.of(data);
             }
         }
 
-        return Optional.of(new ArrayList<>(0));
+        return Optional
+                .of(new PreservedViewData(null, new ArrayList<>(0), null));
     }
 
     private static void disconnectElements(List<HasElement> chain, UI ui) {
@@ -1052,16 +1060,19 @@ public abstract class AbstractNavigationStateRenderer
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
 
+        final String title = ui.getInternals().getTitle();
+
         if (extendedClientDetails.getWindowName() == null) {
             // We need first to retrieve the window name in order to cache the
             // component chain for later potential refreshes.
-            ui.getPage().retrieveExtendedClientDetails(
-                    details -> setPreservedChain(session,
-                            details.getWindowName(), location, chain));
+            ui.getPage()
+                    .retrieveExtendedClientDetails(details -> setPreservedChain(
+                            session, details.getWindowName(), location, chain,
+                            title));
 
         } else {
             final String windowName = extendedClientDetails.getWindowName();
-            setPreservedChain(session, windowName, location, chain);
+            setPreservedChain(session, windowName, location, chain, title);
         }
     }
 
@@ -1104,12 +1115,17 @@ public abstract class AbstractNavigationStateRenderer
                 .map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
-        String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
-                .orElseGet(() -> Optional
-                        .ofNullable(
-                                MenuRegistry.getClientRoutes(true).get(route))
-                        .map(AvailableViewInfo::title)
-                        .orElseGet(lookForTitleInTarget));
+        Optional<String> dynamicTitle = RouteUtil
+                .getDynamicTitle(navigationEvent.getUI());
+        String title = dynamicTitle.orElseGet(() -> Optional
+                .ofNullable(MenuRegistry.getClientRoutes(true).get(route))
+                .map(AvailableViewInfo::title).orElseGet(lookForTitleInTarget));
+
+        if (navigationEvent.getTrigger() == NavigationTrigger.REFRESH
+                && !dynamicTitle.isPresent()
+                && navigationEvent.getUI().getInternals().getTitle() != null) {
+            return;
+        }
 
         navigationEvent.getUI().getPage().setTitle(title);
     }
@@ -1141,7 +1157,20 @@ public abstract class AbstractNavigationStateRenderer
 
     // maps window.name to (location, chain)
     private static class PreservedComponentCache
-            extends HashMap<String, Pair<String, ArrayList<HasElement>>> {
+            extends HashMap<String, PreservedViewData> {
+    }
+
+    static class PreservedViewData implements Serializable {
+        final String location;
+        final ArrayList<HasElement> chain;
+        final String title;
+
+        PreservedViewData(String location, ArrayList<HasElement> chain,
+                String title) {
+            this.location = location;
+            this.chain = chain;
+            this.title = title;
+        }
     }
 
     static boolean hasPreservedChain(VaadinSession session) {
@@ -1155,16 +1184,16 @@ public abstract class AbstractNavigationStateRenderer
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         return cache != null && cache.values().stream()
-                .anyMatch(entry -> entry.getFirst().equals(location.getPath()));
+                .anyMatch(entry -> entry.location.equals(location.getPath()));
     }
 
-    static Optional<ArrayList<HasElement>> getPreservedChain(
-            VaadinSession session, String windowName, Location location) {
+    static Optional<PreservedViewData> getPreservedChain(VaadinSession session,
+            String windowName, Location location) {
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
-        if (cache != null && cache.containsKey(windowName) && cache
-                .get(windowName).getFirst().equals(location.getPath())) {
-            return Optional.of(cache.get(windowName).getSecond());
+        if (cache != null && cache.containsKey(windowName)
+                && cache.get(windowName).location.equals(location.getPath())) {
+            return Optional.of(cache.get(windowName));
         }
         return Optional.empty();
     }
@@ -1183,20 +1212,59 @@ public abstract class AbstractNavigationStateRenderer
         final PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache != null && cache.containsKey(windowName)) {
-            return Optional.of(cache.get(windowName).getSecond());
+            return Optional.of(cache.get(windowName).chain);
         }
         return Optional.empty();
     }
 
     static void setPreservedChain(VaadinSession session, String windowName,
-            Location location, ArrayList<HasElement> chain) {
+            Location location, ArrayList<HasElement> chain, String title) {
         PreservedComponentCache cache = session
                 .getAttribute(PreservedComponentCache.class);
         if (cache == null) {
             cache = new PreservedComponentCache();
         }
-        cache.put(windowName, new Pair<>(location.getPath(), chain));
+        cache.put(windowName,
+                new PreservedViewData(location.getPath(), chain, title));
         session.setAttribute(PreservedComponentCache.class, cache);
+    }
+
+    /**
+     * Updates the preserved chain title for the current UI.
+     *
+     * @param ui
+     *            the UI to update
+     * @param title
+     *            the new title
+     */
+    public static void updatePreservedChainTitle(UI ui, String title) {
+        VaadinSession session = ui.getSession();
+        if (session == null) {
+            return;
+        }
+        if (!hasPreservedChain(session)) {
+            return;
+        }
+
+        ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        if (details == null || details.getWindowName() == null) {
+            return;
+        }
+
+        String windowName = details.getWindowName();
+        PreservedComponentCache cache = session
+                .getAttribute(PreservedComponentCache.class);
+        if (cache != null && cache.containsKey(windowName)) {
+            PreservedViewData oldData = cache.get(windowName);
+            Location currentLocation = ui.getInternals()
+                    .getActiveViewLocation();
+            if (currentLocation != null
+                    && currentLocation.getPath().equals(oldData.location)) {
+                cache.put(windowName, new PreservedViewData(oldData.location,
+                        oldData.chain, title));
+            }
+        }
     }
 
     private static void clearAllPreservedChains(UI ui) {
@@ -1236,7 +1304,7 @@ public abstract class AbstractNavigationStateRenderer
             StateNode uiNode = inactiveUI.getElement().getNode();
             Set<String> inactiveWindows = cache.entrySet().stream()
                     .filter(e -> {
-                        ArrayList<HasElement> chain = e.getValue().getSecond();
+                        ArrayList<HasElement> chain = e.getValue().chain;
                         // chain is never empty
                         StateNode chainNode = chain.get(0).getElement()
                                 .getNode();
