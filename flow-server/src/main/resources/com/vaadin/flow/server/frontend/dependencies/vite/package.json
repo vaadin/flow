@@ -21,6 +21,6 @@
     "workbox-build": "7.4.0",
     "transform-ast": "2.4.4",
     "magic-string": "0.30.21",
-    "@types/node": "24.10.1"
+    "@types/node": "25.0.1"
   }
 }
