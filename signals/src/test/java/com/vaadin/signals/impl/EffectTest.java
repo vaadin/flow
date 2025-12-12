@@ -30,6 +30,7 @@ import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.ValueSignalTest.AsyncValueSignal;
+import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -54,7 +55,7 @@ public class EffectTest extends SignalTestBase {
 
         Signal.effect(() -> {
             count.incrementAndGet();
-        }).run();
+        }).cleanup();
 
         assertEquals(1, count.get());
     }
@@ -327,11 +328,11 @@ public class EffectTest extends SignalTestBase {
         ArrayList<String> invocations = new ArrayList<>();
         ValueSignal<String> signal = new ValueSignal<>("");
 
-        Runnable closer = Signal.effect(() -> {
+        CleanupCallback closer = Signal.effect(() -> {
             invocations.add(signal.value());
         });
 
-        closer.run();
+        closer.cleanup();
         signal.value("update");
 
         assertEquals(List.of(""), invocations);
@@ -365,7 +366,7 @@ public class EffectTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
 
-        Runnable closer = Signal.effect(() -> {
+        CleanupCallback closer = Signal.effect(() -> {
             invocations.add(signal.value());
         });
         dispatcher.runPendingTasks();
@@ -374,7 +375,7 @@ public class EffectTest extends SignalTestBase {
         signal.value("update");
         assertEquals(List.of("initial"), invocations);
 
-        closer.run();
+        closer.cleanup();
         dispatcher.runPendingTasks();
         assertEquals(List.of("initial"), invocations);
     }
@@ -562,7 +563,7 @@ public class EffectTest extends SignalTestBase {
                     }
 
                     @Override
-                    public Runnable onNextChange(TransientListener listener) {
+                    public CleanupCallback onNextChange(TransientListener listener) {
                         /*
                          * Emulate race condition by injecting an unrelated
                          * write at the moment when the effect starts listening

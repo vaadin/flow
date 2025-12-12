@@ -32,6 +32,7 @@ import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
@@ -97,13 +98,13 @@ public class SynchronousSignalTreeTest {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
         AtomicBoolean hasLock = new AtomicBoolean();
 
-        Runnable wrapped = tree.wrapWithLock(() -> {
+        CleanupCallback wrapped = tree.wrapWithLock(() -> {
             hasLock.set(tree.hasLock());
         });
 
         assertFalse(hasLock.get());
 
-        wrapped.run();
+        wrapped.cleanup();
 
         assertTrue(hasLock.get());
     }
@@ -319,9 +320,9 @@ public class SynchronousSignalTreeTest {
     void observe_cancelled_notInvoked() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Runnable canceler = tree.observeNextChange(Id.ZERO,
+        CleanupCallback canceler = tree.observeNextChange(Id.ZERO,
                 immediate -> Assertions.fail());
-        canceler.run();
+        canceler.cleanup();
 
         tree.commitSingleCommand(new SignalCommand.SetCommand(Id.random(),
                 Id.ZERO, new DoubleNode(2)));
@@ -477,7 +478,7 @@ public class SynchronousSignalTreeTest {
         assertEquals(id1, resultContainer1.get().getKey().commandId());
         assertEquals(id1, resultContainer2.get().getKey().commandId());
 
-        canceler1.run(); // removes the first subscriber
+        canceler1.cleanup(); // removes the first subscriber
 
         resultContainer1.set(null);
         resultContainer2.set(null);
@@ -487,7 +488,7 @@ public class SynchronousSignalTreeTest {
         assertNull(resultContainer1.get());
         assertEquals(id1, resultContainer2.get().getKey().commandId());
 
-        canceler2.run();
+        canceler2.cleanup();
         resultContainer2.set(null);
 
         tree.commitSingleCommand(

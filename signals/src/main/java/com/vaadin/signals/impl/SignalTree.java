@@ -21,8 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.ValueSupplier;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
@@ -37,6 +39,23 @@ import com.vaadin.signals.SignalCommand;
  * asynchronously confirmed.
  */
 public abstract class SignalTree {
+    /**
+     * Receives notifications about processed signal commands and their
+     * results.
+     */
+    @FunctionalInterface
+    public interface CommandSubscriber {
+        /**
+         * Called when a command has been processed.
+         *
+         * @param command
+         *            the processed command, not <code>null</code>
+         * @param result
+         *            the command result, not <code>null</code>
+         */
+        void onCommandProcessed(SignalCommand command, CommandResult result);
+    }
+
     /**
      * Collection of callbacks representing the possible stages when committing
      * a transaction. The commit is split up into stages to enable a coordinated
@@ -106,7 +125,7 @@ public abstract class SignalTree {
 
     private final Type type;
 
-    private final List<BiConsumer<SignalCommand, CommandResult>> subscribers = new ArrayList<>();
+    private final List<CommandSubscriber> subscribers = new ArrayList<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -164,10 +183,10 @@ public abstract class SignalTree {
      *            the supplier to run, not <code>null</code>
      * @return the value returned by the supplier
      */
-    protected <T> T getWithLock(Supplier<T> action) {
+    protected <T> T getWithLock(ValueSupplier<T> action) {
         lock.lock();
         try {
-            return action.get();
+            return action.supply();
         } finally {
             lock.unlock();
         }
@@ -193,10 +212,10 @@ public abstract class SignalTree {
      *
      * @param action
      *            the action to wrap, not <code>null</code>
-     * @return a runnable that runs the provided action while holding the lock,
-     *         not <code>null</code>
+     * @return a cleanup callback that runs the provided action while holding
+     *         the lock, not <code>null</code>
      */
-    protected Runnable wrapWithLock(Runnable action) {
+    protected CleanupCallback wrapWithLock(Runnable action) {
         return () -> runWithLock(action);
     }
 
@@ -215,7 +234,7 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the observer before it's
      *         triggered, not <code>null</code>
      */
-    public Runnable observeNextChange(Id nodeId, TransientListener observer) {
+    public CleanupCallback observeNextChange(Id nodeId, TransientListener observer) {
         assert nodeId != null;
         assert observer != null;
 
@@ -300,7 +319,7 @@ public abstract class SignalTree {
      *            confirmed, not <code>null</code> to ignore the result
      */
     public void commitSingleCommand(SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            CommandResultHandler resultHandler) {
         assert command != null;
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,
@@ -367,8 +386,8 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the subscriber, not
      *         <code>null</code>
      */
-    public Runnable subscribeToProcessed(
-            BiConsumer<SignalCommand, CommandResult> subscriber) {
+    public CleanupCallback subscribeToProcessed(
+            CommandSubscriber subscriber) {
         assert subscriber != null;
         return getWithLock(() -> {
             subscribers.add(subscriber);
@@ -390,7 +409,7 @@ public abstract class SignalTree {
         assert hasLock();
         for (var command : commands) {
             for (var subscriber : subscribers) {
-                subscriber.accept(command, results.get(command.commandId()));
+                subscriber.onCommandProcessed(command, results.get(command.commandId()));
             }
         }
     }

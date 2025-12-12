@@ -35,6 +35,7 @@ import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.StagedTransaction.ResultCollector;
 import com.vaadin.signals.impl.Transaction.Type;
@@ -76,14 +77,14 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        Consumer<CommandResult> c3 = collector.registerDependency(d3);
-        c2.accept(CommandResult.ok());
-        collector.registerDependency(d1).accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        CommandResultHandler c3 = collector.registerDependency(d3);
+        c2.handle(CommandResult.ok());
+        collector.registerDependency(d1).handle(CommandResult.ok());
 
         assertNull(resultHolder.get());
 
-        c3.accept(CommandResult.ok());
+        c3.handle(CommandResult.ok());
 
         assertTrue(resultHolder.get().successful());
     }
@@ -99,17 +100,17 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        Consumer<CommandResult> c3 = collector.registerDependency(d3);
-        c2.accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        CommandResultHandler c3 = collector.registerDependency(d3);
+        c2.handle(CommandResult.ok());
 
         assertNull(resultHolder.get());
 
-        collector.registerDependency(d1).accept(CommandResult.fail("reason"));
+        collector.registerDependency(d1).handle(CommandResult.fail("reason"));
 
         assertFalse(resultHolder.get().successful());
 
-        c3.accept(CommandResult.ok());
+        c3.handle(CommandResult.ok());
 
         assertFalse(resultHolder.get().successful(),
                 "Completing last dependency should not make the result successful");
@@ -126,13 +127,13 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        c2.accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        c2.handle(CommandResult.ok());
 
-        collector.registerDependency(d1).accept(CommandResult.ok());
+        collector.registerDependency(d1).handle(CommandResult.ok());
 
         assertThrows(AssertionError.class, () -> {
-            c2.accept(CommandResult.ok());
+            c2.handle(CommandResult.ok());
         });
     }
 

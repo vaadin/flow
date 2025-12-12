@@ -27,6 +27,7 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
@@ -338,7 +339,7 @@ public class TransactionTest {
         }, Type.WRITE_THROUGH);
     }
 
-    private static Runnable dummyTask() {
+    private static TransactionTask dummyTask() {
         return () -> {
         };
     }

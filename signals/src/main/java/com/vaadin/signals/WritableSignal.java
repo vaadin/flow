@@ -16,8 +16,8 @@
 package com.vaadin.signals;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
 
+import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -79,7 +79,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the value update callback, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    CancelableOperation<T> update(UnaryOperator<T> updater);
+    CancelableOperation<T> update(SignalUpdater<T> updater);
 
     /**
      * Wraps this signal to not accept changes.
