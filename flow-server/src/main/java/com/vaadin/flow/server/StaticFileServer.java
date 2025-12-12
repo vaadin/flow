@@ -46,9 +46,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.server.frontend.DevBundleUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;

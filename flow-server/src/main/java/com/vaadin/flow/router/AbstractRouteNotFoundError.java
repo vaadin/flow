@@ -33,9 +33,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Html;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.HttpStatusCode;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This is abstract error view for routing exceptions.
