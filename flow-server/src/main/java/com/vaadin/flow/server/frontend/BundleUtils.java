@@ -46,6 +46,14 @@ public final class BundleUtils {
     }
 
     /**
+     * Cached stats.json content to avoid repeated file I/O and parsing.
+     * Volatile ensures visibility across threads. The stats.json is a classpath
+     * resource that cannot change at runtime, making it safe to cache
+     * indefinitely.
+     */
+    private static volatile ObjectNode cachedStatsJson = null;
+
+    /**
      * Loads stats.json from the classpath (from the production bundle) and
      * returns the "bundleImports" part of it.
      *
@@ -78,24 +86,35 @@ public final class BundleUtils {
     }
 
     /**
-     * Loads stats.json from the classpath (from the production bundle).
+     * Loads stats.json from the classpath (from the production bundle). The
+     * result is cached after first load since stats.json is immutable at
+     * runtime.
      *
      * @return the stats json as a json object
      */
     static ObjectNode loadStatsJson() {
+        ObjectNode cached = cachedStatsJson;
+        if (cached != null) {
+            return cached;
+        }
+
         URL statsUrl = BundleUtils.class.getClassLoader()
                 .getResource("META-INF/VAADIN/config/stats.json");
         if (statsUrl == null) {
-            return JacksonUtils.createObjectNode();
+            cached = JacksonUtils.createObjectNode();
+        } else {
+            try {
+                cached = JacksonUtils.readTree(
+                        IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
+            } catch (IOException e) {
+                getLogger().warn(
+                        "Unable to parse META-INF/VAADIN/config/stats.json", e);
+                cached = JacksonUtils.createObjectNode();
+            }
         }
-        try {
-            return JacksonUtils.readTree(
-                    IOUtils.toString(statsUrl, StandardCharsets.UTF_8));
-        } catch (IOException e) {
-            getLogger().warn(
-                    "Unable to parse META-INF/VAADIN/config/stats.json", e);
-            return JacksonUtils.createObjectNode();
-        }
+
+        cachedStatsJson = cached;
+        return cached;
     }
 
     /**
