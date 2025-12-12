@@ -40,15 +40,15 @@ public class TailwindCssIT extends ChromeBrowserTest {
 
         var customRedElement = findElement(By.id("custom-theme-red"));
         String redColor = customRedElement.getCssValue("color");
-        // red should be rgb(255, 0, 0) or rgba(255, 0, 0, 1)
+        // red should be rgba(255, 0, 0, 1)
         Assert.assertTrue("Expected red color, got: " + redColor,
-                redColor.startsWith("rgb(255, 0, 0"));
+                redColor.startsWith("rgba(255, 0, 0, 1"));
 
         var customBlueElement = findElement(By.id("custom-theme-blue"));
         String blueColor = customBlueElement.getCssValue("color");
-        // #1e40af is rgb(30, 64, 175)
+        // #1e40af is rgba(30, 64, 175, 1)
         Assert.assertTrue("Expected custom blue color, got: " + blueColor,
-                blueColor.startsWith("rgb(30, 64, 175"));
+                blueColor.startsWith("rgba(30, 64, 175, 1"));
     }
 
     @Test
@@ -56,12 +56,17 @@ public class TailwindCssIT extends ChromeBrowserTest {
         open();
         waitForDevServer();
 
-        // Verify that the generated tailwind.css file contains the custom import
+        // Verify that the generated tailwind.css file contains the custom
+        // import
         var tailwindCssContent = (String) executeScript(
-                "const style = Array.from(document.styleSheets).find(s => s.href && s.href.includes('tailwind.css')); " +
-                "return style ? Array.from(style.cssRules).map(r => r.cssText).join('\\n') : '';");
-
-        Assert.assertNotNull("Tailwind CSS should be loaded", tailwindCssContent);
+                """
+                        return Array.from(document.styleSheets)
+                            .map(s => Array.from(s.cssRules).map(r => r.cssText))
+                            .find(rules => rules.find(rule => rule.startsWith('@layer properties')))
+                            .join('\\n');
+                        """);
+        Assert.assertNotNull("Tailwind CSS should be loaded",
+                tailwindCssContent);
         Assert.assertFalse("Tailwind CSS content should not be empty",
                 tailwindCssContent.isEmpty());
     }
