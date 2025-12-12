@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,12 +33,11 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.internal.FileIOUtils;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinContext;
+import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.theme.Theme;
 
