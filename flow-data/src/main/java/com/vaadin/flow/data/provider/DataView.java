@@ -79,6 +79,27 @@ public interface DataView<T> extends Serializable {
     Stream<T> getItems();
 
     /**
+     * Get the full data available to the component with given offset and limit.
+     * Data is filtered and sorted the same way as in the component.
+     * <p>
+     * Consumers of the returned stream are responsible for closing it when all
+     * the stream operations are done to ensure that any resources feeding the
+     * stream are properly released. Failure to close the stream might lead to
+     * resource leaks.
+     * <p>
+     * It is strongly recommended to use a try-with-resources block to
+     * automatically close the stream after its terminal operation has been
+     * executed.
+     *
+     * @param offset
+     *            the index of the first item to retrieve
+     * @param limit
+     *            the number of items to retrieve
+     * @return filtered and sorted data set
+     */
+    Stream<T> getItems(int offset, int limit);
+
+    /**
      * Notifies the component that the item has been updated and thus should be
      * refreshed.
      * <p>
