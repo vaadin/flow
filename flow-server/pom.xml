@@ -14,21 +14,6 @@
   <dependencies>
 
     <!-- Project dependencies -->
-
-    <dependency>
-      <groupId>com.vaadin</groupId>
-      <artifactId>flow-build-tools</artifactId>
-      <version>${project.version}</version>
-      <classifier>shaded</classifier>
-      <!-- Note, ideally vaadin-server should not depend this module at all
-           and development time tooling shared with plugins should end up here.
-           Temporarily build this way so that commons-compress can be ditched
-           from flow-server runtime dependencies with reasonable effort.
-           The actual dependency brought in by plugins or dev mode.
-      -->
-      <scope>provided</scope>
-    </dependency>
-
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-push</artifactId>
