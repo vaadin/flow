@@ -134,7 +134,10 @@ registerRoute(
     // Sometimes navigator.onLine is not reliable,
     // try to serve the resource from the cache also in the case of a network failure.
     try {
-      return await networkOnly.handle(context);
+      const { request } = context;
+      const isEdge = /Edg/.test(self.navigator.userAgent);
+      const newContext = { ...context, request: request.clone() };
+      return await networkOnly.handle(isEdge ? newContext : context);
     } catch (error) {
       const response = await serveResourceFromCache();
       if (response) {
