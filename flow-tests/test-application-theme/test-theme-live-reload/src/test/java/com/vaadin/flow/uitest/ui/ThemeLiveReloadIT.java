@@ -29,7 +29,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe

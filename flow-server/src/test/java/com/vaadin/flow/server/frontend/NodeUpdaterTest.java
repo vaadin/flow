@@ -40,6 +40,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -622,12 +623,17 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
-            mock.when(() -> FrontendUtils
-                    .isReactRouterRequired(Mockito.any(File.class)))
+        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
+                .mockStatic(FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
+                .mockStatic(FrontendBuildUtils.class);
+        try {
+            mockFrontendBuildUtils.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
+            mockFrontendUtils
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
                     .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
@@ -653,16 +659,19 @@ public class NodeUpdaterTest {
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
             options.withReact(reactEnabled);
+            mockFrontendUtils.close();
+            mockFrontendBuildUtils.close();
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> mock = Mockito
+                .mockStatic(FrontendBuildUtils.class)) {
+            mock.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
             options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();

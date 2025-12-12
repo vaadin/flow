@@ -26,14 +26,14 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandlerTest;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.internal.FrontendUtils.THEME_IMPORTS_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.WEB_COMPONENT_HTML;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class TestUtil {

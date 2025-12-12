@@ -29,11 +29,11 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.DependencyFilter;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 

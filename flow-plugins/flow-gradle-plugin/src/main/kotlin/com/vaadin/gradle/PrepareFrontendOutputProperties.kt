@@ -18,7 +18,7 @@ package com.vaadin.flow.gradle
 import java.io.File
 import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
-import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.internal.FrontendUtils
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.OutputFile
