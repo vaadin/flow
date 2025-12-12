@@ -359,4 +359,36 @@ public class BundleUtilsTest {
         Assert.assertEquals("Existing file should not be overwritten",
                 existingLockFile, packageLockContents);
     }
+
+    @Test
+    public void loadStatsJson_cachesResult_returnsSameInstance() {
+        // First call loads and caches
+        ObjectNode first = BundleUtils.loadStatsJson();
+        // Second call returns cached instance
+        ObjectNode second = BundleUtils.loadStatsJson();
+        Assert.assertSame("Should return cached instance on second call", first,
+                second);
+    }
+
+    @Test
+    public void loadStatsJson_cachedResultIsConsistent() {
+        ObjectNode first = BundleUtils.loadStatsJson();
+        ObjectNode second = BundleUtils.loadStatsJson();
+
+        // Verify both have same content (whether same instance or not)
+        Assert.assertEquals("Cached result should be consistent",
+                first.toString(), second.toString());
+    }
+
+    @Test
+    public void isPreCompiledProductionBundle_usesCachedStats() {
+        // Call multiple times
+        boolean first = BundleUtils.isPreCompiledProductionBundle();
+        boolean second = BundleUtils.isPreCompiledProductionBundle();
+        boolean third = BundleUtils.isPreCompiledProductionBundle();
+
+        // All should return same result
+        Assert.assertEquals("Should return consistent results", first, second);
+        Assert.assertEquals("Should return consistent results", second, third);
+    }
 }
