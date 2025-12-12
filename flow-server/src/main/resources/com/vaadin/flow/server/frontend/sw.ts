@@ -134,7 +134,11 @@ registerRoute(
     // Sometimes navigator.onLine is not reliable,
     // try to serve the resource from the cache also in the case of a network failure.
     try {
-      return await networkOnly.handle(context);
+        // Guard fetch getting stuck indefinitely with Edge
+        return await Promise.race([
+          networkOnly.handle(context),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Fetch timeout')), 1000))
+        ]);
     } catch (error) {
       const response = await serveResourceFromCache();
       if (response) {
