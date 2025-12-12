@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -30,9 +30,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
-
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.StringUtil;
 
 /**
  * Utility methods to handle application theme CSS content.
