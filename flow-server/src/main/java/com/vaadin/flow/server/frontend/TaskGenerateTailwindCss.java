@@ -38,7 +38,7 @@ import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
 public class TaskGenerateTailwindCss extends AbstractTaskClientGenerator {
 
     private static final String RELATIVE_SOURCE_PATH_MARKER = "#relativeSourcePath#";
-    private static final String CUSTOM_IMPORT_MARKER = "#customImport#";
+    private static final String CUSTOM_IMPORT_MARKER = "/* #customImport# */";
     private static final String TAILWIND_CUSTOM_CSS = "tailwind-custom.css";
 
     private String relativeSourcePath;
