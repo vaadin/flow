@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -56,6 +57,8 @@ public class ComponentTracker {
             .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location[]> attachLocations = Collections
             .synchronizedMap(new WeakHashMap<>());
+    private static AtomicLong creationOrdinal = new AtomicLong(0);
+    private static AtomicLong attachOrdinal = new AtomicLong(0);
 
     private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
@@ -74,6 +77,7 @@ public class ComponentTracker {
         private final String filename;
         private final String methodName;
         private final int lineNumber;
+        private long ordinal;
 
         public Location(String className, String filename, String methodName,
                 int lineNumber) {
@@ -98,6 +102,11 @@ public class ComponentTracker {
         public int lineNumber() {
             return lineNumber;
         }
+
+        public long ordinal() {
+            return ordinal;
+        }
+
 
         @Override
         public boolean equals(Object o) {
@@ -196,7 +205,7 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findCreateLocations(Component component) {
-        return computeAllLocations(component, createLocations, createThrowable);
+        return computeAllLocations(component, createLocations, createThrowable, creationOrdinal);
     }
 
     /**
@@ -240,7 +249,7 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findAttachLocations(Component component) {
-        return computeAllLocations(component, attachLocations, attachThrowable);
+        return computeAllLocations(component, attachLocations, attachThrowable, attachOrdinal);
     }
 
     /**
@@ -480,7 +489,8 @@ public class ComponentTracker {
      */
     private static Location[] computeAllLocations(Component component,
             Map<Component, Location[]> locationsCache,
-            Map<Component, Throwable> throwableMap) {
+            Map<Component, Throwable> throwableMap,
+            AtomicLong referenceCounter) {
         // Check cache first
         Location[] cached = locationsCache.get(component);
         if (cached != null) {
@@ -494,6 +504,9 @@ public class ComponentTracker {
         }
         Location[] locations = Stream.of(throwable.getStackTrace())
                 .map(ComponentTracker::toLocation).toArray(Location[]::new);
+        for (Location location : locations) {
+            location.ordinal = referenceCounter.getAndIncrement();
+        }
         locationsCache.put(component, locations);
         return locations;
     }
