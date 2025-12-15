@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow;
 
+import javax.swing.*;
+
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Function;
@@ -30,8 +32,6 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
-
-import javax.swing.*;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -146,7 +146,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void ordinalValueSet(){
+    public void ordinalValueSet() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -157,7 +157,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void attachOrderChangesOrdinal(){
+    public void attachOrderChangesOrdinal() {
         Component1 c1 = new Component1();
         Component c2 = new Component1();
         Layout layout = new Layout();
@@ -168,7 +168,7 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void createOrderChangesOrdinal(){
+    public void createOrderChangesOrdinal() {
         Component c2 = new Component1();
         Component1 c1 = new Component1();
         Layout layout = new Layout();
@@ -179,8 +179,9 @@ public class ComponentTrackerTest {
     }
 
     @Test
-    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine(){
-        Component[] components = new  Component[] { new Component1(), new Component1() };
+    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
+        Component[] components = new Component[] { new Component1(),
+                new Component1() };
         new Layout(components);
         assertCreateLocation(components[0], 183, getClass().getName());
         assertCreateLocation(components[1], 183, getClass().getName());
@@ -230,23 +231,36 @@ public class ComponentTrackerTest {
                 .findFirst().orElseThrow();
     }
 
-    private void assertLocationValueIsGreater(Component componentWithLowerOrdinalVal, Component componentWithHigherOrdinalVal, Function<Component, Location> findLocationFn,
-                                              Function<Component, Location[]> findLocationArrFn) {
-        Location locationC1 = findLocationFn.apply(componentWithLowerOrdinalVal);
-        Location locationC2 = findLocationFn.apply(componentWithHigherOrdinalVal);
+    private void assertLocationValueIsGreater(
+            Component componentWithLowerOrdinalVal,
+            Component componentWithHigherOrdinalVal,
+            Function<Component, Location> findLocationFn,
+            Function<Component, Location[]> findLocationArrFn) {
+        Location locationC1 = findLocationFn
+                .apply(componentWithLowerOrdinalVal);
+        Location locationC2 = findLocationFn
+                .apply(componentWithHigherOrdinalVal);
         Assert.assertTrue(locationC2.ordinal() > locationC1.ordinal());
 
-        Location locationFromArrayC1 = getLocationFromArray(findLocationArrFn.apply(componentWithLowerOrdinalVal));
-        Location locationFromArrayC2 = getLocationFromArray(findLocationArrFn.apply(componentWithHigherOrdinalVal));
+        Location locationFromArrayC1 = getLocationFromArray(
+                findLocationArrFn.apply(componentWithLowerOrdinalVal));
+        Location locationFromArrayC2 = getLocationFromArray(
+                findLocationArrFn.apply(componentWithHigherOrdinalVal));
 
-        Assert.assertTrue(locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
-    }
-    private void assertCreateLocationOrdinalValueIsGreater(Component c1, Component c2){
-        assertLocationValueIsGreater(c1, c2, ComponentTracker::findCreate, ComponentTracker::findCreateLocations);
-    }
-    private void assertAttachLocationOrdinalValueIsGreater(Component c1, Component c2){
-        assertLocationValueIsGreater(c1, c2, ComponentTracker::findAttach, ComponentTracker::findAttachLocations);
+        Assert.assertTrue(
+                locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
     }
 
+    private void assertCreateLocationOrdinalValueIsGreater(Component c1,
+            Component c2) {
+        assertLocationValueIsGreater(c1, c2, ComponentTracker::findCreate,
+                ComponentTracker::findCreateLocations);
+    }
+
+    private void assertAttachLocationOrdinalValueIsGreater(Component c1,
+            Component c2) {
+        assertLocationValueIsGreater(c1, c2, ComponentTracker::findAttach,
+                ComponentTracker::findAttachLocations);
+    }
 
 }
