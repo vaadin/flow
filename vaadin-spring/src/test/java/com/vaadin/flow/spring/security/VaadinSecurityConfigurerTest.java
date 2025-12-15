@@ -9,6 +9,11 @@ import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.lang.reflect.Method;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -43,6 +48,7 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.web.access.ExceptionTranslationFilter;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
+import org.springframework.security.web.authentication.AbstractAuthenticationTargetUrlRequestHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
@@ -368,6 +374,110 @@ class VaadinSecurityConfigurerTest {
                             () -> filter.doFilter(request, response, chain))
                             .doesNotThrowAnyException());
         }
+    }
+
+    @Test
+    void defaultSuccessUrl_withLoginView_successHandlerIsConfigured()
+            throws Exception {
+        http.with(configurer,
+                c -> c.loginView("/login").defaultSuccessUrl("/dashboard"))
+                .build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/dashboard");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void defaultSuccessUrl_withLoginViewClass_successHandlerIsConfigured()
+            throws Exception {
+        http.with(configurer, c -> c.loginView(TestLoginView.class)
+                .defaultSuccessUrl("/home")).build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/home");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void defaultSuccessUrl_withOAuth2LoginPage_successHandlerIsConfigured()
+            throws Exception {
+        http.with(configurer,
+                c -> c.oauth2LoginPage("/oauth2/authorization/google")
+                        .defaultSuccessUrl("/main"))
+                .build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/main");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void defaultSuccessUrl_withAlwaysUseTrue_alwaysRedirectsToDefaultUrl()
+            throws Exception {
+        http.with(configurer, c -> c.loginView("/login")
+                .defaultSuccessUrl("/dashboard", true)).build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/dashboard");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isTrue();
+    }
+
+    @Test
+    void defaultSuccessUrl_withAlwaysUseFalse_redirectsToSavedRequest()
+            throws Exception {
+        http.with(configurer, c -> c.loginView("/login")
+                .defaultSuccessUrl("/dashboard", false)).build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/dashboard");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    @Test
+    void defaultSuccessUrl_notSet_usesRootPath() throws Exception {
+        http.with(configurer, c -> c.loginView("/login")).build();
+
+        var handler = http.getSharedObject(
+                VaadinSavedRequestAwareAuthenticationSuccessHandler.class);
+
+        assertThat(handler).isNotNull();
+        assertThat(getDefaultTargetUrl(handler)).isEqualTo("/");
+        assertThat(isAlwaysUseDefaultTargetUrl(handler)).isFalse();
+    }
+
+    // Helper methods to access protected fields using reflection
+    private String getDefaultTargetUrl(
+            VaadinSavedRequestAwareAuthenticationSuccessHandler handler)
+            throws Exception {
+        Method method = AbstractAuthenticationTargetUrlRequestHandler.class
+                .getDeclaredMethod("getDefaultTargetUrl");
+        method.setAccessible(true);
+        return (String) method.invoke(handler);
+    }
+
+    private boolean isAlwaysUseDefaultTargetUrl(
+            VaadinSavedRequestAwareAuthenticationSuccessHandler handler)
+            throws Exception {
+        Method method = AbstractAuthenticationTargetUrlRequestHandler.class
+                .getDeclaredMethod("isAlwaysUseDefaultTargetUrl");
+        method.setAccessible(true);
+        return (boolean) method.invoke(handler);
     }
 
     @Route
