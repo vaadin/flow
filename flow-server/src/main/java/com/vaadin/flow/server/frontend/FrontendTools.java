@@ -29,6 +29,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,11 +62,11 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v24.10.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.12.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "11.6.0";
+    public static final String DEFAULT_NPM_VERSION = "11.6.2";
 
     public static final String DEFAULT_PNPM_VERSION = "10.24.0";
 
@@ -82,22 +83,14 @@ public class FrontendTools {
             + "%nInstall bun by following the instruction at https://bun.sh "
             + MSG_SUFFIX;
 
-    private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
-            + "%nVaadin requires Node.js and npm to be installed. The %s directory already contains 'node' but it's either not a file "
-            + "or not a 'node' executable. Please check the %s directory and clean it up: remove '%s'."
-            + "%n then run the application or Maven goal again." + MSG_SUFFIX;
-
     private static final String BAD_VERSION = MSG_PREFIX
             + "%nYour installed '%s' version (%s) is known to have problems." //
             + "%nPlease update it%s." + "%n" //
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
-    private static final List<FrontendVersion> BAD_NPM_VERSIONS = Collections
+    private static final List<@NonNull FrontendVersion> BAD_NPM_VERSIONS = Collections
             .singletonList(new FrontendVersion("9.2.0"));
-
-    private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
-            7, 0);
 
     private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;

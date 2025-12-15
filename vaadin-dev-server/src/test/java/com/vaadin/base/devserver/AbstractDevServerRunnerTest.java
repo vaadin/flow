@@ -44,7 +44,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.startup.AbstractDevModeTest;
 import com.vaadin.flow.internal.DevModeHandler;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 

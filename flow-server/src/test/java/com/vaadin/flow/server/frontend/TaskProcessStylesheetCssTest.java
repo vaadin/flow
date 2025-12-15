@@ -31,7 +31,6 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 public class TaskProcessStylesheetCssTest {

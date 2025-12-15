@@ -27,8 +27,8 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 
 @Route("com.vaadin.flow.StateView")

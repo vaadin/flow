@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,10 +26,10 @@ import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
-import com.vaadin.flow.internal.StringUtil;
-
 /**
  * Utility class for compression and decompression of folders and files.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
  * @since 24.3

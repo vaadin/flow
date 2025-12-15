@@ -30,7 +30,7 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-archive-extractor</artifactId>
+      <artifactId>flow-build-tools</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

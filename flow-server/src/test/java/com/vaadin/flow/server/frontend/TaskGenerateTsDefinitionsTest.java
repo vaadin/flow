@@ -35,7 +35,6 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static com.vaadin.flow.server.frontend.TaskGenerateTsDefinitions.TS_DEFINITIONS;
 import static java.nio.charset.StandardCharsets.UTF_8;

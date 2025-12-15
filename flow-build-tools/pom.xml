@@ -6,12 +6,10 @@
     <artifactId>flow-project</artifactId>
     <version>25.1-SNAPSHOT</version>
   </parent>
-  <artifactId>flow-archive-extractor</artifactId>
+  <artifactId>flow-build-tools</artifactId>
   <packaging>jar</packaging>
-  <name>Flow Archive Extractor</name>
-  <description>A module to extract installation packages of node. Created
-  as a temporary module to get runtime dependency to commons-compress,
-  should be later be part of larger frontend-tooling package</description>
+  <name>Flow Frontend Build Tools</name>
+  <description>A module to handle frontend build tools common to the plugins and dev server</description>
 
   <dependencies>
 
@@ -21,6 +19,21 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-compress</artifactId>
       <version>1.28.0</version>
+    </dependency>
+
+    <!-- Test dependencies -->
+
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-test-generic</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
