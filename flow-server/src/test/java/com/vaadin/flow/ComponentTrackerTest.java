@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow;
 
-import javax.swing.*;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.function.Function;
@@ -74,7 +72,7 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 71;
+        int c1Line = 72;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
@@ -88,7 +86,7 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 82;
+        int c1Line = 83;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 
@@ -110,7 +108,7 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        int c1Line = 106;
+        int c1Line = 107;
         assertCreateLocation(c1, c1Line, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
@@ -152,8 +150,8 @@ public class ComponentTrackerTest {
         Layout layout = new Layout();
         layout.add(c1);
         layout.add(c2);
-        assertCreateLocationOrdinalValueIsGreater(c1, c2);
-        assertAttachLocationOrdinalValueIsGreater(c1, c2);
+        assertCreateLocationOrdinalValueLower(c1, c2);
+        assertAttachLocationOrdinalValueLower(c1, c2);
     }
 
     @Test
@@ -163,8 +161,8 @@ public class ComponentTrackerTest {
         Layout layout = new Layout();
         layout.add(c2);
         layout.add(c1);
-        assertCreateLocationOrdinalValueIsGreater(c1, c2);
-        assertAttachLocationOrdinalValueIsGreater(c2, c1);
+        assertCreateLocationOrdinalValueLower(c1, c2);
+        assertAttachLocationOrdinalValueLower(c2, c1);
     }
 
     @Test
@@ -174,19 +172,18 @@ public class ComponentTrackerTest {
         Layout layout = new Layout();
         layout.add(c1);
         layout.add(c2);
-        assertCreateLocationOrdinalValueIsGreater(c2, c1);
-        assertAttachLocationOrdinalValueIsGreater(c1, c2);
+        assertCreateLocationOrdinalValueLower(c2, c1);
+        assertAttachLocationOrdinalValueLower(c1, c2);
     }
 
     @Test
     public void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
-        Component[] components = new Component[] { new Component1(),
-                new Component1() };
+        var components = new Component[] { new Component1(), new Component1() };
         new Layout(components);
-        assertCreateLocation(components[0], 183, getClass().getName());
-        assertCreateLocation(components[1], 183, getClass().getName());
-        assertCreateLocationOrdinalValueIsGreater(components[0], components[1]);
-        assertAttachLocationOrdinalValueIsGreater(components[0], components[1]);
+        assertCreateLocation(components[0], 181, getClass().getName());
+        assertCreateLocation(components[1], 181, getClass().getName());
+        assertCreateLocationOrdinalValueLower(components[0], components[1]);
+        assertAttachLocationOrdinalValueLower(components[0], components[1]);
     }
 
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
@@ -231,7 +228,7 @@ public class ComponentTrackerTest {
                 .findFirst().orElseThrow();
     }
 
-    private void assertLocationValueIsGreater(
+    private void assertLocationValueIsLower(
             Component componentWithLowerOrdinalVal,
             Component componentWithHigherOrdinalVal,
             Function<Component, Location> findLocationFn,
@@ -251,15 +248,15 @@ public class ComponentTrackerTest {
                 locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
     }
 
-    private void assertCreateLocationOrdinalValueIsGreater(Component c1,
+    private void assertCreateLocationOrdinalValueLower(Component c1,
             Component c2) {
-        assertLocationValueIsGreater(c1, c2, ComponentTracker::findCreate,
+        assertLocationValueIsLower(c1, c2, ComponentTracker::findCreate,
                 ComponentTracker::findCreateLocations);
     }
 
-    private void assertAttachLocationOrdinalValueIsGreater(Component c1,
+    private void assertAttachLocationOrdinalValueLower(Component c1,
             Component c2) {
-        assertLocationValueIsGreater(c1, c2, ComponentTracker::findAttach,
+        assertLocationValueIsLower(c1, c2, ComponentTracker::findAttach,
                 ComponentTracker::findAttachLocations);
     }
 

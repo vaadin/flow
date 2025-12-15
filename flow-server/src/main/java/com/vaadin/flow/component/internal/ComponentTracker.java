@@ -67,8 +67,7 @@ public class ComponentTracker {
             "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
             "org.springframework.beans.", "org.jboss.weld.", };
 
-
-    private ComponentTracker(){
+    private ComponentTracker() {
 
     }
 
@@ -111,7 +110,6 @@ public class ComponentTracker {
         public long ordinal() {
             return ordinal;
         }
-
 
         @Override
         public boolean equals(Object o) {
@@ -210,7 +208,8 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findCreateLocations(Component component) {
-        return computeAllLocations(component, createLocations, createThrowable, createOrdinal);
+        return computeAllLocations(component, createLocations, createThrowable,
+                createOrdinal);
     }
 
     /**
@@ -254,7 +253,8 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findAttachLocations(Component component) {
-        return computeAllLocations(component, attachLocations, attachThrowable, attachOrdinal);
+        return computeAllLocations(component, attachLocations, attachThrowable,
+                attachOrdinal);
     }
 
     /**
@@ -452,8 +452,7 @@ public class ComponentTracker {
      */
     private static Location computeFilteredLocation(Component component,
             Map<Component, Location> locationCache,
-            Map<Component, Throwable> throwableMap,
-            Location referenceLocation,
+            Map<Component, Throwable> throwableMap, Location referenceLocation,
             AtomicLong ordinalRefCounter) {
         // Check cache first
         Location cached = locationCache.get(component);
@@ -517,8 +516,9 @@ public class ComponentTracker {
         return locations;
     }
 
-    private static void setAndIncrementOrdinal(Location location, AtomicLong ordinalRefCounter) {
-        if(location == null){
+    private static void setAndIncrementOrdinal(Location location,
+            AtomicLong ordinalRefCounter) {
+        if (location == null) {
             return;
         }
         location.ordinal = ordinalRefCounter.getAndIncrement();
