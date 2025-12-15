@@ -62,7 +62,7 @@ import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
+import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
 
 /**
  * Common logic for generate import file JS content.
@@ -95,7 +95,7 @@ abstract class AbstractUpdateImports implements Runnable {
             .compile("^\\s*injectGlobalCss\\(([^,]+),.*$");
     private static final String INJECT_WC_CSS = "injectGlobalWebcomponentCss(%s);";
 
-    private static final String TAILWIND_IMPORT = "./" + TAILWIND_CSS;
+    private static final String TAILWIND_IMPORT = "./" + TAILWIND_JS;
 
     private static final String THEMABLE_MIXIN_IMPORT = "import { css, unsafeCSS, registerStyles } from '@vaadin/vaadin-themable-mixin';";
     private static final String REGISTER_STYLES_FOR_TEMPLATE = CSS_IMPORT_AND_MAKE_LIT_CSS
@@ -310,9 +310,6 @@ abstract class AbstractUpdateImports implements Runnable {
         List<CssData> eagerCssData = new ArrayList<>();
         List<CssData> appShellCssData = new ArrayList<>();
         List<CssData> webComponentCssData = new ArrayList<>();
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
-            appShellCssData.add(new CssData(TAILWIND_IMPORT, null, null, null));
-        }
         for (Entry<ChunkInfo, List<String>> entry : javascript.entrySet()) {
             if (isLazyRoute(entry.getKey())) {
                 lazyJavascript.put(entry.getKey(), entry.getValue());
@@ -417,6 +414,9 @@ abstract class AbstractUpdateImports implements Runnable {
         if (!appShellCssLines.isEmpty()) {
             appShellLines.add(IMPORT_INJECT);
             appShellLines.addAll(appShellCssLines);
+        }
+        if (FrontendUtils.isTailwindCssEnabled(options)) {
+            appShellLines.add(String.format(IMPORT_TEMPLATE, TAILWIND_IMPORT));
         }
         files.put(appShellImports, appShellLines);
         files.put(appShellDefinitions, Collections.singletonList("export {}"));
@@ -664,10 +664,7 @@ abstract class AbstractUpdateImports implements Runnable {
                 es6ImportPaths.add(originalModulePath);
             }
 
-            if (theme != null) {
-                handleImports(originalModulePath, theme, es6ImportPaths,
-                        visited);
-            }
+            handleImports(originalModulePath, theme, es6ImportPaths, visited);
         }
 
         if (!resourceNotFound.isEmpty()) {
@@ -970,14 +967,15 @@ abstract class AbstractUpdateImports implements Runnable {
                             // all
                             return null;
                         }
-                        return normalizePath(resolvedPath);
+                        return normalizePath(
+                                resolvedPath.replaceAll("\\\\", "/"));
                     }).filter(Objects::nonNull).collect(Collectors.toList()));
         }
         List<String> resolvedPaths = resolvedImportPathsCache.get(filePath);
 
         for (String resolvedPath : resolvedPaths) {
-            if (resolvedPath.startsWith(theme.getBaseUrl())
-                    || resolvedPath.startsWith("./" + theme.getBaseUrl())) {
+            if (theme != null && (resolvedPath.startsWith(theme.getBaseUrl())
+                    || resolvedPath.startsWith("./" + theme.getBaseUrl()))) {
                 String translatedPath = theme.translateUrl(resolvedPath);
                 if (!visitedImports.contains(translatedPath)
                         && importedFileExists(translatedPath)) {

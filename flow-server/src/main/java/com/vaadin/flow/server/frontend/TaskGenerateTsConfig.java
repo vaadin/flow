@@ -25,9 +25,9 @@ import java.nio.file.Files;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.ExecutionFailedException;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 

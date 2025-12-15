@@ -53,6 +53,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
@@ -272,6 +273,11 @@ public class FrontendUtils {
      * File name of the Tailwind CSS framework integration entrypoint.
      */
     public static final String TAILWIND_CSS = "tailwind.css";
+
+    /**
+     * File name of the Tailwind CSS integration js wrapper.
+     */
+    public static final String TAILWIND_JS = "tailwind.js";
 
     /**
      * Default generated path for generated frontend files.

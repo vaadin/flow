@@ -125,7 +125,7 @@
     <dependency>
       <groupId>org.eclipse.platform</groupId>
       <artifactId>org.eclipse.equinox.preferences</artifactId>
-      <version>3.12.0</version>
+      <version>3.12.100</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -144,7 +144,7 @@
     <dependency>
       <groupId>org.eclipse.platform</groupId>
       <artifactId>org.eclipse.core.contenttype</artifactId>
-      <version>3.9.700</version>
+      <version>3.9.800</version>
       <scope>test</scope>
     </dependency>
 

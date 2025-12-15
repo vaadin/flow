@@ -23,9 +23,8 @@ import java.nio.file.StandardOpenOption;
 import java.util.regex.Pattern;
 
 import com.vaadin.flow.internal.StringUtil;
-import com.vaadin.flow.server.ExecutionFailedException;
 
-import static com.vaadin.flow.server.frontend.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
+import static com.vaadin.flow.internal.FileIOUtils.compareIgnoringIndentationEOLAndWhiteSpace;
 
 /**
  * Generate <code>types.d.ts</code> if it is missing in project folder and

@@ -21,10 +21,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.Arrays;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Version;
 
 import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;

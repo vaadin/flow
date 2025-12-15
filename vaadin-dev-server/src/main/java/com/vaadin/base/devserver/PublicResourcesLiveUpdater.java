@@ -18,11 +18,13 @@ package com.vaadin.base.devserver;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,7 +54,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
  * For internal use only. May be renamed or removed in a future release.
  */
 public class PublicResourcesLiveUpdater implements Closeable {
-
+    private final static Pattern THEME_URLS_PATTERN = Pattern
+            .compile("^(.*/)?(lumo|aura)/.+\\.css$");
     private final List<FileWatcher> watchers = new ArrayList<>();
     private final List<File> roots = new ArrayList<>();
     private final VaadinContext context;
@@ -123,8 +126,8 @@ public class PublicResourcesLiveUpdater implements Closeable {
                     return;
                 }
                 for (String url : activeUrls) {
-                    if (isVaadinThemeUrl(url)) {
-                        // ignore Aura and Lumo urls
+                    if (isVaadinThemeUrl(url) || isExternalUrl(url)) {
+                        // ignore external urls, and Aura and Lumo urls
                         continue;
                     }
                     String normalized = PublicStyleSheetBundler
@@ -154,9 +157,22 @@ public class PublicResourcesLiveUpdater implements Closeable {
         return watcher;
     }
 
+    private boolean isExternalUrl(String url) {
+        if (url.startsWith(ApplicationConstants.CONTEXT_PROTOCOL_PREFIX)
+                || url.startsWith(ApplicationConstants.BASE_PROTOCOL_PREFIX)) {
+            return false;
+        }
+        try {
+            return URI.create(url).isAbsolute();
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+    }
+
     private boolean isVaadinThemeUrl(String url) {
         url = FrontendUtils.getUnixPath(new File(url).toPath());
-        return url.contains("lumo/lumo.css") || url.contains("aura/aura.css");
+        // all known urls from Aura and Lumo classes
+        return THEME_URLS_PATTERN.matcher(url).matches();
     }
 
     private Logger getLogger() {

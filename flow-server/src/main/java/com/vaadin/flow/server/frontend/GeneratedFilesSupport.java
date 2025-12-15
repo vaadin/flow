@@ -24,6 +24,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.vaadin.flow.internal.FileIOUtils;
+
 /**
  * A helper for tasks to handle generated files.
  * <p>
