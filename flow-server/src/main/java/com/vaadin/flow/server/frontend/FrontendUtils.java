@@ -275,6 +275,11 @@ public class FrontendUtils {
     public static final String TAILWIND_CSS = "tailwind.css";
 
     /**
+     * File name of the Tailwind CSS integration js wrapper.
+     */
+    public static final String TAILWIND_JS = "tailwind.js";
+
+    /**
      * Default generated path for generated frontend files.
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
