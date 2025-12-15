@@ -37,6 +37,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -375,6 +377,20 @@ public class FrontendUtils {
     private static final Pattern CLIENT_SIDE_ROUTES_PATTERN = Pattern.compile(
             "(?<=(?:const|let|var) routes)(:\\s?\\w*\\[\\s?])?\\s?=\\s?\\[([\\s\\S]*?)(?=\\.{3}serverSideRoutes)",
             Pattern.MULTILINE);
+
+    /**
+     * Executor for I/O-bound operations like reading process streams. Uses
+     * virtual threads to avoid blocking the common ForkJoinPool.
+     * <p>
+     * This executor is intentionally never shut down as it's used throughout
+     * the application lifecycle and virtual threads have minimal overhead.
+     *
+     * @see <a href="https://github.com/vaadin/flow/issues/22756">Issue
+     *      #22756</a>
+     */
+    private static final ExecutorService STREAM_EXECUTOR = Executors
+            .newThreadPerTaskExecutor(Thread.ofVirtual()
+                    .name("vaadin-stream-consumer-", 0).factory());
 
     /**
      * Only static stuff here.
@@ -978,10 +994,12 @@ public class FrontendUtils {
      */
     public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
             Process process) {
-        CompletableFuture<String> stdOut = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getInputStream()));
-        CompletableFuture<String> stdErr = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        CompletableFuture<String> stdOut = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getInputStream()),
+                STREAM_EXECUTOR);
+        CompletableFuture<String> stdErr = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getErrorStream()),
+                STREAM_EXECUTOR);
         return CompletableFuture.allOf(stdOut, stdErr).thenApply(
                 unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
     }
