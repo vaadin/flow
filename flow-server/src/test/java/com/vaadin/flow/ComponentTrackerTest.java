@@ -17,6 +17,7 @@ package com.vaadin.flow;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -29,6 +30,8 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.internal.ComponentTracker;
 import com.vaadin.flow.component.internal.ComponentTracker.Location;
+
+import javax.swing.*;
 
 /**
  * Note that this is intentionally in the "wrong" package as internal packages
@@ -142,6 +145,49 @@ public class ComponentTrackerTest {
         Assert.assertTrue(isCleared(attachMap));
     }
 
+    @Test
+    public void ordinalValueSet(){
+        Component1 c1 = new Component1();
+        Component c2 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c1);
+        layout.add(c2);
+        assertCreateLocationOrdinalValueIsGreater(c1, c2);
+        assertAttachLocationOrdinalValueIsGreater(c1, c2);
+    }
+
+    @Test
+    public void attachOrderChangesOrdinal(){
+        Component1 c1 = new Component1();
+        Component c2 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c2);
+        layout.add(c1);
+        assertCreateLocationOrdinalValueIsGreater(c1, c2);
+        assertAttachLocationOrdinalValueIsGreater(c2, c1);
+    }
+
+    @Test
+    public void createOrderChangesOrdinal(){
+        Component c2 = new Component1();
+        Component1 c1 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c1);
+        layout.add(c2);
+        assertCreateLocationOrdinalValueIsGreater(c2, c1);
+        assertAttachLocationOrdinalValueIsGreater(c1, c2);
+    }
+
+    @Test
+    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine(){
+        Component[] components = new  Component[] { new Component1(), new Component1() };
+        new Layout(components);
+        assertCreateLocation(components[0], 183, getClass().getName());
+        assertCreateLocation(components[1], 183, getClass().getName());
+        assertCreateLocationOrdinalValueIsGreater(components[0], components[1]);
+        assertAttachLocationOrdinalValueIsGreater(components[0], components[1]);
+    }
+
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
         for (int i = 0; i < 5; i++) {
             System.gc();
@@ -182,6 +228,25 @@ public class ComponentTrackerTest {
         return Stream.of(locations).filter(
                 l -> l.className().equals(ComponentTrackerTest.class.getName()))
                 .findFirst().orElseThrow();
-
     }
+
+    private void assertLocationValueIsGreater(Component componentWithLowerOrdinalVal, Component componentWithHigherOrdinalVal, Function<Component, Location> findLocationFn,
+                                              Function<Component, Location[]> findLocationArrFn) {
+        Location locationC1 = findLocationFn.apply(componentWithLowerOrdinalVal);
+        Location locationC2 = findLocationFn.apply(componentWithHigherOrdinalVal);
+        Assert.assertTrue(locationC2.ordinal() > locationC1.ordinal());
+
+        Location locationFromArrayC1 = getLocationFromArray(findLocationArrFn.apply(componentWithLowerOrdinalVal));
+        Location locationFromArrayC2 = getLocationFromArray(findLocationArrFn.apply(componentWithHigherOrdinalVal));
+
+        Assert.assertTrue(locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
+    }
+    private void assertCreateLocationOrdinalValueIsGreater(Component c1, Component c2){
+        assertLocationValueIsGreater(c1, c2, ComponentTracker::findCreate, ComponentTracker::findCreateLocations);
+    }
+    private void assertAttachLocationOrdinalValueIsGreater(Component c1, Component c2){
+        assertLocationValueIsGreater(c1, c2, ComponentTracker::findAttach, ComponentTracker::findAttachLocations);
+    }
+
+
 }

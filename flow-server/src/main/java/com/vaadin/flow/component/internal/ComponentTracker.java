@@ -57,8 +57,8 @@ public class ComponentTracker {
             .synchronizedMap(new WeakHashMap<>());
     private static Map<Component, Location[]> attachLocations = Collections
             .synchronizedMap(new WeakHashMap<>());
-    private static AtomicLong creationOrdinal = new AtomicLong(0);
-    private static AtomicLong attachOrdinal = new AtomicLong(0);
+    private static final AtomicLong createOrdinal = new AtomicLong(0);
+    private static final AtomicLong attachOrdinal = new AtomicLong(0);
 
     private static Boolean disabled = null;
     private static String[] prefixesToSkip = new String[] {
@@ -66,6 +66,11 @@ public class ComponentTracker {
             "com.vaadin.flow.dom.", "com.vaadin.flow.internal.",
             "com.vaadin.flow.spring.", "com.vaadin.cdi.", "java.", "jdk.",
             "org.springframework.beans.", "org.jboss.weld.", };
+
+
+    private ComponentTracker(){
+
+    }
 
     /**
      * Represents a location in the source code.
@@ -193,7 +198,7 @@ public class ComponentTracker {
      */
     public static Location findCreate(Component component) {
         return computeFilteredLocation(component, createLocation,
-                createThrowable, null);
+                createThrowable, null, createOrdinal);
     }
 
     /**
@@ -205,7 +210,7 @@ public class ComponentTracker {
      * @return the locations involved in creating the component
      */
     public static Location[] findCreateLocations(Component component) {
-        return computeAllLocations(component, createLocations, createThrowable, creationOrdinal);
+        return computeAllLocations(component, createLocations, createThrowable, createOrdinal);
     }
 
     /**
@@ -237,7 +242,7 @@ public class ComponentTracker {
      */
     public static Location findAttach(Component component) {
         return computeFilteredLocation(component, attachLocation,
-                attachThrowable, findCreate(component));
+                attachThrowable, findCreate(component), attachOrdinal);
     }
 
     /**
@@ -448,7 +453,8 @@ public class ComponentTracker {
     private static Location computeFilteredLocation(Component component,
             Map<Component, Location> locationCache,
             Map<Component, Throwable> throwableMap,
-            Location referenceLocation) {
+            Location referenceLocation,
+            AtomicLong ordinalRefCounter) {
         // Check cache first
         Location cached = locationCache.get(component);
         if (cached != null) {
@@ -471,7 +477,7 @@ public class ComponentTracker {
             location = referenceLocation != null ? referenceLocation
                     : findRelevantLocation(null, relevantLocations, null);
         }
-
+        setAndIncrementOrdinal(location, ordinalRefCounter);
         locationCache.put(component, location);
         return location;
     }
@@ -490,7 +496,7 @@ public class ComponentTracker {
     private static Location[] computeAllLocations(Component component,
             Map<Component, Location[]> locationsCache,
             Map<Component, Throwable> throwableMap,
-            AtomicLong referenceCounter) {
+            AtomicLong ordinalRefCounter) {
         // Check cache first
         Location[] cached = locationsCache.get(component);
         if (cached != null) {
@@ -505,10 +511,17 @@ public class ComponentTracker {
         Location[] locations = Stream.of(throwable.getStackTrace())
                 .map(ComponentTracker::toLocation).toArray(Location[]::new);
         for (Location location : locations) {
-            location.ordinal = referenceCounter.getAndIncrement();
+            setAndIncrementOrdinal(location, ordinalRefCounter);
         }
         locationsCache.put(component, locations);
         return locations;
+    }
+
+    private static void setAndIncrementOrdinal(Location location, AtomicLong ordinalRefCounter) {
+        if(location == null){
+            return;
+        }
+        location.ordinal = ordinalRefCounter.getAndIncrement();
     }
 
     private static Location toLocation(StackTraceElement stackTraceElement) {
