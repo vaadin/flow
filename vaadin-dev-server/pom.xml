@@ -53,6 +53,12 @@
       <artifactId>directory-watcher</artifactId>
       <version>0.19.1</version>
     </dependency>
+    <!-- Needed for security annotations -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
 
     <!-- API dependencies -->
 

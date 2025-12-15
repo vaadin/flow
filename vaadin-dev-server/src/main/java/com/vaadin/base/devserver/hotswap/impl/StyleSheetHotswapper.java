@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,17 +33,17 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
+import com.vaadin.base.devserver.hotswap.HotswapCompleteEvent;
+import com.vaadin.base.devserver.hotswap.HotswapResourceEvent;
+import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
+import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.hotswap.HotswapClassEvent;
-import com.vaadin.flow.hotswap.HotswapClassSessionEvent;
-import com.vaadin.flow.hotswap.HotswapCompleteEvent;
-import com.vaadin.flow.hotswap.HotswapResourceEvent;
-import com.vaadin.flow.hotswap.UIUpdateStrategy;
-import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.CssBundler;

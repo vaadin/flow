@@ -13,14 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.vaadin.flow.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.flow.internal.ReflectionCache;
 import com.vaadin.flow.server.MockVaadinServletService;
 
 public class ReflectionCacheHotswapperTest {

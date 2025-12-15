@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import jakarta.annotation.Priority;
 
-import com.vaadin.flow.hotswap.HotswapClassEvent;
-import com.vaadin.flow.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
+import com.vaadin.flow.internal.ReflectionCache;
 
 /**
  * Clears all mappings from all reflection caches and related resources when one

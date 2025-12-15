@@ -52,7 +52,7 @@ public class ComponentMetaData {
     /**
      * Dependencies defined for a {@link Component} class.
      * <p>
-     * Framework internal class, thus package-private.
+     * Framework internal class.
      */
     public static class DependencyInfo {
         private final List<JavaScript> javaScripts = new ArrayList<>();
@@ -68,7 +68,12 @@ public class ComponentMetaData {
             return Collections.unmodifiableList(jsModules);
         }
 
-        List<StyleSheet> getStyleSheets() {
+        /**
+         * Gets the style sheets defined for the component.
+         * 
+         * @return an list of style sheets
+         */
+        public List<StyleSheet> getStyleSheets() {
             return Collections.unmodifiableList(styleSheets);
         }
 
