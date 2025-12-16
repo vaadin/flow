@@ -81,7 +81,7 @@ public final class VaadinAwareSecurityContextHolderStrategy
             // Session throws IllegalStateException when accessing
             // attributes of an invalid session
             return Optional.empty();
-        }   
+        }
     }
 
     @Override
