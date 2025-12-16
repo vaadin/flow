@@ -1419,7 +1419,7 @@ public class AbstractListDataViewTest {
         IndexOutOfBoundsException exception = assertThrows(
                 IndexOutOfBoundsException.class,
                 () -> dataView.getItems(-1, 10));
-        Assert.assertEquals("Limit must be non-negative",
+        Assert.assertEquals("Offset must be non-negative",
                 exception.getMessage());
     }
 
