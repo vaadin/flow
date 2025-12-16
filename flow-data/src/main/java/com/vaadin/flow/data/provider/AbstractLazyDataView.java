@@ -121,6 +121,9 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         if (limit < 0) {
             throw new IndexOutOfBoundsException("Limit must be non-negative");
         }
+        if (limit == 0) {
+            return Stream.empty();
+        }
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
         if (verifiedDataCommunicator.isDefinedSize()) {
             int count = verifiedDataCommunicator.getItemCount();

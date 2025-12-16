@@ -164,6 +164,9 @@ public abstract class AbstractDataView<T> implements DataView<T> {
         if (limit < 0) {
             throw new IndexOutOfBoundsException("Limit must be non-negative");
         }
+        if (limit == 0) {
+            return Stream.empty();
+        }
         return dataProviderSupplier.get().fetch(
                 new Query(offset, limit, Collections.emptyList(), null, null));
     }

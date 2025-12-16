@@ -49,6 +49,7 @@ import com.vaadin.flow.tests.data.bean.Item;
 
 import static com.vaadin.flow.tests.server.ClassesSerializableUtils.serializeAndDeserialize;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 public class AbstractListDataViewTest {
 
@@ -1415,17 +1416,19 @@ public class AbstractListDataViewTest {
 
     @Test
     public void getItems_withNegativeOffset_throwsException() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Offset must be non-negative");
-
-        dataView.getItems(-1, 10);
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(-1, 10));
+        Assert.assertEquals("Limit must be non-negative",
+                exception.getMessage());
     }
 
     @Test
     public void getItems_withNegativeLimit_throwsException() {
-        exceptionRule.expect(IndexOutOfBoundsException.class);
-        exceptionRule.expectMessage("Limit must be non-negative");
-
-        dataView.getItems(0, -1);
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(0, -1));
+        Assert.assertEquals("Limit must be non-negative",
+                exception.getMessage());
     }
 }
