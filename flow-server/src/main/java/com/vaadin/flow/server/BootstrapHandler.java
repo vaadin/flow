@@ -516,7 +516,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (isVaadinStaticFileRequest(request)) {
-            // Do not allow routes inside /VAADIN/
+            // Do not allow routes inside /VAADIN/ or reserved static folders
             return false;
         }
 
@@ -557,7 +557,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Checks whether the request is a request for /VAADIN/*.
+     * Checks whether the request is a request for /VAADIN/* or other reserved
+     * static folder. (/themes, /assets, /aura, /lumo)
      * <p>
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this.
@@ -572,8 +573,13 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         otherwise
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
+        boolean publicInternalFolderPath = false;
+        if (request.getPathInfo() != null) {
+            publicInternalFolderPath = HandlerHelper
+                    .getPublicInternalFolderPaths().stream()
+                    .anyMatch(path -> request.getPathInfo().startsWith(path));
+        }
+        return request.getPathInfo() != null && publicInternalFolderPath;
     }
 
     /**
