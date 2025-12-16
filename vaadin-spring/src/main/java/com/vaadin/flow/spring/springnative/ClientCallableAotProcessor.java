@@ -204,7 +204,7 @@ public class ClientCallableAotProcessor
      *            the set to accumulate discovered types
      */
     private void processMethod(Method method, Set<Class<?>> types) {
-        LOGGER.info("Processing @ClientCallable method {}", method);
+        LOGGER.debug("Processing @ClientCallable method {}", method);
         // Process return type
         Type returnType = method.getGenericReturnType();
         processType(returnType, types);
