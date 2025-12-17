@@ -4,7 +4,7 @@
     <parent>
         <artifactId>flow-tests</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pwa-prod</artifactId>
     <name>Flow tests for PWA annotation (production mode)</name>
