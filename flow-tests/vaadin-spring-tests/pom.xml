@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-spring-tests</artifactId>
 
@@ -14,7 +14,7 @@
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
-    <component.version>25.0-SNAPSHOT</component.version>
+    <component.version>25.1-SNAPSHOT</component.version>
     <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
   </properties>
 
