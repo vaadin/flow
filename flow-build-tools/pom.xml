@@ -102,6 +102,19 @@
                     <exclude>META-INF/maven/**</exclude>
                   </excludes>
                 </filter>
+                <filter>
+                  <!-- Exclude compressors with optional dependencies we don't need -->
+                  <artifact>org.apache.commons:commons-compress</artifact>
+                  <excludes>
+                    <exclude>org/apache/commons/compress/compressors/xz/**</exclude>
+                    <exclude>org/apache/commons/compress/compressors/lzma/**</exclude>
+                    <exclude>org/apache/commons/compress/compressors/brotli/**</exclude>
+                    <exclude>org/apache/commons/compress/compressors/zstandard/**</exclude>
+                    <exclude>org/apache/commons/compress/compressors/snappy/**</exclude>
+                    <exclude>org/apache/commons/compress/compressors/lz4/**</exclude>
+                    <exclude>org/apache/commons/compress/archivers/sevenz/**</exclude>
+                  </excludes>
+                </filter>
               </filters>
               <transformers>
                 <!-- Merge SPI service files -->
