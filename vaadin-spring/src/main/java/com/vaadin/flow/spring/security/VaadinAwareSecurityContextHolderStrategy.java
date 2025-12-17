@@ -61,11 +61,17 @@ public final class VaadinAwareSecurityContextHolderStrategy
         if (session == null || session.getSession() == null) {
             return Optional.empty();
         }
-        Object securityContext = session.getSession().getAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-        if (securityContext instanceof SecurityContext) {
-            return Optional.of((SecurityContext) securityContext);
-        } else {
+        try {
+            Object securityContext = session.getSession().getAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+            if (securityContext instanceof SecurityContext context) {
+                return Optional.of(context);
+            } else {
+                return Optional.empty();
+            }
+        } catch (IllegalStateException ignored) {
+            // Session throws IllegalStateException when accessing
+            // attributes of an invalid session
             return Optional.empty();
         }
     }
