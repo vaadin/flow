@@ -25,6 +25,10 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+    </dependency>
+    <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>license-checker</artifactId>
     </dependency>
