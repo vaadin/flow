@@ -233,7 +233,7 @@ public class ClientCallableAotProcessor
      *            the object to accumulate discovered callables and types
      */
     private void processMethod(Method method, InspectionResult result) {
-        LOGGER.info("Processing @ClientCallable method {}", method);
+        LOGGER.debug("Processing @ClientCallable method {}", method);
         result.callableMethods.add(new ClientCallableMethod(method));
         // Process return type
         Type returnType = method.getGenericReturnType();
