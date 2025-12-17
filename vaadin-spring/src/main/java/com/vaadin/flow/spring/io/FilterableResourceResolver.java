@@ -15,14 +15,12 @@
  */
 package com.vaadin.flow.spring.io;
 
-import com.vaadin.flow.internal.FileIOUtils;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.JarURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -45,6 +43,8 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.PropertiesLoaderUtils;
 import org.springframework.util.ResourceUtils;
+
+import com.vaadin.flow.internal.FileIOUtils;
 
 /**
  * A {@link PathMatchingResourcePatternResolver} that allows filtering resources
