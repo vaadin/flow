@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.spring.io;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.JarURLConnection;
@@ -36,7 +37,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipException;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
@@ -542,7 +542,7 @@ public class FilterableResourceResolver
             return;
         }
         try {
-            String content = IOUtils.toString(url, StandardCharsets.UTF_8);
+            String content = FileIOUtils.urlToString(url);
             if (content != null) {
                 if (content.isBlank()) {
                     blockedJarsList = Collections.emptyList();
