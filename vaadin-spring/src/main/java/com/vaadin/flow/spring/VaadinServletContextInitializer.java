@@ -541,7 +541,7 @@ public class VaadinServletContextInitializer
                                     dependencies {
                                         developmentOnly('com.vaadin:vaadin-dev')
                                     }
-                                
+
                                 See https://vaadin.com/docs/latest/flow/configuration/development-mode#development-mode for more details.
                                 """);
             }
