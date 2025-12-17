@@ -34,6 +34,8 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.tests.data.bean.Item;
 
+import static org.junit.Assert.assertThrows;
+
 public class AbstractLazyDataViewTest {
 
     private static final String ITEM1 = "foo";
@@ -440,9 +442,82 @@ public class AbstractLazyDataViewTest {
 
     }
 
+    @Test
+    public void getItems_withOffsetAndLimit_correctQuery() {
+        dataCommunicator.setViewportRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            Assert.assertEquals("Invalid offset", 10, query.getOffset());
+            Assert.assertEquals("Invalid limit", 20, query.getLimit());
+            return Stream.of("foo", "bar");
+        }, query -> 100), null);
+
+        Stream<String> items = dataView.getItems(10, 20);
+        Assert.assertEquals(2, items.count());
+    }
+
+    @Test
+    public void getItems_withOffsetAndLimit_definedSize_limitAdjusted() {
+        dataCommunicator.setViewportRange(0, 50);
+        // Total items: 100. Offset: 90. Limit: 20.
+        // Expect query limit: 10 (100-90).
+        AtomicInteger fetchCount = new AtomicInteger(0);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            if (query.getOffset() == 90) {
+                Assert.assertEquals("Invalid limit", 10, query.getLimit());
+                fetchCount.incrementAndGet();
+                return Stream.of("foo");
+            }
+            query.getLimit();
+            query.getOffset();
+            return Stream.generate(() -> "dummy").limit(query.getLimit());
+        }, query -> 100), null);
+
+        fakeClientCommunication(); // To settle size
+
+        Stream<String> items = dataView.getItems(90, 20);
+        Assert.assertEquals(1, items.count());
+        Assert.assertEquals(1, fetchCount.get());
+    }
+
+    @Test
+    public void getItems_withOffsetAndLimit_outOfBounds_emptyStream() {
+        dataCommunicator.setViewportRange(0, 50);
+        dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
+            query.getOffset();
+            query.getLimit();
+            if (query.getOffset() >= 100) {
+                return Stream.empty();
+            }
+            return Stream.generate(() -> "dummy").limit(query.getLimit());
+        }, query -> 100), null);
+
+        fakeClientCommunication();
+
+        Stream<String> items = dataView.getItems(110, 20);
+        Assert.assertEquals(0, items.count());
+    }
+
     private void fakeClientCommunication() {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
         ui.getInternals().getStateTree().collectChanges(ignore -> {
         });
+    }
+
+    @Test
+    public void getItems_withNegativeOffset_throwsException() {
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(-1, 10));
+        Assert.assertEquals("Offset must be non-negative",
+                exception.getMessage());
+    }
+
+    @Test
+    public void getItems_withNegativeLimit_throwsException() {
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(0, -1));
+        Assert.assertEquals("Limit must be non-negative",
+                exception.getMessage());
     }
 }
