@@ -66,4 +66,22 @@ public class VaadinAwareSecurityContextHolderStrategyTest {
         Assert.assertEquals(explicit,
                 vaadinAwareSecurityContextHolderStrategy.getContext());
     }
+
+    @Test
+    public void getContext_invalidateSession_getsThreadSecurityContext() {
+        SecurityContext explicit = Mockito.mock(SecurityContext.class);
+        vaadinAwareSecurityContextHolderStrategy.setContext(explicit);
+
+        VaadinSession vaadinSession = Mockito.mock(VaadinSession.class);
+        HttpSession httpSession = Mockito.mock(HttpSession.class);
+        Mockito.when(vaadinSession.getSession())
+                .thenReturn(new WrappedHttpSession(httpSession));
+        Mockito.doThrow(IllegalStateException.class).when(httpSession)
+                .getAttribute(
+                        HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+        VaadinSession.setCurrent(vaadinSession);
+
+        Assert.assertEquals(explicit,
+                vaadinAwareSecurityContextHolderStrategy.getContext());
+    }
 }
