@@ -64,8 +64,8 @@ public final class VaadinAwareSecurityContextHolderStrategy
         try {
             Object securityContext = session.getSession().getAttribute(
                     HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-            if (securityContext instanceof SecurityContext context) {
-                return Optional.of(context);
+            if (securityContext instanceof SecurityContext) {
+                return Optional.of((SecurityContext) securityContext);
             } else {
                 return Optional.empty();
             }
