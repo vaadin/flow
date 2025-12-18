@@ -42,6 +42,7 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
@@ -187,16 +188,49 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registeredClasses.add(c.getName());
                 logger.debug("Registering a bean for route class {}",
                         c.getName());
-                AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-                        .rootBeanDefinition(c).setScope("prototype")
-                        .getBeanDefinition();
+                AbstractBeanDefinition beanDefinition = createPrototypeBeanDefinition(
+                        c);
                 beanFactory.registerBeanDefinition(c.getName(), beanDefinition);
+
+                // Layouts classes are instantiated programmatically, and they
+                // might need to be
+                // managed by Spring (e.g. because of @PostConstruct annotated
+                // methods)
+                Set<Class<? extends RouterLayout>> definedLayouts = new HashSet<>();
+                if (c.isAnnotationPresent(Route.class)) {
+                    definedLayouts.add(c.getAnnotation(Route.class).layout());
+                } else if (c.isAnnotationPresent(RouteAlias.class)) {
+                    definedLayouts
+                            .add(c.getAnnotation(RouteAlias.class).layout());
+                } else if (c.isAnnotationPresent(RouteAlias.Container.class)) {
+                    for (RouteAlias alias : c
+                            .getAnnotation(RouteAlias.Container.class)
+                            .value()) {
+                        definedLayouts.add(alias.layout());
+                    }
+                }
+                definedLayouts.removeIf(
+                        layout -> registeredClasses.contains(layout.getName())
+                                || layout == RouterLayout.class
+                                || UI.class.isAssignableFrom(layout));
+                for (Class<? extends RouterLayout> layout : definedLayouts) {
+                    beanFactory.registerBeanDefinition(layout.getName(),
+                            createPrototypeBeanDefinition(layout));
+                    registeredClasses.add(layout.getName());
+                }
+
             }
         }
 
         beanFactory.registerBeanDefinition(markerBeanName, BeanDefinitionBuilder
                 .rootBeanDefinition(Marker.class).getBeanDefinition());
 
+    }
+
+    private static AbstractBeanDefinition createPrototypeBeanDefinition(
+            Class<?> c) {
+        return BeanDefinitionBuilder.rootBeanDefinition(c).setScope("prototype")
+                .getBeanDefinition();
     }
 
     private static Collection<Class<?>> getRouteTypesFor(String packageName) {
