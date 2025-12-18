@@ -24,7 +24,9 @@ import org.openqa.selenium.JavascriptExecutor;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
-    final String VITE_PING_PATH = "/VAADIN";
+
+    // Ping actual existing file and not no route page, which now returns 404
+    final String VITE_PING_PATH = "/VAADIN/generated/";
 
     @Before
     public void init() {
@@ -48,12 +50,13 @@ public class MainIT extends ChromeDeviceTest {
         openPage("/");
 
         Assert.assertTrue("Should allow Vite ping requests when online",
-                sendVitePingRequest());
+                sendVitePingRequest(VITE_PING_PATH + "vaadin.ts"));
 
         getDevTools().setOfflineEnabled(true);
 
+        // Different file to not get cached.
         Assert.assertFalse("Should reject Vite ping requests when offline",
-                sendVitePingRequest());
+                sendVitePingRequest(VITE_PING_PATH + "theme.js"));
     }
 
     @Test
@@ -103,7 +106,7 @@ public class MainIT extends ChromeDeviceTest {
                 "return getComputedStyle(document.body).getPropertyValue('--theme-my-theme-loaded') === '1'");
     }
 
-    private Boolean sendVitePingRequest() {
+    private Boolean sendVitePingRequest(String VITE_PING_PATH) {
         return (Boolean) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         "const done = arguments[arguments.length - 1];"
