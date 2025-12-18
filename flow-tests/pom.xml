@@ -75,6 +75,14 @@
       <version>${project.version}</version>
     </dependency>
     <dependency>
+      <!-- This is probably not what we want to do (to verify nodejs downloads work properly): added to test a workaround
+        for jetty based tests (with mvn -pl) -> uses shaded pom.xml of flow-build-tools, but non-shaded classes
+        -->
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.28.0</version>
+    </dependency>
+    <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-util</artifactId>
       <version>${project.version}</version>
