@@ -69,22 +69,19 @@ class ClientCallableAotProcessorTest {
                 .as("Primitive should not be registered").rejects(hints);
 
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "getSimpleData"))
+                .onMethod(TestComponent.class, "getSimpleData")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "processData")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "processDataWithPrimitive"))
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "processData"))
-                .accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
-                TestComponent.class, "processDataWithPrimitive"))
-                .accepts(hints);
+                .onMethod(TestComponent.class, "getNestedList")).accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "getNestedList"))
-                .accepts(hints);
+                .onMethod(TestComponent.class, "handleVoid")).accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "handleVoid"))
+                .onMethod(TestComponent.class, "handleGenericDefinition"))
                 .accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
-                TestComponent.class, "handleGenericDefinition")).accepts(hints);
     }
 
     @Test
@@ -112,24 +109,21 @@ class ClientCallableAotProcessorTest {
                 .as("Primitive should not be registered").rejects(hints);
 
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "getSimpleData"))
+                .onMethod(TestComponent.class, "getSimpleData")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "processData")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "processDataWithPrimitive"))
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "processData"))
-                .accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
-                TestComponent.class, "processDataWithPrimitive"))
+                .onMethod(TestComponent.class, "getNestedList")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "handleVoid")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethod(TestComponent.class, "handleGenericDefinition"))
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "getNestedList"))
-                .accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(TestComponent.class, "handleVoid"))
-                .accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
-                TestComponent.class, "handleGenericDefinition")).accepts(hints);
-        assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(ExtendedComponent.class, "getExtendedData"))
+                .onMethod(ExtendedComponent.class, "getExtendedData"))
                 .accepts(hints);
     }
 
@@ -179,7 +173,7 @@ class ClientCallableAotProcessorTest {
         assertThat(RuntimeHintsPredicates.reflection().onType(SimpleDto.class))
                 .accepts(hints);
         assertThat(RuntimeHintsPredicates.reflection()
-                .onMethodInvocation(AbstractComponent.class, "getExtendedData"))
+                .onMethod(AbstractComponent.class, "getExtendedData"))
                 .accepts(hints);
     }
 
