@@ -573,13 +573,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         otherwise
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
-        boolean publicInternalFolderPath = false;
-        if (request.getPathInfo() != null) {
-            publicInternalFolderPath = HandlerHelper
-                    .getPublicInternalFolderPaths().stream()
-                    .anyMatch(path -> request.getPathInfo().startsWith(path));
-        }
-        return request.getPathInfo() != null && publicInternalFolderPath;
+        return request.getPathInfo() != null && HandlerHelper
+                .getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> request.getPathInfo().startsWith(path));
     }
 
     /**
