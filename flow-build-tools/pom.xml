@@ -10,6 +10,10 @@
   <packaging>jar</packaging>
   <name>Flow Frontend Build Tools</name>
   <description>A module to handle frontend build tools common to the plugins and dev server</description>
+  <properties>
+    <!-- It appears that sonar does not like shade plugin -->
+    <sonar.skip>true</sonar.skip>
+  </properties>
 
   <dependencies>
 
@@ -43,7 +47,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
-        <version>3.6.0</version>
+        <version>3.6.1</version>
         <executions>
           <execution>
             <goals>
