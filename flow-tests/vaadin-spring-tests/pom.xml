@@ -129,6 +129,15 @@
       <artifactId>jakarta.websocket-client-api</artifactId>
     </dependency>
 
+      <dependency>
+          <!-- Not directly used, but something in the depths of spring/swagger
+               is using StringUtils, and we have probably excluded that in some
+               of our test build configs -->
+          <groupId>org.apache.commons</groupId>
+          <artifactId>commons-lang3</artifactId>
+          <version>3.20.0</version>
+      </dependency>
+
     <dependency>
       <groupId>org.apache.httpcomponents.client5</groupId>
       <artifactId>httpclient5</artifactId>
