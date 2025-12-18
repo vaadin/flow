@@ -32,7 +32,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aot.hint.BindingReflectionHintsRegistrar;
+import org.springframework.aot.hint.ExecutableMode;
 import org.springframework.aot.hint.ReflectionHints;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -74,7 +76,7 @@ public class ClientCallableAotProcessor
     public BeanFactoryInitializationAotContribution processAheadOfTime(
             ConfigurableListableBeanFactory beanFactory) {
 
-        Set<Class<?>> usedTypes = new HashSet<>();
+        InspectionResult inspectionResult = new InspectionResult();
         Collection<String> packagesToScan = getPackagesToScan(beanFactory);
         LOGGER.info("Scanning packages {} for @ClientCallable methods",
                 packagesToScan);
@@ -95,7 +97,7 @@ public class ClientCallableAotProcessor
                         Class<?> clazz = ClassUtils.forName(
                                 bd.getBeanClassName(),
                                 beanFactory.getBeanClassLoader());
-                        processClass(clazz, usedTypes);
+                        processClass(clazz, inspectionResult);
                     } catch (ClassNotFoundException e) {
                         LOGGER.warn("Could not load class {}",
                                 bd.getBeanClassName(), e);
@@ -103,22 +105,49 @@ public class ClientCallableAotProcessor
                 }
             }
         }
-        if (usedTypes.isEmpty()) {
-            LOGGER.debug(
-                    "No @ClientCallable types to register for reflection found");
+
+        if (inspectionResult.callableMethods.isEmpty()) {
+            LOGGER.debug("No @ClientCallable to register for reflection found");
             return null;
         }
-        LOGGER.debug(
-                "Found @ClientCallable types to register for reflection: {}",
-                usedTypes);
+
+        LOGGER.trace("Found @ClientCallable to register for reflection: {}",
+                inspectionResult.callableMethods);
+        if (!inspectionResult.usedTypes.isEmpty()) {
+            LOGGER.debug(
+                    "Found @ClientCallable types to register for reflection: {}",
+                    inspectionResult.usedTypes);
+        }
         return (generationContext, beanFactoryInitializationCode) -> {
-            // Recursively register all types that require reflection hints
-            BindingReflectionHintsRegistrar registrar = new BindingReflectionHintsRegistrar();
             ReflectionHints reflectionHints = generationContext
                     .getRuntimeHints().reflection();
-            registrar.registerReflectionHints(reflectionHints,
-                    usedTypes.toArray(new Class[0]));
+
+            // Recursively register all types that require reflection hints
+            if (!inspectionResult.usedTypes.isEmpty()) {
+                BindingReflectionHintsRegistrar registrar = new BindingReflectionHintsRegistrar();
+                registrar.registerReflectionHints(reflectionHints,
+                        inspectionResult.usedTypes.toArray(new Class[0]));
+            }
+
+            inspectionResult.callableMethods.forEach(callable -> reflectionHints
+                    .registerType(callable.declaringClass(),
+                            b -> b.withMethod(callable.methodName(),
+                                    callable.parameterTypes(),
+                                    ExecutableMode.INVOKE)));
         };
+    }
+
+    private record ClientCallableMethod(Class<?> declaringClass,
+            String methodName, List<TypeReference> parameterTypes) {
+        ClientCallableMethod(Method method) {
+            this(method.getDeclaringClass(), method.getName(),
+                    TypeReference.listOf(method.getParameterTypes()));
+        }
+    }
+
+    private static class InspectionResult {
+        Set<Class<?>> usedTypes = new HashSet<>();
+        Set<ClientCallableMethod> callableMethods = new HashSet<>();
     }
 
     // Visible for testing
@@ -175,10 +204,10 @@ public class ClientCallableAotProcessor
      *
      * @param clazz
      *            the class to process
-     * @param types
-     *            the set to accumulate discovered types
+     * @param result
+     *            the object to accumulate discovered callables and types
      */
-    private void processClass(Class<?> clazz, Set<Class<?>> types) {
+    private void processClass(Class<?> clazz, InspectionResult result) {
         // Flow looks for ClientCallable methods only in classes that extend
         // Component
         if (!Component.class.isAssignableFrom(clazz)) {
@@ -187,7 +216,7 @@ public class ClientCallableAotProcessor
         while (Component.class != clazz) {
             for (Method method : clazz.getDeclaredMethods()) {
                 if (method.isAnnotationPresent(ClientCallable.class)) {
-                    processMethod(method, types);
+                    processMethod(method, result);
                 }
             }
             clazz = clazz.getSuperclass();
@@ -200,19 +229,20 @@ public class ClientCallableAotProcessor
      *
      * @param method
      *            the method to process
-     * @param types
-     *            the set to accumulate discovered types
+     * @param result
+     *            the object to accumulate discovered callables and types
      */
-    private void processMethod(Method method, Set<Class<?>> types) {
+    private void processMethod(Method method, InspectionResult result) {
         LOGGER.info("Processing @ClientCallable method {}", method);
+        result.callableMethods.add(new ClientCallableMethod(method));
         // Process return type
         Type returnType = method.getGenericReturnType();
-        processType(returnType, types);
+        processType(returnType, result.usedTypes);
 
         // Process parameter types
         Type[] paramTypes = method.getGenericParameterTypes();
         for (Type paramType : paramTypes) {
-            processType(paramType, types);
+            processType(paramType, result.usedTypes);
         }
     }
 
