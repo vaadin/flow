@@ -547,7 +547,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
                 .getSubtypesOf(getClass().getPackageName(), RouterLayout.class);
 
         assertThat(layouts).as("Should not include the parent type itself")
-                .doesNotContain(RouterLayout.class);
+                .isNotEmpty().doesNotContain(RouterLayout.class);
     }
 
     @Test
