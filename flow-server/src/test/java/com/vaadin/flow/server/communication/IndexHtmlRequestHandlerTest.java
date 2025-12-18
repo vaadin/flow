@@ -58,6 +58,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -311,6 +312,18 @@ public class IndexHtmlRequestHandlerTest {
     public void canHandleRequest_doNotHandle_vaadinStaticResources() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/VAADIN/foo.js", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_vaadinReservedFolders() {
+        for (String reservedFolder : HandlerHelper
+                .getPublicInternalFolderPaths()) {
+            assertFalse(reservedFolder
+                    + " was handled even though it should not init index handler",
+                    indexHtmlRequestHandler.canHandleRequest(
+                            createRequestWithDestination(reservedFolder, null,
+                                    null)));
+        }
     }
 
     @Test
