@@ -18,8 +18,9 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
+
+import com.vaadin.signals.function.CommandValidator;
 
 import tools.jackson.databind.JsonNode;
 
@@ -148,7 +149,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            not <code>null</code>
      */
     protected NodeSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator) {
+            CommandValidator validator) {
         super(tree, id, validator);
     }
 
@@ -395,7 +396,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the validator to use, not <code>null</code>
      * @return a new node signal that uses the validator, not <code>null</code>
      */
-    public NodeSignal withValidator(Predicate<SignalCommand> validator) {
+    public NodeSignal withValidator(CommandValidator validator) {
         return new NodeSignal(tree(), id(), mergeValidators(validator));
     }
 

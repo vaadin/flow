@@ -17,8 +17,9 @@ package com.vaadin.signals;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
+
+import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.SignalUpdater;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
@@ -84,7 +85,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      *            the value type, not <code>null</code>
      */
     protected ValueSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> valueType) {
+            CommandValidator validator, Class<T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }
@@ -125,7 +126,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    public CancelableOperation<T> update(UnaryOperator<T> updater) {
+    public CancelableOperation<T> update(SignalUpdater<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
         tryUpdate(updater, operation);
@@ -133,7 +134,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
         return operation;
     }
 
-    private void tryUpdate(UnaryOperator<T> updater,
+    private void tryUpdate(SignalUpdater<T> updater,
             CancelableOperation<T> operation) {
         if (operation.isCancelled()) {
             operation.result().cancel(false);
@@ -148,7 +149,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
             T value = peek();
             verifyValue(value);
 
-            T newValue = updater.apply(value);
+            T newValue = updater.update(value);
             return value(newValue);
         }).returnValue();
 
@@ -195,7 +196,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      *            the validator to use, not <code>null</code>
      * @return a new value signal that uses the validator, not <code>null</code>
      */
-    public ValueSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public ValueSignal<T> withValidator(CommandValidator validator) {
         return new ValueSignal<>(tree(), id(), mergeValidators(validator),
                 valueType);
     }
@@ -207,7 +208,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
          * specific type that doesn't provide mutator methods, that would also
          * remove access to e.g. the verifyValue method.
          */
-        return withValidator(anything -> false);
+        return withValidator(CommandValidator.REJECT_ALL);
     }
 
     public NodeSignal asNode() {

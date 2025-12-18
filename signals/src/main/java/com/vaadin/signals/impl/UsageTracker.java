@@ -17,8 +17,9 @@ package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Consumer;
-import java.util.function.Supplier;
+
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.ValueSupplier;
 
 /**
  * Tracks signal value read operations while a task is run.
@@ -37,25 +38,25 @@ public class UsageTracker {
         }
 
         @Override
-        public Runnable onNextChange(TransientListener listener) {
-            return new Runnable() {
+        public CleanupCallback onNextChange(TransientListener listener) {
+            return new CleanupCallback() {
                 /*
                  * Synchronize since listeners can fire at any time, e.g. before
                  * all listeners have been registered, or while running the
                  * action due to another listener being fired, or during cleanup
                  */
                 final Object lock = new Object();
-                final Collection<Runnable> cleanups = new ArrayList<>();
+                final Collection<CleanupCallback> cleanups = new ArrayList<>();
 
                 boolean closed = false;
 
                 {
                     synchronized (lock) {
                         for (Usage usage : usages) {
-                            Runnable cleanup = usage
+                            CleanupCallback cleanup = usage
                                     .onNextChange(this::onChange);
                             if (closed) {
-                                cleanup.run();
+                                cleanup.cleanup();
                                 break;
                             } else {
                                 cleanups.add(cleanup);
@@ -80,13 +81,13 @@ public class UsageTracker {
                 private void close() {
                     synchronized (lock) {
                         closed = true;
-                        cleanups.forEach(Runnable::run);
+                        cleanups.forEach(CleanupCallback::cleanup);
                         cleanups.clear();
                     }
                 }
 
                 @Override
-                public void run() {
+                public void cleanup() {
                     close();
                 }
             };
@@ -114,7 +115,21 @@ public class UsageTracker {
          *            the listener to use, not <code>null</code>
          * @return a callback for removing the listener, not <code>null</code>
          */
-        Runnable onNextChange(TransientListener listener);
+        CleanupCallback onNextChange(TransientListener listener);
+    }
+
+    /**
+     * Receives notifications about signal usage events.
+     */
+    @FunctionalInterface
+    public interface UsageRegistrar {
+        /**
+         * Called when a usage event occurs.
+         *
+         * @param usage
+         *            the usage instance, not <code>null</code>
+         */
+        void register(Usage usage);
     }
 
     /**
@@ -127,13 +142,13 @@ public class UsageTracker {
         }
 
         @Override
-        public Runnable onNextChange(TransientListener listener) {
+        public CleanupCallback onNextChange(TransientListener listener) {
             return () -> {
             };
         }
     };
 
-    private static final ThreadLocal<Consumer<Usage>> currentTracker = new ThreadLocal<>();
+    private static final ThreadLocal<UsageRegistrar> currentTracker = new ThreadLocal<>();
 
     private UsageTracker() {
         // Only static methods
@@ -173,7 +188,7 @@ public class UsageTracker {
      *            a consumer that receives all usages as they happen, not
      *            <code>null</code>
      */
-    public static void track(Runnable task, Consumer<Usage> tracker) {
+    public static void track(Runnable task, UsageRegistrar tracker) {
         assert task != null;
         assert tracker != null;
 
@@ -197,16 +212,16 @@ public class UsageTracker {
      *            the supplier task to run, not <code>null</code>
      * @return the value returned from the supplier
      */
-    public static <T> T untracked(Supplier<T> task) {
+    public static <T> T untracked(ValueSupplier<T> task) {
         var previousTracker = currentTracker.get();
         if (previousTracker == null) {
-            return task.get();
+            return task.supply();
         }
 
         try {
             currentTracker.remove();
 
-            return task.get();
+            return task.supply();
         } finally {
             currentTracker.set(previousTracker);
         }
@@ -220,9 +235,9 @@ public class UsageTracker {
      *            the usage instance to register, not <code>null</code>
      */
     public static void registerUsage(Usage usage) {
-        Consumer<Usage> tracker = currentTracker.get();
+        UsageRegistrar tracker = currentTracker.get();
         assert tracker != null;
-        tracker.accept(usage);
+        tracker.register(usage);
     }
 
     /**
