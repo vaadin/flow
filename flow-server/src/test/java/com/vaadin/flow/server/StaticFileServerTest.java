@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -1173,6 +1174,30 @@ public class StaticFileServerTest implements Serializable {
 
         Mockito.verify(servletService).getStaticResource("foo");
         Assert.assertSame(url, result);
+    }
+
+    @Test
+    public void frameworkStaticFolder_withoutEndingSlash_doesNotServeStaticResource()
+            throws IOException {
+        // Test framework static folders without / at the end,
+        // that they do not return a result
+        for (String publicInternalFolderPath : HandlerHelper
+                .getPublicInternalFolderPaths()) {
+            Assert.assertTrue(publicInternalFolderPath.startsWith("/"));
+            Assert.assertFalse(publicInternalFolderPath.endsWith("/**"));
+
+            setupRequestURI("", "", publicInternalFolderPath);
+            Mockito.when(
+                    servletService.getStaticResource(publicInternalFolderPath))
+                    .thenReturn(URI
+                            .create("file:///" + publicInternalFolderPath + "/")
+                            .toURL());
+
+            Assert.assertFalse(
+                    publicInternalFolderPath
+                            + " should not be a static resource.",
+                    fileServer.serveStaticResource(request, response));
+        }
     }
 
     private static class CapturingServletOutputStream
