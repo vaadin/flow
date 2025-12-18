@@ -19,6 +19,7 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-build-tools</artifactId>
       <version>${project.version}</version>
+      <classifier>shaded</classifier>
       <!-- Note, ideally vaadin-server should not depend this module at all
            and development time tooling shared with plugins should end up here.
            Temporarily build this way so that commons-compress can be ditched
