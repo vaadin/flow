@@ -42,6 +42,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.json.JsonMapper;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.MenuData;
 import com.vaadin.flow.router.PageTitle;
@@ -53,7 +54,6 @@ import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 

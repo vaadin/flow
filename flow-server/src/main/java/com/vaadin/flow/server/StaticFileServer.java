@@ -44,12 +44,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.flow.internal.ThemeUtils;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
