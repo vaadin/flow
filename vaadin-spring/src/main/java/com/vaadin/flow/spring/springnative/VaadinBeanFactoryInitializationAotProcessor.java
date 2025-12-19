@@ -199,7 +199,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 Set<Class<? extends RouterLayout>> definedLayouts = new HashSet<>();
                 if (c.isAnnotationPresent(Route.class)) {
                     definedLayouts.add(c.getAnnotation(Route.class).layout());
-                } else if (c.isAnnotationPresent(RouteAlias.class)) {
+                }
+                if (c.isAnnotationPresent(RouteAlias.class)) {
                     definedLayouts
                             .add(c.getAnnotation(RouteAlias.class).layout());
                 } else if (c.isAnnotationPresent(RouteAlias.Container.class)) {

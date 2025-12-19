@@ -559,7 +559,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
 
         assertThat(routes).as("Should find classes annotated with @Route")
                 .contains(TestRouteView.class, RouteWithLayout.class)
-                .doesNotContain(TestRouteAliasView.class);
+                .doesNotContain(TestAppShellWithPWA.class);
     }
 
     @Test
@@ -730,6 +730,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     public static class TestRouteView extends Component {
     }
 
+    @Route("test")
     @RouteAlias("alias")
     @Tag("div")
     public static class TestRouteAliasView extends Component {
@@ -751,6 +752,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     public static class RouteWithLayout extends Component {
     }
 
+    @Route("test")
     @RouteAlias(value = "alias-with-layout", layout = AnotherLayoutView.class)
     @Tag("div")
     public static class RouteAliasWithLayout extends Component {
@@ -791,6 +793,7 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     public static class TestAppShellWithPWA implements AppShellConfigurator {
     }
 
+    @Route("test")
     @RouteAlias(value = "alias1", layout = TestLayoutView.class)
     @RouteAlias(value = "alias2", layout = AnotherLayoutView.class)
     @Tag("div")
