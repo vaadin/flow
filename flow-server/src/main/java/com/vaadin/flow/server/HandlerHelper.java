@@ -21,6 +21,7 @@ import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -102,6 +103,8 @@ public class HandlerHelper implements Serializable {
     }
 
     private static final String[] publicResources;
+    private static final List<String> publicInternalFolderPaths;
+
     static {
         List<String> resources = new ArrayList<>();
         resources.add("/favicon.ico");
@@ -115,6 +118,18 @@ public class HandlerHelper implements Serializable {
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
+
+        List<String> resourcesPath = new ArrayList<>();
+        resources.stream()
+                .filter(resource -> resource.endsWith("/**"))
+                .map(resource -> resource.replace("/**", ""))
+                .forEach(resourcesPath::add);
+        for (String resource : getPublicResourcesRequiringSecurityContext()) {
+            if (resource.endsWith("/**")) {
+                resourcesPath.add(resource.replace("/**", ""));
+            }
+        }
+        publicInternalFolderPaths = resourcesPath;
     }
 
     private HandlerHelper() {
@@ -442,6 +457,10 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResources() {
         return publicResources;
+    }
+
+    public static List<String> getPublicInternalFolderPaths() {
+        return publicInternalFolderPaths;
     }
 
     private static List<String> getIconVariants(String iconPath) {

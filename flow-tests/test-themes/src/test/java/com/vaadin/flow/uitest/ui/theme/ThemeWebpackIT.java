@@ -93,7 +93,7 @@ public class ThemeWebpackIT extends AbstractBaseIT {
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
-                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                ".*HTTP ERROR 404 Request was not handled by any registered handler.*",
                 Pattern.DOTALL).matcher(source);
         Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }

@@ -13,11 +13,14 @@ import org.junit.Test;
 import org.junit.Before;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.devtools.v142.network.Network;
 
 import com.vaadin.flow.testutil.ChromeDeviceTest;
 
 public class MainIT extends ChromeDeviceTest {
-    final String VITE_PING_PATH = "/VAADIN";
+
+    // Ping actual existing file and not no route page, which now returns 404
+    final String VITE_PING_PATH = "/VAADIN/@vite/client";
 
     @Before
     public void init() {
@@ -45,6 +48,12 @@ public class MainIT extends ChromeDeviceTest {
 
         getDevTools().setOfflineEnabled(true);
 
+        Assert.assertFalse("browser not seen as offline",
+                (Boolean) ((JavascriptExecutor) getDriver())
+                        .executeScript("return window.navigator.onLine"));
+        clearSWCaches();
+
+        // Different file to not get cached.
         Assert.assertFalse("Should reject Vite ping requests when offline",
                 sendVitePingRequest());
     }
@@ -56,6 +65,7 @@ public class MainIT extends ChromeDeviceTest {
         reloadPage();
 
         checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || msg.contains("ERR_INTERNET_DISCONNECTED")
                 || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
@@ -83,6 +93,7 @@ public class MainIT extends ChromeDeviceTest {
         reloadPage();
 
         checkLogsForErrors(msg -> msg.contains(VITE_PING_PATH)
+                || msg.contains("ERR_INTERNET_DISCONNECTED")
                 || !msg.contains("Failed to load"));
 
         WebElement h1 = $("h1").first();
@@ -101,10 +112,19 @@ public class MainIT extends ChromeDeviceTest {
         return (Boolean) ((JavascriptExecutor) getDriver())
                 .executeAsyncScript(
                         "const done = arguments[arguments.length - 1];"
-                                + "fetch(arguments[0])"
+                                + "fetch(arguments[0], {cache: \"no-cache\"})"
                                 + "  .then((response) => done(response.ok))"
                                 + "  .catch(() => done(false))",
                         VITE_PING_PATH);
+    }
+
+    private void clearSWCaches() {
+        ((JavascriptExecutor) getDriver()).executeAsyncScript(
+                "const done = arguments[arguments.length - 1];"
+                        + "caches.keys().then(cacheNames => {"
+                        + " cacheNames.forEach(cacheName => {"
+                        + "     caches.delete(cacheName);" + " });"
+                        + "}).then(response => done(response.ok)).catch(()=> done(false))");
     }
 
     private void reloadPage() {
