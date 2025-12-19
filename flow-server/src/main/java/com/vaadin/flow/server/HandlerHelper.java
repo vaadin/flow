@@ -121,6 +121,11 @@ public class HandlerHelper implements Serializable {
         PUSH(ApplicationConstants.REQUEST_TYPE_PUSH),
 
         /**
+         * SSE push requests.
+         */
+        SSE(ApplicationConstants.REQUEST_TYPE_SSE),
+
+        /**
          * Page showing that the browser is unsupported.
          */
         BROWSER_TOO_OLD("oldbrowser"),

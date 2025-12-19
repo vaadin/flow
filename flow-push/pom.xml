@@ -15,6 +15,8 @@
     <pushDirectory>${project.build.outputDirectory}/META-INF/resources/VAADIN/static/push</pushDirectory>
     <vaadinPush.js>${pushDirectory}/vaadinPush.js</vaadinPush.js>
     <vaadinPush-min.js>${pushDirectory}/vaadinPush-min.js</vaadinPush-min.js>
+    <vaadinSsePush.js>${pushDirectory}/vaadinSsePush.js</vaadinSsePush.js>
+    <vaadinSsePush-min.js>${pushDirectory}/vaadinSsePush-min.js</vaadinSsePush-min.js>
   </properties>
 
   <dependencies>
@@ -75,6 +77,7 @@
           <jswarn>false</jswarn>
           <includes>
             <include>vaadinPush.js</include>
+            <include>vaadinSsePush.js</include>
           </includes>
           <outputDirectory>${pushDirectory}</outputDirectory>
         </configuration>
@@ -152,6 +155,8 @@
                 <!-- Gzipped versions -->
                 <gzip destfile="${vaadinPush.js}.gz" src="${vaadinPush.js}"/>
                 <gzip destfile="${vaadinPush-min.js}.gz" src="${vaadinPush-min.js}"/>
+                <gzip destfile="${vaadinSsePush.js}.gz" src="${vaadinSsePush.js}"/>
+                <gzip destfile="${vaadinSsePush-min.js}.gz" src="${vaadinSsePush-min.js}"/>
               </target>
             </configuration>
           </execution>

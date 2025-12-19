@@ -331,8 +331,11 @@ public class AppShellRegistry implements Serializable {
                             Push.class.getSimpleName()));
         } else if (!pushAnnotations.isEmpty()) {
             Push push = pushAnnotations.get(0);
-            pushConfiguration.setPushMode(push.value());
+            // Set transport BEFORE push mode, because setPushMode creates the
+            // connection based on the configured transport (e.g., SSE needs
+            // SsePushConnection instead of AtmospherePushConnection)
             pushConfiguration.setTransport(push.transport());
+            pushConfiguration.setPushMode(push.value());
         }
     }
 
