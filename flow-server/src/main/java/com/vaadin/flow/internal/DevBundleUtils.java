@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -22,8 +22,6 @@ import java.net.URL;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.CompressUtil;
-import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.server.Constants;
 
 /**
