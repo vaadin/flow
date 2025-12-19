@@ -9,6 +9,199 @@ export interface FlowConfig {
   imports?: () => Promise<any>;
 }
 
+// ============================================================================
+// SSE Push - Inlined to avoid module resolution issues in non-optimized builds
+// ============================================================================
+
+interface SseAtmosphereResponse {
+  request: SseAtmosphereRequest;
+  transport: string;
+  state: string;
+  status: number;
+  responseBody: string;
+  headers: (name: string) => string | null;
+  closedByClientTimeout: boolean;
+  error?: string;
+}
+
+interface SseAtmosphereRequest {
+  url: string;
+  maxReconnectOnClose?: number;
+  reconnectInterval?: number;
+  headers?: Record<string, string | (() => string)>;
+  onOpen?: (response: SseAtmosphereResponse) => void;
+  onMessage?: (response: SseAtmosphereResponse) => void;
+  onError?: (response: SseAtmosphereResponse) => void;
+  onClose?: (response: SseAtmosphereResponse) => void;
+  onReconnect?: (response: SseAtmosphereResponse, request: { timeout: number; attempts: number }) => void;
+  onTransportFailure?: (errorMsg: string, response: SseAtmosphereResponse) => void;
+}
+
+class SseConnection {
+  private options: SseAtmosphereRequest;
+  private eventSource: EventSource | null = null;
+  private state: 'closed' | 'connecting' | 'connected' = 'closed';
+  private reconnectAttempts = 0;
+  private maxReconnectAttempts: number;
+  private reconnectInterval: number;
+  private url: string;
+
+  constructor(options: SseAtmosphereRequest) {
+    this.options = options;
+    this.maxReconnectAttempts = options.maxReconnectOnClose ?? 5;
+    this.reconnectInterval = options.reconnectInterval ?? 0;
+    this.url = this.buildSseUrl(options.url);
+    this.connect();
+  }
+
+  private buildSseUrl(baseUrl: string): string {
+    let url = baseUrl;
+    if (url.includes('v-r=push')) {
+      url = url.replace('v-r=push', 'v-r=sse');
+    } else if (url.includes('?')) {
+      url += '&v-r=sse';
+    } else {
+      url += '?v-r=sse';
+    }
+    return url;
+  }
+
+  private connect(): void {
+    if (this.eventSource) {
+      this.eventSource.close();
+    }
+    try {
+      this.state = 'connecting';
+      this.eventSource = new EventSource(this.url, { withCredentials: true });
+
+      this.eventSource.onopen = () => {
+        this.state = 'connected';
+        this.reconnectAttempts = 0;
+        const response = this.createResponse('open');
+        response.transport = 'sse';
+        response.state = 'opening';
+        this.options.onOpen?.(response);
+      };
+
+      this.eventSource.onmessage = (event) => {
+        this.handleMessage(event.data);
+      };
+
+      this.eventSource.addEventListener('uidl', (event) => {
+        this.handleMessage((event as MessageEvent).data);
+      });
+
+      this.eventSource.addEventListener('sessionExpired', () => {
+        const response = this.createResponse('error');
+        response.status = 401;
+        response.error = 'Session expired';
+        this.options.onError?.(response);
+        this.close();
+      });
+
+      this.eventSource.onerror = () => {
+        if (this.state === 'closed') return;
+        const response = this.createResponse('error');
+        if (this.eventSource?.readyState === EventSource.CLOSED) {
+          this.state = 'closed';
+          if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts += 1;
+            this.options.onReconnect?.(response, {
+              timeout: this.reconnectInterval,
+              attempts: this.reconnectAttempts
+            });
+          } else {
+            this.options.onError?.(response);
+            this.options.onClose?.(response);
+          }
+        } else if (this.eventSource?.readyState === EventSource.CONNECTING) {
+          this.options.onError?.(response);
+        }
+      };
+    } catch (e) {
+      const response = this.createResponse('error');
+      response.error = e instanceof Error ? e.message : String(e);
+      this.options.onTransportFailure?.(response.error, response);
+    }
+  }
+
+  private handleMessage(data: string): void {
+    const response = this.createResponse('message');
+    response.responseBody = data;
+    response.state = 'messageReceived';
+    response.status = 200;
+    this.options.onMessage?.(response);
+  }
+
+  private createResponse(type: string): SseAtmosphereResponse {
+    return {
+      request: this.options,
+      transport: 'sse',
+      state: type,
+      status: 200,
+      responseBody: '',
+      headers: () => null,
+      closedByClientTimeout: false
+    };
+  }
+
+  push(message: string): void {
+    const xhr = new XMLHttpRequest();
+    let { url } = this.options;
+    if (url.includes('v-r=sse')) {
+      url = url.replace('v-r=sse', 'v-r=uidl');
+    } else if (url.includes('v-r=push')) {
+      url = url.replace('v-r=push', 'v-r=uidl');
+    }
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
+    if (this.options.headers) {
+      for (const header of Object.keys(this.options.headers)) {
+        let value = this.options.headers[header];
+        if (typeof value === 'function') {
+          value = value();
+        }
+        xhr.setRequestHeader(header, value);
+      }
+    }
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState === 4 && (xhr.status < 200 || xhr.status >= 300)) {
+        const response = this.createResponse('error');
+        response.status = xhr.status;
+        this.options.onError?.(response);
+      }
+    };
+    xhr.send(message);
+  }
+
+  close(): void {
+    this.state = 'closed';
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+    }
+    const response = this.createResponse('closed');
+    response.state = 'closed';
+    this.options.onClose?.(response);
+  }
+}
+
+function initSsePush(): void {
+  const $wnd = window as any;
+  $wnd.vaadinPush = $wnd.vaadinPush || {};
+  $wnd.vaadinPush.atmosphere = {
+    version: 'sse-1.0',
+    subscribe(options: SseAtmosphereRequest) {
+      return new SseConnection(options);
+    },
+    unsubscribeUrl(_url: string): void {
+      // SSE connections are closed via the connection object
+    }
+  };
+}
+
+// ============================================================================
+
 class FlowUiInitializationError extends Error {}
 
 interface AppConfig {
@@ -20,6 +213,7 @@ interface AppConfig {
 interface AppInitResponse {
   appConfig: AppConfig;
   pushScript?: string;
+  useSsePush?: boolean;
 }
 
 interface Router {
@@ -311,9 +505,12 @@ export class Flow {
       // Initialize server side UI
       this.response = await this.flowInitUi();
 
-      const { pushScript, appConfig } = this.response;
+      const { pushScript, useSsePush, appConfig } = this.response;
 
-      if (typeof pushScript === 'string') {
+      // Initialize push: use embedded SSE push or load external Atmosphere script
+      if (useSsePush) {
+        initSsePush();
+      } else if (typeof pushScript === 'string') {
         await this.loadScript(pushScript);
       }
       const { appId } = appConfig;

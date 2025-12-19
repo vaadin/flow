@@ -790,10 +790,22 @@ public class AtmospherePushConnection implements PushConnection {
 
     private String getVersionedPushJs() {
         String pushJs;
-        if (registry.getApplicationConfiguration().isProductionMode()) {
-            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
+        boolean isProductionMode = registry.getApplicationConfiguration()
+                .isProductionMode();
+
+        // Check if SSE transport is configured
+        String configuredTransport = getPushConfiguration().getParameters()
+                .get(TRANSPORT_KEY);
+        boolean useSse = "sse".equals(configuredTransport);
+
+        if (useSse) {
+            // Use SSE push script (no Atmosphere dependency)
+            pushJs = isProductionMode ? ApplicationConstants.VAADIN_SSE_PUSH_JS
+                    : ApplicationConstants.VAADIN_SSE_PUSH_DEBUG_JS;
         } else {
-            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            // Use Atmosphere-based push script
+            pushJs = isProductionMode ? ApplicationConstants.VAADIN_PUSH_JS
+                    : ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
         return pushJs;
     }

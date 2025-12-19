@@ -90,17 +90,17 @@ public class ApplicationConstants implements Serializable {
             + "push/vaadinPush.js";
 
     /**
-     * The name of the javascript containing SSE push support.
+     * The name of the javascript containing SSE push support. Used only for
+     * server-rendered HTML pages; JavaScript bootstrap uses embedded SSE push.
      */
     public static final String VAADIN_SSE_PUSH_JS = VAADIN_STATIC_FILES_PATH
-            + "push/vaadinSsePush-min.js";
+            + "push/vaadinSsePush.js";
 
     /**
      * The name of the debug version of the javascript containing SSE push
-     * support.
+     * support. Same as production version since SSE push is bundled.
      */
-    public static final String VAADIN_SSE_PUSH_DEBUG_JS = VAADIN_STATIC_FILES_PATH
-            + "push/vaadinSsePush.js";
+    public static final String VAADIN_SSE_PUSH_DEBUG_JS = VAADIN_SSE_PUSH_JS;
 
     /**
      * Name of the parameter used to transmit the push connection identifier.

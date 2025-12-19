@@ -325,7 +325,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                             .getPushMode();
                 }
 
-                if (pushMode.isEnabled()
+                // SSE transport doesn't require Atmosphere
+                Transport transport = getUI().getPushConfiguration()
+                        .getTransport();
+                if (pushMode.isEnabled() && transport != Transport.SSE
                         && !getService().ensurePushAvailable()) {
                     /*
                      * Fall back if not supported (ensurePushAvailable will log
