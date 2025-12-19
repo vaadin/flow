@@ -249,8 +249,8 @@ public class DataCommunicatorTest {
     @Test
     public void refreshViewport_updatedRangeSent() {
         var compositeDataGenerator = new CompositeDataGenerator<Item>();
-        dataCommunicator = new DataCommunicator<>(compositeDataGenerator, arrayUpdater,
-                data -> {
+        dataCommunicator = new DataCommunicator<>(compositeDataGenerator,
+                arrayUpdater, data -> {
                 }, element.getNode()) {
         };
         dataCommunicator.setDataProvider(createDataProvider(), null);
