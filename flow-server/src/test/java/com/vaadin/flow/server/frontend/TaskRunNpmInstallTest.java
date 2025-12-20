@@ -46,6 +46,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
