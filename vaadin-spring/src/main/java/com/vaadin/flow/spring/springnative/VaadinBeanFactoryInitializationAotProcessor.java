@@ -199,7 +199,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 Set<Class<? extends RouterLayout>> definedLayouts = new HashSet<>();
                 if (c.isAnnotationPresent(Route.class)) {
                     definedLayouts.add(c.getAnnotation(Route.class).layout());
-                } else if (c.isAnnotationPresent(RouteAlias.class)) {
+                }
+                if (c.isAnnotationPresent(RouteAlias.class)) {
                     definedLayouts
                             .add(c.getAnnotation(RouteAlias.class).layout());
                 } else if (c.isAnnotationPresent(RouteAlias.Container.class)) {
@@ -233,9 +234,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 .getBeanDefinition();
     }
 
-    private static Collection<Class<?>> getRouteTypesFor(String packageName) {
+    // Visible for testing
+    Collection<Class<?>> getRouteTypesFor(String packageName) {
         return getAnnotatedClasses(packageName, Route.class, RouteAlias.class,
-                Layout.class);
+                RouteAlias.Container.class, Layout.class);
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
@@ -359,7 +361,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 "sun.java2d.SunGraphics2D" };
     }
 
-    private static Collection<Class<?>> getAnnotatedClasses(String basePackage,
+    // Visible for testing
+    Collection<Class<?>> getAnnotatedClasses(String basePackage,
             Class<?>... annotations) {
         Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -383,7 +386,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
         return result;
     }
 
-    private static Collection<Class<?>> getSubtypesOf(String basePackage,
+    // Visible for testing
+    Collection<Class<?>> getSubtypesOf(String basePackage,
             Class<?> parentType) {
         Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
