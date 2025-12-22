@@ -151,7 +151,7 @@ public class ServletContainerInitializerTest extends ClassFinder {
         return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*",
                 "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl",
                 // Shaded third-party libraries
-                "com\\.vaadin\\.frontendtools\\.shaded\\..*");
+                "com\\.vaadin\\.frontendtools\\.internal\\..*");
     }
 
     private boolean isBadSubType(Class<?> clazz) {

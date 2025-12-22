@@ -61,7 +61,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     protected Stream<String> getExcludedPatterns() {
         return Stream.of(
                 // Shaded third-party libraries
-                "com\\.vaadin\\.frontendtools\\.shaded\\..*",
+                "com\\.vaadin\\.frontendtools\\.internal\\..*",
                 "com\\.vaadin\\.frontendtools\\.installer\\.DefaultArchiveExtractor",
                 "com\\.vaadin\\.frontendtools\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
