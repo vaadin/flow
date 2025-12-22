@@ -1676,6 +1676,30 @@ public class BootstrapHandlerTest {
     }
 
     @Test
+    public void synchronizedHandleRequest_requestTargetVAADINFolder_noUiCreated()
+            throws IOException {
+        final BootstrapHandler bootstrapHandler = new BootstrapHandler();
+
+        final VaadinServletRequest request = Mockito
+                .mock(VaadinServletRequest.class);
+        Mockito.doAnswer(invocation -> "/VAADIN").when(request).getPathInfo();
+
+        final MockServletServiceSessionSetup.TestVaadinServletResponse response = mocks
+                .createResponse();
+
+        final boolean value = bootstrapHandler.synchronizedHandleRequest(
+                mocks.getSession(), request, response);
+        Assert.assertTrue("No further request handlers should be called",
+                value);
+
+        Assert.assertEquals("Invalid status code reported", 400,
+                response.getErrorCode());
+        Assert.assertEquals("Invalid message reported",
+                "Invalid UI location: VAADIN is for static files",
+                response.getErrorMessage());
+    }
+
+    @Test
     public void synchronizedHandleRequest_requestPathInfoStartsWithSlash_stripped()
             throws IOException {
         final BootstrapHandler bootstrapHandler = new BootstrapHandler();
