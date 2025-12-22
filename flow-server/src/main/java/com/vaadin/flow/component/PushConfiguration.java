@@ -245,7 +245,8 @@ class PushConfigurationImpl implements PushConfiguration {
                     // Use SSE push connection (no Atmosphere dependency)
                     connection = new SsePushConnection(ui);
                 } else {
-                    // Use the configured factory (default: AtmospherePushConnection)
+                    // Use the configured factory (default:
+                    // AtmospherePushConnection)
                     connection = pushConnectionFactory.apply(ui);
                 }
                 ui.getInternals().setPushConnection(connection);

@@ -15,15 +15,15 @@
  */
 package com.vaadin.flow.server.communication;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-
 import jakarta.servlet.AsyncContext;
 import jakarta.servlet.AsyncEvent;
 import jakarta.servlet.AsyncListener;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -93,7 +93,8 @@ public class SseRequestHandler
         // Check if async is supported
         if (!servletRequest.isAsyncSupported()) {
             getLogger().error("Async not supported. SSE push unavailable.");
-            servletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
+            servletResponse.sendError(
+                    HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
                     "Async not supported. SSE push unavailable.");
             return true;
         }
@@ -243,9 +244,8 @@ public class SseRequestHandler
      */
     private void sendRefresh(HttpServletResponse response) throws IOException {
         response.setContentType(JsonConstants.JSON_CONTENT_TYPE);
-        response.getWriter()
-                .write(VaadinService.createCriticalNotificationJSON(null, null,
-                        null, null));
+        response.getWriter().write(VaadinService
+                .createCriticalNotificationJSON(null, null, null, null));
     }
 
     /**

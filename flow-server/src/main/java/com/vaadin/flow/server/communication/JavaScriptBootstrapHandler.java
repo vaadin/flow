@@ -324,7 +324,8 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         initial.set("appConfig", appConfig);
 
         if (context.getPushMode().isEnabled()) {
-            // Check if SSE transport is configured - if so, use embedded SSE push
+            // Check if SSE transport is configured - if so, use embedded SSE
+            // push
             Transport transport = context.getUI().getPushConfiguration()
                     .getTransport();
             if (transport == Transport.SSE) {

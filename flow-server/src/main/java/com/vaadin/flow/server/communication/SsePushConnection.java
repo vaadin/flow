@@ -15,13 +15,13 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.AsyncContext;
+import jakarta.servlet.http.HttpServletResponse;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
-
-import jakarta.servlet.AsyncContext;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -145,10 +145,10 @@ public class SsePushConnection implements PushConnection, Serializable {
             try {
                 // SSE format: event type, id, and data fields
                 writer.write("event: uidl\n");
-                writer.write(
-                        "id: " + (ui.getInternals().getServerSyncId() - 1)
-                                + "\n");
-                // Data can span multiple lines - each line needs "data: " prefix
+                writer.write("id: " + (ui.getInternals().getServerSyncId() - 1)
+                        + "\n");
+                // Data can span multiple lines - each line needs "data: "
+                // prefix
                 String[] lines = message.split("\n", -1);
                 for (String line : lines) {
                     writer.write("data: " + line + "\n");
@@ -157,7 +157,8 @@ public class SsePushConnection implements PushConnection, Serializable {
                 writer.flush();
 
                 if (writer.checkError()) {
-                    getLogger().debug("Error detected while writing SSE message");
+                    getLogger()
+                            .debug("Error detected while writing SSE message");
                     connectionLost();
                 }
             } catch (Exception e) {
