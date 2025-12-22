@@ -19,7 +19,7 @@
  * for application theme plugin.
  */
 import { existsSync, readFileSync } from 'fs';
-import { resolve } from 'path';
+import { resolve, basename } from 'path';
 import { writeThemeFiles } from './theme-generator.js';
 import { writeCssFiles } from './css-theme-generator.js';
 import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
@@ -153,7 +153,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
   if (existsSync(themeFolder)) {
     logger.debug('Found theme ', themeName, ' in folder ', themeFolder);
 
-    const themeProperties = getThemeProperties(themeFolder, options);
+    const themeProperties = getThemeProperties(themeFolder, options, logger);
 
     // If theme has parent handle parent theme immediately.
     if (themeProperties.parent) {
@@ -176,7 +176,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
   return false;
 }
 
-function getThemeProperties(themeFolder, options) {
+function getThemeProperties(themeFolder, options, logger) {
   const themePropertyFile = resolve(themeFolder, 'theme.json');
   let outputFolder;
   if (options.javaResourceFolder) {
@@ -205,6 +205,16 @@ function getThemeProperties(themeFolder, options) {
   }
   let themeJson = JSON.parse(themePropertyFileAsString);
   themeJson.autoInjectComponents = componentFeature;
+
+  if (themeJson.lumoImports) {
+    const themeName = basename(themeFolder);
+    logger.warn(
+      `The 'lumoImports' property detected in theme '${themeName}' is no longer supported in Vaadin 25. ` +
+        "All modules except 'utility' are now loaded automatically when extending Lumo theme. " +
+        "To load utility classes, add '@StyleSheet(Lumo.UTILITY_STYLESHEET)' annotation to 'AppShellConfigurator' implementor " +
+        'or "@import \'lumo/utility.css\';" to the theme styles.css file.'
+    );
+  }
   return themeJson;
 }
 
