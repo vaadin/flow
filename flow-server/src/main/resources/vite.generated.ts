@@ -412,9 +412,12 @@ function preserveUsageStats() {
     transform(src: string, id: string) {
       if (id.includes('vaadin-usage-statistics')) {
         if (src.includes('vaadin-dev-mode:start')) {
-          const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
+          const expectedComment = '/*! vaadin-dev-mode:start';
+          const newSrc = src.replace(DEV_MODE_START_REGEXP, expectedComment);
           if (newSrc === src) {
-            console.error('Comment replacement failed to change anything');
+            if (!src.includes(expectedComment)) {
+              console.error('vaadin-dev-mode:start tag not found');
+            }
           } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
             console.error('New comment fails to match original regexp');
           } else {
