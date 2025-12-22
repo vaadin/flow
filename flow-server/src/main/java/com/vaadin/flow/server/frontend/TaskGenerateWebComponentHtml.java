@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import com.vaadin.flow.internal.StringUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
+import static com.vaadin.flow.internal.FrontendUtils.WEB_COMPONENT_HTML;
 
 /**
  * Generate <code>web-component.html</code> if it is missing in frontend folder.

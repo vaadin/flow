@@ -34,6 +34,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractConfiguration;
 import com.vaadin.flow.server.AppShellRegistry;

@@ -19,6 +19,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
+
 /**
  * FrontendTools class fot manually testing NodeJS installation.
  */

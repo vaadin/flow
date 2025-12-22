@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import com.vaadin.flow.internal.StringUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
+import static com.vaadin.flow.internal.FrontendUtils.TAILWIND_CSS;
 
 /**
  * Generate <code>tailwind.css</code> if it is missing in the generated frontend
