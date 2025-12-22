@@ -582,6 +582,10 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                     + invalidLocationException.getMessage());
             return true;
         }
+        if(LocationUtil.ensureRelativeNonNull(request.getPathInfo()).startsWith("VAADIN")) {
+            response.sendError(400, "Invalid UI location: VAADIN is for static files");
+            return true;
+        }
         return false;
     }
 
