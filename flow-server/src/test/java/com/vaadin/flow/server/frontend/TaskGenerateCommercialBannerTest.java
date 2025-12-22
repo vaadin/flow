@@ -30,7 +30,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.COMMERCIAL_BANNER_JS;
+import static com.vaadin.flow.internal.FrontendUtils.COMMERCIAL_BANNER_JS;
 
 public class TaskGenerateCommercialBannerTest {
     @Rule
