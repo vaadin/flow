@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
@@ -298,7 +299,7 @@ public class NodeTasks implements FallibleCommand {
                 || options.isBundleBuild()) {
             commands.add(new TaskGenerateIndexTs(options));
             commands.add(new TaskGenerateReactFiles(options));
-            if (FrontendUtils.isTailwindCssEnabled(options)) {
+            if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
                 commands.add(new TaskGenerateTailwindCss(options));
                 commands.add(new TaskGenerateTailwindJs(options));
             }
@@ -328,7 +329,7 @@ public class NodeTasks implements FallibleCommand {
     }
 
     private void addEndpointServicesTasks(Options options) {
-        if (!FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+        if (!FrontendBuildUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             return;
         }

@@ -20,9 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.vaadin.experimental.Feature;
+import com.vaadin.flow.internal.FrontendUtils;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 
 /**
  * A task for generating the feature flags file
