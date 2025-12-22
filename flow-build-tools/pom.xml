@@ -70,19 +70,19 @@
               <relocations>
                 <relocation>
                   <pattern>org.apache.commons.compress</pattern>
-                  <shadedPattern>com.vaadin.frontendtools.shaded.commons.compress</shadedPattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.commons.compress</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.commons.io</pattern>
-                  <shadedPattern>com.vaadin.frontendtools.shaded.commons.io</shadedPattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.commons.io</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.commons.codec</pattern>
-                  <shadedPattern>com.vaadin.frontendtools.shaded.commons.codec</shadedPattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.commons.codec</shadedPattern>
                 </relocation>
                 <relocation>
                   <pattern>org.apache.commons.lang3</pattern>
-                  <shadedPattern>com.vaadin.frontendtools.shaded.commons.lang3</shadedPattern>
+                  <shadedPattern>com.vaadin.frontendtools.internal.commons.lang3</shadedPattern>
                 </relocation>
               </relocations>
               <filters>
