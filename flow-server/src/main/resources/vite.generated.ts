@@ -29,7 +29,6 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
-import vaadinBundlesPlugin from '#buildFolder#/plugins/vite-plugin-vaadin-bundles';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
@@ -521,9 +520,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       productionMode && brotli(),
-      devMode && vaadinBundlesPlugin({
-        nodeModulesFolder
-      }),
       devMode && showRecompileReason(),
       settings.offlineEnabled && serviceWorkerPlugin({
         srcPath: settings.clientServiceWorkerSource,
