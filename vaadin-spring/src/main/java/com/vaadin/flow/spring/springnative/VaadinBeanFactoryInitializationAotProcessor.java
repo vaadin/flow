@@ -47,7 +47,9 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -55,6 +57,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 public class VaadinBeanFactoryInitializationAotProcessor
         implements BeanFactoryInitializationAotProcessor {
@@ -121,6 +124,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registerSubTypes(hints, reflections, HasUrlParameter.class);
                 registerSubTypes(hints, reflections,
                         "com.vaadin.flow.data.converter.Converter");
+                registerSubTypes(hints, reflections,
+                        WebComponentExporter.class);
+                registerSubTypes(hints, reflections, I18NProvider.class);
+                registerSubTypes(hints, reflections, MenuAccessControl.class);
             }
         };
     }
