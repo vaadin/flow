@@ -42,7 +42,10 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.component.webcomponent.WebComponent;
+import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.ErrorParameter;
@@ -53,6 +56,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -622,6 +626,76 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void getSubtypesOf_findsWebComponentExporterSubclasses() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        String packageName = getClass().getPackageName();
+        Collection<Class<?>> exporters = processor.getSubtypesOf(
+                new Reflections(packageName), WebComponentExporter.class);
+
+        assertThat(exporters).as("Should find WebComponentExporter subclasses")
+                .contains(TestWebComponentExporter.class);
+    }
+
+    @Test
+    void getSubtypesOf_findsI18NProviderImplementations() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        String packageName = getClass().getPackageName();
+        Collection<Class<?>> providers = processor.getSubtypesOf(
+                new Reflections(packageName), I18NProvider.class);
+
+        assertThat(providers).as("Should find I18NProvider implementations")
+                .contains(TestI18NProvider.class);
+    }
+
+    @Test
+    void getSubtypesOf_findsMenuAccessControlImplementations() {
+        VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
+
+        String packageName = getClass().getPackageName();
+        Collection<Class<?>> accessControls = processor.getSubtypesOf(
+                new Reflections(packageName), MenuAccessControl.class);
+
+        assertThat(accessControls)
+                .as("Should find MenuAccessControl implementations")
+                .contains(TestMenuAccessControl.class);
+    }
+
+    @Test
+    void processAheadOfTime_webComponentExporterSubtype_reflectionHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestWebComponentExporter.class, WebComponentExporter.class);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestWebComponentExporter.class))
+                .as("WebComponentExporter subtype should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_i18nProviderSubtype_reflectionHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestI18NProvider.class, I18NProvider.class);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestI18NProvider.class))
+                .as("I18NProvider subtype should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_menuAccessControlSubtype_reflectionHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestMenuAccessControl.class, MenuAccessControl.class);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestMenuAccessControl.class))
+                .as("MenuAccessControl subtype should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
     void getAnnotatedClasses_findsClassesWithSpecificAnnotation() {
         VaadinBeanFactoryInitializationAotProcessor processor = new VaadinBeanFactoryInitializationAotProcessor();
 
@@ -902,5 +976,42 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     @Route(value = "default-layout", layout = RouterLayout.class)
     @Tag("div")
     public static class RouteWithDefaultLayout extends Component {
+    }
+
+    public static class TestWebComponentExporter
+            extends WebComponentExporter<Component> {
+        public TestWebComponentExporter() {
+            super("test-exporter");
+        }
+
+        @Override
+        protected void configureInstance(WebComponent<Component> webComponent,
+                Component component) {
+        }
+    }
+
+    public static class TestI18NProvider implements I18NProvider {
+        @Override
+        public java.util.List<java.util.Locale> getProvidedLocales() {
+            return java.util.List.of(java.util.Locale.ENGLISH);
+        }
+
+        @Override
+        public String getTranslation(String key, java.util.Locale locale,
+                Object... params) {
+            return key;
+        }
+    }
+
+    public static class TestMenuAccessControl implements MenuAccessControl {
+        @Override
+        public void setPopulateClientSideMenu(
+                PopulateClientMenu populateClientMenu) {
+        }
+
+        @Override
+        public PopulateClientMenu getPopulateClientSideMenu() {
+            return PopulateClientMenu.AUTOMATIC;
+        }
     }
 }
