@@ -1,10 +1,28 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.springnative;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.reflections.Reflections;
 import org.slf4j.Logger;
@@ -21,6 +39,8 @@ import org.springframework.beans.factory.support.AbstractBeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackages;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
@@ -75,8 +95,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                     registerResources(hints, c);
                 }
                 boolean hasPWA = false;
-                for (var c : reflections
-                        .getSubTypesOf(AppShellConfigurator.class)) {
+                for (var c : getSubtypesOf(reflections,
+                        AppShellConfigurator.class)) {
                     registerType(hints, c);
                     registerResources(hints, c);
                     hasPWA = hasPWA || c.getAnnotation(PWA.class) != null;
@@ -104,7 +124,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
     private void registerSubTypes(RuntimeHints hints, Reflections reflections,
             Class<?> cls) {
-        for (var c : reflections.getSubTypesOf(cls)) {
+        for (var c : getSubtypesOf(reflections, cls)) {
             registerType(hints, c);
         }
     }
@@ -113,7 +133,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
             String className) {
         try {
             Class<?> cls = Class.forName(className);
-            for (var c : reflections.getSubTypesOf(cls)) {
+            for (var c : getSubtypesOf(reflections, cls)) {
                 registerType(hints, c);
             }
         } catch (ClassNotFoundException | NoClassDefFoundError e) {
@@ -176,7 +196,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 Set<Class<? extends RouterLayout>> definedLayouts = new HashSet<>();
                 if (c.isAnnotationPresent(Route.class)) {
                     definedLayouts.add(c.getAnnotation(Route.class).layout());
-                } else if (c.isAnnotationPresent(RouteAlias.class)) {
+                }
+                if (c.isAnnotationPresent(RouteAlias.class)) {
                     definedLayouts
                             .add(c.getAnnotation(RouteAlias.class).layout());
                 } else if (c.isAnnotationPresent(RouteAlias.Container.class)) {
@@ -210,13 +231,11 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 .getBeanDefinition();
     }
 
-    private static Collection<Class<?>> getRouteTypesFor(
-            Reflections reflections, String packageName) {
-        var routeTypes = new HashSet<Class<?>>();
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(Route.class));
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(RouteAlias.class));
-        routeTypes.addAll(reflections.getTypesAnnotatedWith(Layout.class));
-        return routeTypes;
+    // Visible for testing
+    Collection<Class<?>> getRouteTypesFor(Reflections reflections,
+            String packageName) {
+        return getAnnotatedClasses(reflections, Route.class, RouteAlias.class,
+                RouteAlias.Container.class, Layout.class);
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
@@ -338,6 +357,25 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 "sun.java2d.pipe.SpanClipRenderer",
                 "sun.java2d.pipe.SpanIterator", "sun.java2d.pipe.ValidatePipe",
                 "sun.java2d.SunGraphics2D" };
+    }
+
+    // Visible for testing
+    @SuppressWarnings("unchecked")
+    Collection<Class<?>> getAnnotatedClasses(Reflections reflections,
+            Class<?>... annotations) {
+        return Arrays.stream(annotations)
+                .filter(Annotation.class::isAssignableFrom)
+                .map(clazz -> (Class<? extends Annotation>) clazz)
+                .flatMap(annotation -> reflections
+                        .getTypesAnnotatedWith(annotation).stream())
+                .collect(Collectors.toSet());
+    }
+
+    // Visible for testing
+    @SuppressWarnings("unchecked")
+    Collection<Class<?>> getSubtypesOf(Reflections reflections,
+            Class<?> parentType) {
+        return (Set<Class<?>>) reflections.getSubTypesOf(parentType);
     }
 
 }
