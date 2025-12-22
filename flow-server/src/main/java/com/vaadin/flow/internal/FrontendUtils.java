@@ -856,6 +856,19 @@ public class FrontendUtils {
         }
     }
 
+    /**
+     * Gets the version of a frontend tool by executing a version command and
+     * parsing the output.
+     *
+     * @param tool
+     *            the name of the tool being detected
+     * @param versionCommand
+     *            the command to execute to get the version (e.g., ["node",
+     *            "--version"])
+     * @return the parsed frontend version
+     * @throws UnknownVersionException
+     *             if the version command fails or the output cannot be parsed
+     */
     public static FrontendVersion getVersion(String tool,
             List<String> versionCommand) throws UnknownVersionException {
         String output;

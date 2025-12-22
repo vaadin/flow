@@ -42,6 +42,15 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.server.Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT;
 import static com.vaadin.flow.server.Constants.RESOURCES_FRONTEND_DEFAULT;
 
+/**
+ * Utility class for frontend build operations.
+ * <p>
+ * Provides helper methods for checking frontend framework availability, version
+ * management, resource loading, and build configuration during the frontend
+ * build process.
+ * <p>
+ * For internal use only. May be renamed or removed in a future release.
+ */
 public class FrontendBuildUtils {
 
     /**
@@ -168,6 +177,14 @@ public class FrontendBuildUtils {
         return false;
     }
 
+    /**
+     * Gets the current Vaadin platform version from the core versions JSON
+     * resource.
+     *
+     * @param finder
+     *            the class finder to use for locating the versions resource
+     * @return the platform version as a string, or empty if not found
+     */
     protected static Optional<String> getVaadinVersion(ClassFinder finder) {
         URL coreVersionsResource = finder
                 .getResource(Constants.VAADIN_CORE_VERSIONS_JSON);
@@ -190,11 +207,29 @@ public class FrontendBuildUtils {
         return Optional.empty();
     }
 
+    /**
+     * Gets the vaadin.json file located in the node_modules/.vaadin directory.
+     *
+     * @param npmFolder
+     *            the npm root folder
+     * @return the vaadin.json file
+     */
     static File getVaadinJsonFile(File npmFolder) {
         return new File(new File(npmFolder, FrontendUtils.NODE_MODULES),
                 NodeUpdater.VAADIN_JSON);
     }
 
+    /**
+     * Reads the contents of the vaadin.json file from the node_modules/.vaadin
+     * directory.
+     *
+     * @param npmFolder
+     *            the npm root folder
+     * @return the parsed JSON contents of vaadin.json, or an empty object if
+     *         the file doesn't exist
+     * @throws IOException
+     *             when file reading fails
+     */
     static ObjectNode getVaadinJsonContents(File npmFolder) throws IOException {
         File vaadinJsonFile = getVaadinJsonFile(npmFolder);
         if (vaadinJsonFile.exists()) {
