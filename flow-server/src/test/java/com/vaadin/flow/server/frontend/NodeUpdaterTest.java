@@ -914,12 +914,6 @@ public class NodeUpdaterTest {
         return (ObjectNode) JacksonUtils.readTree(
                 """
                 {
-                    "bundles": {
-                        "vaadin": {
-                            "jsVersion": "23.2.0",
-                            "npmName": "@vaadin/bundles"
-                        }
-                    },
                     "core": {
                         "accordion": {
                             "jsVersion": "23.2.0",
