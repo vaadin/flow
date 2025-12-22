@@ -23,7 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.function.Function;
 
+import com.vaadin.flow.internal.ReflectTools;
 import org.reflections.Reflections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,7 +115,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
                 registerSubTypes(hints, reflections, Component.class);
                 registerSubTypes(hints, reflections, RouterLayout.class);
-                registerSubTypes(hints, reflections, HasErrorParameter.class);
+                registerSubTypes(hints, reflections, HasErrorParameter.class,
+                        VaadinBeanFactoryInitializationAotProcessor::getExceptionTypeFromHasErrorParameter);
                 registerSubTypes(hints, reflections, ComponentEvent.class);
                 registerSubTypes(hints, reflections, HasUrlParameter.class);
                 registerSubTypes(hints, reflections,
@@ -124,9 +127,7 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
     private void registerSubTypes(RuntimeHints hints, Reflections reflections,
             Class<?> cls) {
-        for (var c : getSubtypesOf(reflections, cls)) {
-            registerType(hints, c);
-        }
+        registerSubTypes(hints, reflections, cls, null);
     }
 
     private void registerSubTypes(RuntimeHints hints, Reflections reflections,
@@ -141,6 +142,29 @@ public class VaadinBeanFactoryInitializationAotProcessor
             // you do not
             // have flow-data
         }
+    }
+
+    private void registerSubTypes(RuntimeHints hints, Reflections reflections,
+            Class<?> cls,
+            Function<Class<?>, Set<Class<?>>> relatedTypesExtractor) {
+        for (var c : getSubtypesOf(reflections, cls)) {
+            registerType(hints, c);
+            if (relatedTypesExtractor != null) {
+                for (var related : relatedTypesExtractor.apply(c)) {
+                    registerType(hints, related);
+                }
+            }
+        }
+    }
+
+    // Visible for testing
+    static Set<Class<?>> getExceptionTypeFromHasErrorParameter(Class<?> clazz) {
+        Class<?> exceptionType = ReflectTools.getGenericInterfaceType(clazz,
+                HasErrorParameter.class);
+        if (exceptionType != null) {
+            return Set.of(exceptionType);
+        }
+        return Set.of();
     }
 
     private static List<String> getPackagesWithRoutes(BeanFactory beanFactory) {
@@ -255,6 +279,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
         }
         MemberCategory[] memberCategories = MemberCategory.values();
         hints.reflection().registerType(c, memberCategories);
+        // Resource hints are needed for ClassPathScanner in
+        // VaadinServletContextInitializer to discover classes at runtime
+        // in native builds (GraalVM)
+        registerResources(hints, c);
     }
 
     private static List<String> getPackages(BeanFactory beanFactory) {

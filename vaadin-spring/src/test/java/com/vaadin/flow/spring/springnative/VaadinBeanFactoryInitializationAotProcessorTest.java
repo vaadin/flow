@@ -20,6 +20,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
@@ -317,6 +318,43 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
     }
 
     @Test
+    void processAheadOfTime_hasErrorParameterSubtype_exceptionTypeReflectionHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestCustomExceptionView.class, HasErrorParameter.class);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onType(TestCustomException.class))
+                .as("Exception type from HasErrorParameter generic parameter should be registered for reflection")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_hasErrorParameterSubtype_resourceHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestErrorParameterView.class, HasErrorParameter.class);
+
+        assertThat(RuntimeHintsPredicates.resource()
+                .forResource(toClassResourcePath(TestErrorParameterView.class)))
+                .as("HasErrorParameter subtype should be registered as resource")
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_hasErrorParameterSubtype_exceptionTypeResourceHintRegistered() {
+        RuntimeHints hints = processAotForHintsWithSubtypes(
+                TestCustomExceptionView.class, HasErrorParameter.class);
+
+        assertThat(RuntimeHintsPredicates.resource()
+                .forResource(toClassResourcePath(TestCustomException.class)))
+                .as("Exception type from HasErrorParameter generic parameter should be registered as resource")
+                .accepts(hints);
+    }
+
+    private static String toClassResourcePath(Class<?> clazz) {
+        return clazz.getName().replace('.', '/') + ".class";
+    }
+
+    @Test
     void processAheadOfTime_componentEventSubtype_reflectionHintRegistered() {
         RuntimeHints hints = processAotForHintsWithSubtypes(
                 TestComponentEvent.class, ComponentEvent.class);
@@ -510,6 +548,27 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         assertThat(errorHandlers)
                 .as("Should find HasErrorParameter implementations")
                 .contains(TestErrorParameterView.class);
+    }
+
+    @Test
+    void getExceptionTypeFromHasErrorParameter_extractsGenericType() {
+        Set<Class<?>> exceptionTypes = VaadinBeanFactoryInitializationAotProcessor
+                .getExceptionTypeFromHasErrorParameter(
+                        TestCustomExceptionView.class);
+
+        assertThat(exceptionTypes).as(
+                "Should extract exception type from HasErrorParameter implementation")
+                .containsExactly(TestCustomException.class);
+    }
+
+    @Test
+    void getExceptionTypeFromHasErrorParameter_returnsEmptyForNonHasErrorParameter() {
+        Set<Class<?>> exceptionTypes = VaadinBeanFactoryInitializationAotProcessor
+                .getExceptionTypeFromHasErrorParameter(TestRouteView.class);
+
+        assertThat(exceptionTypes)
+                .as("Should return empty set for non-HasErrorParameter class")
+                .isEmpty();
     }
 
     @Test
@@ -785,6 +844,25 @@ class VaadinBeanFactoryInitializationAotProcessorTest {
         public int setErrorParameter(BeforeEnterEvent event,
                 ErrorParameter<Exception> parameter) {
             return 500;
+        }
+    }
+
+    public static class TestCustomException extends Exception {
+        public TestCustomException() {
+        }
+
+        public TestCustomException(String message) {
+            super(message);
+        }
+    }
+
+    @Tag("div")
+    public static class TestCustomExceptionView extends Component
+            implements HasErrorParameter<TestCustomException> {
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<TestCustomException> parameter) {
+            return 400;
         }
     }
 
