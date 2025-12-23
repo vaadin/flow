@@ -38,6 +38,7 @@ import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.communication.FaviconHandler;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushRequestHandler;
+import com.vaadin.flow.server.communication.SseRequestHandler;
 import com.vaadin.flow.server.communication.WebComponentProvider;
 import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
@@ -137,6 +138,9 @@ public class VaadinServletService extends VaadinService {
                         e);
             }
         }
+
+        // SSE push handler - always available, no external dependencies
+        handlers.add(new SseRequestHandler(this));
 
         addBootstrapHandler(handlers);
         return handlers;

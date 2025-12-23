@@ -90,6 +90,19 @@ public class ApplicationConstants implements Serializable {
             + "push/vaadinPush.js";
 
     /**
+     * The name of the javascript containing SSE push support. Used only for
+     * server-rendered HTML pages; JavaScript bootstrap uses embedded SSE push.
+     */
+    public static final String VAADIN_SSE_PUSH_JS = VAADIN_STATIC_FILES_PATH
+            + "push/vaadinSsePush.js";
+
+    /**
+     * The name of the debug version of the javascript containing SSE push
+     * support. Same as production version since SSE push is bundled.
+     */
+    public static final String VAADIN_SSE_PUSH_DEBUG_JS = VAADIN_SSE_PUSH_JS;
+
+    /**
      * Name of the parameter used to transmit the push connection identifier.
      */
     public static final String PUSH_ID_PARAMETER = "v-pushId";
@@ -193,6 +206,11 @@ public class ApplicationConstants implements Serializable {
      * Request type parameter value indicating a push request.
      */
     public static final String REQUEST_TYPE_PUSH = "push";
+
+    /**
+     * Request type parameter value indicating an SSE push request.
+     */
+    public static final String REQUEST_TYPE_SSE = "sse";
 
     /**
      * Request type parameter value indicating a WebComponent resynchronization

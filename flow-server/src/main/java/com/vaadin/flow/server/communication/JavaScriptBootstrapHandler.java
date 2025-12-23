@@ -48,6 +48,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.ApplicationConstants;
+import com.vaadin.flow.shared.ui.Transport;
 
 /**
  * Processes a 'start' request type from the client to initialize server session
@@ -323,7 +324,14 @@ public class JavaScriptBootstrapHandler extends BootstrapHandler {
         initial.set("appConfig", appConfig);
 
         if (context.getPushMode().isEnabled()) {
-            initial.put("pushScript", getPushScript(context));
+            // Check if SSE transport is configured - if so, use embedded SSE push
+            Transport transport = context.getUI().getPushConfiguration()
+                    .getTransport();
+            if (transport == Transport.SSE) {
+                initial.put("useSsePush", true);
+            } else {
+                initial.put("pushScript", getPushScript(context));
+            }
         }
         if (!session.getConfiguration().isProductionMode()) {
             initial.set("stats", getStats());

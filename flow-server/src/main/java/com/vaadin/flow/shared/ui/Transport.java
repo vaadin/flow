@@ -34,7 +34,12 @@ public enum Transport {
     /**
      * HTTP long polling.
      */
-    LONG_POLLING("long-polling");
+    LONG_POLLING("long-polling"),
+    /**
+     * Server-Sent Events (SSE) for server to client, XHR for client to server.
+     * Does not use the Atmosphere framework.
+     */
+    SSE("sse");
 
     private String identifier;
 
