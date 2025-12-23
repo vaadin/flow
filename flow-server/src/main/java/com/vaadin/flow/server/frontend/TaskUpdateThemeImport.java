@@ -215,10 +215,15 @@ public class TaskUpdateThemeImport
         ThemeValidationUtil.collectJarPackagedThemes(options,
                 themeJsonContents);
         String themeName = theme.getName();
-        ThemeUtils.getThemeJson(themeName, options.getFrontendDirectory())
-                .ifPresent(prjTheme -> ThemeValidationUtil
-                        .collectThemeJsonContentsInFrontend(options,
-                                themeJsonContents, themeName, prjTheme));
+        try {
+            ThemeUtils.getThemeJson(themeName, options.getFrontendDirectory())
+                    .ifPresent(prjTheme -> ThemeValidationUtil
+                            .collectThemeJsonContentsInFrontend(options,
+                                    themeJsonContents, themeName, prjTheme));
+        } catch (IllegalArgumentException ex) {
+            // ignore errors if the theme folder does not exist.
+            // such a case is handled elsewhere
+        }
 
         // Inspect used theme
         Set<String> themesWithLumoImport = new HashSet<>();
