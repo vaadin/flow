@@ -320,7 +320,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
         addScript(indexDocument, """
-                if (!Object.hasOwn(HTMLElement.prototype, "popover") {
+                if (!Object.hasOwn(HTMLElement.prototype, "popover")) {
                     window.location.search='v-r=oldbrowser';
                 }
                 """);
