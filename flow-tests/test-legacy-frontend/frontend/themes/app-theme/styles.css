@@ -1,3 +1,4 @@
+@import '@vaadin/vaadin-lumo-styles/utility.css';
 html,
 :host {
   --lumo-primary-text-color: #008000;
