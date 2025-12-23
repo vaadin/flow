@@ -23,6 +23,7 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-build-tools</artifactId>
       <version>${project.version}</version>
+      <classifier>shaded</classifier>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
