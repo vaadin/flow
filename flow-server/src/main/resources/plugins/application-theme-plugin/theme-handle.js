@@ -211,8 +211,7 @@ function getThemeProperties(themeFolder, options, logger) {
     logger.warn(
       `The 'lumoImports' property detected in theme '${themeName}' is no longer supported in Vaadin 25. ` +
         "All modules except 'utility' are now loaded automatically when extending Lumo theme. " +
-        "To load utility classes, add '@StyleSheet(Lumo.UTILITY_STYLESHEET)' annotation to 'AppShellConfigurator' implementor " +
-        'or "@import \'lumo/utility.css\';" to the theme styles.css file.'
+        "To load utility classes, add '@StyleSheet(Lumo.UTILITY_STYLESHEET)' annotation to 'AppShellConfigurator' implementor."
     );
   }
   return themeJson;
