@@ -19,11 +19,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.theme.ThemeDefinition;
@@ -108,6 +113,7 @@ public class TaskUpdateThemeImport
             throw new ExecutionFailedException(
                     "Unable to write theme import file", e);
         }
+        warnAboutLumoImports();
     }
 
     private void verifyThemeDirectoryExistence()
@@ -202,6 +208,41 @@ public class TaskUpdateThemeImport
 
         return Arrays.asList(frontendTheme, themePathInMetaInfResources,
                 themePathInStaticResources, themePathInClassPathResources);
+    }
+
+    private void warnAboutLumoImports() {
+        Map<String, JsonNode> themeJsonContents = new HashMap<>();
+        ThemeValidationUtil.collectJarPackagedThemes(options,
+                themeJsonContents);
+        String themeName = theme.getName();
+        ThemeUtils.getThemeJson(themeName, options.getFrontendDirectory())
+                .ifPresent(prjTheme -> ThemeValidationUtil
+                        .collectThemeJsonContentsInFrontend(options,
+                                themeJsonContents, themeName, prjTheme));
+
+        // Inspect used theme
+        Set<String> themesWithLumoImport = new HashSet<>();
+        String inspectedThemeName = themeName;
+        while (inspectedThemeName != null
+                && themeJsonContents.containsKey(inspectedThemeName)) {
+            JsonNode themeJson = themeJsonContents.remove(inspectedThemeName);
+            if (themeJson.has("lumoImports")) {
+                themesWithLumoImport.add(inspectedThemeName);
+            }
+            if (themeJson.has("parent")) {
+                inspectedThemeName = themeJson.get("parent").stringValue();
+            } else {
+                inspectedThemeName = null;
+            }
+        }
+        if (!themesWithLumoImport.isEmpty()) {
+            getLogger().warn(
+                    """
+                            The 'lumoImports' property detected in theme(s) '{}' is no longer supported in Vaadin 25. \
+                            All modules except 'utility' are now loaded automatically when extending Lumo theme. \
+                            To load utility classes, add '@StyleSheet(Lumo.UTILITY_STYLESHEET)' annotation to 'AppShellConfigurator' implementor.""",
+                    themesWithLumoImport);
+        }
     }
 
     Logger getLogger() {

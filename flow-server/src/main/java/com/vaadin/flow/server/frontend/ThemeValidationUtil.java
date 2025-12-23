@@ -64,12 +64,7 @@ public class ThemeValidationUtil {
             FrontendDependenciesScanner frontendDependencies) {
         Map<String, JsonNode> themeJsonContents = new HashMap<>();
 
-        if (options.getJarFiles() != null) {
-            options.getJarFiles().stream().filter(File::exists)
-                    .filter(file -> !file.isDirectory())
-                    .forEach(jarFile -> getPackagedThemeJsonContents(jarFile,
-                            themeJsonContents));
-        }
+        collectJarPackagedThemes(options, themeJsonContents);
 
         Optional<String> maybeThemeName = Optional
                 .ofNullable(frontendDependencies.getThemeDefinition())
@@ -131,6 +126,27 @@ public class ThemeValidationUtil {
         }
 
         return false;
+    }
+
+    /**
+     * Collects packaged themes defined in JAR files based on the provided
+     * options and stores their JSON contents in the given map.
+     *
+     * @param options
+     *            the configuration options that include the list of JAR files
+     *            to scan for packaged theme definitions
+     * @param themeJsonContents
+     *            a map to store the JSON contents of themes found within the
+     *            JAR files, with the theme name as the key
+     */
+    static void collectJarPackagedThemes(Options options,
+            Map<String, JsonNode> themeJsonContents) {
+        if (options.getJarFiles() != null) {
+            options.getJarFiles().stream().filter(File::exists)
+                    .filter(file -> !file.isDirectory())
+                    .forEach(jarFile -> getPackagedThemeJsonContents(jarFile,
+                            themeJsonContents));
+        }
     }
 
     /**
@@ -231,7 +247,22 @@ public class ThemeValidationUtil {
                 && (moreThanOneKey || noParentEntry);
     }
 
-    private static void collectThemeJsonContentsInFrontend(Options options,
+    /**
+     * Recursively collects and stores the JSON contents of a theme and its
+     * parent themes (if applicable) from the frontend directory.
+     *
+     * @param options
+     *            the configuration options that include frontend settings, such
+     *            as the frontend directory path
+     * @param themeJsonContents
+     *            a map to store the JSON contents of themes found in the
+     *            frontend directory, using the theme name as the key
+     * @param themeName
+     *            the name of the theme currently being processed
+     * @param themeJson
+     *            the JSON representation of the theme currently being processed
+     */
+    static void collectThemeJsonContentsInFrontend(Options options,
             Map<String, JsonNode> themeJsonContents, String themeName,
             JsonNode themeJson) {
         Optional<String> parentThemeInFrontend = ThemeUtils
