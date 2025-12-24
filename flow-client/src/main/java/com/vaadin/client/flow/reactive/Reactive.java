@@ -102,20 +102,23 @@ public class Reactive {
         }
         try {
             flushing = true;
-            while (hasFlushListeners() || hasPostFlushListeners()) {
-                // Purge all flush listeners
-                while (hasFlushListeners()) {
-                    FlushListener oldestListener = flushListeners.remove(0);
-                    oldestListener.flush();
-                }
 
-                // Purge one post flush listener, then look if there are new
-                // flush
-                // listeners to purge
-                if (hasPostFlushListeners()) {
-                    FlushListener oldestListener = postFlushListeners.remove(0);
-                    oldestListener.flush();
-                }
+            while (hasFlushListeners()) {
+                flushListeners.splice(0, flushListeners.length())
+                        .forEach(FlushListener::flush);
+            }
+
+            while (hasPostFlushListeners()) {
+                postFlushListeners.splice(0, postFlushListeners.length())
+                        .forEach(listener -> {
+                            listener.flush();
+
+                            while (hasFlushListeners()) {
+                                flushListeners
+                                        .splice(0, flushListeners.length())
+                                        .forEach(FlushListener::flush);
+                            }
+                        });
             }
         } finally {
             flushing = false;
