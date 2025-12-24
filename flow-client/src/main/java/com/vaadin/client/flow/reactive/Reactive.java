@@ -100,37 +100,42 @@ public class Reactive {
         if (flushing) {
             return;
         }
+
+        if (flushListeners == null) {
+            flushListeners = JsCollections.array();
+        }
+
+        if (postFlushListeners == null) {
+            postFlushListeners = JsCollections.array();
+        }
+
+        int flushListenerIndex = 0;
+        int postFlushListenerIndex = 0;
+
         try {
             flushing = true;
 
-            while (hasFlushListeners()) {
-                flushListeners.splice(0, flushListeners.length())
-                        .forEach(FlushListener::flush);
-            }
+            while (flushListenerIndex < flushListeners.length()
+                    || postFlushListenerIndex < postFlushListeners.length()) {
+                // Purge all flush listeners
+                while (flushListenerIndex < flushListeners.length()) {
+                    flushListeners.get(flushListenerIndex).flush();
+                    flushListenerIndex++;
+                }
 
-            while (hasPostFlushListeners()) {
-                postFlushListeners.splice(0, postFlushListeners.length())
-                        .forEach(listener -> {
-                            listener.flush();
-
-                            while (hasFlushListeners()) {
-                                flushListeners
-                                        .splice(0, flushListeners.length())
-                                        .forEach(FlushListener::flush);
-                            }
-                        });
+                // Purge one post flush listener, then look if there are new
+                // listeners to purge
+                if (postFlushListenerIndex < postFlushListeners.length()) {
+                    postFlushListeners.get(postFlushListenerIndex).flush();
+                    postFlushListenerIndex++;
+                }
             }
         } finally {
             flushing = false;
+
+            flushListeners.splice(0, flushListenerIndex);
+            postFlushListeners.splice(0, postFlushListenerIndex);
         }
-    }
-
-    private static boolean hasPostFlushListeners() {
-        return postFlushListeners != null && !postFlushListeners.isEmpty();
-    }
-
-    private static boolean hasFlushListeners() {
-        return flushListeners != null && !flushListeners.isEmpty();
     }
 
     /**
