@@ -240,7 +240,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.CssBundler",
+                "com\\.vaadin\\.flow\\.internal\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",

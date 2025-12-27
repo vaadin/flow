@@ -37,15 +37,15 @@ import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinConfig;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class DefaultApplicationConfigurationFactoryTest {
 

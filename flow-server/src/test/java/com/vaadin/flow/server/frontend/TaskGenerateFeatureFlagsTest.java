@@ -31,7 +31,7 @@ import com.vaadin.flow.server.MockVaadinContext;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
 
 public class TaskGenerateFeatureFlagsTest {
 

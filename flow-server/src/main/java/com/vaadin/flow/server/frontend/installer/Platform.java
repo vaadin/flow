@@ -19,7 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.flow.internal.FrontendVersion;
 
 /**
  * Platform contains information about system architecture and OS.

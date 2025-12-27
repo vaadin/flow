@@ -17,6 +17,8 @@ package com.vaadin.flow.server.frontend;
 
 import org.junit.Test;
 
+import com.vaadin.flow.internal.FrontendVersion;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

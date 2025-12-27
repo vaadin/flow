@@ -27,8 +27,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
+import com.vaadin.flow.internal.FrontendUtils;
 
 public class TaskGenerateTailwindJsTest {
 
@@ -56,7 +55,8 @@ public class TaskGenerateTailwindJsTest {
 
     @Test
     public void should_generateTailwindCss() throws Exception {
-        File tailwindjs = new File(frontendGeneratedFolder, TAILWIND_JS);
+        File tailwindjs = new File(frontendGeneratedFolder,
+                FrontendUtils.TAILWIND_JS);
         taskGenerateTailwindJs.execute();
         Assert.assertEquals("Should have correct tailwind.js file path",
                 tailwindjs, taskGenerateTailwindJs.getGeneratedFile());
@@ -68,7 +68,8 @@ public class TaskGenerateTailwindJsTest {
 
     @Test
     public void should_updateExistingTailwindCss() throws Exception {
-        File tailwindcss = new File(frontendGeneratedFolder, TAILWIND_JS);
+        File tailwindcss = new File(frontendGeneratedFolder,
+                FrontendUtils.TAILWIND_JS);
         Files.writeString(tailwindcss.toPath(), "OLD CONTENT");
         taskGenerateTailwindJs.execute();
         Assert.assertTrue(
