@@ -97,7 +97,7 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(".class{color:red}", processedCss);
+        Assert.assertEquals(".class{color: red}", processedCss);
     }
 
     @Test
@@ -120,8 +120,8 @@ public class TaskProcessStylesheetCssTest {
 
         String processedCss = Files.readString(mainFile.toPath());
         // Should contain both rules, minified
-        Assert.assertTrue(processedCss.contains(".other{color:blue}"));
-        Assert.assertTrue(processedCss.contains(".main{color:red}"));
+        Assert.assertTrue(processedCss.contains(".other{color: blue}"));
+        Assert.assertTrue(processedCss.contains(".main{color: red}"));
     }
 
     @Test
@@ -141,7 +141,7 @@ public class TaskProcessStylesheetCssTest {
         task.execute();
 
         String processedCss = Files.readString(cssFile.toPath());
-        Assert.assertEquals(".nested{color:green}", processedCss);
+        Assert.assertEquals(".nested{color: green}", processedCss);
     }
 
     @Test
@@ -296,9 +296,9 @@ public class TaskProcessStylesheetCssTest {
         String processedCss = Files.readString(mainFile.toPath());
         // Should contain minified node_modules CSS
         Assert.assertTrue("Should contain inlined node_modules CSS",
-                processedCss.contains(".from-node-modules{color:blue}"));
+                processedCss.contains(".from-node-modules{color: blue}"));
         Assert.assertTrue("Should contain main CSS",
-                processedCss.contains(".main{color:red}"));
+                processedCss.contains(".main{color: red}"));
     }
 
     @Test
