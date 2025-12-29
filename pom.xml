@@ -120,7 +120,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.1.0</bnd.version>
+    <bnd.version>7.2.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
