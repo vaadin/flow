@@ -486,7 +486,7 @@ public class CssBundler {
         // Collapse whitespace
         css = css.replaceAll("\\s+", " ");
         // Remove spaces around special characters
-        css = css.replaceAll("\\s*([{};:,>~+])\\s*", "$1");
+        css = css.replaceAll("\\s*([{};:,>~])\\s*", "$1");
         // Remove trailing semicolons before }
         css = css.replaceAll(";}", "}");
         return css.trim();

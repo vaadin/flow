@@ -420,6 +420,26 @@ public class CssBundlerTest {
     }
 
     @Test
+    public void minifyCss_handlesCalc_noRemovalOfWhitespace() {
+        String css = """
+                span.test::before {
+                    content: "";
+                    height: calc(100% + 6px);
+                    width: calc(10px - 100px);
+                    length: calc(var(--variable-width) + 20px);
+                    size: calc(2em * 5);
+                    border-left: 1px solid red;
+                    border: var(--bs-border-width) solid var(--bs-border-color);
+                }
+                """;
+
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(
+                "span.test::before{content:\"\";height:calc(100% + 6px);width:calc(10px - 100px);length:calc(var(--variable-width) + 20px);size:calc(2em * 5);border-left:1px solid red;border:var(--bs-border-width) solid var(--bs-border-color)}",
+                result);
+    }
+
+    @Test
     public void minifyCss_preservesSelectorsWithCombinators() {
         String css = ".parent > .child { color: red; }";
         String result = CssBundler.minifyCss(css);
