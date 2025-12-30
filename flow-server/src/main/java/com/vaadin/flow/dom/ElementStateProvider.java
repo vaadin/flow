@@ -460,6 +460,19 @@ public interface ElementStateProvider extends Serializable {
     void visit(StateNode node, NodeVisitor visitor);
 
     /**
+     * Binds the given signal to the <code>visible</code> property.
+     * <code>null</code> signal unbinds existing binding.
+     *
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     */
+    void bindVisibleSignal(Element owner, Signal<Boolean> signal);
+
+    /**
      * Sets the {@code node} visibility.
      *
      * @param node

@@ -26,7 +26,6 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -92,32 +91,14 @@ public class ElementAttributeMap extends NodeMap {
      * @param signal
      *            the signal to bind or <code>null</code> to unbind any existing
      *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given attribute
      */
     public void bindSignal(Element owner, String attribute,
             Signal<String> signal) {
-        SignalBinding previousSignalBinding;
-        if (super.get(attribute) instanceof SignalBinding binding) {
-            previousSignalBinding = binding;
-        } else {
-            previousSignalBinding = null;
-        }
-        if (signal != null && previousSignalBinding != null
-                && previousSignalBinding.signal() != null) {
-            throw new BindingActiveException();
-        }
-
-        Registration registration = signal != null ? ElementEffect.bind(owner,
-                signal, (element, value) -> doSet(attribute, value)) : null;
-        if (signal == null && previousSignalBinding != null) {
-            if (previousSignalBinding.registration() != null) {
-                previousSignalBinding.registration().remove();
-            }
-            put(attribute, get(attribute), false);
-        } else {
-            put(attribute,
-                    new SignalBinding(signal, registration, get(attribute)),
-                    false);
-        }
+        bindSignal(owner, attribute, signal,
+                (element, value) -> doSet(attribute, value));
     }
 
     /**
@@ -137,12 +118,6 @@ public class ElementAttributeMap extends NodeMap {
             return true;
         }
         return false;
-    }
-
-    private boolean hasSignal(String attribute) {
-        Serializable value = super.get(attribute);
-        return value instanceof SignalBinding binding
-                && binding.signal() != null;
     }
 
     /**

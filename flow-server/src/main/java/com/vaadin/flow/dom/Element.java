@@ -1321,7 +1321,7 @@ public class Element extends Node<Element> {
      * signal value changes have no effect. <code>null</code> signal unbinds the
      * existing binding.
      * <p>
-     * While a Signal is bound to an attribute, any attempt to set the text
+     * While a Signal is bound to a property, any attempt to set the text
      * content manually throws
      * {@link com.vaadin.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
@@ -1797,6 +1797,39 @@ public class Element extends Node<Element> {
             return Optional.empty();
         }
         return Optional.of(ShadowRoot.get(shadowRoot));
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the <code>visible</code> property of
+     * this element and keeps property synchronized with the signal value while
+     * the element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the visibility
+     * manually with {@link #setVisible(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindVisible(signal);
+     * signal.value(false); // The element is set hidden
+     * </pre>
+     *
+     * @param visibleSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setVisible(boolean)
+     */
+    public void bindVisible(Signal<Boolean> visibleSignal) {
+        getStateProvider().bindVisibleSignal(this, visibleSignal);
     }
 
     /**

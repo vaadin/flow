@@ -432,8 +432,20 @@ public class BasicElementStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        assert owner.getNode().hasFeature(ElementData.class);
+        owner.getNode().getFeature(ElementData.class).bindVisibleSignal(owner,
+                signal);
+    }
+
+    @Override
     public void setVisible(StateNode node, boolean visible) {
         assert node.hasFeature(ElementData.class);
+        ElementData feature = node.getFeature(ElementData.class);
+        if (feature.hasSignal(NodeProperties.VISIBLE)) {
+            throw new BindingActiveException(
+                    "setVisible is not allowed while a binding exists.");
+        }
         node.getFeature(ElementData.class).setVisible(visible);
     }
 

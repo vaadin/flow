@@ -20,7 +20,9 @@ import java.io.Serializable;
 import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.signals.Signal;
 
 /**
  * Map of basic element information.
@@ -107,7 +109,11 @@ public class ElementData extends NodeMap {
      * @return Element is visible by default
      */
     public boolean isVisible() {
-        return !Boolean.FALSE.equals(get(NodeProperties.VISIBLE));
+        var value = get(NodeProperties.VISIBLE);
+        return !Boolean.FALSE
+                .equals(value instanceof SignalBinding signalBinding
+                        ? signalBinding.value()
+                        : value);
     }
 
     /**
@@ -131,5 +137,34 @@ public class ElementData extends NodeMap {
 
     public String getJavaClass() {
         return getOrDefault(NodeProperties.JAVA_CLASS, (String) null);
+    }
+
+    /**
+     * Binds the given signal to the <code>visible</code> property.
+     * <code>null</code> signal unbinds existing binding.
+     *
+     * @param owner
+     *            the element owning the property, not <code>null</code>
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             <code>visible</code> property
+     */
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        bindSignal(owner, NodeProperties.VISIBLE, signal,
+                (element, value) -> putVisibleSignalValue(value));
+    }
+
+    private void putVisibleSignalValue(Boolean value) {
+        boolean booleanValue = (value != null) ? value : Boolean.FALSE;
+        if (hasSignal(NodeProperties.VISIBLE)) {
+            SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
+            put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
+                    b.registration(), booleanValue));
+        } else {
+            put(NodeProperties.VISIBLE, booleanValue);
+        }
     }
 }

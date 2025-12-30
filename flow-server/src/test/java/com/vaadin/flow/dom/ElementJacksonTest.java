@@ -158,6 +158,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("bindProperty");
         ignore.add("bindAttribute");
         ignore.add("bindText");
+        ignore.add("bindVisible");
 
         assertMethodsReturnType(Element.class, ignore);
     }
