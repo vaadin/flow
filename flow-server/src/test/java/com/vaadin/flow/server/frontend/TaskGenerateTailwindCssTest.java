@@ -164,7 +164,7 @@ public class TaskGenerateTailwindCssTest {
                 tailwindCssContent
                         .contains("@import 'tailwindcss/utilities.css';\n"));
         Assert.assertTrue("Should have @source directive with path",
-                tailwindCssContent.contains("@source \"../..\";\n"));
+                tailwindCssContent.contains("@source '../..';\n"));
         if (shouldHaveCustomImport) {
             Assert.assertTrue("Should have custom import", tailwindCssContent
                     .contains("@import '../tailwind-custom.css';"));
