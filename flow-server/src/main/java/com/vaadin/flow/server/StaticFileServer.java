@@ -256,6 +256,9 @@ public class StaticFileServer implements StaticFileHandler {
             // servletContext.getResource will return a URL for them, at
             // least with Jetty
             return false;
+        } else if (HandlerHelper.getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> filenameWithPath.equals(path))) {
+            return false;
         }
 
         if (HandlerHelper.isPathUnsafe(filenameWithPath)) {

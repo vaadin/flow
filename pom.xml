@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.0-SNAPSHOT</version>
+  <version>25.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -79,7 +79,7 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.0</spring.boot.version>
+    <spring.boot.version>4.0.1</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
@@ -102,7 +102,7 @@
     <jetty.version>12.1.5</jetty.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
-    <maven.version>3.9.11</maven.version>
+    <maven.version>3.9.12</maven.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <spotless.plugin.version>3.1.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
@@ -120,7 +120,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.1.0</bnd.version>
+    <bnd.version>7.2.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -193,7 +193,7 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.2</version>
+        <version>1.18.3</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
@@ -203,7 +203,7 @@
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.0.0</version>
+        <version>3.0.1</version>
       </dependency>
 
       <!-- Test dependencies -->
