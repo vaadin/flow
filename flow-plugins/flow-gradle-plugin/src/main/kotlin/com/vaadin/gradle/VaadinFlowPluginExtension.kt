@@ -632,7 +632,7 @@ public class PluginEffectiveConfiguration(
         frontendToolsSettings.isUseGlobalPnpm = useGlobalPnpm.get()
         frontendToolsSettings.isForceAlternativeNode = requireHomeNodeExec.get()
         frontendToolsSettings.isIgnoreVersionChecks = frontendIgnoreVersionChecks.get()
-        println("Added frontend tools settings! " + frontendToolsSettings.nodeVersion)
+
         frontendToolsSettings
     }
 
