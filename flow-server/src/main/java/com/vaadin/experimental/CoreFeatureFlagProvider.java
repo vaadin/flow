@@ -41,10 +41,6 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
             "Enable theme component style injection", "themeComponentStyles",
             "https://github.com/vaadin/flow/issues/21608", true, null);
 
-    public static final Feature COPILOT_EXPERIMENTAL = new Feature(
-            "Copilot experimental features", "copilotExperimentalFeatures",
-            "https://vaadin.com/docs/latest/tools/copilot", false, null);
-
     public static final Feature TAILWIND_CSS = new Feature(
             "Tailwind CSS framework", "tailwindCss",
             "https://github.com/vaadin/flow/issues/21643", true, null);
@@ -53,6 +49,6 @@ public class CoreFeatureFlagProvider implements FeatureFlagProvider {
     public List<Feature> getFeatures() {
         return List.of(COLLABORATION_ENGINE_BACKEND, FLOW_FULLSTACK_SIGNALS,
                 ACCESSIBLE_DISABLED_BUTTONS, COMPONENT_STYLE_INJECTION,
-                COPILOT_EXPERIMENTAL, TAILWIND_CSS);
+                TAILWIND_CSS);
     }
 }
