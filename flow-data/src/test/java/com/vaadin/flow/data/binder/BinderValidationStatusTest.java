@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -473,4 +474,14 @@ public class BinderValidationStatusTest
         }
     }
 
+    @Test
+    public void binderValidationStatus_nullBindingStatuses() {
+        try {
+            new BinderValidationStatus<>(new Binder<Person>(), null,
+                    Collections.emptyList());
+            Assert.fail("Binder should throw an NPE");
+        } catch (NullPointerException npe) {
+            Assert.assertNotNull(npe.getMessage());
+        }
+    }
 }
