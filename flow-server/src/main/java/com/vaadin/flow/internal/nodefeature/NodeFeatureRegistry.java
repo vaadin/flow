@@ -66,12 +66,16 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ELEMENT_DATA);
         registerFeature(TextNodeMap.class, TextNodeMap::new,
                 NodeFeatures.TEXT_NODE);
-        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
-                NodeFeatures.TEXT_BINDING);
         registerFeature(ModelList.class, ModelList::new,
                 NodeFeatures.TEMPLATE_MODELLIST);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new,
                 NodeFeatures.BASIC_TYPE_VALUE);
+
+        /* Signal binding features */
+        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
+                NodeFeatures.TEXT_BINDING);
+        registerFeature(SignalBindingFeature.class, SignalBindingFeature::new,
+                NodeFeatures.SIGNAL_BINDING);
 
         /* Common element features */
         registerFeature(ElementChildrenList.class, ElementChildrenList::new,

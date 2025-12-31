@@ -51,6 +51,7 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -1825,6 +1826,60 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the enabled state of this element and
+     * keeps the state synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to an enabled state, any attempt to set the state
+     * manually with {@link #setEnabled(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindEnabled(signal);
+     * signal.value(false); // The element is disabled
+     * </pre>
+     *
+     * @param enabledSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setEnabled(boolean)
+     */
+    public void bindEnabled(Signal<Boolean> enabledSignal) {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (enabledSignal == null) {
+            feature.removeBinding(SignalBindingFeature.ENABLED);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(this, enabledSignal,
+                    (element, value) -> setEnabledInternal(value));
+            feature.setBinding(SignalBindingFeature.ENABLED, registration,
+                    enabledSignal);
+        }
+    }
+
+    private void setEnabledInternal(final Boolean enabled) {
+        boolean booleanEnabled = enabled != null ? enabled : false;
+        getNode().setEnabled(booleanEnabled);
+
+        informEnabledStateChange(booleanEnabled, this);
+    }
+
+    /**
      * Sets the enabled state of the element.
      *
      * @param enabled
@@ -1832,9 +1887,14 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element setEnabled(final boolean enabled) {
-        getNode().setEnabled(enabled);
-
-        informEnabledStateChange(enabled, this);
+        getNode().getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
+                        throw new BindingActiveException(
+                                "setEnabled is not allowed while a binding for enabled state exists.");
+                    }
+                });
+        setEnabledInternal(enabled);
         return getSelf();
     }
 

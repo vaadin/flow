@@ -155,6 +155,7 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("getShadowRoot");
 
         // ignore signal binding methods
+        ignore.add("bindEnabled");
         ignore.add("bindProperty");
         ignore.add("bindAttribute");
         ignore.add("bindText");
