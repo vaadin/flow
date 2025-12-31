@@ -29,7 +29,7 @@ public class BindVisibleIT extends ChromeBrowserTest {
 
     @Test
     public void toggleSignal_updatesVisibility() {
-        open("com.vaadin.flow.uitest.ui.signal.StyleBindView");
+        open();
 
         waitForElementVisible(By.id("target-visible-initially"));
         waitForElementNotPresent(By.id("target-hidden-initially"));
