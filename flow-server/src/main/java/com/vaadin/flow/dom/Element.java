@@ -51,6 +51,7 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
@@ -1887,7 +1888,7 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element setEnabled(final boolean enabled) {
-        getNode().getFeatureIfInitialized(SignalBindingFeature.class)
+        getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
                     if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
                         throw new BindingActiveException(
@@ -2009,4 +2010,12 @@ public class Element extends Node<Element> {
         return getSelf();
     }
 
+    private <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
+            Class<T> featureClass) {
+        try {
+            return getNode().getFeatureIfInitialized(featureClass);
+        } catch (IllegalStateException e) {
+            return Optional.empty();
+        }
+    }
 }
