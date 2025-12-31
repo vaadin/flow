@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-server</artifactId>
   <packaging>jar</packaging>
@@ -186,6 +186,13 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.karaf.tooling</groupId>

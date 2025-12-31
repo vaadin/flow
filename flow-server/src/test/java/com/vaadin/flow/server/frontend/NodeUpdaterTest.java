@@ -41,6 +41,7 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -832,6 +833,56 @@ public class NodeUpdaterTest {
         Mockito.verifyNoInteractions(log);
     }
 
+    @Test
+    public void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
+        boolean reactEnabled = options.isReactEnabled();
+        try (MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
+                .mockStatic(FrontendUtils.class);
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
+                        .mockStatic(EndpointRequestUtil.class)) {
+
+            // Hilla is available in classpath but not used
+            frontendUtilsMock.when(
+                    () -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
+                            Mockito.any(ClassFinder.class)))
+                    .thenReturn(false);
+            endpointUtilMock.when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+            frontendUtilsMock
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
+                    .thenReturn(true);
+
+            // Create a spy to mock the readDependenciesIfAvailable method
+            NodeUpdater spyNodeUpdater = Mockito.spy(nodeUpdater);
+            Map<String, String> mockGeneratorDeps = Map
+                    .of("@vaadin/hilla-generator-core", "2.0.0");
+            Mockito.doReturn(mockGeneratorDeps).when(spyNodeUpdater)
+                    .readDependenciesIfAvailable(Mockito.anyString(),
+                            Mockito.eq("dependencies"),
+                            Mockito.eq("@vaadin/hilla-generator-"));
+
+            // Test with React enabled
+            options.withReact(true);
+            Map<String, String> defaultDeps = spyNodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    "React generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+
+            // Test with React disabled
+            options.withReact(false);
+            defaultDeps = spyNodeUpdater.getDefaultDependencies();
+            Assert.assertTrue(
+                    "Lit generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+        } finally {
+            options.withReact(reactEnabled);
+        }
+    }
+
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
@@ -852,12 +903,6 @@ public class NodeUpdaterTest {
         return (ObjectNode) JacksonUtils.readTree(
                 """
                 {
-                    "bundles": {
-                        "vaadin": {
-                            "jsVersion": "23.2.0",
-                            "npmName": "@vaadin/bundles"
-                        }
-                    },
                     "core": {
                         "accordion": {
                             "jsVersion": "23.2.0",
