@@ -78,7 +78,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
-
+        signal.value(false); // ignored
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
     }
@@ -135,6 +135,19 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         element.bindVisible(null); // remove binding
         signal.value(false); // no effect
         assertTrue(element.isVisible());
+        assertTrue(events.isEmpty());
+    }
+
+    @Test
+    public void bindVisible_withNullBinding_removesBindingPreserveState() {
+        Element element = new Element("foo");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
+        element.bindVisible(signal);
+        assertFalse(element.isVisible());
+
+        element.bindVisible(null); // remove binding
+        assertFalse(element.isVisible());
         assertTrue(events.isEmpty());
     }
 }
