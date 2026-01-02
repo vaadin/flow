@@ -165,6 +165,7 @@ public class ElementBindEnabledTest {
         Element element = new Element("foo");
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
+        signal.value(false);
 
         assertTrue(element.isEnabled());
     }
