@@ -46,11 +46,11 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FileIOUtils;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
 import com.vaadin.flow.server.frontend.FrontendUtils;
@@ -370,7 +370,9 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled())
+                    .withMetaInfResourcesDirectory(
+                            adapter.resourcesOutputDirectory());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;

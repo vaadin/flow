@@ -9,7 +9,7 @@
   </parent>
 
   <artifactId>flow-project</artifactId>
-  <version>25.0-SNAPSHOT</version>
+  <version>25.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Flow</name>
   <url>https://vaadin.com/flow</url>
@@ -29,7 +29,7 @@
 
   <modules>
     <module>flow</module>
-    <module>flow-archive-extractor</module>
+    <module>flow-build-tools</module>
     <module>flow-server</module>
     <module>flow-react</module>
     <module>flow-polymer-template</module>
@@ -79,7 +79,7 @@
     <failOnMissingWebXml>false</failOnMissingWebXml>
 
     <!-- Dependencies -->
-    <spring.boot.version>4.0.0</spring.boot.version>
+    <spring.boot.version>4.0.1</spring.boot.version>
     <jakarta.ee.version>11.0.0</jakarta.ee.version>
     <gwt.version>2.9.0</gwt.version>
     <hibernate.validator.version>9.1.0.Final</hibernate.validator.version>
@@ -94,15 +94,15 @@
     <frontend.maven.plugin.version>1.5</frontend.maven.plugin.version>
     <maven.surefire.plugin.version>3.5.4</maven.surefire.plugin.version>
     <maven.failsafe.plugin.version>3.5.4</maven.failsafe.plugin.version>
-    <maven.war.plugin.version>3.5.0</maven.war.plugin.version>
+    <maven.war.plugin.version>3.5.1</maven.war.plugin.version>
     <maven.resources.plugin.version>3.0.2</maven.resources.plugin.version>
     <maven.clean.plugin.version>3.5.0</maven.clean.plugin.version>
     <maven.exec.plugin.version>1.6.0</maven.exec.plugin.version>
-    <testbench.version>10.0.0-beta5</testbench.version>
-    <jetty.version>12.1.4</jetty.version>
+    <testbench.version>10.0.0</testbench.version>
+    <jetty.version>12.1.5</jetty.version>
     <properties-maven-plugin.version>1.2.1</properties-maven-plugin.version>
     <build-helper-maven-plugin.version>3.6.1</build-helper-maven-plugin.version>
-    <maven.version>3.9.11</maven.version>
+    <maven.version>3.9.12</maven.version>
     <maven-plugin-annotations.version>3.15.2</maven-plugin-annotations.version>
     <spotless.plugin.version>3.1.0</spotless.plugin.version>
     <spotless.license-header>${maven.multiModuleProjectDirectory}/eclipse/apache2-license-header.txt</spotless.license-header>
@@ -112,7 +112,7 @@
     <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
     <!-- Used in OSGi manifests -->
-    <jsoup.version>1.21.2</jsoup.version>
+    <jsoup.version>1.22.1</jsoup.version>
     <!-- Note that this should be kept in sync with the class Constants -->
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.1</atmosphere.client.version>
@@ -120,7 +120,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.1.0</bnd.version>
+    <bnd.version>7.2.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -193,17 +193,17 @@
       <dependency>
         <groupId>net.bytebuddy</groupId>
         <artifactId>byte-buddy</artifactId>
-        <version>1.18.2</version>
+        <version>1.18.3</version>
       </dependency>
       <dependency>
         <groupId>org.ow2.asm</groupId>
         <artifactId>asm</artifactId>
-        <version>9.9</version>
+        <version>9.9.1</version>
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>
         <artifactId>license-checker</artifactId>
-        <version>3.0.0-beta1</version>
+        <version>3.0.1</version>
       </dependency>
 
       <!-- Test dependencies -->
@@ -220,7 +220,7 @@
       <dependency>
         <groupId>org.mockito</groupId>
         <artifactId>mockito-core</artifactId>
-        <version>5.20.0</version>
+        <version>5.21.0</version>
       </dependency>
       <dependency>
         <groupId>org.mockito</groupId>
@@ -537,7 +537,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-resources-plugin</artifactId>
-          <version>3.3.1</version>
+          <version>3.4.0</version>
           <configuration>
             <propertiesEncoding>UTF-8</propertiesEncoding>
           </configuration>
@@ -545,7 +545,7 @@
         <plugin>
           <groupId>org.sonarsource.scanner.maven</groupId>
           <artifactId>sonar-maven-plugin</artifactId>
-          <version>5.3.0.6276</version>
+          <version>5.5.0.6356</version>
         </plugin>
       </plugins>
     </pluginManagement>
@@ -615,7 +615,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
-        <version>3.3.1</version>
+        <version>3.4.0</version>
         <executions>
           <execution>
             <id>attach-sources</id>

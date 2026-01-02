@@ -37,9 +37,9 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.BundleValidationUtil;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles;
@@ -47,6 +47,8 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
+
+import static com.vaadin.flow.server.Constants.META_INF;
 
 /**
  * Goal that builds the frontend bundle.
@@ -135,6 +137,14 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
      */
     @Parameter(property = InitParameters.CLEAN_BUILD_FRONTEND_FILES, defaultValue = "true")
     private boolean cleanFrontendFiles;
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
 
     @Override
     protected void executeInternal()
@@ -274,6 +284,11 @@ public class BuildFrontendMojo extends FlowModeAbstractMojo
     @Override
     public boolean compressBundle() {
         return true;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     @Override

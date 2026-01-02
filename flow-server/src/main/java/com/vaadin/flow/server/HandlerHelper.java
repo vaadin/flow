@@ -32,6 +32,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.communication.PwaHandler;
@@ -147,6 +148,8 @@ public class HandlerHelper implements Serializable {
 
     private static final String[] publicResourcesRoot;
     private static final String[] publicResources;
+    private static final List<String> publicInternalFolderPaths;
+
     static {
         List<String> resources = new ArrayList<>();
         resources.add("/" + PwaConfiguration.DEFAULT_PATH);
@@ -157,17 +160,29 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
         resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
-        resources.add("/aura/**");
-        resources.add("/lumo/**");
         resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
         // These are always in the root of the app, not inside any url mapping
         List<String> rootResources = new ArrayList<>();
+        rootResources.add("/aura/**");
+        rootResources.add("/lumo/**");
         rootResources.add("/favicon.ico");
         publicResourcesRoot = rootResources
                 .toArray(new String[rootResources.size()]);
+
+        List<String> resourcesPath = new ArrayList<>();
+        Stream.concat(resources.stream(), rootResources.stream())
+                .filter(resource -> resource.endsWith("/**"))
+                .map(resource -> resource.replace("/**", ""))
+                .forEach(resourcesPath::add);
+        for (String resource : getPublicResourcesRequiringSecurityContext()) {
+            if (resource.endsWith("/**")) {
+                resourcesPath.add(resource.replace("/**", ""));
+            }
+        }
+        publicInternalFolderPaths = resourcesPath;
     }
 
     private HandlerHelper() {
@@ -542,6 +557,10 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
+    }
+
+    public static List<String> getPublicInternalFolderPaths() {
+        return publicInternalFolderPaths;
     }
 
     /**

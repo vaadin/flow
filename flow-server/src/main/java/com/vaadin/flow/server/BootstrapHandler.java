@@ -516,7 +516,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (isVaadinStaticFileRequest(request)) {
-            // Do not allow routes inside /VAADIN/
+            // Do not allow routes inside /VAADIN/ or reserved static folders
             return false;
         }
 
@@ -557,7 +557,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Checks whether the request is a request for /VAADIN/*.
+     * Checks whether the request is a request for /VAADIN/* or other reserved
+     * static folder. (/themes, /assets, /aura, /lumo)
      * <p>
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this.
@@ -572,8 +573,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         otherwise
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
+        return request.getPathInfo() != null && HandlerHelper
+                .getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> request.getPathInfo().startsWith(path));
     }
 
     /**
@@ -1563,9 +1565,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = DevBundleUtils.findBundleStatsJson(
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
-                "Frontend development bundle is expected to be in the project"
-                        + " or on the classpath, but not found."
-                        + " Add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev' to let Vaadin build the development bundle automatically.");
+                """
+                        Frontend development bundle is expected to be in the project or on the classpath, but not found.
+                        Add 'com.vaadin:vaadin-dev' dependency to let Vaadin re-use the pre-compiled development bundle
+                        or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                        Maven:
+                            <dependency>
+                                <groupId>com.vaadin</groupId>
+                                <artifactId>vaadin-dev</artifactId>
+                            </dependency>
+
+                        Gradle:
+                            dependencies {
+                                implementation('com.vaadin:vaadin-dev')
+                            }
+
+                        """);
         return JacksonUtils.readTree(statsJson);
     }
 
@@ -1661,8 +1677,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .orElse(null);
 
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler.inlineImports(
-                        stylesCss.getParentFile(), stylesCss, themeJson)));
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImportsForThemes(stylesCss.getParentFile(),
+                                stylesCss, themeJson)));
             }
         } catch (IOException e) {
             throw new RuntimeException(

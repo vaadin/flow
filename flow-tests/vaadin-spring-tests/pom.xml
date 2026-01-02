@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-tests</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-spring-tests</artifactId>
 
@@ -14,7 +14,7 @@
 
   <properties>
     <maven.deploy.skip>true</maven.deploy.skip>
-    <component.version>25.0-SNAPSHOT</component.version>
+    <component.version>25.1-SNAPSHOT</component.version>
     <nimbus-jose-jwt.version>10.6</nimbus-jose-jwt.version>
   </properties>
 
@@ -29,7 +29,7 @@
 
       <dependency>
         <groupId>org.springframework.boot</groupId>
-        <artifactId>spring-boot-starter-web</artifactId>
+        <artifactId>spring-boot-starter-webmvc</artifactId>
         <version>${spring.boot.version}</version>
         <exclusions>
           <!-- Exclude logback as Selenium via netty otherwise logs excessively -->
@@ -316,6 +316,7 @@
         <module>test-spring-security-flow-standalone-routepathaccesschecker</module>
         <module>test-spring-security-flow-routepathaccesschecker</module>
         <module>test-spring-security-flow-themes-contextpath</module>
+        <module>test-spring-security-flow-themes-urlmapping</module>
 
         <module>test-spring-boot-only-prepare</module>
         <module>test-spring-white-list</module>

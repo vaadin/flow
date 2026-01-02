@@ -35,9 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -63,6 +63,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateIndexTs.class,
             TaskGenerateReactFiles.class,
             TaskGenerateTailwindCss.class,
+            TaskGenerateTailwindJs.class,
             TaskUpdateOldIndexTs.class,
             TaskGenerateViteDevMode.class,
             TaskGenerateCommercialBanner.class,
@@ -89,6 +90,7 @@ public class NodeTasks implements FallibleCommand {
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
             TaskPrepareProdBundle.class,
+            TaskProcessStylesheetCss.class,
             TaskCleanFrontendFiles.class,
             TaskRemoveOldFrontendGeneratedFiles.class
         ));
@@ -144,6 +146,8 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskGenerateCommercialBanner(options));
                     BundleUtils.copyPackageLockFromBundle(options);
                 }
+                // Process @StyleSheet CSS files (minify and inline @imports)
+                commands.add(new TaskProcessStylesheetCss(options));
             } else if (options.isBundleBuild()) {
                 // The dev bundle check needs the frontendDependencies to be
                 // able to
@@ -296,6 +300,7 @@ public class NodeTasks implements FallibleCommand {
             commands.add(new TaskGenerateReactFiles(options));
             if (FrontendUtils.isTailwindCssEnabled(options)) {
                 commands.add(new TaskGenerateTailwindCss(options));
+                commands.add(new TaskGenerateTailwindJs(options));
             }
             if (!options.isProductionMode()) {
                 commands.add(new TaskGenerateViteDevMode(options));

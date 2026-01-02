@@ -34,7 +34,6 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -59,7 +58,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "- Custom theme imports/assets added into 'theme.json' file\n" +
             "- Exported web component is added.\n\n" +
             "If your project development needs a hot deployment of the frontend changes, \n" +
-            "you can switch Flow to use Vite development server (default in Vaadin 23.3 and earlier versions):\n" +
+            "you can switch Flow to use Vite development server:\n" +
             "- set `vaadin.frontend.hotdeploy=true` in `application.properties`\n" +
             "- configure `vaadin-maven-plugin`:\n" +
             "```\n" +
@@ -75,7 +74,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "       </systemProperties>\n" +
             "   </configuration>\n" +
             "```\n\n" +
-            "Read more [about Vaadin development mode](https://vaadin.com/docs/next/flow/configuration/development-mode#precompiled-bundle).";
+            "Read more [about Vaadin development mode](https://vaadin.com/docs/latest/flow/configuration/development-mode#precompiled-bundle).";
     //@formatter:on
 
     public static final String VAADIN_JSON = "vaadin.json";

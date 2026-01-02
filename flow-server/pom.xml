@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-server</artifactId>
   <packaging>jar</packaging>
@@ -17,7 +17,7 @@
 
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-archive-extractor</artifactId>
+      <artifactId>flow-build-tools</artifactId>
       <version>${project.version}</version>
       <!-- Note, ideally vaadin-server should not depend this module at all
            and development time tooling shared with plugins should end up here.
@@ -186,6 +186,13 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.karaf.tooling</groupId>

@@ -49,6 +49,7 @@ import com.vaadin.flow.internal.BootstrapHandlerHelper;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReload.Backend;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
@@ -65,7 +66,6 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -320,7 +320,7 @@ public class IndexHtmlRequestHandler extends JavaScriptBootstrapHandler {
 
     private void redirectToOldBrowserPageWhenNeeded(Document indexDocument) {
         addScript(indexDocument, """
-                if (!('CSSLayerBlockRule' in window)) {
+                if (!Object.hasOwn(HTMLElement.prototype, "popover")) {
                     window.location.search='v-r=oldbrowser';
                 }
                 """);

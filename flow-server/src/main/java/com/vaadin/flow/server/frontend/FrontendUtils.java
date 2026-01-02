@@ -37,6 +37,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -53,6 +55,7 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.internal.StringUtil;
@@ -274,6 +277,11 @@ public class FrontendUtils {
     public static final String TAILWIND_CSS = "tailwind.css";
 
     /**
+     * File name of the Tailwind CSS integration js wrapper.
+     */
+    public static final String TAILWIND_JS = "tailwind.js";
+
+    /**
      * Default generated path for generated frontend files.
      */
     public static final String DEFAULT_PROJECT_FRONTEND_GENERATED_DIR = DEFAULT_FRONTEND_DIR
@@ -369,6 +377,20 @@ public class FrontendUtils {
     private static final Pattern CLIENT_SIDE_ROUTES_PATTERN = Pattern.compile(
             "(?<=(?:const|let|var) routes)(:\\s?\\w*\\[\\s?])?\\s?=\\s?\\[([\\s\\S]*?)(?=\\.{3}serverSideRoutes)",
             Pattern.MULTILINE);
+
+    /**
+     * Executor for I/O-bound operations like reading process streams. Uses
+     * virtual threads to avoid blocking the common ForkJoinPool.
+     * <p>
+     * This executor is intentionally never shut down as it's used throughout
+     * the application lifecycle and virtual threads have minimal overhead.
+     *
+     * @see <a href="https://github.com/vaadin/flow/issues/22756">Issue
+     *      #22756</a>
+     */
+    private static final ExecutorService STREAM_EXECUTOR = Executors
+            .newThreadPerTaskExecutor(Thread.ofVirtual()
+                    .name("vaadin-stream-consumer-", 0).factory());
 
     /**
      * Only static stuff here.
@@ -972,10 +994,12 @@ public class FrontendUtils {
      */
     public static CompletableFuture<Pair<String, String>> consumeProcessStreams(
             Process process) {
-        CompletableFuture<String> stdOut = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getInputStream()));
-        CompletableFuture<String> stdErr = CompletableFuture
-                .supplyAsync(() -> streamToString(process.getErrorStream()));
+        CompletableFuture<String> stdOut = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getInputStream()),
+                STREAM_EXECUTOR);
+        CompletableFuture<String> stdErr = CompletableFuture.supplyAsync(
+                () -> streamToString(process.getErrorStream()),
+                STREAM_EXECUTOR);
         return CompletableFuture.allOf(stdOut, stdErr).thenApply(
                 unused -> new Pair<>(stdOut.getNow(""), stdErr.getNow("")));
     }

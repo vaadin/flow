@@ -24,7 +24,6 @@ import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.server.frontend.FrontendUtils
-import com.vaadin.flow.server.frontend.installer.NodeInstaller
 import com.vaadin.flow.server.frontend.installer.Platform
 import groovy.lang.Closure
 import groovy.lang.DelegatesTo
@@ -35,6 +34,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
+import java.net.URI
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
@@ -61,6 +61,14 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/VAADIN/webapp/`.
      */
     public abstract val frontendOutputDirectory: Property<File>
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     * Defaults to `null` which will use the auto-detected value of
+     * resoucesDir of the main SourceSet, usually `build/resources/main/META-INF/resources/`.
+     */
+    public abstract val resourcesOutputDirectory: Property<File>
 
     /**
      * The folder where `package.json` file is located. Default is project root
@@ -394,6 +402,17 @@ public class PluginEffectiveConfiguration(
                 )
         )
 
+
+    public val resourcesOutputDirectory: Provider<File> =
+        extension.resourcesOutputDirectory.convention(
+            sourceSetName.map {
+                File(
+                    project.getBuildResourcesDir(it),
+                    Constants.META_INF + "resources/"
+                )
+            }
+        )
+
     public val npmFolder: Provider<File> = extension.npmFolder
         .convention(project.projectDir)
 
@@ -603,10 +622,18 @@ public class PluginEffectiveConfiguration(
             )
 
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
-        FrontendToolsSettings(it.absolutePath) {
+        val frontendToolsSettings = FrontendToolsSettings(it.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath
         }
+
+        frontendToolsSettings.nodeDownloadRoot = URI.create(nodeDownloadRoot.get())
+        frontendToolsSettings.nodeVersion = nodeVersion.get()
+        frontendToolsSettings.isUseGlobalPnpm = useGlobalPnpm.get()
+        frontendToolsSettings.isForceAlternativeNode = requireHomeNodeExec.get()
+        frontendToolsSettings.isIgnoreVersionChecks = frontendIgnoreVersionChecks.get()
+
+        frontendToolsSettings
     }
 
     /**
@@ -642,6 +669,7 @@ public class PluginEffectiveConfiguration(
             "productionMode=${productionMode.get()}, " +
             "applicationIdentifier=${applicationIdentifier.get()}, " +
             "frontendOutputDirectory=${frontendOutputDirectory.get()}, " +
+            "resourcesOutputDirectory=${resourcesOutputDirectory.get()}, " +
             "npmFolder=${npmFolder.get()}, " +
             "frontendDirectory=${frontendDirectory.get()}, " +
             "generateBundle=${generateBundle.get()}, " +

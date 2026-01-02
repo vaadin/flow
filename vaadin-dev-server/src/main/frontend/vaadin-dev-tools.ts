@@ -5,7 +5,6 @@ import { ConnectionStatus } from './connection';
 import { LiveReloadConnection } from './live-reload-connection';
 import { WebSocketConnection } from './websocket-connection';
 import { preTrialStartFailed, updateLicenseDownloadStatus } from './pre-trial-splash-screen';
-import { updateStylesheetsReferencingResource } from './stylesheet-updater';
 
 /**
  * Plugin API for the dev tools window.
@@ -677,24 +676,31 @@ export class VaadinDevTools extends LitElement {
     };
     const onUpdate = (path: string, content: string) => {
       const contextPathProtocol = 'context://';
+      const pathWithNoProtocol = path.substring(contextPathProtocol.length);
       if (path.startsWith(contextPathProtocol)) {
-        path = this.conf.contextRelativePath + path.substring(contextPathProtocol.length);
+        path = this.conf.contextRelativePath + pathWithNoProtocol;
       }
-      let styleTag = document.head.querySelector(`style[data-file-path='${path}']`);
-      if (styleTag) {
+
+      if (content) {
+        // change or add a new stylesheet
+        let styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
+        if (!styleTag) {
+          styleTag = document.createElement('style');
+          styleTag.setAttribute('data-file-path', path);
+          document.head.appendChild(styleTag);
+          this.removeOldLinks(pathWithNoProtocol);
+        }
         styleTag.textContent = content;
         document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-      } else {
-        // do not fallback on page reload, as update might be called even for resources that are not used in CSS
-        // and we want to avoid reloading the page in that case.
-        updateStylesheetsReferencingResource(path).then(
-          () => {
-            document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
-          },
-          (error) => {
-            console.error('Failed to update theme', error);
-          }
-        );
+      } else if (content === '' || content === null) {
+        // remove inlined stylesheets or initial links with the given path
+        const styleTag = document.head.querySelector(`style[data-file-path='${path}']`) as HTMLStyleElement | null;
+        if (styleTag) {
+          styleTag.remove();
+        } else {
+          this.removeOldLinks(pathWithNoProtocol);
+        }
+        document.dispatchEvent(new CustomEvent('vaadin-theme-updated'));
       }
     };
 
@@ -727,6 +733,17 @@ export class VaadinDevTools extends LitElement {
         this.javaStatus = status;
       };
     }
+  }
+
+  removeOldLinks(path: string) {
+    // removes initially added links that are outdated after hot-reload and replaced by inlined styles
+    const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]')) as HTMLLinkElement[];
+    links.forEach((link) => {
+      let filePath = link.getAttribute('data-file-path') || link.getAttribute('href');
+      if (filePath && filePath.includes(path)) {
+        link.remove();
+      }
+    });
   }
 
   tabHandleMessage(tabElement: HTMLElement, message: ServerMessage): boolean {
