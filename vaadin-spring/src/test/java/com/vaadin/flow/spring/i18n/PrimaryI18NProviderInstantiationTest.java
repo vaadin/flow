@@ -46,7 +46,10 @@ public class PrimaryI18NProviderInstantiationTest {
     private ApplicationContext context;
 
     @Configuration
-    @ComponentScan
+    @ComponentScan(useDefaultFilters = false, includeFilters = {
+            @ComponentScan.Filter(classes = { I18NTestProvider.class,
+                    I18NTestProvider1.class,
+                    PrimaryI18NTestProvider.class }, type = FilterType.ASSIGNABLE_TYPE) })
     public static class I18NTestConfig {
 
     }
