@@ -35,6 +35,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
+import java.net.URI
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
@@ -622,10 +623,18 @@ public class PluginEffectiveConfiguration(
             )
 
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
-        FrontendToolsSettings(it.absolutePath) {
+        val frontendToolsSettings = FrontendToolsSettings(it.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath
         }
+
+        frontendToolsSettings.nodeDownloadRoot = URI.create(nodeDownloadRoot.get())
+        frontendToolsSettings.nodeVersion = nodeVersion.get()
+        frontendToolsSettings.isUseGlobalPnpm = useGlobalPnpm.get()
+        frontendToolsSettings.isForceAlternativeNode = requireHomeNodeExec.get()
+        frontendToolsSettings.isIgnoreVersionChecks = frontendIgnoreVersionChecks.get()
+
+        frontendToolsSettings
     }
 
     /**
