@@ -125,4 +125,53 @@ public interface VaadinContext extends Serializable {
      *         no parameter
      */
     String getContextParameter(String name);
+
+    /**
+     * Gets the VaadinContext associated with the current VaadinService.
+     * <p>
+     * This is a convenience method that delegates to the current service's
+     * context. It is equivalent to:
+     *
+     * <pre>
+     * VaadinService service = VaadinService.getCurrent();
+     * if (service != null) {
+     *     return service.getContext();
+     * }
+     * </pre>
+     *
+     * @return the VaadinContext associated with the current VaadinService, or
+     *         {@code null} if there is no current VaadinService
+     * @see VaadinService#getCurrent()
+     * @see VaadinService#getContext()
+     */
+    static VaadinContext getCurrent() {
+        VaadinService service = VaadinService.getCurrent();
+        return service != null ? service.getContext() : null;
+    }
+
+    /**
+     * Gets the VaadinContext associated with the given VaadinService.
+     * <p>
+     * This is a convenience method that delegates to the service's context. It
+     * is equivalent to:
+     *
+     * <pre>
+     * if (service != null) {
+     *     return service.getContext();
+     * }
+     * </pre>
+     *
+     * @param service
+     *            the VaadinService to get the context from, may be
+     *            {@code null}
+     * @return the VaadinContext associated with the given service, or
+     *         {@code null} if the service is {@code null}
+     * @throws IllegalStateException
+     *             if the service exists but its context cannot be constructed
+     *             (rare, indicates configuration issues)
+     * @see VaadinService#getContext()
+     */
+    static VaadinContext get(VaadinService service) {
+        return service != null ? service.getContext() : null;
+    }
 }
