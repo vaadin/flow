@@ -86,7 +86,10 @@ public class PwaRegistryTest {
 
             VaadinService vaadinServiceMocked = Mockito
                     .mock(VaadinService.class);
-            VaadinContext vaadinContext = Mockito.mock(VaadinContext.class);
+            VaadinServletContext vaadinContext = Mockito
+                    .mock(VaadinServletContext.class);
+            ServletContext context = Mockito.mock(ServletContext.class);
+            Mockito.when(vaadinContext.getContext()).thenReturn(context);
             ApplicationConfiguration applicationConfiguration = Mockito
                     .mock(ApplicationConfiguration.class);
 
@@ -102,8 +105,7 @@ public class PwaRegistryTest {
             featureFlags.when(() -> FeatureFlags.get(Mockito.any()))
                     .thenReturn(flags);
 
-            ServletContext context = Mockito.mock(ServletContext.class);
-            return new PwaRegistry(pwa, context);
+            return new PwaRegistry(pwa, vaadinContext);
         }
     }
 

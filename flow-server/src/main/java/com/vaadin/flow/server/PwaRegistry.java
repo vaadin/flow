@@ -92,12 +92,28 @@ public class PwaRegistry implements Serializable {
      * @param pwa
      *            the pwa annotation
      * @param servletContext
-     *            the context
+     *            the servlet context
+     * @throws IOException
+     *             when icon or offline resources are not found.
+     * @deprecated use {@link #PwaRegistry(PWA, VaadinContext)} instead.
+     */
+    @Deprecated
+    public PwaRegistry(PWA pwa, ServletContext servletContext)
+            throws IOException {
+        this(pwa, new VaadinServletContext(servletContext));
+    }
+
+    /**
+     * Creates a new PwaRegistry instance.
+     *
+     * @param pwa
+     *            the pwa annotation
+     * @param context
+     *            the Vaadin context
      * @throws IOException
      *             when icon or offline resources are not found.
      */
-    public PwaRegistry(PWA pwa, ServletContext servletContext)
-            throws IOException {
+    public PwaRegistry(PWA pwa, VaadinContext context) throws IOException {
         if (System.getProperty(HEADLESS_PROPERTY) == null) {
             // set headless mode if the property is not explicitly set
             System.setProperty(HEADLESS_PROPERTY, Boolean.TRUE.toString());
@@ -109,7 +125,7 @@ public class PwaRegistry implements Serializable {
                 : new PwaConfiguration(pwa);
 
         // Build pwa elements only if they are enabled
-        initializeResources(servletContext);
+        initializeResources(context);
     }
 
     // Lazy load base image to prevent using AWT api unless icon
@@ -130,26 +146,33 @@ public class PwaRegistry implements Serializable {
         return baseImage;
     }
 
-    private void initializeResources(ServletContext servletContext)
-            throws IOException {
+    private void initializeResources(VaadinContext context) throws IOException {
         if (!pwaConfiguration.isEnabled()) {
             return;
         }
+        if (!(context instanceof VaadinServletContext)) {
+            getLogger()
+                    .warn("PwaRegistry only works with a VaadinServletContext");
+            return;
+        }
+
+        VaadinServletContext vaadinServletContext = (VaadinServletContext) context;
+
         long start = System.currentTimeMillis();
 
         // Load base logo from servlet context if available
         // fall back to local image if unavailable
-        URL logo = getResourceUrl(servletContext,
+        URL logo = getResourceUrl(vaadinServletContext,
                 pwaConfiguration.relIconPath());
         baseImageUrl = logo != null ? logo
                 : BootstrapHandler.class.getResource("default-logo.png");
 
         URL offlinePage = pwaConfiguration.isOfflinePathEnabled()
-                ? getResourceUrl(servletContext,
+                ? getResourceUrl(vaadinServletContext,
                         pwaConfiguration.relOfflinePath())
                 : null;
 
-        icons = initializeIcons(servletContext);
+        icons = initializeIcons(context);
 
         // Load offline page as string, from servlet context if
         // available, fall back to default page
@@ -160,7 +183,8 @@ public class PwaRegistry implements Serializable {
         manifestJson = initializeManifest().toString();
 
         // Initialize sw-runtime.js
-        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(servletContext);
+        runtimeServiceWorkerJs = initializeRuntimeServiceWorker(
+                vaadinServletContext);
         getLogger().debug(
                 getClass().getSimpleName() + " initialization took {}ms",
                 System.currentTimeMillis() - start);
@@ -170,11 +194,13 @@ public class PwaRegistry implements Serializable {
         return LoggerFactory.getLogger(PwaRegistry.class);
     }
 
-    private URL getResourceUrl(ServletContext context, String path)
-            throws MalformedURLException {
-        URL resourceUrl = VaadinServletService.getStaticResource(context, path);
+    private URL getResourceUrl(VaadinServletContext vaadinServletContext,
+            String path) throws MalformedURLException {
+        URL resourceUrl = VaadinServletService
+                .getStaticResource(vaadinServletContext.getContext(), path);
         if (resourceUrl == null) {
-            // this is a workaround specific for Spring default static resources
+            // this is a workaround specific for Spring default static
+            // resources
             // location: see #8705
             String cpPath = path.startsWith("/") ? META_INF_RESOURCES + path
                     : META_INF_RESOURCES + "/" + path;
@@ -183,10 +209,9 @@ public class PwaRegistry implements Serializable {
         return resourceUrl;
     }
 
-    private List<PwaIcon> initializeIcons(ServletContext servletContext) {
+    private List<PwaIcon> initializeIcons(VaadinContext context) {
         Optional<ResourceProvider> optionalResourceProvider = Optional
-                .ofNullable(new VaadinServletContext(servletContext)
-                        .getAttribute(Lookup.class))
+                .ofNullable(context.getAttribute(Lookup.class))
                 .map(lookup -> lookup.lookup(ResourceProvider.class));
         for (PwaIcon icon : getIconTemplates(pwaConfiguration.getIconPath())) {
             icon.setRegistry(this);
@@ -253,7 +278,7 @@ public class PwaRegistry implements Serializable {
     }
 
     private String initializeRuntimeServiceWorker(
-            ServletContext servletContext) {
+            VaadinServletContext vaadinServletContext) {
         StringBuilder stringBuilder = new StringBuilder();
 
         // List of files to precache
@@ -283,7 +308,8 @@ public class PwaRegistry implements Serializable {
         // the (configurable) web app logic (#8996).
         for (String resource : pwaConfiguration.getOfflineResources()) {
             filesToCache.add(String.format(WORKBOX_CACHE_FORMAT,
-                    resource.replaceAll("'", ""), servletContext.hashCode()));
+                    resource.replaceAll("'", ""),
+                    vaadinServletContext.getContext().hashCode()));
         }
 
         // Precaching
@@ -295,60 +321,60 @@ public class PwaRegistry implements Serializable {
     }
 
     /**
-     * Gets the pwa registry for the given servlet context. If the servlet
-     * context has no pwa registry, a new instance is created and assigned to
-     * the context.
+     * Gets the pwa registry for the given context. If the servlet context has
+     * no pwa registry, a new instance is created and assigned to the context.
      *
-     * @param servletContext
-     *            the servlet context for which to get a route registry, not
-     *            <code>null</code>
+     * @param context
+     *            the servlet context
      *
-     * @return a registry instance for the given servlet context, not
-     *         <code>null</code>
+     * @return a registry instance for the given context, not <code>null</code>
+     * @deprecated use {@link #getInstance(VaadinContext)} instead.
      */
-    public static PwaRegistry getInstance(ServletContext servletContext) {
-        assert servletContext != null;
+    @Deprecated
+    public static PwaRegistry getInstance(ServletContext context) {
+        return getInstance(new VaadinServletContext(context));
+    }
 
-        Object attribute;
-        synchronized (servletContext) {
-            attribute = servletContext
-                    .getAttribute(PwaRegistry.class.getName());
+    /**
+     * Gets the pwa registry for the given context. If the servlet context has
+     * no pwa registry, a new instance is created and assigned to the context.
+     *
+     * @param context
+     *            the Vaadin context
+     *
+     * @return a registry instance for the given context, not <code>null</code>
+     */
+    public static PwaRegistry getInstance(VaadinContext context) {
+        assert context != null;
 
-            if (attribute == null) {
-                VaadinServletContext context = new VaadinServletContext(
-                        servletContext);
+        PwaRegistry attribute = context.getAttribute(PwaRegistry.class);
 
-                // Try first if there is an AppShell for the project
-                Class<?> clazz = AppShellRegistry.getInstance(context)
-                        .getShell();
-
-                // Otherwise use the class reported by router
-                if (clazz == null) {
-                    clazz = ApplicationRouteRegistry.getInstance(context)
-                            .getPwaConfigurationClass();
-                }
-
-                // Initialize PwaRegistry with found PWA settings
-                PWA pwa = clazz != null ? clazz.getAnnotation(PWA.class) : null;
-
-                // will fall back to defaults, if no PWA annotation available
-                try {
-                    attribute = new PwaRegistry(pwa, servletContext);
-                    servletContext.setAttribute(PwaRegistry.class.getName(),
-                            attribute);
-                } catch (IOException ioe) {
-                    throw new UncheckedIOException(
-                            "Failed to initialize the PWA registry", ioe);
-                }
-            }
+        if (attribute != null) {
+            return attribute;
         }
 
-        if (attribute instanceof PwaRegistry) {
-            return (PwaRegistry) attribute;
-        } else {
-            throw new IllegalStateException(
-                    "Unknown servlet context attribute value: " + attribute);
+        // Try first if there is an AppShell for the project
+        Class<?> clazz = AppShellRegistry.getInstance(context).getShell();
+
+        // Otherwise use the class reported by router
+        if (clazz == null) {
+            clazz = ApplicationRouteRegistry.getInstance(context)
+                    .getPwaConfigurationClass();
         }
+
+        // Initialize PwaRegistry with found PWA settings
+        PWA pwa = clazz != null ? clazz.getAnnotation(PWA.class) : null;
+
+        // will fall back to defaults, if no PWA annotation available
+        try {
+            attribute = new PwaRegistry(pwa, context);
+            context.setAttribute(attribute);
+            return attribute;
+        } catch (IOException ioe) {
+            throw new UncheckedIOException(
+                    "Failed to initialize the PWA registry", ioe);
+        }
+
     }
 
     private String initializeOfflinePage(PwaConfiguration config, URL resource)
