@@ -44,6 +44,19 @@ public class TailwindCssView extends Div {
 
         main.add(h1);
 
+        // Test custom @theme directive
+        var customThemeDiv = new Div();
+        customThemeDiv.setText("Custom Theme Colors");
+        customThemeDiv.addClassName("text-my-theme");
+        customThemeDiv.setId("custom-theme-red");
+
+        var customBlueDiv = new Div();
+        customBlueDiv.setText("Custom Blue");
+        customBlueDiv.addClassName("text-custom-blue");
+        customBlueDiv.setId("custom-theme-blue");
+
+        main.add(customThemeDiv, customBlueDiv);
+
         add(main);
     }
 }

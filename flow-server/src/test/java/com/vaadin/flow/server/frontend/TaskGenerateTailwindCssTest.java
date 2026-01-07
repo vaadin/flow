@@ -37,21 +37,27 @@ public class TaskGenerateTailwindCssTest {
 
     private File npmFolder;
     private File frontendGeneratedFolder;
+    private File frontendFolder;
     private TaskGenerateTailwindCss taskGenerateTailwindCss;
 
     @Before
     public void setUp() throws IOException {
         npmFolder = temporaryFolder.newFolder();
-        frontendGeneratedFolder = new File(npmFolder, "src/frontend-generated");
+        File srcFolder = new File(npmFolder, "src");
+        srcFolder.mkdirs();
+        frontendFolder = new File(srcFolder, "frontend");
+        frontendFolder.mkdirs();
+        frontendGeneratedFolder = new File(frontendFolder, "generated");
         frontendGeneratedFolder.mkdirs();
         Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(frontendGeneratedFolder);
         taskGenerateTailwindCss = new TaskGenerateTailwindCss(options);
     }
 
     @Test
     public void should_haveCorrectFileContent() throws Exception {
-        verifyTailwindCss(taskGenerateTailwindCss.getFileContent());
+        verifyTailwindCss(taskGenerateTailwindCss.getFileContent(), false);
     }
 
     @Test
@@ -60,7 +66,7 @@ public class TaskGenerateTailwindCssTest {
         taskGenerateTailwindCss.execute();
         Assert.assertEquals("Should have correct tailwind.css file path",
                 tailwindcss, taskGenerateTailwindCss.getGeneratedFile());
-        verifyTailwindCss(getTailwindCssFileContent());
+        verifyTailwindCss(getTailwindCssFileContent(), false);
         Assert.assertTrue(
                 "Should generate tailwind.css in the frontend generated folder",
                 taskGenerateTailwindCss.shouldGenerate());
@@ -79,15 +85,44 @@ public class TaskGenerateTailwindCssTest {
                 taskGenerateTailwindCss.getFileContent(), tailwindCssContent);
     }
 
-    private void verifyTailwindCss(String tailwindCssContent) {
+    @Test
+    public void should_includeCustomImport_whenCustomFileExists()
+            throws Exception {
+        // Create custom CSS file in the src/frontend folder (parent of
+        // generated folder)
+        File customCss = new File(frontendFolder, "tailwind-custom.css");
+        Files.writeString(customCss.toPath(),
+                "@theme { --color-my-theme: red; }");
+
+        // Recreate task to pick up the custom file
+        Options options = new Options(Mockito.mock(Lookup.class), npmFolder)
+                .withFrontendDirectory(frontendFolder)
+                .withFrontendGeneratedFolder(frontendGeneratedFolder);
+        TaskGenerateTailwindCss task = new TaskGenerateTailwindCss(options);
+
+        String content = task.getFileContent();
+        verifyTailwindCss(content, true);
+        Assert.assertFalse("Should not contain backslashes in import path",
+                content.contains("\\"));
+    }
+
+    private void verifyTailwindCss(String tailwindCssContent,
+            boolean shouldHaveCustomImport) {
         Assert.assertTrue("Should have tailwindcss/theme.css import",
                 tailwindCssContent
                         .contains("@import 'tailwindcss/theme.css';\n"));
         Assert.assertTrue("Should have tailwindcss/utilities.css import",
                 tailwindCssContent
                         .contains("@import 'tailwindcss/utilities.css';\n"));
-        Assert.assertTrue("Should have correct @source directive",
-                tailwindCssContent.contains("@source \"..\";\n"));
+        Assert.assertTrue("Should have @source directive with path",
+                tailwindCssContent.contains("@source '../..';\n"));
+        if (shouldHaveCustomImport) {
+            Assert.assertTrue("Should have custom import", tailwindCssContent
+                    .contains("@import '../tailwind-custom.css';"));
+        } else {
+            Assert.assertFalse("Should not have custom import",
+                    tailwindCssContent.contains("tailwind-custom.css"));
+        }
     }
 
     private String getTailwindCssFileContent() throws IOException {
