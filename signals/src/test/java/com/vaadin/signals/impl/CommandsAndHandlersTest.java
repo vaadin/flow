@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
@@ -204,6 +205,7 @@ public class CommandsAndHandlersTest {
     }
 
     static class ResultHandler implements Consumer<CommandResult> {
+        @Nullable
         CommandResult result;
 
         @Override

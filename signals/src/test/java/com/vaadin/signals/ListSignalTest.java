@@ -33,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -42,9 +43,9 @@ public class ListSignalTest extends SignalTestBase {
     void constructor_initialValue_isEmpty() {
         ListSignal<String> signal = new ListSignal<>(String.class);
 
-        int size = signal.value().size();
-
-        assertEquals(0, size);
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(0, value.size());
     }
 
     @Test
@@ -115,7 +116,7 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("last").signal();
 
         InsertOperation<ValueSignal<String>> operation = signal
-                .insertAt("afterLast", ListPosition.before(null));
+                .insertAt("afterLast", ListPosition.last());
 
         assertSuccess(operation);
         assertChildren(signal, "first", "last", "afterLast");
@@ -142,7 +143,9 @@ public class ListSignalTest extends SignalTestBase {
             ValueSignal<String> childInner = signal.insertLast("insert")
                     .signal();
 
-            assertEquals(0, signal.peekConfirmed().size());
+            var peekConfirmed = signal.peekConfirmed();
+            assertNotNull(peekConfirmed);
+            assertEquals(0, peekConfirmed.size());
             assertNull(childInner.peekConfirmed());
 
             childInner.value("update");
@@ -150,7 +153,9 @@ public class ListSignalTest extends SignalTestBase {
             return childInner;
         }).returnValue();
 
-        assertEquals(1, signal.peekConfirmed().size());
+        var peekConfirmed = signal.peekConfirmed();
+        assertNotNull(peekConfirmed);
+        assertEquals(1, peekConfirmed.size());
         assertEquals("update", child.peekConfirmed());
     }
 
@@ -270,6 +275,7 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertFirst("first");
 
         List<ValueSignal<String>> value = signal.value();
+        assertNotNull(value);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.add(new ValueSignal<>("new"));
@@ -286,6 +292,7 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertFirst("first");
 
         List<ValueSignal<String>> value = signal.value();
+        assertNotNull(value);
 
         signal.insertLast("last");
 
@@ -321,7 +328,9 @@ public class ListSignalTest extends SignalTestBase {
         signal.insertLast("child");
 
         ListSignal<String> readonly = signal.asReadonly();
-        ValueSignal<String> readonlyChild = readonly.value().get(0);
+        var readonlyValue = readonly.value();
+        assertNotNull(readonlyValue);
+        ValueSignal<String> readonlyChild = readonlyValue.get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -377,7 +386,9 @@ public class ListSignalTest extends SignalTestBase {
                 .signal();
         ValueSignal<String> other = signal.insertLast("other").signal();
 
-        ValueSignal<String> valueChild = signal.value().get(0);
+        var value = signal.value();
+        assertNotNull(value);
+        ValueSignal<String> valueChild = value.get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -396,7 +407,9 @@ public class ListSignalTest extends SignalTestBase {
 
     static void assertChildren(ListSignal<String> signal,
             String... expectedValue) {
-        List<String> value = signal.value().stream().map(ValueSignal::value)
+        var signalValue = signal.value();
+        assertNotNull(signalValue);
+        List<String> value = signalValue.stream().map(ValueSignal::value)
                 .toList();
 
         assertEquals(List.of(expectedValue), value);

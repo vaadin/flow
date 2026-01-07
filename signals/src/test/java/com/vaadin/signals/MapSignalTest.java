@@ -35,6 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,7 +46,9 @@ public class MapSignalTest extends SignalTestBase {
     void constructor_initialValue_isEmpty() {
         MapSignal<String> signal = new MapSignal<>(String.class);
 
-        int size = signal.value().size();
+        var value = signal.value();
+        assertNotNull(value);
+        int size = value.size();
 
         assertEquals(0, size);
     }
@@ -70,12 +73,15 @@ public class MapSignalTest extends SignalTestBase {
     void put_existingKey_oldEntryUpdated() {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "initial");
-        ValueSignal<String> child = signal.value().get("key");
+        var value = signal.value();
+        assertNotNull(value);
+        ValueSignal<String> child = value.get("key");
 
         SignalOperation<String> operation = signal.put("key", "update");
 
         String resultValue = assertSuccess(operation);
         assertEquals("initial", resultValue);
+        assertNotNull(child);
         assertEquals("update", child.value());
         assertChildren(signal, "key", "update");
     }
@@ -98,7 +104,9 @@ public class MapSignalTest extends SignalTestBase {
             signal.put(key, "update");
         }
 
-        List<String> keyOrder = List.copyOf(signal.value().keySet());
+        var signalValue = signal.value();
+        assertNotNull(signalValue);
+        List<String> keyOrder = List.copyOf(signalValue.keySet());
         assertEquals(insertOrder, keyOrder);
     }
 
@@ -122,12 +130,15 @@ public class MapSignalTest extends SignalTestBase {
     void putIfAbsent_existingKey_noUpdateAndEntiresLinked() {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "value");
-        ValueSignal<String> child = signal.value().get("key");
+        var value = signal.value();
+        assertNotNull(value);
+        ValueSignal<String> child = value.get("key");
 
         InsertOperation<ValueSignal<String>> operation = signal
                 .putIfAbsent("key", "update");
         ValueSignal<String> insertChild = operation.signal();
 
+        assertNotNull(child);
         assertNotEquals(child.id(), insertChild.id());
 
         assertSuccess(operation);
@@ -178,8 +189,11 @@ public class MapSignalTest extends SignalTestBase {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "value");
 
-        SignalOperation<Void> operation = signal.verifyKey("key",
-                signal.value().get("key"));
+        var value = signal.value();
+        assertNotNull(value);
+        var child = value.get("key");
+        assertNotNull(child);
+        SignalOperation<Void> operation = signal.verifyKey("key", child);
 
         assertSuccess(operation);
     }
@@ -190,8 +204,11 @@ public class MapSignalTest extends SignalTestBase {
         signal.put("key", "value");
         signal.put("key2", "value2");
 
-        SignalOperation<Void> operation = signal.verifyKey("key",
-                signal.value().get("key2"));
+        var value = signal.value();
+        assertNotNull(value);
+        var child2 = value.get("key2");
+        assertNotNull(child2);
+        SignalOperation<Void> operation = signal.verifyKey("key", child2);
 
         assertFailure(operation);
     }
@@ -242,6 +259,7 @@ public class MapSignalTest extends SignalTestBase {
         signal.put("key", "value");
 
         Map<String, ValueSignal<String>> value = signal.value();
+        assertNotNull(value);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.put("key", new ValueSignal<>("update"));
@@ -260,6 +278,7 @@ public class MapSignalTest extends SignalTestBase {
         signal.put("key", "value");
 
         Map<String, ValueSignal<String>> value = signal.value();
+        assertNotNull(value);
 
         signal.put("key2", "value2");
 
@@ -282,7 +301,11 @@ public class MapSignalTest extends SignalTestBase {
         assertInstanceOf(SignalCommand.PutCommand.class,
                 validatedCommands.get(0));
 
-        wrapper.value().get("key").value("update");
+        var wrapperValue = wrapper.value();
+        assertNotNull(wrapperValue);
+        var child = wrapperValue.get("key");
+        assertNotNull(child);
+        child.value("update");
         assertEquals(2, validatedCommands.size());
         assertInstanceOf(SignalCommand.ValueCommand.class,
                 validatedCommands.get(1));
@@ -294,13 +317,16 @@ public class MapSignalTest extends SignalTestBase {
         signal.put("key", "value");
 
         MapSignal<String> readonly = signal.asReadonly();
-        ValueSignal<String> readonlyChild = readonly.value().get("key");
+        var readonlyValue = readonly.value();
+        assertNotNull(readonlyValue);
+        ValueSignal<String> readonlyChild = readonlyValue.get("key");
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
         });
         assertChildren(signal, "key", "value");
 
+        assertNotNull(readonlyChild);
         assertThrows(UnsupportedOperationException.class, () -> {
             readonlyChild.value("update");
         });
@@ -351,8 +377,11 @@ public class MapSignalTest extends SignalTestBase {
         ValueSignal<String> other = signal.putIfAbsent("other", "other")
                 .signal();
 
-        ValueSignal<String> valueChild = signal.value().get("child");
+        var value = signal.value();
+        assertNotNull(value);
+        ValueSignal<String> valueChild = value.get("child");
 
+        assertNotNull(valueChild);
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
 
@@ -373,6 +402,7 @@ public class MapSignalTest extends SignalTestBase {
         assertEquals(0, expectedKeyValuePairs.length % 2);
 
         Map<String, ValueSignal<String>> value = signal.value();
+        assertNotNull(value);
 
         assertEquals(expectedKeyValuePairs.length / 2, value.size());
 
@@ -381,7 +411,9 @@ public class MapSignalTest extends SignalTestBase {
             String expextedValue = expectedKeyValuePairs[i + 1];
 
             assertTrue(value.containsKey(key));
-            assertEquals(expextedValue, value.get(key).value());
+            var valueSignal = value.get(key);
+            assertNotNull(valueSignal);
+            assertEquals(expextedValue, valueSignal.value());
         }
     }
 

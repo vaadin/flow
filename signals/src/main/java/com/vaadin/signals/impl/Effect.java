@@ -21,6 +21,8 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.SignalEnvironment;
 
 /**
@@ -39,7 +41,7 @@ public class Effect {
     private final List<Runnable> registrations = new ArrayList<>();
 
     // Non-final to allow clearing when the effect is closed
-    private Runnable action;
+    private @Nullable Runnable action;
 
     private final AtomicBoolean invalidateScheduled = new AtomicBoolean(false);
 

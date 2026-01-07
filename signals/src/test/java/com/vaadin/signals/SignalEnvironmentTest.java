@@ -38,12 +38,12 @@ public class SignalEnvironmentTest extends SignalTestBase {
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return command -> command.run();
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return command -> command.run();
             }
         };
 
@@ -70,18 +70,18 @@ public class SignalEnvironmentTest extends SignalTestBase {
         SignalEnvironment environment = new SignalEnvironment() {
             @Override
             public boolean isActive() {
-                return active.get() == Boolean.TRUE;
+                return Boolean.TRUE.equals(active.get());
             }
 
             @Override
             public Executor getResultNotifier() {
                 count.incrementAndGet();
-                return null;
+                return command -> command.run();
             }
 
             @Override
             public Executor getEffectDispatcher() {
-                return null;
+                return command -> command.run();
             }
         };
 

@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
+
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 
@@ -65,7 +67,7 @@ public class CommandsAndHandlers {
      *            result handler
      */
     public CommandsAndHandlers(SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            @Nullable Consumer<CommandResult> resultHandler) {
         assert command != null;
         commands.add(command);
         if (resultHandler != null) {

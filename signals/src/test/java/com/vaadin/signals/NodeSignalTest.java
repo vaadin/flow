@@ -34,6 +34,7 @@ import static com.vaadin.signals.TestUtil.assertSuccess;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -45,6 +46,7 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
 
         NodeSignalState value = signal.value();
+        assertNotNull(value);
 
         assertNull(value.value(String.class));
         assertNull(value.parent());
@@ -61,10 +63,14 @@ public class NodeSignalTest extends SignalTestBase {
 
         assertSuccess(operation);
 
-        List<NodeSignal> listChildren = signal.value().listChildren();
+        var value = signal.value();
+        assertNotNull(value);
+        List<NodeSignal> listChildren = value.listChildren();
         assertEquals(1, listChildren.size());
         assertEquals(operation.signal().id(), listChildren.get(0).id());
-        assertEquals("value", operation.signal().value().value(String.class));
+        var opSignalValue = operation.signal().value();
+        assertNotNull(opSignalValue);
+        assertEquals("value", opSignalValue.value(String.class));
     }
 
     @Test
@@ -72,10 +78,12 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
 
         ValueSignal<String> asValue = signal.asValue(String.class);
-        assertEquals(null, asValue.value());
+        assertNull(asValue.value());
 
         asValue.value("update");
-        assertEquals("update", signal.value().value(String.class));
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals("update", value.value(String.class));
     }
 
     @Test
@@ -85,8 +93,10 @@ public class NodeSignalTest extends SignalTestBase {
         ValueSignal<String> asString = signal.asValue(String.class);
         asString.value("update");
 
+        var value = signal.value();
+        assertNotNull(value);
         assertThrows(RuntimeException.class, () -> {
-            signal.value().value(Double.class);
+            value.value(Double.class);
         });
 
         ValueSignal<Double> asDouble = signal.asValue(Double.class);
@@ -105,7 +115,9 @@ public class NodeSignalTest extends SignalTestBase {
         asNumber.incrementBy(1);
         assertEquals(1, asNumber.value());
 
-        assertEquals(1, signal.value().value(Double.class));
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(1, value.value(Double.class));
     }
 
     @Test
@@ -115,10 +127,14 @@ public class NodeSignalTest extends SignalTestBase {
 
         asList.insertLast("last");
 
-        List<NodeSignal> listChildren = signal.value().listChildren();
+        var value = signal.value();
+        assertNotNull(value);
+        List<NodeSignal> listChildren = value.listChildren();
         assertEquals(1, listChildren.size());
 
-        assertEquals("last", listChildren.get(0).value().value(String.class));
+        var childValue = listChildren.get(0).value();
+        assertNotNull(childValue);
+        assertEquals("last", childValue.value(String.class));
     }
 
     @Test
@@ -129,6 +145,7 @@ public class NodeSignalTest extends SignalTestBase {
         signal.insertChildWithValue("last", ListPosition.last());
 
         List<ValueSignal<String>> value = asList.value();
+        assertNotNull(value);
         assertEquals(1, value.size());
 
         assertEquals("last", value.get(0).value());
@@ -141,11 +158,16 @@ public class NodeSignalTest extends SignalTestBase {
 
         asMap.put("key", "value");
 
-        Map<String, NodeSignal> mapChildren = signal.value().mapChildren();
+        var value = signal.value();
+        assertNotNull(value);
+        Map<String, NodeSignal> mapChildren = value.mapChildren();
         assertEquals(Set.of("key"), mapChildren.keySet());
 
-        assertEquals("value",
-                mapChildren.get("key").value().value(String.class));
+        var mapChild = mapChildren.get("key");
+        assertNotNull(mapChild);
+        var mapChildValue = mapChild.value();
+        assertNotNull(mapChildValue);
+        assertEquals("value", mapChildValue.value(String.class));
     }
 
     @Test
@@ -156,9 +178,12 @@ public class NodeSignalTest extends SignalTestBase {
         signal.putChildWithValue("key", "value");
 
         Map<String, ValueSignal<String>> value = asMap.value();
+        assertNotNull(value);
 
         assertEquals(Set.of("key"), value.keySet());
-        assertEquals("value", value.get("key").value());
+        var child = value.get("key");
+        assertNotNull(child);
+        assertEquals("value", child.value());
     }
 
     /*
@@ -174,8 +199,12 @@ public class NodeSignalTest extends SignalTestBase {
                 .insertChild(ListPosition.last());
         NodeSignal child = operation.signal();
 
-        assertEquals(List.of(child), signal.value().listChildren());
-        assertEquals(null, child.value().value(String.class));
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(child), value.listChildren());
+        var childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(null, childValue.value(String.class));
     }
 
     @Test
@@ -184,12 +213,16 @@ public class NodeSignalTest extends SignalTestBase {
 
         InsertOperation<NodeSignal> operation = signal.putChildIfAbsent("key");
         NodeSignal child = operation.signal();
-        assertEquals(Map.of("key", child), signal.value().mapChildren());
-        assertEquals(null, child.value().value(String.class));
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(Map.of("key", child), value.mapChildren());
+        var childValue = child.value();
+        assertNotNull(childValue);
+        assertNull(childValue.value(String.class));
     }
 
     @Test
-    void adpotAt_existingChild_orderChanged() {
+    void adoptAt_existingChild_orderChanged() {
         NodeSignal signal = new NodeSignal();
 
         NodeSignal a = signal.insertChild(ListPosition.last()).signal();
@@ -199,8 +232,12 @@ public class NodeSignalTest extends SignalTestBase {
                 ListPosition.last());
 
         assertSuccess(operation);
-        assertEquals(List.of(b, a), signal.value().listChildren());
-        assertEquals(signal, a.value().parent());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(b, a), value.listChildren());
+        var aValue = a.value();
+        assertNotNull(aValue);
+        assertEquals(signal, aValue.parent());
     }
 
     @Test
@@ -210,15 +247,23 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal parent = signal.insertChild(ListPosition.last()).signal();
         NodeSignal child = parent.insertChild(ListPosition.last()).signal();
 
-        assertEquals(parent, child.value().parent());
+        var childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(parent, childValue.parent());
 
         SignalOperation<Void> operation = signal.adoptAt(child,
                 ListPosition.first());
 
         assertSuccess(operation);
-        assertEquals(signal, child.value().parent());
-        assertEquals(List.of(child, parent), signal.value().listChildren());
-        assertEquals(List.of(), parent.value().listChildren());
+        childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(signal, childValue.parent());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(child, parent), value.listChildren());
+        var parentValue = parent.value();
+        assertNotNull(parentValue);
+        assertEquals(List.of(), parentValue.listChildren());
     }
 
     @Test
@@ -239,12 +284,16 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
         NodeSignal child = signal.putChildIfAbsent("key").signal();
 
-        assertEquals(List.of(), signal.value().listChildren());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(), value.listChildren());
 
         signal.adoptAt(child, ListPosition.last());
 
-        assertEquals(List.of(child), signal.value().listChildren());
-        assertEquals(Map.of(), signal.value().mapChildren());
+        value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(child), value.listChildren());
+        assertEquals(Map.of(), value.mapChildren());
     }
 
     @Test
@@ -255,8 +304,12 @@ public class NodeSignalTest extends SignalTestBase {
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
         assertSuccess(operation);
-        assertEquals(Map.of("update", child), signal.value().mapChildren());
-        assertEquals(signal, child.value().parent());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(Map.of("update", child), value.mapChildren());
+        var childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(signal, childValue.parent());
     }
 
     @Test
@@ -265,15 +318,23 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal parent = signal.putChildIfAbsent("parent").signal();
         NodeSignal child = parent.putChildIfAbsent("child").signal();
 
-        assertEquals(parent, child.value().parent());
+        var childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(parent, childValue.parent());
 
         SignalOperation<Void> operation = signal.adoptAs(child, "child");
 
         assertSuccess(operation);
-        assertEquals(signal, child.value().parent());
+        childValue = child.value();
+        assertNotNull(childValue);
+        assertEquals(signal, childValue.parent());
+        var value = signal.value();
+        assertNotNull(value);
         assertEquals(Map.of("parent", parent, "child", child),
-                signal.value().mapChildren());
-        assertEquals(Map.of(), parent.value().mapChildren());
+                value.mapChildren());
+        var parentValue = parent.value();
+        assertNotNull(parentValue);
+        assertEquals(Map.of(), parentValue.mapChildren());
     }
 
     @Test
@@ -292,13 +353,17 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal signal = new NodeSignal();
         NodeSignal child = signal.insertChild(ListPosition.last()).signal();
 
-        assertEquals(Map.of(), signal.value().mapChildren());
+        var signalValue1 = signal.value();
+        assertNotNull(signalValue1);
+        assertEquals(Map.of(), signalValue1.mapChildren());
 
         SignalOperation<Void> operation = signal.adoptAs(child, "key");
 
         assertSuccess(operation);
-        assertEquals(List.of(), signal.value().listChildren());
-        assertEquals(Map.of("key", child), signal.value().mapChildren());
+        var signalValue2 = signal.value();
+        assertNotNull(signalValue2);
+        assertEquals(List.of(), signalValue2.listChildren());
+        assertEquals(Map.of("key", child), signalValue2.mapChildren());
     }
 
     @Test
@@ -311,13 +376,17 @@ public class NodeSignalTest extends SignalTestBase {
         assertSuccess(mapRemoveOp);
 
         assertNull(mapChild.value());
-        assertEquals(Map.of(), signal.value().mapChildren());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(Map.of(), value.mapChildren());
 
         SignalOperation<Void> listRemoveOp = signal.removeChild(listChild);
         assertSuccess(listRemoveOp);
 
         assertNull(listChild.value());
-        assertEquals(List.of(), signal.value().listChildren());
+        value = signal.value();
+        assertNotNull(value);
+        assertEquals(List.of(), value.listChildren());
     }
 
     @Test
@@ -329,7 +398,9 @@ public class NodeSignalTest extends SignalTestBase {
         assertSuccess(mapRemoveOp);
 
         assertNull(child.value());
-        assertEquals(Map.of(), signal.value().mapChildren());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(Map.of(), value.mapChildren());
     }
 
     @Test
@@ -343,14 +414,17 @@ public class NodeSignalTest extends SignalTestBase {
 
         assertNull(mapChild.value());
         assertNull(listChild.value());
-        assertEquals(Map.of(), signal.value().mapChildren());
-        assertEquals(List.of(), signal.value().listChildren());
+        var value = signal.value();
+        assertNotNull(value);
+        assertEquals(Map.of(), value.mapChildren());
+        assertEquals(List.of(), value.listChildren());
     }
 
     @Test
     void value_modifyStateInstance_isImmutable() {
         NodeSignal signal = new NodeSignal();
         NodeSignalState value = signal.value();
+        assertNotNull(value);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.listChildren().clear();
@@ -364,12 +438,13 @@ public class NodeSignalTest extends SignalTestBase {
     void value_readStateAfterModifications_seesOldState() {
         NodeSignal signal = new NodeSignal();
         NodeSignalState value = signal.value();
+        assertNotNull(value);
 
         signal.asValue(String.class).value("value");
         signal.insertChild(ListPosition.last());
         signal.putChildIfAbsent("key");
 
-        assertEquals(null, value.value(String.class));
+        assertNull(value.value(String.class));
         assertEquals(List.of(), value.listChildren());
         assertEquals(Map.of(), value.mapChildren());
     }
@@ -403,17 +478,23 @@ public class NodeSignalTest extends SignalTestBase {
         signal.insertChildWithValue("child", ListPosition.last()).signal();
 
         NodeSignal readonly = signal.asReadonly();
-        NodeSignal readonlyChild = readonly.value().listChildren().get(0);
+        var value = readonly.value();
+        assertNotNull(value);
+        NodeSignal readonlyChild = value.listChildren().get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
         });
-        assertEquals(List.of(readonlyChild), readonly.value().listChildren());
+        value = readonly.value();
+        assertNotNull(value);
+        assertEquals(List.of(readonlyChild), value.listChildren());
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonlyChild.asValue(String.class).value("update");
         });
-        assertEquals("child", readonlyChild.value().value(String.class));
+        var childValue = readonlyChild.value();
+        assertNotNull(childValue);
+        assertEquals("child", childValue.value(String.class));
     }
 
     @Test
@@ -465,7 +546,9 @@ public class NodeSignalTest extends SignalTestBase {
                 .signal();
         NodeSignal other = signal.insertChild(ListPosition.last()).signal();
 
-        NodeSignal valueChild = signal.value().listChildren().get(0);
+        var value = signal.value();
+        assertNotNull(value);
+        NodeSignal valueChild = value.listChildren().get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -480,8 +563,11 @@ public class NodeSignalTest extends SignalTestBase {
         NodeSignal operationChild = signal.putChildIfAbsent("child").signal();
         NodeSignal other = signal.putChildIfAbsent("other").signal();
 
-        NodeSignal valueChild = signal.value().mapChildren().get("child");
+        var value = signal.value();
+        assertNotNull(value);
+        NodeSignal valueChild = value.mapChildren().get("child");
 
+        assertNotNull(valueChild);
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
 
