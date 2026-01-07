@@ -754,6 +754,93 @@ public class FrontendToolsTest {
         }
     }
 
+    @Test
+    public void nodeFolder_validFolderWithNode_usesSpecifiedNode()
+            throws IOException, FrontendUtils.UnknownVersionException {
+        // Create a custom node folder with node binary and npm
+        // createStubNode creates node/ subdirectory, so we need to point to that
+        File customNodeBase = tmpDir.newFolder("custom-node");
+        createStubNode(true, true, customNodeBase.getAbsolutePath());
+        File customNodeFolder = new File(customNodeBase, "node");
+
+        // Configure FrontendTools to use the custom folder
+        settings.setNodeFolder(customNodeFolder.getAbsolutePath());
+        tools = new FrontendTools(settings);
+
+        // Verify node is used from custom folder
+        assertThat(tools.getNodeExecutable(),
+                containsString(customNodeFolder.getAbsolutePath()));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(vaadinHomeDir)));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nodeFolder_invalidFolder_throwsException() throws IOException {
+        File emptyFolder = tmpDir.newFolder("empty-node-folder");
+        settings.setNodeFolder(emptyFolder.getAbsolutePath());
+        tools = new FrontendTools(settings);
+
+        // This should throw IllegalStateException because folder has no node
+        // binary
+        tools.getNodeExecutable();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void nodeFolder_missingNpm_throwsException() throws IOException {
+        // Create only node binary, no npm
+        // createStubNode creates node/ subdirectory, so we need to point to that
+        File customNodeBase = tmpDir.newFolder("node-without-npm");
+        createStubNode(true, false, customNodeBase.getAbsolutePath());
+        File customNodeFolder = new File(customNodeBase, "node");
+
+        settings.setNodeFolder(customNodeFolder.getAbsolutePath());
+        tools = new FrontendTools(settings);
+
+        // This should throw IllegalStateException because npm is missing
+        tools.getNodeExecutable();
+    }
+
+    @Test
+    public void nodeFolder_notSet_usesNormalResolution() throws Exception {
+        createStubNode(true, true, vaadinHomeDir);
+
+        // Force alternative node to ensure we use vaadin home, not global node
+        settings.setForceAlternativeNode(true);
+
+        // Test both null and empty string behave the same
+        settings.setNodeFolder(null);
+        tools = new FrontendTools(settings);
+        assertThat(tools.getNodeExecutable(), containsString(vaadinHomeDir));
+
+        // Reset and test empty string
+        resetFrontendToolsNodeCache();
+        settings.setNodeFolder("");
+        tools = new FrontendTools(settings);
+        assertThat(tools.getNodeExecutable(), containsString(vaadinHomeDir));
+    }
+
+    @Test
+    public void nodeFolder_takesPrecedenceOverRequireHomeNodeExec()
+            throws IOException, FrontendUtils.UnknownVersionException {
+        // Create both a custom folder and vaadin home node
+        // createStubNode creates node/ subdirectory, so we need to point to that
+        File customNodeBase = tmpDir.newFolder("custom-precedence");
+        createStubNode(true, true, customNodeBase.getAbsolutePath());
+        File customNodeFolder = new File(customNodeBase, "node");
+        createStubNode(true, true, vaadinHomeDir);
+
+        // Enable both nodeFolder and requireHomeNodeExec
+        settings.setNodeFolder(customNodeFolder.getAbsolutePath());
+        settings.setForceAlternativeNode(true);
+        tools = new FrontendTools(settings);
+
+        // nodeFolder should take precedence
+        assertThat(tools.getNodeExecutable(),
+                containsString(customNodeFolder.getAbsolutePath()));
+        assertThat(tools.getNodeExecutable(),
+                not(containsString(vaadinHomeDir)));
+    }
+
     private void installGlobalPnpm(String pnpmVersion) {
         Optional<File> npmInstalled = frontendToolsLocator
                 .tryLocateTool(getCommand("npm"));

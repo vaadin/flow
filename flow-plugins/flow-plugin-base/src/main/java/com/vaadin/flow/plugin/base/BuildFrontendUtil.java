@@ -165,6 +165,7 @@ public class BuildFrontendUtil {
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                .withNodeFolder(adapter.nodeFolder())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
                 .withProductionMode(false).withReact(adapter.isReactEnabled())
                 .withFrontendExtraFileExtensions(
@@ -209,6 +210,7 @@ public class BuildFrontendUtil {
         settings.setNodeVersion(adapter.nodeVersion());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setNodeFolder(adapter.nodeFolder());
         settings.setIgnoreVersionChecks(
                 adapter.isFrontendIgnoreVersionChecks());
 
@@ -264,6 +266,7 @@ public class BuildFrontendUtil {
                 adapter.bunEnable());
         buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
+        buildInfo.put(InitParameters.NODE_FOLDER, adapter.nodeFolder());
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
 
@@ -355,6 +358,7 @@ public class BuildFrontendUtil {
                     .withFrontendGeneratedFolder(
                             getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeFolder(adapter.nodeFolder())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setJavaResourceFolder(adapter.javaResourceFolder())
@@ -429,6 +433,7 @@ public class BuildFrontendUtil {
                     .withFrontendGeneratedFolder(
                             getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeFolder(adapter.nodeFolder())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
                     .setJavaResourceFolder(adapter.javaResourceFolder())

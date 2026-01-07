@@ -92,6 +92,8 @@ public class Options implements Serializable {
 
     private boolean requireHomeNodeExec;
 
+    private String nodeFolder = null;
+
     private boolean copyTemplates = false;
 
     private File npmFolder;
@@ -516,6 +518,22 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the folder containing the Node.js executable.
+     * <p>
+     * When specified, Node.js will be exclusively used from this folder. If
+     * the binary is not found, an exception will be thrown with no fallback.
+     *
+     * @param nodeFolder
+     *            the folder path containing node executable, or null to use
+     *            default resolution
+     * @return the builder, for chaining
+     */
+    public Options withNodeFolder(String nodeFolder) {
+        this.nodeFolder = nodeFolder;
+        return this;
+    }
+
+    /**
      * Sets the node.js version to be used when node.js is installed
      * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults to
      * {@value FrontendTools#DEFAULT_NODE_VERSION}.
@@ -829,6 +847,10 @@ public class Options implements Serializable {
 
     public boolean isRequireHomeNodeExec() {
         return requireHomeNodeExec;
+    }
+
+    public String getNodeFolder() {
+        return nodeFolder;
     }
 
     public boolean isCopyTemplates() {

@@ -242,6 +242,14 @@ public class AbstractConfigurationFactory implements Serializable {
                             .get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
                             .booleanValue()));
         }
+        if (params.get(InitParameters.NODE_FOLDER) == null
+                && buildInfo.has(InitParameters.NODE_FOLDER)) {
+            String nodeFolder = buildInfo.get(InitParameters.NODE_FOLDER)
+                    .textValue();
+            if (nodeFolder != null && !nodeFolder.isEmpty()) {
+                params.put(InitParameters.NODE_FOLDER, nodeFolder);
+            }
+        }
     }
 
     /**

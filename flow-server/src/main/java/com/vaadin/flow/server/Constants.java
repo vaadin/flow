@@ -146,6 +146,11 @@ public final class Constants implements Serializable {
     public static final boolean DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE = false;
 
     /**
+     * The default value for {@link InitParameters#NODE_FOLDER}.
+     */
+    public static final String DEFAULT_NODE_FOLDER = null;
+
+    /**
      * The name of the environment variable that controls whether server-side
      * usage statistics is enabled.
      *
