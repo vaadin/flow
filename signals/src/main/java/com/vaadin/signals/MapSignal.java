@@ -118,7 +118,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      *            the value to set
      * @return an operation containing the eventual result
      */
-    public SignalOperation<T> put(String key, T value) {
+    public SignalOperation<T> put(String key, @Nullable T value) {
         return submit(
                 new SignalCommand.PutCommand(Id.random(), id(),
                         Objects.requireNonNull(key), toJson(value)),
@@ -152,7 +152,8 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
-    public InsertOperation<ValueSignal<T>> putIfAbsent(String key, T value) {
+    public InsertOperation<ValueSignal<T>> putIfAbsent(String key,
+            @Nullable T value) {
         return submitInsert(
                 new SignalCommand.PutIfAbsentCommand(Id.random(), id(), null,
                         Objects.requireNonNull(key), toJson(value)),

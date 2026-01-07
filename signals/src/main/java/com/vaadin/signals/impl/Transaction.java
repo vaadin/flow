@@ -370,7 +370,7 @@ public abstract class Transaction {
      *            ignore the result
      */
     public void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler) {
+            @Nullable Consumer<CommandResult> resultHandler) {
         include(tree, command, resultHandler, true);
     }
 
