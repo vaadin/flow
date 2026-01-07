@@ -36,6 +36,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -82,6 +83,7 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void constructor_nullType_throws() {
         assertThrows(NullPointerException.class, () -> {
             Class<String> type = null;
@@ -90,6 +92,7 @@ public class ValueSignalTest extends SignalTestBase {
     }
 
     @Test
+    @SuppressWarnings("NullAway")
     void constructor_nullInitialValue_throws() {
         assertThrows(NullPointerException.class, () -> {
             String initial = null;
@@ -103,10 +106,16 @@ public class ValueSignalTest extends SignalTestBase {
         ValueSignal<String[]> signal = new ValueSignal<>(array);
 
         array[0] = "modified";
-        assertEquals("initial", signal.value()[0]);
+        String[] value = signal.value();
+        assertNotNull(value);
+        assertEquals("initial", value[0]);
 
-        signal.value()[0] = "modified";
-        assertEquals("initial", signal.value()[0]);
+        value = signal.value();
+        assertNotNull(value);
+        value[0] = "modified";
+        value = signal.value();
+        assertNotNull(value);
+        assertEquals("initial", value[0]);
     }
 
     @Test
@@ -263,7 +272,9 @@ public class ValueSignalTest extends SignalTestBase {
 
         ValueSignal<String> wrapper = signal.withValidator(command -> {
             if (command instanceof SetCommand set) {
-                return !set.value().isNull();
+                var value = set.value();
+                assertNotNull(value);
+                return !value.isNull();
             }
             return true;
         });

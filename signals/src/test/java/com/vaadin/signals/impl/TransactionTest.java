@@ -189,7 +189,9 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
-        assertTrue(handler.result.accepted());
+        var result = handler.result;
+        assertNotNull(result);
+        assertTrue(result.accepted());
     }
 
     @Test
@@ -207,7 +209,9 @@ public class TransactionTest {
         assertTrue(operation.result().isDone());
         assertTrue(operation.result().get().successful());
 
-        assertFalse(handler.result.accepted());
+        var result = handler.result;
+        assertNotNull(result);
+        assertFalse(result.accepted());
     }
 
     @Test
@@ -254,12 +258,16 @@ public class TransactionTest {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = TestUtil.readTransactionRootValue(tree).textValue();
+            var transactionValue1 = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue1);
+            String value = transactionValue1.textValue();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.readTransactionRootValue(tree).textValue();
+            var transactionValue2 = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue2);
+            String value2 = transactionValue2.textValue();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }
@@ -305,7 +313,9 @@ public class TransactionTest {
 
         List<String> invocations = new ArrayList<>();
         tree.observeNextChange(Id.ZERO, immediate -> {
-            invocations.add(TestUtil.readTransactionRootValue(tree).asString());
+            var transactionValue = TestUtil.readTransactionRootValue(tree);
+            assertNotNull(transactionValue);
+            invocations.add(transactionValue.asString());
             return true;
         });
 

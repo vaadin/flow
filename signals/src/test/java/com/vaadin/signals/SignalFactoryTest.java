@@ -21,6 +21,7 @@ import com.vaadin.signals.NodeSignal.NodeSignalState;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public class SignalFactoryTest extends SignalTestBase {
 
@@ -136,7 +137,9 @@ public class SignalFactoryTest extends SignalTestBase {
                 String.class);
         list.insertLast("value");
 
-        assertEquals("value", list.value().get(0).value());
+        var value = list.value();
+        assertNotNull(value);
+        assertEquals("value", value.get(0).value());
     }
 
     @Test
@@ -145,7 +148,11 @@ public class SignalFactoryTest extends SignalTestBase {
                 String.class);
         map.put("key", "value");
 
-        assertEquals("value", map.value().get("key").value());
+        var value = map.value();
+        assertNotNull(value);
+        var child = value.get("key");
+        assertNotNull(child);
+        assertEquals("value", child.value());
     }
 
     @Test
@@ -165,10 +172,16 @@ public class SignalFactoryTest extends SignalTestBase {
         map.put("key", "map");
 
         NodeSignalState state = node.value();
+        assertNotNull(state);
         assertEquals(3, state.value(Double.class));
-        assertEquals("list",
-                state.listChildren().get(0).value().value(String.class));
-        assertEquals("map",
-                state.mapChildren().get("key").value().value(String.class));
+        var child0 = state.listChildren().get(0);
+        var child0Value = child0.value();
+        assertNotNull(child0Value);
+        assertEquals("list", child0Value.value(String.class));
+        var mapChild = state.mapChildren().get("key");
+        assertNotNull(mapChild);
+        var mapChildValue = mapChild.value();
+        assertNotNull(mapChildValue);
+        assertEquals("map", mapChildValue.value(String.class));
     }
 }

@@ -30,7 +30,7 @@ import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -99,23 +99,39 @@ public class ComputedSignalTest extends SignalTestBase {
     void map_mapComputedSignal_valueIsMapped() {
         ValueSignal<String> source = new ValueSignal<>("value");
 
-        Signal<Integer> computed = Signal
-                .computed(() -> source.value().length());
+        Signal<Integer> computed = Signal.computed(() -> {
+            var value = source.value();
+            assertNotNull(value);
+            return value.length();
+        });
 
-        Signal<Integer> doubled = computed.map(l -> l * 2);
+        Signal<Integer> doubled = computed.map(l -> {
+            assertNotNull(l);
+            return l * 2;
+        });
 
-        assertEquals(10, doubled.value());
+        var value = doubled.value();
+        assertNotNull(value);
+        assertEquals(10, value.intValue());
     }
 
     @Test
     void map_mapMappedSignal_valueIsMapped() {
         ValueSignal<String> source = new ValueSignal<>("value");
 
-        Signal<Integer> computed = source.map(String::length);
+        Signal<Integer> computed = source.map(v -> {
+            assertNotNull(v);
+            return v.length();
+        });
 
-        Signal<Integer> doubled = computed.map(l -> l * 2);
+        Signal<Integer> doubled = computed.map(l -> {
+            assertNotNull(l);
+            return l * 2;
+        });
 
-        assertEquals(10, doubled.value());
+        var value = doubled.value();
+        assertNotNull(value);
+        assertEquals(10, value.intValue());
     }
 
     @Test
@@ -124,6 +140,7 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
 
         Signal<Integer> computed = source.map(value -> {
+            assertNotNull(value);
             count.incrementAndGet();
             return value.length();
         });
@@ -163,7 +180,9 @@ public class ComputedSignalTest extends SignalTestBase {
 
         ArrayList<String> invocations = new ArrayList<>();
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            var value = signal.value();
+            assertNotNull(value);
+            invocations.add(value);
         });
 
         assertEquals(1, count.get());
@@ -182,12 +201,16 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> signal = Signal.computed(() -> {
             count.incrementAndGet();
-            return source.value().length();
+            var value = source.value();
+            assertNotNull(value);
+            return value.length();
         });
 
         ArrayList<Integer> invocations = new ArrayList<>();
         Signal.effect(() -> {
-            invocations.add(signal.value());
+            var value = signal.value();
+            assertNotNull(value);
+            invocations.add(value);
         });
 
         assertEquals(1, count.get());
@@ -331,19 +354,27 @@ public class ComputedSignalTest extends SignalTestBase {
 
         Signal<Integer> doubled = () -> {
             count.incrementAndGet();
-            return signal.value() * 2;
+            var value = signal.value();
+            assertNotNull(value);
+            return value * 2;
         };
 
-        assertEquals(2, doubled.value());
+        var value = doubled.value();
+        assertNotNull(value);
+        assertEquals(2, value.intValue());
         assertEquals(1, count.intValue());
 
-        assertEquals(2, doubled.value());
+        value = doubled.value();
+        assertNotNull(value);
+        assertEquals(2, value.intValue());
         assertEquals(2, count.intValue());
 
         signal.value(3);
         assertEquals(2, count.intValue());
 
-        assertEquals(6, doubled.value());
+        value = doubled.value();
+        assertNotNull(value);
+        assertEquals(6, value.intValue());
         assertEquals(3, count.intValue());
     }
 
@@ -354,13 +385,14 @@ public class ComputedSignalTest extends SignalTestBase {
         AtomicInteger count = new AtomicInteger();
         Signal<Boolean> computed = Signal.computed(() -> {
             count.incrementAndGet();
-            if (shouldThrow.value()) {
+            var value = shouldThrow.value();
+            if (Boolean.TRUE.equals(value)) {
                 throw new RuntimeException("Expected exception");
             } else {
-                return shouldThrow.value();
+                return value;
             }
         });
-        assertFalse(computed.value());
+        assertEquals(Boolean.FALSE, computed.value());
         assertEquals(1, count.get());
 
         shouldThrow.value(true);
@@ -371,7 +403,7 @@ public class ComputedSignalTest extends SignalTestBase {
         assertEquals(2, count.get(), "Exception should be cached");
 
         shouldThrow.value(false);
-        assertFalse(computed.value());
+        assertEquals(Boolean.FALSE, computed.value());
         assertEquals(3, count.get());
     }
 

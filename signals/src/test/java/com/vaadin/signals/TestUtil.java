@@ -17,6 +17,7 @@ package com.vaadin.signals;
 
 import java.util.concurrent.ExecutionException;
 
+import org.jspecify.annotations.Nullable;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
@@ -44,19 +45,19 @@ public class TestUtil {
         return new SignalCommand.SetCommand(Id.random(), Id.random(), null);
     }
 
-    public static JsonNode readConfirmedRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readConfirmedRootValue(SignalTree tree) {
         return tree.confirmed().data(Id.ZERO).get().value();
     }
 
-    public static JsonNode readSubmittedRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readSubmittedRootValue(SignalTree tree) {
         return tree.submitted().data(Id.ZERO).get().value();
     }
 
-    public static JsonNode readTransactionRootValue(SignalTree tree) {
+    public static @Nullable JsonNode readTransactionRootValue(SignalTree tree) {
         return Transaction.getCurrent().read(tree).data(Id.ZERO).get().value();
     }
 
-    public static <T> T assertSuccess(SignalOperation<T> operation) {
+    public static <T> @Nullable T assertSuccess(SignalOperation<T> operation) {
         if (assertCompleted(operation) instanceof Result<T> result) {
             return result.value();
         } else {

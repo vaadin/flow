@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.ListSignal;
@@ -33,6 +34,7 @@ import com.vaadin.signals.ValueSignalTest.AsyncValueSignal;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class EffectTest extends SignalTestBase {
@@ -62,7 +64,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_effectReadsValue_effectRunAgain() {
         ValueSignal<String> signal = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -83,7 +85,9 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value().size());
+            var value = signal.value();
+            assertNotNull(value);
+            invocations.add(value.size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -101,7 +105,9 @@ public class EffectTest extends SignalTestBase {
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal.value().size());
+            var value = signal.value();
+            assertNotNull(value);
+            invocations.add(value.size());
         });
 
         assertEquals(List.of(0), invocations);
@@ -116,7 +122,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_effectStopsReadingValue_effectNotRunAgain() {
         ValueSignal<String> signal = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.effect(() -> {
@@ -140,7 +146,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_effectReadsThrougUntracked_effectNotRunAgain() {
         ValueSignal<String> signal = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         AtomicBoolean read = new AtomicBoolean(true);
 
         Signal.effect(() -> {
@@ -166,7 +172,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_failedWrite_effectNotRunAgain() {
         ValueSignal<String> signal = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -179,7 +185,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_multipleWritesInTransaction_effectRunOnce() {
         ValueSignal<String> signal = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -197,10 +203,10 @@ public class EffectTest extends SignalTestBase {
     void changeTracking_multipleSignalsInTransaction_effectRunOnce() {
         ValueSignal<String> signal1 = new ValueSignal<>("");
         ValueSignal<String> signal2 = new ValueSignal<>("");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(signal1.value() + signal2.value());
+            invocations.add(signal1.value() + "" + signal2.value());
         });
 
         Signal.runInTransaction(() -> {
@@ -214,7 +220,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_changeOtherPartOfNode_effectNotRunAgain() {
         ValueSignal<String> signal = new ValueSignal<>("value");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -232,7 +238,7 @@ public class EffectTest extends SignalTestBase {
         signal.value("");
         signal.tree().confirmSubmitted();
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -254,7 +260,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_noOpChange_effectNotRunButRemainsActive() {
         ValueSignal<String> signal = new ValueSignal<>("value");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -275,8 +281,9 @@ public class EffectTest extends SignalTestBase {
         ArrayList<List<String>> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            List<String> values = signal.value().stream().map(Signal::value)
-                    .toList();
+            var value = signal.value();
+            assertNotNull(value);
+            List<String> values = value.stream().map(Signal::value).toList();
             invocations.add(values);
         });
 
@@ -293,7 +300,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_changeValueToNull_effectTriggered() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -308,12 +315,18 @@ public class EffectTest extends SignalTestBase {
     @Test
     void changeTracking_lambdaSignal_changeTracked() {
         ValueSignal<Integer> signal = new ValueSignal<>(1);
-        Signal<Integer> doubled = () -> signal.value() * 2;
+        Signal<Integer> doubled = () -> {
+            var value = signal.value();
+            assertNotNull(value);
+            return value * 2;
+        };
 
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
-            invocations.add(doubled.value());
+            var value = doubled.value();
+            assertNotNull(value);
+            invocations.add(value);
         });
 
         assertEquals(List.of(2), invocations);
@@ -324,7 +337,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void close_effectReadsValue_affectNotRunAfterClose() {
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         ValueSignal<String> signal = new ValueSignal<>("");
 
         Runnable closer = Signal.effect(() -> {
@@ -342,7 +355,7 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         TestExecutor dispatcher = useTestEffectDispatcher();
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -363,7 +376,7 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal = new ValueSignal<>("initial");
         TestExecutor dispatcher = useTestEffectDispatcher();
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
 
         Runnable closer = Signal.effect(() -> {
             invocations.add(signal.value());
@@ -385,7 +398,7 @@ public class EffectTest extends SignalTestBase {
 
         RuntimeException exception = new RuntimeException("Expected exception");
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         Signal.effect(() -> {
             invocations.add(signal.value());
             throw exception;
@@ -409,7 +422,7 @@ public class EffectTest extends SignalTestBase {
 
         assertUncaughtException(exception);
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         Signal.effect(() -> {
             invocations.add(signal.value());
         });
@@ -422,7 +435,7 @@ public class EffectTest extends SignalTestBase {
     void exceptionHandling_effectThrowsError_effectClosed() {
         ValueSignal<String> signal = new ValueSignal<>("initial");
 
-        ArrayList<String> invocations = new ArrayList<>();
+        ArrayList<@Nullable String> invocations = new ArrayList<>();
         Error error = new Error("Expected error");
         Signal.effect(() -> {
             invocations.add(signal.value());
@@ -482,7 +495,9 @@ public class EffectTest extends SignalTestBase {
         AtomicInteger throwCount = new AtomicInteger();
 
         Signal.effect(() -> {
-            String value = signal2.value() + " update";
+            var v2 = signal2.value();
+            assertNotNull(v2);
+            String value = v2 + " update";
 
             try {
                 signal1.value(value);
@@ -494,7 +509,9 @@ public class EffectTest extends SignalTestBase {
                 "Should not fail with only one effect active");
 
         Signal.effect(() -> {
-            signal2.value(signal1.value() + " update");
+            var v1 = signal1.value();
+            assertNotNull(v1);
+            signal2.value(v1 + " update");
         });
         assertEquals(1, throwCount.get(),
                 "Should fail when the other effect is created");
@@ -507,12 +524,17 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<Boolean> trigger = new ValueSignal<>(false);
 
         Signal.effect(() -> {
-            signal1.value(signal2.value() + " update");
+            var v2 = signal2.value();
+            assertNotNull(v2);
+            signal1.value(v2 + " update");
         });
 
         Signal.effect(() -> {
-            if (trigger.value()) {
-                signal2.value(signal1.value() + " update");
+            var triggerValue = trigger.value();
+            if (triggerValue != null && triggerValue) {
+                var v1 = signal1.value();
+                assertNotNull(v1);
+                signal2.value(v1 + " update");
             }
         });
         assertNoUncaughtException();
@@ -529,12 +551,16 @@ public class EffectTest extends SignalTestBase {
         ValueSignal<String> signal2 = new ValueSignal<>("signal");
 
         Signal.effect(() -> {
-            signal1.value(signal2.value() + " update");
+            var v2 = signal2.value();
+            assertNotNull(v2);
+            signal1.value(v2 + " update");
         });
         dispatcher.runPendingTasks();
 
         Signal.effect(() -> {
-            signal2.value(signal1.value() + " update");
+            var v1 = signal1.value();
+            assertNotNull(v1);
+            signal2.value(v1 + " update");
         });
         // Runs the 2nd effect which schedules running the 1st effect
         dispatcher.runPendingTasks();
@@ -548,7 +574,7 @@ public class EffectTest extends SignalTestBase {
     @Test
     void infiniteLoopDetection_concurrentSignalWrite_notDetectedAsLoop() {
         TestExecutor dispatcher = useTestEffectDispatcher();
-        List<String> invocations = new ArrayList<>();
+        List<@Nullable String> invocations = new ArrayList<>();
 
         ValueSignal<String> signal = new ValueSignal<>("signal") {
             @Override

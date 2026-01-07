@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
@@ -213,7 +214,7 @@ public class TreeRevisionTest {
         assertThrows(AssertionError.class, revision::assertValidTree);
     }
 
-    private static Node.Data createSimpleNode(Id parent) {
+    private static Node.Data createSimpleNode(@Nullable Id parent) {
         return new Node.Data(parent, Id.ZERO, null, null, List.of(), Map.of());
     }
 }
