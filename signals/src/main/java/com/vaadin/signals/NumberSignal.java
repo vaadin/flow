@@ -81,8 +81,13 @@ public class NumberSignal extends ValueSignal<Double> {
     public SignalOperation<Double> incrementBy(double delta) {
         return submit(
                 new SignalCommand.IncrementCommand(Id.random(), id(), delta),
-                success -> nodeValue(success.onlyUpdate().newNode(),
-                        Double.class));
+                success -> {
+                    Node newNode = success.onlyUpdate().newNode();
+                    if (newNode == null) {
+                        return null;
+                    }
+                    return nodeValue(newNode, Double.class);
+                });
     }
 
     @Override

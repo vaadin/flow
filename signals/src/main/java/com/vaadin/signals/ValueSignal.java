@@ -105,8 +105,13 @@ public class ValueSignal<T> extends AbstractSignal<T> {
 
         return submit(
                 new SignalCommand.SetCommand(Id.random(), id(), toJson(value)),
-                success -> nodeValue(success.onlyUpdate().oldNode(),
-                        valueType));
+                success -> {
+                    Node oldNode = success.onlyUpdate().oldNode();
+                    if (oldNode == null) {
+                        return null;
+                    }
+                    return nodeValue(oldNode, valueType);
+                });
     }
 
     @Override

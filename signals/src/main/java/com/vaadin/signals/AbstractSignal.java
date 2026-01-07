@@ -550,17 +550,13 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @param <T>
      *            the Java object type
      * @param node
-     *            the signal node to read the value from, or <code>null</code>
+     *            the signal node to read the value from, not <code>null</code>
      * @param valueType
      *            the type to convert to, not <code>null</code>
      * @return the converted Java instance, or <code>null</code> if the node is
      *         <code>null</code>
      */
-    protected static <T> @Nullable T nodeValue(@Nullable Node node,
-            Class<T> valueType) {
-        if (node == null) {
-            return null;
-        }
+    protected static <T> @Nullable T nodeValue(Node node, Class<T> valueType) {
         assert node instanceof Data;
 
         return fromJson(((Data) node).value(), valueType);

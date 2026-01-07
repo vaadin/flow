@@ -124,8 +124,11 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
                         Objects.requireNonNull(key), toJson(value)),
                 success -> {
                     if (success.updates().size() == 1) {
-                        return nodeValue(success.onlyUpdate().oldNode(),
-                                elementType);
+                        Node oldNode = success.onlyUpdate().oldNode();
+                        if (oldNode == null) {
+                            return null;
+                        }
+                        return nodeValue(oldNode, elementType);
                     } else {
                         // New node and mapChildren update -> no previous value
                         assert success.updates().size() == 2;
@@ -172,7 +175,11 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
                     NodeModification removal = success.updates().values()
                             .stream().filter(update -> update.newNode() == null)
                             .findAny().get();
-                    return nodeValue(removal.oldNode(), elementType);
+                    Node oldNode = removal.oldNode();
+                    if (oldNode == null) {
+                        return null;
+                    }
+                    return nodeValue(oldNode, elementType);
                 });
     }
 
