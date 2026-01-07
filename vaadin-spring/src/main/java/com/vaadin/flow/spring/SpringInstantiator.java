@@ -15,12 +15,15 @@
  */
 package com.vaadin.flow.spring;
 
+import java.lang.reflect.Modifier;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.boot.SpringBootVersion;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.SpringVersion;
@@ -92,15 +95,16 @@ public class SpringInstantiator extends DefaultInstantiator {
 
     @Override
     public I18NProvider getI18NProvider() {
-        int beansCount = context.getBeanNamesForType(I18NProvider.class).length;
-        if (beansCount == 1) {
+        try {
             return context.getBean(I18NProvider.class);
-        } else {
+        } catch (NoSuchBeanDefinitionException ignored) {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for I18N, "
-                                + "falling back to the default behavior",
-                                I18NProvider.class.getSimpleName(), beansCount);
+                        .info("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
+                                + "Cannot use Spring beans for I18N, falling back to the default behavior",
+                                I18NProvider.class.getSimpleName(),
+                                context.getBeanNamesForType(
+                                        I18NProvider.class).length);
             }
             return super.getI18NProvider();
         }
@@ -108,17 +112,16 @@ public class SpringInstantiator extends DefaultInstantiator {
 
     @Override
     public MenuAccessControl getMenuAccessControl() {
-        int beansCount = context
-                .getBeanNamesForType(MenuAccessControl.class).length;
-        if (beansCount == 1) {
+        try {
             return context.getBean(MenuAccessControl.class);
-        } else {
+        } catch (NoSuchBeanDefinitionException ignored) {
             if (loggingEnabled.compareAndSet(true, false)) {
                 LoggerFactory.getLogger(SpringInstantiator.class.getName())
-                        .info("The number of beans implementing '{}' is {}. Cannot use Spring beans for Menu Access Control, "
-                                + "falling back to the default behavior",
+                        .info("The number of beans implementing '{}' is {} why spring could not provide a unique bean. "
+                                + "Cannot use Spring beans for Menu Access Control, falling back to the default behavior",
                                 MenuAccessControl.class.getSimpleName(),
-                                beansCount);
+                                context.getBeanNamesForType(
+                                        MenuAccessControl.class).length);
             }
             return super.getMenuAccessControl();
         }
@@ -140,17 +143,29 @@ public class SpringInstantiator extends DefaultInstantiator {
      */
     @Override
     public <T> T getOrCreate(Class<T> type) {
-        if (context.getBeanNamesForType(type).length == 1) {
+        try {
             return context.getBean(type);
-        } else if (context.getBeanNamesForType(type).length > 1) {
-            try {
-                return context.getAutowireCapableBeanFactory().createBean(type);
-            } catch (BeanInstantiationException e) {
-                throw new BeanInstantiationException(e.getBeanClass(),
-                        "[HINT] This could be caused by more than one suitable beans for autowiring in the context.",
+        } catch (NoUniqueBeanDefinitionException e) {
+            // there are multiple beans of this type in the context, but spring
+            // couldn't figure out which one to use
+            // to stay compatible with previous implementation we try to create
+            // a new bean
+            // this will always fail if type is an interface or abstract though
+            // so we won't try but give a meaningful message instead
+            if (type.isInterface()
+                    || Modifier.isAbstract(type.getModifiers())) {
+                throw new BeanInstantiationException(type,
+                        "[HINT] There is multiple Beans of this type and spring could not resolve the ambiguity, but also the given type is an interface or abstract so we cannot try to create a new bean of this type.",
                         e);
             }
-        } else {
+            try {
+                return context.getAutowireCapableBeanFactory().createBean(type);
+            } catch (BeanInstantiationException ie) {
+                throw new BeanInstantiationException(ie.getBeanClass(),
+                        "[HINT] This was caused because there are Multiple beans of this type, spring could not resolve the ambiguity and creating a new bean of this type also failed.",
+                        ie);
+            }
+        } catch (NoSuchBeanDefinitionException ignored) {
             // If there is no bean, try to instantiate one
             return context.getAutowireCapableBeanFactory().createBean(type);
         }

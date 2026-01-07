@@ -30,6 +30,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -39,8 +40,8 @@ import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.spring.instantiator.SpringInstantiatorTest;
 
 @RunWith(SpringRunner.class)
-@Import(I18NProviderInstantiationTest.I18NTestConfig.class)
-public class I18NProviderInstantiationTest {
+@Import(PrimaryI18NProviderInstantiationTest.I18NTestConfig.class)
+public class PrimaryI18NProviderInstantiationTest {
 
     @Autowired
     private ApplicationContext context;
@@ -48,7 +49,8 @@ public class I18NProviderInstantiationTest {
     @Configuration
     @ComponentScan(useDefaultFilters = false, includeFilters = {
             @ComponentScan.Filter(classes = { I18NTestProvider.class,
-                    I18NTestProvider1.class }, type = FilterType.ASSIGNABLE_TYPE) })
+                    I18NTestProvider1.class,
+                    PrimaryI18NTestProvider.class }, type = FilterType.ASSIGNABLE_TYPE) })
     public static class I18NTestConfig {
 
     }
@@ -74,17 +76,33 @@ public class I18NProviderInstantiationTest {
 
     }
 
+    @Primary
+    @Component
+    public static class PrimaryI18NTestProvider extends I18NTestProvider {
+
+    }
+
     public static class DefaultI18NTestProvider extends I18NTestProvider {
 
     }
 
     @Test
-    public void getI18NProvider_i18nProviderIsABean_i18nProviderIsAvailable()
+    public void getI18NProvider_usePrimaryBean() throws ServletException {
+        Instantiator instantiator = SpringInstantiatorTest
+                .getService(context, null).getInstantiator();
+
+        Assert.assertNotNull(instantiator.getI18NProvider());
+        Assert.assertEquals(PrimaryI18NTestProvider.class,
+                instantiator.getI18NProvider().getClass());
+    }
+
+    @Test
+    public void getI18NProvider_givenDefaultI18NProvider_usePrimaryBean()
             throws ServletException {
         Instantiator instantiator = getInstantiator(context);
 
         Assert.assertNotNull(instantiator.getI18NProvider());
-        Assert.assertEquals(DefaultI18NTestProvider.class,
+        Assert.assertEquals(PrimaryI18NTestProvider.class,
                 instantiator.getI18NProvider().getClass());
     }
 
