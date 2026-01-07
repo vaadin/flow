@@ -37,10 +37,10 @@ import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
