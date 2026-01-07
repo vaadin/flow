@@ -23,8 +23,8 @@ import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.ResolutionScope;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 /**
  * This goal checks that node and npm tools are installed and creates or updates

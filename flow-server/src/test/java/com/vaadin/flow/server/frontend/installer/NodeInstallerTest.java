@@ -33,8 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendVersion;
 
 public class NodeInstallerTest {
 

@@ -75,12 +75,12 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.tests.util.TestUtil;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 @NotThreadSafe
 public class StaticFileServerTest implements Serializable {

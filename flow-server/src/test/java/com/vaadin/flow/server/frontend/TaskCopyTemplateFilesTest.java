@@ -30,6 +30,7 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Template;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;

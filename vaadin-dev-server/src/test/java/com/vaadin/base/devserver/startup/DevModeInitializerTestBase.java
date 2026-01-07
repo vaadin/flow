@@ -38,6 +38,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
@@ -48,7 +49,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.mockito.ArgumentMatchers.any;
@@ -145,7 +145,7 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
 
     protected File createStubDevServer(String baseDir) throws IOException {
         createStubViteServer("ready in 500ms", 500, baseDir, true);
-        return new File(baseDir, VITE_CONFIG);
+        return new File(baseDir, FrontendUtils.VITE_CONFIG);
     }
 
     private ObjectNode getInitalPackageJson() {

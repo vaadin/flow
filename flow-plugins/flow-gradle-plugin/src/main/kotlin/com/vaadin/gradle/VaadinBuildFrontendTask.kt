@@ -20,11 +20,12 @@ import com.vaadin.flow.plugin.base.BuildFrontendUtil
 import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.BundleValidationUtil
-import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.server.frontend.FrontendBuildUtils
 import com.vaadin.flow.server.frontend.Options
 import com.vaadin.flow.server.frontend.TaskCleanFrontendFiles
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner.FrontendDependenciesScannerFactory
+import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.pro.licensechecker.LicenseChecker
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException
 import org.gradle.api.DefaultTask
@@ -151,7 +152,7 @@ public abstract class VaadinBuildFrontendTask : DefaultTask() {
      * @return `true` to remove created files, `false` to keep the files
      */
     protected open fun cleanFrontendFiles(): Boolean {
-        if (FrontendUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(adapter.get()),
+        if (FrontendBuildUtils.isHillaUsed(BuildFrontendUtil.getFrontendDirectory(adapter.get()),
                         adapter.get().classFinder)) {
             /*
              * Override this to not clean generated frontend files after the

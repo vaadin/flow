@@ -19,9 +19,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_JS;
 
 /**
  * Generate <code>tailwind.js</code> wrapper if it is missing in the generated
@@ -43,13 +42,13 @@ public class TaskGenerateTailwindJs extends AbstractTaskClientGenerator {
      */
     TaskGenerateTailwindJs(Options options) {
         tailwindJs = new File(options.getFrontendGeneratedFolder(),
-                TAILWIND_JS);
+                FrontendUtils.TAILWIND_JS);
     }
 
     @Override
     protected String getFileContent() throws IOException {
         try (InputStream indexStream = getClass()
-                .getResourceAsStream(TAILWIND_JS)) {
+                .getResourceAsStream(FrontendUtils.TAILWIND_JS)) {
             var template = StringUtil.toUTF8String(indexStream);
             return template;
         }

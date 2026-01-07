@@ -187,7 +187,7 @@ public final class BundleUtils {
      */
     public static void copyPackageLockFromBundle(Options options) {
         try {
-            if (FrontendUtils.isPlatformMajorVersionUpdated(
+            if (FrontendBuildUtils.isPlatformMajorVersionUpdated(
                     options.getClassFinder(), options.getNodeModulesFolder(),
                     options.getNpmFolder(), options.getBuildDirectory())) {
                 getLogger().info(
@@ -236,7 +236,7 @@ public final class BundleUtils {
                 return;
             }
         }
-        boolean hillaUsed = FrontendUtils.isHillaUsed(
+        boolean hillaUsed = FrontendBuildUtils.isHillaUsed(
                 options.getFrontendDirectory(), options.getClassFinder());
         URL resource = null;
         if (hillaUsed) {

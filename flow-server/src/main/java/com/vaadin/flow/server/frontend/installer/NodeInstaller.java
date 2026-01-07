@@ -31,10 +31,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendVersion;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
 import com.vaadin.frontendtools.installer.ArchiveExtractor;
 import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;

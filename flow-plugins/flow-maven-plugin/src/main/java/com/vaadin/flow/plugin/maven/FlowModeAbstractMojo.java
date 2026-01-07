@@ -46,13 +46,13 @@ import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.build.BuildContext;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -60,8 +60,6 @@ import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
 
 /**
  * The base class of Flow Mojos in order to compute correctly the modes.
@@ -92,7 +90,8 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
+    @Parameter(defaultValue = "${project.basedir}/src/main/"
+            + FrontendUtils.FRONTEND)
     private File frontendDirectory;
 
     /**
@@ -476,7 +475,7 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
         if (generatedTsFolder != null) {
             return generatedTsFolder;
         }
-        return new File(frontendDirectory(), GENERATED);
+        return new File(frontendDirectory(), FrontendUtils.GENERATED);
     }
 
     @Override
