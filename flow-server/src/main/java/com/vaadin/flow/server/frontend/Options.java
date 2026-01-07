@@ -520,8 +520,8 @@ public class Options implements Serializable {
     /**
      * Sets the folder containing the Node.js executable.
      * <p>
-     * When specified, Node.js will be exclusively used from this folder. If
-     * the binary is not found, an exception will be thrown with no fallback.
+     * When specified, Node.js will be exclusively used from this folder. If the
+     * binary is not found, an exception will be thrown with no fallback.
      *
      * @param nodeFolder
      *            the folder path containing node executable, or null to use

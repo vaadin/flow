@@ -176,7 +176,8 @@ class NodeResolver implements java.io.Serializable {
                     return null;
                 }
 
-                if (version.getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
+                if (version
+                        .getMajorVersion() > FrontendTools.MAX_SUPPORTED_NODE_MAJOR_VERSION) {
                     getLogger().info(
                             "The globally installed Node.js version {}.x is newer than the maximum supported version {}.x and may not be compatible. Using Node.js from {}.",
                             version.getMajorVersion(),
@@ -208,9 +209,9 @@ class NodeResolver implements java.io.Serializable {
         File nodeFolderFile = new File(nodeFolder);
 
         if (!nodeFolderFile.exists()) {
-            throw new IllegalStateException(String.format(
-                    "Configured node folder does not exist: %s",
-                    nodeFolderFile.getAbsolutePath()));
+            throw new IllegalStateException(
+                    String.format("Configured node folder does not exist: %s",
+                            nodeFolderFile.getAbsolutePath()));
         }
 
         if (!nodeFolderFile.isDirectory()) {
@@ -229,9 +230,9 @@ class NodeResolver implements java.io.Serializable {
         }
 
         if (!nodeExecutable.canExecute()) {
-            throw new IllegalStateException(String.format(
-                    "Node binary is not executable: %s",
-                    nodeExecutable.getAbsolutePath()));
+            throw new IllegalStateException(
+                    String.format("Node binary is not executable: %s",
+                            nodeExecutable.getAbsolutePath()));
         }
 
         try {
@@ -521,8 +522,8 @@ class NodeResolver implements java.io.Serializable {
      * @throws UnknownVersionException
      *             if version cannot be determined
      */
-    private ActiveNodeInstallation tryResolveFromExecutable(
-            File nodeExecutable, File installDir, String expectedVersion)
+    private ActiveNodeInstallation tryResolveFromExecutable(File nodeExecutable,
+            File installDir, String expectedVersion)
             throws UnknownVersionException {
 
         // Get actual version
@@ -536,9 +537,9 @@ class NodeResolver implements java.io.Serializable {
             String normalizedExpected = normalizeVersion(expectedVersion);
 
             if (!normalizedActual.equals(normalizedExpected)) {
-                throw new IllegalStateException(String.format(
-                        "Expected node version %s but found %s",
-                        normalizedExpected, normalizedActual));
+                throw new IllegalStateException(
+                        String.format("Expected node version %s but found %s",
+                                normalizedExpected, normalizedActual));
             }
         }
 
@@ -606,8 +607,7 @@ class NodeResolver implements java.io.Serializable {
      * @return the normalized version string
      */
     private static String normalizeVersion(String version) {
-        return version != null && version.startsWith("v")
-                ? version.substring(1)
+        return version != null && version.startsWith("v") ? version.substring(1)
                 : version;
     }
 

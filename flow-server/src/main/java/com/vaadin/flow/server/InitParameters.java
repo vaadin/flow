@@ -203,9 +203,9 @@ public class InitParameters implements Serializable {
      * Node.js executable.
      * <p>
      * When this parameter is set to a non-empty value, the Node.js binary will
-     * be exclusively used from the specified folder. If the binary is not
-     * found in this folder, an exception will be thrown with no fallback to
-     * global or alternative installations.
+     * be exclusively used from the specified folder. If the binary is not found
+     * in this folder, an exception will be thrown with no fallback to global or
+     * alternative installations.
      * <p>
      * Example: "/usr/local/custom-node" or "C:\\custom\\node"
      */

@@ -758,7 +758,8 @@ public class FrontendToolsTest {
     public void nodeFolder_validFolderWithNode_usesSpecifiedNode()
             throws IOException, FrontendUtils.UnknownVersionException {
         // Create a custom node folder with node binary and npm
-        // createStubNode creates node/ subdirectory, so we need to point to that
+        // createStubNode creates node/ subdirectory, so we need to point to
+        // that
         File customNodeBase = tmpDir.newFolder("custom-node");
         createStubNode(true, true, customNodeBase.getAbsolutePath());
         File customNodeFolder = new File(customNodeBase, "node");
@@ -788,7 +789,8 @@ public class FrontendToolsTest {
     @Test(expected = IllegalStateException.class)
     public void nodeFolder_missingNpm_throwsException() throws IOException {
         // Create only node binary, no npm
-        // createStubNode creates node/ subdirectory, so we need to point to that
+        // createStubNode creates node/ subdirectory, so we need to point to
+        // that
         File customNodeBase = tmpDir.newFolder("node-without-npm");
         createStubNode(true, false, customNodeBase.getAbsolutePath());
         File customNodeFolder = new File(customNodeBase, "node");
@@ -823,7 +825,8 @@ public class FrontendToolsTest {
     public void nodeFolder_takesPrecedenceOverRequireHomeNodeExec()
             throws IOException, FrontendUtils.UnknownVersionException {
         // Create both a custom folder and vaadin home node
-        // createStubNode creates node/ subdirectory, so we need to point to that
+        // createStubNode creates node/ subdirectory, so we need to point to
+        // that
         File customNodeBase = tmpDir.newFolder("custom-precedence");
         createStubNode(true, true, customNodeBase.getAbsolutePath());
         File customNodeFolder = new File(customNodeBase, "node");

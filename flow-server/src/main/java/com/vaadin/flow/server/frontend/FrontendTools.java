@@ -280,8 +280,8 @@ public class FrontendTools {
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
-        String nodeFolder = applicationConfiguration.getStringProperty(
-                InitParameters.NODE_FOLDER, null);
+        String nodeFolder = applicationConfiguration
+                .getStringProperty(InitParameters.NODE_FOLDER, null);
         final String nodeVersion = applicationConfiguration.getStringProperty(
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
