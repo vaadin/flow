@@ -1,0 +1,21 @@
+{
+  "name": "Flow",
+  "image": "docker.io/ausginer/java-node-dev",
+  "runArgs": ["--name=flow_dev"],
+  "containerEnv": {
+    "CHROME_BIN": "/usr/local/bin/chrome",
+    "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD": "1"
+  },
+  "forwardPorts": [9876, 8080, 8000],
+  "containerUser": "vaadin",
+  "remoteUser": "vaadin",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "workspaceMount": "source=${localEnv:PODMAN_DIR}${localWorkspaceFolder},target=/workspaces/${localWorkspaceFolderBasename},type=bind",
+  "mounts": [
+    {
+      "source": "${localWorkspaceFolderBasename}_nodemodules",
+      "target": "${containerWorkspaceFolder}/node_modules",
+      "type": "volume"
+    }
+  ]
+}
