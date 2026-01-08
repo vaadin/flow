@@ -34,6 +34,10 @@
           <groupId>org.bitbucket.b_c</groupId>
           <artifactId>jose4j</artifactId>
         </exclusion>
+        <exclusion>
+          <groupId>org.bouncycastle</groupId>
+          <artifactId>bcprov-jdk18on</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <!--https://github.com/advisories/GHSA-3677-xxcr-wjqv-->
@@ -41,6 +45,12 @@
       <groupId>org.bitbucket.b_c</groupId>
       <artifactId>jose4j</artifactId>
       <version>0.9.6</version>
+    </dependency>
+    <!--https://nvd.nist.gov/vuln/detail/CVE-2025-8916-->
+    <dependency>
+      <groupId>org.bouncycastle</groupId>
+      <artifactId>bcprov-jdk18on</artifactId>
+      <version>1.83</version>
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
