@@ -757,6 +757,8 @@ public class FrontendToolsTest {
     @Test
     public void nodeFolder_validFolderWithNode_usesSpecifiedNode()
             throws IOException, FrontendUtils.UnknownVersionException {
+        Assume.assumeFalse("Skipping test on windows.",
+                FrontendUtils.isWindows());
         // Create a custom node folder with node binary and npm
         // createStubNode creates node/ subdirectory, so we need to point to
         // that
