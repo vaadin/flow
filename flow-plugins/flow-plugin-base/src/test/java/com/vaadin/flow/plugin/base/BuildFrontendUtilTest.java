@@ -53,14 +53,15 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.TaskGenerateEndpoint;
 import com.vaadin.flow.server.frontend.TaskGenerateOpenAPI;
 import com.vaadin.flow.server.frontend.TaskRunNpmInstall;
@@ -74,9 +75,6 @@ import com.vaadin.pro.licensechecker.LicenseChecker;
 import com.vaadin.pro.licensechecker.LicenseException;
 import com.vaadin.pro.licensechecker.MissingLicenseKeyException;
 import com.vaadin.pro.licensechecker.Product;
-
-import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 public class BuildFrontendUtilTest {
 
@@ -176,9 +174,9 @@ public class BuildFrontendUtilTest {
                 .mock(FrontendDependenciesScanner.class);
         Mockito.when(frontendDependencies.getPwaConfiguration())
                 .thenReturn(new PwaConfiguration());
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                     Mockito.any())).thenReturn(true);
             BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
         }
@@ -305,7 +303,7 @@ public class BuildFrontendUtilTest {
         fillAdapter();
 
         BuildFrontendUtil.updateBuildFile(adapter, false, false);
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        File tokenFile = new File(resourceOutput, FrontendUtils.TOKEN_FILE);
         Assert.assertFalse("Token file should not have been created",
                 tokenFile.exists());
     }
@@ -675,7 +673,7 @@ public class BuildFrontendUtilTest {
 
         BuildFrontendUtil.propagateBuildInfo(adapter);
 
-        File tokenFile = new File(resourceOutput, TOKEN_FILE);
+        File tokenFile = new File(resourceOutput, FrontendUtils.TOKEN_FILE);
         Assert.assertTrue("Token file should have been created",
                 tokenFile.exists());
         return tokenFile;
@@ -717,7 +715,7 @@ public class BuildFrontendUtilTest {
         BuildFrontendUtil.runNodeUpdater(adapter, frontendDependencies);
 
         File generatedFeatureFlagsFile = new File(adapter.generatedTsFolder(),
-                FEATURE_FLAGS_FILE_NAME);
+                FrontendUtils.FEATURE_FLAGS_FILE_NAME);
         String featureFlagsJs = Files
                 .readString(generatedFeatureFlagsFile.toPath())
                 .replace("\r\n", "\n");

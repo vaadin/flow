@@ -21,7 +21,7 @@ import java.io.InputStream;
 
 import com.vaadin.flow.internal.StringUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.

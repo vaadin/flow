@@ -27,6 +27,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.Pair;
 
 /**

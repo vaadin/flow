@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-
-import com.vaadin.flow.internal.JacksonUtils;
 
 public class CssBundlerTest {
 
@@ -367,7 +365,7 @@ public class CssBundlerTest {
     public void minifyCss_removesComments() {
         String css = "/* comment */ .class { color: red; }";
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".class{color:red}", result);
+        Assert.assertEquals(".class{color: red}", result);
     }
 
     @Test
@@ -379,7 +377,7 @@ public class CssBundlerTest {
                 """;
         String result = CssBundler.minifyCss(css);
         Assert.assertEquals(
-                ".selector{content:\"/* not a comment,should not remove */\"}",
+                ".selector{content: \"/* not a comment,should not remove */\"}",
                 result);
     }
 
@@ -391,21 +389,21 @@ public class CssBundlerTest {
                 .class { color: red; }
                 """;
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".class{color:red}", result);
+        Assert.assertEquals(".class{color: red}", result);
     }
 
     @Test
     public void minifyCss_collapsesWhitespace() {
         String css = ".class   {   color:   red;   }";
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".class{color:red}", result);
+        Assert.assertEquals(".class{color: red}", result);
     }
 
     @Test
     public void minifyCss_removesTrailingSemicolons() {
         String css = ".class { color: red; }";
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".class{color:red}", result);
+        Assert.assertEquals(".class{color: red}", result);
     }
 
     @Test
@@ -415,7 +413,27 @@ public class CssBundlerTest {
                 .class2 { background: blue; }
                 """;
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".class1{color:red}.class2{background:blue}",
+        Assert.assertEquals(".class1{color: red}.class2{background: blue}",
+                result);
+    }
+
+    @Test
+    public void minifyCss_handlesCalc_noRemovalOfWhitespace() {
+        String css = """
+                span.test::before {
+                    content: "";
+                    height: calc(100% + 6px);
+                    width: calc(10px - 100px);
+                    length: calc(var(--variable-width) + 20px);
+                    size: calc(2em * 5);
+                    border-left: 1px solid red;
+                    border: var(--bs-border-width) solid var(--bs-border-color);
+                }
+                """;
+
+        String result = CssBundler.minifyCss(css);
+        Assert.assertEquals(
+                "span.test::before{content: \"\";height: calc(100% + 6px);width: calc(10px - 100px);length: calc(var(--variable-width) + 20px);size: calc(2em * 5);border-left: 1px solid red;border: var(--bs-border-width) solid var(--bs-border-color)}",
                 result);
     }
 
@@ -423,7 +441,39 @@ public class CssBundlerTest {
     public void minifyCss_preservesSelectorsWithCombinators() {
         String css = ".parent > .child { color: red; }";
         String result = CssBundler.minifyCss(css);
-        Assert.assertEquals(".parent>.child{color:red}", result);
+        Assert.assertEquals(".parent>.child{color: red}", result);
+    }
+
+    @Test
+    public void minifyCss_keyframes() {
+        String content = """
+                @-webkit-keyframes configuratorFlyLeft {
+                	0% {left: 0;}
+                	100% {left: -100%;}
+                 }
+
+                 @-webkit-keyframes configuratorFlyRight {
+                	0% {right: 0;}
+                	100% {right: -100%;}
+                }
+                """;
+        Assert.assertEquals(
+                "@-webkit-keyframes configuratorFlyLeft{0%{left: 0}100%{left: -100%}}@-webkit-keyframes configuratorFlyRight{0%{right: 0}100%{right: -100%}}",
+                CssBundler.minifyCss(content));
+    }
+
+    @Test
+    public void minifyCss_CSSMediaQueriesHandled() {
+        String content = """
+                @media (max-width: 1200px) {
+                    legend {
+                      font-size: calc(1.275rem + 0.3vw);
+                    }
+                }
+                      """;
+        Assert.assertEquals(
+                "@media (max-width: 1200px){legend{font-size: calc(1.275rem + 0.3vw)}}",
+                CssBundler.minifyCss(content));
     }
 
     @Test

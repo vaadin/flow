@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;

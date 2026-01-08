@@ -30,6 +30,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.router.Layout;
@@ -183,8 +184,8 @@ public class TaskGenerateReactFiles
                 writeFile(reactAdapterTsx, reactAdapterContent);
             }
 
-            boolean isHillaUsed = FrontendUtils.isHillaUsed(frontendDirectory,
-                    options.getClassFinder());
+            boolean isHillaUsed = FrontendBuildUtils
+                    .isHillaUsed(frontendDirectory, options.getClassFinder());
             writeFile(frontendGeneratedFolderRoutesTsx,
                     getFileContent(isHillaUsed ? FrontendUtils.ROUTES_TSX
                             : FrontendUtils.ROUTES_FLOW_TSX));

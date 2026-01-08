@@ -21,8 +21,8 @@ import java.io.InputStream;
 
 import com.vaadin.flow.internal.StringUtil;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 
 /**
  * Generate <code>index.html</code> if it is missing in frontend folder.

@@ -26,9 +26,9 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 /**
  * A converter that converts Polymer-based {@code *.js} source files to Lit.

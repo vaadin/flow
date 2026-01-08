@@ -34,6 +34,8 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
@@ -353,7 +355,7 @@ public class TaskUpdatePackages extends NodeUpdater {
         Map<String, String> filteredApplicationDependencies = new ExclusionFilter(
                 finder,
                 options.isReactEnabled()
-                        && FrontendUtils.isReactModuleAvailable(options),
+                        && FrontendBuildUtils.isReactModuleAvailable(options),
                 options.isNpmExcludeWebComponents())
                 .exclude(applicationDependencies);
 
@@ -407,7 +409,7 @@ public class TaskUpdatePackages extends NodeUpdater {
 
         // FIXME do not do cleanup of node_modules every time platform is
         // updated ?
-        doCleanUp = doCleanUp || (!enablePnpm && FrontendUtils
+        doCleanUp = doCleanUp || (!enablePnpm && FrontendBuildUtils
                 .isPlatformVersionUpdated(finder, options.getNpmFolder(),
                         options.getNodeModulesFolder()));
 

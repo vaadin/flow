@@ -38,6 +38,8 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.StringUtil;
@@ -174,8 +176,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options),
+                    options.isReactEnabled() && FrontendBuildUtils
+                            .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
@@ -314,7 +316,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             dependencies
                     .putAll(readDependencies("tailwindcss", "dependencies"));
         }
@@ -388,7 +390,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             defaults.putAll(readDependencies("tailwindcss", "devDependencies"));
         }
 
@@ -639,7 +641,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+        if (FrontendBuildUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(

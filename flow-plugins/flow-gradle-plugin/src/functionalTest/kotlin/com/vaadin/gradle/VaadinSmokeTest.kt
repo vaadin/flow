@@ -25,8 +25,8 @@ import kotlin.test.expect
 import com.vaadin.flow.internal.JacksonUtils
 import com.vaadin.flow.internal.StringUtil
 import com.vaadin.flow.server.InitParameters
-import com.vaadin.flow.server.frontend.FrontendUtils
-import tools.jackson.databind.JsonNode
+import com.vaadin.flow.internal.FrontendUtils
+import tools.jackson.databind.JsonNode  
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.Before
