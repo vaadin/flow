@@ -53,8 +53,42 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
  * @since 2.0
  */
 public class ReflectionsClassFinder implements ClassFinder {
+    /**
+     * System property name to be used to disable default package filtering
+     * during class scan. See {@link #applyScannerPackageFilters(ClassGraph)}
+     * and {@link #DEFAULT_REJECTED_PACKAGES}
+     */
+    public static final String DISABLE_DEFAULT_PACKAGE_FILTER = "vaadin.classfinder.disableDefaultPackageFilter";
+
+    private static final String[] DEFAULT_REJECTED_PACKAGES = new String[] {
+            "antlr", "cglib", "ch.quos.logback", "commons-codec",
+            "commons-fileupload", "commons-io", "commons-logging",
+            "com.fasterxml", "tools.jackson", "com.google", "com.h2database",
+            "com.helger", "com.vaadin.external.atmosphere", "com.vaadin.webjar",
+            "junit", "net.bytebuddy", "org.apache", "org.aspectj",
+            "org.bouncycastle", "org.dom4j", "org.easymock",
+            "org.eclipse.persistence", "org.hamcrest", "org.hibernate",
+            "org.javassist", "org.jboss", "org.jsoup", "org.seleniumhq",
+            "org.slf4j", "org.atmosphere", "org.springframework",
+            "org.webjars.bowergithub", "org.yaml",
+
+            "java.*", "javax.*", "javafx.*", "com.sun.*", "oracle.deploy",
+            "oracle.javafx", "oracle.jrockit", "oracle.jvm", "oracle.net",
+            "oracle.nio", "oracle.tools", "oracle.util", "oracle.webservices",
+            "oracle.xmlns",
+
+            "com.intellij.*", "org.jetbrains",
+
+            "com.vaadin.external.gwt", "javassist.*", "io.methvin",
+            "com.github.javaparser", "oshi.*", "io.micrometer", "jakarta.*",
+            "com.nimbusds", "elemental.util", "org.reflections",
+            "org.aopalliance", "org.objectweb",
+
+            "com.vaadin.hilla", "com.vaadin.copilot" };
+
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ReflectionsClassFinder.class);
+
     private final transient ClassLoader classLoader;
 
     // Cache all discovered classes by annotation
@@ -108,7 +142,7 @@ public class ReflectionsClassFinder implements ClassFinder {
                 .ignoreClassVisibility() // Scan non-public classes
                 .filterClasspathElements(
                         path -> !path.endsWith("module-info.class"));
-
+        applyScannerPackageFilters(classGraph);
         if (VersionFinder.JAVA_MAJOR_VERSION < 24) {
             // Not available on Java 24+ currently, because of the deprecation
             // of the Unsafe API
@@ -295,5 +329,11 @@ public class ReflectionsClassFinder implements ClassFinder {
         }
 
         return cache;
+    }
+
+    private void applyScannerPackageFilters(ClassGraph classGraph) {
+        if (!Boolean.getBoolean(DISABLE_DEFAULT_PACKAGE_FILTER)) {
+            classGraph.rejectPackages(DEFAULT_REJECTED_PACKAGES);
+        }
     }
 }

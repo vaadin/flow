@@ -25,6 +25,7 @@ import java.net.URLClassLoader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -84,6 +85,42 @@ public class ReflectionsClassFinderTest {
 
         Assert.assertEquals(a1, a2);
         Assert.assertEquals(a2, a3);
+    }
+
+    @Test
+    public void getSubTypesOf_rejectNotVaadinKnownPackages() throws Exception {
+        urls = Arrays.copyOf(urls, urls.length + 1);
+        urls[urls.length - 1] = createTestModule("module-4",
+                "org.springframework.feature.ui", "SpringUIComponent", "2.0.0");
+        Set<String> result = new ReflectionsClassFinder(urls)
+                .getSubTypesOf(Component.class).stream().map(Class::getName)
+                .collect(Collectors.toSet());
+        Assert.assertFalse(
+                "Classes from know not-UI packages should be rejected by default",
+                result.contains(
+                        "org.springframework.feature.ui.SpringUIComponent"));
+    }
+
+    @Test
+    public void getSubTypesOf_defaultRejectDisabled_scansAllPackages()
+            throws Exception {
+        urls = Arrays.copyOf(urls, urls.length + 1);
+        urls[urls.length - 1] = createTestModule("module-4",
+                "org.springframework.feature.ui", "SpringUIComponent", "2.0.0");
+        System.setProperty(
+                ReflectionsClassFinder.DISABLE_DEFAULT_PACKAGE_FILTER, "true");
+        try {
+            Set<String> result = new ReflectionsClassFinder(urls)
+                    .getSubTypesOf(Component.class).stream().map(Class::getName)
+                    .collect(Collectors.toSet());
+            Assert.assertTrue(
+                    "Classes from know not-UI packages should be found when default rejection is disabled",
+                    result.contains(
+                            "org.springframework.feature.ui.SpringUIComponent"));
+        } finally {
+            System.clearProperty(
+                    ReflectionsClassFinder.DISABLE_DEFAULT_PACKAGE_FILTER);
+        }
     }
 
     @Test
