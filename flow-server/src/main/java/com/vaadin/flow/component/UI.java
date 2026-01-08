@@ -892,6 +892,17 @@ public class UI extends Component
     }
 
     /**
+     * Gets the wrapper element for this UI when client-side routing is enabled.
+     * This element is used as a container for route components when using
+     * client-side routing.
+     *
+     * @return the wrapper element, or {@code null} if server-side routing is used
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
+    }
+
+    /**
      * Updates this UI to show the view corresponding to the given navigation
      * target.
      * <p>
@@ -1724,7 +1735,7 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
-    public Element wrapperElement;
+    private Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 

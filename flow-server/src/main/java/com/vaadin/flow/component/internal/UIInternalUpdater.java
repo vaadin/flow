@@ -43,7 +43,7 @@ public interface UIInternalUpdater extends Serializable {
      */
     default void updateRoot(UI ui, HasElement oldRoot, HasElement newRoot) {
 
-        Element wrapperElement = ui.wrapperElement;
+        Element wrapperElement = ui.getWrapperElement();
         // server-side routing
         if (wrapperElement == null) {
             Element uiElement = ui.getElement();
