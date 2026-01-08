@@ -31,11 +31,13 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
+import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -116,9 +118,9 @@ public class NodeTasksHillaTest {
         Mockito.doReturn(endpointGeneratorTaskFactory).when(options.getLookup())
                 .lookup(EndpointGeneratorTaskFactory.class);
 
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                     Mockito.any())).thenReturn(true);
 
             new NodeTasks(options).execute();

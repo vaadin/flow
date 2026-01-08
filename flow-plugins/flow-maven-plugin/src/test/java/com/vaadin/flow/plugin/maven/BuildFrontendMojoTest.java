@@ -64,6 +64,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.TestUtils;
@@ -71,7 +72,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.pro.licensechecker.LicenseException;
@@ -84,14 +84,6 @@ import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_IDENTIFIER;
 import static com.vaadin.flow.server.InitParameters.FRONTEND_HOTDEPLOY;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_D_TS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_GENERATED_CONFIG;
 import static java.io.File.pathSeparator;
 
 @NotThreadSafe
@@ -125,18 +117,20 @@ public class BuildFrontendMojoTest {
         projectBase = temporaryFolder.getRoot();
 
         tokenFile = new File(temporaryFolder.getRoot(),
-                VAADIN_SERVLET_RESOURCES + TOKEN_FILE);
+                VAADIN_SERVLET_RESOURCES + FrontendUtils.TOKEN_FILE);
 
         File npmFolder = projectBase;
-        nodeModulesPath = new File(npmFolder, NODE_MODULES);
-        frontendDirectory = new File(npmFolder, DEFAULT_FRONTEND_DIR);
+        nodeModulesPath = new File(npmFolder, FrontendUtils.NODE_MODULES);
+        frontendDirectory = new File(npmFolder,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
         importsFile = FrontendUtils.getFlowGeneratedImports(frontendDirectory);
         jarResourcesFolder = new File(
                 new File(frontendDirectory, FrontendUtils.GENERATED),
                 FrontendUtils.JAR_RESOURCES_FOLDER);
         packageJson = new File(npmFolder, PACKAGE_JSON).getAbsolutePath();
-        viteConfig = new File(npmFolder, VITE_CONFIG).getAbsolutePath();
-        viteGenerated = new File(npmFolder, VITE_GENERATED_CONFIG)
+        viteConfig = new File(npmFolder, FrontendUtils.VITE_CONFIG)
+                .getAbsolutePath();
+        viteGenerated = new File(npmFolder, FrontendUtils.VITE_GENERATED_CONFIG)
                 .getAbsolutePath();
         webpackOutputDirectory = new File(projectBase, VAADIN_WEBAPP_RESOURCES);
         resourceOutputDirectory = new File(projectBase,
@@ -364,10 +358,11 @@ public class BuildFrontendMojoTest {
 
         String generated = "'%s' should have been generated into 'build/frontend'";
 
-        Assert.assertTrue(String.format(generated, IMPORTS_NAME),
-                generatedFiles.contains(IMPORTS_NAME));
-        Assert.assertTrue(String.format(generated, IMPORTS_D_TS_NAME),
-                generatedFiles.contains(IMPORTS_D_TS_NAME));
+        Assert.assertTrue(String.format(generated, FrontendUtils.IMPORTS_NAME),
+                generatedFiles.contains(FrontendUtils.IMPORTS_NAME));
+        Assert.assertTrue(
+                String.format(generated, FrontendUtils.IMPORTS_D_TS_NAME),
+                generatedFiles.contains(FrontendUtils.IMPORTS_D_TS_NAME));
 
         Assert.assertFalse("No 'target' directory should exist after build.",
                 target.exists());
@@ -767,7 +762,7 @@ public class BuildFrontendMojoTest {
 
     private String addFrontendPrefix(String s) {
         if (s.startsWith("./")) {
-            return FRONTEND_FOLDER_ALIAS + s.substring(2);
+            return FrontendUtils.FRONTEND_FOLDER_ALIAS + s.substring(2);
         }
         return s;
     }

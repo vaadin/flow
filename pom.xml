@@ -112,7 +112,7 @@
     <flow.dev.dependencies.file>devDependencies.json</flow.dev.dependencies.file>
 
     <!-- Used in OSGi manifests -->
-    <jsoup.version>1.21.2</jsoup.version>
+    <jsoup.version>1.22.1</jsoup.version>
     <!-- Note that this should be kept in sync with the class Constants -->
     <atmosphere.runtime.version>3.0.5.slf4jvaadin1</atmosphere.runtime.version>
     <atmosphere.client.version>4.0.1</atmosphere.client.version>
@@ -120,7 +120,7 @@
     <!-- OSGi -->
     <!-- Note: the parserVersion value is set by build-helper-maven-plugin -->
     <osgi.bundle.version>${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}</osgi.bundle.version>
-    <bnd.version>7.1.0</bnd.version>
+    <bnd.version>7.2.0</bnd.version>
     <osgi.core.version>7.0.0</osgi.core.version>
     <osgi.compendium.version>7.0.0</osgi.compendium.version>
     <osgi.annotation.version>8.1.0</osgi.annotation.version>
@@ -528,7 +528,7 @@
         <plugin>
           <groupId>org.codehaus.mojo</groupId>
           <artifactId>license-maven-plugin</artifactId>
-          <version>2.7.0</version>
+          <version>2.7.1</version>
           <configuration>
             <!-- Default is system -->
             <excludedScopes>system,test</excludedScopes>

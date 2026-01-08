@@ -216,6 +216,9 @@ internal class GradlePluginAdapter private constructor(
     override fun requireHomeNodeExec(): Boolean =
         config.requireHomeNodeExec.get()
 
+    override fun nodeFolder(): String? =
+        config.nodeFolder.orNull
+
     override fun servletResourceOutputDirectory(): File {
         // when running a task which runs before processResources, we need to
         // generate stuff to build/vaadin-generated.
