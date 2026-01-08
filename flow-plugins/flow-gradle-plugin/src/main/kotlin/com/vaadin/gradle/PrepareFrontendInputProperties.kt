@@ -93,6 +93,10 @@ internal class PrepareFrontendInputProperties(
         config.requireHomeNodeExec
 
     @Input
+    @Optional
+    fun getNodeFolder(): Provider<String> = config.nodeFolder
+
+    @Input
     fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
 
     @InputFile
