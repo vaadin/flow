@@ -25,7 +25,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.By;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.testbench.TestBenchElement;
 
 public class ThemeReloadIT extends ViteDevModeIT {

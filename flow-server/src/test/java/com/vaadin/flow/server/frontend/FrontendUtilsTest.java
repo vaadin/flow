@@ -41,6 +41,8 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.CoreFeatureFlagProvider;
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.Constants;
@@ -699,7 +701,8 @@ public class FrontendUtilsTest {
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
 
-        Optional<String> vaadinVersion = FrontendUtils.getVaadinVersion(finder);
+        Optional<String> vaadinVersion = FrontendBuildUtils
+                .getVaadinVersion(finder);
 
         Assert.assertTrue("versions.json should have had the platform field",
                 vaadinVersion.isPresent());
@@ -712,7 +715,7 @@ public class FrontendUtilsTest {
         //@formatter:on
         FileUtils.write(versionJsonFile, versionJsonString,
                 StandardCharsets.UTF_8);
-        vaadinVersion = FrontendUtils.getVaadinVersion(finder);
+        vaadinVersion = FrontendBuildUtils.getVaadinVersion(finder);
 
         Assert.assertFalse("versions.json should not contain platform version",
                 vaadinVersion.isPresent());
@@ -729,7 +732,8 @@ public class FrontendUtilsTest {
         Mockito.when(finder.getResource(Constants.VAADIN_CORE_VERSIONS_JSON))
                 .thenReturn(null);
 
-        Optional<String> vaadinVersion = FrontendUtils.getVaadinVersion(finder);
+        Optional<String> vaadinVersion = FrontendBuildUtils
+                .getVaadinVersion(finder);
 
         Assert.assertFalse("versions.json should not contain platform version",
                 vaadinVersion.isPresent());
@@ -765,8 +769,8 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
-                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules, npmFolder));
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
+                        npmFolder, nodeModules, npmFolder));
 
         //@formatter:off
         versionJsonString = "{"
@@ -777,8 +781,8 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertTrue("Change in major version should return true",
-                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules, npmFolder));
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
+                        npmFolder, nodeModules, npmFolder));
     }
 
     @Test
@@ -813,8 +817,8 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
-                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules, buildFolder));
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
+                        npmFolder, nodeModules, buildFolder));
 
         //@formatter:off
         versionJsonString = "{"
@@ -825,8 +829,8 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertTrue("Change in major version should return true",
-                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules, buildFolder));
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
+                        npmFolder, nodeModules, buildFolder));
     }
 
     @Test
@@ -872,8 +876,8 @@ public class FrontendUtilsTest {
                 StandardCharsets.UTF_8);
 
         Assert.assertFalse("Change in minor version should return false",
-                FrontendUtils.isPlatformMajorVersionUpdated(finder, npmFolder,
-                        nodeModules, buildFolder));
+                FrontendBuildUtils.isPlatformMajorVersionUpdated(finder,
+                        npmFolder, nodeModules, buildFolder));
     }
 
     @Test
@@ -886,7 +890,7 @@ public class FrontendUtilsTest {
                 .withFeatureFlags(featureFlags);
         Assert.assertTrue(
                 "Expected TailwindCSS to be enabled when feature flag is set in Node tasks options",
-                FrontendUtils.isTailwindCssEnabled(options));
+                FrontendBuildUtils.isTailwindCssEnabled(options));
     }
 
     private File prepareFrontendForRoutesFile(String fileName, String content)

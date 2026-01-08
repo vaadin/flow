@@ -30,13 +30,14 @@ import org.slf4j.Logger;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.THEME_IMPORTS_NAME;
 import static com.vaadin.flow.server.Constants.APPLICATION_THEME_ROOT;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_D_TS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.THEME_IMPORTS_NAME;
 import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_META_INF_RESOURCES;
 import static com.vaadin.flow.server.frontend.TaskUpdateThemeImport.APPLICATION_STATIC_RESOURCES;
 

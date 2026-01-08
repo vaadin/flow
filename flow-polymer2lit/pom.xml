@@ -12,7 +12,7 @@
   <description>${project.name}</description>
 
   <properties>
-    <version.roaster>2.30.3.Final</version.roaster>
+    <version.roaster>2.31.0.Final</version.roaster>
     <flow.apicmp.skip>true</flow.apicmp.skip>
   </properties>
 
@@ -78,7 +78,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>npm-install</id>

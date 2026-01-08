@@ -40,7 +40,9 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -622,12 +624,17 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
-            mock.when(() -> FrontendUtils
-                    .isReactRouterRequired(Mockito.any(File.class)))
+        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
+                .mockStatic(FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
+                .mockStatic(FrontendBuildUtils.class);
+        try {
+            mockFrontendBuildUtils.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
+            mockFrontendUtils
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
                     .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
@@ -653,16 +660,19 @@ public class NodeUpdaterTest {
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
             options.withReact(reactEnabled);
+            mockFrontendUtils.close();
+            mockFrontendBuildUtils.close();
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> mock = Mockito
+                .mockStatic(FrontendBuildUtils.class)) {
+            mock.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
             options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
@@ -832,6 +842,58 @@ public class NodeUpdaterTest {
         Mockito.verifyNoInteractions(log);
     }
 
+    @Test
+    public void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
+        boolean reactEnabled = options.isReactEnabled();
+        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = Mockito
+                .mockStatic(FrontendBuildUtils.class);
+                MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
+                        .mockStatic(FrontendUtils.class);
+
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
+                        .mockStatic(EndpointRequestUtil.class)) {
+
+            // Hilla is available in classpath but not used
+            frontendBuildUtilsMock.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(false);
+            endpointUtilMock.when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+            frontendUtilsMock
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
+                    .thenReturn(true);
+
+            // Create a spy to mock the readDependenciesIfAvailable method
+            NodeUpdater spyNodeUpdater = Mockito.spy(nodeUpdater);
+            Map<String, String> mockGeneratorDeps = Map
+                    .of("@vaadin/hilla-generator-core", "2.0.0");
+            Mockito.doReturn(mockGeneratorDeps).when(spyNodeUpdater)
+                    .readDependenciesIfAvailable(Mockito.anyString(),
+                            Mockito.eq("dependencies"),
+                            Mockito.eq("@vaadin/hilla-generator-"));
+
+            // Test with React enabled
+            options.withReact(true);
+            Map<String, String> defaultDeps = spyNodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    "React generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+
+            // Test with React disabled
+            options.withReact(false);
+            defaultDeps = spyNodeUpdater.getDefaultDependencies();
+            Assert.assertTrue(
+                    "Lit generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+        } finally {
+            options.withReact(reactEnabled);
+        }
+    }
+
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
@@ -852,12 +914,6 @@ public class NodeUpdaterTest {
         return (ObjectNode) JacksonUtils.readTree(
                 """
                 {
-                    "bundles": {
-                        "vaadin": {
-                            "jsVersion": "23.2.0",
-                            "npmName": "@vaadin/bundles"
-                        }
-                    },
                     "core": {
                         "accordion": {
                             "jsVersion": "23.2.0",

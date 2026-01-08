@@ -61,6 +61,7 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinRequest;
@@ -75,10 +76,10 @@ import com.vaadin.flow.theme.Theme;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.TestUtil;
 
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_HTML;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_HOSTS_ALLOWED;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_REMOTE_ADDRESS_HEADER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -311,6 +312,18 @@ public class IndexHtmlRequestHandlerTest {
     public void canHandleRequest_doNotHandle_vaadinStaticResources() {
         assertFalse(indexHtmlRequestHandler.canHandleRequest(
                 createRequestWithDestination("/VAADIN/foo.js", null, null)));
+    }
+
+    @Test
+    public void canHandleRequest_doNotHandle_vaadinReservedFolders() {
+        for (String reservedFolder : HandlerHelper
+                .getPublicInternalFolderPaths()) {
+            assertFalse(reservedFolder
+                    + " was handled even though it should not init index handler",
+                    indexHtmlRequestHandler.canHandleRequest(
+                            createRequestWithDestination(reservedFolder, null,
+                                    null)));
+        }
     }
 
     @Test

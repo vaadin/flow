@@ -38,9 +38,12 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
 import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -173,8 +176,8 @@ public abstract class NodeUpdater implements FallibleCommand {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
                     JacksonUtils.readTree(StringUtil.toUTF8String(content)),
-                    options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options),
+                    options.isReactEnabled() && FrontendBuildUtils
+                            .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
@@ -313,7 +316,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             dependencies
                     .putAll(readDependencies("tailwindcss", "dependencies"));
         }
@@ -363,6 +366,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     Map<String, String> readDependenciesIfAvailable(String id,
+            String packageJsonKey, String contains) {
+        return readDependenciesIfAvailable(id, packageJsonKey).entrySet()
+                .stream().filter(entry -> entry.getKey().contains(contains))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        Map.Entry::getValue));
+    }
+
+    Map<String, String> readDependenciesIfAvailable(String id,
             String packageJsonKey) {
         if (hasPackageJson(id)) {
             return readDependencies(id, packageJsonKey);
@@ -379,7 +390,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
         }
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             defaults.putAll(readDependencies("tailwindcss", "devDependencies"));
         }
 
@@ -630,7 +641,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+        if (FrontendBuildUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
@@ -642,6 +653,20 @@ public abstract class NodeUpdater implements FallibleCommand {
             } else {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/lit", packageJsonKey));
+            }
+        } else if (EndpointRequestUtil.isHillaAvailable()) {
+            // Add dependencies for hilla-generator in case Hilla is available
+            // in the classpath. This ensures that 'generate' Maven/Gradle goal
+            // has required dependencies installed even when Hilla views are not
+            // used.
+            if (options.isReactEnabled()) {
+                dependencies.putAll(
+                        readDependenciesIfAvailable("hilla/components/react",
+                                packageJsonKey, "@vaadin/hilla-generator-"));
+            } else {
+                dependencies.putAll(
+                        readDependenciesIfAvailable("hilla/components/lit",
+                                packageJsonKey, "@vaadin/hilla-generator-"));
             }
         }
     }

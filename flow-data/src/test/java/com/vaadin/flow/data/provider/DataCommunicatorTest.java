@@ -41,6 +41,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -244,6 +245,33 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNull("Expected no communication after reattach", lastSet);
+    }
+
+    @Test
+    public void refreshViewport_updatedRangeSent() {
+        var compositeDataGenerator = new CompositeDataGenerator<Item>();
+        dataCommunicator = new DataCommunicator<>(compositeDataGenerator,
+                arrayUpdater, data -> {
+                }, element.getNode()) {
+        };
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 6);
+
+        var count = new AtomicInteger(0);
+        compositeDataGenerator.addDataGenerator(new DataGenerator<Item>() {
+            @Override
+            public void generateData(Item item, ObjectNode json) {
+                json.put("count", String.valueOf(count.get()));
+            }
+        });
+
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        lastSet = null;
+
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
     }
 
     @Test

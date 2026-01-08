@@ -47,13 +47,13 @@ import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.ProdBundleUtils;
@@ -85,8 +85,6 @@ import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -124,7 +122,8 @@ public class BuildFrontendUtil {
      */
     public static File getTokenFile(PluginAdapterBase adapter) {
 
-        return new File(adapter.servletResourceOutputDirectory(), TOKEN_FILE);
+        return new File(adapter.servletResourceOutputDirectory(),
+                FrontendUtils.TOKEN_FILE);
     }
 
     /**
@@ -228,7 +227,7 @@ public class BuildFrontendUtil {
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
         File token = new File(adapter.servletResourceOutputDirectory(),
-                TOKEN_FILE);
+                FrontendUtils.TOKEN_FILE);
         ObjectNode buildInfo = JacksonUtils.createObjectNode();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
@@ -482,7 +481,7 @@ public class BuildFrontendUtil {
                 .startsWith(adapter.frontendDirectory().toPath())) {
             // Possibly move frontend folder.
             File frontendDirectory = getFrontendDirectory(adapter);
-            return new File(frontendDirectory, GENERATED);
+            return new File(frontendDirectory, FrontendUtils.GENERATED);
         }
         // Return given generated folder
         return adapter.generatedTsFolder();

@@ -28,15 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_HTML;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.WEB_COMPONENT_HTML;
 
 /**
  * Handles communication with a Vite server.
@@ -51,8 +48,9 @@ public final class ViteHandler extends AbstractDevServerRunner {
      * Files that are loaded from the root path but Vite places them in the
      * VAADIN folder.
      */
-    private static final String[] FILES_IN_ROOT = new String[] { INDEX_HTML,
-            WEB_COMPONENT_HTML, SERVICE_WORKER_SRC_JS };
+    private static final String[] FILES_IN_ROOT = new String[] {
+            FrontendUtils.INDEX_HTML, FrontendUtils.WEB_COMPONENT_HTML,
+            FrontendUtils.SERVICE_WORKER_SRC_JS };
     private static final Pattern SERVER_RESTARTED_PATTERN = Pattern
             .compile("\\[vite] server restart(ed| failed)");
     private static final Pattern SERVER_RESTARTING_PATTERN = Pattern

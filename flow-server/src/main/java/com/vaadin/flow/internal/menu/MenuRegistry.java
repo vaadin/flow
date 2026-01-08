@@ -57,7 +57,7 @@ import com.vaadin.flow.server.frontend.DevBundleUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 import com.vaadin.flow.server.menu.RouteParamType;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
 
 /**
  * Registry for getting the menu items available for the current state of the

@@ -62,15 +62,16 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -81,10 +82,12 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -220,7 +223,7 @@ public class DevModeInitializer implements Serializable {
         Options options = new Options(lookup, baseDir)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
-                        new File(frontendFolder + GENERATED))
+                        new File(frontendFolder + FrontendUtils.GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -270,7 +273,8 @@ public class DevModeInitializer implements Serializable {
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(frontendFolder.getPath(), GENERATED).toString());
+                Paths.get(frontendFolder.getPath(), FrontendUtils.GENERATED)
+                        .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
@@ -303,7 +307,12 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendExtraFileExtensions(
                         getFrontendExtraFileExtensions(config))
                 .withReact(reactEnable)
-                .withNpmExcludeWebComponents(npmExcludeWebComponents);
+                .withNpmExcludeWebComponents(npmExcludeWebComponents)
+                .withNodeVersion(config.getStringProperty(NODE_VERSION,
+                        DEFAULT_NODE_VERSION))
+                .withNodeDownloadRoot(
+                        URI.create(config.getStringProperty(NODE_DOWNLOAD_ROOT,
+                                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
 
         // Do not execute inside runnable thread as static mocking doesn't work.
         NodeTasks tasks = new NodeTasks(options);

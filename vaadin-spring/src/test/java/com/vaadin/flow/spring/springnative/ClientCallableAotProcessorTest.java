@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.aot.generate.GenerationContext;
 import org.springframework.aot.hint.RuntimeHints;
+import org.springframework.aot.hint.TypeReference;
 import org.springframework.aot.hint.predicate.RuntimeHintsPredicates;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationAotContribution;
 import org.springframework.beans.factory.aot.BeanFactoryInitializationCode;
@@ -66,6 +67,24 @@ class ClientCallableAotProcessorTest {
                 .rejects(hints);
         assertThat(RuntimeHintsPredicates.reflection().onType(int.class))
                 .as("Primitive should not be registered").rejects(hints);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "getSimpleData"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "processData"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                TestComponent.class, "processDataWithPrimitive"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "getNestedList"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "handleVoid"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                TestComponent.class, "handleGenericDefinition")).accepts(hints);
     }
 
     @Test
@@ -91,6 +110,27 @@ class ClientCallableAotProcessorTest {
                 .rejects(hints);
         assertThat(RuntimeHintsPredicates.reflection().onType(int.class))
                 .as("Primitive should not be registered").rejects(hints);
+
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "getSimpleData"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "processData"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                TestComponent.class, "processDataWithPrimitive"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "getNestedList"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(TestComponent.class, "handleVoid"))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection().onMethodInvocation(
+                TestComponent.class, "handleGenericDefinition")).accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(ExtendedComponent.class, "getExtendedData"))
+                .accepts(hints);
     }
 
     @Test
@@ -129,6 +169,17 @@ class ClientCallableAotProcessorTest {
                 InterfaceBasedComponent.class);
 
         assertThat(RuntimeHintsPredicates.reflection().onType(ComplexDto.class))
+                .accepts(hints);
+    }
+
+    @Test
+    void processAheadOfTime_clientCallableOnAbstractSuperClass_typesDetected() {
+        RuntimeHints hints = processAotForComponents(SubComponent.class);
+
+        assertThat(RuntimeHintsPredicates.reflection().onType(SimpleDto.class))
+                .accepts(hints);
+        assertThat(RuntimeHintsPredicates.reflection()
+                .onMethodInvocation(AbstractComponent.class, "getExtendedData"))
                 .accepts(hints);
     }
 
@@ -202,7 +253,11 @@ class ClientCallableAotProcessorTest {
                 PrimitiveParameterComponent.class);
 
         assertThat(hints.reflection().typeHints())
-                .as("Should not register types from primitive types").isEmpty();
+                .as("Should not register types from primitive types")
+                .filteredOn(hint -> !TypeReference
+                        .of(PrimitiveParameterComponent.class)
+                        .equals(hint.getType()))
+                .isEmpty();
     }
 
     @Test
@@ -224,6 +279,8 @@ class ClientCallableAotProcessorTest {
 
         assertThat(hints.reflection().typeHints())
                 .as("Should not register hints from void return type")
+                .filteredOn(hint -> !TypeReference.of(VoidMethodComponent.class)
+                        .equals(hint.getType()))
                 .isEmpty();
     }
 
@@ -442,6 +499,17 @@ class ClientCallableAotProcessorTest {
         public List<NestedDto> getExtendedData() {
             return null;
         }
+    }
+
+    // Extended component for multi-level inheritance testing
+    public static abstract class AbstractComponent extends Component {
+        @ClientCallable
+        private List<SimpleDto> getExtendedData() {
+            return null;
+        }
+    }
+
+    public static class SubComponent extends AbstractComponent {
     }
 
     // Test DTOs
