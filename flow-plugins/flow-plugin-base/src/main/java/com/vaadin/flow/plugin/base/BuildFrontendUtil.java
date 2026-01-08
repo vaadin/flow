@@ -266,7 +266,9 @@ public class BuildFrontendUtil {
                 adapter.bunEnable());
         buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
-        buildInfo.put(InitParameters.NODE_FOLDER, adapter.nodeFolder());
+        if (adapter.nodeFolder() != null) {
+            buildInfo.put(InitParameters.NODE_FOLDER, adapter.nodeFolder());
+        }
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
 
