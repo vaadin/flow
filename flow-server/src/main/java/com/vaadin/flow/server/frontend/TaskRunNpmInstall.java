@@ -228,6 +228,7 @@ public class TaskRunNpmInstall implements FallibleCommand {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
