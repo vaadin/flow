@@ -29,6 +29,18 @@
       <groupId>dev.blanke.webpush.jwt</groupId>
       <artifactId>webpush-jwt-jose4j</artifactId>
       <version>6.1.3</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.bitbucket.b_c</groupId>
+          <artifactId>jose4j</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <!--https://github.com/advisories/GHSA-3677-xxcr-wjqv-->
+    <dependency>
+      <groupId>org.bitbucket.b_c</groupId>
+      <artifactId>jose4j</artifactId>
+      <version>0.9.6</version>
     </dependency>
 
     <!-- DefaultApplicationConfigurationFactory is declared as an OSGi
