@@ -5,7 +5,7 @@
     "@polymer/polymer": "3.5.2",
     "@vaadin/common-frontend": "0.0.19",
     "construct-style-sheets-polyfill": "3.1.0",
-    "lit": "3.3.1"
+    "lit": "3.3.2"
   },
   "devDependencies": {
     "glob": "12.0.0",
