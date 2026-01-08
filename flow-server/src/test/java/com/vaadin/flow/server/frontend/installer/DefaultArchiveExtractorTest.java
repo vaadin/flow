@@ -108,4 +108,29 @@ public class DefaultArchiveExtractorTest {
         new DefaultArchiveExtractor().extract(archiveFile, targetDir);
 
     }
+
+    @Test
+    public void zipArchive_containsBadZipFilePath()
+            throws IOException, ArchiveExtractionException {
+        File archiveFile = new File(baseDir, "archive.zip");
+        archiveFile.createNewFile();
+        Path tempArchive = archiveFile.toPath();
+
+        try (ZipOutputStream zipOutputStream = new ZipOutputStream(
+                Files.newOutputStream(tempArchive))) {
+            zipOutputStream.putNextEntry(new ZipEntry("../" + ROOT_FILE));
+            zipOutputStream.closeEntry();
+            zipOutputStream.putNextEntry(new ZipEntry(SUBFOLDER_FILE));
+            zipOutputStream.closeEntry();
+        }
+
+        ArchiveExtractionException archiveExtractionException = Assert
+                .assertThrows(ArchiveExtractionException.class,
+                        () -> new DefaultArchiveExtractor().extract(archiveFile,
+                                targetDir));
+
+        Assert.assertEquals("Entry is outside of the target dir: ../root.file",
+                archiveExtractionException.getCause().getMessage());
+    }
+
 }
