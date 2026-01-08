@@ -158,6 +158,17 @@ public class BuildDevBundleMojo extends AbstractMojo
     private boolean requireHomeNodeExec;
 
     /**
+     * Custom folder containing a pre-installed node executable. When specified,
+     * Vaadin will use the node installation from this folder exclusively with
+     * no fallback. If the specified folder does not contain a valid node
+     * binary, the build will fail with no fallback.
+     * <p>
+     * Example: {@code /usr/local/custom-node} or {@code C:\custom\node}
+     */
+    @Parameter(property = InitParameters.NODE_FOLDER)
+    private String nodeFolder;
+
+    /**
      * Build directory for the project.
      */
     @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
@@ -451,6 +462,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean requireHomeNodeExec() {
         return requireHomeNodeExec;
+    }
+
+    @Override
+    public String nodeFolder() {
+        return nodeFolder;
     }
 
     @Override
