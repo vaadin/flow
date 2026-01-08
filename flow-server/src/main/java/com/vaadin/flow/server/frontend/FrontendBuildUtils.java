@@ -285,8 +285,23 @@ public class FrontendBuildUtils {
      */
     public static boolean isHillaUsed(File frontendDirectory,
             ClassFinder classFinder) {
-        return EndpointRequestUtil.isHillaAvailable(classFinder)
+        return isHillaAvailable(classFinder)
                 && FrontendUtils.isHillaViewsUsed(frontendDirectory);
     }
 
+    /**
+     * Checks if Hilla is available using the given class finder.
+     *
+     * @param classFinder
+     *            class finder to check the presence of Hilla endpoint class
+     * @return true if Hilla is available, false otherwise
+     */
+    static boolean isHillaAvailable(ClassFinder classFinder) {
+        try {
+            classFinder.loadClass(EndpointRequestUtil.HILLA_ENDPOINT_CLASS);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
 }
