@@ -51,7 +51,8 @@ public class WebPushView extends Div {
     private WebPushSubscription subscription;
 
     public WebPushView() {
-        webPush = new WebPush(PUBLIC_KEY, PRIVATE_KEY, "test");
+        webPush = new WebPush(PUBLIC_KEY, PRIVATE_KEY,
+                "mailto:test@noresponse.com");
 
         check = new NativeButton("Check",
                 event -> webPush.subscriptionExists(

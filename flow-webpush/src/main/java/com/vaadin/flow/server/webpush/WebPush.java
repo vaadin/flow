@@ -19,13 +19,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.http.HttpResponse;
-import java.security.GeneralSecurityException;
-import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import com.interaso.webpush.VapidKeys;
+import com.interaso.webpush.WebPush.SubscriptionState;
+import com.interaso.webpush.WebPushService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
@@ -51,7 +49,7 @@ import com.vaadin.flow.internal.StringUtil;
  */
 public class WebPush {
 
-    private PushService pushService;
+    private WebPushService pushService;
 
     private String publicKey;
 
@@ -68,22 +66,32 @@ public class WebPush {
      * @param privateKey
      *            web push private key
      * @param subject
-     *            Subject used in the JWT payload (for VAPID).
+     *            The subject identifying the push notification sender. It must
+     *            start with "mailto:" or "https://".
      */
     public WebPush(String publicKey, String privateKey, String subject) {
         this.publicKey = publicKey;
 
-        Security.addProvider(new BouncyCastleProvider());
+        VapidKeys vapidKeys;
+
         try {
-            // Initialize push service with the public key, private key and
-            // subject
-            pushService = PushService.builder().withVapidPublicKey(publicKey)
-                    .withVapidPrivateKey(privateKey).withVapidSubject(subject)
-                    .build();
-        } catch (GeneralSecurityException e) {
-            throw new WebPushException(
-                    "Security exception initializing web push PushService", e);
+            // Expect Base64 encoded strings in X509 and PKCS8 formats
+            vapidKeys = VapidKeys.create(publicKey, privateKey);
+        } catch (Exception e) {
+            if (e.getClass().equals(InvalidKeySpecException.class)) {
+                // Create from Base64 encoded strings of uncompressed bytes as
+                // generated for webpush-java library
+                vapidKeys = VapidKeys.fromUncompressedBytes(publicKey,
+                        privateKey);
+            } else {
+                throw e;
+            }
+
         }
+
+        // Initialize push service with the public key, private key and
+        // subject
+        pushService = new WebPushService(subject, vapidKeys);
     }
 
     /**
@@ -100,36 +108,23 @@ public class WebPush {
      */
     public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {
-        int statusCode = -1;
+        SubscriptionState status = null;
         HttpResponse<String> response = null;
         try {
-            Subscription.Keys keys = null;
-            if (subscription.keys() != null) {
-                keys = new Subscription.Keys(subscription.keys().p256dh(),
-                        subscription.keys().auth());
-            }
-            Subscription nativeSubscription = new Subscription(
-                    subscription.endpoint(), keys);
-            Notification notification = Notification.builder()
-                    .subscription(nativeSubscription).payload(message.toJson())
-                    .build();
-            response = pushService.send(notification,
-                    PushService.DEFAULT_ENCODING,
-                    HttpResponse.BodyHandlers.ofString());
-            statusCode = response.statusCode();
+            status = pushService.send(message.toJson(), subscription.endpoint(),
+                    subscription.keys().p256dh(), subscription.keys().auth(),
+                    null, null, null);
         } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
             throw new WebPushException(
                     "Sending of web push notification failed", e);
         }
-        if (statusCode != 201) {
+        if (!SubscriptionState.ACTIVE.equals(status)) {
             getLogger().error(
-                    "Failed to send web push notification, received status code:"
-                            + statusCode);
+                    "Failed to send web push notification, received status code: 404 or 410");
             getLogger().error(String.join("\n", response.body()));
             throw new WebPushException(
-                    "Sending of web push notification failed with status code "
-                            + statusCode);
+                    "Sending of web push notification failed with status code 404 or 410");
         }
     }
 
