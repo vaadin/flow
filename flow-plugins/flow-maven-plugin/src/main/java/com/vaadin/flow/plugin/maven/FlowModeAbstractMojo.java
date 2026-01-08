@@ -197,6 +197,17 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     private boolean requireHomeNodeExec;
 
     /**
+     * The folder containing the Node.js executable to use.
+     * <p>
+     * When specified, Node.js will be exclusively used from this folder. If the
+     * binary is not found, the build will fail with no fallback.
+     * <p>
+     * Example: {@code /usr/local/custom-node} or {@code C:\custom\node}
+     */
+    @Parameter(property = InitParameters.NODE_FOLDER)
+    private String nodeFolder;
+
+    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file.
      */
@@ -623,6 +634,11 @@ public abstract class FlowModeAbstractMojo extends AbstractMojo
     public boolean requireHomeNodeExec() {
 
         return requireHomeNodeExec;
+    }
+
+    @Override
+    public String nodeFolder() {
+        return nodeFolder;
     }
 
     @Override
