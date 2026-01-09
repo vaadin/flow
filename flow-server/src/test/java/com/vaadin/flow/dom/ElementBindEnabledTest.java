@@ -222,6 +222,20 @@ public class ElementBindEnabledTest {
     }
 
     @Test
+    public void bindVisible_withNullBinding_allowsSetEnabled() {
+        Element element = new Element("foo");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.bindEnabled(signal);
+        assertTrue(element.isEnabled());
+
+        element.bindEnabled(null); // remove binding
+
+        element.setEnabled(false);
+        assertFalse(element.isEnabled());
+    }
+
+    @Test
     public void bindEnabled_lazyInitSignalBindingFeature() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
