@@ -35,7 +35,6 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
@@ -268,12 +267,12 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendHotdeploy(true).withProductionMode(false)
                 .withBuildResultFolders(npmFolder, npmFolder);
-        try (MockedStatic<BundleUtils> bundleUtils = Mockito
-                .mockStatic(BundleUtils.class);
+        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = Mockito
+                .mockStatic(BundleBuildUtils.class);
                 MockedStatic<BundleValidationUtil> validationUtil = Mockito
                         .mockStatic(BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
-            bundleUtils.verify(
+            bundleBuildUtils.verify(
                     () -> BundleBuildUtils.copyPackageLockFromBundle(options),
                     Mockito.times(1));
             validationUtil.verify(() -> BundleValidationUtil.needsBuild(
