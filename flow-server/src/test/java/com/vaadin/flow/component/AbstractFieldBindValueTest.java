@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.ErrorEvent;
@@ -40,7 +39,6 @@ import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
