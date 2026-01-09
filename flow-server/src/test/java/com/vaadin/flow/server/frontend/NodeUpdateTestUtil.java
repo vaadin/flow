@@ -29,7 +29,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {

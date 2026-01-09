@@ -30,9 +30,9 @@ import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.polymer2lit.FrontendConverter;
 import com.vaadin.flow.polymer2lit.ServerConverter;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 public class ConvertPolymerCommandTest {
     @Rule

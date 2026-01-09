@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.shared.util.SharedUtil;
@@ -137,6 +138,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
@@ -254,7 +256,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         File devBundleFolder = getDevBundleFolderInTarget();
         assert devBundleFolder.exists() : "No dev-bundle folder created";
 
-        Optional<String> vaadinVersion = FrontendUtils
+        Optional<String> vaadinVersion = FrontendBuildUtils
                 .getVaadinVersion(options.getClassFinder());
         if (vaadinVersion.isPresent()) {
             ObjectNode vaadinObject = JacksonUtils.createObjectNode();

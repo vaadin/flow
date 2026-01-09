@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 
 /**
@@ -156,7 +157,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateFileSystemRouterVitePlugin(String template) {
-        if (options.isReactEnabled() && FrontendUtils.isHillaUsed(
+        if (options.isReactEnabled() && FrontendBuildUtils.isHillaUsed(
                 options.getFrontendDirectory(), options.getClassFinder())) {
             return template
                     .replace("//#vitePluginFileSystemRouterImport#",
@@ -170,7 +171,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private String updateTailwindCssVitePlugin(String template) {
-        if (FrontendUtils.isTailwindCssEnabled(options)) {
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
             return template
                     .replace("//#tailwindcssVitePluginImport#",
                             "import tailwindcss from '@tailwindcss/vite';")

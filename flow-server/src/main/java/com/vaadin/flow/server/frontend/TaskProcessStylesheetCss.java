@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.dependency.StyleSheet;
+import com.vaadin.flow.internal.CssBundler;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**

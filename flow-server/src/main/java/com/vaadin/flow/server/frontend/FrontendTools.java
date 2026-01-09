@@ -33,10 +33,12 @@ import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
+import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Pair;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
@@ -171,6 +173,7 @@ public class FrontendTools {
     private final boolean ignoreVersionChecks;
     private final boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
+    private final String nodeFolder;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -195,6 +198,7 @@ public class FrontendTools {
         this.ignoreVersionChecks = settings.isIgnoreVersionChecks();
         this.forceAlternativeNode = settings.isForceAlternativeNode();
         this.useGlobalPnpm = settings.isUseGlobalPnpm();
+        this.nodeFolder = settings.getNodeFolder();
     }
 
     /**
@@ -252,13 +256,13 @@ public class FrontendTools {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
                 "true".equalsIgnoreCase(System.getProperty(
                         FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
-                forceAlternativeNode, useGlobalPnpm);
+                forceAlternativeNode, useGlobalPnpm, null);
     }
 
     FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
             boolean ignoreVersionChecks, boolean forceAlternativeNode,
-            boolean useGlobalPnpm) {
+            boolean useGlobalPnpm, String nodeFolder) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
@@ -266,6 +270,7 @@ public class FrontendTools {
         this.ignoreVersionChecks = ignoreVersionChecks;
         this.forceAlternativeNode = forceAlternativeNode;
         this.useGlobalPnpm = useGlobalPnpm;
+        this.nodeFolder = nodeFolder;
     }
 
     private static FrontendToolsSettings createSettings(
@@ -275,6 +280,8 @@ public class FrontendTools {
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+        String nodeFolder = applicationConfiguration
+                .getStringProperty(InitParameters.NODE_FOLDER, null);
         final String nodeVersion = applicationConfiguration.getStringProperty(
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
@@ -286,6 +293,7 @@ public class FrontendTools {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setForceAlternativeNode(useHomeNodeExec);
         settings.setUseGlobalPnpm(useGlobalPnpm);
+        settings.setNodeFolder(nodeFolder);
         settings.setNodeVersion(nodeVersion);
         settings.setNodeDownloadRoot(URI.create(nodeDownloadRoot));
         settings.setIgnoreVersionChecks(false);
@@ -328,7 +336,7 @@ public class FrontendTools {
 
             NodeResolver resolver = new NodeResolver(getAlternativeDir(),
                     nodeVersion, nodeDownloadRoot, forceAlternativeNode,
-                    getProxies());
+                    getProxies(), nodeFolder);
             activeNodeInstallation = resolver.resolve();
             return activeNodeInstallation;
         }

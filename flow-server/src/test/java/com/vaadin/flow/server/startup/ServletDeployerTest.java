@@ -47,9 +47,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;

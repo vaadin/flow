@@ -33,6 +33,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
@@ -149,9 +150,9 @@ public class TaskUpdateViteTest {
     public void generatedTemplate_reactAndHillaUsed_correctFileRouterImport()
             throws IOException {
         TaskUpdateVite task = new TaskUpdateVite(options.withReact(true), null);
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+        try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                     Mockito.any())).thenReturn(true);
             task.execute();
         }

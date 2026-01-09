@@ -21,6 +21,7 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.installer.Platform;
@@ -45,6 +46,7 @@ public class FrontendToolsSettings implements Serializable {
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;
     private boolean useGlobalPnpm = Constants.GLOBAL_PNPM_DEFAULT;
+    private String nodeFolder = null;
 
     /**
      * Create a tools configuration object.
@@ -152,6 +154,19 @@ public class FrontendToolsSettings implements Serializable {
     }
 
     /**
+     * Set the folder containing the Node.js executable.
+     * <p>
+     * When set to a non-null/non-empty value, Node.js will be exclusively used
+     * from this folder. If not found, an exception is thrown with no fallback.
+     *
+     * @param nodeFolder
+     *            the folder path, or null to use default resolution
+     */
+    public void setNodeFolder(String nodeFolder) {
+        this.nodeFolder = nodeFolder;
+    }
+
+    /**
      * Force usage of global pnpm.
      *
      * @param useGlobalPnpm
@@ -214,6 +229,15 @@ public class FrontendToolsSettings implements Serializable {
      */
     public boolean isForceAlternativeNode() {
         return forceAlternativeNode;
+    }
+
+    /**
+     * Get the configured node folder.
+     *
+     * @return the node folder path, or null if not configured
+     */
+    public String getNodeFolder() {
+        return nodeFolder;
     }
 
     /**
