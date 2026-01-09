@@ -39,9 +39,9 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * A component that reacts on class changes to update route registries.
  * <p>
- * This class is meant to be used in combination with Flow
- * {@link Hotswapper} to immediately update routes
- * registries when classes have been added or modified.
+ * This class is meant to be used in combination with Flow {@link Hotswapper} to
+ * immediately update routes registries when classes have been added or
+ * modified.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
