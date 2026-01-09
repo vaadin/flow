@@ -15,103 +15,17 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.LinkedList;
-
-import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 
-import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
 import com.vaadin.signals.WritableSignal;
-import com.vaadin.tests.util.MockUI;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
-
-public class AbstractCompositeFieldBindValueTest {
-
-    private static MockVaadinServletService service;
-
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
-    private MockUI ui;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeClass
-    public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
-    }
-
-    @AfterClass
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @Before
-    public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @After
-    public void after() {
-        assertTrue(events.isEmpty());
-        close(featureFlagStaticMock);
-        events = null;
-        ui = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        // UI is set to field to avoid too eager GC due to WeakReference in
-        // CurrentInstance.
-        ui = new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
-    }
+public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 
     private static class MultipleFieldsField extends
             AbstractCompositeField<TestDiv, MultipleFieldsField, String> {
