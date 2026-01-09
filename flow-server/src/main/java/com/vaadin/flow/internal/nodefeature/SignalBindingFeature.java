@@ -22,6 +22,7 @@ import java.util.Map;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -31,6 +32,7 @@ import com.vaadin.signals.Signal;
 public class SignalBindingFeature extends ServerSideFeature {
 
     public static final String ENABLED = "enabled";
+    public static final String VALUE = "value";
 
     private Map<String, SignalBinding> values;
 
@@ -97,9 +99,37 @@ public class SignalBindingFeature extends ServerSideFeature {
         values.remove(key);
     }
 
+    /**
+     * Updates the value of the writable signal bound to the given key.
+     * 
+     * @param key
+     *            the key
+     * @param value
+     *            the new value
+     * @param <T>
+     *            the type of the value
+     */
+    public <T> void updateWritableSignalValue(String key, T value) {
+        if (hasBinding(SignalBindingFeature.VALUE)) {
+            Signal<T> signal = getSignal(key);
+            if (signal instanceof WritableSignal<T> writableSignal) {
+                writableSignal.value(value);
+            }
+        }
+    }
+
+    private <T> Signal<T> getSignal(String key) {
+        if (values == null) {
+            return null;
+        }
+        SignalBinding binding = values.get(key);
+        return binding != null ? (Signal<T>) values.get(key).signal : null;
+    }
+
     private void ensureValues() {
         if (values == null) {
             values = new HashMap<>();
         }
     }
+
 }
