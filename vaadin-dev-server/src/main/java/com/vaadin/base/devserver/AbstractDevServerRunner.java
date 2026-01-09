@@ -46,6 +46,7 @@ import com.vaadin.base.devserver.DevServerOutputTracker.Result;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.NetworkUtil;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.router.internal.RouteUtil;
@@ -59,7 +60,6 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**

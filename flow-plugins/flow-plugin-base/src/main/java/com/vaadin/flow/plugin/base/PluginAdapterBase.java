@@ -259,6 +259,16 @@ public interface PluginAdapterBase {
     boolean requireHomeNodeExec();
 
     /**
+     * The folder containing the Node.js executable.
+     * <p>
+     * When returned value is non-null and non-empty, Node.js will be
+     * exclusively used from this folder. If not found, build will fail.
+     *
+     * @return the node folder path, or null to use default resolution
+     */
+    String nodeFolder();
+
+    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file.
      *

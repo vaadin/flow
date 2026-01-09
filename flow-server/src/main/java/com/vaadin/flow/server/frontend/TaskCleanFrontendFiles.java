@@ -26,6 +26,7 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 
 /**
@@ -71,7 +72,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
         // If we have an existing package.json or run Hilla, do not remove
         // node_modules
-        boolean hillaUsed = FrontendUtils.isHillaUsed(
+        boolean hillaUsed = FrontendBuildUtils.isHillaUsed(
                 options.getFrontendDirectory(), options.getClassFinder());
 
         if (existingFiles.contains(

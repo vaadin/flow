@@ -60,6 +60,8 @@ public abstract class ClassesSerializableTest extends ClassFinder {
     @SuppressWarnings("WeakerAccess")
     protected Stream<String> getExcludedPatterns() {
         return Stream.of(
+                // Shaded third-party libraries
+                "com\\.vaadin\\.frontendtools\\.internal\\..*",
                 "com\\.vaadin\\.frontendtools\\.installer\\.DefaultArchiveExtractor",
                 "com\\.vaadin\\.frontendtools\\.installer\\.ArchiveExtractor",
                 "com\\.vaadin\\.flow\\.data\\.validator\\.BeanValidator\\$LazyFactoryInitializer",
@@ -240,7 +242,7 @@ public abstract class ClassesSerializableTest extends ClassFinder {
                 // Frontend tasks classes which are not stored anywhere but used
                 // only once
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.scanner\\..*",
-                "com\\.vaadin\\.flow\\.server\\.frontend\\.CssBundler",
+                "com\\.vaadin\\.flow\\.internal\\.CssBundler",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.FrontendTools",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.JarContentsManager",
                 "com\\.vaadin\\.flow\\.server\\.frontend\\.VersionsJsonConverter",

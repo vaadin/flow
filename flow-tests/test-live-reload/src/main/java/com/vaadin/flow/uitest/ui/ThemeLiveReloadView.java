@@ -20,9 +20,9 @@ import java.nio.file.Paths;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 

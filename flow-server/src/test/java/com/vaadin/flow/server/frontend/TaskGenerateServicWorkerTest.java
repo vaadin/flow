@@ -30,8 +30,8 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 
 public class TaskGenerateServicWorkerTest {
     @Rule

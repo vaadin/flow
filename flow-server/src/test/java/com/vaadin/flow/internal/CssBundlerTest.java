@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend;
+package com.vaadin.flow.internal;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,8 +26,6 @@ import org.junit.Before;
 import org.junit.Test;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
-
-import com.vaadin.flow.internal.JacksonUtils;
 
 public class CssBundlerTest {
 

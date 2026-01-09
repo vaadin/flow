@@ -19,6 +19,8 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 
 import static com.vaadin.flow.server.frontend.NodeUpdater.VAADIN_DEP_KEY;

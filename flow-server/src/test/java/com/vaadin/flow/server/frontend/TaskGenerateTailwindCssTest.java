@@ -28,7 +28,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.TAILWIND_CSS;
+import static com.vaadin.flow.internal.FrontendUtils.TAILWIND_CSS;
 
 public class TaskGenerateTailwindCssTest {
 

@@ -46,11 +46,11 @@ import com.vaadin.flow.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
@@ -116,11 +116,12 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
             UI ui = uiInitEvent.getUI();
             VaadinSession session = ui.getSession();
             ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
-                    .get(vaadinService);
+                    .get(session.getService());
             ui.addAfterNavigationListener(navigationEvent -> {
                 UI newUi = navigationEvent.getLocationChangeEvent().getUI();
                 Set<String> allUrls = new LinkedHashSet<>();
-                lookupUrlsForComponents(newUi, allUrls, vaadinService);
+                lookupUrlsForComponents(newUi, allUrls,
+                        newUi.getSession().getService());
                 allUrls.forEach(tracker::trackAddForComponent);
             });
         });
@@ -598,8 +599,8 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         return contextPath;
     }
 
-    private void lookupUrlsForComponents(Component root, Set<String> allUrls,
-            VaadinService vaadinService) {
+    private static void lookupUrlsForComponents(Component root,
+            Set<String> allUrls, VaadinService vaadinService) {
         root.getChildren().forEach(child -> {
             if (child.getClass().isAnnotationPresent(StyleSheet.class)) {
                 ComponentUtil.getDependencies(vaadinService, child.getClass())

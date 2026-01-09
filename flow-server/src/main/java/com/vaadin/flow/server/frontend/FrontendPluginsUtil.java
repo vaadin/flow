@@ -26,6 +26,7 @@ import java.util.List;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**

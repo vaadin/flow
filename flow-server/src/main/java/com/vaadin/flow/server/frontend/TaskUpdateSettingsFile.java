@@ -26,13 +26,14 @@ import org.slf4j.LoggerFactory;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.PwaConfiguration;
 
 import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC;
+import static com.vaadin.flow.internal.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC;
-import static com.vaadin.flow.server.frontend.FrontendUtils.SERVICE_WORKER_SRC_JS;
 import static com.vaadin.flow.shared.ApplicationConstants.VAADIN_STATIC_FILES_PATH;
 
 /**

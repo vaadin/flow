@@ -24,7 +24,7 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.server.frontend.FrontendVersion;
+import com.vaadin.flow.internal.FrontendVersion;
 
 import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 
