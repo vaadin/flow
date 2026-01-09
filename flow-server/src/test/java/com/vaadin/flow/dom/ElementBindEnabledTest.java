@@ -222,7 +222,7 @@ public class ElementBindEnabledTest {
     }
 
     @Test
-    public void bindVisible_withNullBinding_allowsSetEnabled() {
+    public void bindEnabled_withNullBinding_allowsSetEnabled() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
         ValueSignal<Boolean> signal = new ValueSignal<>(true);
