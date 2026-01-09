@@ -20,6 +20,9 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+
+import com.vaadin.flow.internal.UrlUtil;
 
 /**
  * Utility class which contains various methods for parsing a route url into
@@ -49,6 +52,39 @@ public class PathUtil implements Serializable {
 
         } else {
             return Collections.unmodifiableList(Arrays.asList(segments));
+        }
+    }
+
+    /**
+     * Returns an unmodifiable list containing the URL-decoded segments of the
+     * specified path. Each segment is decoded using
+     * {@link UrlUtil#decodeURIComponent(String)}, which properly handles
+     * percent-encoded characters including slashes (%2F), spaces (%20), and
+     * other special characters.
+     * <p>
+     * This method is designed for processing paths where individual segments
+     * may contain URL-encoded data that should be preserved after decoding.
+     * For example, a path segment containing {@code %2F} will be decoded to
+     * {@code /}, but this slash will not be treated as a path separator.
+     *
+     * @param path
+     *            url path to split into segments and decode. The path may also
+     *            start with a slash `/` but it may not contain the url
+     *            protocol.
+     * @return a List containing the decoded segments of the path.
+     */
+    public static List<String> getSegmentsListWithDecoding(String path) {
+        path = path == null ? "" : trimSegmentsString(path);
+
+        final String[] segments = path.split("/");
+        if (segments.length == 1 && segments[0].isEmpty()) {
+            // This happens on root.
+            return Collections.emptyList();
+
+        } else {
+            return Arrays.stream(segments)
+                    .map(UrlUtil::decodeURIComponent)
+                    .collect(Collectors.toUnmodifiableList());
         }
     }
 
