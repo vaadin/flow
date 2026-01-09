@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
 import com.vaadin.frontendtools.installer.ArchiveExtractor;
 import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
