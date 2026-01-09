@@ -230,6 +230,11 @@ public class ShadowRootStateProvider extends AbstractNodeStateProvider {
     }
 
     @Override
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setVisible(StateNode node, boolean visible) {
         throw new UnsupportedOperationException();
     }
