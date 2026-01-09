@@ -116,11 +116,12 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
             UI ui = uiInitEvent.getUI();
             VaadinSession session = ui.getSession();
             ActiveStyleSheetTracker tracker = ActiveStyleSheetTracker
-                    .get(vaadinService);
+                    .get(session.getService());
             ui.addAfterNavigationListener(navigationEvent -> {
                 UI newUi = navigationEvent.getLocationChangeEvent().getUI();
                 Set<String> allUrls = new LinkedHashSet<>();
-                lookupUrlsForComponents(newUi, allUrls, vaadinService);
+                lookupUrlsForComponents(newUi, allUrls,
+                        newUi.getSession().getService());
                 allUrls.forEach(tracker::trackAddForComponent);
             });
         });
@@ -598,8 +599,8 @@ public class StyleSheetHotswapper implements VaadinHotswapper {
         return contextPath;
     }
 
-    private void lookupUrlsForComponents(Component root, Set<String> allUrls,
-            VaadinService vaadinService) {
+    private static void lookupUrlsForComponents(Component root,
+            Set<String> allUrls, VaadinService vaadinService) {
         root.getChildren().forEach(child -> {
             if (child.getClass().isAnnotationPresent(StyleSheet.class)) {
                 ComponentUtil.getDependencies(vaadinService, child.getClass())
