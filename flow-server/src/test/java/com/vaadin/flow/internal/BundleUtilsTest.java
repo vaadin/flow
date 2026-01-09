@@ -15,16 +15,10 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Rule;
@@ -35,14 +29,6 @@ import org.mockito.Mockito;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
-
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.internal.BundleUtils;
-import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.server.Constants;
-import com.vaadin.tests.util.MockOptions;
-
-import static com.vaadin.flow.server.Constants.DEV_BUNDLE_JAR_PATH;
 
 public class BundleUtilsTest {
 
@@ -133,7 +119,6 @@ public class BundleUtilsTest {
         closeOnTearDown.add(mock);
 
     }
-
 
     @Test
     public void loadStatsJson_cachesResult_returnsSameInstance() {
