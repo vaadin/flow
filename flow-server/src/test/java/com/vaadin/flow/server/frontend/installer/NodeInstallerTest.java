@@ -37,9 +37,10 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendVersion;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.frontend.FrontendTools;
 
-import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
+import static com.vaadin.flow.internal.Platform.ALPINE_RELEASE_FILE_PATH;
 
 public class NodeInstallerTest {
 

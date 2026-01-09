@@ -47,6 +47,7 @@ import org.apache.maven.project.MavenProject;
 import org.codehaus.plexus.build.BuildContext;
 
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
@@ -54,7 +55,6 @@ import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 
