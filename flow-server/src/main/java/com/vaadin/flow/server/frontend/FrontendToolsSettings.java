@@ -22,9 +22,9 @@ import java.util.function.Supplier;
 
 import com.vaadin.flow.function.SerializableSupplier;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 
 import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION;
 
@@ -41,7 +41,7 @@ public class FrontendToolsSettings implements Serializable {
 
     private String nodeVersion = DEFAULT_NODE_VERSION;
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;

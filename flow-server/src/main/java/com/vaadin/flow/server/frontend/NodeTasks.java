@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.UsageStatistics;
@@ -145,7 +146,7 @@ public class NodeTasks implements FallibleCommand {
                     }
                 } else {
                     commands.add(new TaskGenerateCommercialBanner(options));
-                    BundleUtils.copyPackageLockFromBundle(options);
+                    BundleBuildUtils.copyPackageLockFromBundle(options);
                 }
                 // Process @StyleSheet CSS files (minify and inline @imports)
                 commands.add(new TaskProcessStylesheetCss(options));
@@ -160,7 +161,7 @@ public class NodeTasks implements FallibleCommand {
                     commands.add(new TaskCleanFrontendFiles(options));
                     options.withRunNpmInstall(true);
                     options.withCopyTemplates(true);
-                    BundleUtils.copyPackageLockFromBundle(options);
+                    BundleBuildUtils.copyPackageLockFromBundle(options);
                     UsageStatistics.markAsUsed("flow/app-dev-bundle", null);
                 } else {
                     // A dev bundle build is not needed after all, skip it
@@ -175,7 +176,7 @@ public class NodeTasks implements FallibleCommand {
                     }
                 }
             } else if (options.isFrontendHotdeploy()) {
-                BundleUtils.copyPackageLockFromBundle(options);
+                BundleBuildUtils.copyPackageLockFromBundle(options);
             }
 
             if (options.isGenerateEmbeddableWebComponents()) {

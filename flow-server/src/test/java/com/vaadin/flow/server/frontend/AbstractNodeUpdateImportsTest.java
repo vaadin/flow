@@ -40,6 +40,7 @@ import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.tests.util.MockOptions;

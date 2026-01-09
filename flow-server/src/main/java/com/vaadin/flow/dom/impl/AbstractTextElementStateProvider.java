@@ -205,6 +205,11 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void setVisible(StateNode node, boolean visible) {
         throw new UnsupportedOperationException();
     }

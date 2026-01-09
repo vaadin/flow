@@ -147,6 +147,11 @@ public final class NodeFeatures {
      */
     public static final int TEXT_BINDING = 27;
 
+    /**
+     * Id for {@link SignalBindingFeature}.
+     */
+    public static final int SIGNAL_BINDING = 28;
+
     private NodeFeatures() {
         // Only static
     }

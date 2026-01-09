@@ -19,12 +19,9 @@ import java.io.Serializable;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.dom.Element;
-import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
-import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
 
 /**
@@ -141,11 +138,6 @@ public abstract class AbstractPropertyMap extends NodeMap {
                 || StateNode.class.isAssignableFrom(type);
     }
 
-    public boolean hasSignal(String key) {
-        return super.get(key) instanceof SignalBinding binding
-                && binding.signal() != null && binding.registration() != null;
-    }
-
     @Override
     public void updateFromClient(String key, Serializable value) {
         if (hasSignal(key)) {
@@ -173,29 +165,8 @@ public abstract class AbstractPropertyMap extends NodeMap {
      *             given property
      */
     public void bindSignal(Element owner, String name, Signal<?> signal) {
-        SignalBinding previousSignalBinding;
-        if (super.get(name) instanceof SignalBinding binding) {
-            previousSignalBinding = binding;
-        } else {
-            previousSignalBinding = null;
-        }
-        if (signal != null && hasSignal(name)) {
-            throw new BindingActiveException();
-        }
-        Registration registration = signal != null
-                ? ElementEffect.bind(owner, signal,
-                        (element, value) -> setPropertyFromSignal(name, value))
-                : null;
-        if (signal == null && previousSignalBinding != null) {
-            if (previousSignalBinding.registration() != null) {
-                previousSignalBinding.registration().remove();
-            }
-            // revert to plain stored value (may be null)
-            put(name, get(name), false);
-        } else {
-            put(name, new SignalBinding(signal, registration, get(name)),
-                    false);
-        }
+        bindSignal(owner, name, signal,
+                (element, value) -> setPropertyFromSignal(name, value));
     }
 
     /**

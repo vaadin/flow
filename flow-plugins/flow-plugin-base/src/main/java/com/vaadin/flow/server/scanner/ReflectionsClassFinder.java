@@ -82,9 +82,7 @@ public class ReflectionsClassFinder implements ClassFinder {
             "com.vaadin.external.gwt", "javassist.*", "io.methvin",
             "com.github.javaparser", "oshi.*", "io.micrometer", "jakarta.*",
             "com.nimbusds", "elemental.util", "org.reflections",
-            "org.aopalliance", "org.objectweb",
-
-            "com.vaadin.hilla", "com.vaadin.copilot" };
+            "org.aopalliance", "org.objectweb" };
 
     private static final Logger LOGGER = LoggerFactory
             .getLogger(ReflectionsClassFinder.class);

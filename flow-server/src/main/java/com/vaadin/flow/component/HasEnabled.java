@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * A generic interface for components and other user interface objects that may
@@ -96,5 +98,38 @@ public interface HasEnabled extends HasElement {
          * assumptions with regards to application security.
          */
         return getElement().isEnabled();
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the enabled state of this component and
+     * keeps the state synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to an enabled state, any attempt to set the state
+     * manually with {@link #setEnabled(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Span component = new Span();
+     * add(component);
+     * component.bindEnabled(signal);
+     * signal.value(false); // The component is disabled
+     * </pre>
+     *
+     * @param enabledSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setEnabled(boolean)
+     */
+    default void bindEnabled(Signal<Boolean> enabledSignal) {
+        getElement().bindEnabled(enabledSignal);
     }
 }

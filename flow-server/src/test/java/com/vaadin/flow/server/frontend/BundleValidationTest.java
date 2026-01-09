@@ -42,6 +42,7 @@ import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;

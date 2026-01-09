@@ -24,8 +24,6 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Assert;
 import tools.jackson.databind.ObjectMapper;
 
-import com.vaadin.flow.server.frontend.TaskGenerateTsConfigTest;
-
 public class BrowserDetailsTest extends TestCase {
 
     private static final String FIREFOX30_WINDOWS = "Mozilla/5.0 (Windows; U; Windows NT 6.1; en-GB; rv:1.9.0.6) Gecko/2009011913 Firefox/3.0.6";
@@ -790,8 +788,8 @@ public class BrowserDetailsTest extends TestCase {
     private static UserAgent[] getUserAgentDetails(String agentFile)
             throws IOException {
         String userAgents = IOUtils.toString(
-                Objects.requireNonNull(TaskGenerateTsConfigTest.class
-                        .getClassLoader().getResourceAsStream(agentFile)),
+                Objects.requireNonNull(BrowserDetailsTest.class.getClassLoader()
+                        .getResourceAsStream(agentFile)),
                 StandardCharsets.UTF_8);
         ObjectMapper mapper = new ObjectMapper();
 
