@@ -155,7 +155,24 @@ public class AbstractCompositeFieldBindValueTest {
     }
 
     @Test
-    public void multipleFieldsField_bindValue() {
+    public void multipleFieldsField_bindValue_detached_setModalValueDoesNotUpdateSignal() {
+        MultipleFieldsField field = new MultipleFieldsField();
+
+        WritableSignal<String> signal = new ValueSignal<>("Hello Cool World");
+        field.bindValue(signal);
+        // not attached yet, so presentation value not used from the signal
+        Assert.assertEquals("", field.start.getValue());
+        Assert.assertEquals("", field.rest.getValue());
+
+        // test that setModelValue updates the bound signal even when detached
+        field.start.setValue("Hey");
+        field.rest.setValue("You");
+        Assert.assertEquals("Hey You", field.getValue());
+        Assert.assertEquals("Hello Cool World", signal.peek());
+    }
+
+    @Test
+    public void multipleFieldsField_bindValue_attached() {
         MultipleFieldsField field = new MultipleFieldsField();
         UI.getCurrent().add(field);
 

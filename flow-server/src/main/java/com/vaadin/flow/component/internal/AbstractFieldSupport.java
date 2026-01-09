@@ -182,6 +182,30 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         setValue(newModelValue, true, fromClient);
     }
 
+    /**
+     * Binds a {@link WritableSignal}'s value to the value state of the field
+     * and keeps the state synchronized with the signal value while the element
+     * is in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to a value state, any attempt to set the state
+     * manually with {@link #setValue(Object)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * While a Signal is bound to a value state and the element is in attached
+     * state, setting the value with {@link #setModelValue(Object, boolean)}, or
+     * when a change originates from the client, will update the signal value.
+     *
+     * @param valueSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setValue(Object)
+     * @see #setModelValue(Object, boolean)
+     */
     public void bindValue(WritableSignal<T> valueSignal) {
         SignalBindingFeature feature = component.getElement().getNode()
                 .getFeature(SignalBindingFeature.class);
@@ -247,8 +271,10 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             // change.
             getFeatureIfInitialized(SignalBindingFeature.class)
                     .ifPresent(feature -> {
-                        feature.updateWritableSignalValue(
-                                SignalBindingFeature.VALUE, newValue);
+                        if (component.isAttached()) {
+                            feature.updateWritableSignalValue(
+                                    SignalBindingFeature.VALUE, newValue);
+                        }
                     });
         }
 
@@ -273,8 +299,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         return valueSetFromPresentationUpdate;
     }
 
-    private <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
-            Class<T> featureClass) {
+    private <FEATURE extends NodeFeature> Optional<FEATURE> getFeatureIfInitialized(
+            Class<FEATURE> featureClass) {
         try {
             return component.getElement().getNode()
                     .getFeatureIfInitialized(featureClass);
