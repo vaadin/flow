@@ -20,7 +20,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
+
+import com.vaadin.signals.function.CommandValidator;
 import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
@@ -72,7 +73,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      *            the element type, not <code>null</code>
      */
     protected MapSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> elementType) {
+            CommandValidator validator, Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -256,7 +257,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new map signal that uses the validator, not <code>null</code>
      */
-    public MapSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public MapSignal<T> withValidator(CommandValidator validator) {
         return new MapSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }

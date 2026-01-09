@@ -17,7 +17,9 @@ package com.vaadin.signals.impl;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Supplier;
+
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SignalComputation;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
@@ -53,10 +55,10 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             Usage dependencies) {
     }
 
-    private final Supplier<T> computation;
+    private final SignalComputation<T> computation;
 
     private int dependentCount = 0;
-    private Runnable dependencyRegistration;
+    private CleanupCallback dependencyRegistration;
 
     /**
      * Creates a new computed signal with the provided compute callback.
@@ -64,7 +66,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
      * @param computation
      *            a callback that returns the computed value, not null
      */
-    public ComputedSignal(Supplier<T> computation) {
+    public ComputedSignal(SignalComputation<T> computation) {
         super(new SynchronousSignalTree(true), Id.ZERO, ANYTHING_GOES);
         this.computation = Objects.requireNonNull(computation);
     }
@@ -89,7 +91,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
     private synchronized void revalidateAndListen() {
         // Clear listeners on old dependencies
         if (dependencyRegistration != null) {
-            dependencyRegistration.run();
+            dependencyRegistration.cleanup();
         }
 
         // Run compute callback to get new dependencies
@@ -108,7 +110,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
      *
      * @return a callback to count back down again, not <code>null</code>
      */
-    private synchronized Runnable countActiveExternalListener() {
+    private synchronized CleanupCallback countActiveExternalListener() {
         if (dependentCount++ == 0) {
             revalidateAndListen();
         }
@@ -125,7 +127,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
                      * external listeners.
                      */
                     if (--dependentCount == 0) {
-                        dependencyRegistration.run();
+                        dependencyRegistration.cleanup();
                         dependencyRegistration = null;
                     }
                 }
@@ -153,20 +155,20 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             }
 
             @Override
-            public Runnable onNextChange(TransientListener listener) {
-                Runnable uncount = countActiveExternalListener();
+            public CleanupCallback onNextChange(TransientListener listener) {
+                CleanupCallback uncount = countActiveExternalListener();
 
-                Runnable superCleanup = superUsage.onNextChange(immediate -> {
+                CleanupCallback superCleanup = superUsage.onNextChange(immediate -> {
                     boolean listenToNext = listener.invoke(immediate);
                     if (!listenToNext) {
-                        uncount.run();
+                        uncount.cleanup();
                     }
                     return listenToNext;
                 });
 
                 return () -> {
-                    superCleanup.run();
-                    uncount.run();
+                    superCleanup.cleanup();
+                    uncount.cleanup();
                 };
             }
         };
@@ -179,7 +181,7 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             Object[] holder = new Object[2];
             Usage dependencies = UsageTracker.track(() -> {
                 try {
-                    holder[0] = computation.get();
+                    holder[0] = computation.compute();
                 } catch (RuntimeException e) {
                     holder[1] = e;
                 }
