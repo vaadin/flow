@@ -32,6 +32,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.theme.ThemeDefinition;
 
 import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
