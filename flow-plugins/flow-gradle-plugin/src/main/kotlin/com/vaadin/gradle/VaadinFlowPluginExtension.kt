@@ -531,7 +531,7 @@ public class PluginEffectiveConfiguration(
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
 
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
-        .convention(Platform.guess().nodeDownloadRoot)
+        .convention(NodeInstaller.getDownloadRoot(Platform.guess()))
 
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory

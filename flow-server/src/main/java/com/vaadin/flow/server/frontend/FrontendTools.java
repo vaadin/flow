@@ -286,7 +286,7 @@ public class FrontendTools {
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
                 .getStringProperty(NODE_DOWNLOAD_ROOT,
-                        Platform.guess().getNodeDownloadRoot());
+                        NodeInstaller.getDownloadRoot(Platform.guess()));
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),

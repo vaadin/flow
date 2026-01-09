@@ -413,7 +413,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public URI nodeDownloadRoot() throws URISyntaxException {
         if (nodeDownloadRoot == null) {
-            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+            nodeDownloadRoot = NodeInstaller.getDownloadRoot(Platform.guess());
         }
         try {
             return new URI(nodeDownloadRoot);
