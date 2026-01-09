@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -159,6 +161,13 @@ public class KeyMapper<V> implements DataKeyMapper<V> {
         if (key != null) {
             keyObjectMap.put(key, dataObject);
         }
+    }
+
+    /**
+     * Gets all mapped objects.
+     */
+    public Collection<V> objects() {
+        return Collections.unmodifiableCollection(keyObjectMap.values());
     }
 
     @Override
