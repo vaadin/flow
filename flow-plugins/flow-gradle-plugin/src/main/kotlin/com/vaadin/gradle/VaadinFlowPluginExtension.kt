@@ -25,7 +25,7 @@ import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
 import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
-import com.vaadin.flow.server.frontend.installer.Platform
+import com.vaadin.flow.internal.Platform
 import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action

@@ -13,13 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.server.frontend.installer;
+package com.vaadin.flow.internal;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-
-import com.vaadin.flow.internal.FrontendVersion;
 
 /**
  * Platform contains information about system architecture and OS.

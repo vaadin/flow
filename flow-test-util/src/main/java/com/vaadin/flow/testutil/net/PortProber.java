@@ -26,7 +26,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.installer.Platform;
+import com.vaadin.flow.internal.Platform;
 
 /**
  * Class for determining a free localhost port that is not used by any ipv4 or
