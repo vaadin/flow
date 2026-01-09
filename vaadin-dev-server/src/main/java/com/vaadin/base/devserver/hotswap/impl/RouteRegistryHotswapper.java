@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
 import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
+import com.vaadin.base.devserver.hotswap.Hotswapper;
 import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
@@ -38,8 +39,8 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * A component that reacts on class changes to update route registries.
  * <p>
- * This class is meant to be used in combination wit Flow
- * {@link com.vaadin.flow.hotswap.Hotswapper} to immediately update routes
+ * This class is meant to be used in combination with Flow
+ * {@link Hotswapper} to immediately update routes
  * registries when classes have been added or modified.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
