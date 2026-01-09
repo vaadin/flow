@@ -150,4 +150,18 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         assertFalse(element.isVisible());
         assertTrue(events.isEmpty());
     }
+
+    @Test
+    public void bindVisible_withNullBinding_allowsSetVisible() {
+        Element element = new Element("foo");
+        UI.getCurrent().getElement().appendChild(element);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        element.bindVisible(signal);
+        assertTrue(element.isVisible());
+
+        element.bindVisible(null); // remove binding
+
+        element.setVisible(false);
+        assertFalse(element.isVisible());
+    }
 }

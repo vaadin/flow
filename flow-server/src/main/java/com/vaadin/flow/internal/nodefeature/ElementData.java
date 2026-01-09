@@ -45,6 +45,16 @@ public class ElementData extends NodeMap {
         super(node);
     }
 
+    @Override
+    protected Serializable get(String key) {
+        Serializable value = super.get(key);
+        if (value instanceof SignalBinding) {
+            return ((SignalBinding) value).value();
+        } else {
+            return value;
+        }
+    }
+
     /**
      * Sets the tag name of the element.
      *
