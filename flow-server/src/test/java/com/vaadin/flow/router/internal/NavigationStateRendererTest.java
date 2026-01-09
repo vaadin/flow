@@ -352,9 +352,11 @@ public class NavigationStateRendererTest {
                 navigationStateFromTarget(PreservedView.class));
 
         // given the session has a cache of something at this location
-        AbstractNavigationStateRenderer.setPreservedChain(session, "",
-                new Location("preserved"), new ArrayList<>(Collections
-                        .singletonList(Mockito.mock(Component.class))));
+        AbstractNavigationStateRenderer
+                .setPreservedChain(session, "", new Location("preserved"),
+                        new ArrayList<>(Collections
+                                .singletonList(Mockito.mock(Component.class))),
+                        null);
 
         // given a UI that contain no window name with an instrumented Page
         // that records JS invocations
@@ -518,7 +520,8 @@ public class NavigationStateRendererTest {
         // given the session has a cache of PreservedView at this location
         final PreservedView view = new PreservedView();
         AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
-                new Location("preserved"), new ArrayList<>(List.of(view)));
+                new Location("preserved"), new ArrayList<>(List.of(view)),
+                null);
 
         // given an old UI that contains the component and an extra element
         MockUI ui0 = new MockUI(session);
@@ -574,7 +577,7 @@ public class NavigationStateRendererTest {
 
         AbstractNavigationStateRenderer.setPreservedChain(session, "ROOT.123",
                 new Location("preservedNested"),
-                new ArrayList<>(Arrays.asList(nestedView, layout)));
+                new ArrayList<>(Arrays.asList(nestedView, layout)), null);
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
@@ -622,7 +625,7 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("a",
                                 Collections.emptyList()))),
-                new ArrayList<>(List.of(view)));
+                new ArrayList<>(List.of(view)), null);
 
         ExtendedClientDetails details = Mockito
                 .mock(ExtendedClientDetails.class);
@@ -1011,21 +1014,23 @@ public class NavigationStateRendererTest {
         Location location = new Location("preserved");
         AbstractNavigationStateRenderer.setPreservedChain(session, "ACTIVE",
                 location,
-                new ArrayList<>(Collections.singletonList(attachedToActiveUI)));
+                new ArrayList<>(Collections.singletonList(attachedToActiveUI)),
+                null);
         AbstractNavigationStateRenderer.setPreservedChain(session, "INACTIVE",
                 location, new ArrayList<>(
-                        Collections.singletonList(attachedToInactiveUI)));
+                        Collections.singletonList(attachedToInactiveUI)),
+                null);
 
         AbstractNavigationStateRenderer
                 .purgeInactiveUIPreservedChainCache(inActiveUI);
 
-        Optional<ArrayList<HasElement>> active = AbstractNavigationStateRenderer
+        Optional<AbstractNavigationStateRenderer.PreservedViewData> active = AbstractNavigationStateRenderer
                 .getPreservedChain(session, "ACTIVE", location);
         Assert.assertTrue(
                 "Expected preserved chain for active window to be present",
                 active.isPresent());
 
-        Optional<ArrayList<HasElement>> inactive = AbstractNavigationStateRenderer
+        Optional<AbstractNavigationStateRenderer.PreservedViewData> inactive = AbstractNavigationStateRenderer
                 .getPreservedChain(session, "INACTIVE", location);
         Assert.assertFalse(
                 "Expected preserved chain for inactive window to be removed",
