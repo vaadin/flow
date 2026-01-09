@@ -22,14 +22,15 @@ import java.nio.file.Files;
 import java.util.Arrays;
 
 import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Version;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 
 /**
  * Generate <code>index.ts</code> if it is missing in frontend folder.

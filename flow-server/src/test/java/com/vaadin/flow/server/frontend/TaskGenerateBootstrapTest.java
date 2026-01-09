@@ -30,6 +30,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -38,10 +39,10 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.tests.util.MockOptions;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 import static com.vaadin.flow.server.frontend.NodeUpdateTestUtil.getClassFinder;
 
 public class TaskGenerateBootstrapTest {

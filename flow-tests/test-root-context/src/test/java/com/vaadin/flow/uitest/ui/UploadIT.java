@@ -26,7 +26,7 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static com.vaadin.flow.uitest.ui.UploadView.INPUT_ID;

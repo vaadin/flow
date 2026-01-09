@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import org.slf4j.Logger;
 
 import com.vaadin.flow.component.dependency.JsModule;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.Theme;

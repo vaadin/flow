@@ -28,8 +28,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.hamcrest.Matchers.is;

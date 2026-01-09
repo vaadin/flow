@@ -32,6 +32,7 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.plugin.TestUtils;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -40,7 +41,6 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
 
 public class GenerateNpmBOMMojoTest {
 
@@ -63,7 +63,8 @@ public class GenerateNpmBOMMojoTest {
         this.mojo = Mockito.spy(new GenerateNpmBOMMojo());
 
         File projectBase = temporaryFolder.getRoot();
-        File frontendDirectory = new File(projectBase, DEFAULT_FRONTEND_DIR);
+        File frontendDirectory = new File(projectBase,
+                FrontendUtils.DEFAULT_FRONTEND_DIR);
         resourceOutputDirectory = new File(projectBase,
                 VAADIN_SERVLET_RESOURCES);
         jarResourcesSource = new File(projectBase,
