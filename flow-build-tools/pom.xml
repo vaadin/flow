@@ -34,6 +34,11 @@
       <artifactId>flow-server</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <!-- Byte code analysis -->
+    <dependency>
+      <groupId>org.ow2.asm</groupId>
+      <artifactId>asm</artifactId>
+    </dependency>
 
     <!-- Test dependencies -->
 

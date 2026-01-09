@@ -98,13 +98,6 @@
       <artifactId>jsoup</artifactId>
       <version>${jsoup.version}</version>
     </dependency>
-
-    <!-- Byte code analysis -->
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-
     <!-- Small reflection library -->
     <dependency>
       <groupId>com.vaadin.external</groupId>
