@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.hotswap;
+package com.vaadin.base.devserver.hotswap;
 
 /**
  * Strategy for updating the UI after a hotswap event.

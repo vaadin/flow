@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -29,10 +29,10 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
-import com.vaadin.flow.hotswap.HotswapClassEvent;
-import com.vaadin.flow.hotswap.HotswapClassSessionEvent;
 import com.vaadin.flow.router.Layout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteBaseData;

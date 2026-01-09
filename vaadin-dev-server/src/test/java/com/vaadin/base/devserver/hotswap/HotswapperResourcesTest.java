@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.hotswap;
+package com.vaadin.base.devserver.hotswap;
 
 import java.io.IOException;
 import java.net.URI;
@@ -35,8 +35,8 @@ import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.ApplicationConfigurationFactory;
 
-import static com.vaadin.flow.hotswap.HotswapperTest.createMockVaadinSession;
-import static com.vaadin.flow.hotswap.HotswapperTest.initUIAndNavigateTo;
+import static com.vaadin.base.devserver.hotswap.HotswapperTest.createMockVaadinSession;
+import static com.vaadin.base.devserver.hotswap.HotswapperTest.initUIAndNavigateTo;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.Mockito.never;

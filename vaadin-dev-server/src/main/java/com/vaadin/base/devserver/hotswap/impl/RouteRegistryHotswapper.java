@@ -13,19 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.router.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
+import com.vaadin.base.devserver.hotswap.Hotswapper;
+import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.hotswap.HotswapClassEvent;
-import com.vaadin.flow.hotswap.HotswapClassSessionEvent;
-import com.vaadin.flow.hotswap.VaadinHotswapper;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.router.internal.AbstractRouteRegistry;
+import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
@@ -36,9 +39,9 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 /**
  * A component that reacts on class changes to update route registries.
  * <p>
- * This class is meant to be used in combination wit Flow
- * {@link com.vaadin.flow.hotswap.Hotswapper} to immediately update routes
- * registries when classes have been added or modified.
+ * This class is meant to be used in combination with Flow {@link Hotswapper} to
+ * immediately update routes registries when classes have been added or
+ * modified.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

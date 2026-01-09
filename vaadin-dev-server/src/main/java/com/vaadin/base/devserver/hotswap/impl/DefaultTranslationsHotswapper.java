@@ -13,13 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.i18n;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.util.ResourceBundle;
 
-import com.vaadin.flow.hotswap.HotswapResourceEvent;
-import com.vaadin.flow.hotswap.UIUpdateStrategy;
-import com.vaadin.flow.hotswap.VaadinHotswapper;
+import com.vaadin.base.devserver.hotswap.HotswapResourceEvent;
+import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
+import com.vaadin.base.devserver.hotswap.VaadinHotswapper;
 import com.vaadin.flow.internal.JacksonUtils;
 
 /**
