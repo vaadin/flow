@@ -28,6 +28,7 @@ import org.junit.Test;
 import org.mockito.MockedStatic;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.server.ErrorEvent;
@@ -39,6 +40,7 @@ import com.vaadin.signals.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -216,6 +218,20 @@ public class AbstractFieldBindValueTest {
         input.bindValue(null); // remove binding
         signal.value("bar"); // no effect
         assertEquals("foo", input.getValue());
+
+        input.setValue("bar");
+        assertEquals("bar", input.getValue());
+    }
+
+    @Test
+    public void bindValue_withNullBinding_allowsSetValue() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal);
+        assertEquals("foo", input.getValue());
+
+        input.bindValue(null); // remove binding
 
         input.setValue("bar");
         assertEquals("bar", input.getValue());
