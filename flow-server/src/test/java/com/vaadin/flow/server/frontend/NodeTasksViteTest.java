@@ -274,7 +274,7 @@ public class NodeTasksViteTest {
                         .mockStatic(BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
             bundleUtils.verify(
-                    () -> BundleUtils.copyPackageLockFromBundle(options),
+                    () -> BundleBuildUtils.copyPackageLockFromBundle(options),
                     Mockito.times(1));
             validationUtil.verify(() -> BundleValidationUtil.needsBuild(
                     any(Options.class), any(FrontendDependenciesScanner.class),
