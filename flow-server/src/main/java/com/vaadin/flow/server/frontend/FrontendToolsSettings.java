@@ -41,7 +41,7 @@ public class FrontendToolsSettings implements Serializable {
 
     private String nodeVersion = DEFAULT_NODE_VERSION;
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;

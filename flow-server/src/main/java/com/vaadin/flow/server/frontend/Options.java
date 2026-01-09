@@ -121,7 +121,7 @@ public class Options implements Serializable {
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private Lookup lookup;
 

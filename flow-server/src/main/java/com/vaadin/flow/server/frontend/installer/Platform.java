@@ -112,7 +112,6 @@ public class Platform {
         }
     }
 
-    private final String nodeDownloadRoot;
     private final OS os;
     private final Architecture architecture;
     private final String classifier;
@@ -130,13 +129,10 @@ public class Platform {
      *            platform Architecture
      */
     public Platform(OS os, Architecture architecture) {
-        this(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT, os, architecture,
-                null);
+        this(os, architecture, null);
     }
 
-    public Platform(String nodeDownloadRoot, OS os, Architecture architecture,
-            String classifier) {
-        this.nodeDownloadRoot = nodeDownloadRoot;
+    public Platform(OS os, Architecture architecture, String classifier) {
         this.os = os;
         this.architecture = architecture;
         this.classifier = classifier;
@@ -158,14 +154,9 @@ public class Platform {
         Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
         if (os == OS.LINUX && Files.exists(alpineReleaseFilePath)) {
             return new Platform(
-                    // Currently, musl is Experimental. The download root can be
-                    // overridden with config
-                    // if this changes and there's not been an update to this
-                    // project, yet.
-                    // See
+                    // Currently, musl is Experimental. See
                     // https://github.com/nodejs/node/blob/master/BUILDING.md#platform-list
-                    NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT, os,
-                    architecture, "musl");
+                    os, architecture, "musl");
         }
         return new Platform(os, architecture);
     }
@@ -246,15 +237,6 @@ public class Platform {
         return classifier != null ? result + "-" + classifier : result;
     }
 
-    /**
-     * Gets the platform dependent download root.
-     *
-     * @return platform download root
-     */
-    public String getNodeDownloadRoot() {
-        return nodeDownloadRoot;
-    }
-
     private Architecture resolveArchitecture(FrontendVersion nodeVersion) {
         if (isMac() && architecture == Architecture.ARM64) {
             Integer nodeMajorVersion = nodeVersion.getMajorVersion();
@@ -265,5 +247,14 @@ public class Platform {
         }
 
         return architecture;
+    }
+
+    /**
+     * Check if the current platform is experimental for Node.js.
+     * 
+     * @return true if experimental
+     */
+    public boolean isNodeSupportExperimental() {
+        return isLinux() && "musl".equals(classifier);
     }
 }

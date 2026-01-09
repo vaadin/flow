@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
@@ -32,9 +33,13 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.server.frontend.FrontendTools;
+
+import static com.vaadin.flow.server.frontend.installer.Platform.ALPINE_RELEASE_FILE_PATH;
 
 public class NodeInstallerTest {
 
@@ -173,4 +178,71 @@ public class NodeInstallerTest {
         // distribution
     }
 
+    @Test
+    public void testGuess_whenOsIsLinuxAndAlpineReleaseFileExists_unofficialNodeDownloadPathReturned() {
+        try (MockedStatic<Platform.OS> os = Mockito
+                .mockStatic(Platform.OS.class);
+                MockedStatic<Paths> paths = Mockito.mockStatic(Paths.class);
+                MockedStatic<Files> files = Mockito.mockStatic(Files.class)) {
+
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
+            Path alpineReleaseFilePath = Paths.get(ALPINE_RELEASE_FILE_PATH);
+            paths.when(() -> Paths.get(ALPINE_RELEASE_FILE_PATH))
+                    .thenReturn(alpineReleaseFilePath);
+            files.when(() -> Files.exists(alpineReleaseFilePath))
+                    .thenReturn(true);
+
+            Platform platform = Platform.guess();
+            Assert.assertEquals(NodeInstaller.UNOFFICIAL_NODEJS_DOWNLOAD_ROOT,
+                    NodeInstaller.getDownloadRoot(platform));
+
+            FrontendVersion frontendVersion = Mockito
+                    .mock(FrontendVersion.class);
+            Assert.assertTrue(platform.getNodeClassifier(frontendVersion)
+                    .contains("-musl"));
+        }
+    }
+
+    @Test
+    public void testGuess_whenOsIsLinuxAndAlpineReleaseFileDoesNotExist_officialNodeDownloadPathReturned() {
+        try (MockedStatic<Platform.OS> os = Mockito
+                .mockStatic(Platform.OS.class)) {
+
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.LINUX);
+
+            Platform platform = Platform.guess();
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+                    NodeInstaller.getDownloadRoot(platform));
+
+            FrontendVersion frontendVersion = Mockito
+                    .mock(FrontendVersion.class);
+            Assert.assertFalse(platform.getNodeClassifier(frontendVersion)
+                    .contains("-musl"));
+        }
+    }
+
+    @Test
+    public void testGuess_whenOsIsAnythingOtherThanLinuxAlpineRelease_officialNodeDownloadPathReturned() {
+        try (MockedStatic<Platform.OS> os = Mockito
+                .mockStatic(Platform.OS.class)) {
+
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.WINDOWS);
+
+            Platform platform = Platform.guess();
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+                    NodeInstaller.getDownloadRoot(platform));
+
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.MAC);
+
+            platform = Platform.guess();
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+                    NodeInstaller.getDownloadRoot(platform));
+
+            os.when(Platform.OS::guess).thenReturn(Platform.OS.SUN_OS);
+
+            platform = Platform.guess();
+            Assert.assertEquals(NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT,
+                    NodeInstaller.getDownloadRoot(platform));
+        }
+    }
 }
