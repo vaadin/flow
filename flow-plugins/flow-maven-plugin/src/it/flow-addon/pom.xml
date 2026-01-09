@@ -15,7 +15,7 @@
     </description>
 
     <properties>
-        <vaadin.version>@project.version@</vaadin.version>
+        <flow.version>@project.version@</flow.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
         <maven.compiler.source>${maven.compiler.release}</maven.compiler.source>
@@ -50,7 +50,12 @@
         <dependency>
             <groupId>com.vaadin</groupId>
             <artifactId>flow-server</artifactId>
-            <version>${vaadin.version}</version>
+            <version>${flow.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>flow-build-tools</artifactId>
+            <version>${flow.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
