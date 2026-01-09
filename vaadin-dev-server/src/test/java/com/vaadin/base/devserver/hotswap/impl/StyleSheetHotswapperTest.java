@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.component.internal;
+package com.vaadin.base.devserver.hotswap.impl;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,14 +34,14 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
+import com.vaadin.base.devserver.hotswap.HotswapClassEvent;
+import com.vaadin.base.devserver.hotswap.HotswapClassSessionEvent;
+import com.vaadin.base.devserver.hotswap.HotswapResourceEvent;
+import com.vaadin.base.devserver.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.hotswap.HotswapClassEvent;
-import com.vaadin.flow.hotswap.HotswapClassSessionEvent;
-import com.vaadin.flow.hotswap.HotswapResourceEvent;
-import com.vaadin.flow.hotswap.UIUpdateStrategy;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.server.AppShellRegistry;
 import com.vaadin.flow.server.MockVaadinServletService;

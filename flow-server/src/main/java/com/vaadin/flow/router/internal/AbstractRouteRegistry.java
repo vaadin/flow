@@ -612,7 +612,14 @@ public abstract class AbstractRouteRegistry implements RouteRegistry {
         }
     }
 
-    Collection<Class<?>> getLayouts() {
+    /**
+     * Get all registered layouts.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     * 
+     * @return a collection of all registered layouts
+     */
+    public Collection<Class<?>> getLayouts() {
         return Set.copyOf(layouts.values());
     }
 
