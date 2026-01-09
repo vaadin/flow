@@ -47,6 +47,7 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.internal.UrlUtil;

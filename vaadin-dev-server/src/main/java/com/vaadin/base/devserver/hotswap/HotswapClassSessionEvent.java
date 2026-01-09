@@ -13,26 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.flow.hotswap;
+package com.vaadin.base.devserver.hotswap;
 
-import java.net.URI;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 
 import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Event object passed to {@link VaadinHotswapper} implementations during
- * hotswap processing of resources.
- * <p>
- * The type of modification (creation, modification, deletion) is not considered
- * because IDEs may triggers multiple events for a single file; for example, a
- * modification will trigger a creation and a deletion event.
+ * hotswap processing of Java classes for a specific {@link VaadinSession}.
  * <p>
  * This event provides methods for {@link VaadinHotswapper} implementations to:
  * <ul>
@@ -54,43 +48,37 @@ import com.vaadin.flow.server.VaadinService;
  *
  * @since 25.0
  */
-public class HotswapResourceEvent extends HotswapEvent {
-
-    private final Set<URI> changedResources;
+public class HotswapClassSessionEvent extends HotswapClassEvent {
+    private final VaadinSession vaadinSession;
 
     /**
      * Creates a new hotswap class event.
      *
      * @param vaadinService
      *            the active {@link VaadinService} instance
-     * @param changedResources
-     *            the set of resources that were updated
+     * @param classes
+     *            the set of classes that were updated
+     * @param redefined
+     *            {@literal true} if the classes have been redefined by the
+     *            hotswap mechanism, {@literal false} if they have been loaded
+     *            for the first time by the ClassLoader
      */
-    public HotswapResourceEvent(VaadinService vaadinService,
-            Set<URI> changedResources) {
-        super(vaadinService);
-        this.changedResources = Set.copyOf(Objects.requireNonNull(
-                changedResources, "Changed resources cannot be null"));
-    }
-
-    public Set<URI> getChangedResources() {
-        return changedResources;
+    public HotswapClassSessionEvent(VaadinService vaadinService,
+            VaadinSession vaadinSession, Set<Class<?>> classes,
+            boolean redefined) {
+        super(vaadinService, classes, redefined);
+        this.vaadinSession = Objects.requireNonNull(vaadinSession,
+                "VaadinSession cannot be null");
     }
 
     /**
-     * Determines if any of the changed resources URI match the given regular
-     * expression.
+     * Retrieves the associated {@link VaadinSession} for this event.
      *
-     * @param regexp
-     *            the regular expression to match against the string
-     *            representation of the URIs
-     * @return true if at least one URI matches the regular expression, false
-     *         otherwise
+     * @return the {@link VaadinSession} instance linked to this event, never
+     *         null
      */
-    public boolean anyMatches(String regexp) {
-        Predicate<String> predicate = Pattern.compile(regexp)
-                .asMatchPredicate();
-        return changedResources.stream().map(URI::toString).anyMatch(predicate);
+    public final VaadinSession getVaadinSession() {
+        return vaadinSession;
     }
 
 }
