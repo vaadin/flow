@@ -303,7 +303,31 @@ public class Router implements Serializable {
             ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
                     this, location, ui, trigger, errorParameter, state);
 
-            return handler.handle(navigationEvent);
+            try {
+                return handler.handle(navigationEvent);
+            } catch (Exception errorHandlingException) {
+                // Error view threw an exception - fall back to
+                // InternalServerError
+                LoggerFactory.getLogger(Router.class).error(
+                        "Exception occurred while rendering error view for '{}'. "
+                                + "Falling back to InternalServerError.",
+                        location.getPath(), errorHandlingException);
+
+                // Render InternalServerError as fallback
+                ErrorParameter<?> fallbackParameter = new ErrorParameter<>(
+                        Exception.class, errorHandlingException,
+                        "Error view rendering failed");
+                ErrorStateRenderer fallbackHandler = new ErrorStateRenderer(
+                        new NavigationStateBuilder(this)
+                                .withTarget(InternalServerError.class).build());
+
+                ErrorNavigationEvent fallbackEvent = new ErrorNavigationEvent(
+                        this, location, ui, trigger, fallbackParameter, state);
+
+                // If InternalServerError also throws, let it propagate -
+                // nothing more we can do
+                return fallbackHandler.handle(fallbackEvent);
+            }
         } else {
             throw new RuntimeException(exception);
         }

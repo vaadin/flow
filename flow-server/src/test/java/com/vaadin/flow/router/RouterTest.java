@@ -4697,4 +4697,63 @@ public class RouterTest extends RoutingTestBase {
         router.navigate(ui, new Location(url), NavigationTrigger.PROGRAMMATIC);
     }
 
+    // Test classes for exception in error view's parent layout afterNavigation
+    @Tag(Tag.DIV)
+    @Layout
+    public static class ThrowingMainLayout extends Component
+            implements RouterLayout, AfterNavigationObserver {
+
+        static List<AfterNavigationEvent> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+            if (event.getLocation().getPath().equals("error")) {
+                throw new RuntimeException("Exception in MainLayout afterNavigation");
+            }
+        }
+    }
+
+    @Route(value = "error", layout = ThrowingMainLayout.class)
+    @Tag(Tag.DIV)
+    public static class TriggerErrorView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(ThrowingMainLayout.class)
+    public static class ErrorViewWithThrowingLayout extends Component
+            implements HasErrorParameter<RuntimeException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<RuntimeException> parameter) {
+            getElement().setText("An unexpected error occurred");
+            return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+    }
+
+    @Test
+    public void exception_in_error_view_parent_layout_afterNavigation_falls_back_to_InternalServerError()
+            throws InvalidRouteConfigurationException {
+        ThrowingMainLayout.events.clear();
+        setNavigationTargets(TriggerErrorView.class);
+        setErrorNavigationTargets(ErrorViewWithThrowingLayout.class);
+
+        int result = router.navigate(ui, new Location("error"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Navigation should complete with internal server error status.",
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
+
+        // Should fall back to InternalServerError instead of the custom error view
+        assertExceptionComponent(InternalServerError.class,
+                "Error view rendering failed");
+
+        // Verify that MainLayout's afterNavigation was called at least once
+        Assert.assertFalse(
+                "MainLayout's afterNavigation should have been called",
+                ThrowingMainLayout.events.isEmpty());
+    }
+
 }
