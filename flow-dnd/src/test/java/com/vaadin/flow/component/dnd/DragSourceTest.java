@@ -54,7 +54,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         component.addDragEndListener(endEventCapture::set);
 
         DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
-                component, true, 0, 0);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals(startEvent, startEventCapture.get());
@@ -89,7 +89,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         Assert.assertNull(component.getDragData());
 
         DragStartEvent<TestComponent> startEvent = new DragStartEvent<TestComponent>(
-                component, true, 0, 0);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals("Drag data not set from event", dragData,
@@ -148,7 +148,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         dragSource.addDragEndListener(endEventCapture::set);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true, 0, 0);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
 
         Assert.assertEquals(startEvent, startEventCapture.get());
@@ -184,7 +184,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true, 0, 0);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
     }
 
@@ -195,7 +195,7 @@ public class DragSourceTest extends AbstractDnDUnitTest {
         DragSource<RouterLink> dragSource = DragSource.create(component);
 
         DragStartEvent<RouterLink> startEvent = new DragStartEvent<RouterLink>(
-                component, true, 0, 0);
+                component, true, 0, 0, 0, 0);
         ComponentUtil.fireEvent(component, startEvent);
         Assert.assertEquals(component, ui.getActiveDragSourceComponent());
 

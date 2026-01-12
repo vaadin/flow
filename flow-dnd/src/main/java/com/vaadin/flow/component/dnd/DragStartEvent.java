@@ -31,6 +31,9 @@ import com.vaadin.flow.component.EventData;
 @DomEvent("dragstart")
 public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
 
+    private final int offsetX;
+    private final int offsetY;
+
     /**
      * Creates a drag start event.
      *
@@ -43,11 +46,49 @@ public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
      *            the x coordinate of the mouse pointer relative to the viewport
      * @param clientY
      *            the y coordinate of the mouse pointer relative to the viewport
+     * @param offsetX
+     *            the x coordinate of the mouse pointer relative to the drag
+     *            source element
+     * @param offsetY
+     *            the y coordinate of the mouse pointer relative to the drag
+     *            source element
      */
     public DragStartEvent(T source, boolean fromClient,
             @EventData("event.clientX") int clientX,
-            @EventData("event.clientY") int clientY) {
+            @EventData("event.clientY") int clientY,
+            @EventData("event.offsetX") int offsetX,
+            @EventData("event.offsetY") int offsetY) {
         super(source, fromClient, clientX, clientY);
+        this.offsetX = offsetX;
+        this.offsetY = offsetY;
+    }
+
+    /**
+     * Gets the x coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items.
+     *
+     * @return the x coordinate relative to the drag source element
+     * @since 25.1
+     */
+    public int getOffsetX() {
+        return offsetX;
+    }
+
+    /**
+     * Gets the y coordinate of the mouse pointer relative to the drag source
+     * element when the drag started.
+     * <p>
+     * This is useful for maintaining the relative grab position when
+     * positioning dropped items.
+     *
+     * @return the y coordinate relative to the drag source element
+     * @since 25.1
+     */
+    public int getOffsetY() {
+        return offsetY;
     }
 
     /**

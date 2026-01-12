@@ -27,7 +27,7 @@ import com.vaadin.flow.component.ComponentEvent;
  * @param <T>
  *            Type of the component associated with the event.
  * @author Vaadin Ltd
- * @since 24.8
+ * @since 25.1
  */
 public abstract class AbstractDnDEvent<T extends Component>
         extends ComponentEvent<T> {
