@@ -20,11 +20,11 @@ import java.util.List;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Point;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Actions;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import org.openqa.selenium.Point;
 
 /**
  * Integration test for {@link DnDAttachToDropLocationView} verifying that drop
@@ -72,7 +72,8 @@ public class DnDAttachToDropLocationIT extends ChromeBrowserTest {
                 .perform();
         waitUntilDroppedItemsCount(2);
 
-        actions.clickAndHold(blueItem).moveToElement(canvas).release().perform();
+        actions.clickAndHold(blueItem).moveToElement(canvas).release()
+                .perform();
         waitUntilDroppedItemsCount(3);
 
         // Verify three items were created
@@ -87,19 +88,20 @@ public class DnDAttachToDropLocationIT extends ChromeBrowserTest {
 
         final int startOffsetX = 1;
         final int startOffsetY = 2;
-        
+
         final int offsetX = 40;
         final int offsetY = 30;
         WebElement redItem = findDraggableByText("Red");
         WebElement canvas = findCanvas();
-        
+
         Point redItemTopLeft = redItem.getLocation();
         Point canvasTopLeft = canvas.getLocation();
 
         Actions actions = new Actions(getDriver());
-        actions.moveToLocation(redItemTopLeft.getX() + startOffsetX, redItemTopLeft.getY() + startOffsetY)
-                .clickAndHold()
-                .moveToLocation(canvasTopLeft.getX() + offsetX, canvasTopLeft.getY() + offsetY)
+        actions.moveToLocation(redItemTopLeft.getX() + startOffsetX,
+                redItemTopLeft.getY() + startOffsetY).clickAndHold()
+                .moveToLocation(canvasTopLeft.getX() + offsetX,
+                        canvasTopLeft.getY() + offsetY)
                 .release().perform();
 
         waitUntilDroppedItemsCount(1);
@@ -116,8 +118,10 @@ public class DnDAttachToDropLocationIT extends ChromeBrowserTest {
                 position);
         Assert.assertNotNull("Left should be set", left);
         Assert.assertNotNull("Top should be set", top);
-        Assert.assertEquals("Left should match offsetx", (offsetX - startOffsetX) + "px", left);
-        Assert.assertEquals("Top should match offsety", (offsetY - startOffsetY) + "px", top);
+        Assert.assertEquals("Left should match offsetx",
+                (offsetX - startOffsetX) + "px", left);
+        Assert.assertEquals("Top should match offsety",
+                (offsetY - startOffsetY) + "px", top);
     }
 
     @Test
@@ -139,7 +143,8 @@ public class DnDAttachToDropLocationIT extends ChromeBrowserTest {
         Assert.assertTrue(
                 "Dropped item should have red background (got: "
                         + backgroundColor + ")",
-                backgroundColor.contains("255") && backgroundColor.contains("0"));
+                backgroundColor.contains("255")
+                        && backgroundColor.contains("0"));
     }
 
     private WebElement findDraggableByText(String text) {

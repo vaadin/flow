@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import java.util.List;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
@@ -26,8 +24,8 @@ import org.openqa.selenium.interactions.Actions;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 /**
- * Integration test for {@link DnDAbsolutePositioningView} verifying that dragging
- * the brick element moves it using clientX/clientY coordinates.
+ * Integration test for {@link DnDAbsolutePositioningView} verifying that
+ * dragging the brick element moves it using clientX/clientY coordinates.
  */
 public class DnDAbsolutePositioningIT extends ChromeBrowserTest {
 
@@ -74,12 +72,11 @@ public class DnDAbsolutePositioningIT extends ChromeBrowserTest {
         WebElement logEntry = waitForLogEntry();
         String logText = logEntry.getText();
 
-        Assert.assertTrue("Log should show pixel movement (got: " + logText + ")",
+        Assert.assertTrue(
+                "Log should show pixel movement (got: " + logText + ")",
                 logText.contains("Pixels moved"));
-        Assert.assertTrue("Log should contain x value",
-                logText.contains("x:"));
-        Assert.assertTrue("Log should contain y value",
-                logText.contains("y:"));
+        Assert.assertTrue("Log should contain x value", logText.contains("x:"));
+        Assert.assertTrue("Log should contain y value", logText.contains("y:"));
     }
 
     @Test
@@ -106,8 +103,8 @@ public class DnDAbsolutePositioningIT extends ChromeBrowserTest {
 
         // Position should have increased further
         Assert.assertTrue(
-                "Left should increase after second drag (first: " + leftAfterFirst
-                        + ", second: " + leftAfterSecond + ")",
+                "Left should increase after second drag (first: "
+                        + leftAfterFirst + ", second: " + leftAfterSecond + ")",
                 leftAfterSecond > leftAfterFirst);
         Assert.assertTrue(
                 "Top should increase after second drag (first: " + topAfterFirst
@@ -121,8 +118,7 @@ public class DnDAbsolutePositioningIT extends ChromeBrowserTest {
 
     private WebElement findCanvas() {
         // Canvas has lightyellow background
-        return findElement(
-                By.xpath("//div[contains(@style, 'lightyellow')]"));
+        return findElement(By.xpath("//div[contains(@style, 'lightyellow')]"));
     }
 
     private WebElement waitForLogEntry() {
@@ -131,8 +127,8 @@ public class DnDAbsolutePositioningIT extends ChromeBrowserTest {
     }
 
     private void waitForLogEntryCount(int count) {
-        waitUntil(
-                driver -> driver.findElements(By.tagName("pre")).size() >= count);
+        waitUntil(driver -> driver.findElements(By.tagName("pre"))
+                .size() >= count);
     }
 
     private int parsePixelValue(String value) {

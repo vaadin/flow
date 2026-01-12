@@ -24,7 +24,8 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
 @Route(value = "com.vaadin.flow.uitest.ui.DnDAbsolutePositioningView", layout = ViewTestLayout.class)
-public class DnDAbsolutePositioningView extends Div implements DropTarget<DnDAbsolutePositioningView> {
+public class DnDAbsolutePositioningView extends Div
+        implements DropTarget<DnDAbsolutePositioningView> {
 
     {
         // Configure styles for absolutely positioned canvas

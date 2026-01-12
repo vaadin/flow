@@ -34,14 +34,16 @@ public class DnDAttachToDropLocationView extends Div {
 
     public DnDAttachToDropLocationView() {
         // Create a palette of draggable items
-        Div palette = new Div() {{
-            getStyle().setDisplay(Style.Display.FLEX);
-            getStyle().setGap("10px");
-            getStyle().setPadding("10px");
-            add(new DraggableItem("Red", "red"));
-            add(new DraggableItem("Green", "green"));
-            add(new DraggableItem("Blue", "blue"));
-        }};
+        Div palette = new Div() {
+            {
+                getStyle().setDisplay(Style.Display.FLEX);
+                getStyle().setGap("10px");
+                getStyle().setPadding("10px");
+                add(new DraggableItem("Red", "red"));
+                add(new DraggableItem("Green", "green"));
+                add(new DraggableItem("Blue", "blue"));
+            }
+        };
 
         // Add instruction text
         Div instructions = new Div(
@@ -102,8 +104,8 @@ public class DnDAttachToDropLocationView extends Div {
                         - event.getDragStartOffsetY().orElse(0);
 
                 String color = (String) event.getDragData().orElse("gray");
-                ColoredItem dropped = new ColoredItem(
-                        "Item " + (++itemCounter), color);
+                ColoredItem dropped = new ColoredItem("Item " + (++itemCounter),
+                        color);
                 dropped.getStyle().setPosition(Style.Position.ABSOLUTE);
                 dropped.getStyle().setLeft(x + "px");
                 dropped.getStyle().setTop(y + "px");
