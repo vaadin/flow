@@ -39,7 +39,6 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.tests.util.MockOptions;
 

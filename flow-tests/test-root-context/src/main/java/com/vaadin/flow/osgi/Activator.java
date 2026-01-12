@@ -18,6 +18,7 @@ package com.vaadin.flow.osgi;
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 
 import java.util.Dictionary;
 import java.util.Hashtable;
@@ -72,6 +73,7 @@ public class Activator {
 
     }
 
+    @MultipartConfig
     private static class FixedViewServlet extends ViewTestServlet {
         @Override
         public void init(ServletConfig servletConfig) throws ServletException {

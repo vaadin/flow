@@ -135,13 +135,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return value;
     }
 
-    /**
-     * Reads the value without setting up any dependencies. This method returns
-     * the same value as {@link #value()} but without creating a dependency when
-     * used inside a transaction, effect or computed signal.
-     *
-     * @return the signal value
-     */
+    @Override
     public T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }

@@ -2,7 +2,7 @@
   "private": true,
   "description": "Workbox dependencies for PWA support",
   "devDependencies": {
-    "workbox-core": "7.3.0",
-    "workbox-precaching": "7.3.0"
+    "workbox-core": "7.4.0",
+    "workbox-precaching": "7.4.0"
   }
 }

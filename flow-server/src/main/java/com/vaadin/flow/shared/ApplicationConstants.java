@@ -70,6 +70,13 @@ public class ApplicationConstants implements Serializable {
      * The prefix used for all internal static files, relative to context root.
      */
     public static final String VAADIN_STATIC_FILES_PATH = "VAADIN/static/";
+
+    /**
+     * The prefix used for all internal static files, relative to context root.
+     */
+    public static final String VAADIN_STATIC_ASSETS_PATH = VAADIN_STATIC_FILES_PATH
+            + "assets/";
+
     /**
      * The name of the javascript containing push support.
      */

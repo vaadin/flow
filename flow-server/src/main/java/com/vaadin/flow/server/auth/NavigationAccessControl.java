@@ -447,6 +447,6 @@ public class NavigationAccessControl implements BeforeEnterListener {
         return new NavigationContext(vaadinService.getRouter(),
                 navigationTarget, new Location(path), RouteParameters.empty(),
                 getPrincipal(vaadinRequest), getRolesChecker(vaadinRequest),
-                false);
+                false, false);
     }
 }

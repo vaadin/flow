@@ -105,6 +105,15 @@ public class MainView extends AppLayout implements AfterNavigationObserver {
         logoLayout
                 .add(new Image("public/images/logo.jpg", "Bank of Flow logo"));
         logoLayout.add(new H1("Bank of Flow"));
+        Image circle;
+        if (userInfo == null) {
+            circle = new Image("assets/icons/circle.svg", "empty circle");
+        } else {
+            circle = new Image("assets/icons/user-circle.svg", "user circle");
+        }
+        circle.setId("status-icon");
+        logoLayout.add(circle);
+
         Div info = new Div();
         info.setText(
                 "The menu intentionally shows items you cannot access so that access control can be tested by clicking on them");

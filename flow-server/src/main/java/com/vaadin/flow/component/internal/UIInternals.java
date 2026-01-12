@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -83,7 +84,6 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -620,6 +620,7 @@ public class UIInternals implements Serializable {
      * @return a list of pending JavaScript invocations
      */
     public List<PendingJavaScriptInvocation> dumpPendingJavaScriptInvocations() {
+        session.checkHasLock();
         pendingTitleUpdateCanceler = null;
 
         if (pendingJsInvocations.isEmpty()) {
@@ -677,6 +678,7 @@ public class UIInternals implements Serializable {
 
         private void removePendingInvocation(
                 PendingJavaScriptInvocation invocation) {
+            session.checkHasLock();
             UIInternals.this.pendingJsInvocations.remove(invocation);
             if (invocationList.isEmpty() && registration != null) {
                 registration.remove();
@@ -699,6 +701,7 @@ public class UIInternals implements Serializable {
      */
     // Non-private for testing purposes
     Stream<PendingJavaScriptInvocation> getPendingJavaScriptInvocations() {
+        session.checkHasLock();
         return pendingJsInvocations.stream()
                 .filter(invocation -> !invocation.isCanceled());
     }
@@ -1347,12 +1350,20 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * The extended client details, if obtained, are cached in this field.
+     * Returns the extended client details. If browser details have not been
+     * received yet, returns a placeholder instance with default values (all
+     * dimensions set to -1). The placeholder will be updated with actual values
+     * when the browser details are received.
      *
-     * @return the extended client details, or {@literal null} if not yet
-     *         received.
+     * @return the extended client details (never {@code null})
      */
     public ExtendedClientDetails getExtendedClientDetails() {
+        if (extendedClientDetails == null) {
+            // Create placeholder with default values
+            extendedClientDetails = new ExtendedClientDetails(ui, null, null,
+                    null, null, null, null, null, null, null, null, null, null,
+                    null, null, null, null, null, null);
+        }
         return extendedClientDetails;
     }
 

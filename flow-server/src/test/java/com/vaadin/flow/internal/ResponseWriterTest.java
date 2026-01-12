@@ -40,7 +40,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.zip.GZIPOutputStream;
 
-import org.apache.commons.fileupload2.core.MultipartInput;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -568,13 +567,11 @@ public class ResponseWriterTest {
         String boundary = contentType.get()
                 .substring(contentType.get().indexOf("=") + 1);
 
-        @SuppressWarnings("deprecation")
-        MultipartInput mps = MultipartInput.builder()
-                .setInputStream(new ByteArrayInputStream(output))
-                .setBoundary(boundary.getBytes()).get();
+        SimpleMultipartParser parser = new SimpleMultipartParser(output,
+                boundary);
         for (Pair<String[], byte[]> expected : expectedHeadersAndBytes) {
             String[] expectedHeaders = expected.getFirst();
-            String actualHeaders = mps.readHeaders();
+            String actualHeaders = parser.readHeaders();
             for (String expectedHeader : expectedHeaders) {
                 Assert.assertTrue(
                         String.format("Headers:\n%s\ndid not contain:\n%s",
@@ -583,16 +580,16 @@ public class ResponseWriterTest {
             }
             byte[] expectedBytes = expected.getSecond();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            mps.readBodyData(outputStream);
+            parser.readBodyData(outputStream);
             byte[] bytes = outputStream.toByteArray();
             Assert.assertArrayEquals(expectedBytes, bytes);
         }
 
         // check that there are no excess parts
         try {
-            mps.readHeaders();
+            parser.readHeaders();
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-            mps.readBodyData(outputStream);
+            parser.readBodyData(outputStream);
             Assert.assertTrue("excess bytes in multipart response",
                     outputStream.toByteArray().length == 0);
         } catch (IOException ioe) {

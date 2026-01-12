@@ -4,12 +4,16 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-bom</artifactId>
   <packaging>pom</packaging>
   <name>Flow Bill of Materials</name>
   <description>Flow Bill of Materials</description>
+
+  <properties>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -77,6 +81,12 @@
         <groupId>com.vaadin</groupId>
         <artifactId>flow-dnd</artifactId>
         <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.vaadin</groupId>
+        <artifactId>flow-build-tools</artifactId>
+        <version>${project.version}</version>
+        <classifier>shaded</classifier>
       </dependency>
       <dependency>
         <groupId>com.vaadin</groupId>

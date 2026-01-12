@@ -140,11 +140,6 @@ public final class Constants implements Serializable {
     public static final boolean GLOBAL_PNPM_DEFAULT = false;
 
     /**
-     * The default value for {@link InitParameters#NODE_AUTO_UPDATE}.
-     */
-    public static final boolean DEFAULT_NODE_AUTO_UPDATE = true;
-
-    /**
      * The default value for
      * {@link InitParameters#REQUIRE_HOME_NODE_EXECUTABLE}.
      */

@@ -236,7 +236,8 @@ public class AppShellRegistry implements Serializable {
         return settings;
     }
 
-    private String resolveStyleSheetHref(String href, VaadinRequest request) {
+    private static String resolveStyleSheetHref(String href,
+            VaadinRequest request) {
         if (href == null || href.isBlank()) {
             return null;
         }
@@ -395,7 +396,8 @@ public class AppShellRegistry implements Serializable {
 
         stylesheets.forEach((href, sourcePath) -> {
             Map<String, String> attributes = Map.of("rel", "stylesheet",
-                    "data-file-path", sourcePath);
+                    "data-file-path", sourcePath, "data-id",
+                    "appShell-" + sourcePath);
             settings.addLink(Position.APPEND, href, attributes);
         });
     }

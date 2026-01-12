@@ -15,7 +15,6 @@
  */
 package com.vaadin.viteapp.views.empty;
 
-import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -26,8 +25,6 @@ import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.router.Route;
 
 @Route("")
-@JsModule("@vaadin/testscope-button")
-@JsModule("@vaadin/testscope-map")
 @JsModule("@vaadin/test-package-outside-npm/index.js")
 @JsModule("@vaadin/test-package2-outside-npm/index.js")
 @JsModule("./toplevelawait-main.js")
@@ -67,9 +64,6 @@ public class MainView extends Div {
         Paragraph outsideStatus = new Paragraph();
         outsideStatus.setId(OUTSIDE_RESULT);
         add(outsideStatus);
-
-        add(new HtmlComponent("testscope-button"));
-        add(new HtmlComponent("testscope-map"));
     }
 
 }

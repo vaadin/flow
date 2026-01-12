@@ -28,9 +28,10 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -91,6 +92,8 @@ public class Options implements Serializable {
 
     private boolean requireHomeNodeExec;
 
+    private String nodeFolder = null;
+
     private boolean copyTemplates = false;
 
     private File npmFolder;
@@ -118,9 +121,7 @@ public class Options implements Serializable {
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
-
-    private boolean nodeAutoUpdate = false;
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private Lookup lookup;
 
@@ -134,6 +135,11 @@ public class Options implements Serializable {
      * The resource folder for java resources.
      */
     private File javaResourceFolder;
+
+    /**
+     * META-INF/resources directory.
+     */
+    private File resourcesDirectory;
 
     /**
      * Additional npm packages to run postinstall for.
@@ -512,6 +518,22 @@ public class Options implements Serializable {
     }
 
     /**
+     * Sets the folder containing the Node.js executable.
+     * <p>
+     * When specified, Node.js will be exclusively used from this folder. If the
+     * binary is not found, an exception will be thrown with no fallback.
+     *
+     * @param nodeFolder
+     *            the folder path containing node executable, or null to use
+     *            default resolution
+     * @return the builder, for chaining
+     */
+    public Options withNodeFolder(String nodeFolder) {
+        this.nodeFolder = nodeFolder;
+        return this;
+    }
+
+    /**
      * Sets the node.js version to be used when node.js is installed
      * automatically by Vaadin, for example <code>"v16.0.0"</code>. Defaults to
      * {@value FrontendTools#DEFAULT_NODE_VERSION}.
@@ -618,19 +640,6 @@ public class Options implements Serializable {
      */
     public boolean isBundleBuild() {
         return bundleBuild;
-    }
-
-    /**
-     * Sets whether it is fine to automatically update the alternate node
-     * installation if installed version is older than the current default.
-     *
-     * @param update
-     *            true to update alternate node when used
-     * @return the builder
-     */
-    public Options setNodeAutoUpdate(boolean update) {
-        this.nodeAutoUpdate = update;
-        return this;
     }
 
     /**
@@ -840,6 +849,10 @@ public class Options implements Serializable {
         return requireHomeNodeExec;
     }
 
+    public String getNodeFolder() {
+        return nodeFolder;
+    }
+
     public boolean isCopyTemplates() {
         return copyTemplates;
     }
@@ -850,10 +863,6 @@ public class Options implements Serializable {
 
     public URI getNodeDownloadRoot() {
         return nodeDownloadRoot;
-    }
-
-    public boolean isNodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     /**
@@ -1109,5 +1118,26 @@ public class Options implements Serializable {
             return true;
         }
         return copyAssets;
+    }
+
+    /**
+     * Set where the META-INF/resources files are copied by the build.
+     *
+     * @param resourcesDirectory
+     *            META-INF resources directory
+     * @return this builder
+     */
+    public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
+        this.resourcesDirectory = resourcesDirectory;
+        return this;
+    }
+
+    /**
+     * Get the resources directory if defined.
+     *
+     * @return META-INF resources directory
+     */
+    public File getMetaInfResourcesDirectory() {
+        return resourcesDirectory;
     }
 }

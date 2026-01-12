@@ -32,12 +32,12 @@ import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
-import com.vaadin.base.devserver.MockDeploymentConfiguration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
@@ -45,8 +45,8 @@ import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public abstract class AbstractDevModeTest {
 
@@ -65,6 +65,9 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        // Reset static node installation cache to ensure test isolation
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+
         Field firstMapping = VaadinServlet.class
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
@@ -85,11 +88,12 @@ public abstract class AbstractDevModeTest {
 
         vaadinContext = new VaadinServletContext(servletContext);
 
-        mockApplicationConfiguration(appConfig, enablePnpm);
-
         lookup = Mockito.mock(Lookup.class);
+        vaadinContext.setAttribute(Lookup.class, lookup);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+
+        mockApplicationConfiguration(appConfig, enablePnpm);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
@@ -136,6 +140,7 @@ public abstract class AbstractDevModeTest {
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
+        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
         Mockito.when(appConfig.getMode())
                 .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
@@ -149,7 +154,6 @@ public abstract class AbstractDevModeTest {
         Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
-        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
     }
 
     protected DevModeHandler getDevModeHandler() {

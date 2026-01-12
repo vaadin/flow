@@ -21,8 +21,6 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.ExecutionFailedException;
-
 /**
  * Abstract class for generating client files.
  * <p>

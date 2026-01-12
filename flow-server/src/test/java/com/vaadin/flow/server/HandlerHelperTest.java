@@ -434,15 +434,16 @@ public class HandlerHelperTest {
         expected.add("/icons/icon-1334x750.png");
         expected.add("/icons/icon-640x1136.png");
         expected.add("/icons/icon-1136x640.png");
+        expected.add("/styles.css");
         expected.add("/themes/**");
-        expected.add("/aura/**");
-        expected.add("/lumo/**");
+        expected.add("/assets/**");
 
         Set<String> actual = new HashSet<>();
         Collections.addAll(actual, HandlerHelper.getPublicResources());
         Assert.assertEquals(expected, actual);
 
-        Set<String> expectedRoot = Set.of("/favicon.ico");
+        Set<String> expectedRoot = Set.of("/favicon.ico", "/aura/**",
+                "/lumo/**");
 
         Set<String> actualRoot = new HashSet<>();
         Collections.addAll(actualRoot, HandlerHelper.getPublicResourcesRoot());

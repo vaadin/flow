@@ -34,10 +34,9 @@ public class SpringDevToolsPortHandler implements EnvironmentPostProcessor {
     @Override
     public void postProcessEnvironment(ConfigurableEnvironment environment,
             SpringApplication application) {
-        // Only set the port if livereload is enabled (defaults to true when
-        // DevTools is present)
+        // Only set the port if livereload is enabled
         boolean liveReloadEnabled = environment.getProperty(
-                SPRING_DEVTOOLS_LIVERELOAD_ENABLED, Boolean.class, true);
+                SPRING_DEVTOOLS_LIVERELOAD_ENABLED, Boolean.class, false);
 
         if (!liveReloadEnabled) {
             return;

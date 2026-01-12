@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.component.page.BodySize;
+import com.vaadin.flow.component.page.ColorScheme;
 import com.vaadin.flow.component.page.Inline;
 import com.vaadin.flow.component.page.Meta;
 import com.vaadin.flow.component.page.Push;
@@ -61,8 +62,9 @@ import static com.vaadin.flow.server.AppShellRegistry.ERROR_HEADER_OFFENDING_PWA
  */
 @HandlesTypes({ AppShellConfigurator.class, Meta.class, Meta.Container.class,
         PWA.class, Inline.class, Inline.Container.class, Viewport.class,
-        BodySize.class, PageTitle.class, Push.class, Theme.class, NoTheme.class,
-        StyleSheet.class, StyleSheet.Container.class })
+        BodySize.class, PageTitle.class, Push.class, ColorScheme.class,
+        Theme.class, NoTheme.class, StyleSheet.class,
+        StyleSheet.Container.class })
 // @WebListener is needed so that servlet containers know that they have to run
 // it
 @WebListener

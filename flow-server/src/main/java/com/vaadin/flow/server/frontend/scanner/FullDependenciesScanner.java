@@ -33,6 +33,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
@@ -75,6 +76,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     private HashMap<String, List<String>> devAssets = new HashMap<>();
     private List<CssData> themeCssData;
     private List<CssData> cssData;
+    private List<CssData> webComponentCssData;
     private List<String> scripts;
     private List<String> scriptsDevelopment;
     private List<String> modules;
@@ -154,6 +156,7 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
 
         themeCssData = new ArrayList<>();
         cssData = new ArrayList<>();
+        webComponentCssData = new ArrayList<>();
         discoverCss();
 
         if (!reactEnabled) {
@@ -220,7 +223,8 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
     public Map<ChunkInfo, List<CssData>> getCss() {
         // Map theme CSS to the APP_SHELL chunk
         return Map.ofEntries(Map.entry(ChunkInfo.APP_SHELL, themeCssData),
-                Map.entry(ChunkInfo.GLOBAL, cssData));
+                Map.entry(ChunkInfo.GLOBAL, cssData),
+                Map.entry(ChunkInfo.WEB_COMPONENT, webComponentCssData));
     }
 
     @Override
@@ -320,9 +324,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                     .getAnnotatedClasses(loadedAnnotation);
             var themeCss = new LinkedHashSet<CssData>();
             var globalCss = new LinkedHashSet<CssData>();
+            var webComponentCss = new LinkedHashSet<CssData>();
+
             for (Class<?> clazz : annotatedClasses) {
                 classes.add(clazz.getName());
                 var isAppShellClass = AppShellConfigurator.class
+                        .isAssignableFrom(clazz);
+                var isWebcomponentExporter = WebComponentExporter.class
                         .isAssignableFrom(clazz);
                 var isThemeClass = AbstractTheme.class.isAssignableFrom(clazz);
                 if (isThemeClass && (themeDefinition == null
@@ -336,10 +344,13 @@ class FullDependenciesScanner extends AbstractDependenciesScanner {
                 imports.stream()
                         .forEach(imp -> ((isAppShellClass || isThemeClass)
                                 ? themeCss
-                                : globalCss).add(createCssData(imp)));
+                                : isWebcomponentExporter ? webComponentCss
+                                        : globalCss)
+                                .add(createCssData(imp)));
             }
             themeCssData.addAll(themeCss);
             cssData.addAll(globalCss);
+            webComponentCssData.addAll(webComponentCss);
         } catch (ClassNotFoundException exception) {
             throw new IllegalStateException(
                     COULD_NOT_LOAD_ERROR_MSG + CssData.class.getName(),

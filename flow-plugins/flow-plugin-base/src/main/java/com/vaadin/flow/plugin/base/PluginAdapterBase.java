@@ -57,7 +57,7 @@ public interface PluginAdapterBase {
     /**
      * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
-     * @return {@link boolean}
+     * @return true if eager server load should happen
      */
     boolean eagerServerLoad();
 
@@ -194,13 +194,6 @@ public interface PluginAdapterBase {
     URI nodeDownloadRoot() throws URISyntaxException;
 
     /**
-     * Whether the alternative node may be auto-updated or not.
-     *
-     * @return {@code true} to update node if older than default
-     */
-    boolean nodeAutoUpdate();
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
@@ -264,6 +257,16 @@ public interface PluginAdapterBase {
      * @return boolean
      */
     boolean requireHomeNodeExec();
+
+    /**
+     * The folder containing the Node.js executable.
+     * <p>
+     * When returned value is non-null and non-empty, Node.js will be
+     * exclusively used from this folder. If not found, build will fail.
+     *
+     * @return the node folder path, or null to use default resolution
+     */
+    String nodeFolder();
 
     /**
      * Defines the output directory for generated non-served resources, such as

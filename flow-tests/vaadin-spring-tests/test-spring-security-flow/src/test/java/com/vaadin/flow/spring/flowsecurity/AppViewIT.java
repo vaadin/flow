@@ -35,6 +35,7 @@ import org.openqa.selenium.WebDriverException;
 
 import com.vaadin.flow.component.applayout.testbench.AppLayoutElement;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
+import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
@@ -107,6 +108,40 @@ public class AppViewIT extends AbstractIT {
     public void root_page_does_not_require_login() {
         open("");
         assertRootPageShown();
+    }
+
+    @Test
+    public void npm_asset_does_not_require_login() {
+        open("");
+        assertRootPageShown();
+        checkLogsForErrors();
+
+        ImageElement status = $(ImageElement.class).id("status-icon");
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/circle.svg",
+                status.getAttribute("src"));
+        // openResource but taking into account all the / in every case
+        driver.get(getRootURL() + getUrlMappingBasePath()
+                + "/assets/icons/circle.svg");
+    }
+
+    @Test
+    public void npm_asset_works_with_login() {
+        open("private");
+        assertPathShown(LOGIN_PATH);
+        loginUser();
+
+        checkLogsForErrors();
+
+        ImageElement status = $(ImageElement.class).id("status-icon");
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/user-circle.svg",
+                status.getAttribute("src"));
+        // openResource but taking into account all the / in every case
+        driver.get(getRootURL() + getUrlMappingBasePath()
+                + "/assets/icons/user-circle.svg");
     }
 
     @Test

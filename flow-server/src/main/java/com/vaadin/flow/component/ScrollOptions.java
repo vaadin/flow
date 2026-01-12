@@ -26,7 +26,14 @@ import com.vaadin.flow.internal.JacksonUtils;
  * Options for scrollIntoView.
  * <p>
  * See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+ *
+ * @deprecated Use
+ *             {@link com.vaadin.flow.dom.Element#scrollIntoView(ScrollIntoViewOption...)}
+ *             with {@link ScrollIntoViewOption.Behavior},
+ *             {@link ScrollIntoViewOption.Block}, and
+ *             {@link ScrollIntoViewOption.Inline} options instead
  **/
+@Deprecated(since = "25.0", forRemoval = true)
 public class ScrollOptions implements Serializable {
     /**
      * Scroll behavior for scrollIntoView.

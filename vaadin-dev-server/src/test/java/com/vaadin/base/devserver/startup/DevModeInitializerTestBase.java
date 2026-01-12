@@ -22,6 +22,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,12 +33,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
@@ -47,7 +49,6 @@ import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.VITE_CONFIG;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
 import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
 import static org.mockito.ArgumentMatchers.any;
@@ -81,7 +82,10 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
     public void setup() throws Exception {
         super.setup();
 
+        // Create stub npm (but not node - use real system node)
+        // The stub npm needs to be in baseDir/node/ for compatibility
         createStubNode(false, true, baseDir);
+
         devServerConfigFile = createStubDevServer(baseDir);
 
         // Prevent TaskRunNpmInstall#cleanUp from deleting node_modules
@@ -128,17 +132,20 @@ public class DevModeInitializerTestBase extends AbstractDevModeTest {
         // Not this needs to update according to dependencies in
         // NodeUpdater.getDefaultDependencies and
         // NodeUpdater.getDefaultDevDependencies
-        FileUtils.write(mainPackageFile, getInitalPackageJson().toString(),
-                "UTF-8");
-        devServerConfigFile.createNewFile();
-        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
+        Files.writeString(mainPackageFile.toPath(),
+                getInitalPackageJson().toString(), StandardCharsets.UTF_8);
+        // Create a minimal valid vite.config.ts that exports an empty
+        // configuration
+        Files.writeString(devServerConfigFile.toPath(), "export default {}\n",
+                StandardCharsets.UTF_8);
+        Files.createDirectories(new File(baseDir, "src/main/java").toPath());
 
         devModeStartupListener = new DevModeStartupListener();
     }
 
     protected File createStubDevServer(String baseDir) throws IOException {
         createStubViteServer("ready in 500ms", 500, baseDir, true);
-        return new File(baseDir, VITE_CONFIG);
+        return new File(baseDir, FrontendUtils.VITE_CONFIG);
     }
 
     private ObjectNode getInitalPackageJson() {

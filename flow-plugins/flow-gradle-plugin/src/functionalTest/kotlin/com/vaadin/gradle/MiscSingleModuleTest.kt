@@ -59,7 +59,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         build.expectTaskNotRan("vaadinBuildFrontend")
 
         val war: File = testProject.builtWar
-        expectArchiveDoesntContainVaadinWebpackBundle(war, false)
+        expectArchiveDoesntContainVaadinBundle(war, false)
     }
 
     /**
@@ -160,7 +160,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(null) { build.task(":vaadinBuildFrontend") }
 
         val jar: File = testProject.builtJar
-        expectArchiveDoesntContainVaadinWebpackBundle(jar, false)
+        expectArchiveDoesntContainVaadinBundle(jar, false)
     }
 
     /**
@@ -194,7 +194,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
             def jettyVersion = "11.0.12"
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
             dependencies {
                 implementation("com.vaadin:flow:$flowVersion")
@@ -230,6 +230,19 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         doTestSpringProjectProductionMode();
     }
 
+    @Test
+    fun testSpringProjectAutoProductionMode() {
+        doTestSpringProjectAutoProductionMode();
+    }
+
+    /**
+     * Test Spring boot project build with 'bootJar' task (production), but forced in dev mode.
+     */
+    @Test
+    fun testSpringProjectForcedDevelopmentMode() {
+        doTestSpringProjectForcedDevelopmentMode();
+    }
+
     @Ignore("Webpack uses gzip compression")
     @Test
     fun testSpringProjectProductionModeWebpack() {
@@ -238,6 +251,44 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
     private fun doTestSpringProjectProductionMode(compressedExtension: String = "*.br") {
 
+        doTestSpringProject()
+
+        val build: BuildResult =
+                testProject.build("-Pvaadin.productionMode", "build")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
+    }
+
+    private fun doTestSpringProjectAutoProductionMode(compressedExtension: String = "*.br") {
+
+        doTestSpringProject()
+
+        val build: BuildResult =
+            testProject.build("bootJar")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskSucceded("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
+    }
+
+    private fun doTestSpringProjectForcedDevelopmentMode(compressedExtension: String = "*.br") {
+
+        doTestSpringProject()
+
+        val build: BuildResult =
+            testProject.build("-Pvaadin.productionMode=false", "bootJar")
+        build.expectTaskSucceded("vaadinPrepareFrontend")
+        build.expectTaskNotRan("vaadinBuildFrontend")
+
+        val jar: File = testProject.builtJar
+        expectArchiveDoesntContainVaadinBundle(jar, false)
+    }
+
+    private fun doTestSpringProject() {
         val springBootVersion = "3.3.4"
 
         testProject.settingsFile.writeText(
@@ -251,7 +302,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             """
         )
         testProject.buildFile.writeText(
-                """
+            """
             plugins {
                 id 'org.springframework.boot' version '$springBootVersion'
                 id 'io.spring.dependency-management' version '1.0.11.RELEASE'
@@ -298,7 +349,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // need to create the Application.java file otherwise bootJar will fail
         testProject.newFile(
-                "src/main/java/com/example/demo/DemoApplication.java", """
+            "src/main/java/com/example/demo/DemoApplication.java", """
             package com.example.demo;
             
             import org.springframework.boot.SpringApplication;
@@ -317,7 +368,7 @@ class MiscSingleModuleTest : AbstractGradleTest() {
 
         // AppShell.java file creation
         testProject.newFile(
-                "src/main/java/com/example/demo/AppShell.java", """
+            "src/main/java/com/example/demo/AppShell.java", """
             package com.example.demo;
             
             import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -328,14 +379,6 @@ class MiscSingleModuleTest : AbstractGradleTest() {
             }
         """.trimIndent()
         )
-
-        val build: BuildResult =
-                testProject.build("-Pvaadin.productionMode", "build")
-        build.expectTaskSucceded("vaadinPrepareFrontend")
-        build.expectTaskSucceded("vaadinBuildFrontend")
-
-        val jar: File = testProject.builtJar
-        expectArchiveContainsVaadinBundle(jar, true, compressedExtension)
     }
 
     /**
@@ -706,5 +749,63 @@ class MiscSingleModuleTest : AbstractGradleTest() {
         expect(true, buildResult.output) { buildResult.output.contains("!!!cfg2.productionMode=false!!!") }
         expect(true, buildResult.output) { buildResult.output.contains("!!!effective1.productionMode=true!!!") }
         expect(true, buildResult.output) { buildResult.output.contains("!!!effective2.productionMode=true!!!") }
+    }
+
+    /**
+     * Tests https://github.com/vaadin/flow/issues/22679
+     * Verifies that vaadinBuildFrontend can propagate build info
+     * if the token file doesn't exist, making it possible to run
+     * without vaadinPrepareFrontend in edge cases.
+     */
+    @Test
+    fun testBuildFrontendPropagatesBuildInfo() {
+        testProject.buildFile.writeText(
+            """
+            plugins {
+                id 'war'
+                id 'org.gretty' version '4.0.3'
+                id("com.vaadin.flow")
+            }
+            repositories {
+                mavenLocal()
+                mavenCentral()
+                maven { url = 'https://maven.vaadin.com/vaadin-prereleases' }
+            }
+            dependencies {
+                implementation("com.vaadin:flow:$flowVersion")
+                providedCompile("jakarta.servlet:jakarta.servlet-api:6.0.0")
+                implementation("org.slf4j:slf4j-simple:$slf4jVersion")
+            }
+        """.trimIndent()
+        )
+
+        // First, run prepare and build to ensure everything works normally
+        val build1: BuildResult = testProject.build("-Pvaadin.productionMode", "build")
+        build1.expectTaskSucceded("vaadinPrepareFrontend")
+        build1.expectTaskSucceded("vaadinBuildFrontend")
+
+        // Verify token file was created
+        val tokenFile = File(testProject.dir, "build/resources/main/META-INF/VAADIN/config/flow-build-info.json")
+        expect(true) { tokenFile.exists() }
+        val tokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash(testProject.dir.name,
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { tokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
+
+        // Clean the token file to simulate it not existing
+        tokenFile.delete()
+        expect(false) { tokenFile.exists() }
+
+        // Run vaadinBuildFrontend again - it should propagate build info
+        // even though the token file doesn't exist
+        val build2: BuildResult = testProject.build("-Pvaadin.productionMode", "vaadinBuildFrontend")
+        build2.expectTaskSucceded("vaadinBuildFrontend")
+
+        // Verify token file was re-created by propagation
+        expect(true) { tokenFile.exists() }
+        val newTokenFileContent = JacksonUtils.readTree(tokenFile.readText())
+        expect("app-" + StringUtil.getHash(testProject.dir.name,
+            java.nio.charset.StandardCharsets.UTF_8
+        )) { newTokenFileContent.get(InitParameters.APPLICATION_IDENTIFIER).textValue() }
     }
 }

@@ -188,7 +188,7 @@ public class MutableTreeRevisionTest {
         NodeModification childUpdate = accept.updates().get(commandId);
         assertNull(childUpdate.oldNode());
         assertEquals("value",
-                ((Data) childUpdate.newNode()).value().textValue());
+                ((Data) childUpdate.newNode()).value().asString());
 
         // Check revision state
         assertListChildren(Id.ZERO, commandId);
@@ -416,7 +416,7 @@ public class MutableTreeRevisionTest {
         NodeModification childModification = accept.updates().get(commandId);
         assertNull(childModification.oldNode());
         assertEquals("value",
-                ((Data) childModification.newNode()).value().textValue());
+                ((Data) childModification.newNode()).value().asString());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", commandId));
@@ -447,8 +447,8 @@ public class MutableTreeRevisionTest {
         // Check result object
         Accept accept = assertAccepted(result);
         NodeModification childUpdate = accept.onlyUpdate();
-        assertEquals("1", ((Data) childUpdate.oldNode()).value().textValue());
-        assertEquals("2", ((Data) childUpdate.newNode()).value().textValue());
+        assertEquals("1", ((Data) childUpdate.oldNode()).value().asString());
+        assertEquals("2", ((Data) childUpdate.newNode()).value().asString());
 
         // Check revision state
         assertMapChildren(Id.ZERO, Map.of("key", child));
@@ -1499,7 +1499,7 @@ public class MutableTreeRevisionTest {
 
         Accept set = assertAccepted(results.get(command1));
         Data setModificationNode = (Data) set.onlyUpdate().newNode();
-        assertEquals("value", setModificationNode.value().textValue());
+        assertEquals("value", setModificationNode.value().asString());
         assertEquals(Map.of(), setModificationNode.mapChildren());
 
         // Check revision state

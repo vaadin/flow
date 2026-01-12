@@ -23,6 +23,7 @@ import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a servlet resource for client download.

@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -275,6 +275,12 @@ public class DefaultDeploymentConfiguration
         return sessionLockCheckStrategy;
     }
 
+    @Override
+    public Mode getMode() {
+        return frontendHotdeploy ? Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                : super.getMode();
+    }
+
     /**
      * Log a warning if Vaadin is not running in production mode.
      */
@@ -436,7 +442,9 @@ public class DefaultDeploymentConfiguration
     }
 
     private boolean automaticHotdeployDefault() {
-        return FrontendUtils.isHillaUsed(getFrontendFolder());
+        return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                .equals(getParentConfiguration().getMode())
+                || FrontendUtils.isHillaUsed(getFrontendFolder());
     }
 
 }

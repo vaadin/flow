@@ -105,6 +105,7 @@ const moduleWeights = {
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-websocket': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-contextpath': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-contextpath': { pos: 5, weight: 3 },
+  'flow-tests/vaadin-spring-tests/test-spring-security-flow-themes-urlmapping': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-methodsecurity': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-urlmapping': { pos: 5, weight: 3 },
   'flow-tests/vaadin-spring-tests/test-spring-security-flow-reverseproxy': { pos: 5, weight: 3 },

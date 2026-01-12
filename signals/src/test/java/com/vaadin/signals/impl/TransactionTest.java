@@ -254,12 +254,12 @@ public class TransactionTest {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = TestUtil.readTransactionRootValue(tree).textValue();
+            String value = TestUtil.readTransactionRootValue(tree).asString();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.readTransactionRootValue(tree).textValue();
+            String value2 = TestUtil.readTransactionRootValue(tree).asString();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }

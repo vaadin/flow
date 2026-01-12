@@ -42,8 +42,7 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * <li>Primitives and their wrappers: {@link Integer}, {@link Double},
  * {@link Boolean}, int, double, boolean, etc.</li>
  * <li>String values: {@link String}</li>
- * <li>JSON types: {@link tools.jackson.databind.JsonNode},
- * {@link elemental.json.JsonValue}</li>
+ * <li>JSON types: {@link tools.jackson.databind.JsonNode}</li>
  * <li>Bean/DTO types: Any Java bean or record that can be deserialized from
  * JSON using Jackson</li>
  * <li>Collections: {@link java.util.List}, {@link java.util.Map}, etc. (when

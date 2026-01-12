@@ -37,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.server.BootstrapHandler;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.PwaConfiguration;
 import com.vaadin.flow.server.PwaIcon;
 import com.vaadin.flow.server.PwaRegistry;

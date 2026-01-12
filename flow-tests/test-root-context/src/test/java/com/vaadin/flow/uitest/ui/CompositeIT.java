@@ -54,7 +54,8 @@ public class CompositeIT extends ChromeBrowserTest {
         waitForElementPresent(By.id(CompositeView.COMPOSITE_PAPER_SLIDER));
         TestBenchElement paperSlider = (TestBenchElement) findElement(
                 By.id(CompositeView.COMPOSITE_PAPER_SLIDER));
-        Assert.assertEquals("100", paperSlider.getPropertyString("max"));
+        Assert.assertEquals(Integer.valueOf(100),
+                paperSlider.getPropertyInteger("max"));
 
     }
 }

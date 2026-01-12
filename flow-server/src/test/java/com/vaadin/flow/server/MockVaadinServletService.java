@@ -17,13 +17,10 @@ package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletException;
 
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 
 import org.mockito.Mockito;
 import org.slf4j.LoggerFactory;
@@ -181,23 +178,12 @@ public class MockVaadinServletService extends VaadinServletService {
     }
 
     @Override
-    protected Executor createDefaultExecutor() {
-        Executor executor = super.createDefaultExecutor();
-        if (executor instanceof ThreadPoolExecutor threadPoolExecutor) {
-            threadPoolExecutor.setCorePoolSize(0);
-            threadPoolExecutor.setMaximumPoolSize(4);
-            threadPoolExecutor.setKeepAliveTime(10, TimeUnit.SECONDS);
-            ThreadFactory threadFactory = threadPoolExecutor.getThreadFactory();
-            threadPoolExecutor.setThreadFactory(r -> {
-                Thread thread = threadFactory.newThread(r);
-                thread.setUncaughtExceptionHandler((t, e) -> {
+    OfVirtual defaultExecutorFactory() {
+        return super.defaultExecutorFactory()
+                .uncaughtExceptionHandler((t, e) -> {
                     LoggerFactory.getLogger(getClass()).error(
                             "An uncaught exception occurred in thread {}",
                             t.getName(), e);
                 });
-                return thread;
-            });
-        }
-        return executor;
     }
 }

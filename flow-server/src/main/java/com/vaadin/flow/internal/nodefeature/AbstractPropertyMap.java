@@ -18,9 +18,11 @@ package com.vaadin.flow.internal.nodefeature;
 import java.io.Serializable;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.signals.Signal;
 
 /**
  * Abstract class to be used as a parent for node maps which supports setting
@@ -59,7 +61,13 @@ public abstract class AbstractPropertyMap extends NodeMap {
         assert name != null;
         assert isValidValueType(value);
 
-        put(name, value, emitChange);
+        if (hasSignal(name)) {
+            SignalBinding b = (SignalBinding) super.get(name);
+            put(name, new SignalBinding(b.signal(), b.registration(), value),
+                    emitChange);
+        } else {
+            put(name, value, emitChange);
+        }
     }
 
     /**
@@ -130,4 +138,47 @@ public abstract class AbstractPropertyMap extends NodeMap {
                 || StateNode.class.isAssignableFrom(type);
     }
 
+    @Override
+    public void updateFromClient(String key, Serializable value) {
+        if (hasSignal(key)) {
+            SignalBinding b = (SignalBinding) super.get(key);
+            super.updateFromClient(key,
+                    new SignalBinding(b.signal(), b.registration(), value));
+        } else {
+            super.updateFromClient(key, value);
+        }
+    }
+
+    /**
+     * Binds the given signal to the given property. <code>null</code> signal
+     * unbinds existing binding.
+     *
+     * @param owner
+     *            the element owning the property, not <code>null</code>
+     * @param name
+     *            the name of the property
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given property
+     */
+    public void bindSignal(Element owner, String name, Signal<?> signal) {
+        bindSignal(owner, name, signal,
+                (element, value) -> setPropertyFromSignal(name, value));
+    }
+
+    /**
+     * Applies a value coming from a signal to the property while preserving an
+     * existing binding.
+     *
+     * @param name
+     *            the property name
+     * @param value
+     *            the value to apply; <code>null</code> removes the property on
+     *            the client but keeps the binding and last-applied value as
+     *            <code>null</code>
+     */
+    protected abstract void setPropertyFromSignal(String name, Object value);
 }

@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 
+import com.vaadin.flow.server.communication.TransferUtil;
+
 /**
  * Upload handler for storing the upload in-memory. Data is returned as a
  * {@code byte[]} to the given successHandler.

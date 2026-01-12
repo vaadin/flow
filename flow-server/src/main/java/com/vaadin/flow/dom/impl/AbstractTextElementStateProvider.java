@@ -135,6 +135,12 @@ public abstract class AbstractTextElementStateProvider
     }
 
     @Override
+    public void bindPropertySignal(Element owner, String name,
+            Signal<?> signal) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void removeProperty(StateNode node, String name) {
         throw new UnsupportedOperationException();
     }
@@ -196,6 +202,11 @@ public abstract class AbstractTextElementStateProvider
     @Override
     public void visit(StateNode node, NodeVisitor visitor) {
         visitor.visit(ElementType.REGULAR, Element.get(node));
+    }
+
+    @Override
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        throw new UnsupportedOperationException();
     }
 
     @Override

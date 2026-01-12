@@ -89,7 +89,8 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             + "com\\.(helger|spring|gwt|lowagie|fasterxml|sun|nimbusds|googlecode|ibm)\\b|"
             + "ch\\.quos\\.logback\\b|"
             + "io\\.(fabric8\\.kubernetes)\\b|"
-            + "net\\.(sf|bytebuddy)\\b"
+            + "net\\.(sf|bytebuddy)\\b|"
+            + "tools\\.jackson\\b"
             + ").*|"
             + ".*(Exception)$"
             + ")");
@@ -324,6 +325,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
     private ChunkInfo getChunkInfo(EntryPointData data) {
         if (data.getType() == EntryPointType.APP_SHELL) {
             return ChunkInfo.APP_SHELL;
+        }
+        if (data.getType() == EntryPointType.WEB_COMPONENT) {
+            return ChunkInfo.WEB_COMPONENT;
         }
         if (data.getType() == EntryPointType.INTERNAL) {
             return ChunkInfo.GLOBAL;
@@ -938,6 +942,9 @@ public class FrontendDependencies extends AbstractDependenciesScanner {
             return true;
         }
         if (theme.isNotheme()) {
+            return true;
+        }
+        if (theme.themeAnnotationPresent) {
             return true;
         }
 

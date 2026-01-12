@@ -35,7 +35,7 @@ import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.frontend.NodeTestComponents.ExampleExperimentalComponent;
 import com.vaadin.flow.server.frontend.NodeTestComponents.FlagView;
@@ -43,10 +43,10 @@ import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.IMPORTS_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.IMPORTS_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -267,13 +267,13 @@ public class NodeTasksViteTest {
                 .withJarFrontendResourcesFolder(getJarFrontendResourcesFolder())
                 .withFrontendHotdeploy(true).withProductionMode(false)
                 .withBuildResultFolders(npmFolder, npmFolder);
-        try (MockedStatic<BundleUtils> bundleUtils = Mockito
-                .mockStatic(BundleUtils.class);
+        try (MockedStatic<BundleBuildUtils> bundleBuildUtils = Mockito
+                .mockStatic(BundleBuildUtils.class);
                 MockedStatic<BundleValidationUtil> validationUtil = Mockito
                         .mockStatic(BundleValidationUtil.class)) {
             new NodeTasks(options).execute();
-            bundleUtils.verify(
-                    () -> BundleUtils.copyPackageLockFromBundle(options),
+            bundleBuildUtils.verify(
+                    () -> BundleBuildUtils.copyPackageLockFromBundle(options),
                     Mockito.times(1));
             validationUtil.verify(() -> BundleValidationUtil.needsBuild(
                     any(Options.class), any(FrontendDependenciesScanner.class),

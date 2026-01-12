@@ -42,7 +42,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
-    static final String VAADIN_BUNDLES = "@vaadin/bundles";
     static final String JS_VERSION = "jsVersion";
     static final String NPM_NAME = "npmName";
     static final String NPM_VERSION = "npmVersion";
@@ -155,10 +154,6 @@ class VersionsJsonConverter {
         String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
-            return;
-        }
-        if (excludeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
-            exclusions.add(npmName);
             return;
         }
         if (reactEnabled && Objects.equals(npmName, VAADIN_ROUTER)) {

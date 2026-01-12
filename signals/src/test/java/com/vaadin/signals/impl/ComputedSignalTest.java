@@ -137,6 +137,20 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void not_booleanInputs_negatedOutputs() {
+        ValueSignal<Boolean> signal = new ValueSignal<>(Boolean.TRUE);
+        Signal<Boolean> negated = Signal.not(signal);
+
+        assertFalse(negated.value());
+
+        signal.value(false);
+        assertTrue(negated.value());
+
+        signal.value(null);
+        assertNull(negated.value());
+    }
+
+    @Test
     void callback_updateOtherSignal_signalUpdated() {
         ValueSignal<String> other = new ValueSignal<>("value");
 

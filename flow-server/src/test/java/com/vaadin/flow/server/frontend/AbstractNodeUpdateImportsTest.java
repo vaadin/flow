@@ -39,13 +39,15 @@ import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 import org.slf4j.Logger;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.MockLogger;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -163,7 +165,8 @@ public abstract class AbstractNodeUpdateImportsTest extends NodeUpdateTestUtil {
 
         // Using regex match because of the ➜ character in TC
         assertContains(output, true,
-                "Failed to find the following imports in the `node_modules` tree:\n      - unresolved/component");
+                "Failed to find the following imports in the `node_modules` tree:",
+                "unresolved/component");
     }
 
     @Test

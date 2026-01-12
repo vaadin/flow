@@ -61,7 +61,7 @@ public class ThemeView extends Div {
         faText.setId(FONTAWESOME_ID);
 
         // Test npm asset
-        Image snowFlake = new Image("VAADIN/static/npm/icons/snowflake.svg",
+        Image snowFlake = new Image("assets/npm/icons/snowflake.svg",
                 "snowflake");
         snowFlake.setHeight("1em");
         snowFlake.setId(SNOWFLAKE_ID);

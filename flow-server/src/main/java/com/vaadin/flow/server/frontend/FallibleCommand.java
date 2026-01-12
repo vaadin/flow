@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.server.frontend;
 
-import com.vaadin.flow.server.ExecutionFailedException;
-
 /**
  * A generic command which may fail.
  * <p>

@@ -36,15 +36,15 @@ import org.mockito.Mockito;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.internal.MockLogger;
 
 import static com.vaadin.flow.server.frontend.TaskGenerateTsConfig.ERROR_MESSAGE;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 @NotThreadSafe
 public class TaskGenerateTsConfigTest {
-    private static final CharSequence DEFAULT_ES_TARGET = "es2022";
-    private static final CharSequence NEWER_ES_TARGET = "es2023";
+    private static final CharSequence DEFAULT_ES_TARGET = "es2023";
+    private static final CharSequence NEWER_ES_TARGET = "es2024";
 
     static private String LATEST_VERSION = "9.1";
 

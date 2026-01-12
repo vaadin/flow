@@ -54,24 +54,24 @@ import org.codehaus.plexus.classworlds.realm.NoSuchRealmException;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.plugin.base.BuildFrontendUtil;
 import com.vaadin.flow.plugin.base.PluginAdapterBase;
 import com.vaadin.flow.plugin.base.PluginAdapterBuild;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.scanner.ReflectionsClassFinder;
 import com.vaadin.flow.theme.Theme;
 import com.vaadin.flow.utils.FlowFileUtils;
 
+import static com.vaadin.flow.server.Constants.META_INF;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND;
 
 /**
  * Goal that builds the dev frontend bundle to be used in Express Build mode.
@@ -134,14 +134,6 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Parameter(property = InitParameters.NODE_VERSION, defaultValue = FrontendTools.DEFAULT_NODE_VERSION)
     private String nodeVersion;
 
-    /**
-     * Setting defining if the automatically installed node version may be
-     * updated to the default Vaadin node version.
-     */
-    @Parameter(property = InitParameters.NODE_AUTO_UPDATE, defaultValue = ""
-            + Constants.DEFAULT_NODE_AUTO_UPDATE)
-    private boolean nodeAutoUpdate;
-
     @Parameter(defaultValue = "${project}", readonly = true, required = true)
     MavenProject project;
 
@@ -166,6 +158,17 @@ public class BuildDevBundleMojo extends AbstractMojo
     private boolean requireHomeNodeExec;
 
     /**
+     * Custom folder containing a pre-installed node executable. When specified,
+     * Vaadin will use the node installation from this folder exclusively with
+     * no fallback. If the specified folder does not contain a valid node
+     * binary, the build will fail with no fallback.
+     * <p>
+     * Example: {@code /usr/local/custom-node} or {@code C:\custom\node}
+     */
+    @Parameter(property = InitParameters.NODE_FOLDER)
+    private String nodeFolder;
+
+    /**
      * Build directory for the project.
      */
     @Parameter(property = "build.folder", defaultValue = "${project.build.directory}")
@@ -186,7 +189,8 @@ public class BuildDevBundleMojo extends AbstractMojo
     /**
      * A directory with project's frontend source files.
      */
-    @Parameter(defaultValue = "${project.basedir}/src/main/" + FRONTEND)
+    @Parameter(defaultValue = "${project.basedir}/src/main/"
+            + FrontendUtils.FRONTEND)
     private File frontendDirectory;
 
     @Parameter(property = InitParameters.NPM_EXCLUDE_WEB_COMPONENTS, defaultValue = "false")
@@ -197,6 +201,14 @@ public class BuildDevBundleMojo extends AbstractMojo
      */
     @Parameter(property = FrontendUtils.PARAM_IGNORE_VERSION_CHECKS, defaultValue = "false")
     private boolean frontendIgnoreVersionChecks;
+
+    /**
+     * The folder where the META-INF/resources files are copied. Used for
+     * finding the StyleSheet referenced css files.
+     */
+    @Parameter(defaultValue = "${project.build.outputDirectory}/" + META_INF
+            + "resources/")
+    private File resourcesOutputDirectory;
 
     static final String CLASSFINDER_FIELD_NAME = "classFinder";
 
@@ -401,7 +413,7 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public URI nodeDownloadRoot() throws URISyntaxException {
         if (nodeDownloadRoot == null) {
-            nodeDownloadRoot = Platform.guess().getNodeDownloadRoot();
+            nodeDownloadRoot = NodeInstaller.getDownloadRoot(Platform.guess());
         }
         try {
             return new URI(nodeDownloadRoot);
@@ -410,11 +422,6 @@ public class BuildDevBundleMojo extends AbstractMojo
             throw new URISyntaxException(nodeDownloadRoot,
                     "Failed to parse nodeDownloadRoot uri");
         }
-    }
-
-    @Override
-    public boolean nodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     @Override
@@ -455,6 +462,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean requireHomeNodeExec() {
         return requireHomeNodeExec;
+    }
+
+    @Override
+    public String nodeFolder() {
+        return nodeFolder;
     }
 
     @Override
@@ -538,6 +550,11 @@ public class BuildDevBundleMojo extends AbstractMojo
     @Override
     public boolean isFrontendIgnoreVersionChecks() {
         return frontendIgnoreVersionChecks;
+    }
+
+    @Override
+    public File resourcesOutputDirectory() {
+        return resourcesOutputDirectory;
     }
 
     private static URLClassLoader createIsolatedClassLoader(

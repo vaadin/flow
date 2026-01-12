@@ -199,11 +199,17 @@ public class InitParameters implements Serializable {
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
     /**
-     * Configuration parameter name for requiring node executable installed in
-     * home directory.
-     *
+     * Configuration parameter name for specifying the folder containing the
+     * Node.js executable.
+     * <p>
+     * When this parameter is set to a non-empty value, the Node.js binary will
+     * be exclusively used from the specified folder. If the binary is not found
+     * in this folder, an exception will be thrown with no fallback to global or
+     * alternative installations.
+     * <p>
+     * Example: "/usr/local/custom-node" or "C:\\custom\\node"
      */
-    public static final String NODE_AUTO_UPDATE = "node.auto.update";
+    public static final String NODE_FOLDER = "node.folder";
 
     /**
      * Configuration name for the parameter that sets the compiled web

@@ -25,14 +25,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.fileupload2.jakarta.servlet6.JakartaServletFileUpload;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -105,6 +103,7 @@ public class StreamReceiverHandlerTest {
 
     private boolean isGetContentLengthLongCalled;
     private String requestCharacterEncoding;
+    private String xFilenameHeader;
 
     @Before
     public void setup() throws Exception {
@@ -179,6 +178,12 @@ public class StreamReceiverHandlerTest {
             public String getHeader(String name) {
                 if ("content-length".equals(name.toLowerCase())) {
                     return contentLength;
+                }
+                if ("x-filename".equals(name.toLowerCase())) {
+                    return xFilenameHeader;
+                }
+                if ("content-type".equals(name.toLowerCase())) {
+                    return contentType;
                 }
                 return super.getHeader(name);
             }
@@ -303,36 +308,13 @@ public class StreamReceiverHandlerTest {
     }
 
     @Test
-    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500_getContentLengthLongCalled()
+    public void doHandleMultipartFileUpload_noPart_uploadFailed_responseStatusIs500()
             throws IOException {
-
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
 
         Mockito.verify(response)
                 .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-        Assert.assertTrue(isGetContentLengthLongCalled);
-    }
-
-    @Test
-    public void createServletFileUpload_useUTF8HeaderCharacterEncodingWhenRequestCharEncodingIsNotSet() {
-        JakartaServletFileUpload servletFileUpload = handler
-                .createServletFileUpload(request);
-        Assert.assertNotNull(servletFileUpload);
-        Assert.assertEquals(
-                "Header encoding should be UTF-8 when request character encoding is null",
-                StandardCharsets.UTF_8, servletFileUpload.getHeaderCharset());
-    }
-
-    @Test
-    public void createServletFileUpload_dontSetHeaderCharEncodingWhenRequestCharEncodingIsSet() {
-        requestCharacterEncoding = "ASCII";
-        JakartaServletFileUpload servletFileUpload = handler
-                .createServletFileUpload(request);
-        Assert.assertNotNull(servletFileUpload);
-        Assert.assertNull(
-                "Header encoding should not be set by Flow when request character encoding is set",
-                servletFileUpload.getHeaderCharset());
     }
 
     @Test
@@ -491,6 +473,92 @@ public class StreamReceiverHandlerTest {
         handler.doHandleMultipartFileUpload(session, request, response,
                 streamReceiver, stateNode);
         Mockito.verifyNoInteractions(errorHandler);
+    }
+
+    @Test
+    public void doHandleXhrFilePost_filenameFromHeader_extractedCorrectly()
+            throws IOException {
+        xFilenameHeader = "test.txt";
+        outputStream = new ByteArrayOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 6);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
+        Assert.assertEquals("test.txt",
+                endEventCaptor.getValue().getFileName());
+    }
+
+    @Test
+    public void doHandleXhrFilePost_encodedFilename_decodedCorrectly()
+            throws IOException {
+        // encodeURIComponent("my file åäö.txt") in JavaScript
+        xFilenameHeader = "my%20file%20%C3%A5%C3%A4%C3%B6.txt";
+        outputStream = new ByteArrayOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 6);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
+        Assert.assertEquals("my file åäö.txt",
+                endEventCaptor.getValue().getFileName());
+    }
+
+    @Test
+    public void doHandleXhrFilePost_contentTypeFromHeader_extractedCorrectly()
+            throws IOException {
+        xFilenameHeader = "test.txt";
+        contentType = "text/plain";
+        outputStream = new ByteArrayOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 6);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
+        Assert.assertEquals("text/plain",
+                endEventCaptor.getValue().getMimeType());
+    }
+
+    @Test
+    public void doHandleXhrFilePost_missingContentTypeHeader_defaultsToUnknown()
+            throws IOException {
+        xFilenameHeader = "test.txt";
+        contentType = null;
+        outputStream = new ByteArrayOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 6);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
+        Assert.assertEquals("unknown", endEventCaptor.getValue().getMimeType());
+    }
+
+    @Test
+    public void doHandleXhrFilePost_missingFilenameHeader_defaultsToUnknown()
+            throws IOException {
+        xFilenameHeader = null;
+        outputStream = new ByteArrayOutputStream();
+
+        handler.doHandleXhrFilePost(session, request, response, streamReceiver,
+                stateNode, 6);
+
+        ArgumentCaptor<StreamVariable.StreamingEndEvent> endEventCaptor = ArgumentCaptor
+                .forClass(StreamVariable.StreamingEndEvent.class);
+        Mockito.verify(streamVariable)
+                .streamingFinished(endEventCaptor.capture());
+        Assert.assertEquals("unknown", endEventCaptor.getValue().getFileName());
     }
 
 }

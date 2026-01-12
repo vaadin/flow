@@ -17,11 +17,13 @@ package com.vaadin.flow.uitest.servlet;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 
 import com.vaadin.flow.server.VaadinServlet;
 
 @WebServlet(asyncSupported = true, urlPatterns = { "/view/*" })
+@MultipartConfig
 public class ViewTestServlet extends VaadinServlet {
 
     private static ViewClassLocator viewLocator;

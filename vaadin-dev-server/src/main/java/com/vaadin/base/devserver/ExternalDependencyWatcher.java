@@ -31,9 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 
+import com.vaadin.flow.internal.FileIOUtils;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FileIOUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**

@@ -172,16 +172,22 @@ public class WebComponentUI extends UI {
 
         if (!shouldBePreserved) {
             attachCreatedWebComponent(webComponentConfiguration.get(), event);
-        } else if (getInternals().getExtendedClientDetails() != null) {
-            attachCachedOrCreatedWebComponent(webComponentConfiguration.get(),
-                    event, getComponentHash(event,
-                            getInternals().getExtendedClientDetails()));
         } else {
-            getPage().retrieveExtendedClientDetails(extendedClientDetails -> {
+            ExtendedClientDetails details = getInternals()
+                    .getExtendedClientDetails();
+            if (details.getWindowName() == null) {
+                getPage().retrieveExtendedClientDetails(
+                        extendedClientDetails -> {
+                            attachCachedOrCreatedWebComponent(
+                                    webComponentConfiguration.get(), event,
+                                    getComponentHash(event,
+                                            extendedClientDetails));
+                        });
+            } else {
                 attachCachedOrCreatedWebComponent(
                         webComponentConfiguration.get(), event,
-                        getComponentHash(event, extendedClientDetails));
-            });
+                        getComponentHash(event, details));
+            }
         }
     }
 

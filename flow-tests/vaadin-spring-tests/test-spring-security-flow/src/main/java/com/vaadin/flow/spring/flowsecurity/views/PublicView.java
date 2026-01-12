@@ -54,19 +54,17 @@ public class PublicView extends FlexLayout {
         Button backgroundNavigation = new Button(
                 "Navigate to admin view in 1 second", e -> {
                     UI ui = e.getSource().getUI().get();
+                    Runnable doNavigation = new DelegatingSecurityContextRunnable(
+                            () -> ui.navigate(AdminView.class),
+                            SecurityContextHolder.getContext());
                     Runnable navigateToAdmin = () -> {
                         try {
                             Thread.sleep(1000);
                         } catch (InterruptedException e1) {
                         }
-                        ui.access(() -> {
-                            ui.navigate(AdminView.class);
-                        });
+                        ui.access(doNavigation::run);
                     };
-                    Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                            navigateToAdmin,
-                            SecurityContextHolder.getContext());
-                    new Thread(wrappedRunnable).start();
+                    new Thread(navigateToAdmin).start();
                 });
         backgroundNavigation.setId(BACKGROUND_NAVIGATION_ID);
         add(backgroundNavigation);

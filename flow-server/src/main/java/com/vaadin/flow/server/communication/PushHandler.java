@@ -17,6 +17,7 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.util.Collection;
@@ -25,7 +26,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.IOUtils;
 import org.atmosphere.cpr.AtmosphereRequest;
 import org.atmosphere.cpr.AtmosphereResource;
 import org.atmosphere.cpr.AtmosphereResource.TRANSPORT;
@@ -664,8 +664,9 @@ public class PushHandler {
                 return;
             }
 
-            String msg = IOUtils.toString(reader);
-            liveReload.get().onMessage(resource, msg);
+            StringWriter writer = new StringWriter();
+            reader.transferTo(writer);
+            liveReload.get().onMessage(resource, writer.toString());
         } catch (IOException e) {
             getLogger().error(
                     "Unable to read contents of debug connection message", e);

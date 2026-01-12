@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-server</artifactId>
   <packaging>jar</packaging>
@@ -14,6 +14,20 @@
   <dependencies>
 
     <!-- Project dependencies -->
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-build-tools</artifactId>
+      <version>${project.version}</version>
+      <classifier>shaded</classifier>
+      <!-- Note, ideally vaadin-server should not depend this module at all
+           and development time tooling shared with plugins should end up here.
+           Temporarily build this way so that commons-compress can be ditched
+           from flow-server runtime dependencies with reasonable effort.
+           The actual dependency brought in by plugins or dev mode.
+      -->
+      <scope>provided</scope>
+    </dependency>
 
     <dependency>
       <groupId>com.vaadin</groupId>
@@ -74,25 +88,15 @@
     </dependency>
 
     <dependency>
-      <groupId>com.vaadin.external.gwt</groupId>
-      <artifactId>gwt-elemental</artifactId>
-      <version>2.8.2.vaadin2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-fileupload2-jakarta-servlet6</artifactId>
-      <version>2.0.0-M4</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
-    <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.28.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>tools.jackson.core</groupId>
@@ -123,18 +127,6 @@
       <version>1.2.0.vaadin1</version>
     </dependency>
 
-    <!-- Download libraries -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.28.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>com.vaadin</groupId>
@@ -201,6 +193,13 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.karaf.tooling</groupId>

@@ -139,6 +139,12 @@ public class NodeTestComponents extends NodeUpdateTestUtil {
 
     }
 
+    @Route()
+    public static class ReferenceView extends Component {
+        // References the bower component for bytecode scanner.
+        VaadinBowerComponent vaadinBowerComponent;
+    }
+
     @JsModule("./common-js-file.js")
     @Theme(themeClass = LumoTest.class, variant = LumoTest.DARK)
     @Route

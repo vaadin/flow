@@ -20,17 +20,22 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.DevBundleUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.shared.util.SharedUtil;
 
 /**
@@ -55,7 +60,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "- Custom theme imports/assets added into 'theme.json' file\n" +
             "- Exported web component is added.\n\n" +
             "If your project development needs a hot deployment of the frontend changes, \n" +
-            "you can switch Flow to use Vite development server (default in Vaadin 23.3 and earlier versions):\n" +
+            "you can switch Flow to use Vite development server:\n" +
             "- set `vaadin.frontend.hotdeploy=true` in `application.properties`\n" +
             "- configure `vaadin-maven-plugin`:\n" +
             "```\n" +
@@ -71,8 +76,10 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
             "       </systemProperties>\n" +
             "   </configuration>\n" +
             "```\n\n" +
-            "Read more [about Vaadin development mode](https://vaadin.com/docs/next/flow/configuration/development-mode#precompiled-bundle).";
+            "Read more [about Vaadin development mode](https://vaadin.com/docs/latest/flow/configuration/development-mode#precompiled-bundle).";
     //@formatter:on
+
+    public static final String VAADIN_JSON = "vaadin.json";
 
     private final Options options;
 
@@ -93,6 +100,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         runFrontendBuildTool("Vite", "vite", "vite", "build");
 
         copyPackageLockToBundleFolder();
+        addVaadinVersionToDevBundle();
 
         addReadme();
 
@@ -131,8 +139,8 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(options.getNodeDownloadRoot());
         settings.setForceAlternativeNode(options.isRequireHomeNodeExec());
+        settings.setNodeFolder(options.getNodeFolder());
         settings.setUseGlobalPnpm(options.isUseGlobalPnpm());
-        settings.setAutoUpdate(options.isNodeAutoUpdate());
         settings.setNodeVersion(options.getNodeVersion());
         settings.setIgnoreVersionChecks(
                 options.isFrontendIgnoreVersionChecks());
@@ -156,12 +164,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (options.isRequireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);
@@ -240,11 +243,35 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
                 packageLockFile);
         if (packageLockJson.exists()) {
             try {
-                FileUtils.copyFile(packageLockJson,
-                        new File(devBundleFolder, packageLockFile));
+                Files.copy(packageLockJson.toPath(),
+                        new File(devBundleFolder, packageLockFile).toPath(),
+                        StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException e) {
                 getLogger().error("Failed to copy '" + packageLockFile + "' to "
                         + getDevBundleFolderInTarget(), e);
+            }
+        }
+    }
+
+    private void addVaadinVersionToDevBundle() {
+        File devBundleFolder = getDevBundleFolderInTarget();
+        assert devBundleFolder.exists() : "No dev-bundle folder created";
+
+        Optional<String> vaadinVersion = FrontendBuildUtils
+                .getVaadinVersion(options.getClassFinder());
+        if (vaadinVersion.isPresent()) {
+            ObjectNode vaadinObject = JacksonUtils.createObjectNode();
+            vaadinObject.put("version", vaadinVersion.get());
+
+            try {
+                Files.writeString(
+                        new File(devBundleFolder, VAADIN_JSON).toPath(),
+                        vaadinObject.toPrettyString(), StandardCharsets.UTF_8);
+            } catch (IOException e) {
+                getLogger().error(
+                        "Failed to write vaadin version to '"
+                                + new File(devBundleFolder, VAADIN_JSON) + "'",
+                        e);
             }
         }
     }
@@ -268,8 +295,7 @@ public class TaskRunDevBundleBuild implements FallibleCommand {
         try {
             boolean created = readme.createNewFile();
             if (created) {
-                FileUtils.writeStringToFile(readme, README,
-                        StandardCharsets.UTF_8);
+                Files.writeString(readme.toPath(), README);
             } else {
                 getLogger().warn("Failed to create " + readme);
             }
