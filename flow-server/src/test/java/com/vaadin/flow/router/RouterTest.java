@@ -4709,7 +4709,8 @@ public class RouterTest extends RoutingTestBase {
         public void afterNavigation(AfterNavigationEvent event) {
             events.add(event);
             if (event.getLocation().getPath().equals("error")) {
-                throw new RuntimeException("Exception in MainLayout afterNavigation");
+                throw new RuntimeException(
+                        "Exception in MainLayout afterNavigation");
             }
         }
     }
@@ -4746,7 +4747,8 @@ public class RouterTest extends RoutingTestBase {
                 "Navigation should complete with internal server error status.",
                 HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
 
-        // Should fall back to InternalServerError instead of the custom error view
+        // Should fall back to InternalServerError instead of the custom error
+        // view
         assertExceptionComponent(InternalServerError.class,
                 "Error view rendering failed");
 
