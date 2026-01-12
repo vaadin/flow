@@ -45,7 +45,6 @@ import com.vaadin.signals.SignalCommand.AdoptAsCommand;
 import com.vaadin.signals.SignalCommand.AdoptAtCommand;
 import com.vaadin.signals.SignalCommand.ClearCommand;
 import com.vaadin.signals.SignalCommand.ClearOwnerCommand;
-import com.vaadin.signals.SignalCommand.ConditionCommand;
 import com.vaadin.signals.SignalCommand.IncrementCommand;
 import com.vaadin.signals.SignalCommand.InsertCommand;
 import com.vaadin.signals.SignalCommand.KeyCondition;
