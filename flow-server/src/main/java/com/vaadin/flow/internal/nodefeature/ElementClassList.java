@@ -15,9 +15,7 @@
  */
 package com.vaadin.flow.internal.nodefeature;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Optional;
 
 import com.vaadin.flow.dom.ClassList;
 import com.vaadin.flow.dom.Element;
@@ -36,8 +34,6 @@ import com.vaadin.signals.Signal;
  * @since 1.0
  */
 public class ElementClassList extends SerializableNodeList<String> {
-
-    private Map<String, SignalBinding> bindingsByName;
 
     private static class ClassListView extends NodeList.SetView<String>
             implements ClassList {
@@ -83,14 +79,6 @@ public class ElementClassList extends SerializableNodeList<String> {
             }
         }
 
-        private Map<String, SignalBinding> getBindings() {
-            return elementClassList.getBindings();
-        }
-
-        private boolean isBound(String name) {
-            return elementClassList.isBound(name);
-        }
-
         private StateNode getNode() {
             return elementClassList.getNode();
         }
@@ -98,47 +86,36 @@ public class ElementClassList extends SerializableNodeList<String> {
         @Override
         public void bind(String name, Signal<Boolean> signal) {
             validate(name);
-            if (signal == null) {
-                // Unbind: remove existing binding and leave the current class
-                // presence as-is
-                if (isBound(name)) {
-                    SignalBinding old = getBindings().remove(name);
-                    if (old != null && old.registration != null) {
-                        old.registration.remove();
-                    }
-                }
-                return;
-            }
+            SignalBindingFeature feature = getNode()
+                    .getFeature(SignalBindingFeature.class);
 
-            if (isBound(name)) {
-                throw new BindingActiveException("Class name '" + name
-                        + "' is already bound to a signal");
+            if (signal == null) {
+                feature.removeBinding(SignalBindingFeature.CLASSES + name);
+            } else {
+                if (feature.hasBinding(SignalBindingFeature.CLASSES + name)) {
+                    throw new BindingActiveException("Class name '" + name
+                            + "' is already bound to a signal");
+                }
+
+                Registration registration = ElementEffect.bind(
+                        Element.get(getNode()), signal,
+                        (element, value) -> internalSetPresence(name,
+                                Boolean.TRUE.equals(value)));
+                feature.setBinding(SignalBindingFeature.CLASSES + name,
+                        registration, signal);
             }
-            Element owner = Element.get(getNode());
-            Registration registration = ElementEffect.bind(owner, signal,
-                    (element, value) -> internalSetPresence(name,
-                            Boolean.TRUE.equals(value)));
-            SignalBinding binding = new SignalBinding(signal, registration,
-                    name);
-            getBindings().put(name, binding);
         }
 
         @Override
         public boolean add(String className) {
-            if (isBound(className)) {
-                throw new BindingActiveException("Class name '" + className
-                        + "' is bound and cannot be modified manually");
-            }
+            throwIfBound(className);
             return super.add(className);
         }
 
         @Override
         public boolean remove(Object className) {
             if (className instanceof String name) {
-                if (isBound(name)) {
-                    throw new BindingActiveException("Class name '" + name
-                            + "' is bound and cannot be modified manually");
-                }
+                throwIfBound(name);
             }
             return super.remove(className);
         }
@@ -159,7 +136,27 @@ public class ElementClassList extends SerializableNodeList<String> {
          * Clears all signal bindings.
          */
         public void clearBindings() {
-            elementClassList.clearBindings();
+            getSignalBindingFeatureIfInitialized().ifPresent(feature -> feature
+                    .clearBindings(SignalBindingFeature.CLASSES));
+        }
+
+        private void throwIfBound(String className) {
+            getSignalBindingFeatureIfInitialized().ifPresent(feature -> {
+                if (feature
+                        .hasBinding(SignalBindingFeature.CLASSES + className)) {
+                    throw new BindingActiveException("Class name '" + className
+                            + "' is bound and cannot be modified manually");
+                }
+            });
+        }
+
+        private Optional<SignalBindingFeature> getSignalBindingFeatureIfInitialized() {
+            try {
+                return getNode()
+                        .getFeatureIfInitialized(SignalBindingFeature.class);
+            } catch (IllegalStateException e) {
+                return Optional.empty();
+            }
         }
     }
 
@@ -182,30 +179,4 @@ public class ElementClassList extends SerializableNodeList<String> {
         return new ClassListView(this);
     }
 
-    private Map<String, SignalBinding> getBindings() {
-        if (bindingsByName == null) {
-            bindingsByName = new HashMap<>();
-        }
-        return bindingsByName;
-    }
-
-    private boolean isBound(String name) {
-        return bindingsByName != null && bindingsByName.containsKey(name);
-    }
-
-    private void clearBindings() {
-        if (bindingsByName == null || bindingsByName.isEmpty()) {
-            return;
-        }
-        for (SignalBinding binding : bindingsByName.values()) {
-            if (binding.registration != null) {
-                binding.registration.remove();
-            }
-        }
-        bindingsByName.clear();
-    }
-
-    private record SignalBinding(Signal<Boolean> signal,
-            Registration registration, String name) implements Serializable {
-    }
 }
