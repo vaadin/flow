@@ -2623,7 +2623,7 @@ public abstract class VaadinService implements Serializable {
      *
      * @return Context. This may never be {@code null}.
      */
-    protected abstract VaadinContext constructVaadinContext();
+    protected abstract VaadinContext                   constructVaadinContext();
 
     /**
      * Returns {@link VaadinContext} for this service.
