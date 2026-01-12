@@ -502,7 +502,12 @@ public class DefaultConnectionStateHandler implements ConnectionStateHandler {
         debug("pushReconnectPending(" + pushConnection.getTransportType()
                 + ")");
         Console.debug("Reopening push connection");
-        if (pushConnection.isBidirectional()) {
+        // SSE reliably notifies when connection is re-established (via onopen),
+        // so it should be treated like bidirectional connections for this
+        // purpose
+        boolean providesReconnectionFeedback = pushConnection.isBidirectional()
+                || "sse".equals(pushConnection.getTransportType());
+        if (providesReconnectionFeedback) {
             // Lost connection for a connection which will tell us when the
             // connection is available again
             handleRecoverableError(Type.PUSH, null);

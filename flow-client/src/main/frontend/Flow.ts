@@ -44,12 +44,13 @@ class SseConnection {
   private reconnectAttempts = 0;
   private maxReconnectAttempts: number;
   private reconnectInterval: number;
+  private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
   private url: string;
 
   constructor(options: SseAtmosphereRequest) {
     this.options = options;
-    this.maxReconnectAttempts = options.maxReconnectOnClose ?? 5;
-    this.reconnectInterval = options.reconnectInterval ?? 0;
+    this.maxReconnectAttempts = options.maxReconnectOnClose ?? 25;
+    this.reconnectInterval = options.reconnectInterval ?? 5000;
     this.url = this.buildSseUrl(options.url);
     this.connect();
   }
@@ -69,6 +70,7 @@ class SseConnection {
   private connect(): void {
     if (this.eventSource) {
       this.eventSource.close();
+      this.eventSource = null;
     }
     try {
       this.state = 'connecting';
@@ -101,28 +103,51 @@ class SseConnection {
 
       this.eventSource.onerror = () => {
         if (this.state === 'closed') return;
-        const response = this.createResponse('error');
-        if (this.eventSource?.readyState === EventSource.CLOSED) {
-          this.state = 'closed';
-          if (this.reconnectAttempts < this.maxReconnectAttempts) {
-            this.reconnectAttempts += 1;
-            this.options.onReconnect?.(response, {
-              timeout: this.reconnectInterval,
-              attempts: this.reconnectAttempts
-            });
-          } else {
-            this.options.onError?.(response);
-            this.options.onClose?.(response);
-          }
-        } else if (this.eventSource?.readyState === EventSource.CONNECTING) {
-          this.options.onError?.(response);
+
+        // Don't rely on browser's auto-reconnection - it's inconsistent across
+        // browsers (Safari, Chrome, Firefox behave differently). Take full
+        // control of reconnection by closing the EventSource and managing
+        // reconnection ourselves.
+        if (this.eventSource) {
+          this.eventSource.close();
+          this.eventSource = null;
         }
+        this.state = 'closed';
+        this.scheduleReconnect();
       };
     } catch (e) {
       const response = this.createResponse('error');
       response.error = e instanceof Error ? e.message : String(e);
       this.options.onTransportFailure?.(response.error, response);
     }
+  }
+
+  private scheduleReconnect(): void {
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      // Max attempts exceeded - report error
+      const response = this.createResponse('error');
+      response.error = 'Max reconnection attempts exceeded';
+      this.options.onError?.(response);
+      this.options.onClose?.(response);
+      return;
+    }
+
+    this.reconnectAttempts += 1;
+    const response = this.createResponse('reconnect');
+
+    // Notify about reconnection attempt (this integrates with Vaadin's connection state)
+    this.options.onReconnect?.(response, {
+      timeout: this.reconnectInterval,
+      attempts: this.reconnectAttempts
+    });
+
+    // Schedule actual reconnection - use shorter interval for first few attempts
+    const interval = this.reconnectAttempts <= 3 ? 1000 : this.reconnectInterval;
+    this.reconnectTimeoutId = setTimeout(() => {
+      this.reconnectTimeoutId = null;
+      if (this.state !== 'closed') return; // Already reconnected or closed by user
+      this.connect();
+    }, interval);
   }
 
   private handleMessage(data: string): void {
@@ -176,6 +201,10 @@ class SseConnection {
 
   close(): void {
     this.state = 'closed';
+    if (this.reconnectTimeoutId) {
+      clearTimeout(this.reconnectTimeoutId);
+      this.reconnectTimeoutId = null;
+    }
     if (this.eventSource) {
       this.eventSource.close();
       this.eventSource = null;
