@@ -745,8 +745,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         // Remove those items from the keyMapper and dataGenerator to
         // release any associated client-side resources.
         itemsToRemove.forEach((item) -> {
-            keyMapper.remove(item);
             dataGenerator.destroyData(item);
+            keyMapper.remove(item);
         });
     }
 
