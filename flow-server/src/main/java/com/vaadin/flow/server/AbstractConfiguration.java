@@ -136,8 +136,7 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether globally installed pnpm is used or the default one (see
-     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * Returns whether globally installed pnpm is used or the default one.
      *
      * @return {@code true} if globally installed pnpm is used, {@code false} if
      *         the default one is used.
