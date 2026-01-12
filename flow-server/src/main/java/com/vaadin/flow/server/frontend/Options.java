@@ -29,9 +29,9 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -121,7 +121,7 @@ public class Options implements Serializable {
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private Lookup lookup;
 

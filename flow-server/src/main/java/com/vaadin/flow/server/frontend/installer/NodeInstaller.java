@@ -35,6 +35,7 @@ import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.MessageDigestUtil;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.frontendtools.installer.ArchiveExtractionException;
 import com.vaadin.frontendtools.installer.ArchiveExtractor;
 import com.vaadin.frontendtools.installer.DefaultArchiveExtractor;
@@ -208,7 +209,7 @@ public class NodeInstaller {
         synchronized (lock) {
             // If no download root defined use default root
             if (nodeDownloadRoot == null) {
-                nodeDownloadRoot = URI.create(platform.getNodeDownloadRoot());
+                nodeDownloadRoot = URI.create(getDownloadRoot(platform));
             }
 
             getLogger().info("Installing node version {}", nodeVersion);
@@ -650,5 +651,18 @@ public class NodeInstaller {
             filename.append(".").append(archiveExtension);
             return new File(installDirectory, filename.toString());
         }
+    }
+
+    /**
+     * Get the download root for the given platform.
+     * 
+     * @param platform
+     *            platform to get download root for
+     */
+    public static String getDownloadRoot(Platform platform) {
+        if (platform.isNodeSupportExperimental()) {
+            return UNOFFICIAL_NODEJS_DOWNLOAD_ROOT;
+        }
+        return DEFAULT_NODEJS_DOWNLOAD_ROOT;
     }
 }

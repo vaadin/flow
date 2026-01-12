@@ -38,9 +38,9 @@ import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
 import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -70,7 +70,7 @@ public class FrontendTools {
      */
     public static final String DEFAULT_NPM_VERSION = "11.6.2";
 
-    public static final String DEFAULT_PNPM_VERSION = "10.26.0";
+    public static final String DEFAULT_PNPM_VERSION = "10.28.0";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -286,7 +286,7 @@ public class FrontendTools {
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
                 .getStringProperty(NODE_DOWNLOAD_ROOT,
-                        Platform.guess().getNodeDownloadRoot());
+                        NodeInstaller.getDownloadRoot(Platform.guess()));
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),
