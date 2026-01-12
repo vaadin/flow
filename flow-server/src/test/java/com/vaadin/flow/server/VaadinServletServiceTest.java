@@ -184,7 +184,7 @@ public class VaadinServletServiceTest {
     }
 
     @Test
-    public void getPwaRegistry_servletNotInitialized_getsNull() {
+    public void getPwaRegistry_serdvletNotInitialized_getsNull()                  {
         MockServletServiceSessionSetup.TestVaadinServlet vaadinServlet = Mockito
                 .spy(mocks.getServlet());
         // Restore original behavior of getServletContext
