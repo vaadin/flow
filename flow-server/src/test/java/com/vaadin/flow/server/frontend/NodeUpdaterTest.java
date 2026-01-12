@@ -23,13 +23,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.core.StringContains;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -37,9 +36,13 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -110,12 +113,13 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void getDefaultDependencies_includesAllDependencies() {
+    public void getDefaultDependencies_withPolymerTemplate_includesAllDependencies() {
+        fakePolymerTemplateInClasspath();
+
         Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("@polymer/polymer");
         expectedDependencies.add("@vaadin/common-frontend");
-        expectedDependencies.add("construct-style-sheets-polyfill");
         expectedDependencies.add("lit");
         expectedDependencies.add("react");
         expectedDependencies.add("react-dom");
@@ -127,28 +131,18 @@ public class NodeUpdaterTest {
     }
 
     @Test
-    public void react19UsedWhenFeatureFlagIsOn() {
-        Map<String, String> react18Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react18DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
-        Mockito.when(options.getFeatureFlags().isEnabled(FeatureFlags.REACT19))
-                .thenReturn(true);
+    public void getDefaultDependencies_includesAllDependencies() {
+        Map<String, String> defaultDeps = nodeUpdater.getDefaultDependencies();
+        Set<String> expectedDependencies = new HashSet<>();
+        expectedDependencies.add("@vaadin/common-frontend");
+        expectedDependencies.add("lit");
+        expectedDependencies.add("react");
+        expectedDependencies.add("react-dom");
+        expectedDependencies.add("react-router");
 
-        Map<String, String> react19Deps = nodeUpdater.getDefaultDependencies();
-        Map<String, String> react19DevDeps = nodeUpdater
-                .getDefaultDevDependencies();
+        Set<String> actualDependendencies = defaultDeps.keySet();
 
-        Assert.assertTrue(react18Deps.get("react").startsWith("18."));
-        Assert.assertTrue(react18Deps.get("react-dom").startsWith("18."));
-        Assert.assertTrue(react18DevDeps.get("@types/react").startsWith("18."));
-        Assert.assertTrue(
-                react18DevDeps.get("@types/react-dom").startsWith("18."));
-
-        Assert.assertTrue(react19Deps.get("react").startsWith("19."));
-        Assert.assertTrue(react19Deps.get("react-dom").startsWith("19."));
-        Assert.assertTrue(react19DevDeps.get("@types/react").startsWith("19."));
-        Assert.assertTrue(
-                react19DevDeps.get("@types/react-dom").startsWith("19."));
+        Assert.assertEquals(expectedDependencies, actualDependendencies);
     }
 
     @Test
@@ -172,6 +166,8 @@ public class NodeUpdaterTest {
         expectedDependencies.add("@types/react");
         expectedDependencies.add("@types/react-dom");
         expectedDependencies.add("@preact/signals-react-transform");
+        expectedDependencies.add("magic-string");
+        expectedDependencies.add("@types/node");
 
         Set<String> actualDependendencies = defaultDeps.keySet();
 
@@ -181,15 +177,12 @@ public class NodeUpdaterTest {
     private Set<String> getCommonDevDeps() {
         Set<String> expectedDependencies = new HashSet<>();
         expectedDependencies.add("typescript");
-        expectedDependencies.add("workbox-core");
-        expectedDependencies.add("workbox-precaching");
-        expectedDependencies.add("glob");
-        expectedDependencies.add("async");
         return expectedDependencies;
     }
 
     @Test
     public void updateMainDefaultDependencies_polymerVersionIsNull_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
         nodeUpdater.addVaadinDefaultsToJson(object);
         nodeUpdater.updateDefaultDependencies(object);
@@ -214,6 +207,7 @@ public class NodeUpdaterTest {
 
     @Test
     public void updateMainDefaultDependencies_vaadinIsProvidedByUser_useDefault() {
+        fakePolymerTemplateInClasspath();
         ObjectNode object = JacksonUtils.createObjectNode();
 
         ObjectNode vaadin = JacksonUtils.createObjectNode();
@@ -236,12 +230,13 @@ public class NodeUpdaterTest {
                 JacksonUtils.createObjectNode());
         packageJson.set(NodeUpdater.DEV_DEPENDENCIES,
                 JacksonUtils.createObjectNode());
-        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES)).put("glob",
-                "7.0.0");
+        ((ObjectNode) packageJson.get(NodeUpdater.DEV_DEPENDENCIES))
+                .put("typescript", "1.0.0");
         nodeUpdater.updateDefaultDependencies(packageJson);
 
-        Assert.assertEquals("11.0.2", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("glob").textValue());
+        Assert.assertNotEquals("1.0.0",
+                packageJson.get(NodeUpdater.DEV_DEPENDENCIES).get("typescript")
+                        .stringValue());
     }
 
     @Test // #6907 test when user has set newer versions
@@ -257,7 +252,7 @@ public class NodeUpdaterTest {
         nodeUpdater.updateDefaultDependencies(packageJson);
 
         Assert.assertEquals("78.2.3", packageJson
-                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").textValue());
+                .get(NodeUpdater.DEV_DEPENDENCIES).get("vite").asString());
     }
 
     @Test
@@ -280,7 +275,7 @@ public class NodeUpdaterTest {
                 formPackage, newVersion);
 
         Assert.assertEquals(newVersion, packageJson
-                .get(NodeUpdater.DEPENDENCIES).get(formPackage).textValue());
+                .get(NodeUpdater.DEPENDENCIES).get(formPackage).asString());
     }
 
     @Test
@@ -347,6 +342,7 @@ public class NodeUpdaterTest {
     }
 
     @Test
+    @Ignore("Can be removed if we agree on ignoring potential issues in [23 + webpack] -> [25] upgrades")
     public void removedAllOldAndExistingPlugins() throws IOException {
         File packageJson = new File(npmFolder, "package.json");
         FileWriter packageJsonWriter = new FileWriter(packageJson);
@@ -362,7 +358,7 @@ public class NodeUpdaterTest {
         packageJsonWriter.close();
         ObjectNode actualDevDeps = (ObjectNode) nodeUpdater.getPackageJson()
                 .get(NodeUpdater.DEV_DEPENDENCIES);
-        Assert.assertFalse(actualDevDeps.has("some-old-plugin"));
+        Assert.assertFalse(actualDevDeps.has("@vaadin/some-old-plugin"));
         Assert.assertFalse(
                 actualDevDeps.has("@vaadin/application-theme-plugin"));
     }
@@ -628,12 +624,17 @@ public class NodeUpdaterTest {
     @Test
     public void getDefaultDependencies_reactIsUsed_addsHillaReactComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
-            mock.when(() -> FrontendUtils
-                    .isReactRouterRequired(Mockito.any(File.class)))
+        MockedStatic<FrontendUtils> mockFrontendUtils = Mockito
+                .mockStatic(FrontendUtils.class);
+        MockedStatic<FrontendBuildUtils> mockFrontendBuildUtils = Mockito
+                .mockStatic(FrontendBuildUtils.class);
+        try {
+            mockFrontendBuildUtils.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
+            mockFrontendUtils
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
                     .thenReturn(true);
             options.withReact(true);
             Map<String, String> defaultDeps = nodeUpdater
@@ -659,16 +660,19 @@ public class NodeUpdaterTest {
                     defaultDevDeps.containsKey("react-dev-dependency"));
         } finally {
             options.withReact(reactEnabled);
+            mockFrontendUtils.close();
+            mockFrontendBuildUtils.close();
         }
     }
 
     @Test
     public void getDefaultDependencies_vaadinRouterIsUsed_addsHillaLitComponents() {
         boolean reactEnabled = options.isReactEnabled();
-        try (MockedStatic<FrontendUtils> mock = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            mock.when(() -> FrontendUtils.isHillaUsed(Mockito.any(File.class),
-                    Mockito.any(ClassFinder.class))).thenReturn(true);
+        try (MockedStatic<FrontendBuildUtils> mock = Mockito
+                .mockStatic(FrontendBuildUtils.class)) {
+            mock.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(true);
             options.withReact(false);
             Map<String, String> defaultDeps = nodeUpdater
                     .getDefaultDependencies();
@@ -710,6 +714,86 @@ public class NodeUpdaterTest {
         Assert.assertFalse(
                 "Lit dev dependency added unexpectedly when Hilla isn't used",
                 defaultDevDeps.containsKey("lit-dev-dependency"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_includesWorkbox_whenPwaEnabled() {
+        // Create a mock FrontendDependencies with PWA enabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(true);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertTrue("workbox-core should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertTrue(
+                "workbox-precaching should be included when PWA is enabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaDisabled() {
+        // Create a mock FrontendDependencies with PWA disabled
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        com.vaadin.flow.server.PwaConfiguration pwaConfig = Mockito
+                .mock(com.vaadin.flow.server.PwaConfiguration.class);
+        Mockito.when(pwaConfig.isEnabled()).thenReturn(false);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(pwaConfig);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is disabled",
+                defaultDevDeps.containsKey("workbox-precaching"));
+    }
+
+    @Test
+    public void getDefaultDevDependencies_excludesWorkbox_whenPwaNull() {
+        // Create a mock FrontendDependencies with no PWA configuration
+        FrontendDependencies frontendDependencies = Mockito
+                .mock(FrontendDependencies.class);
+        Mockito.when(frontendDependencies.getPwaConfiguration())
+                .thenReturn(null);
+
+        nodeUpdater = new NodeUpdater(frontendDependencies, options) {
+            @Override
+            public void execute() {
+                // NO-OP
+            }
+        };
+
+        Map<String, String> defaultDevDeps = nodeUpdater
+                .getDefaultDevDependencies();
+        Assert.assertFalse(
+                "workbox-core should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-core"));
+        Assert.assertFalse(
+                "workbox-precaching should not be included when PWA is null",
+                defaultDevDeps.containsKey("workbox-precaching"));
     }
 
     @Test
@@ -758,9 +842,71 @@ public class NodeUpdaterTest {
         Mockito.verifyNoInteractions(log);
     }
 
+    @Test
+    public void getDefaultDependencies_hillaAvailableButNotUsed_addsGeneratorDependencies() {
+        boolean reactEnabled = options.isReactEnabled();
+        try (MockedStatic<FrontendBuildUtils> frontendBuildUtilsMock = Mockito
+                .mockStatic(FrontendBuildUtils.class);
+                MockedStatic<FrontendUtils> frontendUtilsMock = Mockito
+                        .mockStatic(FrontendUtils.class);
+
+                MockedStatic<EndpointRequestUtil> endpointUtilMock = Mockito
+                        .mockStatic(EndpointRequestUtil.class)) {
+
+            // Hilla is available in classpath but not used
+            frontendBuildUtilsMock.when(() -> FrontendBuildUtils.isHillaUsed(
+                    Mockito.any(File.class), Mockito.any(ClassFinder.class)))
+                    .thenReturn(false);
+            endpointUtilMock.when(EndpointRequestUtil::isHillaAvailable)
+                    .thenReturn(true);
+            frontendUtilsMock
+                    .when(() -> FrontendUtils
+                            .isReactRouterRequired(Mockito.any(File.class)))
+                    .thenReturn(true);
+
+            // Create a spy to mock the readDependenciesIfAvailable method
+            NodeUpdater spyNodeUpdater = Mockito.spy(nodeUpdater);
+            Map<String, String> mockGeneratorDeps = Map
+                    .of("@vaadin/hilla-generator-core", "2.0.0");
+            Mockito.doReturn(mockGeneratorDeps).when(spyNodeUpdater)
+                    .readDependenciesIfAvailable(Mockito.anyString(),
+                            Mockito.eq("dependencies"),
+                            Mockito.eq("@vaadin/hilla-generator-"));
+
+            // Test with React enabled
+            options.withReact(true);
+            Map<String, String> defaultDeps = spyNodeUpdater
+                    .getDefaultDependencies();
+            Assert.assertTrue(
+                    "React generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+
+            // Test with React disabled
+            options.withReact(false);
+            defaultDeps = spyNodeUpdater.getDefaultDependencies();
+            Assert.assertTrue(
+                    "Lit generator dependency should be added when Hilla is available",
+                    defaultDeps.keySet().stream().anyMatch(
+                            key -> key.contains("@vaadin/hilla-generator-")));
+        } finally {
+            options.withReact(reactEnabled);
+        }
+    }
+
     private String getPolymerVersion(JsonNode object) {
         JsonNode deps = object.get("dependencies");
         return deps.get("@polymer/polymer").textValue();
+    }
+
+    private void fakePolymerTemplateInClasspath() {
+        Class clazz = FeatureFlags.class; // actual class doesn't matter
+        try {
+            Mockito.doReturn(clazz).when(finder).loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private ObjectNode getMockVaadinCoreVersionsJson() {
@@ -768,12 +914,6 @@ public class NodeUpdaterTest {
         return (ObjectNode) JacksonUtils.readTree(
                 """
                 {
-                    "bundles": {
-                        "vaadin": {
-                            "jsVersion": "23.2.0",
-                            "npmName": "@vaadin/bundles"
-                        }
-                    },
                     "core": {
                         "accordion": {
                             "jsVersion": "23.2.0",

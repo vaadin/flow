@@ -20,15 +20,15 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 /**
@@ -67,7 +67,7 @@ public class ThemeLiveUpdater implements Closeable {
                             liveReload.get()
                                     .update(ThemeUtils.getThemeFilePath(
                                             themeName, "styles.css"),
-                                            CssBundler.inlineImports(
+                                            CssBundler.inlineImportsForThemes(
                                                     stylesCss.getParentFile(),
                                                     stylesCss, themeJson));
                         } catch (IOException e) {

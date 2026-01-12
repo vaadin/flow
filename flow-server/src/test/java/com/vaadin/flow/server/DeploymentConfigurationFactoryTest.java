@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletConfig;
@@ -37,13 +52,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
+import static com.vaadin.flow.internal.FrontendUtils.PARAM_TOKEN_FILE;
+import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_TOKEN_FILE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.startup.AbstractConfigurationFactory.DEV_FOLDER_MISSING_MESSAGE;
 import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
@@ -561,8 +576,6 @@ public class DeploymentConfigurationFactoryTest {
                 .singletonMap(PARAM_TOKEN_FILE, tokenFile.getPath()));
 
         assertTrue(config.isProductionMode());
-        assertFalse("Dev server should be default false due to stats",
-                config.frontendHotdeploy());
         assertTrue(config.isStatsExternal());
         assertEquals(Constants.DEFAULT_EXTERNAL_STATS_URL,
                 config.getExternalStatsUrl());
@@ -628,7 +641,6 @@ public class DeploymentConfigurationFactoryTest {
         VaadinContext context = new MockVaadinContext();
         ApplicationConfiguration configuration = Mockito
                 .mock(ApplicationConfiguration.class);
-        Mockito.when(configuration.frontendHotdeploy()).thenReturn(true);
         Mockito.when(configuration.isProductionMode()).thenReturn(true);
         Mockito.when(configuration.getContext()).thenReturn(context);
         Mockito.when(configuration.getStringProperty(Mockito.anyString(),

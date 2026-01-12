@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
 import java.net.URI;
@@ -71,21 +70,6 @@ public class LocationUtil {
         }
 
         // All is OK if we get here
-    }
-
-    /**
-     * Parses the given path to parts split by the path separator, ignoring the
-     * query string and fragment if either present. The path is verified with
-     * {@link #verifyRelativePath(String)}.
-     *
-     * @param path
-     *            the path to parse
-     * @return tha path split into parts
-     * @deprecated use {@link #parsePathToSegments(String, boolean)}
-     */
-    @Deprecated
-    public static List<String> parsePathToSegments(String path) {
-        return parsePathToSegments(path, true);
     }
 
     /**

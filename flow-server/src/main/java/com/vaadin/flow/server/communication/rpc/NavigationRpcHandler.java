@@ -17,6 +17,9 @@ package com.vaadin.flow.server.communication.rpc;
 
 import java.util.Optional;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.History;
 import com.vaadin.flow.component.page.History.HistoryStateChangeEvent;
@@ -24,9 +27,6 @@ import com.vaadin.flow.component.page.History.HistoryStateChangeHandler;
 import com.vaadin.flow.router.Location;
 import com.vaadin.flow.router.NavigationTrigger;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * RPC handler for Navigation.
@@ -46,18 +46,18 @@ public class NavigationRpcHandler implements RpcInvocationHandler {
     }
 
     @Override
-    public Optional<Runnable> handle(UI ui, JsonObject invocationJson) {
+    public Optional<Runnable> handle(UI ui, JsonNode invocationJson) {
         History history = ui.getPage().getHistory();
 
         HistoryStateChangeHandler historyStateChangeHandler = history
                 .getHistoryStateChangeHandler();
         if (historyStateChangeHandler != null) {
-            JsonValue state = invocationJson
+            BaseJsonNode state = (BaseJsonNode) invocationJson
                     .get(JsonConstants.RPC_NAVIGATION_STATE);
             String location = invocationJson
-                    .getString(JsonConstants.RPC_NAVIGATION_LOCATION);
+                    .get(JsonConstants.RPC_NAVIGATION_LOCATION).asString();
             boolean triggeredByLink = invocationJson
-                    .hasKey(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
+                    .has(JsonConstants.RPC_NAVIGATION_ROUTERLINK);
             NavigationTrigger trigger = triggeredByLink
                     ? NavigationTrigger.ROUTER_LINK
                     : NavigationTrigger.HISTORY;

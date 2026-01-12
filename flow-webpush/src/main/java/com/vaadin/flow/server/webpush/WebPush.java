@@ -13,36 +13,30 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.webpush;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.Security;
+import java.security.spec.InvalidKeySpecException;
 
-import nl.martijndwars.webpush.Notification;
-import nl.martijndwars.webpush.PushService;
-import nl.martijndwars.webpush.Subscription;
-import org.apache.commons.io.IOUtils;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import com.interaso.webpush.VapidKeys;
+import com.interaso.webpush.WebPush.SubscriptionState;
+import com.interaso.webpush.WebPushService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StringUtil;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 /**
  * Base class for handling Web Push notifications.
@@ -55,7 +49,7 @@ import elemental.json.JsonValue;
  */
 public class WebPush {
 
-    private PushService pushService;
+    private WebPushService pushService;
 
     private String publicKey;
 
@@ -72,22 +66,32 @@ public class WebPush {
      * @param privateKey
      *            web push private key
      * @param subject
-     *            Subject used in the JWT payload (for VAPID).
+     *            The subject identifying the push notification sender. It must
+     *            start with "mailto:" or "https://".
      */
     public WebPush(String publicKey, String privateKey, String subject) {
         this.publicKey = publicKey;
 
-        Security.addProvider(new BouncyCastleProvider());
+        VapidKeys vapidKeys;
+
         try {
-            // Initialize push service with the public key, private key and
-            // subject
-            pushService = PushService.builder().withVapidPublicKey(publicKey)
-                    .withVapidPrivateKey(privateKey).withVapidSubject(subject)
-                    .build();
-        } catch (GeneralSecurityException e) {
-            throw new WebPushException(
-                    "Security exception initializing web push PushService", e);
+            // Expect Base64 encoded strings in X509 and PKCS8 formats
+            vapidKeys = VapidKeys.create(publicKey, privateKey);
+        } catch (Exception e) {
+            if (e.getClass().equals(InvalidKeySpecException.class)) {
+                // Create from Base64 encoded strings of uncompressed bytes as
+                // generated for webpush-java library
+                vapidKeys = VapidKeys.fromUncompressedBytes(publicKey,
+                        privateKey);
+            } else {
+                throw e;
+            }
+
         }
+
+        // Initialize push service with the public key, private key and
+        // subject
+        pushService = new WebPushService(subject, vapidKeys);
     }
 
     /**
@@ -104,36 +108,23 @@ public class WebPush {
      */
     public void sendNotification(WebPushSubscription subscription,
             WebPushMessage message) throws WebPushException {
-        int statusCode = -1;
+        SubscriptionState status = null;
         HttpResponse<String> response = null;
         try {
-            Subscription.Keys keys = null;
-            if (subscription.keys() != null) {
-                keys = new Subscription.Keys(subscription.keys().p256dh(),
-                        subscription.keys().auth());
-            }
-            Subscription nativeSubscription = new Subscription(
-                    subscription.endpoint(), keys);
-            Notification notification = Notification.builder()
-                    .subscription(nativeSubscription).payload(message.toJson())
-                    .build();
-            response = pushService.send(notification,
-                    PushService.DEFAULT_ENCODING,
-                    HttpResponse.BodyHandlers.ofString());
-            statusCode = response.statusCode();
+            status = pushService.send(message.toJson(), subscription.endpoint(),
+                    subscription.keys().p256dh(), subscription.keys().auth(),
+                    null, null, null);
         } catch (Exception e) {
             getLogger().error("Failed to send notification.", e);
             throw new WebPushException(
                     "Sending of web push notification failed", e);
         }
-        if (statusCode != 201) {
+        if (!SubscriptionState.ACTIVE.equals(status)) {
             getLogger().error(
-                    "Failed to send web push notification, received status code:"
-                            + statusCode);
+                    "Failed to send web push notification, received status code: 404 or 410");
             getLogger().error(String.join("\n", response.body()));
             throw new WebPushException(
-                    "Sending of web push notification failed with status code "
-                            + statusCode);
+                    "Sending of web push notification failed with status code 404 or 410");
         }
     }
 
@@ -147,8 +138,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void subscriptionExists(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
-            receiver.state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            receiver.state(Boolean.parseBoolean(json.toString()));
         };
 
         executeJavascript(ui,
@@ -165,8 +156,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void isNotificationDenied(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
-                .state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toString()));
 
         executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationDenied()")
@@ -182,8 +173,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void isNotificationGranted(UI ui, WebPushState receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> receiver
-                .state(Boolean.parseBoolean(json.toJson()));
+        final SerializableConsumer<JsonNode> resultHandler = json -> receiver
+                .state(Boolean.parseBoolean(json.toString()));
 
         executeJavascript(ui,
                 "return window.Vaadin.Flow.webPush.notificationGranted()")
@@ -200,8 +191,8 @@ public class WebPush {
      *            the callback to which the details are provided
      */
     public void subscribe(UI ui, WebPushSubscriptionResponse receiver) {
-        final SerializableConsumer<JsonValue> resultHandler = json -> {
-            JsonObject responseJson = Json.parse(json.toJson());
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            ObjectNode responseJson = JacksonUtils.readTree(json.toString());
             receiver.subscription(generateSubscription(responseJson));
         };
         executeJavascript(ui, "return window.Vaadin.Flow.webPush.subscribe($0)",
@@ -251,8 +242,8 @@ public class WebPush {
         Page page = ui.getPage();
         try (InputStream stream = WebPush.class.getClassLoader()
                 .getResourceAsStream("META-INF/frontend/FlowWebPush.js")) {
-            page.executeJs(StringUtil.removeComments(
-                    IOUtils.toString(stream, StandardCharsets.UTF_8)))
+            page.executeJs(
+                    StringUtil.removeComments(StringUtil.toUTF8String(stream)))
                     .then(unused -> getLogger()
                             .debug("Webpush client code initialized"),
                             err -> getLogger().error(
@@ -263,18 +254,18 @@ public class WebPush {
         }
     }
 
-    private SerializableConsumer<JsonValue> handlePossiblyEmptySubscription(
+    private SerializableConsumer<JsonNode> handlePossiblyEmptySubscription(
             WebPushSubscriptionResponse receiver) {
         return json -> {
-            JsonObject responseJson;
+            ObjectNode responseJson;
             // It may happen that an error is sent as a plain string
-            if (json.getType() == JsonType.STRING) {
-                responseJson = Json.createObject();
+            if (json.getNodeType() == JsonNodeType.STRING) {
+                responseJson = JacksonUtils.createObjectNode();
                 responseJson.put("message", json.asString());
             } else {
-                responseJson = Json.parse(json.toJson());
+                responseJson = JacksonUtils.readTree(json.toString());
             }
-            if (responseJson.hasKey("message")) {
+            if (responseJson.has("message")) {
                 receiver.subscription(null);
             } else {
                 receiver.subscription(generateSubscription(responseJson));
@@ -283,12 +274,12 @@ public class WebPush {
     }
 
     private WebPushSubscription generateSubscription(
-            JsonObject subscriptionJson) {
+            ObjectNode subscriptionJson) {
         WebPushKeys keys = new WebPushKeys(
-                subscriptionJson.getObject("keys").getString("p256dh"),
-                subscriptionJson.getObject("keys").getString("auth"));
-        return new WebPushSubscription(subscriptionJson.getString("endpoint"),
-                keys);
+                subscriptionJson.get("keys").get("p256dh").asString(),
+                subscriptionJson.get("keys").get("auth").asString());
+        return new WebPushSubscription(
+                subscriptionJson.get("endpoint").asString(), keys);
     }
 
     private Logger getLogger() {

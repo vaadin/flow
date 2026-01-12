@@ -13,16 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.change;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeFeatureRegistry;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 /**
  * Base class for all node changes related to a feature.
@@ -58,8 +57,8 @@ public abstract class NodeFeatureChange extends NodeChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
-        json.put(JsonConstants.CHANGE_FEATURE,
-                Json.create(NodeFeatureRegistry.getId(feature)));
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
+        json.set(JsonConstants.CHANGE_FEATURE,
+                JacksonUtils.createNode(NodeFeatureRegistry.getId(feature)));
     }
 }

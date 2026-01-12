@@ -23,8 +23,8 @@ import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Input;
-import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.NativeButton;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
@@ -57,7 +57,6 @@ public class JavaScriptReturnValueView extends AbstractDivView {
         valueSelect.addOption("String", "'foo'");
         valueSelect.addOption("Number", "42");
         valueSelect.addOption("null", "null");
-        valueSelect.addOption("Error", "new Error('message')", "error-value");
 
         // Promise semantics to use
         NativeRadioButtonGroup<String> resolveRejectSelect = new NativeRadioButtonGroup<>(

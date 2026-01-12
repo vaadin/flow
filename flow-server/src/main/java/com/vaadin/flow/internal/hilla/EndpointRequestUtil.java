@@ -13,13 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.hilla;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.io.Serializable;
 
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
+import java.io.Serializable;
 
 /**
  * A container for utility methods related with Hilla endpoints.
@@ -71,19 +69,4 @@ public interface EndpointRequestUtil extends Serializable {
         }
     }
 
-    /**
-     * Checks if Hilla is available using the given class finder.
-     *
-     * @param classFinder
-     *            class finder to check the presence of Hilla endpoint class
-     * @return true if Hilla is available, false otherwise
-     */
-    static boolean isHillaAvailable(ClassFinder classFinder) {
-        try {
-            classFinder.loadClass(HILLA_ENDPOINT_CLASS);
-            return true;
-        } catch (ClassNotFoundException e) {
-            return false;
-        }
-    }
 }

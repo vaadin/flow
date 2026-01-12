@@ -27,12 +27,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.internal.UrlUtil;
-import java.util.Optional;
-import java.util.Set;
 
 /**
  * Holds query parameters information.

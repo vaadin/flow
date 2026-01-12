@@ -21,30 +21,25 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.JsonNodeType;
 
 import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.dom.DomListenerRegistration;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.SerializableRunnable;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonUtils;
 import com.vaadin.flow.server.MockServletServiceSessionSetup.TestVaadinServletService;
 import com.vaadin.tests.PublicApiAnalyzer;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
-import elemental.json.JsonType;
-import elemental.json.JsonValue;
 
 public class AbstractSinglePropertyFieldTest {
     @Rule
@@ -440,64 +435,63 @@ public class AbstractSinglePropertyFieldTest {
 
     @Tag("tag")
     private static class JsonField
-            extends AbstractSinglePropertyField<JsonField, JsonValue> {
+            extends AbstractSinglePropertyField<JsonField, JsonNode> {
         public JsonField() {
-            super("property", Json.createNull(), false);
+            super("property", JacksonUtils.nullNode(), false);
         }
     }
 
     @Tag("tag")
     private static class JsonArrayField
-            extends AbstractSinglePropertyField<JsonArrayField, JsonArray> {
+            extends AbstractSinglePropertyField<JsonArrayField, ArrayNode> {
         public JsonArrayField() {
-            super("property", Json.createArray(), false);
+            super("property", JacksonUtils.createArray(), false);
         }
     }
 
     @Test
     public void jsonField() {
         JsonField field = new JsonField();
-        ValueChangeMonitor<JsonValue> monitor = new ValueChangeMonitor<>(field);
+        ValueChangeMonitor<JsonNode> monitor = new ValueChangeMonitor<>(field);
 
-        Assert.assertEquals(JsonType.NULL, field.getValue().getType());
+        Assert.assertEquals(JsonNodeType.NULL, field.getValue().getNodeType());
         monitor.assertNoEvent();
 
-        field.setValue(
-                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        field.setValue(JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                JacksonUtils.createNode(42)));
         monitor.discard();
         Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+                field.getElement().getPropertyRaw("property").toString());
 
-        field.getElement().setPropertyJson("property", Json.createObject());
+        field.getElement().setPropertyJson("property",
+                JacksonUtils.createObjectNode());
         monitor.discard();
-        Assert.assertEquals("{}", field.getValue().toJson());
+        Assert.assertEquals("{}", field.getValue().toString());
 
         field.getElement().setProperty("property", "text");
         monitor.discard();
-        Assert.assertEquals("\"text\"", field.getValue().toJson());
+        Assert.assertEquals("\"text\"", field.getValue().toString());
     }
 
     @Test
     public void jsonArrayField() {
         JsonArrayField field = new JsonArrayField();
-        ValueChangeMonitor<JsonArray> monitor = new ValueChangeMonitor<>(field);
+        ValueChangeMonitor<ArrayNode> monitor = new ValueChangeMonitor<>(field);
 
-        Assert.assertEquals(JsonType.ARRAY, field.getValue().getType());
-        Assert.assertEquals(0, field.getValue().length());
+        Assert.assertEquals(JsonNodeType.ARRAY, field.getValue().getNodeType());
+        Assert.assertEquals(0, field.getValue().size());
         monitor.assertNoEvent();
 
-        field.setValue(
-                JsonUtils.createArray(Json.create("foo"), Json.create(42)));
+        field.setValue(JacksonUtils.createArray(JacksonUtils.createNode("foo"),
+                JacksonUtils.createNode(42)));
         monitor.discard();
         Assert.assertEquals("[\"foo\",42]",
-                ((JsonArray) field.getElement().getPropertyRaw("property"))
-                        .toJson());
+                field.getElement().getPropertyRaw("property").toString());
 
-        field.getElement().setPropertyJson("property",
-                JsonUtils.createArray(Json.create(37), Json.create("bar")));
+        field.getElement().setPropertyJson("property", JacksonUtils.createArray(
+                JacksonUtils.createNode(37), JacksonUtils.createNode("bar")));
         monitor.discard();
-        Assert.assertEquals("[37,\"bar\"]", field.getValue().toJson());
+        Assert.assertEquals("[37,\"bar\"]", field.getValue().toString());
     }
 
     @Test

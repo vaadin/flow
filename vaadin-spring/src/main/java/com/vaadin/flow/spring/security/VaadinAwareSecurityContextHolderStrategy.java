@@ -15,14 +15,15 @@
  */
 package com.vaadin.flow.spring.security;
 
-import com.vaadin.flow.server.VaadinSession;
-import org.springframework.lang.NonNull;
+import java.util.Optional;
+
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.security.web.context.HttpSessionSecurityContextRepository;
 
-import java.util.Optional;
+import com.vaadin.flow.server.VaadinSession;
 
 import static java.util.Objects.requireNonNull;
 
@@ -68,11 +69,17 @@ public final class VaadinAwareSecurityContextHolderStrategy
         if (session == null || session.getSession() == null) {
             return Optional.empty();
         }
-        Object securityContext = session.getSession().getAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-        if (securityContext instanceof SecurityContext) {
-            return Optional.of((SecurityContext) securityContext);
-        } else {
+        try {
+            Object securityContext = session.getSession().getAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+            if (securityContext instanceof SecurityContext context) {
+                return Optional.of(context);
+            } else {
+                return Optional.empty();
+            }
+        } catch (IllegalStateException ignored) {
+            // Session throws IllegalStateException when accessing
+            // attributes of an invalid session
             return Optional.empty();
         }
     }

@@ -17,14 +17,20 @@ package com.vaadin.tests.util;
 
 import java.util.List;
 
+import org.mockito.Mockito;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.page.Page;
+import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 
 public class MockUI extends UI {
+
+    private Page page;
 
     public MockUI() {
         this(findOrCreateSession());
@@ -37,6 +43,18 @@ public class MockUI extends UI {
 
     public MockUI(Router router) {
         this(createSession(router));
+    }
+
+    @Override
+    public Page getPage() {
+        if (this.page != null) {
+            return this.page;
+        }
+        return super.getPage();
+    }
+
+    public void setPage(Page page) {
+        this.page = page;
     }
 
     @Override
@@ -66,6 +84,7 @@ public class MockUI extends UI {
     private static VaadinSession createSession(Router router) {
         MockServletServiceSessionSetup setup = new MockServletServiceSessionSetup();
         VaadinSession session = setup.getSession();
+
         if (router != null) {
             setup.getService().setRouter(router);
         }
@@ -73,8 +92,13 @@ public class MockUI extends UI {
         return session;
     }
 
+    private static DeploymentConfiguration createConfiguration() {
+        DeploymentConfiguration configuration = Mockito
+                .mock(DeploymentConfiguration.class);
+        return configuration;
+    }
+
     public static MockUI createUI() {
-        VaadinSession session = createSession();
-        return new MockUI(session);
+        return new MockUI(createSession());
     }
 }

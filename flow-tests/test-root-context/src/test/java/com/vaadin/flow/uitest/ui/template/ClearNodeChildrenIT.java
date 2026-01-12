@@ -25,9 +25,9 @@ import org.junit.experimental.categories.Category;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 
+import com.vaadin.flow.testcategory.SlowTests;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import com.vaadin.flow.testcategory.SlowTests;
 
 /**
  * Tests for validating the {@code removeAll()} feature, that should clear all

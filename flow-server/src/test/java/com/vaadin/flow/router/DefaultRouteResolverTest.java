@@ -32,11 +32,11 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.CurrentInstance;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.internal.DefaultRouteResolver;
 import com.vaadin.flow.router.internal.ResolveRequest;
 import com.vaadin.flow.server.InvalidRouteConfigurationException;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 public class DefaultRouteResolverTest extends RoutingTestBase {

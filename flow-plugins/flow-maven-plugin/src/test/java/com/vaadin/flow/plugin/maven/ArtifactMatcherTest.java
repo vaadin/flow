@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import org.apache.maven.artifact.Artifact;
@@ -79,7 +78,7 @@ public class ArtifactMatcherTest {
     @Test
     public void matches_matchEverything_returnsTrue() {
         Artifact artifact = fromString(
-                "com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile");
+                "com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile");
         Assert.assertTrue("Unspecified groups and artifacts",
                 new FrontendScannerConfig.ArtifactMatcher().matches(artifact));
         Assert.assertTrue("Empty groups and artifacts",
@@ -113,17 +112,17 @@ public class ArtifactMatcherTest {
         FrontendScannerConfig.ArtifactMatcher matcher = new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin", null);
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin:flow-server:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin:flow-server:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "org.com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "org.com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadindemo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadindemo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("org.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("org.example:vaadin:jar:25.1-SNAPSHOT:compile")));
     }
 
     @Test
@@ -131,51 +130,51 @@ public class ArtifactMatcherTest {
         FrontendScannerConfig.ArtifactMatcher matcher = new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin.*", null);
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
 
         matcher.setGroupId("*.vaadin");
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.example.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.example.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString(".vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString(".vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadindemo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadindemo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
 
         matcher.setGroupId("*vaadin*");
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.example.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.example.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString(".vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString(".vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString("vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadindemo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadindemo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.example:vaadin:jar:25.1-SNAPSHOT:compile")));
     }
 
     @Test
@@ -183,43 +182,43 @@ public class ArtifactMatcherTest {
         FrontendScannerConfig.ArtifactMatcher matcher = new FrontendScannerConfig.ArtifactMatcher(
                 null, "vaadin*");
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin-demo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin-demo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:vaadindemo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:vaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:demovaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:demovaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:example:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:example:jar:25.1-SNAPSHOT:compile")));
 
         matcher.setArtifactId("*vaadin");
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:demo-vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:demo-vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:demovaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:demovaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:vaadindemo:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin:vaadin-demo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin:vaadin-demo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:example:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:example:jar:25.1-SNAPSHOT:compile")));
 
         matcher.setArtifactId("*vaadin*");
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin-demo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin-demo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:vaadindemo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:vaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo:demo-vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:demo-vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(fromString(
-                "com.vaadin.demo.a:demovaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo.a:demovaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:example:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:example:jar:25.1-SNAPSHOT:compile")));
     }
 
     @Test
@@ -227,17 +226,17 @@ public class ArtifactMatcherTest {
         FrontendScannerConfig.ArtifactMatcher matcher = new FrontendScannerConfig.ArtifactMatcher(
                 null, "vaadin");
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertTrue(matcher.matches(
-                fromString("org.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("org.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:vaadindemo:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:demovaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:demovaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin:demovaadindemo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin:demovaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:example:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:example:jar:25.1-SNAPSHOT:compile")));
 
     }
 
@@ -246,25 +245,25 @@ public class ArtifactMatcherTest {
         FrontendScannerConfig.ArtifactMatcher matcher = new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin", "vaadin");
         Assert.assertTrue(matcher.matches(
-                fromString("com.vaadin:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin:flow-server:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin:flow-server:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "org.com.vaadin.demo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                "org.com.vaadin.demo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadindemo:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadindemo:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("org.example:vaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("org.example:vaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:vaadindemo:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:vaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:demovaadin:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:demovaadin:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(fromString(
-                "com.vaadin:demovaadindemo:jar:24.8-SNAPSHOT:compile")));
+                "com.vaadin:demovaadindemo:jar:25.1-SNAPSHOT:compile")));
         Assert.assertFalse(matcher.matches(
-                fromString("com.vaadin:example:jar:24.8-SNAPSHOT:compile")));
+                fromString("com.vaadin:example:jar:25.1-SNAPSHOT:compile")));
     }
 
     @Test
@@ -280,7 +279,7 @@ public class ArtifactMatcherTest {
     /**
      * Creates an Artifact instance based on the give coordinates.
      * <p>
-     * </p>
+     *
      *
      * Allowed syntaxes:
      *

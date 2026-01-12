@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.flowsecurity.views;
 
 import jakarta.annotation.security.RolesAllowed;
@@ -40,16 +55,17 @@ public class AdminView extends VerticalLayout {
         accessRolePrefixedAdminPageFromThread.setId(ROLE_PREFIX_TEST_BUTTON_ID);
         accessRolePrefixedAdminPageFromThread.addClickListener(event -> {
             UI ui = event.getSource().getUI().get();
-            Runnable doNavigation = () -> {
+            Runnable doNavigation = new DelegatingSecurityContextRunnable(
+                    () -> ui.navigate(RolePrefixedAdminView.class),
+                    SecurityContextHolder.getContext());
+            Runnable delayedNavigation = () -> {
                 try {
                     TimeUnit.MILLISECONDS.sleep(100);
-                    ui.access(() -> ui.navigate(RolePrefixedAdminView.class));
+                    ui.access(doNavigation::run);
                 } catch (InterruptedException e) {
                 }
             };
-            Runnable wrappedRunnable = new DelegatingSecurityContextRunnable(
-                    doNavigation, SecurityContextHolder.getContext());
-            new Thread(wrappedRunnable).start();
+            new Thread(delayedNavigation).start();
         });
         add(accessRolePrefixedAdminPageFromThread);
     }

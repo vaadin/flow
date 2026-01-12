@@ -14,16 +14,16 @@
  * the License.
  */
 
-function doNotifyJsExecution(){
-  var lbl = document.createElement("label");
-  lbl.setAttribute("id", "js");
-  lbl.innerHTML='Inlined JS';
+function doNotifyJsExecution() {
+  var lbl = document.createElement('label');
+  lbl.setAttribute('id', 'js');
+  lbl.innerHTML = 'Inlined JS';
   document.body.appendChild(lbl);
 }
 
-function notifyJsExecution(){
-  if ( document.body) {
-    doNotifyJsExecution()
+function notifyJsExecution() {
+  if (document.body) {
+    doNotifyJsExecution();
   } else {
     setTimeout(notifyJsExecution, 50);
   }

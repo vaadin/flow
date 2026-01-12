@@ -8,6 +8,7 @@
  */
 package com.vaadin.flow.component;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.jsoup.Jsoup;
 import org.junit.After;
 import org.junit.Before;
@@ -19,8 +20,6 @@ import com.vaadin.flow.component.polymertemplate.TemplateParser.TemplateData;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModel;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class CompositeTest {

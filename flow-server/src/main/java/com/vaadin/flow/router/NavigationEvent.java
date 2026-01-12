@@ -18,12 +18,9 @@ package com.vaadin.flow.router;
 import java.util.EventObject;
 import java.util.Optional;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.JsonValue;
 
 /**
  * Event object with data related to navigation.
@@ -64,72 +61,6 @@ public class NavigationEvent extends EventObject {
         this.location = location;
         this.ui = ui;
         this.trigger = trigger;
-    }
-
-    /**
-     * Creates a new navigation event.
-     *
-     * @param router
-     *            the router handling the navigation, not {@code null}
-     * @param location
-     *            the new location, not {@code null}
-     * @param ui
-     *            the UI in which the navigation occurs, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
-     * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
-     * @param forwardTo
-     *            indicates if this event is created as a result of
-     *            {@link BeforeEvent#forwardTo} or not
-     */
-    @Deprecated
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo) {
-        this(router, location, ui, trigger);
-
-        this.state = JacksonUtils.mapElemental(state);
-        this.forwardTo = forwardTo;
-    }
-
-    /**
-     * Creates a new navigation event.
-     *
-     * @param router
-     *            the router handling the navigation, not {@code null}
-     * @param location
-     *            the new location, not {@code null}
-     * @param ui
-     *            the UI in which the navigation occurs, not {@code null}
-     * @param trigger
-     *            the type of user action that triggered this navigation event,
-     *            not {@code null}
-     * @param state
-     *            includes navigation state info including for example the
-     *            scroll position and the complete href of the RouterLink
-     * @param forwardTo
-     *            indicates if this event is created as a result of
-     *            {@link BeforeEvent#forwardTo} or not
-     * @param forceInstantiation
-     *            if set to {@code true}, the navigation target will always be
-     *            instantiated
-     * @param recreateLayoutChain
-     *            if set to {@code true}, the complete layout chain up to the
-     *            navigation target will be re-instantiated. Requires
-     *            {@code forceInstantiation} to be true to have an effect.
-     */
-    @Deprecated
-    public NavigationEvent(Router router, Location location, UI ui,
-            NavigationTrigger trigger, JsonValue state, boolean forwardTo,
-            boolean forceInstantiation, boolean recreateLayoutChain) {
-        this(router, location, ui, trigger);
-
-        this.state = JacksonUtils.mapElemental(state);
-        this.forwardTo = forwardTo;
-        this.forceInstantiation = forceInstantiation;
-        this.recreateLayoutChain = recreateLayoutChain;
     }
 
     /**

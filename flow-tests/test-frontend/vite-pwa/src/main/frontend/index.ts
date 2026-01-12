@@ -16,5 +16,5 @@ router.setRoutes([
     async action() {
       await import('./about-view.js');
     }
-  },
+  }
 ]);

@@ -15,11 +15,6 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -33,6 +28,11 @@ import com.vaadin.flow.data.provider.DataProviderTestBase;
 import com.vaadin.flow.data.provider.QuerySortOrder;
 import com.vaadin.flow.data.provider.StrBean;
 import com.vaadin.flow.function.SerializablePredicate;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 public class TreeDataProviderTest
         extends DataProviderTestBase<TreeDataProvider<StrBean>> {
@@ -286,6 +286,25 @@ public class TreeDataProviderTest
         getDataProvider().addFilter(item -> item.getId() <= 10);
         getDataProvider().addFilter(item -> item.getId() >= 5);
         assertEquals(8, sizeWithUnfilteredQuery());
+    }
+
+    @Test
+    public void rootItem_getParent_returnsNull() {
+        var rootItem = rootData.get(0);
+        assertNull(getDataProvider().getParent(rootItem));
+    }
+
+    @Test
+    public void childItem_getParent_returnsParent() {
+        var rootItem = rootData.get(0);
+        var childItem = data.getChildren(rootItem).get(0);
+        assertEquals(rootItem, data.getParent(childItem));
+    }
+
+    @Test
+    public void notPresentItem_getParent_returnsNull() {
+        var itemNotPresentInProvider = new StrBean("Not present", -1, 0);
+        assertNull(getDataProvider().getParent(itemNotPresentInProvider));
     }
 
     @Override

@@ -16,6 +16,7 @@
 package com.vaadin.flow.data.provider;
 
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Text;
@@ -23,15 +24,13 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 
-import elemental.json.JsonObject;
-
 public class AbstractComponentDataGeneratorTest {
 
     private static class TestComponentDataGenerator
             extends AbstractComponentDataGenerator<String> {
 
         @Override
-        public void generateData(String item, JsonObject jsonObject) {
+        public void generateData(String item, ObjectNode jsonObject) {
         }
 
         @Override

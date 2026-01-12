@@ -36,8 +36,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.function.VaadinApplicationInitializationBootstrap;
 import com.vaadin.flow.internal.ReflectTools;
@@ -56,7 +54,6 @@ import com.vaadin.flow.server.startup.DefaultApplicationConfigurationFactory;
  * Default implementation of {@link AbstractLookupInitializer}.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see AbstractLookupInitializer
  */
@@ -73,7 +70,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link Lookup}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class LookupImpl implements Lookup {
@@ -155,7 +151,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link ResourceProvider}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class ResourceProviderImpl implements ResourceProvider {
@@ -197,7 +192,7 @@ public class LookupInitializer implements AbstractLookupInitializer {
                 URL url = getClientResource(key);
                 try (InputStream stream = url.openStream()) {
                     ByteArrayOutputStream tempBuffer = new ByteArrayOutputStream();
-                    IOUtils.copy(stream, tempBuffer);
+                    stream.transferTo(tempBuffer);
                     return new CachedStreamData(tempBuffer.toByteArray(), null);
                 } catch (IOException e) {
                     return new CachedStreamData(null, e);
@@ -235,7 +230,6 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * Default implementation of {@link AppShellPredicate}.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     protected static class AppShellPredicateImpl implements AppShellPredicate {
@@ -306,6 +300,8 @@ public class LookupInitializer implements AbstractLookupInitializer {
      * The default {@code  serviceImpl} implementation will be set as the
      * service into {@code services} if there is no other services available.
      *
+     * @param <T>
+     *            the service type
      * @param services
      *            map of internal services
      * @param serviceType

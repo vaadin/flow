@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.ServletException;
@@ -27,7 +26,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 /**
- * Default logout success handler for {@link VaadinWebSecurity}.
+ * Default logout success handler for {@link VaadinSecurityConfigurer}.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  */

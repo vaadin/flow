@@ -46,12 +46,13 @@ public class SpringDevToolsHorizontalLayoutReloadView extends Div {
 
         layout.getElement().addEventListener("componentready", event -> {
 
-            System.out.println("result: "
-                    + event.getEventData().getNumber("event.detail.result"));
+            System.out.println("result: " + event.getEventData()
+                    .get("event.detail.result").doubleValue());
 
-            result.setText(String.format(
-                    "Reload time by class change was [%s] ms",
-                    event.getEventData().getNumber("event.detail.result")));
+            result.setText(
+                    String.format("Reload time by class change was [%s] ms",
+                            event.getEventData().get("event.detail.result")
+                                    .doubleValue()));
             result.setVisible(true);
 
         }).addEventData("event.detail.result");

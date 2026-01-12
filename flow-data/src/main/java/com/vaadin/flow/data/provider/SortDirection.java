@@ -41,4 +41,14 @@ public enum SortDirection {
     public SortDirection getOpposite() {
         return ASCENDING.equals(this) ? DESCENDING : ASCENDING;
     }
+
+    /**
+     * Get the short name of the sort direction.
+     *
+     * @return The shortened representation of the sort direction, either "asc"
+     *         or "desc"
+     */
+    public String getShortName() {
+        return ASCENDING.equals(this) ? "asc" : "desc";
+    }
 }

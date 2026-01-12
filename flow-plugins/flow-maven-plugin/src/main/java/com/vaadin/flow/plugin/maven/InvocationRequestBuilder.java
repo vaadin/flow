@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.plugin.maven;
 
-import java.io.File;
 import java.util.Collections;
 import java.util.Objects;
 

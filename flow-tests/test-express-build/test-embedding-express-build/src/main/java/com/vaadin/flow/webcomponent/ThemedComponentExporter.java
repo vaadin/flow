@@ -19,7 +19,6 @@ import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 import com.vaadin.flow.theme.Theme;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 @Theme("embedded-theme")

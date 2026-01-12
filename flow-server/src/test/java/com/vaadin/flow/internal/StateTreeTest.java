@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
 import java.lang.ref.WeakReference;
@@ -34,6 +33,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
@@ -53,11 +53,8 @@ import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.PushConfigurationMap.PushConfigurationParametersMap;
-import com.vaadin.flow.server.ErrorHandler;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.tests.util.TestUtil;
-
-import elemental.json.JsonObject;
 
 public class StateTreeTest {
 
@@ -97,7 +94,7 @@ public class StateTreeTest {
         public void collectChanges(Consumer<NodeChange> collector) {
             collector.accept(new NodeChange(this) {
                 @Override
-                protected void populateJson(JsonObject json,
+                protected void populateJson(ObjectNode json,
                         ConstantPool constantPool) {
                 }
             });

@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
@@ -5,6 +20,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -89,6 +105,8 @@ public abstract class SignalTree {
     private final ReentrantLock lock = new ReentrantLock();
 
     private final Type type;
+
+    private final List<BiConsumer<SignalCommand, CommandResult>> subscribers = new ArrayList<>();
 
     /**
      * Creates a new signal tree with the given type.
@@ -231,7 +249,7 @@ public abstract class SignalTree {
         }
 
         runWithLock(() -> {
-            observers.forEach((nodeId, list) -> {
+            Map.copyOf(observers).forEach((nodeId, list) -> {
                 Data oldNode = oldSnapshot.data(nodeId).orElse(Node.EMPTY);
                 Data newNode = newSnapshot.data(nodeId).orElse(Node.EMPTY);
 
@@ -245,7 +263,7 @@ public abstract class SignalTree {
                     list.clear();
 
                     for (TransientListener observer : copy) {
-                        boolean listenToNext = observer.invoke();
+                        boolean listenToNext = observer.invoke(false);
                         if (listenToNext) {
                             list.add(observer);
                         }
@@ -333,5 +351,47 @@ public abstract class SignalTree {
      */
     public Type type() {
         return type;
+    }
+
+    /**
+     * Registers a callback that is executed after commands are processed
+     * (regardless of acceptance or rejection). It is guaranteed that the
+     * callback is invoked in the order the commands are processed. Contrary to
+     * the observers that are attached to a specific node by calling
+     * {@link #observeNextChange}, the <code>subscriber</code> remains active
+     * indefinitely until it is removed by executing the returned callback.
+     *
+     * @param subscriber
+     *            the callback to run when a command is confirmed, not
+     *            <code>null</code>
+     * @return a callback that can be used to remove the subscriber, not
+     *         <code>null</code>
+     */
+    public Runnable subscribeToProcessed(
+            BiConsumer<SignalCommand, CommandResult> subscriber) {
+        assert subscriber != null;
+        return getWithLock(() -> {
+            subscribers.add(subscriber);
+            return wrapWithLock(() -> subscribers.remove(subscriber));
+        });
+    }
+
+    /**
+     * Notifies all subscribers after a command is processed. This method must
+     * be called from a code block that holds the tree lock.
+     *
+     * @param commands
+     *            the list of processed commands, not <code>null</code>
+     * @param results
+     *            the map of results for the commands, not <code>null</code>
+     */
+    protected void notifyProcessedCommandSubscribers(
+            List<SignalCommand> commands, Map<Id, CommandResult> results) {
+        assert hasLock();
+        for (var command : commands) {
+            for (var subscriber : subscribers) {
+                subscriber.accept(command, results.get(command.commandId()));
+            }
+        }
     }
 }

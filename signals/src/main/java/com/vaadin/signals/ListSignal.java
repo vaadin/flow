@@ -36,7 +36,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
+public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -89,7 +89,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          *            first
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition after(Signal<?> after) {
+        public static ListPosition after(AbstractSignal<?> after) {
             return new ListPosition(idOf(after), null);
         }
 
@@ -103,7 +103,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          *            insert last
          * @return a list position after the given signal, not <code>null</code>
          */
-        public static ListPosition before(Signal<?> before) {
+        public static ListPosition before(AbstractSignal<?> before) {
             return new ListPosition(null, idOf(before));
         }
 
@@ -123,11 +123,12 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
          * @return a list position between the given signals, not
          *         <code>null</code>
          */
-        public static ListPosition between(Signal<?> after, Signal<?> before) {
+        public static ListPosition between(AbstractSignal<?> after,
+                AbstractSignal<?> before) {
             return new ListPosition(idOf(after), idOf(before));
         }
 
-        private static Id idOf(Signal<?> signal) {
+        private static Id idOf(AbstractSignal<?> signal) {
             if (signal == null) {
                 return Id.EDGE;
             } else {
@@ -202,6 +203,18 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
         return insertAt(value, ListPosition.first());
     }
 
+    /**
+     * Helper method to convert a list of child node IDs to a list of signal
+     * instances using the provided factory function.
+     *
+     * @param <T>
+     *            the signal type
+     * @param node
+     *            the node data containing the list of child IDs
+     * @param factory
+     *            the factory function to create signal instances from IDs
+     * @return a list of signal instances, not <code>null</code>
+     */
     static <T extends Signal<?>> List<T> children(Data node,
             Function<Id, T> factory) {
         return node.listChildren().stream().map(factory).toList();
@@ -248,7 +261,8 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the position to move to, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> moveTo(Signal<T> child, ListPosition to) {
+    public SignalOperation<Void> moveTo(AbstractSignal<T> child,
+            ListPosition to) {
         var verifyChild = new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), new ListPosition(null, null));
         var adopt = new SignalCommand.AdoptAtCommand(Id.random(), id(),
@@ -286,7 +300,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Checks that the given child is at the given position in this list. This
      * operation is only meaningful to use as a condition in a
-     * {@link #runInTransaction(Runnable) transaction}. The result of the
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given child is a
      * child of this list and at the given position when the operation is
      * processed.
@@ -297,7 +311,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the expected position of the child, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyPosition(Signal<?> child,
+    public SignalOperation<Void> verifyPosition(AbstractSignal<?> child,
             ListPosition expectedPosition) {
         return submit(new SignalCommand.PositionCondition(Id.random(), id(),
                 child.id(), Objects.requireNonNull(expectedPosition)));
@@ -306,7 +320,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
     /**
      * Checks that the given signal is a child in this list. This operation is
      * only meaningful to use as a condition in a
-     * {@link #runInTransaction(Runnable) transaction}. The result of the
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given child is a
      * child of this list and at the given position when the operation is
      * processed.
@@ -315,7 +329,7 @@ public class ListSignal<T> extends Signal<List<ValueSignal<T>>> {
      *            the child to look for test, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> verifyChild(Signal<?> child) {
+    public SignalOperation<Void> verifyChild(AbstractSignal<?> child) {
         return verifyPosition(child, new ListPosition(null, null));
     }
 

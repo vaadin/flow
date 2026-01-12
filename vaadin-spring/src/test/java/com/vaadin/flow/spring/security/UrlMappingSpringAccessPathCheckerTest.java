@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
 import java.security.Principal;
@@ -30,7 +29,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.web.SpringJUnitWebConfig;
 
@@ -152,23 +151,23 @@ class UrlMappingSpringAccessPathCheckerTest {
     public static class TestConfig {
 
         @Bean
-        SpringAccessPathChecker urlMappingPpathAccessChecker(
+        SpringAccessPathChecker urlMappingPathAccessChecker(
                 WebInvocationPrivilegeEvaluator evaluator) {
             return new SpringAccessPathChecker(evaluator, "/url-mapping/*");
         }
 
         @Bean
-        public SecurityFilterChain testingFilterChain(HttpSecurity http)
-                throws Exception {
+        public SecurityFilterChain testingFilterChain(HttpSecurity http) {
             // @formatter:off
+            var matcherBuilder = PathPatternRequestMatcher.withDefaults();
             http.authorizeHttpRequests(cfg -> cfg
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/")).anonymous()
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/admin/**")).hasRole("ADMIN")
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/guest/**")).hasRole("GUEST")
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/protected/**")).authenticated()
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/anon/**")).anonymous()
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/public/**")).permitAll()
-                    .requestMatchers(new AntPathRequestMatcher("/url-mapping/forbidden/**")).denyAll());
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/")).anonymous()
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/admin/**")).hasRole("ADMIN")
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/guest/**")).hasRole("GUEST")
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/protected/**")).authenticated()
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/anon/**")).anonymous()
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/public/**")).permitAll()
+                    .requestMatchers(matcherBuilder.matcher("/url-mapping/forbidden/**")).denyAll());
             // @formatter:on
             return http.build();
         }

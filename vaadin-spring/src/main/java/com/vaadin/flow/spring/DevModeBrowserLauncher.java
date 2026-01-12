@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.spring;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.time.Duration;
 
@@ -30,8 +32,6 @@ import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.DevModeHandlerManager;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-
-import jakarta.servlet.ServletContext;
 
 /**
  * Utilities for launching a browser when running in development mode.

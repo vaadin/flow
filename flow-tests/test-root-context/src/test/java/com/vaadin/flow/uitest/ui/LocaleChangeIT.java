@@ -21,13 +21,13 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.WindowType;
 
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.CHANGE_LOCALE_BUTTON_ID;
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.SAME_UI_RESULT_ID;
 import static com.vaadin.flow.uitest.ui.LocaleChangeView.SHOW_RESULTS_BUTTON_ID;
-import org.openqa.selenium.WindowType;
 
 public class LocaleChangeIT extends ChromeBrowserTest {
 

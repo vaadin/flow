@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.io.File;
@@ -30,7 +29,7 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
 import org.openqa.selenium.WebElement;
 
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @NotThreadSafe
@@ -75,7 +74,7 @@ public class ThemeLiveReloadIT extends ChromeBrowserTest {
     }
 
     @Test
-    public void webpackLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
+    public void frontendLiveReload_newCssAndFontCreatedAndDeleted_stylesUpdatedOnFly() {
         open();
         Assert.assertFalse(
                 "Red background is not expected before applying the styles",

@@ -15,13 +15,7 @@
  */
 package com.vaadin.base.devserver;
 
-import com.fasterxml.jackson.databind.JsonNode;
-
-import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import tools.jackson.databind.JsonNode;
 
 /**
  * Handles dev tools messages from the client.
@@ -53,27 +47,9 @@ public interface DevToolsMessageHandler {
      * @return {@code true} if the message was handled and should not be passed
      *         on to further handlers
      */
-    @Deprecated
-    boolean handleMessage(String command, JsonObject data,
-            DevToolsInterface devToolsInterface);
-
-    /**
-     * Called when a message from the browser arrives.
-     *
-     * @param command
-     *            the command received
-     * @param data
-     *            the data received
-     * @param devToolsInterface
-     *            for interaction with the development tools, e.g. sending a
-     *            message
-     * @return {@code true} if the message was handled and should not be passed
-     *         on to further handlers
-     */
     default boolean handleMessage(String command, JsonNode data,
             DevToolsInterface devToolsInterface) {
-        return this.handleMessage(command, Json.parse(data.toString()),
-                devToolsInterface);
+        return this.handleMessage(command, data, devToolsInterface);
     }
 
     /**

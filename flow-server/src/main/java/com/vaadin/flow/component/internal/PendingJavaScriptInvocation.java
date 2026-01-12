@@ -17,13 +17,12 @@ package com.vaadin.flow.component.internal;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.component.page.PendingJavaScriptResult;
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.internal.StateNode;
-
-import elemental.json.JsonValue;
 
 /**
  * A pending JavaScript result that can be sent to the client.
@@ -39,7 +38,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     private final JavaScriptInvocation invocation;
     private final StateNode owner;
 
-    private SerializableConsumer<JsonValue> successHandler;
+    private SerializableConsumer<JsonNode> successHandler;
     private SerializableConsumer<String> errorHandler;
 
     private boolean sentToBrowser = false;
@@ -90,7 +89,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * @param value
      *            the JSON return value from the client
      */
-    public void complete(JsonValue value) {
+    public void complete(JsonNode value) {
         assert isSubscribed();
 
         successHandler.accept(value);
@@ -103,7 +102,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
      * @param value
      *            the JSON exception value from the client
      */
-    public void completeExceptionally(JsonValue value) {
+    public void completeExceptionally(JsonNode value) {
         assert isSubscribed();
 
         String message = value.asString();
@@ -141,7 +140,7 @@ public class PendingJavaScriptInvocation implements PendingJavaScriptResult {
     }
 
     @Override
-    public void then(SerializableConsumer<JsonValue> successHandler,
+    public void then(SerializableConsumer<JsonNode> successHandler,
             SerializableConsumer<String> errorHandler) {
         if (successHandler == null) {
             throw new IllegalArgumentException(

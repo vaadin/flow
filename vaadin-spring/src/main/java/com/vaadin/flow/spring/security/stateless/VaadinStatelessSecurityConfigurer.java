@@ -39,13 +39,13 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jose.jws.JwsAlgorithm;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.context.DelegatingSecurityContextRepository;
 import org.springframework.security.web.context.RequestAttributeSecurityContextRepository;
 import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
-import org.springframework.security.web.csrf.LazyCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.header.HeaderWriterFilter;
 import org.springframework.security.web.savedrequest.CookieRequestCache;
@@ -67,8 +67,7 @@ import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSucc
  * <li>{@link SecurityContextRepository} is populated with a
  * {@link JwtSecurityContextRepository}</li>
  * <li>{@link CsrfConfigurer#csrfTokenRepository(CsrfTokenRepository)} is used
- * to set {@link LazyCsrfTokenRepository} that delegates to
- * {@link CookieCsrfTokenRepository}</li>
+ * to set {@link CookieCsrfTokenRepository}</li>
  * </ul>
  *
  * <h2>Shared Objects Used</h2>
@@ -98,30 +97,10 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     private SecretKeyConfigurer secretKeyConfigurer;
 
     /**
-     * Sets {@link JwtSecurityContextRepository} as a shared object to be used
-     * by multiple {@code SecurityConfigurer}.
-     *
-     * @param http
-     *            the http security builder to store the shared object.
-     * @deprecated to be removed. There is no direct replacement for this
-     *             method. Shared object setup must be done along with other
-     *             required configurations by calling
-     *             {@link #apply(HttpSecurity, Customizer)}.
-     * @see #apply(HttpSecurity, Customizer)
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public void setSharedObjects(HttpSecurity http) {
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
-                new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(SecurityContextRepository.class,
-                jwtSecurityContextRepository);
-    }
-
-    /**
      * Applies configuration required to enable stateless security for a Vaadin
      * application.
      * <p>
-     * </p>
+     *
      * Use {@code customizer} to tune {@link VaadinStatelessSecurityConfigurer},
      * or {@link Customizer#withDefaults()} to accept the default values.
      *
@@ -130,22 +109,16 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
      * @param customizer
      *            the {@link Customizer} to provide more options for the
      *            {@link VaadinStatelessSecurityConfigurer}
+     * @throws Exception
+     *             if an error occurs during configuration
+     * @deprecated use
+     *             {@code http.with(new VaadinStatelessSecurityConfigurer(), customizer)}
+     *             instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public static void apply(HttpSecurity http,
             Customizer<VaadinStatelessSecurityConfigurer<HttpSecurity>> customizer)
             throws Exception {
-
-        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
-                new SerializedJwtSplitCookieRepository());
-        http.setSharedObject(JwtSecurityContextRepository.class,
-                jwtSecurityContextRepository);
-        http.securityContext(cfg -> {
-            DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
-                    jwtSecurityContextRepository,
-                    new RequestAttributeSecurityContextRepository());
-            cfg.securityContextRepository(repository);
-        });
-
         VaadinStatelessSecurityConfigurer<HttpSecurity> vaadinStatelessSecurityConfigurer = new VaadinStatelessSecurityConfigurer<>();
         http.with(vaadinStatelessSecurityConfigurer, customizer);
     }
@@ -153,6 +126,22 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
     @Override
     @SuppressWarnings("unchecked")
     public void init(H http) {
+
+        JwtSecurityContextRepository jwtSecurityContextRepository = new JwtSecurityContextRepository(
+                new SerializedJwtSplitCookieRepository());
+        http.setSharedObject(JwtSecurityContextRepository.class,
+                jwtSecurityContextRepository);
+        // This class should not be parameterized but only accept HttpSecurity
+        // It has not been refactored for compatibility reason. The following
+        // cast is only a hack to work around the generic type definition.
+        if (http instanceof HttpSecurity httpSecurity) {
+            httpSecurity.securityContext(cfg -> {
+                DelegatingSecurityContextRepository repository = new DelegatingSecurityContextRepository(
+                        jwtSecurityContextRepository,
+                        new RequestAttributeSecurityContextRepository());
+                cfg.securityContextRepository(repository);
+            });
+        }
 
         CsrfConfigurer<H> csrf = http.getConfigurer(CsrfConfigurer.class);
         if (csrf != null) {
@@ -168,6 +157,12 @@ public final class VaadinStatelessSecurityConfigurer<H extends HttpSecurityBuild
             CsrfTokenRequestHandler requestHandler = delegate::handle;
             csrf.csrfTokenRepository(csrfTokenRepository);
             csrf.csrfTokenRequestHandler(requestHandler);
+
+            // Disables removing CSRF token upon successful authentication,
+            // which happens in every request when using stateless JWT
+            // authentication.
+            csrf.sessionAuthenticationStrategy(
+                    new NullAuthenticatedSessionStrategy());
 
             http.getSharedObject(
                     VaadinSavedRequestAwareAuthenticationSuccessHandler.class)

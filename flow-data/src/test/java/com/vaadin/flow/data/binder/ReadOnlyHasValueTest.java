@@ -15,18 +15,18 @@
  */
 package com.vaadin.flow.data.binder;
 
+import java.util.Objects;
+
+import org.junit.Before;
+import org.junit.Test;
+
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
+import com.vaadin.flow.shared.Registration;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-
-import java.util.Objects;
-
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
-import org.junit.Before;
-import org.junit.Test;
-
-import com.vaadin.flow.shared.Registration;
 
 /**
  *

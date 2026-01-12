@@ -17,6 +17,7 @@ package com.vaadin.client.communication;
 
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.xhr.client.XMLHttpRequest;
+
 import com.vaadin.client.BrowserInfo;
 import com.vaadin.client.Console;
 import com.vaadin.client.Profiler;

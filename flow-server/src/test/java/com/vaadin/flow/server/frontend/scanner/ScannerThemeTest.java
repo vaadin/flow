@@ -1,6 +1,20 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend.scanner;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,7 +22,6 @@ import java.util.HashSet;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
-import org.mockito.Mockito;
 
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.FirstView;
@@ -18,16 +31,15 @@ import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RootViewWit
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RootViewWithMultipleTheme;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RootViewWithTheme;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RootViewWithoutTheme;
-import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.RootViewWithoutThemeAnnotation;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.SecondView;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme1;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme2;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.Theme4;
 import com.vaadin.flow.server.frontend.scanner.ScannerTestComponents.ThemeExporter;
-import com.vaadin.flow.theme.AbstractTheme;
 
 import static com.vaadin.flow.server.frontend.scanner.ScannerDependenciesTest.getFrontendDependencies;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -92,30 +104,16 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_visitDefaultTheme_when_noThemeAnnotationIsGiven()
-            throws Exception {
-
-        DefaultClassFinder finder = spy(new DefaultClassFinder(
-                Collections.singleton(RootViewWithoutThemeAnnotation.class)));
-
-        // we'll do a partial mock here since we want to keep the other
-        // behavior of the DefaultClassFinder. Theme4 is used as a fake Lumo
-        // since it has @JsModule annotation which makes it easy to verify
-        // that the Theme was actually visited and modules collected
+    public void should_notFindAnyTheme_when_noThemeAnnotationIsGiven() {
+        DefaultClassFinder finder = spy(
+                new DefaultClassFinder(Collections.singleton(
+                        ScannerTestComponents.RootViewWithoutThemeAnnotation.class)));
 
         FrontendDependencies deps = new FrontendDependencies(finder, true, null,
-                true) {
-            @Override
-            Class<? extends AbstractTheme> getDefaultTheme()
-                    throws IOException {
-                return Theme4.class;
-            }
-        };
+                true);
 
-        assertEquals(
-                "Theme4 should have been returned when default theme was selected",
-                Theme4.class, deps.getThemeDefinition().getTheme());
-        DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
+        assertNull("No default theme should have been selected",
+                deps.getThemeDefinition());
     }
 
     @Test
@@ -127,7 +125,7 @@ public class ScannerThemeTest {
     }
 
     @Test
-    public void should_defaultToLumoTheme_when_noThemeDefinedByExporter()
+    public void should_useExtendedClassTheme_when_noThemeDefinedByExporter()
             throws Exception {
         // RootViewWithTheme is added to the list just to make sure exporter
         // handles theming default, not the other crawlers
@@ -135,14 +133,10 @@ public class ScannerThemeTest {
                 new HashSet<>(Arrays.asList(NoThemeExporter.class,
                         RootViewWithTheme.class))));
 
-        Mockito.doReturn(Theme4.class).when(finder)
-                .loadClass(FrontendDependencies.LUMO);
-
         FrontendDependencies deps = new FrontendDependencies(finder, true, null,
                 true);
-        assertEquals(
-                "Theme4 should have been returned when default theme was selected",
-                Theme4.class, deps.getThemeDefinition().getTheme());
+        assertEquals("Theme4 should have been returned as theme", Theme4.class,
+                deps.getThemeDefinition().getTheme());
         DepsTests.assertImportsExcludingUI(deps.getModules(), "./theme-4.js");
     }
 

@@ -35,11 +35,9 @@ import com.vaadin.flow.server.VaadinSession;
  * most recently added handler is used first and the first request handler that
  * was added to the session is invoked towards the end unless any previous
  * handler has already produced a response.
- * </p>
  * <p>
  * The session is not locked during execution of the request handlers. The
  * request handler can itself decide if it needs to lock the session or not.
- * </p>
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *

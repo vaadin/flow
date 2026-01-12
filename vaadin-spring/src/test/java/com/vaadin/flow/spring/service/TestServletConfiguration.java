@@ -15,17 +15,19 @@
  */
 package com.vaadin.flow.spring.service;
 
-import com.vaadin.flow.server.VaadinRequest;
-import com.vaadin.flow.server.VaadinRequestInterceptor;
-import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
+
+import com.vaadin.flow.server.VaadinRequest;
+import com.vaadin.flow.server.VaadinRequestInterceptor;
+import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinSession;
 
 @Configuration
-@ComponentScan
+@ComponentScan(excludeFilters = @ComponentScan.Filter(type = FilterType.REGEX, pattern = ".*\\.SpringVaadinServiceExecutorTest.*"))
 @SpringBootConfiguration
 public class TestServletConfiguration {
 

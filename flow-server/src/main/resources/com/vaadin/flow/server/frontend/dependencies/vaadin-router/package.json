@@ -2,7 +2,7 @@
   "private": true,
   "description": "A list of Flow dependencies when using Vaadin router for Web Components",
   "dependencies": {
-    "@vaadin/router": "2.0.0"
+    "@vaadin/router": "2.0.1"
   },
   "devDependencies": {
   }

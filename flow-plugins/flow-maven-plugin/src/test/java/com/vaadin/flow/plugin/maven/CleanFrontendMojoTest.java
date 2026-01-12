@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.plugin.maven;
 
@@ -22,8 +21,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
@@ -35,7 +32,10 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.FrontendTools;
@@ -46,7 +46,6 @@ import static com.vaadin.flow.plugin.maven.BuildFrontendMojoTest.setProject;
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class CleanFrontendMojoTest {
     @Rule
@@ -116,7 +115,8 @@ public class CleanFrontendMojoTest {
     @Test
     public void should_removeNodeModulesFolder()
             throws MojoFailureException, MojoExecutionException {
-        final File nodeModules = new File(projectBase, NODE_MODULES);
+        final File nodeModules = new File(projectBase,
+                FrontendUtils.NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
         mojo.execute();
@@ -128,7 +128,8 @@ public class CleanFrontendMojoTest {
     public void should_notRemoveNodeModulesFolder_hilla()
             throws MojoFailureException, IOException, MojoExecutionException {
         enableHilla();
-        final File nodeModules = new File(projectBase, NODE_MODULES);
+        final File nodeModules = new File(projectBase,
+                FrontendUtils.NODE_MODULES);
         Assert.assertTrue("Failed to create 'node_modules'",
                 nodeModules.mkdirs());
         mojo.execute();
@@ -279,7 +280,7 @@ public class CleanFrontendMojoTest {
     public void should_keepUserDependencies_whenPackageJsonEdited()
             throws MojoFailureException, IOException, MojoExecutionException {
         ObjectNode json = createInitialPackageJson();
-        json.put("dependencies", JacksonUtils.createObjectNode());
+        json.set("dependencies", JacksonUtils.createObjectNode());
         ((ObjectNode) json.get("dependencies")).put("foo", "bar");
         FileUtils.fileWrite(packageJson, json.toString());
         mojo.execute();

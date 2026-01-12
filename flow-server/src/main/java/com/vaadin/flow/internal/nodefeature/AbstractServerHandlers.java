@@ -204,15 +204,7 @@ public abstract class AbstractServerHandlers<T>
      *            method to check return type for
      */
     protected void ensureSupportedReturnType(Method method) {
-        if (!void.class.equals(method.getReturnType())) {
-            String msg = String.format(Locale.ENGLISH,
-                    "Only void handler methods are supported. "
-                            + "Component '%s' has method '%s' annotated with '%s' whose return type is not void but \"%s\"",
-                    method.getDeclaringClass().getName(), method.getName(),
-                    getHandlerAnnotationFqn(),
-                    method.getReturnType().getSimpleName());
-            throw new IllegalStateException(msg);
-        }
+        // Default implementation allows all return types
     }
 
     /**

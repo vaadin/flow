@@ -11,6 +11,8 @@ export { routes as forHMROnly };
 if (import.meta.hot) {
    // @ts-ignore
    import.meta.hot.accept((module) => {
-     (window as any).Vaadin.routesConfig = module.forHMROnly;
+     if (module?.forHMROnly) {
+       (window as any).Vaadin.routesConfig = module.forHMROnly;
+     }
   });
 }

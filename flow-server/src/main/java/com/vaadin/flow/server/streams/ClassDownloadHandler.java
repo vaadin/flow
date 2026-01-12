@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
@@ -22,8 +21,8 @@ import java.io.OutputStream;
 
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving a class resource.
@@ -34,7 +33,8 @@ import com.vaadin.flow.server.HttpStatusCode;
  *
  * @since 24.8
  */
-public class ClassDownloadHandler extends AbstractDownloadHandler {
+public class ClassDownloadHandler
+        extends AbstractDownloadHandler<ClassDownloadHandler> {
 
     private final Class<?> clazz;
     private final String resourceName;
@@ -43,6 +43,10 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     /**
      * Create a class resource download handler with the resource name as the
      * url postfix (file name).
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>resourceName</code>. If you want to use a different file name, use
+     * {@link #ClassDownloadHandler(Class, String, String)} instead.
      *
      * @param clazz
      *            class to use for getting resource
@@ -56,13 +60,17 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     /**
      * Create a class resource download handler with the given file name as the
      * url postfix.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>fileName</code>.
      *
      * @param clazz
      *            class to use for getting resource
      * @param resourceName
      *            resource to get
      * @param fileName
-     *            name to use as url postfix
+     *            download file name that overrides <code>resourceName</code>
+     *            and also used as a download request URL postfix
      */
     public ClassDownloadHandler(Class<?> clazz, String resourceName,
             String fileName) {
@@ -78,28 +86,37 @@ public class ClassDownloadHandler extends AbstractDownloadHandler {
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
+        setTransferUI(downloadEvent.getUI());
         if (clazz.getResource(resourceName) == null) {
-            event.getResponse().setStatus(HttpStatusCode.NOT_FOUND.getCode());
+            LoggerFactory.getLogger(ClassDownloadHandler.class)
+                    .warn("No resource found for '{}'", resourceName);
+            downloadEvent.getResponse()
+                    .setStatus(HttpStatusCode.NOT_FOUND.getCode());
             return;
         }
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = clazz
                         .getResourceAsStream(resourceName)) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(event.getSession(), inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
+            String resourceName = getUrlPostfix();
+            downloadEvent.setContentType(
+                    getContentType(resourceName, downloadEvent.getResponse()));
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
+            } else {
+                downloadEvent.setFileName(resourceName);
             }
+            TransferUtil.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
-            event.getResponse()
+            downloadEvent.getResponse()
                     .setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            downloadEvent.setException(ioe);
+            notifyError(downloadEvent, ioe);
+            throw ioe;
         }
-
-        event.getResponse().setContentType(event.getContentType());
     }
 
     @Override

@@ -13,88 +13,100 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UncheckedIOException;
 
-import com.vaadin.flow.function.SerializableFunction;
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for serving an input stream for client download.
  *
  * @since 24.8
  */
-public class InputStreamDownloadHandler extends AbstractDownloadHandler {
+public class InputStreamDownloadHandler
+        extends AbstractDownloadHandler<InputStreamDownloadHandler> {
 
-    private final SerializableFunction<DownloadRequest, DownloadResponse> handler;
-    private final String name;
-
-    /**
-     * Create a input stream download handler for given event -> response
-     * function.
-     *
-     * @param handler
-     *            serializable function for handling download
-     */
-    public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler) {
-        this(handler, null);
-    }
+    private final InputStreamDownloadCallback callback;
 
     /**
-     * Create a input stream download handler for given event -> response
+     * Create an input stream download handler for given event -> response
      * function.
      *
-     * @param handler
+     * @param callback
      *            serializable function for handling download
-     * @param name
-     *            name to use as the url postfix as download response is not
-     *            generated before postfix
      */
-    public InputStreamDownloadHandler(
-            SerializableFunction<DownloadRequest, DownloadResponse> handler,
-            String name) {
-        this.handler = handler;
-        this.name = name;
+    public InputStreamDownloadHandler(InputStreamDownloadCallback callback) {
+        this.callback = callback;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        DownloadResponse download = handler.apply(event);
-        VaadinResponse response = event.getResponse();
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
+        VaadinResponse response = downloadEvent.getResponse();
+        setTransferUI(downloadEvent.getUI());
+        DownloadResponse download;
+        try {
+            download = callback.complete(downloadEvent);
+        } catch (IOException | RuntimeException e) {
+            // Set status before output is closed (see #8740)
+            response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
+            IOException cause;
+            if (e instanceof IOException ioe) {
+                cause = ioe;
+            } else if (e instanceof UncheckedIOException uioe) {
+                cause = uioe.getCause();
+            } else {
+                cause = new IOException(e.getMessage(), e);
+            }
+            downloadEvent.setException(e);
+            notifyError(downloadEvent, cause);
+            throw e;
+        }
         if (download.hasError()) {
             response.setStatus(download.getError());
+            String message = download.getErrorMessage();
+            if (message == null) {
+                message = "Download failed with code " + download.getError();
+            }
+            IOException ioException = new IOException(message);
+            if (download.getException() != null) {
+                downloadEvent.setException(download.getException());
+            } else {
+                downloadEvent.setException(ioException);
+            }
+            notifyError(downloadEvent, ioException);
             return;
         }
 
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+        String downloadName = download.getFileName();
+        String contentType = download.getContentType() == null
+                ? getContentType(downloadName, response)
+                : download.getContentType();
+        downloadEvent.setContentType(contentType);
+        downloadEvent.setContentLength(download.getContentLength());
+
+        if (isInline()) {
+            downloadEvent.inline(downloadName);
+        } else {
+            downloadEvent.setFileName(downloadName);
+        }
+
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
                 InputStream inputStream = download.getInputStream()) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(event.getSession(), inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
-            }
+            TransferUtil.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            downloadEvent.setException(ioe);
+            notifyError(downloadEvent, ioe);
+            throw ioe;
         }
-
-        response.setContentType(download.getContentType());
-        response.setContentLength(download.getSize());
-        response.setHeader("Content-Disposition",
-                "attachment;filename=" + download.getFileName());
-    }
-
-    @Override
-    public String getUrlPostfix() {
-        return name;
     }
 }

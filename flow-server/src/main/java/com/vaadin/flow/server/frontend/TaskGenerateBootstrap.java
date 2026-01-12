@@ -20,19 +20,19 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 import com.vaadin.flow.theme.ThemeDefinition;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.BOOTSTRAP_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_JS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TS;
-import static com.vaadin.flow.server.frontend.FrontendUtils.INDEX_TSX;
+import static com.vaadin.flow.internal.FrontendUtils.BOOTSTRAP_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import static com.vaadin.flow.internal.FrontendUtils.GENERATED;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_JS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TS;
+import static com.vaadin.flow.internal.FrontendUtils.INDEX_TSX;
 
 /**
  * A task for generating the bootstrap file
@@ -74,7 +74,6 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
     @Override
     protected String getFileContent() {
         List<String> lines = new ArrayList<>();
-        lines.add(String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         lines.add(String.format("import '%s';%n", getIndexTsEntryPath()));
         if (options.isReactEnabled()) {
             lines.add("import './vaadin-react.js';");
@@ -87,6 +86,8 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
         for (TypeScriptBootstrapModifier modifier : modifiers) {
             modifier.modify(lines, options, frontDeps);
         }
+        lines.add(0,
+                String.format("import './%s';%n", FEATURE_FLAGS_FILE_NAME));
         return String.join(System.lineSeparator(), lines);
     }
 
@@ -116,12 +117,18 @@ public class TaskGenerateBootstrap extends AbstractTaskClientGenerator {
 
     private Collection<String> getThemeLines() {
         Collection<String> lines = new ArrayList<>();
+        lines.add("import './app-shell-imports.js';");
         ThemeDefinition themeDef = frontDeps.getThemeDefinition();
         if (themeDef != null && !"".equals(themeDef.getName())) {
             lines.add("import './theme-" + themeDef.getName()
                     + ".global.generated.js';");
             lines.add("import { applyTheme } from './theme.js';");
             lines.add("applyTheme(document);");
+            lines.add("");
+        } else {
+            lines.add("import './css.generated.js';");
+            lines.add("import { applyCss } from './css.generated.js';");
+            lines.add("applyCss(document);");
             lines.add("");
         }
         return lines;

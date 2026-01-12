@@ -15,16 +15,13 @@
  */
 package com.vaadin.flow.gradle
 
-import org.gradle.api.JavaVersion
 import org.gradle.testkit.runner.BuildResult
 import org.gradle.testkit.runner.BuildTask
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import java.io.File
-import java.io.IOException
 import java.nio.file.FileSystems
 import java.nio.file.Files
-import java.nio.file.Path
 import java.nio.file.PathMatcher
 import java.util.zip.ZipInputStream
 import kotlin.test.expect
@@ -165,11 +162,11 @@ fun expectArchiveContainsVaadinBundle(
 }
 
 /**
- * Asserts that given archive (jar/war) doesn't contain the Vaadin webpack bundle:
+ * Asserts that given archive (jar/war) doesn't contain the Vaadin bundle:
  * the `META-INF/VAADIN/build/` directory.
  */
-fun expectArchiveDoesntContainVaadinWebpackBundle(archive: File,
-                                                  isSpringBootJar: Boolean) {
+fun expectArchiveDoesntContainVaadinBundle(archive: File,
+                                           isSpringBootJar: Boolean) {
     val isWar: Boolean = archive.name.endsWith(".war", true)
     val isStandaloneJar: Boolean = !isWar && !isSpringBootJar
     val resourcePackaging: String = when {

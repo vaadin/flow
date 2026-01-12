@@ -1,7 +1,5 @@
 window.divConnector = {
-        
-  jsFunction: function( divComponent ){
-      divComponent.$server.handleClientCall("foo");
+  jsFunction: function (divComponent) {
+    divComponent.$server.handleClientCall('foo');
   }
-}
-
+};

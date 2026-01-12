@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security.stateless;
 
 import jakarta.servlet.http.Cookie;
@@ -30,13 +29,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.context.TestConfiguration;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -65,8 +64,8 @@ import org.springframework.web.context.WebApplicationContext;
 import com.vaadin.flow.spring.SpringBootAutoConfiguration;
 import com.vaadin.flow.spring.SpringSecurityAutoConfiguration;
 import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
+import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.authenticated;
 import static org.springframework.security.test.web.servlet.response.SecurityMockMvcResultMatchers.unauthenticated;
@@ -127,7 +126,8 @@ class JwtStatelessAuthenticationTest {
     }
 
     @Test
-    void authenticated_jwtCookieUpdatedAtEveryRequest() throws Exception {
+    void authenticated_protected_jwtCookieUpdatedAtEveryRequest()
+            throws Exception {
         MvcResult result = doLogin();
 
         Cookie jwtCookie = result.getResponse()
@@ -144,12 +144,29 @@ class JwtStatelessAuthenticationTest {
                 .andExpect(cookie().exists("jwt.signature"))
                 .andExpect(cookie().exists("jwt.headerAndPayload")).andReturn();
 
-        Cookie jwtCookie2 = result.getResponse()
+        assertCookiesUpdated(result, jwtCookie, jwtSignature);
+    }
+
+    @Test
+    void authenticated_restricted_jwtCookieUpdatedAtEveryRequest()
+            throws Exception {
+        MvcResult result = doLogin();
+
+        Cookie jwtCookie = result.getResponse()
                 .getCookie("jwt.headerAndPayload");
-        Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
-        Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
-        Assertions.assertNotEquals(jwtSignature.getValue(),
-                jwtSignature2.getValue());
+        Cookie jwtSignature = result.getResponse().getCookie("jwt.signature");
+
+        // Wait for a while, to be sure expire time is different
+        Thread.sleep(1500);
+        result = this.mvc
+                .perform(get("/restricted").with(csrfCookie()).cookie(jwtCookie,
+                        jwtSignature))
+                .andExpect(status().isForbidden())
+                .andExpect(authenticated().withUsername("user"))
+                .andExpect(cookie().exists("jwt.signature"))
+                .andExpect(cookie().exists("jwt.headerAndPayload")).andReturn();
+
+        assertCookiesUpdated(result, jwtCookie, jwtSignature);
     }
 
     @Test
@@ -212,25 +229,40 @@ class JwtStatelessAuthenticationTest {
         };
     }
 
-    @TestConfiguration
-    @Import(FakeController.class)
-    public static class SecurityConfig extends VaadinWebSecurity {
+    private static void assertCookiesUpdated(MvcResult result, Cookie jwtCookie,
+            Cookie jwtSignature) {
+        Cookie jwtCookie2 = result.getResponse()
+                .getCookie("jwt.headerAndPayload");
+        Assertions.assertNotEquals(jwtCookie.getValue(), jwtCookie2.getValue());
+        Cookie jwtSignature2 = result.getResponse().getCookie("jwt.signature");
+        Assertions.assertNotEquals(jwtSignature.getValue(),
+                jwtSignature2.getValue());
+    }
 
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            http.authorizeHttpRequests(
-                    auth -> auth.requestMatchers(antMatchers("/")).permitAll());
-            super.configure(http);
-            setLoginView(http, "login");
-            setStatelessAuthentication(http,
-                    new SecretKeySpec(Base64.getDecoder().decode(
+    @TestConfiguration
+    @EnableWebSecurity
+    @Import(FakeController.class)
+    public static class SecurityConfig {
+
+        @Bean("VaadinSecurityFilterChainBean")
+        SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
+            http.authorizeHttpRequests(auth -> auth.requestMatchers("/")
+                    .permitAll().requestMatchers("/protected").authenticated());
+            http.with(vaadin(), cfg -> {
+                cfg.loginView("login");
+            });
+            http.with(new VaadinStatelessSecurityConfigurer<>(), cfg -> cfg
+                    .withSecretKey()
+                    .secretKey(new SecretKeySpec(Base64.getDecoder().decode(
                             "YOc+XUfRA/cPGNTEsHfU897W0VYF1nrLNWrsGEI1rBw="),
-                            JwsAlgorithms.HS256),
-                    "someone", 2000);
+                            JwsAlgorithms.HS256))
+                    .and().issuer("someone").expiresIn(2000));
+            return http.build();
         }
 
         @Bean
         UserDetailsService userDetailsService() {
+            @SuppressWarnings("deprecation")
             UserDetails user = User.withDefaultPasswordEncoder()
                     .username("user").password("password").roles("USER")
                     .build();
@@ -267,6 +299,11 @@ class JwtStatelessAuthenticationTest {
         @GetMapping("/protected")
         public String protectedView() {
             return "PROTECTED";
+        }
+
+        @GetMapping("/restricted")
+        public String restrictedView() {
+            return "RESTRICTED";
         }
 
     }

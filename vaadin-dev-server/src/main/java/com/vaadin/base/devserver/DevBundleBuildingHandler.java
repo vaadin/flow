@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.base.devserver;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,11 +34,11 @@ import com.vaadin.flow.server.VaadinSession;
  * progress" HTML page to the user, during the creation of the development
  * bundle.
  * <p>
- * </p>
+ *
  * The {@link #getPort()} method returns a fixed value of {@literal -1}, meaning
  * that this handler will not start a server listening for incoming requests.
  * <p>
- * </p>
+ *
  * Most of the other methods should not be invoked, and they may throw an
  * exception if called.
  */

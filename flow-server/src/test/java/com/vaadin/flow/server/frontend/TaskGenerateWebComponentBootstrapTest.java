@@ -17,8 +17,6 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 
-import com.vaadin.flow.di.Lookup;
-import com.vaadin.flow.server.ExecutionFailedException;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -26,8 +24,12 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.mockito.Mockito;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
+import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
+
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.FEATURE_FLAGS_FILE_NAME;
 
 public class TaskGenerateWebComponentBootstrapTest {
     @Rule
@@ -44,8 +46,12 @@ public class TaskGenerateWebComponentBootstrapTest {
                 .getFlowGeneratedImports(frontendDirectory);
         generatedImports.getParentFile().mkdirs();
         generatedImports.createNewFile();
+        FrontendDependenciesScanner scanner = Mockito
+                .mock(FrontendDependenciesScanner.class);
+        Mockito.when(scanner.getThemeDefinition()).thenReturn(null);
         Options options = new Options(Mockito.mock(Lookup.class), null)
-                .withFrontendDirectory(frontendDirectory);
+                .withFrontendDirectory(frontendDirectory)
+                .withFrontendDependenciesScanner(scanner);
 
         taskGenerateWebComponentBootstrap = new TaskGenerateWebComponentBootstrap(
                 options);

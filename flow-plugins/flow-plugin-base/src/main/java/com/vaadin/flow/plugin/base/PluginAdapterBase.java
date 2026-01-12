@@ -57,7 +57,7 @@ public interface PluginAdapterBase {
     /**
      * Whether to insert the initial Uidl object in the bootstrap index.html.
      *
-     * @return {@link boolean}
+     * @return true if eager server load should happen
      */
     boolean eagerServerLoad();
 
@@ -194,13 +194,6 @@ public interface PluginAdapterBase {
     URI nodeDownloadRoot() throws URISyntaxException;
 
     /**
-     * Whether the alternative node may be auto-updated or not.
-     *
-     * @return {@code true} to update node if older than default
-     */
-    boolean nodeAutoUpdate();
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
@@ -266,6 +259,16 @@ public interface PluginAdapterBase {
     boolean requireHomeNodeExec();
 
     /**
+     * The folder containing the Node.js executable.
+     * <p>
+     * When returned value is non-null and non-empty, Node.js will be
+     * exclusively used from this folder. If not found, build will fail.
+     *
+     * @return the node folder path, or null to use default resolution
+     */
+    String nodeFolder();
+
+    /**
      * Defines the output directory for generated non-served resources, such as
      * the token file.
      *
@@ -278,8 +281,20 @@ public interface PluginAdapterBase {
      * files.
      *
      * @return {@link File}
+     * @deprecated since 24.8, use {@link #frontendOutputDirectory()} instead.
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     File webpackOutputDirectory();
+
+    /**
+     * The folder where the frontend build tool should output index.js and other
+     * generated files.
+     *
+     * @return {@link File}
+     */
+    default File frontendOutputDirectory() {
+        return webpackOutputDirectory();
+    }
 
     /**
      * The folder where everything is built into.
@@ -364,4 +379,18 @@ public interface PluginAdapterBase {
      * @return {@code true} to ignore node/npm tool version checks
      */
     boolean isFrontendIgnoreVersionChecks();
+
+    /**
+     * Specifies whether to allow building a version of the application with a
+     * commercial banner when commercial components are used without a license
+     * key.
+     *
+     * @return {@code true} to enable commercial banner when commercial
+     *         components are used without a valid license key, {@code false} to
+     *         fail the build in this situation
+     */
+    default boolean isCommercialBannerEnabled() {
+        return false;
+    }
+
 }

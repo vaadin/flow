@@ -131,7 +131,7 @@ public class AuthenticationContext {
      * {@link org.springframework.security.web.authentication.logout.LogoutHandler}.
      */
     public void logout() {
-        final UI ui = UI.getCurrent();
+        final UI ui = UI.getCurrentOrThrow();
         boolean pushWebsocketConnected = ui.getPushConfiguration()
                 .getTransport() == Transport.WEBSOCKET
                 && ui.getInternals().getPushConnection().isConnected();
@@ -224,7 +224,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has the given role.
      * <p>
-     * </p>
+     *
      * The role must be provided without the role prefix, for example
      * {@code hasRole("USER")} instead of {@code hasRole("ROLE_USER")}.
      *
@@ -240,7 +240,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has any of the given roles.
      * <p>
-     * </p>
+     *
      * Roles must be provided without the role prefix, for example
      * {@code hasAnyRole(Set.of("USER", "ADMIN"))} instead of
      * {@code hasAnyRole(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
@@ -264,7 +264,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has any of the given roles.
      * <p>
-     * </p>
+     *
      * Roles must be provided without the role prefix, for example
      * {@code hasAnyRole("USER", "ADMIN")} instead of
      * {@code hasAnyRole("ROLE_USER", "ROLE_ADMIN")}.
@@ -284,7 +284,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has all the given roles.
      * <p>
-     * </p>
+     *
      * Roles must be provided without the role prefix, for example
      * {@code hasAllRoles(Set.of("USER", "ADMIN"))} instead of
      * {@code hasAllRoles(Set.of("ROLE_USER", "ROLE_ADMIN"))}.
@@ -309,7 +309,7 @@ public class AuthenticationContext {
     /**
      * Checks whether the current authenticated user has all the given roles.
      * <p>
-     * </p>
+     *
      * Roles must be provided without the role prefix, for example
      * {@code hasAllRoles("USER", "ADMIN")} instead of
      * {@code hasAllRoles("ROLE_USER", "ROLE_ADMIN")}.
@@ -458,7 +458,8 @@ public class AuthenticationContext {
      * Augments the given {@link AuthenticationContext} with Spring Security.
      *
      * This method can be used to configure the {@link AuthenticationContext}
-     * when {@link VaadinWebSecurity} is not used to set up Spring Security.
+     * when {@link VaadinSecurityConfigurer} is not used to set up Spring
+     * Security.
      *
      * @param httpSecurity
      *            Spring {@link HttpSecurity} for security configuration

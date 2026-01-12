@@ -25,6 +25,7 @@ import java.io.UncheckedIOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -33,7 +34,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +41,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -49,7 +48,6 @@ import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,16 +60,18 @@ import com.vaadin.base.devserver.stats.StatisticsStorage;
 import com.vaadin.base.devserver.viteproxy.ViteWebsocketEndpoint;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.internal.DevModeHandler;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
+import com.vaadin.flow.server.frontend.installer.NodeInstaller;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
@@ -82,10 +82,12 @@ import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TOKEN;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
+import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION;
 
 /**
  * Initializer for starting node updaters as well as the dev mode server.
@@ -170,34 +172,6 @@ public class DevModeInitializer implements Serializable {
     /**
      * Initialize the devmode server if not in production mode or compatibility
      * mode.
-     * <p>
-     * </p>
-     * Uses common ForkJoin pool to execute asynchronous tasks. It is
-     * recommended to use
-     * {@link #initDevModeHandler(Set, VaadinContext, Executor)} and provide a a
-     * custom executor if initialization starts long-running tasks.
-     *
-     * @param classes
-     *            classes to check for npm- and js modules
-     * @param context
-     *            VaadinContext we are running in
-     * @return the initialized dev mode handler or {@code null} if none was
-     *         created
-     *
-     * @throws VaadinInitializerException
-     *             if dev mode can't be initialized
-     * @deprecated use {@link #initDevModeHandler(Set, VaadinContext, Executor)}
-     *             providing a custom executor.
-     */
-    @Deprecated(forRemoval = true)
-    public static DevModeHandler initDevModeHandler(Set<Class<?>> classes,
-            VaadinContext context) throws VaadinInitializerException {
-        return initDevModeHandler(classes, context, ForkJoinPool.commonPool());
-    }
-
-    /**
-     * Initialize the devmode server if not in production mode or compatibility
-     * mode.
      *
      * @param classes
      *            classes to check for npm- and js modules
@@ -249,7 +223,7 @@ public class DevModeInitializer implements Serializable {
         Options options = new Options(lookup, baseDir)
                 .withFrontendDirectory(frontendFolder)
                 .withFrontendGeneratedFolder(
-                        new File(frontendFolder + GENERATED))
+                        new File(frontendFolder + FrontendUtils.GENERATED))
                 .withBuildDirectory(config.getBuildFolder());
 
         log().info("Starting dev-mode updaters in {} folder.",
@@ -273,8 +247,10 @@ public class DevModeInitializer implements Serializable {
             options.createMissingPackageJson(true);
         }
 
-        Set<File> frontendLocations = getFrontendLocationsFromClassloader(
-                DevModeStartupListener.class.getClassLoader());
+        ResourceProvider resourceProvider = lookup
+                .lookup(ResourceProvider.class);
+        Set<File> frontendLocations = getFrontendLocationsFromResourceProvider(
+                resourceProvider);
 
         boolean useByteCodeScanner = config.getBooleanProperty(
                 SERVLET_PARAMETER_DEVMODE_OPTIMIZE_BUNDLE,
@@ -297,7 +273,8 @@ public class DevModeInitializer implements Serializable {
 
         String frontendGeneratedFolderName = config.getStringProperty(
                 PROJECT_FRONTEND_GENERATED_DIR_TOKEN,
-                Paths.get(frontendFolder.getPath(), GENERATED).toString());
+                Paths.get(frontendFolder.getPath(), FrontendUtils.GENERATED)
+                        .toString());
         File frontendGeneratedFolder = new File(frontendGeneratedFolderName);
         File jarFrontendResourcesFolder = new File(frontendGeneratedFolder,
                 FrontendUtils.JAR_RESOURCES_FOLDER);
@@ -330,7 +307,12 @@ public class DevModeInitializer implements Serializable {
                 .withFrontendExtraFileExtensions(
                         getFrontendExtraFileExtensions(config))
                 .withReact(reactEnable)
-                .withNpmExcludeWebComponents(npmExcludeWebComponents);
+                .withNpmExcludeWebComponents(npmExcludeWebComponents)
+                .withNodeVersion(config.getStringProperty(NODE_VERSION,
+                        DEFAULT_NODE_VERSION))
+                .withNodeDownloadRoot(
+                        URI.create(config.getStringProperty(NODE_DOWNLOAD_ROOT,
+                                NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
 
         // Do not execute inside runnable thread as static mocking doesn't work.
         NodeTasks tasks = new NodeTasks(options);
@@ -370,12 +352,12 @@ public class DevModeInitializer implements Serializable {
         }
     }
 
-    private static List<String> getFrontendExtraFileExtensions(
+    static List<String> getFrontendExtraFileExtensions(
             ApplicationConfiguration config) {
-        List<String> stringProperty = Arrays.asList(config
+        List<String> stringProperty = Arrays.stream(config
                 .getStringProperty(InitParameters.FRONTEND_EXTRA_EXTENSIONS, "")
-                .split(","));
-        return stringProperty;
+                .split(",")).filter(input -> !input.isBlank()).toList();
+        return stringProperty.isEmpty() ? null : stringProperty;
     }
 
     private static Logger log() {
@@ -387,15 +369,17 @@ public class DevModeInitializer implements Serializable {
      * META-INF/resources/frontend and META-INF/resources/themes folder. We
      * don't use URLClassLoader because will fail in Java 9+
      */
-    static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader) throws VaadinInitializerException {
+    static Set<File> getFrontendLocationsFromResourceProvider(
+            ResourceProvider resourceProvider)
+            throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.RESOURCES_FRONTEND_DEFAULT));
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
-        frontendFiles.addAll(getFrontendLocationsFromClassloader(classLoader,
-                Constants.RESOURCES_THEME_JAR_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromResourceProvider(
+                resourceProvider, Constants.RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(
+                getFrontendLocationsFromResourceProvider(resourceProvider,
+                        Constants.COMPATIBILITY_RESOURCES_FRONTEND_DEFAULT));
+        frontendFiles.addAll(getFrontendLocationsFromResourceProvider(
+                resourceProvider, Constants.RESOURCES_THEME_JAR_DEFAULT));
         return frontendFiles;
     }
 
@@ -410,22 +394,22 @@ public class DevModeInitializer implements Serializable {
         }
     }
 
-    private static Set<File> getFrontendLocationsFromClassloader(
-            ClassLoader classLoader, String resourcesFolder)
+    private static Set<File> getFrontendLocationsFromResourceProvider(
+            ResourceProvider resourceProvider, String resourcesFolder)
             throws VaadinInitializerException {
         Set<File> frontendFiles = new HashSet<>();
         try {
-            Enumeration<URL> en = classLoader.getResources(resourcesFolder);
+            List<URL> en = resourceProvider
+                    .getApplicationResources(resourcesFolder);
             if (en == null) {
                 return frontendFiles;
             }
             Set<String> vfsJars = new HashSet<>();
-            while (en.hasMoreElements()) {
-                URL url = en.nextElement();
+            for (URL url : en) {
                 String urlString = url.toString();
 
                 String path = URLDecoder.decode(url.getPath(),
-                        StandardCharsets.UTF_8.name());
+                        StandardCharsets.UTF_8);
                 Matcher jarMatcher = JAR_FILE_REGEX.matcher(path);
                 Matcher zipProtocolJarMatcher = ZIP_PROTOCOL_JAR_FILE_REGEX
                         .matcher(path);
@@ -439,12 +423,14 @@ public class DevModeInitializer implements Serializable {
                 if (jarVfsMatcher.find()) {
                     String vfsJar = jarVfsMatcher.group(1);
                     if (vfsJars.add(vfsJar)) { // NOSONAR
-                        frontendFiles.add(
-                                getPhysicalFileOfJBossVfsJar(new URL(vfsJar)));
+                        frontendFiles.add(getPhysicalFileOfJBossVfsJar(
+                                URI.create(vfsJar).toURL()));
                     }
                 } else if (dirVfsMatcher.find()) {
-                    URL vfsDirUrl = new URL(urlString.substring(0,
-                            urlString.lastIndexOf(resourcesFolder)));
+                    URL vfsDirUrl = URI
+                            .create(urlString.substring(0,
+                                    urlString.lastIndexOf(resourcesFolder)))
+                            .toURL();
                     frontendFiles
                             .add(getPhysicalFileOfJBossVfsDirectory(vfsDirUrl));
                 } else if (jarMatcher.find()) {
@@ -476,7 +462,7 @@ public class DevModeInitializer implements Serializable {
             throws IOException, VaadinInitializerException {
         try {
             Object virtualFile = url.openConnection().getContent();
-            Class virtualFileClass = virtualFile.getClass();
+            Class<?> virtualFileClass = virtualFile.getClass();
 
             // Reflection as we cannot afford a dependency to
             // WildFly or JBoss
@@ -492,7 +478,7 @@ public class DevModeInitializer implements Serializable {
             // are created. Later, these physical files are scanned
             // to collect
             // their resources.
-            List virtualFiles = (List) getChildrenRecursivelyMethod
+            List<?> virtualFiles = (List<?>) getChildrenRecursivelyMethod
                     .invoke(virtualFile);
             File rootDirectory = (File) getPhysicalFileMethod
                     .invoke(virtualFile);
@@ -539,7 +525,7 @@ public class DevModeInitializer implements Serializable {
         // We should use reflection to use JBoss VFS API as we cannot
         // afford a
         // dependency to WildFly or JBoss
-        Class virtualFileClass = jarVirtualFile.getClass();
+        Class<?> virtualFileClass = jarVirtualFile.getClass();
         Method getChildrenRecursivelyMethod = virtualFileClass
                 .getMethod("getChildrenRecursively");
         Method openStreamMethod = virtualFileClass.getMethod("openStream");
@@ -547,7 +533,7 @@ public class DevModeInitializer implements Serializable {
         Method getPathNameRelativeToMethod = virtualFileClass
                 .getMethod("getPathNameRelativeTo", virtualFileClass);
 
-        List jarVirtualChildren = (List) getChildrenRecursivelyMethod
+        List<?> jarVirtualChildren = (List<?>) getChildrenRecursivelyMethod
                 .invoke(jarVirtualFile);
         try (ZipOutputStream zipOutputStream = new ZipOutputStream(
                 Files.newOutputStream(tempJar))) {
@@ -557,12 +543,13 @@ public class DevModeInitializer implements Serializable {
 
                 String relativePath = (String) getPathNameRelativeToMethod
                         .invoke(child, jarVirtualFile);
-                InputStream inputStream = (InputStream) openStreamMethod
-                        .invoke(child);
-                ZipEntry zipEntry = new ZipEntry(relativePath);
-                zipOutputStream.putNextEntry(zipEntry);
-                IOUtils.copy(inputStream, zipOutputStream);
-                zipOutputStream.closeEntry();
+                try (InputStream inputStream = (InputStream) openStreamMethod
+                        .invoke(child)) {
+                    ZipEntry zipEntry = new ZipEntry(relativePath);
+                    zipOutputStream.putNextEntry(zipEntry);
+                    inputStream.transferTo(zipOutputStream);
+                    zipOutputStream.closeEntry();
+                }
             }
         }
     }

@@ -48,6 +48,9 @@ public class ReconnectionAttemptEvent
 
     /**
      * Creates an event object.
+     *
+     * @param attempt
+     *            the reconnection attempt number
      */
     public ReconnectionAttemptEvent(int attempt) {
         this.attempt = attempt;

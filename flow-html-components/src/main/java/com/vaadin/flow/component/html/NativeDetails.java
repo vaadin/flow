@@ -34,7 +34,6 @@ import com.vaadin.flow.shared.Registration;
  * Component representing a <code>&lt;details&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
  */
 @Tag(Tag.DETAILS)
 public class NativeDetails extends HtmlComponent
@@ -231,7 +230,7 @@ public class NativeDetails extends HtmlComponent
 
         /**
          * ToggleEvent base constructor.
-         * <p>
+         *
          * Note: This event is always triggered on client side. Resulting in
          * {@code fromClient} to be always {@code true}.
          *

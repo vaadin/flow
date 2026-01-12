@@ -37,10 +37,36 @@ import com.vaadin.flow.dom.DomListenerRegistration;
  * expression is passed back to the server and injected into the annotated
  * {@link ComponentEvent} constructor parameter.
  * <p>
- * Supported parameter types are {@link String},
- * {@link elemental.json.JsonValue},
- * {@link com.fasterxml.jackson.databind.JsonNode}, {@link Integer},
- * {@link Double}, {@link Boolean} and their respective primitive types.
+ * Supported parameter types include:
+ * <ul>
+ * <li>Primitives and their wrappers: {@link Integer}, {@link Double},
+ * {@link Boolean}, int, double, boolean, etc.</li>
+ * <li>String values: {@link String}</li>
+ * <li>JSON types: {@link tools.jackson.databind.JsonNode}</li>
+ * <li>Bean/DTO types: Any Java bean or record that can be deserialized from
+ * JSON using Jackson</li>
+ * <li>Collections: {@link java.util.List}, {@link java.util.Map}, etc. (when
+ * using generic types with proper bean definitions)</li>
+ * </ul>
+ * <p>
+ * Example with a bean type:
+ *
+ * <pre>
+ * public class MouseDetails {
+ *     private int clientX;
+ *     private int clientY;
+ *     // getters and setters
+ * }
+ *
+ * &#64;DomEvent("custom-click")
+ * public class CustomClickEvent extends ComponentEvent&lt;Component&gt; {
+ *     public CustomClickEvent(Component source, boolean fromClient,
+ *             &#64;EventData("event.detail") MouseDetails details) {
+ *         super(source, fromClient);
+ *         // details is automatically deserialized from the event data
+ *     }
+ * }
+ * </pre>
  *
  * @see DomEvent
  * @see DomListenerRegistration#addEventData(String)

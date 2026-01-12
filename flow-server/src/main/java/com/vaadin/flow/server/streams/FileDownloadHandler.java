@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.streams;
 
 import java.io.File;
@@ -21,10 +20,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import com.vaadin.flow.server.DownloadRequest;
 import com.vaadin.flow.server.HttpStatusCode;
 import com.vaadin.flow.server.VaadinResponse;
-import com.vaadin.flow.server.VaadinSession;
+import com.vaadin.flow.server.communication.TransferUtil;
 
 /**
  * Download handler for use with a given File that will be read and written as
@@ -32,14 +30,19 @@ import com.vaadin.flow.server.VaadinSession;
  *
  * @since 24.8
  */
-public class FileDownloadHandler extends AbstractDownloadHandler {
+public class FileDownloadHandler
+        extends AbstractDownloadHandler<FileDownloadHandler> {
 
     private final File file;
-    private final String name;
+    private final String fileNameOverride;
 
     /**
      * Create a download handler for given file. Url postfix will be used as
-     * {@code file.getName()}
+     * {@code file.getName()}.
+     * <p>
+     * The downloaded file name and download URL postfix will be set to
+     * <code>file.getName()</code>. If you want to use a different file name,
+     * use {@link #FileDownloadHandler(File, String)} instead.
      *
      * @param file
      *            file to download
@@ -50,44 +53,63 @@ public class FileDownloadHandler extends AbstractDownloadHandler {
 
     /**
      * Create a download handler for given file.
+     * <p>
+     * The downloaded file fileNameOverride and download URL postfix will be set
+     * to <code>fileNameOverride</code>.
      *
      * @param file
      *            file to download
-     * @param name
-     *            url postfix name to use instead of file name
+     * @param fileNameOverride
+     *            used as a downloaded file name (overrides
+     *            <code>file.getName()</code>) and also as a download request
+     *            URL postfix, e.g.
+     *            <code>/VAADIN/dynamic/resource/0/5298ee8b-9686-4a5a-ae1d-b38c62767d6a/my-file.txt</code>
      */
-    public FileDownloadHandler(File file, String name) {
+    public FileDownloadHandler(File file, String fileNameOverride) {
         this.file = file;
-        this.name = name;
+        this.fileNameOverride = fileNameOverride;
     }
 
     @Override
-    public void handleDownloadRequest(DownloadRequest event) {
-        VaadinSession session = event.getSession();
-        VaadinResponse response = event.getResponse();
-
-        final int BUFFER_SIZE = 1024;
-        try (OutputStream outputStream = event.getOutputStream();
+    public void handleDownloadRequest(DownloadEvent downloadEvent)
+            throws IOException {
+        setTransferUI(downloadEvent.getUI());
+        VaadinResponse response = downloadEvent.getResponse();
+        try (OutputStream outputStream = downloadEvent.getOutputStream();
                 FileInputStream inputStream = new FileInputStream(file)) {
-            byte[] buf = new byte[BUFFER_SIZE];
-            int n;
-            while ((n = read(session, inputStream, buf)) >= 0) {
-                outputStream.write(buf, 0, n);
+            String resourceName = getUrlPostfix();
+            if (isInline()) {
+                downloadEvent.inline(resourceName);
+            } else {
+                downloadEvent.setFileName(resourceName);
             }
+            downloadEvent
+                    .setContentType(getContentType(resourceName, response));
+            downloadEvent.setContentLength(file.length());
+            TransferUtil.transfer(inputStream, outputStream,
+                    getTransferContext(downloadEvent), getListeners());
         } catch (IOException ioe) {
             // Set status before output is closed (see #8740)
             response.setStatus(HttpStatusCode.INTERNAL_SERVER_ERROR.getCode());
-            throw new RuntimeException(ioe);
+            downloadEvent.setException(ioe);
+            notifyError(downloadEvent, ioe);
+            throw ioe;
         }
-        response.setContentType(event.getContentType());
-        response.setContentLength(Math.toIntExact(file.length()));
     }
 
     @Override
     public String getUrlPostfix() {
-        if (name != null) {
-            return name;
+        if (fileNameOverride != null) {
+            return fileNameOverride;
         }
         return file.getName();
+    }
+
+    @Override
+    protected TransferContext getTransferContext(DownloadEvent transferEvent) {
+        return new TransferContext(transferEvent.getRequest(),
+                transferEvent.getResponse(), transferEvent.getSession(),
+                getUrlPostfix(), transferEvent.getOwningElement(),
+                file.length(), transferEvent.getException());
     }
 }

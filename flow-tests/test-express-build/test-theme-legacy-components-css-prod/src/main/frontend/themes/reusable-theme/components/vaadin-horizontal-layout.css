@@ -1,5 +1,3 @@
-::slotted(:nth-child(2))  {
-    background-color: white;
+::slotted(:nth-child(2)) {
+  background-color: white;
 }
-
-

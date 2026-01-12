@@ -29,7 +29,7 @@ public class ToStringTest {
         Collection<Class<? extends Component>> viewClasses = new ViewClassLocator(
                 getClass().getClassLoader()).getAllViewClasses();
         for (Class<? extends Component> viewClass : viewClasses) {
-            Component view = viewClass.newInstance();
+            Component view = viewClass.getDeclaredConstructor().newInstance();
             String string = view.getElement().toString();
             Assert.assertNotNull(string);
             Assert.assertNotEquals("", string);

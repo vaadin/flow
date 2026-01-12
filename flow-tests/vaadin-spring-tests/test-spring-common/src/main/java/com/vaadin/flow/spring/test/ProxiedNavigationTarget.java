@@ -18,10 +18,7 @@ package com.vaadin.flow.spring.test;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.springframework.context.annotation.Scope;
-import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.router.BeforeEvent;
@@ -29,8 +26,6 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouterLink;
-
-import static com.vaadin.flow.spring.scopes.VaadinUIScope.VAADIN_UI_SCOPE_NAME;
 
 @Route("proxied")
 public class ProxiedNavigationTarget extends Div

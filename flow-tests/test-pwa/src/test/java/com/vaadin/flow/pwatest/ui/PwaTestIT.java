@@ -36,11 +36,10 @@ import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.testutil.ChromeDeviceTest;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 public class PwaTestIT extends ChromeDeviceTest {
 
@@ -93,14 +92,14 @@ public class PwaTestIT extends ChromeDeviceTest {
         if (!href.startsWith(getRootURL())) {
             href = getRootURL() + '/' + href;
         }
-        JsonObject manifest = readJsonFromUrl(href);
-        Assert.assertEquals(AppShell.PWA_NAME, manifest.getString("name"));
+        ObjectNode manifest = readJsonFromUrl(href);
+        Assert.assertEquals(AppShell.PWA_NAME, manifest.get("name").asText());
         Assert.assertEquals(AppShell.PWA_SHORT_NAME,
-                manifest.getString("short_name"));
+                manifest.get("short_name").asText());
         Assert.assertEquals(AppShell.BG_COLOR,
-                manifest.getString("background_color"));
+                manifest.get("background_color").asText());
         Assert.assertEquals(AppShell.THEME_COLOR,
-                manifest.getString("theme_color"));
+                manifest.get("theme_color").asText());
 
         // test service worker initialization
         elements = head.findElements(By.tagName("script")).stream()
@@ -293,8 +292,8 @@ public class PwaTestIT extends ChromeDeviceTest {
                 StandardCharsets.UTF_8);
     }
 
-    private static JsonObject readJsonFromUrl(String url) throws IOException {
-        return Json.parse(readStringFromUrl(url));
+    private static ObjectNode readJsonFromUrl(String url) throws IOException {
+        return JacksonUtils.readTree(readStringFromUrl(url));
     }
 
     private static byte[] readBytesFromUrl(String url) throws IOException {
@@ -316,9 +315,10 @@ public class PwaTestIT extends ChromeDeviceTest {
     }
 
     private boolean isProductionMode() throws IOException {
-        JsonObject stats = readJsonFromUrl(
+        ObjectNode stats = readJsonFromUrl(
                 getRootURL() + "?v-r=init&location=");
-        return stats.getObject("appConfig").getBoolean("productionMode");
+        return ((ObjectNode) stats.get("appConfig")).get("productionMode")
+                .asBoolean();
     }
 
     private String getInnerHtml(WebElement element) {

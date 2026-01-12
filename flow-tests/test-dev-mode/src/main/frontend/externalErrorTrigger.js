@@ -1,3 +1,3 @@
-window.externalErrorTrigger = function() {
+window.externalErrorTrigger = function () {
   null.bar;
-}
+};

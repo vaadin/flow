@@ -2,26 +2,26 @@
 @import 'sub-css/nested/lemon.css';
 
 @font-face {
-    font-family: "Ostrich";
-    src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
+  font-family: 'Ostrich';
+  src: url('./font/ostrich-sans-regular.ttf') format('TrueType');
 }
 
 body {
-    background-image: url("./img/bg.jpg");
-    font-family: "Ostrich";
+  background-image: url('./img/bg.jpg');
+  font-family: 'Ostrich';
 }
 
 #butterfly {
-    /* This shouldn't be translated */
-    background-image: url("./test/path/monarch-butterfly.jpg");
-    width: 300px;
-    height: 274px;
-    display: block;
+  /* This shouldn't be translated */
+  background-image: url('./test/path/monarch-butterfly.jpg');
+  width: 300px;
+  height: 274px;
+  display: block;
 }
 
 #octopuss {
-    background-image: url('/octopuss.jpg');
-    width: 224px;
-    height: 224px;
-    display: block;
+  background-image: url('/octopuss.jpg');
+  width: 224px;
+  height: 224px;
+  display: block;
 }

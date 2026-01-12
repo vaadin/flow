@@ -19,14 +19,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.testbench.TestBenchElement;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class ThemeLiveReloadWithShadowRootIT extends AbstractLiveReloadIT {

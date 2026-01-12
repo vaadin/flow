@@ -7,9 +7,9 @@ const customConfig: UserConfigFn = (env) => ({
   // https://vitejs.dev/config/
   plugins: [
     react({
-      include: '**/*.tsx',
-    }),
-  ],
+      include: '**/*.tsx'
+    })
+  ]
 });
 
 export default overrideVaadinConfig(customConfig);

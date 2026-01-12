@@ -18,10 +18,9 @@ package com.vaadin.flow.component.template.internal;
 import java.io.Serializable;
 import java.lang.reflect.Type;
 
-import com.vaadin.flow.component.Component;
+import tools.jackson.databind.JsonNode;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
+import com.vaadin.flow.component.Component;
 
 /**
  * Service for injecting the polymer event handler when the module is available.
@@ -29,7 +28,6 @@ import elemental.json.JsonValue;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @deprecated Polymer template support is deprecated - we recommend you to use
  *             {@code LitTemplate} instead. Read more details from <a href=
@@ -51,7 +49,7 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      *            target type that value should be converted to
      * @return true if valid template model value
      */
-    boolean isTemplateModelValue(Component instance, JsonValue argValue,
+    boolean isTemplateModelValue(Component instance, JsonNode argValue,
             Class<?> convertedType);
 
     /**
@@ -67,6 +65,6 @@ public interface DeprecatedPolymerPublishedEventHandler extends Serializable {
      * @throws IllegalStateException
      *             if the component is not attached to the UI
      */
-    Object getTemplateItem(Component template, JsonObject argValue,
+    Object getTemplateItem(Component template, JsonNode argValue,
             Type convertedType);
 }

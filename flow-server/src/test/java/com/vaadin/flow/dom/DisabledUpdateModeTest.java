@@ -15,11 +15,11 @@
  */
 package com.vaadin.flow.dom;
 
-import static com.vaadin.flow.dom.DisabledUpdateMode.ALWAYS;
-import static com.vaadin.flow.dom.DisabledUpdateMode.ONLY_WHEN_ENABLED;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import static com.vaadin.flow.dom.DisabledUpdateMode.ALWAYS;
+import static com.vaadin.flow.dom.DisabledUpdateMode.ONLY_WHEN_ENABLED;
 
 public class DisabledUpdateModeTest {
 

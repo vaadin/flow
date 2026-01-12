@@ -115,8 +115,14 @@ public class PushAtmosphereHandler extends AbstractReflectorAtmosphereHandler
 
         @Override
         public void onThrowable(AtmosphereResourceEvent event) {
-            getLogger().error("Exception in push connection",
-                    event.throwable());
+            Throwable throwable = event.throwable();
+            if (throwable instanceof IOException
+                    && throwable.getMessage() != null && throwable.getMessage()
+                            .contains("Connection remotely closed")) {
+                getLogger().debug("Push connection remotely closed", throwable);
+            } else {
+                getLogger().error("Exception in push connection", throwable);
+            }
             pushHandler.connectionLost(event);
         }
     }

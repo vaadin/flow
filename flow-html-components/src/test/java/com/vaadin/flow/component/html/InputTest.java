@@ -16,6 +16,8 @@
 package com.vaadin.flow.component.html;
 
 import java.beans.IntrospectionException;
+import java.lang.reflect.InvocationTargetException;
+
 import org.junit.Test;
 
 public class InputTest extends ComponentTest {
@@ -24,7 +26,8 @@ public class InputTest extends ComponentTest {
 
     @Override
     public void setup() throws IntrospectionException, InstantiationException,
-            IllegalAccessException, ClassNotFoundException {
+            IllegalAccessException, ClassNotFoundException,
+            InvocationTargetException, NoSuchMethodException {
         whitelistProperty("valueChangeMode");
         whitelistProperty("valueChangeTimeout");
         super.setup();

@@ -13,10 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client.flow.collection.jre;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -36,7 +35,7 @@ import com.vaadin.client.flow.collection.JsMap;
  */
 @Deprecated
 public class JreJsMap<K, V> extends JsMap<K, V> {
-    private Map<K, V> values = new HashMap<>();
+    private Map<K, V> values = new LinkedHashMap<>();
 
     @Override
     public JsMap<K, V> set(K key, V value) {

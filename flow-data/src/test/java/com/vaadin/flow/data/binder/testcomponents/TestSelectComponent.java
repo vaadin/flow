@@ -1,8 +1,25 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.data.binder.testcomponents;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+
+import tools.jackson.databind.node.ArrayNode;
 
 import com.vaadin.flow.component.AbstractSinglePropertyField;
 import com.vaadin.flow.component.HasValidation;
@@ -11,10 +28,8 @@ import com.vaadin.flow.data.provider.KeyMapper;
 import com.vaadin.flow.data.selection.MultiSelect;
 import com.vaadin.flow.data.selection.MultiSelectionEvent;
 import com.vaadin.flow.data.selection.MultiSelectionListener;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonArray;
 
 @Tag("test-select-field")
 public class TestSelectComponent<T>
@@ -24,7 +39,7 @@ public class TestSelectComponent<T>
     private final KeyMapper<T> keyMapper = new KeyMapper<>(i -> i);
 
     public TestSelectComponent() {
-        super("value", Collections.emptySet(), JsonArray.class,
+        super("value", Collections.emptySet(), ArrayNode.class,
                 TestSelectComponent::presentationToModel,
                 TestSelectComponent::modelToPresentation);
     }
@@ -77,23 +92,22 @@ public class TestSelectComponent<T>
     }
 
     private static <T> Set<T> presentationToModel(TestSelectComponent<T> group,
-            JsonArray presentation) {
+            ArrayNode presentation) {
         Set<T> set = new HashSet<>();
-        for (int i = 0; i < presentation.length(); i++) {
-            set.add(group.keyMapper.get(presentation.getString(i)));
+        for (int i = 0; i < presentation.size(); i++) {
+            set.add(group.keyMapper.get(presentation.get(i).asString()));
         }
         return set;
     }
 
-    private static <T> JsonArray modelToPresentation(
+    private static <T> ArrayNode modelToPresentation(
             TestSelectComponent<T> group, Set<T> model) {
-        JsonArray array = Json.createArray();
+        ArrayNode array = JacksonUtils.createArrayNode();
         if (model.isEmpty()) {
             return array;
         }
 
-        model.stream().map(group.keyMapper::key)
-                .forEach(key -> array.set(array.length(), key));
+        model.stream().map(group.keyMapper::key).forEach(key -> array.add(key));
         return array;
     }
 

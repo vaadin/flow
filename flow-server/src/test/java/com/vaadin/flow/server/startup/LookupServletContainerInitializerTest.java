@@ -31,6 +31,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEventHandler;
@@ -42,9 +43,6 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.startup.testdata.TestResourceProvider;
 
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
-
 public class LookupServletContainerInitializerTest {
 
     private LookupServletContainerInitializer initializer = new LookupServletContainerInitializer();
@@ -54,12 +52,12 @@ public class LookupServletContainerInitializerTest {
 
         @Override
         public boolean isTemplateModelValue(Component instance,
-                JsonValue argValue, Class<?> convertedType) {
+                JsonNode argValue, Class<?> convertedType) {
             return false;
         }
 
         @Override
-        public Object getTemplateItem(Component template, JsonObject argValue,
+        public Object getTemplateItem(Component template, JsonNode argValue,
                 Type convertedType) {
             return null;
         }

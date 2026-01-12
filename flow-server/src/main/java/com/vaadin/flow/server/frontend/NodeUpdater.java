@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -32,17 +32,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
-import com.vaadin.experimental.FeatureFlags;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JsonDecodingException;
+import com.vaadin.flow.internal.StringUtil;
+import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -50,7 +51,6 @@ import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
 import static com.vaadin.flow.server.Constants.PACKAGE_JSON;
 import static com.vaadin.flow.server.Constants.PACKAGE_LOCK_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -70,13 +70,14 @@ public abstract class NodeUpdater implements FallibleCommand {
     // .vaadin/vaadin.json contains local installation data inside node_modules
     // This will help us know to execute even when another developer has pushed
     // a new hash to the code repository.
-    private static final String VAADIN_JSON = ".vaadin/vaadin.json";
+    protected static final String VAADIN_JSON = ".vaadin/vaadin.json";
 
     static final String DEPENDENCIES = "dependencies";
     static final String VAADIN_DEP_KEY = "vaadin";
     static final String HASH_KEY = "hash";
     static final String DEV_DEPENDENCIES = "devDependencies";
     static final String OVERRIDES = "overrides";
+    static final String PNPM = "pnpm";
 
     private static final String DEP_LICENSE_KEY = "license";
     private static final String DEP_LICENSE_DEFAULT = "UNLICENSED";
@@ -162,7 +163,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         ObjectNode vaadinVersionsJson = getFilteredVersionsFromResource(
                 vaadinVersionsResource, Constants.VAADIN_VERSIONS_JSON);
         for (String key : JacksonUtils.getKeys(vaadinVersionsJson)) {
-            versionsJson.put(key, vaadinVersionsJson.get(key).textValue());
+            versionsJson.put(key, vaadinVersionsJson.get(key).asString());
         }
 
         return versionsJson;
@@ -174,10 +175,9 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
-                    options.isReactEnabled()
-                            && FrontendUtils.isReactModuleAvailable(options),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
+                    options.isReactEnabled() && FrontendBuildUtils
+                            .isReactModuleAvailable(options),
                     options.isNpmExcludeWebComponents());
             versionsJson = convert.getConvertedJson();
             versionsJson = new VersionsJsonFilter(getPackageJson(),
@@ -200,12 +200,18 @@ public abstract class NodeUpdater implements FallibleCommand {
             return Collections.emptySet();
         }
 
-        return FileUtils
-                .listFiles(webComponentsFolder, new String[] { "js" }, true)
-                .stream()
-                .map(file -> unixPath
-                        .apply(baseDir.relativize(file.toURI()).getPath()))
-                .collect(Collectors.toSet());
+        try {
+            return FileIOUtils
+                    .listFiles(webComponentsFolder, new String[] { "js" }, true)
+                    .stream()
+                    .map(file -> unixPath
+                            .apply(baseDir.relativize(file.toURI()).getPath()))
+                    .collect(Collectors.toSet());
+        } catch (IOException e) {
+            throw new IllegalStateException(
+                    "Could not read web components from " + webComponentsFolder,
+                    e);
+        }
     }
 
     ObjectNode getPackageJson() throws IOException {
@@ -219,7 +225,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         addDefaultObjects(packageJson);
         addVaadinDefaultsToJson(packageJson);
-        removeWebpackPlugins(packageJson);
+        removePlugins(packageJson);
 
         return packageJson;
     }
@@ -229,7 +235,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         computeIfAbsent(json, DEV_DEPENDENCIES, JacksonUtils::createObjectNode);
     }
 
-    private void removeWebpackPlugins(ObjectNode packageJson) {
+    private void removePlugins(ObjectNode packageJson) {
         Path targetFolder = Paths.get(options.getNpmFolder().toString(),
                 options.getBuildDirectoryName(),
                 FrontendPluginsUtil.PLUGIN_TARGET);
@@ -247,7 +253,7 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         // Clean previously installed plugins
         for (String depKey : JacksonUtils.getKeys(devDependencies)) {
-            String depVersion = devDependencies.get(depKey).textValue();
+            String depVersion = devDependencies.get(depKey).asString();
             if (depKey.startsWith(atVaadinPrefix)
                     && depVersion.startsWith(pluginTargetPrefix)) {
                 devDependencies.remove(depKey);
@@ -258,8 +264,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     static ObjectNode getJsonFileContent(File packageFile) throws IOException {
         ObjectNode jsonContent = null;
         if (packageFile.exists()) {
-            String fileContent = FileUtils.readFileToString(packageFile,
-                    UTF_8.name());
+            String fileContent = Files.readString(packageFile.toPath(), UTF_8);
             try {
                 jsonContent = (ObjectNode) JacksonUtils.readTree(fileContent);
             } catch (JsonDecodingException e) { // NOSONAR
@@ -301,16 +306,19 @@ public abstract class NodeUpdater implements FallibleCommand {
     Map<String, String> getDefaultDependencies() {
         Map<String, String> dependencies = readDependencies("default",
                 "dependencies");
+        if (!isPolymerTemplateModuleAvailable(options)) {
+            dependencies.remove("@polymer/polymer");
+        }
         if (options.isReactEnabled()) {
             dependencies
                     .putAll(readDependencies("react-router", "dependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                dependencies
-                        .putAll(readDependencies("react19", "dependencies"));
-            }
         } else {
             dependencies
                     .putAll(readDependencies("vaadin-router", "dependencies"));
+        }
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
+            dependencies
+                    .putAll(readDependencies("tailwindcss", "dependencies"));
         }
         putHillaComponentsDependencies(dependencies, "dependencies");
         return dependencies;
@@ -326,7 +334,7 @@ public abstract class NodeUpdater implements FallibleCommand {
                 return new HashMap<>();
             }
             for (String key : JacksonUtils.getKeys(dependencies)) {
-                map.put(key, dependencies.get(key).textValue());
+                map.put(key, dependencies.get(key).asString());
             }
 
             return map;
@@ -349,13 +357,20 @@ public abstract class NodeUpdater implements FallibleCommand {
             return JacksonUtils.readTree("{\"%s\":{},\"%s\":{}}"
                     .formatted(DEPENDENCIES, DEV_DEPENDENCIES));
         }
-        return JacksonUtils
-                .readTree(IOUtils.toString(resource, StandardCharsets.UTF_8));
+        return JacksonUtils.readTree(FileIOUtils.urlToString(resource));
     }
 
     boolean hasPackageJson(String id) {
         return options.getClassFinder().getResource(FRONTEND_RESOURCES_PATH
                 + "dependencies/" + id + "/package.json") != null;
+    }
+
+    Map<String, String> readDependenciesIfAvailable(String id,
+            String packageJsonKey, String contains) {
+        return readDependenciesIfAvailable(id, packageJsonKey).entrySet()
+                .stream().filter(entry -> entry.getKey().contains(contains))
+                .collect(Collectors.toMap(Map.Entry::getKey,
+                        Map.Entry::getValue));
     }
 
     Map<String, String> readDependenciesIfAvailable(String id,
@@ -374,9 +389,15 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (options.isReactEnabled()) {
             defaults.putAll(
                     readDependencies("react-router", "devDependencies"));
-            if (options.getFeatureFlags().isEnabled(FeatureFlags.REACT19)) {
-                defaults.putAll(readDependencies("react19", "devDependencies"));
-            }
+        }
+        if (FrontendBuildUtils.isTailwindCssEnabled(options)) {
+            defaults.putAll(readDependencies("tailwindcss", "devDependencies"));
+        }
+
+        // Add workbox dependencies only when PWA is enabled
+        if (frontDeps != null && frontDeps.getPwaConfiguration() != null
+                && frontDeps.getPwaConfiguration().isEnabled()) {
+            defaults.putAll(readDependencies("workbox", "devDependencies"));
         }
 
         return defaults;
@@ -419,14 +440,14 @@ public abstract class NodeUpdater implements FallibleCommand {
 
         ObjectNode vaadinDeps = (ObjectNode) json.get(VAADIN_DEP_KEY);
         if (!json.has(key)) {
-            json.put(key, JacksonUtils.createObjectNode());
+            json.set(key, JacksonUtils.createObjectNode());
         }
         json = (ObjectNode) json.get(key);
         vaadinDeps = (ObjectNode) vaadinDeps.get(key);
 
         if (vaadinDeps.has(pkg)) {
             if (version == null) {
-                version = vaadinDeps.get(pkg).textValue();
+                version = vaadinDeps.get(pkg).asString();
             }
             return handleExistingVaadinDep(json, pkg, version, vaadinDeps);
         } else {
@@ -447,7 +468,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             FrontendVersion existingVersion = toVersion(json, pkg);
             return newVersion.isNewerThan(existingVersion);
         } catch (NumberFormatException e) {
-            if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).textValue()
+            if (VAADIN_FORM_PKG.equals(pkg) && json.get(pkg).asString()
                     .contains(VAADIN_FORM_PKG_LEGACY_VERSION)) {
                 return true;
             } else {
@@ -495,7 +516,7 @@ public abstract class NodeUpdater implements FallibleCommand {
              */
         }
         // always update vaadin version to the latest set version
-        if (!version.equals(vaadinDeps.get(pkg).textValue())) {
+        if (!version.equals(vaadinDeps.get(pkg).asString())) {
             vaadinDeps.put(pkg, version);
             updatedVaadinVersionSection = true;
         }
@@ -511,7 +532,7 @@ public abstract class NodeUpdater implements FallibleCommand {
     }
 
     private static FrontendVersion toVersion(JsonNode json, String key) {
-        return new FrontendVersion(json.get(key).textValue());
+        return new FrontendVersion(json.get(key).asString());
     }
 
     String writePackageFile(JsonNode packageJson) throws IOException {
@@ -525,22 +546,23 @@ public abstract class NodeUpdater implements FallibleCommand {
         if (packageFile.exists() || options.isFrontendHotdeploy()
                 || options.isBundleBuild()) {
             log().debug("writing file {}.", packageFile.getAbsolutePath());
-            FileUtils.forceMkdirParent(packageFile);
+            Files.createDirectories(packageFile.toPath().getParent());
             FileIOUtils.writeIfChanged(packageFile, content);
         }
         return content;
     }
 
     File getVaadinJsonFile() {
-        return new File(new File(options.getNpmFolder(), NODE_MODULES),
+        return new File(
+                new File(options.getNpmFolder(), FrontendUtils.NODE_MODULES),
                 VAADIN_JSON);
     }
 
     ObjectNode getVaadinJsonContents() throws IOException {
         File vaadinJsonFile = getVaadinJsonFile();
         if (vaadinJsonFile.exists()) {
-            String fileContent = FileUtils.readFileToString(vaadinJsonFile,
-                    UTF_8.name());
+            String fileContent = Files.readString(vaadinJsonFile.toPath(),
+                    UTF_8);
             return JacksonUtils.readTree(fileContent);
         } else {
             return JacksonUtils.createObjectNode();
@@ -552,7 +574,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         ObjectNode fileContent = getVaadinJsonContents();
         newContent.forEach(fileContent::put);
         File vaadinJsonFile = getVaadinJsonFile();
-        FileUtils.forceMkdirParent(vaadinJsonFile);
+        Files.createDirectories(vaadinJsonFile.toPath().getParent());
         String content = fileContent.toPrettyString() + "\n";
         FileIOUtils.writeIfChanged(vaadinJsonFile, content);
     }
@@ -580,7 +602,7 @@ public abstract class NodeUpdater implements FallibleCommand {
             for (String key : JacksonUtils.getKeys(packageJsonVersions)) {
                 if (!versionsJson.has(key)) {
                     versionsJson.put(key,
-                            packageJsonVersions.get(key).textValue());
+                            packageJsonVersions.get(key).asString());
                 }
             }
         }
@@ -599,7 +621,7 @@ public abstract class NodeUpdater implements FallibleCommand {
         final JsonNode dependencies = packageJson.get(DEPENDENCIES);
         if (dependencies != null) {
             for (String key : JacksonUtils.getKeys(dependencies)) {
-                versionsJson.put(key, dependencies.get(key).textValue());
+                versionsJson.put(key, dependencies.get(key).asString());
             }
         }
 
@@ -619,7 +641,7 @@ public abstract class NodeUpdater implements FallibleCommand {
      */
     private void putHillaComponentsDependencies(
             Map<String, String> dependencies, String packageJsonKey) {
-        if (FrontendUtils.isHillaUsed(options.getFrontendDirectory(),
+        if (FrontendBuildUtils.isHillaUsed(options.getFrontendDirectory(),
                 options.getClassFinder())) {
             if (options.isReactEnabled()) {
                 dependencies.putAll(readDependenciesIfAvailable(
@@ -632,6 +654,30 @@ public abstract class NodeUpdater implements FallibleCommand {
                 dependencies.putAll(readDependenciesIfAvailable(
                         "hilla/components/lit", packageJsonKey));
             }
+        } else if (EndpointRequestUtil.isHillaAvailable()) {
+            // Add dependencies for hilla-generator in case Hilla is available
+            // in the classpath. This ensures that 'generate' Maven/Gradle goal
+            // has required dependencies installed even when Hilla views are not
+            // used.
+            if (options.isReactEnabled()) {
+                dependencies.putAll(
+                        readDependenciesIfAvailable("hilla/components/react",
+                                packageJsonKey, "@vaadin/hilla-generator-"));
+            } else {
+                dependencies.putAll(
+                        readDependenciesIfAvailable("hilla/components/lit",
+                                packageJsonKey, "@vaadin/hilla-generator-"));
+            }
+        }
+    }
+
+    private boolean isPolymerTemplateModuleAvailable(Options options) {
+        try {
+            options.getClassFinder().loadClass(
+                    "com.vaadin.flow.component.polymertemplate.PolymerTemplate");
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
         }
     }
 }

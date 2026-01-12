@@ -16,10 +16,16 @@
 package com.vaadin.flow.i18n;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import com.vaadin.flow.di.Instantiator;
 import com.vaadin.flow.internal.LocaleUtil;
+import com.vaadin.flow.server.VaadinService;
 
 /**
  * I18N provider interface for internationalization usage.
@@ -35,6 +41,20 @@ public interface I18NProvider extends Serializable {
      * @return provided locales
      */
     List<Locale> getProvidedLocales();
+
+    /**
+     * Get the default locale. Per default this is the first locale returned by
+     * {@link #getProvidedLocales}.
+     *
+     * @return default locale
+     */
+    default Locale getDefaultLocale() {
+        List<Locale> providedLocales = getProvidedLocales();
+        if (providedLocales.isEmpty()) {
+            return null;
+        }
+        return providedLocales.get(0);
+    }
 
     /**
      * Get the translation for key with given locale.
@@ -71,6 +91,36 @@ public interface I18NProvider extends Serializable {
     }
 
     /**
+     * Retrieves all available translations. This is currently used only by
+     * Hilla in development mode.
+     *
+     * @param locale
+     *            locale to use
+     * @return a map of all available translations (the default implementation
+     *         just returns an empty map)
+     */
+    default Map<String, String> getAllTranslations(Locale locale) {
+        return Map.of();
+    }
+
+    /**
+     * Retrieves the translations for a collection of keys. By default, it calls
+     * `getTranslation` on each key, but this can be optimized by the
+     * implementation.
+     *
+     * @param keys
+     *            the keys to be translated
+     * @param locale
+     *            locale to use
+     * @return a map of translations
+     */
+    default Map<String, String> getTranslations(Collection<String> keys,
+            Locale locale) {
+        return keys.stream().distinct().collect(Collectors
+                .toMap(Function.identity(), k -> getTranslation(k, locale)));
+    }
+
+    /**
      * Get the translation for key via {@link I18NProvider} instance retrieved
      * from the current VaadinService. Uses the current UI locale, or if not
      * available, then the default locale.
@@ -90,6 +140,9 @@ public interface I18NProvider extends Serializable {
     /**
      * Get the translation for key with given locale via {@link I18NProvider}
      * instance retrieved from the current VaadinService.
+     * <p>
+     * If there is no {@link I18NProvider} available or no translation for the
+     * {@code key} it returns an exception string e.g. '!{key}!'.
      *
      * @param locale
      *            locale to use
@@ -98,13 +151,21 @@ public interface I18NProvider extends Serializable {
      * @param params
      *            parameters used in translation string
      * @return translation for key if found
-     * @throws IllegalStateException
-     *             thrown if no I18NProvider found from the VaadinService
      */
     static String translate(Locale locale, String key, Object... params) {
+        VaadinService vaadinService = VaadinService.getCurrent();
+        if (vaadinService == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as VaadinService is null");
+        }
+        Instantiator instantiator = vaadinService.getInstantiator();
+        if (instantiator == null) {
+            throw new IllegalStateException(
+                    "I18NProvider is not available as Instantiator is null");
+        }
+
         return LocaleUtil.getI18NProvider()
-                .orElseThrow(() -> new IllegalStateException(
-                        "I18NProvider is not available via current VaadinService. VaadinService, Instantiator or I18NProvider is null."))
-                .getTranslation(key, locale, params);
+                .map(i18n -> i18n.getTranslation(key, locale, params))
+                .orElseGet(() -> "!{" + key + "}!");
     }
 }

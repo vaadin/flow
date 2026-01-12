@@ -24,8 +24,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker;
 import com.vaadin.flow.tests.data.bean.Person;
 
 import static com.vaadin.flow.data.binder.testcomponents.TestHasValidatorDatePicker.INVALID_DATE_FORMAT;

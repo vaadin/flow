@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -23,9 +22,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.NodeOwner;
 import com.vaadin.flow.internal.StateNode;
@@ -37,6 +37,8 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * Map for element attribute values.
@@ -71,7 +73,32 @@ public class ElementAttributeMap extends NodeMap {
      *            the value
      */
     public void set(String attribute, String value) {
+        if (hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "setAttribute is not allowed while a binding for the given attribute exists.");
+        }
         doSet(attribute, value);
+    }
+
+    /**
+     * Binds the given signal to the given attribute. <code>null</code> signal
+     * unbinds existing binding.
+     *
+     * @param owner
+     *            the element owning the attribute, not <code>null</code>
+     * @param attribute
+     *            the name of the attribute
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given attribute
+     */
+    public void bindSignal(Element owner, String attribute,
+            Signal<String> signal) {
+        bindSignal(owner, attribute, signal,
+                (element, value) -> doSet(attribute, value));
     }
 
     /**
@@ -83,7 +110,14 @@ public class ElementAttributeMap extends NodeMap {
      *         <code>false</code> if there is no property
      */
     public boolean has(String attribute) {
-        return contains(attribute);
+        if (contains(attribute)) {
+            if (hasSignal(attribute)) {
+                SignalBinding binding = (SignalBinding) super.get(attribute);
+                return binding.value() != null;
+            }
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -94,6 +128,10 @@ public class ElementAttributeMap extends NodeMap {
      */
     @Override
     public Serializable remove(String attribute) {
+        if (hasSignal(attribute)) {
+            throw new BindingActiveException(
+                    "removeAttribute is not allowed while a binding for the given attribute exists.");
+        }
         unregisterResource(attribute);
         return super.remove(attribute);
     }
@@ -111,15 +149,16 @@ public class ElementAttributeMap extends NodeMap {
         Serializable value = super.get(attribute);
         if (value == null || value instanceof String) {
             return (String) value;
-        } else {
-            // If the value is not a string then current impl only uses
-            // JsonNode
-            assert value instanceof JsonNode;
-            JsonNode node = (JsonNode) value;
+        } else if (value instanceof JsonNode node) {
             // The only object which may be set by the current imlp contains
             // "uri" attribute, only this situation is expected here.
             assert node.has(NodeProperties.URI_ATTRIBUTE);
-            return node.get(NodeProperties.URI_ATTRIBUTE).textValue();
+            return node.get(NodeProperties.URI_ATTRIBUTE).asString();
+        } else {
+            // If the value is not a string or JsonNode then current impl only
+            // uses SignalBinding
+            assert value instanceof SignalBinding;
+            return (String) ((SignalBinding) value).value();
         }
     }
 
@@ -248,7 +287,15 @@ public class ElementAttributeMap extends NodeMap {
 
     private void doSet(String attribute, Serializable value) {
         unregisterResource(attribute);
-        put(attribute, value);
+        if (hasSignal(attribute)) {
+            SignalBinding binding = (SignalBinding) super.get(attribute);
+            put(attribute, new SignalBinding(binding.signal(),
+                    binding.registration(), (String) value));
+        } else if (value == null) {
+            super.remove(attribute);
+        } else {
+            put(attribute, value);
+        }
     }
 
     private void unsetResource(String attribute) {

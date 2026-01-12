@@ -1,21 +1,29 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.signals.impl;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
+import tools.jackson.databind.JsonNode;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
@@ -26,6 +34,15 @@ import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.Transaction.Type;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class TransactionTest {
     @Test
@@ -237,12 +254,12 @@ public class TransactionTest {
         Transaction.runInTransaction(() -> {
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value"));
 
-            String value = TestUtil.readTransactionRootValue(tree).textValue();
+            String value = TestUtil.readTransactionRootValue(tree).asString();
             assertEquals("value", value);
 
             tree.commitSingleCommand(TestUtil.writeRootValueCommand("value2"));
 
-            String value2 = TestUtil.readTransactionRootValue(tree).textValue();
+            String value2 = TestUtil.readTransactionRootValue(tree).asString();
             assertEquals("value", value2);
         }, Type.WRITE_THROUGH);
     }
@@ -283,78 +300,29 @@ public class TransactionTest {
     }
 
     @Test
-    void readonly_externalChange_repeatableRead() {
+    void writeThrough_readValueInObserver_updatedValueRead() {
         SynchronousSignalTree tree = new SynchronousSignalTree(false);
 
-        Transaction.runInTransaction(() -> {
-            JsonNode beforeUpdate = TestUtil.readTransactionRootValue(tree);
-
-            // Writes directly to the tree, skipping the transaction
-            tree.commitSingleCommand(TestUtil.writeRootValueCommand());
-
-            JsonNode afterUpdate = TestUtil.readTransactionRootValue(tree);
-            assertNull(afterUpdate);
-            assertSame(beforeUpdate, afterUpdate);
-        }, Type.READ_ONLY);
-
-        JsonNode outsideTransaction = TestUtil.readTransactionRootValue(tree);
-        assertNotNull(outsideTransaction);
-    }
-
-    @Test
-    void readonly_writeSyncTree_throws() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(false);
-
-        assertThrows(IllegalStateException.class, () -> {
-            Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            }, Type.READ_ONLY);
+        List<String> invocations = new ArrayList<>();
+        tree.observeNextChange(Id.ZERO, immediate -> {
+            invocations.add(TestUtil.readTransactionRootValue(tree).asString());
+            return true;
         });
-    }
-
-    @Test
-    void readonly_writeAsyncTree_throws() {
-        AsyncTestTree tree = new AsyncTestTree();
-
-        assertThrows(IllegalStateException.class, () -> {
-            Transaction.runInTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            }, Type.READ_ONLY);
-        });
-    }
-
-    @Test
-    void readonly_writeComputedTree_accepted() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(true);
 
         Transaction.runInTransaction(() -> {
+            // Include original value in read revision
+            TestUtil.readTransactionRootValue(tree);
+
             Transaction.getCurrent().include(tree,
-                    TestUtil.writeRootValueCommand(), null);
-        }, Type.READ_ONLY);
+                    TestUtil.writeRootValueCommand("update"), null);
+        }, Type.WRITE_THROUGH);
 
-        assertNotNull(TestUtil.readSubmittedRootValue(tree));
-    }
-
-    @Test
-    void readonly_writeInNoTransaction_acceptedButIgnoredInTransaction() {
-        SynchronousSignalTree tree = new SynchronousSignalTree(false);
-
-        Transaction.runInTransaction(() -> {
-            Transaction.runWithoutTransaction(() -> {
-                Transaction.getCurrent().include(tree,
-                        TestUtil.writeRootValueCommand(), null);
-            });
-        }, Type.READ_ONLY);
-
-        assertNotNull(TestUtil.readSubmittedRootValue(tree));
+        assertEquals(List.of("update"), invocations);
     }
 
     @Test
     void transactionWrapping_inFull_acceptAll() {
         Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
             Transaction.runInTransaction(dummyTask(), Type.STAGED);
             Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
             Transaction.runWithoutTransaction(dummyTask());
@@ -364,28 +332,10 @@ public class TransactionTest {
     @Test
     void transactionWrapping_inWriteThrough_acceptAll() {
         Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
             Transaction.runInTransaction(dummyTask(), Type.STAGED);
             Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
             Transaction.runWithoutTransaction(dummyTask());
         }, Type.WRITE_THROUGH);
-    }
-
-    @Test
-    void transactionWrapping_readOnly_acceptOnlyReadOnlyAndNoTransaction() {
-        Transaction.runInTransaction(() -> {
-            Transaction.runInTransaction(dummyTask(), Type.READ_ONLY);
-
-            assertThrows(IllegalStateException.class, () -> {
-                Transaction.runInTransaction(dummyTask(), Type.STAGED);
-            });
-
-            assertThrows(IllegalStateException.class, () -> {
-                Transaction.runInTransaction(dummyTask(), Type.WRITE_THROUGH);
-            });
-
-            Transaction.runWithoutTransaction(dummyTask());
-        }, Type.READ_ONLY);
     }
 
     private static Runnable dummyTask() {

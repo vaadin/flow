@@ -17,9 +17,9 @@ package com.vaadin.flow.spring.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openqa.selenium.By;
 
 import com.vaadin.testbench.TestBenchElement;
-import org.openqa.selenium.By;
 
 public class ComponentAddedViaInitListenerIT extends AbstractSpringTest {
 

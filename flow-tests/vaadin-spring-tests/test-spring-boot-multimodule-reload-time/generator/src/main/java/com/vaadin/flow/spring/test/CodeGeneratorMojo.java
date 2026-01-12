@@ -112,10 +112,10 @@ public class CodeGeneratorMojo extends AbstractMojo {
         FileUtils.deleteDirectory(new File(
                 output.toString() + "/" + apiPackage.replace(".", "/")));
         // ... and generated frontend css and js
-        FileUtils.deleteDirectory(new File(
-                project.getBasedir().toString() + "/frontend/generated-css"));
-        FileUtils.deleteDirectory(new File(
-                project.getBasedir().toString() + "/frontend/generated-js"));
+        FileUtils.deleteDirectory(new File(project.getBasedir().toString()
+                + "/src/main/frontend/generated-css"));
+        FileUtils.deleteDirectory(new File(project.getBasedir().toString()
+                + "/src/main/frontend/generated-js"));
 
         int servicesGeneratedTotal = 0;
         int cssImportsGeneratedTotal = 0;
@@ -138,7 +138,7 @@ public class CodeGeneratorMojo extends AbstractMojo {
         if (numberOfRoutes > 0 && (cssImportsGeneratedTotal > 0
                 || jsModulesGeneratedTotal > 0)) {
             getLog().info("Frontend files generated in "
-                    + project.getBasedir().toString() + "/frontend");
+                    + project.getBasedir().toString() + "/src/main/frontend");
         }
     }
 
@@ -261,8 +261,8 @@ public class CodeGeneratorMojo extends AbstractMojo {
     private void generateFrontendFileByMustacheTemplate(Object context,
             String templateFileName, String frontEndFilePath)
             throws IOException {
-        File newFile = new File(project.getBasedir().toString() + "/frontend/"
-                + frontEndFilePath);
+        File newFile = new File(project.getBasedir().toString()
+                + "/src/main/frontend/" + frontEndFilePath);
         generateFileByMustacheTemplate(context, templateFileName, newFile);
     }
 

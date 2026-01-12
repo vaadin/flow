@@ -40,7 +40,6 @@ import com.vaadin.flow.spring.security.SpringMenuAccessControl;
  * application if there is no developer provided factory available.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Configuration
@@ -73,6 +72,8 @@ public class VaadinApplicationConfiguration {
      * Creates default {@link I18NProvider}. This is created only if there's no
      * {@link I18NProvider} bean declared.
      *
+     * @param locationPattern
+     *            the location pattern for i18n resource files
      * @return default I18N provider
      */
     @Bean

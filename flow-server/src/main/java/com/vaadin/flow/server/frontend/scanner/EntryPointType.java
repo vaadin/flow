@@ -24,5 +24,5 @@ package com.vaadin.flow.server.frontend.scanner;
  * For internal use only. May be renamed or removed in a future release.
  */
 public enum EntryPointType {
-    ROUTE, WEB_COMPONENT, INTERNAL;
+    ROUTE, WEB_COMPONENT, INTERNAL, APP_SHELL;
 }

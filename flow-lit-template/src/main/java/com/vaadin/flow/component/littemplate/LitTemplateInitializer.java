@@ -30,7 +30,6 @@ import com.vaadin.flow.server.VaadinService;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public class LitTemplateInitializer {

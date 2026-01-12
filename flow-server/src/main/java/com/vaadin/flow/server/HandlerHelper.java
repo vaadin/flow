@@ -22,18 +22,22 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -57,6 +61,34 @@ public class HandlerHelper implements Serializable {
 
     private static final Pattern PARENT_DIRECTORY_REGEX = Pattern
             .compile("(/|\\\\)\\.\\.(/|\\\\)?", Pattern.CASE_INSENSITIVE);
+
+    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
+
+    private static final Set<String> nonHtmlFetchDests;
+
+    static {
+        // Full list at
+        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
+        Set<String> dests = new HashSet<>();
+        dests.add("audio");
+        dests.add("audioworklet");
+        dests.add("font");
+        dests.add("image");
+        dests.add("manifest");
+        dests.add("paintworklet");
+        dests.add("script"); // NOSONAR
+        dests.add("serviceworker");
+        dests.add("sharedworker");
+        dests.add("style");
+        dests.add("track");
+        dests.add("video");
+        dests.add("worker");
+        dests.add("xslt");
+
+        // "empty" requests are used when service worker caches / so they need
+        // to be allowed
+        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
+    }
 
     /**
      * Framework internal enum for tracking the type of a request.
@@ -116,6 +148,8 @@ public class HandlerHelper implements Serializable {
 
     private static final String[] publicResourcesRoot;
     private static final String[] publicResources;
+    private static final List<String> publicInternalFolderPaths;
+
     static {
         List<String> resources = new ArrayList<>();
         resources.add("/" + PwaConfiguration.DEFAULT_PATH);
@@ -124,15 +158,31 @@ public class HandlerHelper implements Serializable {
         resources.add("/" + PwaConfiguration.DEFAULT_OFFLINE_PATH);
         resources.add("/" + PwaHandler.DEFAULT_OFFLINE_STUB_PATH);
         resources.add("/" + PwaConfiguration.DEFAULT_ICON);
+        resources.add("/" + FrontendUtils.DEFAULT_STYLES_CSS);
         resources.add("/themes/**");
+        resources.add("/assets/**");
         resources.addAll(getIconVariants(PwaConfiguration.DEFAULT_ICON));
         publicResources = resources.toArray(new String[resources.size()]);
 
         // These are always in the root of the app, not inside any url mapping
         List<String> rootResources = new ArrayList<>();
+        rootResources.add("/aura/**");
+        rootResources.add("/lumo/**");
         rootResources.add("/favicon.ico");
         publicResourcesRoot = rootResources
                 .toArray(new String[rootResources.size()]);
+
+        List<String> resourcesPath = new ArrayList<>();
+        Stream.concat(resources.stream(), rootResources.stream())
+                .filter(resource -> resource.endsWith("/**"))
+                .map(resource -> resource.replace("/**", ""))
+                .forEach(resourcesPath::add);
+        for (String resource : getPublicResourcesRequiringSecurityContext()) {
+            if (resource.endsWith("/**")) {
+                resourcesPath.add(resource.replace("/**", ""));
+            }
+        }
+        publicInternalFolderPaths = resourcesPath;
     }
 
     private HandlerHelper() {
@@ -181,6 +231,11 @@ public class HandlerHelper implements Serializable {
 
     private static boolean isFrameworkInternalRequest(String servletMappingPath,
             String requestedPath, String requestTypeParameter) {
+        // Hilla push requests do not respect Vaadin servlet mapping
+        if (isHillaPush(requestedPath)) {
+            return true;
+        }
+
         /*
          * According to the spec, pathInfo should be null but not all servers
          * implement it like that...
@@ -205,7 +260,8 @@ public class HandlerHelper implements Serializable {
             return true;
         } else if (isUploadRequest(requestedPathWithoutServletMapping.get())) {
             return true;
-        } else if (isHillaPush(requestedPathWithoutServletMapping.get())) {
+        } else if (isDynamicResourceRequest(
+                requestedPathWithoutServletMapping.get())) {
             return true;
         }
 
@@ -219,6 +275,18 @@ public class HandlerHelper implements Serializable {
         return requestedPathWithoutServletMapping
                 .matches(StreamRequestHandler.DYN_RES_PREFIX
                         + "(\\d+)/([0-9a-z-]*)/upload");
+    }
+
+    private static boolean isDynamicResourceRequest(
+            String requestedPathWithoutServletMapping) {
+        // Check if the request is for any dynamic resource, including
+        // ElementRequestHandler requests without a specific postfix
+        // Reject paths with directory traversal attempts
+        if (HandlerHelper.isPathUnsafe(requestedPathWithoutServletMapping)) {
+            return false;
+        }
+        return requestedPathWithoutServletMapping
+                .startsWith(StreamRequestHandler.DYN_RES_PREFIX);
     }
 
     private static boolean isHillaPush(
@@ -470,6 +538,8 @@ public class HandlerHelper implements Serializable {
      * Spring Security.
      * <p>
      * These paths are relative to a potential Vaadin mapping
+     *
+     * @return array of public resource path patterns
      */
     public static String[] getPublicResources() {
         return publicResources;
@@ -482,9 +552,15 @@ public class HandlerHelper implements Serializable {
      * <p>
      * These URLs are always relative to the root path and independent of any
      * Vaadin mapping
+     *
+     * @return array of public resource root path patterns
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
+    }
+
+    public static List<String> getPublicInternalFolderPaths() {
+        return publicInternalFolderPaths;
     }
 
     /**
@@ -503,13 +579,68 @@ public class HandlerHelper implements Serializable {
      * URLs matching these patterns should be publicly available for
      * applications to work but might require a security context, i.e.
      * authentication information.
+     *
+     * @return array of public resource path patterns requiring security context
      */
     public static String[] getPublicResourcesRequiringSecurityContext() {
         return new String[] { //
-                "/VAADIN/**", // This contains static bundle files which
-                              // typically do not need a security
-                              // context but also uploads go here
+                "/VAADIN/**" // This contains static bundle files which
+                             // typically do not need a security
+                             // context but also uploads go here
         };
+    }
+
+    /**
+     * Determines whether the given HTTP request is initiated by a non-HTML
+     * context.
+     *
+     * This is based on the value of the {@literal Sec-Fetch-Dest} in the
+     * request headers. If the header value is absent or does not match certain
+     * predefined values, it is considered an HTML-initiated request.
+     *
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest">Sec-Fetch-Dest
+     * header</a> documentation for more details.
+     *
+     * @param request
+     *            the HTTP servlet request to evaluate
+     * @return {@code true} if the request is initiated by a non-HTML context;
+     *         {@code false} otherwise
+     */
+    public static boolean isNonHtmlInitiatedRequest(
+            HttpServletRequest request) {
+        return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));
+    }
+
+    /**
+     * Determines whether the given request is initiated by a non-HTML context.
+     *
+     * This is based on the value of the {@literal Sec-Fetch-Dest} in the
+     * request headers. If the header value is absent or does not match certain
+     * predefined values, it is considered an HTML-initiated request.
+     *
+     * See <a href=
+     * "https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest">Sec-Fetch-Dest
+     * header</a> documentation for more details.
+     *
+     * @param request
+     *            the Vaadin request to evaluate
+     * @return {@code true} if the request is initiated by a non-HTML context;
+     *         {@code false} otherwise
+     */
+    public static boolean isNonHtmlInitiatedRequest(VaadinRequest request) {
+        return isNonHtmlInitiatedRequest(request.getHeader(FETCH_DEST_HEADER));
+    }
+
+    // The above public methods are indirectly tested by
+    // IndexHtmlRequestHandlerTest and VaadinDefaultRequestCacheTest
+    private static boolean isNonHtmlInitiatedRequest(String fetchDest) {
+        if (fetchDest == null) {
+            // Old browsers do not send the header at all, assume the request
+            // is HTML initiated
+            return false;
+        }
+        return nonHtmlFetchDests.contains(fetchDest);
     }
 
 }

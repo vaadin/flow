@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
 
 import java.util.ArrayList;
@@ -224,7 +223,6 @@ public class ShortcutRegistrationTest {
         clientResponse();
 
         // listenOn component should be set after client response
-        assertEquals(listenOn[0], registration.getOwner());
         assertArrayEquals(listenOn, registration.getOwners());
 
         // Change the listenOn component
@@ -237,7 +235,6 @@ public class ShortcutRegistrationTest {
         clientResponse(newListenOn);
 
         // listenOn component should be set to the new component
-        assertEquals(newListenOn[0], registration.getOwner());
         assertArrayEquals(newListenOn, registration.getOwners());
     }
 

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
 
 import java.net.URI;
@@ -27,9 +26,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.internal.JavaScriptNavigationStateRenderer;
@@ -45,7 +45,6 @@ import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ExecutionContext;
-import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateTree.ExecutionRegistration;
 import com.vaadin.flow.internal.nodefeature.ElementData;
@@ -88,10 +87,6 @@ import com.vaadin.flow.server.VaadinSessionState;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.communication.PushConnection;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * The topmost component in any component hierarchy. There is one UI for every
@@ -177,7 +172,6 @@ public class UI extends Component
      * <p>
      * The method will return {@code null} if the UI is not currently attached
      * to a VaadinSession.
-     * </p>
      *
      * <p>
      * Getting a null value is often a problem in constructors of regular
@@ -187,7 +181,6 @@ public class UI extends Component
      * Another way is to move the problematic initialization to
      * {@link #onAttach(AttachEvent)}, as described in the documentation of the
      * method.
-     * </p>
      *
      * @return the parent application of the component or <code>null</code>.
      * @see #onAttach(AttachEvent)
@@ -217,25 +210,9 @@ public class UI extends Component
      * Internal initialization method, should not be overridden. This method is
      * not declared as final because that would break compatibility with e.g.
      * CDI.
-     *
-     * @param request
-     *            the initialization request
-     * @param uiId
-     *            the id of the new ui
-     *
-     * @see #getUIId()
-     * @deprecated Use {@link #doInit(VaadinRequest, int, String)} instead
-     */
-    @Deprecated
-    public void doInit(VaadinRequest request, int uiId) {
-        doInit(request, uiId,
-                getSession().getService().getMainDivId(getSession(), request));
-    }
-
-    /**
-     * Internal initialization method, should not be overridden. This method is
-     * not declared as final because that would break compatibility with e.g.
-     * CDI.
+     * <p>
+     * {@code appId} can be obtained by calling
+     * {@code getService().getMainDivId(getSession(), getRequest())}.
      *
      * @param request
      *            the initialization request
@@ -343,6 +320,33 @@ public class UI extends Component
      */
     public static UI getCurrent() {
         return CurrentInstance.get(UI.class);
+    }
+
+    /**
+     * Gets the currently used UI, throwing an exception if none is available.
+     * Use this method when the code must run within an active UI context.
+     * <p>
+     * This method is useful when code must execute within a UI context and
+     * cannot handle the case where no UI is available. If the code can work
+     * without a UI, use {@link #getCurrent()} instead and check for null.
+     * <p>
+     * The UI is stored using a weak reference to avoid leaking memory in case
+     * it is not explicitly cleared.
+     *
+     * @return the current UI instance, never <code>null</code>
+     * @throws IllegalStateException
+     *             if no UI is bound to the current thread
+     * @see #getCurrent()
+     * @see #access(Command)
+     */
+    public static UI getCurrentOrThrow() {
+        UI ui = getCurrent();
+        if (ui == null) {
+            throw new IllegalStateException(
+                    "No currently active UI found. This code must be run within a UI context. "
+                            + "If you are running this from a background thread, wrap the call in UI.access().");
+        }
+        return ui;
     }
 
     /**
@@ -517,12 +521,10 @@ public class UI extends Component
      * exclusive access to this UI. If the session is not locked, the lock will
      * be acquired and the command is run right away. If the session is
      * currently locked, the command will be run before that lock is released.
-     * </p>
      * <p>
      * RPC handlers for components inside this UI do not need to use this method
      * as the session is automatically locked by the framework during RPC
      * handling.
-     * </p>
      * <p>
      * Please note that the command might be invoked on a different thread or
      * later on the current thread, which means that custom thread locals might
@@ -532,11 +534,9 @@ public class UI extends Component
      * executing the command. Other standard CurrentInstance values such as
      * {@link VaadinService#getCurrentRequest()} and
      * {@link VaadinService#getCurrentResponse()} will not be defined.
-     * </p>
      * <p>
      * The returned future can be used to check for task completion and to
      * cancel the task.
-     * </p>
      *
      * @see #getCurrent()
      * @see #accessSynchronously(Command)
@@ -653,6 +653,8 @@ public class UI extends Component
      * external notifier that isn't aware of the synchronization needed to
      * update a UI instance.
      *
+     * @param <T>
+     *            the type of the value consumed by the task
      * @param accessTask
      *            the task that updates this UI, not <code>null</code>
      * @param detachHandler
@@ -675,12 +677,10 @@ public class UI extends Component
      * <p>
      * Note that it is possible to enable push and polling at the same time but
      * it should not be done to avoid excessive server traffic.
-     * </p>
      * <p>
      * Add-on developers should note that this method is only meant for the
      * application developer. An add-on should not set the poll interval
      * directly, rather instruct the user to set it.
-     * </p>
      *
      * @param intervalInMillis
      *            The interval (in ms) with which the UI should poll the server
@@ -796,13 +796,13 @@ public class UI extends Component
      * locale, which is in turn determined in different ways depending on
      * whether a {@link I18NProvider} is available.
      * <p>
-     * If a i18n provider is available, the locale is determined by selecting
+     * If an i18n provider is available, the locale is determined by selecting
      * the locale from {@link I18NProvider#getProvidedLocales()} that best
      * matches the user agent preferences (i.e. the <code>Accept-Language</code>
      * header). If an exact match is found, then that locale is used. Otherwise,
      * the matching logic looks for the first provided locale that uses the same
-     * language regardless of the country. If no other match is found, then the
-     * first item from {@link I18NProvider#getProvidedLocales()} is used.
+     * language regardless of the country. If no other match is found, then
+     * {@link I18NProvider#getDefaultLocale()} is used.
      * <p>
      * If no i18n provider is available, then the {@link Locale#getDefault()
      * default JVM locale} is used as the default locale.
@@ -902,7 +902,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
-     *
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to
      * @throws IllegalArgumentException
@@ -988,6 +989,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to.
      * @param parameters
@@ -1024,6 +1027,8 @@ public class UI extends Component
      * the navigation), all navigation listeners are notified and a reference of
      * the new view is returned for additional configuration.
      *
+     * @param <T>
+     *            the navigation target type
      * @param navigationTarget
      *            navigation target to navigate to.
      * @param parameters
@@ -1306,18 +1311,6 @@ public class UI extends Component
     }
 
     /**
-     * Gets the router used for navigating in this UI.
-     *
-     * @return a router
-     *
-     * @deprecated For internal use only. Will be removed in the future.
-     */
-    @Deprecated
-    public Router getRouter() {
-        return internals.getRouter();
-    }
-
-    /**
      * Registers a task to be executed before the response is sent to the
      * client. The tasks are executed in order of registration. If tasks
      * register more tasks, they are executed after all already registered tasks
@@ -1474,7 +1467,7 @@ public class UI extends Component
      * @return {@link ShortcutRegistration} for configuring the shortcut and
      *         removing
      * @see #addShortcutListener(ShortcutEventListener, Key, KeyModifier...) for
-     *      registering a listener which receives a {@link ShortcutEvent}
+     *      registering a listener which receives a ShortcutEvent
      * @see Shortcuts for a more generic way to add a shortcut
      */
     public ShortcutRegistration addShortcutListener(Command command, Key key,
@@ -1574,33 +1567,40 @@ public class UI extends Component
     /**
      * Adds the given component as a modal child to the UI, making the UI and
      * all other (existing) components added to the UI impossible for the user
-     * to interact with. This is useful for modal dialogs which should make the
-     * UI in the background inert. Note that this only prevents user
-     * interaction, but doesn't show a modality curtain or change the visible
-     * state of the components in the UI - that should be handled by the
-     * component separately. Thus this is purely a server side feature.
+     * to interact with. Using {@link ModalityMode#STRICT} mode. This is useful
+     * for modal dialogs which should make the UI in the background inert. Note
+     * that this only prevents user interaction, but doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      * <p>
      * When the modal component is removed the UI and its other children are no
      * longer inert, unless there was another component added as modal before.
      *
-     *
      * @param component
      *            the modal component to add
      * @see #setChildComponentModal(Component, boolean)
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     public void addModal(Component component) {
         add(component);
-        getInternals().setChildModal(component);
+        setChildComponentModal(component, true);
     }
 
     /**
-     * Makes the child component modal or modeless. The component needs to be a
-     * child of this UI. By default all child components are modeless.
+     * Makes the child component modal or modeless (i.e.
+     * {@link ModalityMode#STRICT} or {@link ModalityMode#MODELESS}). The
+     * component needs to be a child of this UI. By default, all child
+     * components are modeless. Note that calling this doesn't show a modality
+     * curtain or change the visible state of the components in the UI - that
+     * should be handled by the component separately. Thus, this is purely a
+     * server side feature.
      *
      * @param childComponent
      *            the child component to change state for
      * @param modal
      *            {@code true} for modal, {@code false} for modeless
+     * @see #setChildComponentModal(Component, ModalityMode)
      */
     /*
      * TODO decide and document whether resize listener still works for UI even
@@ -1608,16 +1608,37 @@ public class UI extends Component
      */
     public void setChildComponentModal(Component childComponent,
             boolean modal) {
+        setChildComponentModal(childComponent,
+                modal ? ModalityMode.STRICT : ModalityMode.MODELESS);
+    }
+
+    /**
+     * Change the child component server side modality by modality mode:
+     * {@link ModalityMode#STRICT}, {@link ModalityMode#VISUAL}, or
+     * {@link ModalityMode#MODELESS}. The component needs to be a child of this
+     * UI. By default, all child components are modeless. Note that calling this
+     * doesn't show a modality curtain or change the visible state of the
+     * components in the UI - that should be handled by the component
+     * separately. Thus, this is purely a server side feature.
+     *
+     * @param childComponent
+     *            the child component to change state for
+     * @param mode
+     *            the modality mode, not null
+     */
+    public void setChildComponentModal(Component childComponent,
+            ModalityMode mode) {
         Objects.requireNonNull(childComponent,
                 "Given child component may not be null");
+        Objects.requireNonNull(mode, "Given modality mode may not be null");
         final Optional<UI> ui = childComponent.getUI();
         if (ui.isPresent() && !ui.get().equals(this)) {
             throw new IllegalStateException(
                     "Given component is not a child in this UI. "
                             + "Add it first as a child of the UI so it is "
-                            + "attached or just use addModal(component).");
+                            + "attached or just use addModal(component) when using ModalityMode.STRICT.");
         }
-        if (modal) {
+        if (mode == ModalityMode.STRICT) {
             getInternals().setChildModal(childComponent);
         } else {
             getInternals().setChildModeless(childComponent);
@@ -1729,6 +1750,11 @@ public class UI extends Component
         /**
          * Creates a new event instance.
          *
+         * @param source
+         *            the UI that is the source of the event
+         * @param fromClient
+         *            {@code true} if the event originated from the client side,
+         *            {@code false} otherwise
          * @param route
          *            the route the user is navigating to.
          * @param query
@@ -1756,6 +1782,11 @@ public class UI extends Component
         /**
          * Creates a new event instance.
          *
+         * @param source
+         *            the UI that is the source of the event
+         * @param fromClient
+         *            {@code true} if the event originated from the client side,
+         *            {@code false} otherwise
          * @param route
          *            flow route path that should be attached to the client
          *            element
@@ -1789,7 +1820,6 @@ public class UI extends Component
      * Event fired by the client to request a refresh of the user interface, by
      * re-navigating to the current route.
      * <p>
-     * </p>
      * The route target component is re-instantiated, as well as all layouts in
      * the route chain if the {@code fullRefresh} event flag is active.
      *
@@ -1820,33 +1850,6 @@ public class UI extends Component
             super(source, true);
             this.refreshRouteChain = refreshRouteChain;
         }
-    }
-
-    /**
-     * Connect a client with the server side UI. This method is invoked each
-     * time client router navigates to a server route.
-     *
-     * @param flowRoutePath
-     *            flow route path that should be attached to the client element
-     * @param flowRouteQuery
-     *            flow route query string
-     * @param appShellTitle
-     *            client side title of the application shell
-     * @param historyState
-     *            client side history state value
-     * @param trigger
-     *            navigation trigger
-     *
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and connectClient is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void connectClient(String flowRoutePath, String flowRouteQuery,
-            String appShellTitle, JsonValue historyState, String trigger) {
-        browserNavigate(new BrowserNavigateEvent(this, false, flowRoutePath,
-                flowRouteQuery, appShellTitle,
-                JacksonUtils.mapElemental(historyState), trigger));
     }
 
     /**
@@ -1887,8 +1890,8 @@ public class UI extends Component
         } else {
             History.HistoryStateChangeHandler handler = getPage().getHistory()
                     .getHistoryStateChangeHandler();
-            JsonObject state = event.historyState == null ? null
-                    : Json.parse(event.historyState.toString());
+            BaseJsonNode state = event.historyState == null ? null
+                    : (BaseJsonNode) event.historyState;
             handler.onHistoryStateChange(
                     new History.HistoryStateChangeEvent(getPage().getHistory(),
                             state, location, navigationTrigger));
@@ -1930,28 +1933,6 @@ public class UI extends Component
             // See InternalRedirectHandler invoked via Router.
             getPage().getHistory().replaceState(null, location);
         }
-    }
-
-    /**
-     * Check that the view can be leave. This method is invoked when the client
-     * router tries to navigate to a client route while the current route is a
-     * server route.
-     * <p>
-     * This is only called when client route navigates from a server to a client
-     * view.
-     *
-     * @param route
-     *            the route that is navigating to.
-     * @param query
-     *            route query string
-     * @deprecated(forRemoval=true) method is not enabled for client side
-     *                              anymore and leave navigation is triggered by
-     *                              DOM event, to be removed in next major 25
-     */
-    @Deprecated
-    public void leaveNavigation(String route, String query) {
-        leaveNavigation(
-                new BrowserLeaveNavigationEvent(this, false, route, query));
     }
 
     /**

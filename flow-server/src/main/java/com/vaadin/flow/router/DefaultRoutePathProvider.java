@@ -22,7 +22,6 @@ import org.osgi.service.component.annotations.Component;
  * Default implementation for {@link RoutePathProvider}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Component(service = RoutePathProvider.class, property = Constants.SERVICE_RANKING

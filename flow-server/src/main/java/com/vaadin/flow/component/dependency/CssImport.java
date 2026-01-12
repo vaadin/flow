@@ -123,6 +123,7 @@ public @interface CssImport {
      *
      * @return the include value.
      */
+    @Deprecated(since = "25.0")
     String include() default "";
 
     /**
@@ -130,6 +131,7 @@ public @interface CssImport {
      *
      * @return the id.
      */
+    @Deprecated(since = "25.0")
     String id() default "";
 
     /**
@@ -137,7 +139,11 @@ public @interface CssImport {
      * target.
      *
      * @return the themable element.
+     *
+     * @deprecated Component styling can be done entirely with normal "light
+     *             DOM" CSS.
      */
+    @Deprecated(since = "25.0")
     String themeFor() default "";
 
     /**

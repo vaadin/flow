@@ -1,4 +1,21 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.base.devserver.startup;
+
+import jakarta.servlet.ServletContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,27 +28,25 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import com.vaadin.base.devserver.AbstractDevServerRunner;
 import com.vaadin.base.devserver.DevModeHandlerManagerImpl;
-import com.vaadin.base.devserver.MockDeploymentConfiguration;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
+import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.StaticFileServer;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServlet;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
-
-import jakarta.servlet.ServletContext;
+import com.vaadin.tests.util.MockDeploymentConfiguration;
 
 public abstract class AbstractDevModeTest {
 
@@ -50,6 +65,9 @@ public abstract class AbstractDevModeTest {
 
     @Before
     public void setup() throws Exception {
+        // Reset static node installation cache to ensure test isolation
+        com.vaadin.flow.testutil.FrontendStubs.resetFrontendToolsNodeCache();
+
         Field firstMapping = VaadinServlet.class
                 .getDeclaredField("frontendMapping");
         firstMapping.setAccessible(true);
@@ -70,11 +88,12 @@ public abstract class AbstractDevModeTest {
 
         vaadinContext = new VaadinServletContext(servletContext);
 
-        mockApplicationConfiguration(appConfig, enablePnpm);
-
         lookup = Mockito.mock(Lookup.class);
+        vaadinContext.setAttribute(Lookup.class, lookup);
         Mockito.when(servletContext.getAttribute(Lookup.class.getName()))
                 .thenReturn(lookup);
+
+        mockApplicationConfiguration(appConfig, enablePnpm);
 
         ResourceProvider resourceProvider = Mockito
                 .mock(ResourceProvider.class);
@@ -121,12 +140,9 @@ public abstract class AbstractDevModeTest {
                 Mockito.anyString()))
                 .thenAnswer(invocation -> invocation.getArgument(1));
         Mockito.when(appConfig.isProductionMode()).thenReturn(false);
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
-                    .thenReturn(false);
-            Mockito.when(appConfig.frontendHotdeploy()).thenReturn(true);
-        }
+        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
+        Mockito.when(appConfig.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
         Mockito.when(appConfig.isPnpmEnabled()).thenReturn(enablePnpm);
 
         Mockito.when(appConfig.getBooleanProperty(Mockito.anyString(),
@@ -138,7 +154,6 @@ public abstract class AbstractDevModeTest {
         Mockito.when(appConfig.getBuildFolder()).thenReturn(Constants.TARGET);
         Mockito.when(appConfig.getPropertyNames())
                 .thenReturn(Collections.enumeration(Collections.emptyList()));
-        Mockito.when(appConfig.getContext()).thenReturn(vaadinContext);
     }
 
     protected DevModeHandler getDevModeHandler() {

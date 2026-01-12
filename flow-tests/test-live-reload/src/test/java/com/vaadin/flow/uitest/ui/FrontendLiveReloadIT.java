@@ -63,19 +63,19 @@ public class FrontendLiveReloadIT extends AbstractLiveReloadIT {
     }
 
     @Test
-    public void webpackErrorIsShownAfterReloadAndHiddenAfterFix() {
+    public void frontendErrorIsShownAfterReloadAndHiddenAfterFix() {
         open();
 
-        // when: a webpack error occurs during frontend file edit
+        // when: a frontend compilation error occurs during frontend file edit
         WebElement codeField = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_TEXT));
         String oldCode = getValue(codeField);
         String erroneousCode = "{" + oldCode;
         codeField.clear();
         codeField.sendKeys(erroneousCode); // illegal TS
-        WebElement insertWebpackError = findElement(
+        WebElement insertFrontendError = findElement(
                 By.id(FrontendLiveReloadView.FRONTEND_CODE_UPDATE_BUTTON));
-        insertWebpackError.click();
+        insertFrontendError.click();
 
         // then: an error box is shown
         testBench().disableWaitForVaadin();

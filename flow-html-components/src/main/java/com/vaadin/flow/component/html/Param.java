@@ -29,7 +29,6 @@ import com.vaadin.flow.component.Tag;
  * @see HtmlObject
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Tag(Tag.PARAM)

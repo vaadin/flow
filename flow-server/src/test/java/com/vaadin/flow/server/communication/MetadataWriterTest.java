@@ -17,11 +17,11 @@ package com.vaadin.flow.server.communication;
 
 import java.io.IOException;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.SystemMessages;

@@ -113,7 +113,8 @@ public class PushHandlerTest {
         context.setAttribute(ApplicationConfiguration.class,
                 applicationConfiguration);
 
-        BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(context);
+        BrowserLiveReload liveReload = mockBrowserLiveReloadImpl(
+                service.getLookup());
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
@@ -142,8 +143,7 @@ public class PushHandlerTest {
         deploymentConfiguration.setDevToolsEnabled(true);
         setProductionMode(service, false);
 
-        VaadinContext context = service.getContext();
-        mockBrowserLiveReloadImpl(context);
+        mockBrowserLiveReloadImpl(service.getLookup());
 
         AtomicReference<AtmosphereResource> res = new AtomicReference<>();
         runTest(service, (handler, resource) -> {
@@ -428,16 +428,10 @@ public class PushHandlerTest {
         }
     }
 
-    public static BrowserLiveReload mockBrowserLiveReloadImpl(
-            VaadinContext context) {
+    public static BrowserLiveReload mockBrowserLiveReloadImpl(Lookup lookup) {
         BrowserLiveReload liveReload = Mockito.mock(BrowserLiveReload.class);
-        Lookup lookup = Lookup.of(new BrowserLiveReloadAccessor() {
-            @Override
-            public BrowserLiveReload getLiveReload(VaadinContext context) {
-                return liveReload;
-            }
-        }, BrowserLiveReloadAccessor.class);
-        context.setAttribute(Lookup.class, lookup);
+        Mockito.when(lookup.lookup(BrowserLiveReloadAccessor.class))
+                .thenReturn(context -> liveReload);
         return liveReload;
     }
 }

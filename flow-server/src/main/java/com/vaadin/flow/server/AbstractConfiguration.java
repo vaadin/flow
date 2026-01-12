@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.server.frontend.BundleUtils;
-import com.vaadin.flow.server.frontend.FileIOUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 
@@ -31,7 +31,6 @@ import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XS
  * servlet level,...).
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface AbstractConfiguration extends Serializable {
@@ -41,22 +40,6 @@ public interface AbstractConfiguration extends Serializable {
      * @return true if in production mode, false otherwise.
      */
     boolean isProductionMode();
-
-    /**
-     * Get if the dev server should be enabled. false by default as a
-     * development bundle is used.
-     *
-     * @return true if dev server should be used
-     * @deprecated Use {@link #getMode()} instead
-     */
-    @Deprecated
-    default boolean frontendHotdeploy() {
-        if (isProductionMode()) {
-            return false;
-        }
-        return getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
-                FrontendUtils.isHillaUsed(getFrontendFolder()));
-    }
 
     default File getFrontendFolder() {
         String frontendFolderPath = getStringProperty(
@@ -68,8 +51,7 @@ public interface AbstractConfiguration extends Serializable {
             frontend = new File(getProjectFolder(), frontendFolderPath);
         }
 
-        return FrontendUtils.getLegacyFrontendFolderIfExists(getProjectFolder(),
-                frontend);
+        return FrontendUtils.getFrontendFolder(getProjectFolder(), frontend);
     }
 
     /**
@@ -83,7 +65,8 @@ public interface AbstractConfiguration extends Serializable {
             return BundleUtils.isPreCompiledProductionBundle()
                     ? Mode.PRODUCTION_PRECOMPILED_BUNDLE
                     : Mode.PRODUCTION_CUSTOM;
-        } else if (frontendHotdeploy()) {
+        } else if (getBooleanProperty(InitParameters.FRONTEND_HOTDEPLOY,
+                FrontendUtils.isHillaUsed(getFrontendFolder()))) {
             return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD;
         } else {
             return Mode.DEVELOPMENT_BUNDLE;
@@ -199,6 +182,35 @@ public interface AbstractConfiguration extends Serializable {
      */
     default String getBuildFolder() {
         return getStringProperty(InitParameters.BUILD_FOLDER, Constants.TARGET);
+    }
+
+    /**
+     * Returns a folder inside build folder, where the built tool places
+     * project's resources.
+     * <p>
+     * Only available in development mode.
+     * <p>
+     * For Maven this is typically {@code target/classes/} and for Gradle -
+     * {@code build/resources/main/}.
+     *
+     * @return the folder inside build folder where resources are placed, or
+     *         {@code null} if the project folder is unknown.
+     */
+    default File getOutputResourceFolder() {
+        File projectFolder = getProjectFolder();
+        if (projectFolder == null) {
+            return null;
+        }
+        String buildFolderName = getBuildFolder();
+        File buildFolder = new File(projectFolder, buildFolderName);
+        File gradleOutputResources = new File(buildFolder, "resources/main/");
+        if (gradleOutputResources.exists()) {
+            // Gradle
+            return gradleOutputResources;
+        } else {
+            // Maven
+            return new File(buildFolder, "classes/");
+        }
     }
 
     /**

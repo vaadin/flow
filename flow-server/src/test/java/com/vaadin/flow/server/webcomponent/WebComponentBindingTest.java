@@ -13,21 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.webcomponent;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.internal.JacksonUtils;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 public class WebComponentBindingTest {
 
@@ -41,8 +37,8 @@ public class WebComponentBindingTest {
         PropertyConfigurationImpl<MyComponent, Integer> integerProperty = new PropertyConfigurationImpl<>(
                 MyComponent.class, "int", Integer.class, 0);
         integerProperty.onChange(MyComponent::setInt);
-        PropertyConfigurationImpl<MyComponent, JsonValue> jsonProperty = new PropertyConfigurationImpl<>(
-                MyComponent.class, "json", JsonValue.class, null);
+        PropertyConfigurationImpl<MyComponent, ObjectNode> jsonProperty = new PropertyConfigurationImpl<>(
+                MyComponent.class, "json", ObjectNode.class, null);
         jsonProperty.onChange(MyComponent::setJson);
         binding.bindProperty(integerProperty, false);
         binding.bindProperty(jsonProperty, false);
@@ -56,7 +52,7 @@ public class WebComponentBindingTest {
     @Test
     public void getPropertyType() {
         Assert.assertEquals(Integer.class, binding.getPropertyType("int"));
-        Assert.assertEquals(JsonValue.class, binding.getPropertyType("json"));
+        Assert.assertEquals(ObjectNode.class, binding.getPropertyType("json"));
 
         Assert.assertNull(binding.getPropertyType("not-a-property"));
     }
@@ -74,12 +70,12 @@ public class WebComponentBindingTest {
         binding.updateProperty("int", 5);
         Assert.assertEquals(5, component.integer);
 
-        JsonObject obj = Json.createObject();
+        ObjectNode obj = JacksonUtils.createObjectNode();
         obj.put("String", "Value");
 
         binding.updateProperty("json", obj);
         Assert.assertEquals("{\"String\":\"Value\"}",
-                component.jsonValue.toJson());
+                component.jsonValue.toString());
     }
 
     @Test
@@ -92,19 +88,19 @@ public class WebComponentBindingTest {
 
         binding.updateProperty("json", obj);
         Assert.assertEquals("{\"String\":\"Value\"}",
-                component.jsonValue.toJson());
+                component.jsonValue.toString());
     }
 
     @Tag("tag")
     private static class MyComponent extends Component {
         int integer;
-        JsonValue jsonValue;
+        JsonNode jsonValue;
 
         public void setInt(int v) {
             integer = v;
         }
 
-        public void setJson(JsonValue v) {
+        public void setJson(JsonNode v) {
             jsonValue = v;
         }
     }

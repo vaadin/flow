@@ -19,7 +19,6 @@ package com.vaadin.flow.router;
  * Thrown to indicate that a {@link Location} instance is invalid.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see Location
  */

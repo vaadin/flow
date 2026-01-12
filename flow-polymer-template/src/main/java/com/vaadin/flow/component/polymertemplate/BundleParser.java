@@ -64,7 +64,7 @@ public final class BundleParser {
      * <code>[\s]*return[\s]*html([\`|\'|\"])</code> finds the return statement
      * and captures the used string character
      * <p>
-     * </p>
+     *
      * <code>([\s\S]*)\1;[\s]*\}</code> captures all text until we encounter the
      * end character with <code>;}</code> e.g. <code>';}</code>
      */

@@ -22,10 +22,10 @@ import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.theme.AbstractTheme;
-
 import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
 
 /**
@@ -34,14 +34,8 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
  * @since 1.0
  */
 @NpmPackage(value = "@vaadin/vaadin-themable-mixin", version = TestVersion.VAADIN)
-@NpmPackage(value = "@vaadin/polymer-legacy-adapter", version = TestVersion.VAADIN)
-@JsModule("@vaadin/polymer-legacy-adapter/style-modules.js")
 @NpmPackage(value = "@vaadin/vaadin-lumo-styles", version = TestVersion.VAADIN)
-@JsModule("@vaadin/vaadin-lumo-styles/color-global.js")
-@JsModule("@vaadin/vaadin-lumo-styles/typography-global.js")
-@JsModule("@vaadin/vaadin-lumo-styles/sizing.js")
-@JsModule("@vaadin/vaadin-lumo-styles/spacing.js")
-@JsModule("@vaadin/vaadin-lumo-styles/style.js")
+@CssImport("@vaadin/vaadin-lumo-styles/lumo.css")
 @JsModule("@vaadin/vaadin-lumo-styles/vaadin-iconset.js")
 public class Lumo implements AbstractTheme {
 

@@ -30,15 +30,15 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Attribute;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -46,6 +46,7 @@ import com.vaadin.flow.component.webcomponent.WebComponentUI;
 import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.BootstrapException;
@@ -60,12 +61,12 @@ import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.webcomponent.WebComponentConfigurationRegistry;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
+import static com.vaadin.flow.internal.FrontendUtils.EXPORT_CHUNK;
+import static com.vaadin.flow.server.communication.IndexHtmlRequestHandler.addCommercialBanner;
 import static com.vaadin.flow.shared.ApplicationConstants.CONTENT_TYPE_TEXT_JAVASCRIPT_UTF_8;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -129,7 +130,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 if (deploymentConfiguration.isProductionMode()) {
                     // The web-component.html is fetched from the bundle so it
                     // includes the entry point javascripts
-                } else if (!deploymentConfiguration.frontendHotdeploy()) {
+                } else if (deploymentConfiguration
+                        .getMode() != Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                     // When running without a frontend server, the
                     // web-component.html comes
                     // directly from the frontend folder and the JS
@@ -161,6 +163,8 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 }
 
                 setupCss(head, context);
+
+                addCommercialBanner(deploymentConfiguration, document);
 
                 return document;
             } catch (IOException e) {
@@ -275,7 +279,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         ArrayNode tags = registry.getConfigurations().stream()
                 .map(conf -> JacksonUtils.createNode(conf.getTag()))
                 .collect(JacksonUtils.asArray());
-        config.put("webcomponents", tags);
+        config.set("webcomponents", tags);
 
         config.put(ApplicationConstants.DEV_TOOLS_ENABLED, false);
 
@@ -437,7 +441,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
             BootstrapHandler
                     .getStylesheetLinks(context, "document.css",
                             frontendDirectory)
-                    .forEach(link -> UI.getCurrent().getPage().executeJs(
+                    .forEach(link -> UI.getCurrentOrThrow().getPage().executeJs(
                             BootstrapHandler.SCRIPT_TEMPLATE_FOR_STYLESHEET_LINK_TAG,
                             modifyPath(serviceUrl, link)));
         }
@@ -451,7 +455,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
         if (!"script".equalsIgnoreCase(element.tagName())) {
             return null;
         }
-        // Injecting a webpack bundle twice can never work.
+        // Injecting a frontend bundle twice can never work.
         // The bundle contains web components that register
         // themselves and loading twice will always cause
         // custom element conflicts

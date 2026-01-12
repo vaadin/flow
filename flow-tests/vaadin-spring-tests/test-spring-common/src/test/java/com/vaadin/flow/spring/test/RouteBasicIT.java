@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.test;
 
 import java.util.concurrent.atomic.AtomicReference;
@@ -21,7 +20,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
-import org.slf4j.LoggerFactory;
 
 public class RouteBasicIT extends AbstractSpringTest {
 

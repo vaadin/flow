@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
 import java.lang.annotation.Documented;
@@ -30,7 +29,6 @@ import java.lang.annotation.Target;
  * in Hilla application's main menu, but only if server route is accessible and
  * {@code frontend/views/@layout.tsx} is used with {@code createMenuItems()}
  * function to build the menu.
- * </p>
  *
  * @see Route
  */

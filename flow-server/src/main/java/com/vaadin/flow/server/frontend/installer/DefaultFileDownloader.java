@@ -31,10 +31,9 @@ import java.net.http.HttpClient.Version;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandler;
+import java.nio.file.Files;
 import java.util.Objects;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,10 +44,10 @@ import org.slf4j.LoggerFactory;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public final class DefaultFileDownloader implements FileDownloader {
 
+    private static final int DEFAULT_BUFFER_SIZE = 8192;
     public static final String HTTPS_PROTOCOLS = "https.protocols";
 
     private final ProxyConfig proxyConfig;
@@ -78,7 +77,9 @@ public final class DefaultFileDownloader implements FileDownloader {
         String oldProtocols = System.setProperty(HTTPS_PROTOCOLS, "TLSv1.2");
         try {
             if ("file".equalsIgnoreCase(downloadURI.getScheme())) {
-                FileUtils.copyFile(new File(downloadURI), destination);
+                Files.createDirectories(destination.getParentFile().toPath());
+                Files.copy(new File(downloadURI).toPath(),
+                        destination.toPath());
             } else {
                 downloadFile(destination, downloadURI, progressListener);
             }
@@ -151,14 +152,13 @@ public final class DefaultFileDownloader implements FileDownloader {
                         + response.statusCode() + " from the server.");
             }
             long contentLength = response.headers()
-                    .firstValueAsLong("Content-Length").getAsLong();
+                    .firstValueAsLong("Content-Length").orElse(-1L);
 
-            try (FileOutputStream out = FileUtils
-                    .openOutputStream(destination)) {
+            try (FileOutputStream out = openOutputStream(destination)) {
                 copy(response.body(), out, contentLength, progressListener);
             }
 
-            if (destination.length() != contentLength) {
+            if (contentLength != -1 && destination.length() != contentLength) {
                 throw new DownloadException("Error downloading from "
                         + downloadUri + ". Expected " + contentLength
                         + " bytes but got " + destination.length());
@@ -171,6 +171,12 @@ public final class DefaultFileDownloader implements FileDownloader {
 
     }
 
+    private static FileOutputStream openOutputStream(final File file)
+            throws IOException {
+        file.getParentFile().mkdirs();
+        return new FileOutputStream(file, false);
+    }
+
     /**
      * From {@link IOUtils#copyLarge(InputStream, OutputStream, byte[])} and
      * {@link IOUtils#copyLarge(InputStream, OutputStream)}
@@ -179,6 +185,8 @@ public final class DefaultFileDownloader implements FileDownloader {
      *            the input stream
      * @param outputStream
      *            the output stream
+     * @param total
+     *            the total number of bytes to copy or -1 if unknown
      * @param progressListener
      *            the progress listener or null
      * @return the number of bytes copied
@@ -188,12 +196,12 @@ public final class DefaultFileDownloader implements FileDownloader {
             ProgressListener progressListener) throws IOException {
         Objects.requireNonNull(inputStream, "inputStream");
         Objects.requireNonNull(outputStream, "outputStream");
-        byte[] buffer = IOUtils.byteArray(IOUtils.DEFAULT_BUFFER_SIZE);
+        byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
         long count = 0;
         int n;
         double lastReportedProgress = 0.0;
-        while (IOUtils.EOF != (n = inputStream.read(buffer))) {
+        while (-1 != (n = inputStream.read(buffer))) {
             outputStream.write(buffer, 0, n);
             count += n;
 

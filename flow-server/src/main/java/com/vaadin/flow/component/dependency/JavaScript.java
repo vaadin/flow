@@ -99,7 +99,6 @@ public @interface JavaScript {
      * frontend directory. Such URLs are not bundled but included into the page
      * as standalone scripts in the same way as it's done by
      * {@link Page#addJavaScript(String)}.
-     * <p>
      *
      * @return a JavaScript file URL
      */
@@ -111,6 +110,9 @@ public @interface JavaScript {
      * loaded.
      * <p>
      * By default, scripts are always loaded.
+     *
+     * @return {@code true} to load the script only in development mode,
+     *         {@code false} to always load it
      */
     boolean developmentOnly() default false;
 

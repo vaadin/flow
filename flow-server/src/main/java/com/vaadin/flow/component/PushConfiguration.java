@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
@@ -50,7 +49,6 @@ public interface PushConfiguration extends Serializable {
      * Add-on developers should note that this method is only meant for the
      * application developer. An add-on should not set the push mode directly,
      * rather instruct the user to set it.
-     * </p>
      *
      * @param pushMode
      *            The push mode to use.

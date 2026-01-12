@@ -29,8 +29,8 @@ import java.util.Set;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasElement;
@@ -274,7 +274,9 @@ public abstract class AbstractNavigationStateRenderer
             if (chain.isEmpty() && isPreservePartialTarget(
                     navigationState.getNavigationTarget(), routeLayoutTypes)) {
                 UI ui = event.getUI();
-                if (ui.getInternals().getExtendedClientDetails() == null) {
+                ExtendedClientDetails details = ui.getInternals()
+                        .getExtendedClientDetails();
+                if (details.getWindowName() == null) {
                     PreservedComponentCache cache = ui.getSession()
                             .getAttribute(PreservedComponentCache.class);
                     if (cache != null && !cache.isEmpty()) {
@@ -282,14 +284,12 @@ public abstract class AbstractNavigationStateRenderer
                         // to get the window name so we can determine if the
                         // cache contains a chain for us to use.
                         ui.getPage().retrieveExtendedClientDetails(
-                                details -> handle(event));
+                                d -> handle(event));
                         return true;
                     }
                 } else {
                     Optional<List<HasElement>> partialChain = getWindowPreservedChain(
-                            ui.getSession(),
-                            ui.getInternals().getExtendedClientDetails()
-                                    .getWindowName());
+                            ui.getSession(), details.getWindowName());
                     if (partialChain.isPresent()) {
                         List<HasElement> oldChain = partialChain.get();
                         disconnectElements(oldChain, ui);
@@ -992,18 +992,18 @@ public abstract class AbstractNavigationStateRenderer
         final UI ui = event.getUI();
         final VaadinSession session = ui.getSession();
 
-        if (ui.getInternals().getExtendedClientDetails() == null) {
+        final ExtendedClientDetails details = ui.getInternals()
+                .getExtendedClientDetails();
+        if (details.getWindowName() == null) {
             if (hasPreservedChainOfLocation(session, location)) {
                 // We may have a cached instance for this location, but we
                 // need to retrieve the window name before we can determine
                 // this, so execute a client-side request.
-                ui.getPage().retrieveExtendedClientDetails(
-                        details -> handle(event));
+                ui.getPage().retrieveExtendedClientDetails(d -> handle(event));
                 return Optional.empty();
             }
         } else {
-            final String windowName = ui.getInternals()
-                    .getExtendedClientDetails().getWindowName();
+            final String windowName = details.getWindowName();
             final Optional<ArrayList<HasElement>> maybePreserved = getPreservedChain(
                     session, windowName, event.getLocation());
             if (maybePreserved.isPresent()) {
@@ -1052,7 +1052,7 @@ public abstract class AbstractNavigationStateRenderer
         final ExtendedClientDetails extendedClientDetails = ui.getInternals()
                 .getExtendedClientDetails();
 
-        if (extendedClientDetails == null) {
+        if (extendedClientDetails.getWindowName() == null) {
             // We need first to retrieve the window name in order to cache the
             // component chain for later potential refreshes.
             ui.getPage().retrieveExtendedClientDetails(
@@ -1097,9 +1097,11 @@ public abstract class AbstractNavigationStateRenderer
 
     private static void updatePageTitle(NavigationEvent navigationEvent,
             Component routeTarget, String route) {
-
+        Instantiator instantiator = navigationEvent.getUI().getSession()
+                .getService().getInstantiator();
         Supplier<String> lookForTitleInTarget = () -> lookForTitleInTarget(
-                routeTarget).map(PageTitle::value).orElse("");
+                instantiator.getApplicationClass(routeTarget))
+                .map(PageTitle::value).orElse("");
 
         // check for HasDynamicTitle in current router targets chain
         String title = RouteUtil.getDynamicTitle(navigationEvent.getUI())
@@ -1113,9 +1115,8 @@ public abstract class AbstractNavigationStateRenderer
     }
 
     private static Optional<PageTitle> lookForTitleInTarget(
-            Component routeTarget) {
-        return Optional.ofNullable(
-                routeTarget.getClass().getAnnotation(PageTitle.class));
+            Class<?> routeTarget) {
+        return Optional.ofNullable(routeTarget.getAnnotation(PageTitle.class));
     }
 
     private static boolean isPreserveOnRefreshTarget(

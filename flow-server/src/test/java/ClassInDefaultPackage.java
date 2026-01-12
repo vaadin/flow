@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2000-2025 Vaadin Ltd.
  *

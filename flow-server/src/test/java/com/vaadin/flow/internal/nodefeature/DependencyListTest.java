@@ -25,17 +25,15 @@ import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.DependencyList;
-import com.vaadin.flow.internal.JsonUtils;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.Dependency.Type;
 import com.vaadin.flow.shared.ui.LoadMode;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -110,19 +108,31 @@ public class DependencyListTest {
 
     private void validateDependency(String url, Type dependencyType,
             LoadMode loadMode) {
-        JsonObject expectedJson = Json.createObject();
+        assertEquals("Expected to receive exactly one dependency", 1,
+                deps.getPendingSendToClient().size());
+
+        Dependency dependency = deps.getPendingSendToClient().iterator().next();
+        assertEquals("URL mismatch", url, dependency.getUrl());
+        assertEquals("Type mismatch", dependencyType, dependency.getType());
+        assertEquals("LoadMode mismatch", loadMode, dependency.getLoadMode());
+
+        // Validate JSON representation includes the expected fields
+        ObjectNode expectedJson = JacksonUtils.createObjectNode();
         expectedJson.put(Dependency.KEY_URL, url);
         expectedJson.put(Dependency.KEY_TYPE, dependencyType.name());
         expectedJson.put(Dependency.KEY_LOAD_MODE, loadMode.name());
 
-        assertEquals("Expected to receive exactly one dependency", 1,
-                deps.getPendingSendToClient().size());
+        ObjectNode actualJson = JacksonUtils.getMapper()
+                .valueToTree(dependency);
+
+        // Remove the ID field from comparison since it's auto-generated for
+        // some dependencies
+        actualJson.remove(Dependency.KEY_ID);
+
         assertTrue(String.format(
                 "Dependencies' json representations are different, expected = \n'%s'\n, actual = \n'%s'",
-                expectedJson.toJson(),
-                deps.getPendingSendToClient().iterator().next().toJson()),
-                JsonUtils.jsonEquals(expectedJson, deps.getPendingSendToClient()
-                        .iterator().next().toJson()));
+                expectedJson.toString(), actualJson.toString()),
+                JacksonUtils.jsonEquals(expectedJson, actualJson));
     }
 
     @Test

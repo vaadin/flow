@@ -33,7 +33,6 @@ public class DateRangeValidator extends RangeValidator<LocalDate> {
      * By default the range is inclusive i.e. both minValue and maxValue are
      * valid values. Use {@link #setMinValueIncluded(boolean)} or
      * {@link #setMaxValueIncluded(boolean)} to change it.
-     * </p>
      *
      * @param errorMessage
      *            the message to display in case the value does not validate.

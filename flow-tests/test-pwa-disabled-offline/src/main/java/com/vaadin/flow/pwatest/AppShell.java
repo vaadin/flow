@@ -15,9 +15,7 @@
  */
 package com.vaadin.flow.pwatest;
 
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.AppShellConfigurator;
-import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
 
 @PWA(name = "PWA app", shortName = "app", offline = false)

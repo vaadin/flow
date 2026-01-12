@@ -35,6 +35,8 @@ import org.objectweb.asm.Opcodes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.vaadin.flow.server.frontend.scanner.FrontendClassVisitor.ASSETS;
+
 /**
  * A class visitor for annotated classes. It's used to visit multiple classes
  * and extract all the properties of an specific annotation defined in the
@@ -128,14 +130,21 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
     }
 
     /**
-     * Return all values of a repeated annotation parameter in the occurrence
-     * order. For instance `getValues("value")` will return 'Bar' and 'Baz' when
-     * we have the following code:
+     * Return all explicitly defined values of a repeated annotation parameter
+     * in the occurrence order, ignoring attribute default values. For instance
+     * `getValues("value")` will return 'Bar' and 'Baz' when we have the
+     * following code:
      *
      * <pre>
      * <code>
+     * &#64;interface MyAnnotation {
+     *    String value() default "Foo";
+     *    String other();
+     * }
+     *
      * &#64;MyAnnotation(value = "Bar", other = "aa")
      * &#64;MyAnnotation(value = "Baz", other = "bb")
+     * &#64;MyAnnotation(other = "cc")
      * class Foo {
      * }
      * </code>
@@ -155,14 +164,21 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
     /**
      * Return all parameter values of a repeated annotation when they share the
-     * same value for a key parameter in the occurrence order. For example
-     * `getValuesForKey("value", "foo", "other")` will return 'aa' and 'bb' when
-     * we have the following code:
+     * same value for a key parameter in the occurrence order. Key parameter
+     * must be explicitly defined, otherwise the annotation is ignored. For
+     * example `getValuesForKey("value", "foo", "other")` will return 'aa' and
+     * 'bb' when we have the following code:
      *
      * <pre>
      * <code>
+     * &#64;interface MyAnnotation {
+     *    String value() default "foo";
+     *    String other();
+     * }
+     *
      * &#64;MyAnnotation(value = "foo", other = "aa")
      * &#64;MyAnnotation(value = "foo", other = "bb")
+     * &#64;MyAnnotation(other = "cc")
      * class Bar {
      * }
      * </code>
@@ -319,7 +335,7 @@ final class FrontendAnnotatedClassVisitor extends ClassVisitor {
 
         @Override
         public AnnotationVisitor visitArray(String name) {
-            if (isRepeatableContainer) {
+            if (isRepeatableContainer && !ASSETS.equals(name)) {
                 // For repeatable container annotations, skip array values
                 // but use this instance for visiting items
                 return this;

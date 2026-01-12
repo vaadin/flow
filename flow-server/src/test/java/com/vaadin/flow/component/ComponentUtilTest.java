@@ -18,11 +18,11 @@ package com.vaadin.flow.component;
 import java.util.Collection;
 import java.util.Set;
 
-import com.vaadin.flow.shared.Registration;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.ComponentTest.TestDiv;
+import com.vaadin.flow.shared.Registration;
 
 public class ComponentUtilTest {
     private Component component = new TestDiv();

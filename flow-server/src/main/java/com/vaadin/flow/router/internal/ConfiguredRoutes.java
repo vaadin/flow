@@ -19,7 +19,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -279,6 +278,8 @@ public class ConfiguredRoutes implements Serializable {
     /**
      * Make a copy of the target and route models mapping.
      *
+     * @param mutable
+     *            whether the copied route models should be mutable
      * @return a copy of the target and route models mapping.
      */
     protected final Map<Class<? extends Component>, RouteModel> copyTargetRouteModels(

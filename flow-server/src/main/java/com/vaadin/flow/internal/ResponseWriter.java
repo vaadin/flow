@@ -13,11 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal;
 
-import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
-import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
+import jakarta.servlet.ServletOutputStream;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,11 +42,8 @@ import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import static com.vaadin.flow.server.Constants.VAADIN_BUILD_FILES_PATH;
+import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 
 /**
  * The class that handles writing the response data into the response.

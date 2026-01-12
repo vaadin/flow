@@ -12,10 +12,10 @@
 
 @keyframes fadein {
   0% {
-    background: rgba(0,0,0,0);
+    background: rgba(0, 0, 0, 0);
   }
   100% {
-    background: rgba(0,0,0,.5);
+    background: rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -31,7 +31,7 @@
 
   border-radius: 100%;
   animation: bouncedelay 1.2s infinite 0.4s ease-in-out both;
-  content: "";
+  content: '';
 }
 
 .v-loading-indicator.first:before {
@@ -47,9 +47,12 @@
 }
 
 @keyframes bouncedelay {
-  0%, 80%, 100% { 
+  0%,
+  80%,
+  100% {
     transform: scale(0);
-  } 40% { 
-    transform: scale(1.0);
+  }
+  40% {
+    transform: scale(1);
   }
 }

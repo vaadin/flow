@@ -13,10 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client.flow.collection;
-
-import static org.junit.Assert.assertEquals;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -28,6 +25,8 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.client.flow.collection.jre.JreJsArray;
+
+import static org.junit.Assert.assertEquals;
 
 @SuppressWarnings("deprecation")
 public class JreArrayTest {

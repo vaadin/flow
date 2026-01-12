@@ -20,11 +20,11 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.IntStream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -42,10 +42,9 @@ import com.vaadin.flow.internal.JacksonUtils;
 class VersionsJsonConverter {
 
     static final String VAADIN_CORE_NPM_PACKAGE = "@vaadin/vaadin-core";
-    static final String VAADIN_BUNDLES = "@vaadin/bundles";
-    private static final String JS_VERSION = "jsVersion";
-    private static final String NPM_NAME = "npmName";
-    private static final String NPM_VERSION = "npmVersion";
+    static final String JS_VERSION = "jsVersion";
+    static final String NPM_NAME = "npmName";
+    static final String NPM_VERSION = "npmVersion";
 
     /**
      * Key for exclusions array.
@@ -150,15 +149,11 @@ class VersionsJsonConverter {
 
     private void addDependency(JsonNode obj) {
         assert obj.has(NPM_NAME);
-        String npmName = obj.get(NPM_NAME).textValue();
-        String mode = obj.has(MODE) ? obj.get(MODE).textValue() : null;
+        String npmName = obj.get(NPM_NAME).asString();
+        String mode = obj.has(MODE) ? obj.get(MODE).asString() : null;
         String version;
         // #11025
         if (Objects.equals(npmName, VAADIN_CORE_NPM_PACKAGE)) {
-            return;
-        }
-        if (excludeWebComponents && Objects.equals(npmName, VAADIN_BUNDLES)) {
-            exclusions.add(npmName);
             return;
         }
         if (reactEnabled && Objects.equals(npmName, VAADIN_ROUTER)) {
@@ -177,9 +172,9 @@ class VersionsJsonConverter {
             return;
         }
         if (obj.has(NPM_VERSION)) {
-            version = obj.get(NPM_VERSION).textValue();
+            version = obj.get(NPM_VERSION).asString();
         } else if (obj.has(JS_VERSION)) {
-            version = obj.get(JS_VERSION).textValue();
+            version = obj.get(JS_VERSION).asString();
         } else {
             throw new IllegalStateException("Vaadin code versions file "
                     + "contains unexpected data: dependency '" + npmName
@@ -198,7 +193,7 @@ class VersionsJsonConverter {
             ArrayNode array = (ArrayNode) obj.get(EXCLUSIONS);
             if (array != null) {
                 IntStream.range(0, array.size())
-                        .forEach(i -> exclusions.add(array.get(i).textValue()));
+                        .forEach(i -> exclusions.add(array.get(i).asString()));
             }
         }
     }

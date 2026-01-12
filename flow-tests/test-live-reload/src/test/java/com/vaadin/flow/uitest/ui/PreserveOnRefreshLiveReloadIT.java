@@ -16,9 +16,6 @@
 package com.vaadin.flow.uitest.ui;
 
 import net.jcip.annotations.NotThreadSafe;
-
-import com.vaadin.flow.testutil.DevToolsElement;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;

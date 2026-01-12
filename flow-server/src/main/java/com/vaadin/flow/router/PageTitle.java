@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
 import java.lang.annotation.ElementType;
@@ -22,7 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Defines the HTML page title for a navigation target.
+ * Defines the page title for a navigation target.
  *
  * @since 1.0
  */
@@ -31,7 +30,7 @@ import java.lang.annotation.Target;
 public @interface PageTitle {
 
     /**
-     * Gets the HTML title that should be used.
+     * Gets the title that should be used.
      * <p>
      * Empty string will clear any previous page title. In that case the browser
      * will decide what to show as the title, most likely the url.

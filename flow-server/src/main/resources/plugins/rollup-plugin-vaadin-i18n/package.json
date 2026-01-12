@@ -1,0 +1,23 @@
+{
+  "description": "rollup-plugin-vaadin-i18n",
+  "keywords": [
+    "plugin"
+  ],
+  "repository": "vaadin/flow",
+  "name": "@vaadin/rollup-plugin-vaadin-i18n",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "Vaadin Ltd",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/vaadin/flow/issues"
+  },
+  "files": [
+    "rollup-plugin-vaadin-i18n.js"
+  ],
+  "dependencies": {
+    "@rollup/pluginutils": "5.1.4",
+    "transform-ast": "2.4.4",
+    "magic-string": "0.30.17"
+  }
+}

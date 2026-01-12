@@ -1,8 +1,24 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Arrays;
@@ -97,7 +113,7 @@ public final class DAUUtils {
     /**
      * Parses DAU cookie value to extract tracking information.
      * <p>
-     * </p>
+     *
      * Cookie value is expected to be in format
      * {@literal trackingHash$creationTime}, with {@literal creationTime}
      * expressed as the number of milliseconds from the epoch of
@@ -159,7 +175,7 @@ public final class DAUUtils {
     /**
      * Gets the enforcement messages for the given request.
      * <p>
-     * </p>
+     *
      * Enforcement messages are get from the registered {@link DAUCustomizer},
      * if available. Otherwise, the default messages are returned.
      *
@@ -233,7 +249,7 @@ public final class DAUUtils {
     /**
      * Gets if a request should be considered for DAU tracking or not.
      * <p>
-     * </p>
+     *
      * Request that should be taken into account for DAU tracking are:
      *
      * <ul>
@@ -338,7 +354,7 @@ public final class DAUUtils {
      * Track DAU and check if enforcement should apply to the given request. If
      * enforcement is needed, the enforcement messages are returned.
      * <p>
-     * </p>
+     *
      * Method checks if the current request should be considered for DAU
      * tracking by using {@link #isDauEnabled(VaadinService)}.
      *

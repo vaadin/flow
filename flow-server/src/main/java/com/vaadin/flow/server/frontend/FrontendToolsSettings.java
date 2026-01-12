@@ -21,9 +21,10 @@ import java.util.Objects;
 import java.util.function.Supplier;
 
 import com.vaadin.flow.function.SerializableSupplier;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 
 import static com.vaadin.flow.server.frontend.FrontendTools.DEFAULT_NODE_VERSION;
 
@@ -40,12 +41,12 @@ public class FrontendToolsSettings implements Serializable {
 
     private String nodeVersion = DEFAULT_NODE_VERSION;
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private boolean ignoreVersionChecks;
     private boolean forceAlternativeNode = Constants.DEFAULT_REQUIRE_HOME_NODE_EXECUTABLE;
     private boolean useGlobalPnpm = Constants.GLOBAL_PNPM_DEFAULT;
-    private boolean autoUpdate = Constants.DEFAULT_NODE_AUTO_UPDATE;
+    private String nodeFolder = null;
 
     /**
      * Create a tools configuration object.
@@ -153,6 +154,19 @@ public class FrontendToolsSettings implements Serializable {
     }
 
     /**
+     * Set the folder containing the Node.js executable.
+     * <p>
+     * When set to a non-null/non-empty value, Node.js will be exclusively used
+     * from this folder. If not found, an exception is thrown with no fallback.
+     *
+     * @param nodeFolder
+     *            the folder path, or null to use default resolution
+     */
+    public void setNodeFolder(String nodeFolder) {
+        this.nodeFolder = nodeFolder;
+    }
+
+    /**
      * Force usage of global pnpm.
      *
      * @param useGlobalPnpm
@@ -161,19 +175,6 @@ public class FrontendToolsSettings implements Serializable {
      */
     public void setUseGlobalPnpm(boolean useGlobalPnpm) {
         this.useGlobalPnpm = useGlobalPnpm;
-    }
-
-    /**
-     * When set to true the alternative version is updated to the latest default
-     * node version as defined for the framework.
-     *
-     * @param autoUpdate
-     *            update node in {@link #alternativeDirGetter} if version older
-     *            than the current default
-     *            {@value FrontendTools#DEFAULT_NODE_VERSION}
-     */
-    public void setAutoUpdate(boolean autoUpdate) {
-        this.autoUpdate = autoUpdate;
     }
 
     /**
@@ -231,20 +232,20 @@ public class FrontendToolsSettings implements Serializable {
     }
 
     /**
+     * Get the configured node folder.
+     *
+     * @return the node folder path, or null if not configured
+     */
+    public String getNodeFolder() {
+        return nodeFolder;
+    }
+
+    /**
      * Check if global pnpm should be used.
      *
      * @return use global pnpm
      */
     public boolean isUseGlobalPnpm() {
         return useGlobalPnpm;
-    }
-
-    /**
-     * Check if automatic updates are enabled.
-     *
-     * @return automatic update
-     */
-    public boolean isAutoUpdate() {
-        return autoUpdate;
     }
 }

@@ -1,5 +1,5 @@
-import {PolymerElement} from '@polymer/polymer/polymer-element.js';
-import {html} from '@polymer/polymer/lib/utils/html-tag.js';
+import { PolymerElement } from '@polymer/polymer/polymer-element.js';
+import { html } from '@polymer/polymer/lib/utils/html-tag.js';
 
 class TemplateScalabilityView extends PolymerElement {
   static get is() {
@@ -8,15 +8,13 @@ class TemplateScalabilityView extends PolymerElement {
 
   static get template() {
     return html`
-                  <style include="shared-styles">
-            :host {
-                display: block;
-            }
-        </style>
+      <style include="shared-styles">
+        :host {
+          display: block;
+        }
+      </style>
 
-        <div id="content">
-
-        </div>
+      <div id="content"> </div>
     `;
   }
 }

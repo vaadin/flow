@@ -22,7 +22,6 @@ package com.vaadin.flow.server.frontend.installer;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public final class DownloadException extends Exception {
 

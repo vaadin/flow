@@ -8,8 +8,6 @@
  */
 package com.vaadin.flow.templatemodel;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collections;
@@ -17,6 +15,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -28,7 +27,7 @@ import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.templatemodel.TemplateModelTest.EmptyDivTemplate;
 
-import net.jcip.annotations.NotThreadSafe;
+import static org.junit.Assert.assertEquals;
 
 @NotThreadSafe
 public class TemplateModelWithEncodersTest extends HasCurrentService {

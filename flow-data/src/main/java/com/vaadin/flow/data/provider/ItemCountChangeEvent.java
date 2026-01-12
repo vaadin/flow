@@ -35,7 +35,6 @@ import com.vaadin.flow.component.ComponentEvent;
  *
  * @param <T>
  *            the event source type
- * @since
  */
 public class ItemCountChangeEvent<T extends Component>
         extends ComponentEvent<T> {

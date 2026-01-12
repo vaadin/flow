@@ -113,7 +113,6 @@ import com.vaadin.flow.dom.Element;
  *
  *
  * @author Vaadin Ltd
- * @since
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)

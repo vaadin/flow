@@ -15,9 +15,9 @@
  */
 package com.vaadin.flow.data.binder;
 
-import com.vaadin.flow.component.HasValue;
-
 import java.io.Serializable;
+
+import com.vaadin.flow.component.HasValue;
 
 /**
  * The event to be processed when

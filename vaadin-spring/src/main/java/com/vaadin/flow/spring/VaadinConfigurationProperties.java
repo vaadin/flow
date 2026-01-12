@@ -67,6 +67,23 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Gets the allowed packages using the given environment.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. in AOT processors.
+     *
+     * @param environment
+     *            the application environment
+     * @return the allowed packages or an empty list if none is defined
+     */
+    public static List<String> getAllowedPackages(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(VaadinConfigurationProperties::getAllowedPackages)
+                .orElse(Collections.emptyList());
+    }
+
+    /**
      * Base URL mapping of the Vaadin servlet.
      */
     private String urlMapping = "/*";
@@ -356,8 +373,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @return if servlet is loaded on startup
      */
@@ -370,8 +387,8 @@ public class VaadinConfigurationProperties {
      * <p>
      * If the servlet is not loaded on startup then the first request to the
      * server might be incorrectly handled by
-     * {@link com.vaadin.flow.spring.security.VaadinWebSecurity} and access to a
-     * public view will be denied instead of allowed.
+     * {@link com.vaadin.flow.spring.security.VaadinSecurityConfigurer} and
+     * access to a public view will be denied instead of allowed.
      *
      * @param loadOnStartup
      *            {@code true} to load the servlet on startup, {@code false}
@@ -384,7 +401,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns if a browser should be launched on startup when in development
      * mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -408,7 +424,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns timout after which a browser should be launched again on startup
      * when in development mode.
-     * <p>
      *
      * @return if a browser should be launched on startup when in development
      *         mode
@@ -432,7 +447,6 @@ public class VaadinConfigurationProperties {
     /**
      * Returns whether class scan caching between reloads when using Spring Boot
      * DevTools should be enabled.
-     * <p>
      *
      * @return if class scan caching should be enabled
      */
@@ -472,29 +486,6 @@ public class VaadinConfigurationProperties {
     }
 
     /**
-     * Get a list of packages that are blocked for class scanning.
-     *
-     * @return blocked packages
-     * @deprecated use {@link #getBlockedPackages()}
-     */
-    @Deprecated(forRemoval = true)
-    public List<String> getBlacklistedPackages() {
-        return Collections.unmodifiableList(blockedPackages);
-    }
-
-    /**
-     * Set list of packages to ignore for class scanning.
-     *
-     * @param blockedPackages
-     *            list of packages to ignore
-     * @deprecated use {@link #setBlockedPackages(List)}
-     */
-    @Deprecated(forRemoval = true)
-    public void setBlacklistedPackages(List<String> blockedPackages) {
-        this.blockedPackages = new ArrayList<>(blockedPackages);
-    }
-
-    /**
      * Get a list of packages that are allowed for class scanning.
      *
      * @return allowed packages
@@ -512,30 +503,6 @@ public class VaadinConfigurationProperties {
      */
     public void setAllowedPackages(List<String> allowedPackages) {
         this.allowedPackages = allowedPackages;
-    }
-
-    /**
-     * Get a list of packages that are allowed for class scanning.
-     *
-     * @return allowed packages
-     * @deprecated use {@link #getAllowedPackages()}
-     */
-    @Deprecated(forRemoval = true)
-    public List<String> getWhitelistedPackages() {
-        return Collections.unmodifiableList(allowedPackages);
-    }
-
-    /**
-     * Set list of packages to be scanned. If <code>allowedPackages</code> is
-     * set then <code>blockedPackages</code> is ignored.
-     *
-     * @param allowedPackages
-     *            list of packages to be scanned
-     * @deprecated use {@link #setAllowedPackages(List)}
-     */
-    @Deprecated(forRemoval = true)
-    public void setWhitelistedPackages(List<String> allowedPackages) {
-        this.allowedPackages = new ArrayList<>(allowedPackages);
     }
 
     /**

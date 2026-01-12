@@ -15,6 +15,11 @@
  */
 package com.vaadin.flow.contexttest.ui;
 
+import java.io.ByteArrayInputStream;
+import java.nio.charset.StandardCharsets;
+
+import org.slf4j.LoggerFactory;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.dependency.JavaScript;
 import com.vaadin.flow.component.dependency.StyleSheet;
@@ -24,10 +29,6 @@ import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.server.StreamRegistration;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.VaadinSession;
-import org.slf4j.LoggerFactory;
-
-import java.io.ByteArrayInputStream;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Abstract layout to test various resourcess accessibility. Contains:

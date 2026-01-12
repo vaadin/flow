@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
@@ -476,25 +475,6 @@ public class ShortcutRegistration implements Registration, Serializable {
             this.resetFocusOnActiveElement = resetFocusOnActiveElement;
             prepareForClientResponse();
         }
-    }
-
-    /**
-     * {@link Component} which owns the first shortcuts key event listener.
-     *
-     * @return Component
-     * @deprecated This component has now multiple owners so this method has
-     *             been replaced by #getOwners().
-     */
-    @Deprecated
-    public Component getOwner() {
-        if (listenOnComponents == null) {
-            return null;
-        }
-        if (listenOnComponents.length <= 0 || listenOnComponents[0] == null) {
-            throw new IllegalStateException(
-                    "listenOnComponents must not be empty!");
-        }
-        return listenOnComponents[0];
     }
 
     /**

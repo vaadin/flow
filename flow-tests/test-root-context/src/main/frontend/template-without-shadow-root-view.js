@@ -8,8 +8,7 @@ class PolymerTemplateWithoutShadowRootView extends PolymerElement {
   }
 
   static get properties() {
-    return {
-    };
+    return {};
   }
   static get is() {
     return 'template-without-shadow-root-view';

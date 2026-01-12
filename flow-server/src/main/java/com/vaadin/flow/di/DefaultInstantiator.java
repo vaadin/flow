@@ -183,6 +183,8 @@ public class DefaultInstantiator implements Instantiator {
      * Get property value from the session configurator or try to load it from
      * application.properties property file.
      *
+     * @param propertyName
+     *            the name of the property to get
      * @return parameter value or null if not found
      */
     protected String getInitProperty(String propertyName) {

@@ -15,15 +15,6 @@
  */
 package com.vaadin.signals;
 
-import static com.vaadin.signals.TestUtil.assertFailure;
-import static com.vaadin.signals.TestUtil.assertSuccess;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +28,15 @@ import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+
+import static com.vaadin.signals.TestUtil.assertFailure;
+import static com.vaadin.signals.TestUtil.assertSuccess;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class NodeSignalTest extends SignalTestBase {
 
@@ -106,16 +106,6 @@ public class NodeSignalTest extends SignalTestBase {
         assertEquals(1, asNumber.value());
 
         assertEquals(1, signal.value().value(Double.class));
-    }
-
-    @Test
-    void asNumber_valueAsInt_valueTruncated() {
-        NodeSignal signal = new NodeSignal();
-
-        NumberSignal asNumber = signal.asNumber();
-        asNumber.value(2.718);
-
-        assertEquals(2, signal.value().value(Integer.class));
     }
 
     @Test

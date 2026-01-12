@@ -15,23 +15,23 @@
  */
 package com.vaadin.flow.server.startup;
 
-import com.vaadin.flow.server.InvalidRouteConfigurationException;
-import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
-import com.vaadin.flow.server.VaadinServletContext;
-
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
+
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.vaadin.flow.server.InvalidRouteConfigurationException;
+import com.vaadin.flow.server.InvalidRouteLayoutConfigurationException;
+import com.vaadin.flow.server.VaadinServletContext;
 
 /**
  * Allows a library/runtime to be notified of a web application's startup phase
  * and perform any required programmatic registration of servlets, filters, and
  * listeners in response to it.
  *
- * @since
  *
  * @see ClassLoaderAwareServletContainerInitializer
  */

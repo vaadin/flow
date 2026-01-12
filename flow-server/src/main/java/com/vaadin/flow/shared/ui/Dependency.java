@@ -19,9 +19,6 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
-
 /**
  * Represents an html import, stylesheet or JavaScript to include on the page.
  *
@@ -32,8 +29,9 @@ public class Dependency implements Serializable {
 
     public static final String KEY_URL = "url";
     public static final String KEY_TYPE = "type";
-    public static final String KEY_LOAD_MODE = "mode";
+    public static final String KEY_LOAD_MODE = "loadMode";
     public static final String KEY_CONTENTS = "contents";
+    public static final String KEY_ID = "id";
 
     /**
      * The type of a dependency.
@@ -57,6 +55,7 @@ public class Dependency implements Serializable {
     private final Type type;
     private final String url;
     private final LoadMode loadMode;
+    private String id;
 
     /**
      * Creates a new dependency of the given type, to be loaded from the given
@@ -75,13 +74,37 @@ public class Dependency implements Serializable {
      *            details
      */
     public Dependency(Type type, String url, LoadMode loadMode) {
+        this(type, url, loadMode, null);
+    }
+
+    /**
+     * Creates a new dependency of the given type, to be loaded from the given
+     * URL with an optional ID for tracking.
+     * <p>
+     * The URL is passed through the translation mechanism before loading, so
+     * custom protocols, specified at
+     * {@link com.vaadin.flow.shared.VaadinUriResolver} can be used.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param type
+     *            the type of the dependency, not {@code null}
+     * @param url
+     *            the URL to load the dependency from, not {@code null}
+     * @param loadMode
+     *            determines dependency load mode, refer to {@link LoadMode} for
+     *            details
+     * @param id
+     *            optional ID for tracking the dependency
+     */
+    public Dependency(Type type, String url, LoadMode loadMode, String id) {
         if (url == null) {
             throw new IllegalArgumentException("url cannot be null");
         }
         this.type = Objects.requireNonNull(type);
-
         this.url = url;
         this.loadMode = loadMode;
+        this.id = id;
     }
 
     /**
@@ -133,21 +156,19 @@ public class Dependency implements Serializable {
     }
 
     /**
-     * Converts the object into json representation.
+     * Gets the ID associated with this dependency.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
      *
-     * @return json representation of the object
+     * @return the dependency ID or null if not set
      */
-    public JsonObject toJson() {
-        JsonObject jsonObject = Json.createObject();
-        jsonObject.put(KEY_URL, url);
-        jsonObject.put(KEY_TYPE, type.name());
-        jsonObject.put(KEY_LOAD_MODE, loadMode.name());
-        return jsonObject;
+    public String getId() {
+        return id;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(type, url, loadMode);
+        return Objects.hash(type, url, loadMode, id);
     }
 
     @Override
@@ -160,13 +181,13 @@ public class Dependency implements Serializable {
         }
         Dependency that = (Dependency) o;
         return type == that.type && loadMode == that.loadMode
-                && Objects.equals(url, that.url);
+                && Objects.equals(url, that.url) && Objects.equals(id, that.id);
 
     }
 
     @Override
     public String toString() {
         return "Dependency [type=" + type + ", url=" + url + ", loadMode="
-                + loadMode + "]";
+                + loadMode + ", id=" + id + "]";
     }
 }

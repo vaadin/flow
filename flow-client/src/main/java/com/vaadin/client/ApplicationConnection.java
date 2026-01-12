@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client;
 
 import com.google.gwt.core.client.GWT;
@@ -211,12 +210,12 @@ public class ApplicationConnection {
             var ur = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getURIResolver()();
             return ur.@com.vaadin.client.URIResolver::resolveVaadinUri(Ljava/lang/String;)(uriToResolve);
         });
-
+    
         client.sendEventMessage = $entry(function(nodeId, eventType, eventData) {
             var sc = ap.@ApplicationConnection::registry.@com.vaadin.client.Registry::getServerConnector()();
             sc.@com.vaadin.client.communication.ServerConnector::sendEventMessage(ILjava/lang/String;Lelemental/json/JsonObject;)(nodeId,eventType,eventData);
         });
-
+    
         client.initializing = false;
         client.exportedWebComponents = exportedWebComponents;
         $wnd.Vaadin.Flow.clients[applicationId] = client;
@@ -320,7 +319,7 @@ public class ApplicationConnection {
                 styles: ap.@ApplicationConnection::getElementStyleProperties(*)(nodeId)
             };
         });
-
+    
     }-*/;
 
     /**
@@ -330,7 +329,6 @@ public class ApplicationConnection {
      * if a deferred command is added in another deferred command.
      * <p>
      * Used by the native "client.isActive" function.
-     * </p>
      *
      * @return true if deferred commands are (potentially) being executed, false
      *         otherwise

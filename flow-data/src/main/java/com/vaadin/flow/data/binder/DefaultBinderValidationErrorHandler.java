@@ -40,7 +40,6 @@ import com.vaadin.flow.dom.ThemeList;
  *
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public class DefaultBinderValidationErrorHandler

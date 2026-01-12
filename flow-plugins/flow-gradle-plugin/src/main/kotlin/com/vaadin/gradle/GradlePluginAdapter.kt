@@ -123,9 +123,10 @@ internal class GradlePluginAdapter private constructor(
                     it.componentFilter { componentId ->
                         // a componentId different ModuleComponentIdentifier
                         // could be a local library, should not be filtered out
-                        val accepted = componentId !is ModuleComponentIdentifier || artifactFilter.test(
-                            componentId.moduleIdentifier
-                        )
+                        val accepted =
+                            componentId !is ModuleComponentIdentifier || artifactFilter.test(
+                                componentId.moduleIdentifier
+                            )
                         accepted
                     }
                 }.files
@@ -198,8 +199,6 @@ internal class GradlePluginAdapter private constructor(
     override fun nodeDownloadRoot(): URI =
         URI.create(config.nodeDownloadRoot.get())
 
-    override fun nodeAutoUpdate(): Boolean = config.nodeAutoUpdate.get()
-
     override fun nodeVersion(): String = config.nodeVersion.get()
 
     override fun npmFolder(): File = config.npmFolder.get()
@@ -217,6 +216,9 @@ internal class GradlePluginAdapter private constructor(
     override fun requireHomeNodeExec(): Boolean =
         config.requireHomeNodeExec.get()
 
+    override fun nodeFolder(): String? =
+        config.nodeFolder.orNull
+
     override fun servletResourceOutputDirectory(): File {
         // when running a task which runs before processResources, we need to
         // generate stuff to build/vaadin-generated.
@@ -233,8 +235,13 @@ internal class GradlePluginAdapter private constructor(
         return File(buildResourcesDir, Constants.VAADIN_SERVLET_RESOURCES)
     }
 
-    override fun webpackOutputDirectory(): File =
-        config.webpackOutputDirectory.get()
+    override fun webpackOutputDirectory(): File = frontendOutputDirectory()
+
+    override fun frontendOutputDirectory(): File =
+        config.frontendOutputDirectory.get()
+
+    override fun resourcesOutputDirectory(): File =
+        config.resourcesOutputDirectory.get()
 
     override fun frontendResourcesDirectory(): File =
         config.frontendResourcesDirectory.get()
@@ -312,6 +319,11 @@ internal class GradlePluginAdapter private constructor(
     override fun frontendExtraFileExtensions(): List<String> =
         config.frontendExtraFileExtensions.get()
 
-    override fun isFrontendIgnoreVersionChecks(): Boolean = config.frontendIgnoreVersionChecks.get()
+    override fun isFrontendIgnoreVersionChecks(): Boolean =
+        config.frontendIgnoreVersionChecks.get()
+
+    override fun isCommercialBannerEnabled(): Boolean {
+        return config.commercialWithBanner.get()
+    }
 
 }

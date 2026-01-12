@@ -8,12 +8,12 @@
  */
 package com.vaadin.flow.component.polymertemplate;
 
-import static org.junit.Assert.assertNull;
-
 import org.junit.After;
 import org.junit.Before;
 
 import com.vaadin.flow.server.VaadinService;
+
+import static org.junit.Assert.assertNull;
 
 /**
  * Helper for test classes that need to have {@code VaadinService.getCurrent()}

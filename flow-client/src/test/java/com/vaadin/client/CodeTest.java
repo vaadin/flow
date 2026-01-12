@@ -15,9 +15,6 @@
  */
 package com.vaadin.client;
 
-import static java.nio.charset.StandardCharsets.UTF_8;
-import static org.junit.Assert.fail;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashSet;
@@ -39,6 +36,9 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.junit.Test;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.junit.Assert.fail;
 
 /**
  * Tests the java code.

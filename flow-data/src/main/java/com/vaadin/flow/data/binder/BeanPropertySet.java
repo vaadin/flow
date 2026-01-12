@@ -56,6 +56,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
      * for the corresponding bean type is requested, which either returns the
      * existing cached instance or creates a new one.
      *
+     * @param <T>
+     *            the bean type
      * @see #readResolve()
      * @see BeanPropertyDefinition#writeReplace()
      */
@@ -253,6 +255,8 @@ public class BeanPropertySet<T> implements PropertySet<T> {
     /**
      * Key for identifying cached BeanPropertySet instances.
      *
+     * @param <T>
+     *            the bean type
      */
     private static class InstanceKey<T> implements Serializable {
         private Class<T> type;

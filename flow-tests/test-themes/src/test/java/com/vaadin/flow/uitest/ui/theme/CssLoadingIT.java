@@ -46,6 +46,20 @@ public class CssLoadingIT extends ChromeBrowserTest {
         }
     }
 
+    @Test
+    public void fakeAuraStylesApplied() {
+        open();
+
+        // Verify that the Aura theme stylesheet from @StyleSheet has been
+        // applied
+        // by checking that the CSS custom property is present on :root
+        String auraLoaded = (String) executeScript(
+                "return getComputedStyle(document.documentElement).getPropertyValue('--fake-aura-theme-loaded').trim() ");
+        Assert.assertEquals(
+                "Expected :root --fake-aura-theme-loaded custom property to be set by aura/fake-aura.css",
+                "1", auraLoaded);
+    }
+
     private void assertColor(String id) {
         TestBenchElement element = $("*").id(id);
         String elementBackground = (String) executeScript(

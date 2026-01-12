@@ -123,6 +123,8 @@ public interface HasValidator<V> extends Serializable {
      *      Setter)
      * @since 23.2
      *
+     * @param listener
+     *            the validation status change listener to add
      * @return Registration of the added listener.
      */
     default Registration addValidationStatusChangeListener(

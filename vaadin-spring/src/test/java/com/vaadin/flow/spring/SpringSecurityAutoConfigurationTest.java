@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring;
 
 import java.io.ByteArrayInputStream;
@@ -29,11 +28,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.Customizer;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.web.SecurityFilterChain;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.router.Location;
@@ -49,7 +52,7 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
+import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -200,7 +203,7 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomAccessPathChecker extends VaadinWebSecurity {
+    static class CustomAccessPathChecker extends BaseSecurityClass {
 
         @Bean
         static AccessPathChecker customAccessPathChecker() {
@@ -209,7 +212,7 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @TestConfiguration(proxyBeanMethods = false)
-    static class CustomAccessAnnotationChecker extends VaadinWebSecurity {
+    static class CustomAccessAnnotationChecker extends BaseSecurityClass {
 
         @Bean
         static AccessAnnotationChecker accessAnnotationChecker() {
@@ -219,7 +222,7 @@ class SpringSecurityAutoConfigurationTest {
 
     @TestConfiguration(proxyBeanMethods = false)
     static class CustomNavigationAccessCheckersConfigurer
-            extends VaadinWebSecurity {
+            extends BaseSecurityClass {
 
         private static final NavigationAccessChecker CUSTOM = context -> context
                 .deny("Custom Implementation");
@@ -241,6 +244,17 @@ class SpringSecurityAutoConfigurationTest {
         NavigationAccessControlConfigurer navigationAccessCheckersConfigurer() {
             return new NavigationAccessControlConfigurer()
                     .withNavigationAccessChecker(CUSTOM);
+        }
+    }
+
+    @EnableWebSecurity
+    private static class BaseSecurityClass {
+
+        @Bean
+        public SecurityFilterChain vaadinSecurityFilterChain(
+                HttpSecurity httpSecurity) {
+            return httpSecurity.with(VaadinSecurityConfigurer.vaadin(),
+                    Customizer.withDefaults()).build();
         }
     }
 

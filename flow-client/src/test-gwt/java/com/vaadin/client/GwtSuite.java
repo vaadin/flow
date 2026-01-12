@@ -21,6 +21,7 @@ import com.vaadin.client.flow.collection.GwtJsSetTest;
 import com.vaadin.client.flow.collection.GwtJsWeakMapTest;
 import com.vaadin.client.flow.dom.GwtDomApiTest;
 import com.vaadin.client.flow.dom.GwtPolymerApiImplTest;
+import com.vaadin.client.flow.util.GwtClientJsonCodecTest;
 import com.vaadin.client.flow.util.GwtNativeFunctionTest;
 
 public class GwtSuite extends GWTTestSuite {
@@ -53,6 +54,7 @@ public class GwtSuite extends GWTTestSuite {
         suite.addTestSuite(GwtDefaultConnectionStateHandlerTest.class);
         suite.addTestSuite(GwtErrotHandlerTest.class);
         suite.addTestSuite(GwtAtmospherePushConnectionTest.class);
+        suite.addTestSuite(GwtClientJsonCodecTest.class);
         return suite;
     }
 }

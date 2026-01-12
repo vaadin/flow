@@ -49,7 +49,8 @@ public abstract class ClassFinder {
 
     protected boolean isTestClassPath(String classPath) {
         File file = new File(classPath);
-        return "test-classes".equals(file.getName());
+        return "test-classes".equals(file.getName())
+                || file.getName().matches(".*-tests\\.jar");
     }
 
     protected static boolean isFunctionalType(Type type) {
@@ -146,10 +147,16 @@ public abstract class ClassFinder {
         }
 
         // Test classes with a @Test annotation on some method
-        for (Method method : cls.getMethods()) {
-            if (method.isAnnotationPresent(Test.class)) {
-                return true;
+        try {
+            for (Method method : cls.getMethods()) {
+                if (method.isAnnotationPresent(Test.class)) {
+                    return true;
+                }
             }
+        } catch (NoClassDefFoundError e) {
+            LoggerFactory.getLogger(ClassFinder.class).warn(
+                    "Class {} cannot be loaded. Perhaps some referenced class is missing from test classpath. Error message: {}",
+                    cls.getName(), e.getMessage());
         }
 
         return false;

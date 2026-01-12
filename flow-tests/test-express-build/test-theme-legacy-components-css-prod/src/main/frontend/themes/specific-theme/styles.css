@@ -1,12 +1,12 @@
 body {
-    background-color: rgba(0, 0, 255, 1);
+  background-color: rgba(0, 0, 255, 1);
 }
 
 .hilla-logo {
-    background-image: url("./images/hilla-logo.png");
+  background-image: url('./images/hilla-logo.png');
 }
 
 .vaadin-logo {
-    /* This doesn't work currently with url("./images/vaadin-logo.png")*/
-    background-image: url("/images/vaadin-logo.png");
+  /* This doesn't work currently with url("./images/vaadin-logo.png")*/
+  background-image: url('/images/vaadin-logo.png');
 }

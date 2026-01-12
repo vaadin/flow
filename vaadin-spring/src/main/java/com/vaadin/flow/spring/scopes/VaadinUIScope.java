@@ -25,7 +25,6 @@ import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.DetachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.shared.Registration;
 
 /**
  * Implementation of Spring's
@@ -122,11 +121,6 @@ public class VaadinUIScope extends AbstractScope {
     }
 
     private UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The UI scope is not active");
-        }
-        return ui;
+        return UI.getCurrentOrThrow();
     }
 }

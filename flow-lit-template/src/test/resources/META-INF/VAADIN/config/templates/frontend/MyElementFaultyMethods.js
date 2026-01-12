@@ -3,7 +3,6 @@ import { LitElement, html } from 'lit';
 
 // Define an element class
 export class MyLitElement extends LitElement {
-
   // Define public API properties
   // Define the element's template
   render() {

@@ -25,29 +25,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.osgi.framework.Constants;
 import org.osgi.service.component.annotations.Component;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.AbstractPropertyConfiguration;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.internal.FrontendUtils.TOKEN_FILE;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Default implementation of {@link ApplicationConfigurationFactory}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Component(service = ApplicationConfigurationFactory.class, property = Constants.SERVICE_RANKING
@@ -178,7 +177,7 @@ public class DefaultApplicationConfigurationFactory
     }
 
     /**
-     * Check if the webpack.generated.js resources is inside 2 jars
+     * Check if the vite.generated.ts resources is inside 2 jars
      * (flow-server.jar and application.jar) if this is the case then we can
      * accept a build info file from inside jar with a single jar in the path.
      * <p>

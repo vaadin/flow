@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.BufferedWriter;
@@ -23,6 +22,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Serializable;
+import java.lang.Thread.Builder.OfVirtual;
 import java.lang.reflect.Constructor;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -41,7 +41,11 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -49,10 +53,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.experimental.DisabledFeatureException;
+import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.DefaultInstantiator;
 import com.vaadin.flow.di.Instantiator;
@@ -89,6 +96,7 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.JsonConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
+import com.vaadin.signals.SignalEnvironment;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -184,6 +192,10 @@ public abstract class VaadinService implements Serializable {
 
     private Instantiator instantiator;
 
+    private Executor executor;
+
+    private boolean defaultExecutorInUse;
+
     private VaadinContext vaadinContext;
 
     private Iterable<VaadinRequestInterceptor> vaadinRequestInterceptors;
@@ -267,6 +279,9 @@ public abstract class VaadinService implements Serializable {
             instantiator.getServiceInitListeners()
                     .forEach(listener -> listener.serviceInit(event));
 
+            this.executor = event.getExecutor()
+                    .orElseGet(this::createDefaultExecutor);
+
             event.getAddedRequestHandlers().forEach(handlers::add);
 
             Collections.reverse(handlers);
@@ -293,6 +308,32 @@ public abstract class VaadinService implements Serializable {
                     .collect(Collectors.toList());
         });
 
+        if (this.executor == null) {
+            throw new ServiceException(
+                    "Unable to create the default Executor for "
+                            + getClass().getName()
+                            + ". This is most likely a bug in a custom VaadinService implementation "
+                            + "that overrides the createDefaultExecutor() method "
+                            + "but returns a null Executor instance. "
+                            + "As a workaround, you can register a "
+                            + VaadinServiceInitListener.class.getSimpleName()
+                            + " providing a custom Executor instance.");
+        }
+
+        try {
+            initSignalsEnvironment();
+        } catch (Exception e) {
+            if (FeatureFlags.get(getContext())
+                    .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId())) {
+                throw e;
+            } else {
+                getLogger().info(
+                        "Error initializing signals. This is non-fatal since signals are "
+                                + "a preview feature and the feature flag is not enabled.",
+                        e);
+            }
+        }
+
         DeploymentConfiguration configuration = getDeploymentConfiguration();
         if (!configuration.isProductionMode()) {
             Logger logger = getLogger();
@@ -313,10 +354,73 @@ public abstract class VaadinService implements Serializable {
             UsageStatistics.markAsUsed("flow/bun", null);
         }
 
-        RouteUtil.checkForClientRouteCollisions(this,
-                getRouteRegistry().getRegisteredRoutes());
+        if (getDeploymentConfiguration().isProductionMode()) {
+            // Postpone the check until dev-server is fully initialized and
+            // client routes are computed.
+            RouteUtil.checkForClientRouteCollisions(this,
+                    getRouteRegistry().getRegisteredRoutes());
+        }
 
         initialized = true;
+    }
+
+    private void initSignalsEnvironment() {
+        boolean enabled = FeatureFlags.get(getContext())
+                .isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId());
+        if (enabled) {
+            // Trigger check for multiple TaskExecutor candidates
+            getExecutor();
+        }
+
+        class VaadinServiceEnvironment extends SignalEnvironment
+                implements Serializable {
+            @Override
+            public boolean isActive() {
+                if (VaadinService.getCurrent() != VaadinService.this) {
+                    return false;
+                } else if (!enabled) {
+                    throw new DisabledFeatureException(
+                            FeatureFlags.FLOW_FULLSTACK_SIGNALS);
+                } else {
+                    return true;
+                }
+            }
+
+            private Executor createCurrentUiDispatcher() {
+                UI owner = UI.getCurrent();
+                if (owner == null) {
+                    return getExecutor();
+                }
+
+                return task -> {
+                    if (UI.getCurrent() == owner) {
+                        task.run();
+                    } else {
+                        try {
+                            getExecutor()
+                                    .execute(() -> owner.access(task::run));
+                        } catch (Exception e) {
+                            // submitted when executor is shut down, ignore
+                        }
+                    }
+                };
+            }
+
+            @Override
+            public Executor getResultNotifier() {
+                return createCurrentUiDispatcher();
+            }
+
+            @Override
+            public Executor getEffectDispatcher() {
+                return getExecutor();
+            }
+        }
+
+        Runnable unregister = SignalEnvironment
+                .register(new VaadinServiceEnvironment());
+
+        addServiceDestroyListener(event -> unregister.run());
     }
 
     private void addRouterUsageStatistics() {
@@ -394,7 +498,7 @@ public abstract class VaadinService implements Serializable {
         handlers.add(new StreamRequestHandler());
         handlers.add(new PwaHandler(() -> getPwaRegistry()));
         handlers.add(new TranslationFileRequestHandler(
-                getInstantiator().getI18NProvider()));
+                getInstantiator().getI18NProvider(), getClassLoader()));
 
         handlers.add(new WebComponentBootstrapHandler());
         handlers.add(new WebComponentProvider());
@@ -504,6 +608,79 @@ public abstract class VaadinService implements Serializable {
     }
 
     /**
+     * Creates a default executor instance to use with this service. This
+     * default implementation creates a virtual tread executor.
+     * <p>
+     * A custom {@link VaadinService} implementation can override this method to
+     * provide its own ad-hoc executor tailored to specific environments like
+     * CDI or Spring.
+     * <p>
+     * Implementors should never return {@literal null}; if an executor instance
+     * cannot be provided, the method should call
+     * {@code super.createDefaultExecutor()}.
+     * <p>
+     * The application can provide a more appropriate executor implementation
+     * through a {@link VaadinServiceInitListener} and calling
+     * {@link ServiceInitEvent#setExecutor(Executor)}.
+     *
+     * @return a default executor instance to use, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
+     */
+    protected Executor createDefaultExecutor() {
+        this.defaultExecutorInUse = true;
+        ThreadFactory namedVirtualThreadFactory = defaultExecutorFactory()
+                .factory();
+        return Executors.newThreadPerTaskExecutor(namedVirtualThreadFactory);
+    }
+
+    /*
+     * Package private to allow overriding with an uncaught exception handler in
+     * tests
+     */
+    OfVirtual defaultExecutorFactory() {
+        return Thread.ofVirtual().name("VaadinTaskExecutor-thread-", 1);
+    }
+
+    /**
+     * Gets the executor instance used by Vaadin for managing concurrent tasks.
+     * <p>
+     * By default, a thread pool executor with a custom with core pool size of
+     * 8, an unbounded maximum pool size, and a keep-alive time of 60 seconds
+     * for idle threads is provided. The thread pool grows dynamically as
+     * required, and idle core threads are allowed to time out.
+     * <p>
+     * {@link VaadinService} implementations for specific environments like CDI
+     * or Spring might provide their own ad-hoc Executors tailored to those
+     * environments.
+     * <p>
+     * A custom executor can be configured by registering a
+     * {@link VaadinServiceInitListener} and providing the executor instance to
+     * the {@link ServiceInitEvent}.
+     * <p>
+     * A Vaadin application can also benefit from this executor to submit
+     * asynchronous tasks.
+     *
+     * @return the Executor instance, never {@literal null}.
+     * @see VaadinServiceInitListener
+     * @see ServiceInitEvent#setExecutor(Executor)
+     */
+    public Executor getExecutor() {
+        return executor;
+    }
+
+    /**
+     * Creates and configures a default instance of {@link ObjectMapper}. The
+     * configured {@link ObjectMapper} handle serialization and deserialization
+     * of Java time API objects.
+     *
+     * @return the configured {@link ObjectMapper} instance
+     */
+    protected ObjectMapper createDefaultObjectMapper() {
+        return JacksonUtils.getMapper();
+    }
+
+    /**
      * Gets the class loader to use for loading classes loaded by name, e.g.
      * custom UI classes. This is by default the class loader that was used to
      * load the Servlet class to which this service belongs.
@@ -580,7 +757,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * By default, the {@link DefaultSystemMessagesProvider} which always
      * provides the built-in default {@link SystemMessages} is used.
-     * </p>
      *
      * @return the system messages provider; not <code>null</code>
      * @see #setSystemMessagesProvider(SystemMessagesProvider)
@@ -741,7 +917,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * Handles locking of the session internally to avoid creation of duplicate
      * sessions by two threads simultaneously.
-     * </p>
      *
      * @param request
      *            the request to get a vaadin service session for.
@@ -804,7 +979,6 @@ public abstract class VaadinService implements Serializable {
      * <p>
      * This method uses the wrapped session instead of VaadinSession to be able
      * to lock even before the VaadinSession has been initialized.
-     * </p>
      *
      * @param wrappedSession
      *            The wrapped session
@@ -1011,7 +1185,13 @@ public abstract class VaadinService implements Serializable {
         // Initial WebBrowser data comes from the request
         session.setBrowser(new WebBrowser(request));
 
-        session.setConfiguration(getDeploymentConfiguration());
+        SessionLockCheckStrategy sessionLockCheckStrategy = getDeploymentConfiguration()
+                .isProductionMode()
+                        ? getDeploymentConfiguration()
+                                .getSessionLockCheckStrategy()
+                        : SessionLockCheckStrategy.THROW;
+        assert sessionLockCheckStrategy != null;
+        session.applyLockStrategy(sessionLockCheckStrategy);
 
         // Initial locale comes from the request
         if (getInstantiator().getI18NProvider() != null) {
@@ -1033,17 +1213,17 @@ public abstract class VaadinService implements Serializable {
             Optional<Locale> foundLocale = LocaleUtil
                     .getExactLocaleMatch(request, providedLocales);
 
-            if (!foundLocale.isPresent()) {
+            if (foundLocale.isEmpty()) {
                 foundLocale = LocaleUtil.getLocaleMatchByLanguage(request,
                         providedLocales);
             }
 
-            // Set locale by match found in I18N provider, first provided locale
-            // or else leave as default locale
+            // Set locale by match found in I18N provider, locale provided by
+            // I18nProvider.getDefaultLocale or else leave as default locale
             if (foundLocale.isPresent()) {
                 session.setLocale(foundLocale.get());
             } else if (!providedLocales.isEmpty()) {
-                session.setLocale(providedLocales.get(0));
+                session.setLocale(provider.getDefaultLocale());
             }
         }
     }
@@ -1154,7 +1334,6 @@ public abstract class VaadinService implements Serializable {
      * The application developer can also use this method to define the current
      * instances outside the normal request handling, e.g. when initiating
      * custom background threads.
-     * </p>
      *
      * @param request
      *            the Vaadin request to set as the current request, or
@@ -1635,7 +1814,6 @@ public abstract class VaadinService implements Serializable {
      * expiration event if it implements {@link SessionExpiredHandler}. If no
      * request handler handles session expiration a default expiration message
      * will be written.
-     * </p>
      *
      * @param request
      *            The incoming request
@@ -2216,6 +2394,10 @@ public abstract class VaadinService implements Serializable {
      */
     public void destroy() {
         ServiceDestroyEvent event = new ServiceDestroyEvent(this);
+        if (defaultExecutorInUse && executor instanceof ExecutorService cast) {
+            cast.shutdownNow();
+            this.executor = null;
+        }
         RuntimeException exception = null;
         for (ServiceDestroyListener listener : serviceDestroyListeners) {
             try {

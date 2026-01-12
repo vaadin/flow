@@ -18,12 +18,6 @@ package org.vaadin.example;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.vaadin.flow.server.Version;
-import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.annotations.BrowserConfiguration;
-import com.vaadin.testbench.parallel.Browser;
-
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
@@ -32,6 +26,12 @@ import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.logging.Logs;
 import org.openqa.selenium.remote.DesiredCapabilities;
+
+import com.vaadin.flow.server.Version;
+import com.vaadin.flow.spring.test.SpringDevToolsReloadUtils;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.annotations.BrowserConfiguration;
+import com.vaadin.testbench.parallel.Browser;
 
 /**
  * Class for testing reload time of tiny Vaadin app triggered by spring-boot Dev

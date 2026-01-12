@@ -17,11 +17,12 @@ package com.vaadin.flow.ccdmtest;
 
 import java.util.List;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 @Ignore
 public class CCDMTest extends ChromeBrowserTest {

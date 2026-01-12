@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.flowsecurity;
 
 import java.io.File;
@@ -20,6 +35,7 @@ import org.openqa.selenium.WebDriverException;
 
 import com.vaadin.flow.component.applayout.testbench.AppLayoutElement;
 import com.vaadin.flow.component.button.testbench.ButtonElement;
+import com.vaadin.flow.component.html.testbench.ImageElement;
 import com.vaadin.flow.component.upload.testbench.UploadElement;
 import com.vaadin.flow.spring.flowsecurity.views.AdminView;
 import com.vaadin.flow.spring.flowsecurity.views.PublicView;
@@ -92,6 +108,40 @@ public class AppViewIT extends AbstractIT {
     public void root_page_does_not_require_login() {
         open("");
         assertRootPageShown();
+    }
+
+    @Test
+    public void npm_asset_does_not_require_login() {
+        open("");
+        assertRootPageShown();
+        checkLogsForErrors();
+
+        ImageElement status = $(ImageElement.class).id("status-icon");
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/circle.svg",
+                status.getAttribute("src"));
+        // openResource but taking into account all the / in every case
+        driver.get(getRootURL() + getUrlMappingBasePath()
+                + "/assets/icons/circle.svg");
+    }
+
+    @Test
+    public void npm_asset_works_with_login() {
+        open("private");
+        assertPathShown(LOGIN_PATH);
+        loginUser();
+
+        checkLogsForErrors();
+
+        ImageElement status = $(ImageElement.class).id("status-icon");
+        Assert.assertEquals(
+                getRootURL() + getUrlMappingBasePath()
+                        + "/assets/icons/user-circle.svg",
+                status.getAttribute("src"));
+        // openResource but taking into account all the / in every case
+        driver.get(getRootURL() + getUrlMappingBasePath()
+                + "/assets/icons/user-circle.svg");
     }
 
     @Test
@@ -202,6 +252,25 @@ public class AppViewIT extends AbstractIT {
         openResource(path);
         loginAdmin();
         assertPageContains(contents);
+        logout();
+
+        openResource(path);
+        assertLoginViewShown();
+    }
+
+    @Test
+    public void access_restricted_to_all_by_default() {
+        String path = "restricted/secret.txt";
+
+        openResource(path);
+        assertLoginViewShown();
+        loginUser();
+        assertForbiddenPage();
+        logout();
+
+        openResource(path);
+        loginAdmin();
+        assertForbiddenPage();
         logout();
 
         openResource(path);

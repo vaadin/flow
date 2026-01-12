@@ -82,6 +82,19 @@ public class InvalidUrlTest {
             public VaadinContext getContext() {
                 return new MockVaadinContext();
             }
+
+            @Override
+            public DeploymentConfiguration getDeploymentConfiguration() {
+                if (super.getDeploymentConfiguration() != null) {
+                    return super.getDeploymentConfiguration();
+                } else {
+                    DeploymentConfiguration config = Mockito
+                            .mock(DeploymentConfiguration.class);
+                    Mockito.when(config.isProductionMode()).thenReturn(false);
+                    setConfiguration(config);
+                    return config;
+                }
+            }
         };
         service.setCurrentInstances(request, response);
 
@@ -94,15 +107,13 @@ public class InvalidUrlTest {
         Mockito.when(config.getProjectFolder()).thenReturn(new File("./"));
         Mockito.when(config.getBuildFolder()).thenReturn("build");
 
-        session.lock();
-        session.setConfiguration(config);
         ((MockVaadinServletService) service).setConfiguration(config);
         CurrentInstance.set(VaadinSession.class, session);
 
         ui.getInternals().setSession(session);
 
         RouteConfiguration routeConfiguration = RouteConfiguration
-                .forRegistry(ui.getRouter().getRegistry());
+                .forRegistry(ui.getInternals().getRouter().getRegistry());
         routeConfiguration.update(() -> {
             routeConfiguration.getHandledRegistry().clean();
             Arrays.asList(UITest.RootNavigationTarget.class,
@@ -110,10 +121,9 @@ public class InvalidUrlTest {
                     .forEach(routeConfiguration::setAnnotatedRoute);
         });
 
-        ui.doInit(request, 0);
-        ui.getRouter().initializeUI(ui, UITest.requestToLocation(request));
-
-        session.unlock();
+        ui.doInit(request, 0, "foo");
+        ui.getInternals().getRouter().initializeUI(ui,
+                UITest.requestToLocation(request));
 
         if (statusCodeCaptor != null) {
             Mockito.verify(response).setStatus(statusCodeCaptor.capture());

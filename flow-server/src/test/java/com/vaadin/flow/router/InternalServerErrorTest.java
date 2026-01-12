@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.router;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -24,8 +25,6 @@ import org.mockito.Mockito;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.server.VaadinService;
-
-import net.jcip.annotations.NotThreadSafe;
 
 @NotThreadSafe
 public class InternalServerErrorTest {

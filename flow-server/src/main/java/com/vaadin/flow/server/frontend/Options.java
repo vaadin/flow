@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -8,14 +23,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
 
@@ -76,6 +92,8 @@ public class Options implements Serializable {
 
     private boolean requireHomeNodeExec;
 
+    private String nodeFolder = null;
+
     private boolean copyTemplates = false;
 
     private File npmFolder;
@@ -87,6 +105,8 @@ public class Options implements Serializable {
     private List<String> frontendExtraFileExtensions = null;
 
     private FrontendDependenciesScanner frontendDependenciesScanner;
+
+    private boolean copyAssets = true;
 
     /**
      * The node.js version to be used when node.js is installed automatically by
@@ -101,9 +121,7 @@ public class Options implements Serializable {
      * mirror. Defaults to {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT}.
      */
     private URI nodeDownloadRoot = URI
-            .create(Platform.guess().getNodeDownloadRoot());
-
-    private boolean nodeAutoUpdate = false;
+            .create(NodeInstaller.getDownloadRoot(Platform.guess()));
 
     private Lookup lookup;
 
@@ -117,6 +135,11 @@ public class Options implements Serializable {
      * The resource folder for java resources.
      */
     private File javaResourceFolder;
+
+    /**
+     * META-INF/resources directory.
+     */
+    private File resourcesDirectory;
 
     /**
      * Additional npm packages to run postinstall for.
@@ -138,6 +161,8 @@ public class Options implements Serializable {
     private boolean cleanOldGeneratedFiles = false;
 
     private boolean frontendIgnoreVersionChecks = false;
+
+    private boolean commercialBannerEnabled = false;
 
     /**
      * Creates a new instance.
@@ -217,27 +242,6 @@ public class Options implements Serializable {
     }
 
     /**
-     * Sets the webpack related properties.
-     *
-     * @param webappResourcesDirectory
-     *            the directory to set for webpack to output its build results,
-     *            meant for serving from context root.
-     * @param resourceOutputDirectory
-     *            the directory to output generated non-served resources, such
-     *            as the "config/stats.json" stats file, and the
-     *            "config/flow-build-info.json" token file.
-     * @return this builder
-     * @deprecated to be removed, use
-     *             {@link #withBuildResultFolders(File, File)} instead.
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public Options withWebpack(File webappResourcesDirectory,
-            File resourceOutputDirectory) {
-        return withBuildResultFolders(webappResourcesDirectory,
-                resourceOutputDirectory);
-    }
-
-    /**
      * Sets whether to enable packages and frontend file updates. Default is
      * <code>true</code>.
      *
@@ -251,20 +255,8 @@ public class Options implements Serializable {
         return this;
     }
 
-    /**
-     * Sets whether to perform always perform clean up procedure. Default is
-     * <code>false</code>. When the value is false, npm related files will only
-     * be removed when a platform version update is detected.
-     *
-     * This method is only for tests.
-     *
-     * @param forceClean
-     *            <code>true</code> to clean npm files always, otherwise
-     *            <code>false</code>
-     * @return this builder
-     */
-    @Deprecated
-    public Options enableNpmFileCleaning(boolean forceClean) {
+    // Visible only for tests
+    Options enableNpmFileCleaning(boolean forceClean) {
         this.cleanNpmFiles = forceClean;
         return this;
     }
@@ -490,6 +482,10 @@ public class Options implements Serializable {
     /**
      * Setting this to {@code true} will force a build of the production build
      * even if there is a default production bundle that could be used.
+     *
+     * @param forceProductionBuild
+     *            true to force production build
+     * @return the builder, for chaining
      */
     public Options withForceProductionBuild(boolean forceProductionBuild) {
         this.forceProductionBuild = forceProductionBuild;
@@ -518,6 +514,22 @@ public class Options implements Serializable {
      */
     public Options withHomeNodeExecRequired(boolean requireHomeNodeExec) {
         this.requireHomeNodeExec = requireHomeNodeExec;
+        return this;
+    }
+
+    /**
+     * Sets the folder containing the Node.js executable.
+     * <p>
+     * When specified, Node.js will be exclusively used from this folder. If the
+     * binary is not found, an exception will be thrown with no fallback.
+     *
+     * @param nodeFolder
+     *            the folder path containing node executable, or null to use
+     *            default resolution
+     * @return the builder, for chaining
+     */
+    public Options withNodeFolder(String nodeFolder) {
+        this.nodeFolder = nodeFolder;
         return this;
     }
 
@@ -581,6 +593,7 @@ public class Options implements Serializable {
      *
      * @param frontendIgnoreVersionChecks
      *            {@code true} to ignore node/npm tool version checks
+     * @return the builder, for chaining
      */
     public Options withFrontendIgnoreVersionChecks(
             boolean frontendIgnoreVersionChecks) {
@@ -627,19 +640,6 @@ public class Options implements Serializable {
      */
     public boolean isBundleBuild() {
         return bundleBuild;
-    }
-
-    /**
-     * Sets whether it is fine to automatically update the alternate node
-     * installation if installed version is older than the current default.
-     *
-     * @param update
-     *            true to update alternate node when used
-     * @return the builder
-     */
-    public Options setNodeAutoUpdate(boolean update) {
-        this.nodeAutoUpdate = update;
-        return this;
     }
 
     /**
@@ -787,14 +787,6 @@ public class Options implements Serializable {
         return enableConfigUpdate;
     }
 
-    /**
-     * @deprecated use {@link #isEnableConfigUpdate()}
-     */
-    @Deprecated(since = "24.4", forRemoval = true)
-    public boolean isEnableWebpackConfigUpdate() {
-        return isEnableConfigUpdate();
-    }
-
     public boolean isRunNpmInstall() {
         return runNpmInstall;
     }
@@ -807,6 +799,12 @@ public class Options implements Serializable {
         return generateEmbeddableWebComponents;
     }
 
+    /**
+     * @deprecated used internally only for testing, to be removed without a
+     *             replacement.
+     * @return true if npm files should be cleaned, false otherwise
+     */
+    @Deprecated(since = "25.0", forRemoval = true)
     public boolean isCleanNpmFiles() {
         return cleanNpmFiles;
     }
@@ -851,6 +849,10 @@ public class Options implements Serializable {
         return requireHomeNodeExec;
     }
 
+    public String getNodeFolder() {
+        return nodeFolder;
+    }
+
     public boolean isCopyTemplates() {
         return copyTemplates;
     }
@@ -861,10 +863,6 @@ public class Options implements Serializable {
 
     public URI getNodeDownloadRoot() {
         return nodeDownloadRoot;
-    }
-
-    public boolean isNodeAutoUpdate() {
-        return nodeAutoUpdate;
     }
 
     /**
@@ -964,7 +962,7 @@ public class Options implements Serializable {
      * Sets whether generated files from a previous execution that are no more
      * created should be removed.
      * <p>
-     * </p>
+     *
      * By default, the odl generated files are preserved.
      *
      * @param clean
@@ -1055,6 +1053,30 @@ public class Options implements Serializable {
     }
 
     /**
+     * Checks if the commercial banner is enabled for the build.
+     *
+     * @return {@code true} if the commercial banner is enabled, {@code false}
+     *         otherwise
+     */
+    public boolean isCommercialBannerEnabled() {
+        return commercialBannerEnabled;
+    }
+
+    /**
+     * Sets whether the build could generate an application with a commercial
+     * banner.
+     *
+     * @param enableCommercialBanner
+     *            a boolean value indicating whether the built application could
+     *            add a commercial banner.
+     * @return this builder
+     */
+    public Options withCommercialBanner(boolean enableCommercialBanner) {
+        this.commercialBannerEnabled = enableCommercialBanner;
+        return this;
+    }
+
+    /**
      * Gets the frontend dependencies scanner to use. If not is not pre-set,
      * this initializes a new one based on the Options set.
      *
@@ -1070,5 +1092,52 @@ public class Options implements Serializable {
                             getFeatureFlags(), reactEnabled);
         }
         return frontendDependenciesScanner;
+    }
+
+    /**
+     * Sets whether to copy npm assets or not. True by default.
+     *
+     * @param copyAssets
+     *            boolean value indicating if npm assets should be copied.
+     * @return this builder
+     */
+    public Options setCopyAssets(boolean copyAssets) {
+        this.copyAssets = copyAssets;
+        return this;
+    }
+
+    /**
+     * Get if npm assets should be copied for this Options execution.
+     * <p>
+     * NOTE! For a devBundleBuild copy assets will always be true!
+     *
+     * @return {@code false} to skip copying except for devBundleBuild.
+     */
+    public boolean copyAssets() {
+        if (isDevBundleBuild()) {
+            return true;
+        }
+        return copyAssets;
+    }
+
+    /**
+     * Set where the META-INF/resources files are copied by the build.
+     *
+     * @param resourcesDirectory
+     *            META-INF resources directory
+     * @return this builder
+     */
+    public Options withMetaInfResourcesDirectory(File resourcesDirectory) {
+        this.resourcesDirectory = resourcesDirectory;
+        return this;
+    }
+
+    /**
+     * Get the resources directory if defined.
+     *
+     * @return META-INF resources directory
+     */
+    public File getMetaInfResourcesDirectory() {
+        return resourcesDirectory;
     }
 }

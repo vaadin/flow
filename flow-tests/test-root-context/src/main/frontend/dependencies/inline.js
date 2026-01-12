@@ -16,4 +16,4 @@
 
 // document.body might not yet be accessible, so just leave a message
 window.messages = window.messages || [];
-window.messages.push("inline.js");
+window.messages.push('inline.js');

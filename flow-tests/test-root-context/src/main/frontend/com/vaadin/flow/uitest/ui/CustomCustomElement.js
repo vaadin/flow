@@ -1,11 +1,13 @@
 // A custom element that isn't using Polymer
 class CustomCustomElement extends HTMLElement {
-  static get is() { return 'custom-custom-element' }
+  static get is() {
+    return 'custom-custom-element';
+  }
 
   constructor() {
     super();
-    this.attachShadow({mode: "open"});
-    this.property = "constructor";
+    this.attachShadow({ mode: 'open' });
+    this.property = 'constructor';
   }
 
   set property(value) {

@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import jakarta.servlet.http.HttpSession;
@@ -84,11 +83,6 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     final List<SessionDestroyListener> destroyListeners = new CopyOnWriteArrayList<>();
 
     /**
-     * Configuration for the session.
-     */
-    private DeploymentConfiguration configuration;
-
-    /**
      * Default locale of the session.
      */
     private Locale locale = Locale.getDefault();
@@ -151,6 +145,10 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     public VaadinSession(VaadinService service) {
         this.service = service;
         resourceRegistry = createStreamResourceRegistry();
+    }
+
+    final protected void applyLockStrategy(SessionLockCheckStrategy strategy) {
+        this.sessionLockCheckStrategy = Objects.requireNonNull(strategy);
     }
 
     /**
@@ -246,6 +244,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the total time spent servicing requests in this session.
+     *
      * @return The total time spent servicing requests in this session, in
      *         milliseconds.
      */
@@ -268,6 +268,8 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     }
 
     /**
+     * Gets the time spent servicing the last request in this session.
+     *
      * @return The time spent servicing the last request in this session, in
      *         milliseconds.
      */
@@ -349,33 +351,15 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
         lock = service.getSessionLock(session);
     }
 
-    public void setConfiguration(DeploymentConfiguration configuration) {
-        checkHasLock();
-        if (configuration == null) {
-            throw new IllegalArgumentException("Can not set to null");
-        }
-        checkSetConfiguration();
-        this.configuration = configuration;
-
-        sessionLockCheckStrategy = configuration.isProductionMode()
-                ? configuration.getSessionLockCheckStrategy()
-                : SessionLockCheckStrategy.THROW;
-        assert sessionLockCheckStrategy != null;
-    }
-
-    protected void checkSetConfiguration() {
-        assert this.configuration == null
-                : "Configuration can only be set once";
-    }
-
     /**
-     * Gets the configuration for this session.
+     * Gets the configuration for this session. Delegates the call to
+     * {@link VaadinService#getDeploymentConfiguration()}.
      *
      * @return the deployment configuration
      */
     public DeploymentConfiguration getConfiguration() {
         checkHasLock();
-        return configuration;
+        return service.getDeploymentConfiguration();
     }
 
     /**
@@ -704,7 +688,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *     }
      * });
      * </pre>
-     *
+     * <p>
      * If you for whatever reason want to do locking manually, you should do it
      * like:
      *
@@ -716,7 +700,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
      *     session.unlock();
      * }
      * </pre>
-     *
+     * <p>
      * This method will block until the lock can be retrieved.
      * <p>
      * {@link #getLockInstance()} can be used if more control over the locking
@@ -1197,7 +1181,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the timestamp of the most recent lock operation performed on this
      * session.
-     *
+     * <p>
      * Value is expressed as the difference, measured in milliseconds, between
      * the current time and midnight, January 1, 1970 UTC.
      *
@@ -1210,7 +1194,7 @@ public class VaadinSession implements HttpSessionBindingListener, Serializable {
     /**
      * Gets the timestamp of the most recent unlock operation performed on this
      * session.
-     *
+     * <p>
      * Value is expressed as the difference, measured in milliseconds, between
      * the current time and midnight, January 1, 1970 UTC.
      *

@@ -109,7 +109,6 @@ public class ComponentEventBusUtil {
     /**
      * Gets the constructor to use for firing a component event, of the given
      * type, based on a DOM event.
-     * <p>
      *
      * @param <T>
      *            the event type

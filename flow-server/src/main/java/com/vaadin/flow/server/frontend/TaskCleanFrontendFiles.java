@@ -26,10 +26,8 @@ import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
-import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
 /**
  * Clean any frontend files generated for creation on a new development or
@@ -74,7 +72,7 @@ public class TaskCleanFrontendFiles implements FallibleCommand {
 
         // If we have an existing package.json or run Hilla, do not remove
         // node_modules
-        boolean hillaUsed = FrontendUtils.isHillaUsed(
+        boolean hillaUsed = FrontendBuildUtils.isHillaUsed(
                 options.getFrontendDirectory(), options.getClassFinder());
 
         if (existingFiles.contains(

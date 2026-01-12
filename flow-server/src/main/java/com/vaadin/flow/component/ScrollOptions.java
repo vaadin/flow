@@ -1,9 +1,24 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
 import java.util.Locale;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.internal.JacksonUtils;
 
@@ -11,7 +26,14 @@ import com.vaadin.flow.internal.JacksonUtils;
  * Options for scrollIntoView.
  * <p>
  * See https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView
+ *
+ * @deprecated Use
+ *             {@link com.vaadin.flow.dom.Element#scrollIntoView(ScrollIntoViewOption...)}
+ *             with {@link ScrollIntoViewOption.Behavior},
+ *             {@link ScrollIntoViewOption.Block}, and
+ *             {@link ScrollIntoViewOption.Inline} options instead
  **/
+@Deprecated(since = "25.0", forRemoval = true)
 public class ScrollOptions implements Serializable {
     /**
      * Scroll behavior for scrollIntoView.

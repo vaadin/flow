@@ -15,9 +15,6 @@
  */
 package com.vaadin.flow.tests.data.bean;
 
-import java.io.Serializable;
-import java.util.Calendar;
-
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Digits;
 import jakarta.validation.constraints.Max;
@@ -26,6 +23,9 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+
+import java.io.Serializable;
+import java.util.Calendar;
 
 public class BeanToValidate implements Serializable {
 

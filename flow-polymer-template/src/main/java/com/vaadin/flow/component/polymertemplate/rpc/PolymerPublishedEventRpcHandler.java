@@ -11,6 +11,9 @@ package com.vaadin.flow.component.polymertemplate.rpc;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.polymertemplate.PolymerTemplate;
@@ -18,9 +21,6 @@ import com.vaadin.flow.component.template.internal.DeprecatedPolymerPublishedEve
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.templatemodel.ModelType;
-
-import elemental.json.JsonObject;
-import elemental.json.JsonValue;
 
 /**
  * Polymer utilitiy class for handling polymer rpc events for @EventHandler.
@@ -30,7 +30,6 @@ import elemental.json.JsonValue;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 // This is OSGi specific annotation for the class which may be used without
 // OSGi. But RetentionPolicy.CLASS used for the annotation makes it safe to use
@@ -52,13 +51,13 @@ public class PolymerPublishedEventRpcHandler
      * @return true if valid template model value
      */
     @Override
-    public boolean isTemplateModelValue(Component instance, JsonValue argValue,
+    public boolean isTemplateModelValue(Component instance, JsonNode argValue,
             Class<?> convertedType) {
         return instance instanceof PolymerTemplate
-                && argValue instanceof JsonObject
-                && ((PolymerTemplate<?>) instance)
-                        .isSupportedClass(convertedType)
-                && ((JsonObject) argValue).hasKey("nodeId");
+                && argValue instanceof ObjectNode
+                && ((PolymerTemplate<?>) instance).isSupportedClass(
+                        convertedType)
+                && argValue.has("nodeId");
     }
 
     /**
@@ -75,12 +74,12 @@ public class PolymerPublishedEventRpcHandler
      *             if the component is not attached to the UI
      */
     @Override
-    public Object getTemplateItem(Component template, JsonObject argValue,
+    public Object getTemplateItem(Component template, JsonNode argValue,
             Type convertedType) {
         final Optional<UI> ui = template.getUI();
         if (ui.isPresent()) {
             StateNode node = ui.get().getInternals().getStateTree()
-                    .getNodeById((int) argValue.getNumber("nodeId"));
+                    .getNodeById(argValue.get("nodeId").intValue());
 
             ModelType propertyType = ((PolymerTemplate<?>) template)
                     .getModelType(convertedType);

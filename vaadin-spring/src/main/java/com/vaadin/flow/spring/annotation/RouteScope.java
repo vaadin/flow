@@ -48,7 +48,6 @@ import com.vaadin.flow.spring.scopes.VaadinRouteScope;
  * (but the "initial" calculated owner is still in the navigation chain).
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Scope(VaadinRouteScope.VAADIN_ROUTE_SCOPE_NAME)

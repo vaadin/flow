@@ -38,6 +38,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.internal.AnnotationReader;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.DefaultRoutePathProvider;
 import com.vaadin.flow.router.HasDynamicTitle;
@@ -58,7 +59,6 @@ import com.vaadin.flow.server.RouteRegistry;
 import com.vaadin.flow.server.SessionRouteRegistry;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**
@@ -296,6 +296,8 @@ public class RouteUtil {
      * {@link Route} or {@link RouteAlias} annotation. Also handles non route
      * targets with {@link ParentLayout}.
      *
+     * @param context
+     *            a Vaadin context
      * @param component
      *            navigation target to get top most parent for
      * @param path
@@ -374,7 +376,7 @@ public class RouteUtil {
      * Updates route registry as necessary when classes have been added /
      * modified / deleted.
      * <p>
-     * </p>
+     *
      * Registry Update rules:
      * <ul>
      * <li>a route is preserved if the class does not have a {@link Route}
@@ -656,8 +658,12 @@ public class RouteUtil {
         if (!collisions.isEmpty()) {
             String msg = String.format(
                     "Invalid route configuration. The following Hilla "
-                            + "route(s) conflict with configured Flow routes: %s",
-                    String.join(", ", collisions));
+                            + "route(s) conflict with configured Flow routes: '%s'. "
+                            + "Please double-check the Hilla and Flow routes path and resolve the conflicts. "
+                            + "If the error persists try to delete the %s folder.",
+                    String.join("', '", collisions),
+                    FrontendUtils.getFrontendGeneratedFolder(service
+                            .getDeploymentConfiguration().getFrontendFolder()));
             throw new InvalidRouteConfigurationException(msg);
         }
     }

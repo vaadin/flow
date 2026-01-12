@@ -82,7 +82,7 @@ public class FeatureFlagsTest {
     @Test
     public void propertiesLoaded() throws IOException {
         Assert.assertFalse("Feature should be initially disabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
 
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
@@ -92,7 +92,7 @@ public class FeatureFlagsTest {
         featureFlags.loadProperties();
 
         Assert.assertTrue("Feature should have been enabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
     }
 
     @Test
@@ -101,10 +101,10 @@ public class FeatureFlagsTest {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         Assert.assertFalse("Feature should be initially disabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
         featureFlags.setPropertiesLocation(propertiesDir);
         Assert.assertTrue("Feature should have been enabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class FeatureFlagsTest {
 
         // then the feature should be disabled
         Assert.assertFalse("Feature should have been disabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
     }
 
     @Test
@@ -132,19 +132,19 @@ public class FeatureFlagsTest {
         featureFlags.loadProperties();
         Assert.assertFalse(
                 "Feature should be disabled after reading the properties",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
-        featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
+        featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true);
         Assert.assertTrue("Feature should have been enabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
         Assert.assertEquals(String.format(
                 "# %s\ncom.vaadin.experimental.exampleFeatureFlag=true\n",
-                FeatureFlags.EXAMPLE.getTitle()),
+                TestFeatureFlagProvider.EXAMPLE.getTitle()),
                 FileUtils.readFileToString(featureFlagsFile,
                         StandardCharsets.UTF_8));
 
-        featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
+        featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), false);
         Assert.assertFalse("Feature should have been disabled",
-                featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
         Assert.assertEquals(
                 "Feature flags file should be empty when no features are enabled",
                 "", FileUtils.readFileToString(featureFlagsFile,
@@ -160,7 +160,7 @@ public class FeatureFlagsTest {
         ApplicationConfiguration conf = ApplicationConfiguration
                 .get(VaadinService.getCurrent().getContext());
         Mockito.when(conf.isProductionMode()).thenReturn(true);
-        featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+        featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true);
     }
 
     @Test
@@ -189,7 +189,7 @@ public class FeatureFlagsTest {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=true\n");
         UsageStatistics.resetEntries();
-        featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), false);
+        featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), false);
         Assert.assertFalse(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
@@ -200,7 +200,7 @@ public class FeatureFlagsTest {
         createFeatureFlagsFile(
                 "com.vaadin.experimental.exampleFeatureFlag=false\n");
         UsageStatistics.resetEntries();
-        featureFlags.setEnabled(FeatureFlags.EXAMPLE.getId(), true);
+        featureFlags.setEnabled(TestFeatureFlagProvider.EXAMPLE.getId(), true);
         Assert.assertTrue(
                 hasUsageStatsEntry("flow/featureflags/exampleFeatureFlag"));
     }
@@ -209,7 +209,8 @@ public class FeatureFlagsTest {
     public void featureFlagShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -218,7 +219,8 @@ public class FeatureFlagsTest {
                     .format("com.vaadin.experimental.%s=false\n", feature);
             createFeatureFlagsFile(fileContents);
             featureFlags.loadProperties();
-            Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+            Assert.assertTrue(
+                    featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
             Assert.assertEquals(
                     "Feature flags file should not be overwritten by system property value",
                     fileContents, FileUtils.readFileToString(featureFlagsFile,
@@ -236,7 +238,8 @@ public class FeatureFlagsTest {
     public void featureFlagLoadedByResourceProviderShouldBeOverridableWithSystemProperty()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         File flagsFile = new File(propertiesDir,
@@ -258,7 +261,8 @@ public class FeatureFlagsTest {
 
             System.setProperty(propertyName, "true");
             featureFlags.loadProperties();
-            Assert.assertTrue(featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+            Assert.assertTrue(
+                    featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
             Assert.assertFalse(
                     "Setting feature flag by system properties should not create feature flag file",
                     featureFlagsFile.exists());
@@ -275,7 +279,8 @@ public class FeatureFlagsTest {
     public void noFeatureFlagFile_systemPropertyProvided_featureEnabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -283,7 +288,7 @@ public class FeatureFlagsTest {
             featureFlags.loadProperties();
             Assert.assertTrue(
                     "Feature set with system property should be enabled",
-                    featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                    featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
             Assert.assertFalse(
                     "Setting feature flag by system properties should not create feature flag file",
                     featureFlagsFile.exists());
@@ -300,7 +305,8 @@ public class FeatureFlagsTest {
     public void noFeatureFlagFile_noSystemPropertyProvided_allFeatureDisabled()
             throws IOException {
         var feature = "exampleFeatureFlag";
-        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX + feature;
+        var propertyName = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
+                + feature;
         var previousValue = System.getProperty(propertyName);
 
         try {
@@ -310,7 +316,7 @@ public class FeatureFlagsTest {
             featureFlags.loadProperties();
             Assert.assertFalse(
                     "Feature not set with system property should be disabled by default",
-                    featureFlags.isEnabled(FeatureFlags.EXAMPLE));
+                    featureFlags.isEnabled(TestFeatureFlagProvider.EXAMPLE));
         } finally {
             if (previousValue != null) {
                 System.setProperty(propertyName, previousValue);
@@ -455,12 +461,8 @@ public class FeatureFlagsTest {
     @Test
     public void systemPropertiesCheckedForUnsupportedFeatureFlags() {
         Logger mockedLogger = Mockito.mock(Logger.class);
-        String examplePropertyDeprecatedFormat = FeatureFlags.SYSTEM_PROPERTY_PREFIX
-                + "exampleFeatureFlag";
         String exampleProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "exampleFeatureFlag";
-        String unsupportedDeprecatedFormatProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX
-                + "unsupportedFeature";
         String unsupportedProperty = FeatureFlags.SYSTEM_PROPERTY_PREFIX_EXPERIMENTAL
                 + "unsupportedFeature";
         var previousValue = System.getProperty(exampleProperty);
@@ -471,9 +473,7 @@ public class FeatureFlagsTest {
                     .when(() -> LoggerFactory.getLogger(FeatureFlags.class))
                     .thenReturn(mockedLogger);
 
-            System.setProperty(examplePropertyDeprecatedFormat, "true");
             System.setProperty(exampleProperty, "true");
-            System.setProperty(unsupportedDeprecatedFormatProperty, "true");
             System.setProperty(unsupportedProperty, "true");
             // resetting feature flags to manually retry check (because it was
             // run in @Before block)
@@ -484,13 +484,6 @@ public class FeatureFlagsTest {
             // prefix
             Mockito.verify(mockedLogger, Mockito.never()).warn(
                     "Unsupported feature flag is present: {}", exampleProperty);
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
-                    "Unsupported feature flag is present: {}",
-                    examplePropertyDeprecatedFormat);
-            // We do not want warning message for vaadin.unsupportedFeature
-            Mockito.verify(mockedLogger, Mockito.never()).warn(
-                    "Unsupported feature flag is present: {}",
-                    unsupportedDeprecatedFormatProperty);
             // We do want warning message for
             // vaadin.experimental.unsupportedFeature
             Mockito.verify(mockedLogger, Mockito.times(1)).warn(
@@ -499,11 +492,9 @@ public class FeatureFlagsTest {
         } finally {
             if (previousValue == null) {
                 System.clearProperty(exampleProperty);
-                System.clearProperty(examplePropertyDeprecatedFormat);
             } else {
                 System.setProperty(exampleProperty, previousValue);
             }
-            System.clearProperty(unsupportedDeprecatedFormatProperty);
             System.clearProperty(unsupportedProperty);
         }
     }

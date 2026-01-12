@@ -160,8 +160,8 @@ public class JsonConstants implements Serializable {
     public static final String RPC_EVENT_DATA = "data";
 
     /**
-     * Key used for data related to
-     * {@link Page#executeJs(String, Serializable...)} in UIDL messages.
+     * Key used for data related to {@link Page#executeJs(String, Object...)} in
+     * UIDL messages.
      */
     public static final String UIDL_KEY_EXECUTE = "execute";
 

@@ -21,11 +21,11 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import org.junit.Assert;
 import org.junit.Test;
 
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
+import com.vaadin.flow.data.binder.testcomponents.TestLabel;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.shared.Registration;
 

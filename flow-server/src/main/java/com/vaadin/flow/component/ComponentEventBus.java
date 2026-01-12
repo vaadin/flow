@@ -28,7 +28,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Consumer;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.DisabledUpdateMode;
@@ -38,12 +38,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.JacksonUtils;
-import com.vaadin.flow.internal.JsonCodec;
 import com.vaadin.flow.shared.Registration;
-
-import elemental.json.Json;
-import elemental.json.JsonNull;
-import elemental.json.JsonValue;
 
 /**
  * An event bus for {@link Component}s.
@@ -64,6 +59,9 @@ public class ComponentEventBus implements Serializable {
     /**
      * Pairs a component-level listener for its DOM listener registration, if
      * the event-type is annotated with {@link DomEvent}.
+     *
+     * @param <T>
+     *            the component event type
      */
     private static class ListenerWrapper<T extends ComponentEvent<?>>
             implements Serializable {
@@ -366,20 +364,12 @@ public class ComponentEventBus implements Serializable {
                     || type == Element.class) {
                 eventDataObjects.add(parseStateNodeIdToComponentReference(
                         domEvent, type, expression));
-            } else if (JsonNode.class.isAssignableFrom(type)) {
-                // TODO: Decode and remove if when domEvent uses jackson.
-                JsonValue eventValue = domEvent.getEventData().get(expression);
-                if (eventValue == null || eventValue instanceof JsonNull) {
-                    eventDataObjects.add(null);
-                } else {
-                    eventDataObjects.add(JacksonUtils.mapElemental(eventValue));
-                }
             } else {
-                JsonValue jsonValue = domEvent.getEventData().get(expression);
+                JsonNode jsonValue = domEvent.getEventData().get(expression);
                 if (jsonValue == null) {
-                    jsonValue = Json.createNull();
+                    jsonValue = JacksonUtils.nullNode();
                 }
-                Object value = JsonCodec.decodeAs(jsonValue, type);
+                Object value = JacksonCodec.decodeAs(jsonValue, type);
                 eventDataObjects.add(value);
             }
         });

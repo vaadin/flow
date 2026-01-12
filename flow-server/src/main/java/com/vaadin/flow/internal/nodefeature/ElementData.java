@@ -13,15 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
 
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.internal.StateNode;
+import tools.jackson.databind.node.BaseJsonNode;
 
-import elemental.json.JsonValue;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.signals.Signal;
 
 /**
  * Map of basic element information.
@@ -44,6 +45,16 @@ public class ElementData extends NodeMap {
         super(node);
     }
 
+    @Override
+    protected Serializable get(String key) {
+        Serializable value = super.get(key);
+        if (value instanceof SignalBinding) {
+            return ((SignalBinding) value).value();
+        } else {
+            return value;
+        }
+    }
+
     /**
      * Sets the tag name of the element.
      *
@@ -64,12 +75,31 @@ public class ElementData extends NodeMap {
     }
 
     /**
+     * Sets the namespace of the element.
+     *
+     * @param namespace
+     *            the namespace to set
+     */
+    public void setNamespace(String namespace) {
+        put(NodeProperties.NAMESPACE, namespace);
+    }
+
+    /**
+     * Gets the namespace of the element.
+     *
+     * @return namespace
+     */
+    public String getNamespace() {
+        return getOrDefault(NodeProperties.NAMESPACE, null);
+    }
+
+    /**
      * Sets the payload data of the element.
      *
      * @param payload
      *            the payload data
      */
-    public void setPayload(JsonValue payload) {
+    public void setPayload(BaseJsonNode payload) {
         put(NodeProperties.PAYLOAD, payload);
     }
 
@@ -89,7 +119,11 @@ public class ElementData extends NodeMap {
      * @return Element is visible by default
      */
     public boolean isVisible() {
-        return !Boolean.FALSE.equals(get(NodeProperties.VISIBLE));
+        var value = get(NodeProperties.VISIBLE);
+        return !Boolean.FALSE
+                .equals(value instanceof SignalBinding signalBinding
+                        ? signalBinding.value()
+                        : value);
     }
 
     /**
@@ -97,9 +131,9 @@ public class ElementData extends NodeMap {
      *
      * @return the payload data of the element
      */
-    public JsonValue getPayload() {
+    public BaseJsonNode getPayload() {
         Serializable value = get(NodeProperties.PAYLOAD);
-        return value == null ? null : (JsonValue) value;
+        return value == null ? null : (BaseJsonNode) value;
     }
 
     @Override
@@ -113,5 +147,34 @@ public class ElementData extends NodeMap {
 
     public String getJavaClass() {
         return getOrDefault(NodeProperties.JAVA_CLASS, (String) null);
+    }
+
+    /**
+     * Binds the given signal to the <code>visible</code> property.
+     * <code>null</code> signal unbinds existing binding.
+     *
+     * @param owner
+     *            the element owning the property, not <code>null</code>
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             <code>visible</code> property
+     */
+    public void bindVisibleSignal(Element owner, Signal<Boolean> signal) {
+        bindSignal(owner, NodeProperties.VISIBLE, signal,
+                (element, value) -> putVisibleSignalValue(value));
+    }
+
+    private void putVisibleSignalValue(Boolean value) {
+        boolean booleanValue = (value != null) ? value : Boolean.FALSE;
+        if (hasSignal(NodeProperties.VISIBLE)) {
+            SignalBinding b = (SignalBinding) super.get(NodeProperties.VISIBLE);
+            put(NodeProperties.VISIBLE, new SignalBinding(b.signal(),
+                    b.registration(), booleanValue));
+        } else {
+            put(NodeProperties.VISIBLE, booleanValue);
+        }
     }
 }

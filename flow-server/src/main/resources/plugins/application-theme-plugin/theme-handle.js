@@ -21,6 +21,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { resolve } from 'path';
 import { writeThemeFiles } from './theme-generator.js';
+import { writeCssFiles } from './css-theme-generator.js';
 import { copyStaticAssets, copyThemeResources } from './theme-copy.js';
 
 // matches theme name in './theme-my-theme.generated.js'
@@ -69,6 +70,7 @@ function processThemeResources(options, logger) {
 
     findThemeFolderAndHandleTheme(themeName, options, logger);
   } else {
+    writeCssFiles(options);
     // This is needed in the situation that the user decides to comment or
     // remove the @Theme(...) completely to see how the application looks
     // without any theme. Then when the user brings back one of the themes,
@@ -151,7 +153,7 @@ function handleThemes(themeName, themesFolder, options, logger) {
   if (existsSync(themeFolder)) {
     logger.debug('Found theme ', themeName, ' in folder ', themeFolder);
 
-    const themeProperties = getThemeProperties(themeFolder);
+    const themeProperties = getThemeProperties(themeFolder, options);
 
     // If theme has parent handle parent theme immediately.
     if (themeProperties.parent) {
@@ -174,16 +176,36 @@ function handleThemes(themeName, themesFolder, options, logger) {
   return false;
 }
 
-function getThemeProperties(themeFolder) {
+function getThemeProperties(themeFolder, options) {
   const themePropertyFile = resolve(themeFolder, 'theme.json');
+  let outputFolder;
+  if (options.javaResourceFolder) {
+    // Use the explicit javaResourceFolder if provided
+    outputFolder = options.javaResourceFolder;
+  } else {
+    // Fallback to the old logic for backwards compatibility
+    let lastIndexOf = options.projectStaticOutput.lastIndexOf('classes');
+    outputFolder = options.projectStaticOutput.substring(0, lastIndexOf + 'classes'.length);
+  }
+  let featureFlags = resolve(outputFolder, 'vaadin-featureflags.properties');
+
+  let componentFeature = existsSync(featureFlags)
+    ? /themeComponentStyles(\s+)?=(\s+)?true/.test(readFileSync(featureFlags, { encoding: 'utf8' }))
+    : false;
   if (!existsSync(themePropertyFile)) {
-    return {};
+    return {
+      autoInjectComponents: componentFeature
+    };
   }
   const themePropertyFileAsString = readFileSync(themePropertyFile);
   if (themePropertyFileAsString.length === 0) {
-    return {};
+    return {
+      autoInjectComponents: componentFeature
+    };
   }
-  return JSON.parse(themePropertyFileAsString);
+  let themeJson = JSON.parse(themePropertyFileAsString);
+  themeJson.autoInjectComponents = componentFeature;
+  return themeJson;
 }
 
 /**
@@ -205,7 +227,11 @@ function extractThemeName(frontendGeneratedFolder) {
   if (existsSync(generatedThemeFile)) {
     // read theme name from the 'generated/theme.js' as there we always
     // mark the used theme for webpack to handle.
-    const themeName = nameRegex.exec(readFileSync(generatedThemeFile, { encoding: 'utf8' }))[1];
+    let themeFile = readFileSync(generatedThemeFile, { encoding: 'utf8' });
+    if (!nameRegex.test(themeFile)) {
+      return '';
+    }
+    const themeName = nameRegex.exec(themeFile)[1];
     if (!themeName) {
       throw new Error("Couldn't parse theme name from '" + generatedThemeFile + "'.");
     }

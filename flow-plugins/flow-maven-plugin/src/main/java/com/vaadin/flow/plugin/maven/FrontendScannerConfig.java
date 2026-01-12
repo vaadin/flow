@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.maven;
 
 import java.util.ArrayList;
@@ -30,7 +29,7 @@ import org.slf4j.LoggerFactory;
  * plugin. This class allows enabling or disabling the scanner and defining
  * inclusion and exclusion rules.
  * <p>
- * </p>
+ *
  * Exclusions have higher priority and are checked first. If an artifact matches
  * an exclusion rule, it is not scanned. If no exclusion rule applies, inclusion
  * rules are evaluated. If the artifact doesn't even match the inclusion rule,
@@ -43,6 +42,8 @@ public class FrontendScannerConfig {
             .getLogger(FrontendScannerConfig.class);
 
     static final Predicate<Artifact> DEFAULT_FILTER = withDefaults()::shouldScan;
+
+    static final Predicate<Artifact> DEV_EXCLUSION_FILTER = devExclusions()::shouldScan;
 
     private final boolean silent;
 
@@ -90,7 +91,7 @@ public class FrontendScannerConfig {
     /**
      * Sets if the output directory should be included in the scan.
      * <p>
-     * </p>
+     *
      * Can be turned on to make scanning faster if the maven module itself does
      * not have classes referencing frontend resources or Vaadin components or
      * add-ons.
@@ -160,7 +161,7 @@ public class FrontendScannerConfig {
      * Determines whether the given artifact should be analyzed by the frontend
      * scanner.
      * <p>
-     * </p>
+     *
      * Exclusions have higher priority and are checked first. If an artifact
      * matches an exclusion rule, it is not scanned. If no exclusion rule
      * applies, inclusion rules are evaluated.
@@ -205,6 +206,18 @@ public class FrontendScannerConfig {
         FrontendScannerConfig out = new FrontendScannerConfig(true);
         out.addInclude(
                 new FrontendScannerConfig.ArtifactMatcher("com.vaadin", "*"));
+        setupDefaultExclusions(out);
+        return out;
+    }
+
+    private static FrontendScannerConfig devExclusions() {
+        FrontendScannerConfig out = new FrontendScannerConfig(true);
+        out.addInclude(new FrontendScannerConfig.ArtifactMatcher("*", "*"));
+        setupDefaultExclusions(out);
+        return out;
+    }
+
+    private static void setupDefaultExclusions(FrontendScannerConfig out) {
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
                 "com.vaadin.external.gw", "*"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
@@ -213,7 +226,22 @@ public class FrontendScannerConfig {
                 "open"));
         out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
                 "license-checker"));
-        return out;
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "flow-archive-extractor"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "ui-tests"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external", "gentyref"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher(
+                "com.vaadin.external.atmosphere", "atmosphere-runtime"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev-server"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "vaadin-dev-bundle"));
+        out.addExclude(new FrontendScannerConfig.ArtifactMatcher("com.vaadin",
+                "copilot"));
     }
 
     @Override
@@ -226,7 +254,7 @@ public class FrontendScannerConfig {
     /**
      * Represents a pattern-based matcher for Maven artifacts.
      * <p>
-     * </p>
+     *
      * Patterns can use the wildcard {@code *}, but only at the beginning or end
      * of the rule. Examples of valid patterns:
      * <ul>
@@ -278,7 +306,7 @@ public class FrontendScannerConfig {
         /**
          * Sets the pattern for matching the artifact's group ID.
          * <p>
-         * </p>
+         *
          * The argument must be a valid pattern as describe in the class
          * Javadoc. {@literal null} is and allowed and value, and it acts like
          * setting {@code *}, meaning every group ID is allowed.
@@ -305,7 +333,7 @@ public class FrontendScannerConfig {
         /**
          * Sets the pattern for matching the artifact's artifact ID.
          * <p>
-         * </p>
+         *
          * The argument must be a valid pattern as describe in the class
          * Javadoc. {@literal null} is and allowed and value, and it acts like
          * setting {@code *}, meaning every artifact ID is allowed.

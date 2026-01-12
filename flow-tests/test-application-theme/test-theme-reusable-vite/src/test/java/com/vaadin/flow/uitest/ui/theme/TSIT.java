@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2000-2025 Vaadin Ltd.
  *
@@ -16,11 +15,11 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
-import com.vaadin.flow.component.html.testbench.DivElement;
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.component.html.testbench.DivElement;
+import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class TSIT extends ChromeBrowserTest {
 

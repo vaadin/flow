@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.internal;
 
-import java.io.Closeable;
 import java.util.Optional;
 import java.util.Set;
 
@@ -32,7 +31,6 @@ import com.vaadin.flow.server.startup.VaadinInitializerException;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface DevModeHandlerManager {

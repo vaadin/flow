@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.router;
 
 import java.lang.annotation.Documented;
@@ -29,7 +28,6 @@ import java.lang.annotation.Target;
  * <p>
  * Eligibility is checked by the value as path match.
  * <p>
- * </p>
  * Opting out from automatic layouting for a {@link Route} or {@link RouteAlias}
  * can be done with the {@link Route#autoLayout()} or
  * {@link RouteAlias#autoLayout()} method.

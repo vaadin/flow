@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.IOException;
@@ -41,7 +40,6 @@ public interface RequestHandler extends Serializable {
      * {@link SynchronizedRequestHandler} or by using
      * {@link VaadinSession#accessSynchronously(Command)} or
      * {@link UI#accessSynchronously(Command)}.
-     * </p>
      *
      * @param session
      *            The session for the request

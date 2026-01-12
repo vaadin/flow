@@ -15,8 +15,8 @@
  */
 package com.vaadin.base.devserver.stats;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Wraps a JSON data structure and provides a slightly easier API for it.
@@ -134,7 +134,7 @@ public class StatisticsContainer {
      * @return the value of the field as a string
      */
     public String getValue(String name) {
-        return json.get(name).asText();
+        return json.get(name).asString();
     }
 
     /**

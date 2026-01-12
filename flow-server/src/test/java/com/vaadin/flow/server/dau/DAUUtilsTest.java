@@ -1,3 +1,18 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.dau;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,7 +27,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
 
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.SystemMessagesInfo;
@@ -27,10 +45,6 @@ import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.pro.licensechecker.dau.DauIntegration;
 import com.vaadin.pro.licensechecker.dau.EnforcementException;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
-
-import elemental.json.Json;
-import elemental.json.JsonObject;
-import elemental.json.JsonType;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -136,8 +150,8 @@ public class DAUUtilsTest {
 
             // remove JSON wrap
             response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-            JsonObject json = Json.parse(response).getObject("meta")
-                    .getObject("appError");
+            JsonNode json = JacksonUtils.readTree(response).get("meta")
+                    .get("appError");
 
             EnforcementNotificationMessages expectedMessages = EnforcementNotificationMessages.DEFAULT;
             assertJsonErrorProperty("caption", expectedMessages.caption(),
@@ -172,8 +186,8 @@ public class DAUUtilsTest {
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
             response = response.replace("for(;;);[", "").replaceFirst("]$", "");
-            JsonObject json = Json.parse(response).getObject("meta")
-                    .getObject("appError");
+            JsonNode json = JacksonUtils.readTree(response).get("meta")
+                    .get("appError");
 
             assertJsonErrorProperty("caption", expectedMessages.caption(),
                     json);
@@ -239,13 +253,13 @@ public class DAUUtilsTest {
     }
 
     private void assertJsonErrorProperty(String expectedKey,
-            String expectedValue, JsonObject json) {
+            String expectedValue, JsonNode json) {
         if (expectedValue != null) {
             Assert.assertEquals(expectedKey, expectedValue,
-                    json.getString(expectedKey));
+                    json.get(expectedKey).asString());
         } else {
             Assert.assertEquals("expected key " + expectedKey + " to be null",
-                    JsonType.NULL, json.get(expectedKey).getType());
+                    JsonNodeType.NULL, json.get(expectedKey).getNodeType());
         }
 
     }

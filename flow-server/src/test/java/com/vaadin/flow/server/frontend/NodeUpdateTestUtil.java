@@ -12,7 +12,6 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
 package com.vaadin.flow.server.frontend;
 
@@ -30,7 +29,7 @@ import org.junit.Assert;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder.DefaultClassFinder;
 
-import static com.vaadin.flow.server.frontend.FrontendUtils.FRONTEND_FOLDER_ALIAS;
+import static com.vaadin.flow.internal.FrontendUtils.FRONTEND_FOLDER_ALIAS;
 import static org.junit.Assert.assertNotNull;
 
 public class NodeUpdateTestUtil {
@@ -89,15 +88,15 @@ public class NodeUpdateTestUtil {
                 "@vaadin/vaadin-lumo-styles/color.js",
                 "@vaadin/vaadin-lumo-styles/color-global.js",
                 "@vaadin/vaadin-lumo-styles/sizing.js",
-                "@vaadin/vaadin-date-picker/theme/lumo/vaadin-date-picker.js",
+                "@vaadin/vaadin-date-picker/src/vaadin-date-picker.js",
                 "@vaadin/vaadin-date-picker/src/vaadin-month-calendar.js",
                 "@vaadin/vaadin-element-mixin/vaadin-element-mixin.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
-                "@vaadin/vaadin-mixed-component/theme/lumo/vaadin-something-else.js",
-                "./theme/lumo/vaadin-custom-themed-component.js",
+                "@vaadin/vaadin-mixed-component/src/vaadin-mixed-component.js",
+                "@vaadin/vaadin-mixed-component/src/vaadin-something-else.js",
+                "@vaadin/vaadin-mixed-component/src/vaadin-custom-themed-component.js",
                 "./generated/jar-resources/ExampleConnector.js",
                 "3rdparty/component.js", "./local-p3-template.js", "./foo.js",
-                "./vaadin-mixed-component/theme/lumo/vaadin-mixed-component.js",
+                "./vaadin-mixed-component/src/vaadin-mixed-component.js",
                 "./local-template.js", "./foo-dir/vaadin-npm-component.js",
                 "./foo.css", "@vaadin/vaadin-mixed-component/bar.css",
                 "./common-js-file.js",
@@ -137,7 +136,7 @@ public class NodeUpdateTestUtil {
         return new File(root, jsImport);
     }
 
-    String addWebpackPrefix(String s) {
+    String addFrontendAlias(String s) {
         if (s.startsWith("./")) {
             return FRONTEND_FOLDER_ALIAS + s.substring(2);
         }

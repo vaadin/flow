@@ -13,23 +13,20 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.io.IOUtils;
-
 import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 
@@ -111,8 +108,7 @@ public class ExclusionFilter implements Serializable {
     private Set<String> getExclusions(URL versionsResource) throws IOException {
         try (InputStream content = versionsResource.openStream()) {
             VersionsJsonConverter convert = new VersionsJsonConverter(
-                    JacksonUtils.readTree(
-                            IOUtils.toString(content, StandardCharsets.UTF_8)),
+                    JacksonUtils.readTree(StringUtil.toUTF8String(content)),
                     reactEnabled, excludeWebComponentNpmPackages);
             return convert.getExclusions();
         }

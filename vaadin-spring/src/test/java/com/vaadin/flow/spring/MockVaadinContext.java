@@ -16,6 +16,7 @@
 package com.vaadin.flow.spring;
 
 import jakarta.servlet.ServletContext;
+
 import org.mockito.Mockito;
 import org.springframework.mock.web.MockServletContext;
 

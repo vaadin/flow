@@ -15,13 +15,15 @@
  */
 package com.vaadin.flow.server;
 
-import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
-
 import java.util.ArrayList;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.Executor;
 import java.util.stream.Stream;
+
+import com.vaadin.flow.server.communication.IndexHtmlRequestListener;
 
 /**
  * Event fired to {@link VaadinServiceInitListener} when a {@link VaadinService}
@@ -39,6 +41,7 @@ public class ServiceInitEvent extends EventObject {
     private List<IndexHtmlRequestListener> addedIndexHtmlRequestListeners = new ArrayList<>();
     private List<DependencyFilter> addedDependencyFilters = new ArrayList<>();
     private List<VaadinRequestInterceptor> addedVaadinRequestInterceptors = new ArrayList<>();
+    private Executor executor;
 
     /**
      * Creates a new service init event for a given {@link VaadinService} and
@@ -108,6 +111,27 @@ public class ServiceInitEvent extends EventObject {
     }
 
     /**
+     * Sets the {@link Executor} to be used by Vaadin for running asynchronous
+     * tasks.
+     * <p>
+     * The application can also benefit from this executor to submit its own
+     * asynchronous tasks.
+     * <p>
+     * The developer is responsible for managing the executor's lifecycle, for
+     * example, by registering a {@link VaadinService} destroy listener to shut
+     * it down.
+     * <p>
+     * A {@literal null} value can be given to switch back to the Vaadin default
+     * executor.
+     *
+     * @param executor
+     *            the executor to set.
+     */
+    public void setExecutor(Executor executor) {
+        this.executor = executor;
+    }
+
+    /**
      * Gets a stream of all custom request handlers that have been added for the
      * service.
      *
@@ -145,6 +169,17 @@ public class ServiceInitEvent extends EventObject {
      */
     public Stream<VaadinRequestInterceptor> getAddedVaadinRequestInterceptor() {
         return addedVaadinRequestInterceptors.stream();
+    }
+
+    /**
+     * Gets the optional {@link Executor} that is currently set to be used by
+     * Vaadin for running asynchronous tasks.
+     *
+     * @return an {@link Optional} containing the {@link Executor}, or an empty
+     *         {@link Optional} if no executor is set.
+     */
+    public Optional<Executor> getExecutor() {
+        return Optional.ofNullable(executor);
     }
 
     @Override

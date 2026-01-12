@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.util.Arrays;
@@ -96,6 +95,9 @@ public class NodeFeatureTest {
         expectedIds.put(ReturnChannelMap.class,
                 NodeFeatures.RETURN_CHANNEL_MAP);
         expectedIds.put(InertData.class, NodeFeatures.INERT_DATA);
+        expectedIds.put(TextBindingFeature.class, NodeFeatures.TEXT_BINDING);
+        expectedIds.put(SignalBindingFeature.class,
+                NodeFeatures.SIGNAL_BINDING);
 
         return expectedIds;
     }
@@ -135,6 +137,9 @@ public class NodeFeatureTest {
                 /* Primary features */
                 ElementData.class, TextNodeMap.class, ModelList.class,
                 BasicTypeValue.class,
+
+                /* Signal binding feature */
+                TextBindingFeature.class, SignalBindingFeature.class,
 
                 /* Common element features */
                 ElementChildrenList.class, ElementPropertyMap.class,

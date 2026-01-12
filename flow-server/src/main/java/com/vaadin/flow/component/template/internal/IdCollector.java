@@ -38,7 +38,6 @@ import com.vaadin.flow.internal.ReflectTools;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 public class IdCollector {
     private static final String DEPRECATED_ID = "com.vaadin.flow.component.polymertemplate.Id";

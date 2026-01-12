@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.internal;
 
+import jakarta.servlet.ServletConfig;
+import jakarta.servlet.ServletRegistration;
+
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
-
-import jakarta.servlet.ServletConfig;
-import jakarta.servlet.ServletRegistration;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.HandlerHelper;

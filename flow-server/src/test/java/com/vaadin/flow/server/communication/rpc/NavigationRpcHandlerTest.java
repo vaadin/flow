@@ -1,22 +1,37 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.communication.rpc;
 
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.page.History;
-import com.vaadin.flow.router.RouterLink;
-import com.vaadin.flow.shared.JsonConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ObjectNode;
 
-import elemental.json.Json;
-import elemental.json.JsonObject;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.page.History;
+import com.vaadin.flow.internal.JacksonUtils;
+import com.vaadin.flow.router.RouterLink;
+import com.vaadin.flow.shared.JsonConstants;
 
 public class NavigationRpcHandlerTest {
 
     private UI ui;
     private History.HistoryStateChangeHandler historyStateChangeHandler;
     private NavigationRpcHandler rpcHandler;
-    private JsonObject invocation;
+    private ObjectNode invocation;
 
     @Before
     public void setup() {
@@ -29,8 +44,9 @@ public class NavigationRpcHandlerTest {
         ui.add(new RouterLink());
 
         rpcHandler = new NavigationRpcHandler();
-        invocation = Json.createObject();
-        invocation.put(JsonConstants.RPC_NAVIGATION_LOCATION, "foo");
+        invocation = JacksonUtils.createObjectNode();
+        invocation.set(JsonConstants.RPC_NAVIGATION_LOCATION,
+                JacksonUtils.createNode("foo"));
     }
 
     @Test

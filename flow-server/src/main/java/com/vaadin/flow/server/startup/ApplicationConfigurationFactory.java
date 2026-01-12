@@ -21,7 +21,6 @@ import com.vaadin.flow.server.VaadinContext;
  * A factory for {@link ApplicationConfiguration}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface ApplicationConfigurationFactory {

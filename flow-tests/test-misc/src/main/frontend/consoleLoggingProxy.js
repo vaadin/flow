@@ -1,8 +1,8 @@
 window.allLogMessages = [];
 
-const console = (function(oldConsole) {
+const console = (function (oldConsole) {
   return {
-    log: function(message){
+    log: function (message) {
       oldConsole.log(message);
       window.allLogMessages.push(message);
     },
@@ -27,11 +27,11 @@ const console = (function(oldConsole) {
       window.allLogMessages.push(message);
     }
   };
-}(window.console));
+})(window.console);
 
 window.console = console;
 
-window.addEventListener("error", function (e) {
+window.addEventListener('error', function (e) {
   window.console.trace(e.error.message);
   return false;
 });

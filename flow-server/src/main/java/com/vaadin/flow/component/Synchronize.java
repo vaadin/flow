@@ -15,14 +15,14 @@
  */
 package com.vaadin.flow.component;
 
-import static java.lang.annotation.ElementType.METHOD;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * Annotates getters for which properties should be synchronized to the server.

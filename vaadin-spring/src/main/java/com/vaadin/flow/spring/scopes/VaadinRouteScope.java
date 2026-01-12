@@ -23,11 +23,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.ObjectFactory;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
-import org.springframework.lang.NonNull;
 
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
@@ -54,7 +54,6 @@ import com.vaadin.flow.spring.annotation.RouteScopeOwner;
  *
  * @see com.vaadin.flow.spring.annotation.VaadinSessionScope
  * @author Vaadin Ltd
- * @since
  *
  */
 public class VaadinRouteScope extends AbstractScope {
@@ -79,7 +78,7 @@ public class VaadinRouteScope extends AbstractScope {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
             String key = getUIStoreKey(ui);
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 ui.getPage().retrieveExtendedClientDetails(
                         det -> relocateStore(ui, key));
             }
@@ -89,6 +88,11 @@ public class VaadinRouteScope extends AbstractScope {
                         uiInstance -> routeStores
                                 .remove(getUIStoreKey(uiInstance)));
                 routeStores.put(key, beanStore);
+            }
+            if (!ui.equals(beanStore.currentUI)) {
+                // Reloading for new UI on same window name. Update UI for
+                // beanStore.
+                beanStore.currentUI = ui;
             }
             return beanStore;
         }
@@ -115,10 +119,10 @@ public class VaadinRouteScope extends AbstractScope {
         private String getUIStoreKey(UI ui) {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 return "uid-" + ui.getUIId();
             } else {
-                return "win-" + getWindowName(ui);
+                return "win-" + details.getWindowName();
             }
         }
 
@@ -444,19 +448,11 @@ public class VaadinRouteScope extends AbstractScope {
     private static String getWindowName(UI ui) {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (details == null) {
-            return null;
-        }
         return details.getWindowName();
     }
 
     private static UI getUI() {
-        UI ui = UI.getCurrent();
-        if (ui == null) {
-            throw new IllegalStateException(
-                    "There is no UI available. The route scope is not active");
-        }
-        return ui;
+        return UI.getCurrentOrThrow();
     }
 
     private static UI findPreservingUI(UI ui) {

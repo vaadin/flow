@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.data.provider;
 
 import java.util.Optional;
@@ -28,7 +27,6 @@ import com.vaadin.flow.function.SerializablePredicate;
  * simplify the filtering and sorting handling, but not limited to it.
  *
  * @author Vaadin Ltd
- * @since
  */
 public final class DataViewUtils {
 

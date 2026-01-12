@@ -25,7 +25,6 @@ import java.util.stream.Stream;
  * element.
  *
  * @author Vaadin Ltd
- * @since
  *
  * @see AnchorTarget
  *

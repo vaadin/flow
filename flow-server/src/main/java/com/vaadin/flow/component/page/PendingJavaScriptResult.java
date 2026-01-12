@@ -18,12 +18,13 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.concurrent.CompletableFuture;
 
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.JsonNode;
+
 import com.vaadin.flow.component.internal.DeadlockDetectingCompletableFuture;
 import com.vaadin.flow.function.SerializableConsumer;
-import com.vaadin.flow.internal.JsonCodec;
+import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 /**
  * A pending result from a JavaScript snippet sent to the browser for
@@ -86,9 +87,15 @@ public interface PendingJavaScriptResult extends Serializable {
      * be invoked asynchronously when the result of the execution is sent back
      * to the server.
      * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
+     * <p>
      * Handlers can only be added before the execution has been sent to the
      * browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>
@@ -109,8 +116,8 @@ public interface PendingJavaScriptResult extends Serializable {
             throw new IllegalArgumentException("Result handler cannot be null");
         }
 
-        SerializableConsumer<JsonValue> convertingResultHandler = value -> resultHandler
-                .accept(JsonCodec.decodeAs(value, targetType));
+        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
+                .accept(JacksonCodec.decodeAs(value, targetType));
 
         then(convertingResultHandler, errorHandler);
     }
@@ -120,9 +127,15 @@ public interface PendingJavaScriptResult extends Serializable {
      * handler will be invoked asynchronously if the execution was successful.
      * In case of a failure, no handler will be run.
      * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
+     * <p>
      * A handler can only be added before the execution has been sent to the
      * browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>
@@ -143,9 +156,15 @@ public interface PendingJavaScriptResult extends Serializable {
      * session lock since the request handling thread that makes the result
      * available will also need to lock the session.
      * <p>
+     * The JavaScript return value will be automatically converted to the
+     * specified target type. All types supported by Jackson for JSON
+     * deserialization are supported, including custom bean classes.
+     * <p>
      * A completable future can only be created before the execution has been
      * sent to the browser.
      *
+     * @param <T>
+     *            the type to convert the result to
      * @param targetType
      *            the type to convert the JavaScript return value to, not
      *            <code>null</code>
@@ -173,7 +192,124 @@ public interface PendingJavaScriptResult extends Serializable {
                 session);
 
         then(value -> {
-            T convertedValue = JsonCodec.decodeAs(value, targetType);
+            T convertedValue = JacksonCodec.decodeAs(value, targetType);
+            completableFuture.complete(convertedValue);
+        }, errorValue -> {
+            JavaScriptException exception = new JavaScriptException(errorValue);
+            completableFuture.completeExceptionally(exception);
+        });
+
+        return completableFuture;
+    }
+
+    /**
+     * Adds a typed handler that will be run for a successful execution and a
+     * handler that will be run for a failed execution. One of the handlers will
+     * be invoked asynchronously when the result of the execution is sent back
+     * to the server.
+     * <p>
+     * The JavaScript return value will be automatically converted to the type
+     * specified by the {@link TypeReference}. This method supports generic
+     * types such as {@code List<MyBean>} and {@code Map<String, MyBean>}.
+     * <p>
+     * Example usage:
+     *
+     * <pre>
+     * element.executeJs("return [{name: 'Alice', age: 30}]")
+     *         .then(new TypeReference&lt;List&lt;Person&gt;&gt;() {
+     *         }, list -&gt; System.out.println(list.get(0).name));
+     * </pre>
+     * <p>
+     * Handlers can only be added before the execution has been sent to the
+     * browser.
+     *
+     * @param <T>
+     *            the type to convert the result to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @param resultHandler
+     *            a handler for the return value from a successful execution,
+     *            not <code>null</code>
+     * @param errorHandler
+     *            a handler for an error message in case the execution failed,
+     *            or <code>null</code> to ignore errors
+     */
+    default <T> void then(TypeReference<T> typeReference,
+            SerializableConsumer<T> resultHandler,
+            SerializableConsumer<String> errorHandler) {
+        if (typeReference == null) {
+            throw new IllegalArgumentException("Type reference cannot be null");
+        }
+        if (resultHandler == null) {
+            throw new IllegalArgumentException("Result handler cannot be null");
+        }
+
+        SerializableConsumer<JsonNode> convertingResultHandler = value -> resultHandler
+                .accept(JacksonCodec.decodeAs(value, typeReference));
+
+        then(convertingResultHandler, errorHandler);
+    }
+
+    /**
+     * Adds a typed handler that will be run for a successful execution. The
+     * handler will be invoked asynchronously if the execution was successful.
+     * In case of a failure, no handler will be run.
+     * <p>
+     * The JavaScript return value will be automatically converted to the type
+     * specified by the {@link TypeReference}. This method supports generic
+     * types such as {@code List<MyBean>} and {@code Map<String, MyBean>}.
+     * <p>
+     * A handler can only be added before the execution has been sent to the
+     * browser.
+     *
+     * @param <T>
+     *            the type to convert the result to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @param resultHandler
+     *            a handler for the return value from a successful execution,
+     *            not <code>null</code>
+     */
+    default <T> void then(TypeReference<T> typeReference,
+            SerializableConsumer<T> resultHandler) {
+        then(typeReference, resultHandler, null);
+    }
+
+    /**
+     * Creates a typed completable future that will be completed with the result
+     * of the execution. It will be completed asynchronously when the result of
+     * the execution is sent back to the server.
+     * <p>
+     * The JavaScript return value will be automatically converted to the type
+     * specified by the {@link TypeReference}. This method supports generic
+     * types such as {@code List<MyBean>} and {@code Map<String, MyBean>}.
+     * <p>
+     * A completable future can only be created before the execution has been
+     * sent to the browser.
+     *
+     * @param <T>
+     *            the type to convert the result to
+     * @param typeReference
+     *            the type reference describing the target type, not
+     *            <code>null</code>
+     * @return a completable future that will be completed based on the
+     *         execution results, not <code>null</code>
+     */
+    default <T> CompletableFuture<T> toCompletableFuture(
+            TypeReference<T> typeReference) {
+        if (typeReference == null) {
+            throw new IllegalArgumentException("Type reference cannot be null");
+        }
+
+        VaadinSession session = VaadinSession.getCurrent();
+
+        CompletableFuture<T> completableFuture = new DeadlockDetectingCompletableFuture<>(
+                session);
+
+        then(value -> {
+            T convertedValue = JacksonCodec.decodeAs(value, typeReference);
             completableFuture.complete(convertedValue);
         }, errorValue -> {
             JavaScriptException exception = new JavaScriptException(errorValue);
@@ -202,7 +338,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for an error message in case the execution failed,
      *            or <code>null</code> to ignore errors
      */
-    void then(SerializableConsumer<JsonValue> resultHandler,
+    void then(SerializableConsumer<JsonNode> resultHandler,
             SerializableConsumer<String> errorHandler);
 
     /**
@@ -217,7 +353,7 @@ public interface PendingJavaScriptResult extends Serializable {
      *            a handler for the JSON representation of the return value from
      *            a successful execution, not <code>null</code>
      */
-    default void then(SerializableConsumer<JsonValue> resultHandler) {
+    default void then(SerializableConsumer<JsonNode> resultHandler) {
         then(resultHandler, null);
     }
 
@@ -232,7 +368,7 @@ public interface PendingJavaScriptResult extends Serializable {
      * @return a completable future that will be completed based on the
      *         execution results, not <code>null</code>
      */
-    default CompletableFuture<JsonValue> toCompletableFuture() {
-        return toCompletableFuture(JsonValue.class);
+    default CompletableFuture<JsonNode> toCompletableFuture() {
+        return toCompletableFuture(JsonNode.class);
     }
 }

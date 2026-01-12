@@ -16,6 +16,7 @@
 package com.vaadin.client.bootstrap;
 
 import com.google.gwt.core.client.JavaScriptObject;
+
 import com.vaadin.client.ValueMap;
 
 /**

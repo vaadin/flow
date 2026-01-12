@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component;
 
 import com.vaadin.flow.server.Command;
@@ -158,7 +157,6 @@ public final class Shortcuts {
      * @return a registration for removing the locator, does not affect active
      *         shortcuts or if the locator has changed from what was set for
      *         this registration
-     * @since
      */
     public static Registration setShortcutListenOnElement(
             String elementLocatorJs, Component listenOnComponent) {

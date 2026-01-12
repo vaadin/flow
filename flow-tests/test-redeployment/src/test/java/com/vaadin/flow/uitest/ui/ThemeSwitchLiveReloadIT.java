@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import javax.tools.JavaCompiler;
 import javax.tools.ToolProvider;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -27,6 +27,7 @@ import net.jcip.annotations.NotThreadSafe;
 import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.StaleElementReferenceException;
@@ -50,6 +51,21 @@ public class ThemeSwitchLiveReloadIT extends ChromeBrowserTest {
     @Override
     protected String getTestPath() {
         return super.getTestPath().replace("/view", "");
+    }
+
+    @Before
+    @Override
+    public void checkIfServerAvailable() {
+        // Make sure the server is not still restarting
+        waitUntil(driver -> {
+            String rootUrl = getRootURL();
+            try {
+                super.checkIfServerAvailable();
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        });
     }
 
     @After

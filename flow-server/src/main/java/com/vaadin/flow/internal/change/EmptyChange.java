@@ -15,12 +15,12 @@
  */
 package com.vaadin.flow.internal.change;
 
+import tools.jackson.databind.node.ObjectNode;
+
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.nodefeature.NodeFeature;
 import com.vaadin.flow.internal.nodefeature.NodeList;
 import com.vaadin.flow.shared.JsonConstants;
-
-import elemental.json.JsonObject;
 
 /**
  * Empty change for the feature to report its presence for the client (send the
@@ -45,7 +45,7 @@ public class EmptyChange extends NodeFeatureChange {
     }
 
     @Override
-    protected void populateJson(JsonObject json, ConstantPool constantPool) {
+    protected void populateJson(ObjectNode json, ConstantPool constantPool) {
         json.put(JsonConstants.CHANGE_TYPE, JsonConstants.CHANGE_TYPE_NOOP);
         if (NodeList.class.isAssignableFrom(getFeature())) {
             json.put(JsonConstants.CHANGE_FEATURE_TYPE, true);

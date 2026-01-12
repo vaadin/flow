@@ -28,8 +28,8 @@ import org.junit.rules.TemporaryFolder;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
 import static org.hamcrest.Matchers.is;
@@ -251,17 +251,30 @@ public class DefaultDeploymentConfigurationTest {
     }
 
     @Test
-    public void frontendHotdeployParameter_expressBuildFeatureFlagIsON_resetsFrontendHotdeployToFalse() {
+    public void frontendHotdeployParameter_developmentBundle_resetsFrontendHotdeployToFalse() {
         DefaultDeploymentConfiguration config = createDeploymentConfig(
                 new Properties());
-        Assert.assertFalse("Expected dev server to be disabled by default",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be disabled by default",
+                Mode.DEVELOPMENT_BUNDLE, config.getMode());
 
         Properties init = new Properties();
         init.put(InitParameters.FRONTEND_HOTDEPLOY, "true");
         config = createDeploymentConfig(init);
-        Assert.assertTrue("Expected dev server to be enabled when set true",
-                config.frontendHotdeploy());
+        Assert.assertEquals("Expected dev server to be enabled when set true",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
+    }
+
+    @Test
+    public void frontendHotdeploy_defaultsToParentConfiguration() {
+        ApplicationConfiguration appConfig = setupAppConfig();
+        Mockito.when(appConfig.getMode())
+                .thenReturn(Mode.DEVELOPMENT_FRONTEND_LIVERELOAD);
+        DefaultDeploymentConfiguration config = createDeploymentConfig(
+                appConfig, new Properties());
+
+        Assert.assertEquals(
+                "Expected dev server to be enabled from parent configuration",
+                Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
     }
 
     @Test
@@ -294,13 +307,10 @@ public class DefaultDeploymentConfigurationTest {
 
         Assert.assertTrue("ProductionMode should be enabled",
                 config.isProductionMode());
-        Assert.assertFalse(
-                "Frontend hotdeploy should return false in production mode",
-                config.frontendHotdeploy());
     }
 
     @Test
-    public void frontendHotDeploy_hillaInLegacyFrontendFolderExists_usesLegacyAndHotdeploy()
+    public void hillaViewInLegacyFrontendFolderExists_shouldUseLegacyFolderAndHotdeploy()
             throws IOException {
         File projectRoot = tempFolder.getRoot();
         File legacyFrontend = tempFolder
@@ -324,9 +334,8 @@ public class DefaultDeploymentConfigurationTest {
                     projectRoot.getAbsolutePath());
             DefaultDeploymentConfiguration config = createDeploymentConfig(
                     init);
-            boolean hotdeploy = config.frontendHotdeploy();
-            Assert.assertTrue("Should use the legacy frontend folder",
-                    hotdeploy);
+            Assert.assertEquals("Should use the legacy frontend folder",
+                    Mode.DEVELOPMENT_FRONTEND_LIVERELOAD, config.getMode());
         }
     }
 

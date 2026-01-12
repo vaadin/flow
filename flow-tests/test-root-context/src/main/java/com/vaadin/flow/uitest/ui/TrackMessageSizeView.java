@@ -12,12 +12,17 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+
+import org.apache.commons.io.IOUtils;
 
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.page.Push;
@@ -27,11 +32,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.shared.ui.Transport;
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import org.apache.commons.io.IOUtils;
 
 @Route("com.vaadin.flow.uitest.ui.TrackMessageSizeView")
 @Push(transport = Transport.LONG_POLLING)

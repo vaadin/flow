@@ -63,7 +63,8 @@ public class DebounceSynchronizePropertyView
 
             @Override
             public void handleEvent(DomEvent event) {
-                if (event.getEventData().getBoolean("element.checked")) {
+                if (event.getEventData().get("element.checked")
+                        .booleanValue()) {
                     assert registration == null;
 
                     registration = inputElement.addPropertyChangeListener(

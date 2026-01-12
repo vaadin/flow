@@ -32,5 +32,6 @@ public class Hr extends HtmlComponent {
      */
     public Hr() {
         super();
+        getElement().setAttribute("aria-hidden", "true");
     }
 }

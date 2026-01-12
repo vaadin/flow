@@ -18,22 +18,32 @@ package com.vaadin.flow.component.page;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.TimeZone;
+import java.util.function.Function;
 
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
+
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Provides extended information about the web browser, such as screen
  * resolution and time zone.
  * <p>
- * Please note that all information is fetched only once, and <em>not updated
- * automatically</em>. To retrieve updated values, you can execute JS with
- * {@link Page#executeJs(String, Serializable...)} and get the current value
- * back.
+ * Browser details are automatically fetched on the first call to
+ * {@link Page#getExtendedClientDetails()} and cached for the lifetime of the
+ * UI. The fetch happens asynchronously, so the first call may return
+ * {@code null} while the data is being retrieved. To update the cached values
+ * with fresh data from the browser, use
+ * {@link #refresh(SerializableConsumer)}}.
  *
  * @author Vaadin Ltd
  * @since 2.0
  */
 public class ExtendedClientDetails implements Serializable {
+    private final UI ui;
     private int screenWidth = -1;
     private int screenHeight = -1;
     private int windowInnerWidth = -1;
@@ -50,11 +60,15 @@ public class ExtendedClientDetails implements Serializable {
     private double devicePixelRatio = -1.0D;
     private String windowName;
     private String navigatorPlatform;
+    private ColorScheme.Value colorScheme = ColorScheme.Value.NORMAL;
+    private String themeName;
 
     /**
      * For internal use only. Updates all properties in the class according to
      * the given information.
      *
+     * @param ui
+     *            the UI instance that owns this ExtendedClientDetails
      * @param screenWidth
      *            Screen width
      * @param screenHeight
@@ -88,14 +102,19 @@ public class ExtendedClientDetails implements Serializable {
      *            a unique browser window name which persists on reload
      * @param navigatorPlatform
      *            navigation platform received from the browser
+     * @param colorScheme
+     *            the current color scheme
+     * @param themeName
+     *            the theme name (e.g., "lumo", "aura")
      */
-    ExtendedClientDetails(String screenWidth, String screenHeight,
+    public ExtendedClientDetails(UI ui, String screenWidth, String screenHeight,
             String windowInnerWidth, String windowInnerHeight,
             String bodyClientWidth, String bodyClientHeight, String tzOffset,
             String rawTzOffset, String dstShift, String dstInEffect,
             String tzId, String curDate, String touchDevice,
             String devicePixelRatio, String windowName,
-            String navigatorPlatform) {
+            String navigatorPlatform, String colorScheme, String themeName) {
+        this.ui = ui;
         if (screenWidth != null) {
             try {
                 this.screenWidth = Integer.parseInt(screenWidth);
@@ -171,6 +190,8 @@ public class ExtendedClientDetails implements Serializable {
 
         this.windowName = windowName;
         this.navigatorPlatform = navigatorPlatform;
+        setColorScheme(ColorScheme.Value.fromString(colorScheme));
+        this.themeName = themeName;
     }
 
     /**
@@ -263,13 +284,11 @@ public class ExtendedClientDetails implements Serializable {
      * <p>
      * You can use this to figure out which TimeZones the user could actually be
      * in by calling {@link TimeZone#getAvailableIDs(int)}.
-     * </p>
      * <p>
      * If {@link #getRawTimezoneOffset()} and {@link #getTimezoneOffset()}
      * returns the same value, the browser is either in a zone that does not
      * currently have daylight saving time, or in a zone that never has daylight
      * saving time.
-     * </p>
      *
      * @return timezone offset in milliseconds excluding DST, 0 if not available
      */
@@ -384,5 +403,115 @@ public class ExtendedClientDetails implements Serializable {
         return isIPad() || VaadinSession.getCurrent().getBrowser().isIPhone()
                 || (navigatorPlatform != null
                         && navigatorPlatform.startsWith("iPod"));
+    }
+
+    /**
+     * Gets the color scheme.
+     *
+     * @return the color scheme, never {@code null}
+     */
+    public ColorScheme.Value getColorScheme() {
+        return colorScheme;
+    }
+
+    /**
+     * Gets the theme name.
+     *
+     * @return the theme name (e.g., "lumo", "aura"), or empty string if not
+     *         detected
+     */
+    public String getThemeName() {
+        return themeName;
+    }
+
+    /**
+     * Updates the color scheme. For internal use only.
+     *
+     * @param colorScheme
+     *            the new color scheme
+     */
+    void setColorScheme(ColorScheme.Value colorScheme) {
+        this.colorScheme = colorScheme == null ? ColorScheme.Value.NORMAL
+                : colorScheme;
+    }
+
+    /**
+     * Creates an ExtendedClientDetails instance from browser details JSON
+     * object. This is intended for internal use when browser details are
+     * provided as JSON (e.g., during UI initialization or refresh).
+     * <p>
+     * For internal use only.
+     *
+     * @param ui
+     *            the UI instance that owns this ExtendedClientDetails
+     * @param json
+     *            the JSON object containing browser details parameters
+     * @return a new ExtendedClientDetails instance
+     * @throws RuntimeException
+     *             if the JSON is not a valid object
+     */
+    public static ExtendedClientDetails fromJson(UI ui, JsonNode json) {
+        if (!(json instanceof ObjectNode)) {
+            throw new RuntimeException("Expected a JSON object");
+        }
+        final ObjectNode jsonObj = (ObjectNode) json;
+
+        // Note that JSON returned is a plain string -> string map, the actual
+        // parsing of the fields happens in ExtendedClient's constructor. If a
+        // field is missing or the wrong type, pass on null for default.
+        final Function<String, String> getStringElseNull = key -> {
+            final JsonNode jsValue = jsonObj.get(key);
+            if (jsValue != null
+                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
+                return jsValue.asString();
+            } else {
+                return null;
+            }
+        };
+
+        return new ExtendedClientDetails(ui, getStringElseNull.apply("v-sw"),
+                getStringElseNull.apply("v-sh"),
+                getStringElseNull.apply("v-ww"),
+                getStringElseNull.apply("v-wh"),
+                getStringElseNull.apply("v-bw"),
+                getStringElseNull.apply("v-bh"),
+                getStringElseNull.apply("v-tzo"),
+                getStringElseNull.apply("v-rtzo"),
+                getStringElseNull.apply("v-dstd"),
+                getStringElseNull.apply("v-dston"),
+                getStringElseNull.apply("v-tzid"),
+                getStringElseNull.apply("v-curdate"),
+                getStringElseNull.apply("v-td"),
+                getStringElseNull.apply("v-pr"),
+                getStringElseNull.apply("v-wn"),
+                getStringElseNull.apply("v-np"),
+                getStringElseNull.apply("v-cs"),
+                getStringElseNull.apply("v-tn"));
+    }
+
+    /**
+     * Refreshes the browser details by fetching updated values from the
+     * browser. The refresh happens asynchronously. The cached values in this
+     * instance will be updated when the browser responds, and then the provided
+     * callback will be invoked with the updated details.
+     *
+     * @param callback
+     *            a callback that will be invoked with the updated
+     *            ExtendedClientDetails when the refresh is complete
+     */
+    public void refresh(SerializableConsumer<ExtendedClientDetails> callback) {
+        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
+        final SerializableConsumer<JsonNode> resultHandler = json -> {
+            ExtendedClientDetails details = fromJson(ui, json);
+            ui.getInternals().setExtendedClientDetails(details);
+            if (callback != null) {
+                callback.accept(details);
+            }
+        };
+        final SerializableConsumer<String> errorHandler = err -> {
+            throw new RuntimeException("Unable to retrieve extended "
+                    + "client details. JS error is '" + err + "'");
+        };
+        ui.getPage().executeJs(js).then(resultHandler, errorHandler);
     }
 }

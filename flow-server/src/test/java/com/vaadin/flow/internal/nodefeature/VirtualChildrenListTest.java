@@ -21,11 +21,11 @@ import java.util.Spliterators;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import com.vaadin.flow.internal.StateNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
 
-import elemental.json.JsonObject;
+import com.vaadin.flow.internal.StateNode;
 
 public class VirtualChildrenListTest {
 
@@ -41,7 +41,7 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
@@ -52,7 +52,7 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(anotherChild, list.get(0));
 
-        payload = (JsonObject) anotherChild.getFeature(ElementData.class)
+        payload = (JsonNode) anotherChild.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
@@ -65,7 +65,7 @@ public class VirtualChildrenListTest {
 
         Assert.assertEquals(child, list.get(0));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNotNull(payload);
 
@@ -105,7 +105,7 @@ public class VirtualChildrenListTest {
         Assert.assertEquals(0, list.size());
         Assert.assertEquals(-1, list.indexOf(child));
 
-        JsonObject payload = (JsonObject) child.getFeature(ElementData.class)
+        JsonNode payload = (JsonNode) child.getFeature(ElementData.class)
                 .getPayload();
         Assert.assertNull(payload);
     }

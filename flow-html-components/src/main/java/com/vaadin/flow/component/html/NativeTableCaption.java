@@ -15,8 +15,6 @@
  */
 package com.vaadin.flow.component.html;
 
-import com.vaadin.flow.component.HasSize;
-import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
 

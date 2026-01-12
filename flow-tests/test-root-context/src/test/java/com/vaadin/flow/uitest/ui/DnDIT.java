@@ -15,11 +15,12 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.TestBenchElement;
 import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
+
+import com.vaadin.flow.testutil.ChromeBrowserTest;
+import com.vaadin.testbench.TestBenchElement;
 
 /**
  * This testing is using a mock of browser html5 dnd support just for fun
@@ -192,7 +193,7 @@ public class DnDIT extends ChromeBrowserTest {
         waitForElementPresent(By.id("event-2"));
 
         TestBenchElement eventlog = getEventlog(2);
-        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\"> no-effect </div>";
+        String expected = "2: DragImage: <div id=\"box-no-effect\" style=\"width:100px;border:1px solid;margin:10px;height:60px\">no-effect</div>";
         Assert.assertEquals("Invalid drag image", expected, eventlog.getText());
     }
 

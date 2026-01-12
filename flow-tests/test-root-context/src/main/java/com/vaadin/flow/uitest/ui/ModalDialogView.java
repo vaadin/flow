@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
@@ -23,6 +22,7 @@ import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.Key;
+import com.vaadin.flow.component.ModalityMode;
 import com.vaadin.flow.component.Text;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Div;
@@ -40,7 +40,8 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
     public static final String EVENT_LOG = "event-log";
     public static final String UI_BUTTON = "ui-button";
     public static final String OPEN_MODELESS_BUTTON = "modeless-dialog-button";
-    public static final String OPEN_MODAL_BUTTON = "modal-dialog-button";
+    public static final String OPEN_MODAL_STRICT_BUTTON = "modal-strict-dialog-button";
+    public static final String OPEN_MODAL_VISUAL_BUTTON = "modal-visual-dialog-button";
     public static final String DIALOG_BUTTON = "dialog-button";
     public static final String DIALOG_CLOSE_BUTTON = "dialog-close-button";
     public static final String DIALOG = "DIALOG";
@@ -59,9 +60,13 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
         testButton.setId(UI_BUTTON);
         testButton.addClickShortcut(SHORTCUT_KEY);
 
-        add(createOpenDialogButton(true, OPEN_MODAL_BUTTON),
-                createOpenDialogButton(false, OPEN_MODELESS_BUTTON), testButton,
-                eventLog);
+        add(createOpenDialogButton(ModalityMode.STRICT,
+                OPEN_MODAL_STRICT_BUTTON),
+                createOpenDialogButton(ModalityMode.MODELESS,
+                        OPEN_MODELESS_BUTTON),
+                createOpenDialogButton(ModalityMode.VISUAL,
+                        OPEN_MODAL_VISUAL_BUTTON),
+                testButton, eventLog);
         setId("main-div");
     }
 
@@ -74,7 +79,8 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
         if (queryParameters.containsKey("open_dialog")) {
             boolean modal = queryParameters.get("open_dialog")
                     .contains("modal");
-            final Dialog dialog = new Dialog(modal);
+            final Dialog dialog = new Dialog(
+                    modal ? ModalityMode.STRICT : ModalityMode.MODELESS);
             dialog.open();
         }
     }
@@ -84,11 +90,10 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
                 + event.getSource().getId().orElse("NO-SOURCE-ID"))));
     }
 
-    private Component createOpenDialogButton(boolean modal, String id) {
+    private Component createOpenDialogButton(ModalityMode mode, String id) {
         final NativeButton button = createButton(
-                "Open " + (modal ? "modal" : "non-modal") + " dialog",
-                event -> {
-                    final Dialog dialog = new Dialog(modal);
+                "Open " + mode.name() + " dialog", event -> {
+                    final Dialog dialog = new Dialog(mode);
                     dialog.open();
                 });
         button.setId(id);
@@ -106,10 +111,10 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
     }
 
     public class Dialog extends Div {
-        private boolean modal;
+        private ModalityMode mode;
 
-        public Dialog(boolean modal) {
-            this.modal = modal;
+        public Dialog(ModalityMode mode) {
+            this.mode = mode;
 
             final NativeButton testButton = createButton(
                     "Test button with enter shortcut",
@@ -132,12 +137,12 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
             final Component closeButton = createButton("Close",
                     event -> close());
             closeButton.setId(DIALOG_CLOSE_BUTTON);
-            add(new Text("A " + (modal ? "modal" : "modeless") + " dialog"),
-                    new Input(), new Div(), closeButton, uiScopeShortcutButton,
+            add(new Text("A " + this.mode.name() + " dialog"), new Input(),
+                    new Div(), closeButton, uiScopeShortcutButton,
                     dialogScopeShortcutButton, new Div(), testButton);
 
             getUI().ifPresent(ui -> {
-                ui.setChildComponentModal(this, modal);
+                ui.setChildComponentModal(this, this.mode);
             });
             getStyle().set("position", "fixed").set("inset", "50% 50%")
                     .set("border", "1px solid black");
@@ -146,7 +151,7 @@ public class ModalDialogView extends Div implements HasUrlParameter<String> {
 
         public void open() {
             final UI ui = UI.getCurrent();
-            if (modal) {
+            if (mode == ModalityMode.STRICT) {
                 ui.addModal(this);
             } else {
                 ui.add(this);

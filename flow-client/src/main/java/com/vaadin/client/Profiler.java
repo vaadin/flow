@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client;
 
 import java.util.ArrayList;
@@ -426,7 +425,6 @@ public class Profiler {
      * Please note that this method should be called even if the profiler is not
      * enabled because it will then remove a logger function that might have
      * been included in the HTML page and that would leak memory unless removed.
-     * </p>
      *
      */
     public static void initialize() {

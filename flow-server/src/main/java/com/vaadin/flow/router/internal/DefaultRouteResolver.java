@@ -21,13 +21,13 @@ import java.util.Optional;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.router.NavigationState;
 import com.vaadin.flow.router.NavigationStateBuilder;
 import com.vaadin.flow.router.NotFoundException;
 import com.vaadin.flow.router.RouteResolver;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.RouteRegistry;
-import com.vaadin.flow.internal.menu.MenuRegistry;
 import com.vaadin.flow.server.menu.AvailableViewInfo;
 
 /**

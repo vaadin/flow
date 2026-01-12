@@ -34,7 +34,6 @@ import com.vaadin.flow.router.RouterLayout;
  * {@link RouterLayout}, or a {@link HasErrorParameter}.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Qualifier

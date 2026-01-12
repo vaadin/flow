@@ -19,37 +19,37 @@
 window.allLogMessages = [];
 
 const oldTrace = console.trace;
-console.trace = function(message) {
+console.trace = function (message) {
   window.allLogMessages.push(message);
   oldTrace(message);
 };
 
 const oldInfo = console.info;
-console.info = function(message) {
+console.info = function (message) {
   window.allLogMessages.push(message);
   oldInfo(message);
 };
 
 const oldLog = console.log;
-console.log = function(message) {
+console.log = function (message) {
   window.allLogMessages.push(message);
   oldLog(message);
 };
 
 const oldWarn = console.warn;
-console.warn = function(message) {
+console.warn = function (message) {
   window.allLogMessages.push(message);
   oldWarn(message);
 };
 
 const oldDebug = console.debug;
-console.debug = function(message) {
+console.debug = function (message) {
   window.allLogMessages.push(message);
   oldDebug(message);
 };
 
 const oldError = console.error;
-console.error = function(message) {
+console.error = function (message) {
   window.allLogMessages.push(message);
   oldError(message);
 };

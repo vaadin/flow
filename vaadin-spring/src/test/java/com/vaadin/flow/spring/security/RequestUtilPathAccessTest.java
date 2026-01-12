@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
 import java.util.Collections;
@@ -29,11 +28,11 @@ import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.TestConfiguration;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.vaadin.flow.component.Component;
@@ -72,13 +71,13 @@ public class RequestUtilPathAccessTest {
     @Autowired
     NavigationAccessControl accessControl;
 
-    @MockBean
+    @MockitoBean
     VaadinConfigurationProperties vaadinConfigurationProperties;
 
-    @MockBean
+    @MockitoBean
     private ServletRegistrationBean<SpringServlet> springServletRegistration;
 
-    @MockBean
+    @MockitoBean
     private AccessPathChecker accessPathChecker;
 
     @Before

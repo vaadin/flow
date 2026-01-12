@@ -54,7 +54,6 @@ import com.vaadin.flow.server.VaadinService;
  * @see Id
  *
  * @author Vaadin Ltd
- * @since
  */
 public abstract class LitTemplate extends Component
         implements HasStyle, Template {

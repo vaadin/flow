@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
 import java.io.BufferedReader;
@@ -30,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -39,7 +37,6 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
-import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -47,9 +44,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.DataNode;
 import org.jsoup.nodes.Document;
@@ -59,6 +53,9 @@ import org.jsoup.parser.Parser;
 import org.jsoup.parser.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.PushConfiguration;
 import com.vaadin.flow.component.UI;
@@ -70,8 +67,12 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.DevBundleUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
@@ -81,10 +82,6 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
-import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -92,8 +89,8 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import static com.vaadin.flow.internal.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -106,8 +103,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 public class BootstrapHandler extends SynchronizedRequestHandler {
 
     public static final String SERVICE_WORKER_HEADER = "Service-Worker";
-
-    private static final String FETCH_DEST_HEADER = "Sec-Fetch-Dest";
 
     private static final CharSequence GWT_STAT_EVENTS_JS = "if (typeof window.__gwtStatsEvent != 'function') {"
             + "window.Vaadin.Flow.gwtStatsEvents = [];"
@@ -144,32 +139,6 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     private static final String URL = "url";
 
     private final PageBuilder pageBuilder;
-
-    private static final Set<String> nonHtmlFetchDests;
-
-    static {
-        // Full list at
-        // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Sec-Fetch-Dest
-        Set<String> dests = new HashSet<>();
-        dests.add("audio");
-        dests.add("audioworklet");
-        dests.add("font");
-        dests.add("image");
-        dests.add("manifest");
-        dests.add("paintworklet");
-        dests.add("script"); // NOSONAR
-        dests.add("serviceworker");
-        dests.add("sharedworker");
-        dests.add("style");
-        dests.add("track");
-        dests.add("video");
-        dests.add("worker");
-        dests.add("xslt");
-
-        // "empty" requests are used when service worker caches / so they need
-        // to be allowed
-        nonHtmlFetchDests = Collections.unmodifiableSet(dests);
-    }
 
     /**
      * Creates an instance of the handler with default {@link PageBuilder}.
@@ -547,7 +516,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (isVaadinStaticFileRequest(request)) {
-            // Do not allow routes inside /VAADIN/
+            // Do not allow routes inside /VAADIN/ or reserved static folders
             return false;
         }
 
@@ -588,7 +557,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Checks whether the request is a request for /VAADIN/*.
+     * Checks whether the request is a request for /VAADIN/* or other reserved
+     * static folder. (/themes, /assets, /aura, /lumo)
      * <p>
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this.
@@ -603,8 +573,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         otherwise
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
+        return request.getPathInfo() != null && HandlerHelper
+                .getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> request.getPathInfo().startsWith(path));
     }
 
     /**
@@ -620,15 +591,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         if (request.getHeader(BootstrapHandler.SERVICE_WORKER_HEADER) != null) {
             return false;
         }
-        String fetchDest = request.getHeader(FETCH_DEST_HEADER);
-        if (fetchDest == null) {
-            // Old browsers do not send the header at all
-            return true;
-        }
-        if (nonHtmlFetchDests.contains(fetchDest)) {
-            return false;
-        }
-        return true;
+        return !HandlerHelper.isNonHtmlInitiatedRequest(request);
     }
 
     @Override
@@ -758,14 +721,14 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
         private Element createDependencyElement(BootstrapContext context,
                 ObjectNode dependencyJson) {
-            String type = dependencyJson.get(Dependency.KEY_TYPE).textValue();
+            String type = dependencyJson.get(Dependency.KEY_TYPE).asString();
             if (Dependency.Type.contains(type)) {
                 Dependency.Type dependencyType = Dependency.Type.valueOf(type);
                 return createDependencyElement(context.getUriResolver(),
                         LoadMode.INLINE, dependencyJson, dependencyType);
             }
             return Jsoup.parse(
-                    dependencyJson.get(Dependency.KEY_CONTENTS).textValue(), "",
+                    dependencyJson.get(Dependency.KEY_CONTENTS).asString(), "",
                     Parser.xmlParser());
         }
 
@@ -886,7 +849,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             for (int i = 0; i < dependencies.size(); i++) {
                 ObjectNode dependencyJson = (ObjectNode) dependencies.get(i);
                 Dependency.Type dependencyType = Dependency.Type.valueOf(
-                        dependencyJson.get(Dependency.KEY_TYPE).textValue());
+                        dependencyJson.get(Dependency.KEY_TYPE).asString());
                 Element dependencyElement = createDependencyElement(uriResolver,
                         loadMode, dependencyJson, dependencyType);
 
@@ -978,7 +941,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
          *
          * @param chunks
          *            in the stat file
-         * @return
+         * @return the list of chunk keys to process
          */
         protected List<String> getChunkKeys(ObjectNode chunks) {
             // include all chunks but the one used for exported
@@ -1132,7 +1095,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
             boolean inlineElement = loadMode == LoadMode.INLINE;
             String url = dependency.has(Dependency.KEY_URL)
                     ? resolver.resolveVaadinUri(
-                            dependency.get(Dependency.KEY_URL).textValue())
+                            dependency.get(Dependency.KEY_URL).asString())
                     : null;
 
             final Element dependencyElement;
@@ -1154,7 +1117,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
 
             if (inlineElement) {
                 dependencyElement.appendChild(new DataNode(
-                        dependency.get(Dependency.KEY_CONTENTS).textValue()));
+                        dependency.get(Dependency.KEY_CONTENTS).asString()));
             }
 
             return dependencyElement;
@@ -1278,7 +1241,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 if (atmosphereVersion != null) {
                     versionInfo.put("atmosphereVersion", atmosphereVersion);
                 }
-                appConfig.put("versionInfo", versionInfo);
+                appConfig.set("versionInfo", versionInfo);
                 appConfig.put(ApplicationConstants.DEV_TOOLS_ENABLED,
                         deploymentConfiguration.isDevToolsEnabled());
             }
@@ -1297,7 +1260,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                 putValueOrNull(sessExpMsg, URL,
                         systemMessages.getSessionExpiredURL());
 
-                appConfig.put("sessExpMsg", sessExpMsg);
+                appConfig.set("sessExpMsg", sessExpMsg);
             }
 
             String contextRoot = contextCallback.apply(request);
@@ -1420,6 +1383,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *            the response object
      * @param ui
      *            the UI object
+     * @param contextPathCallback
+     *            a callback that is invoked to resolve the context root from
+     *            the request
      * @return a new bootstrap context instance
      */
     protected BootstrapContext createBootstrapContext(VaadinRequest request,
@@ -1545,18 +1511,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
-        // Load client-side dependencies for push support
-        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
+        String pushJs;
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
         } else {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        pushJSPath += versionQueryParam;
-        return pushJSPath;
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        return pushJs + versionQueryParam;
     }
 
     protected static void setupErrorDialogs(Element style) {
@@ -1599,8 +1565,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = DevBundleUtils.findBundleStatsJson(
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
-                "Frontend development bundle is expected to be in the project"
-                        + " or on the classpath, but not found.");
+                """
+                        Frontend development bundle is expected to be in the project or on the classpath, but not found.
+                        Add 'com.vaadin:vaadin-dev' dependency to let Vaadin re-use the pre-compiled development bundle
+                        or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                        Maven:
+                            <dependency>
+                                <groupId>com.vaadin</groupId>
+                                <artifactId>vaadin-dev</artifactId>
+                            </dependency>
+
+                        Gradle:
+                            dependencies {
+                                implementation('com.vaadin:vaadin-dev')
+                            }
+
+                        """);
         return JacksonUtils.readTree(statsJson);
     }
 
@@ -1629,7 +1610,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      * <p>
-     * </p>
+     *
      * This method does not verify that the style sheet exists, so it may end up
      * at runtime with broken links. Use
      * {@link #getStylesheetLinks(VaadinContext, String, File)} if you want only
@@ -1651,7 +1632,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      * (typically styles.css or document.css), which are served in express build
      * mode by static file server directly from frontend/themes folder.
      * <p>
-     * </p>
+     *
      * This method return links only for existing style sheet files.
      *
      * @param context
@@ -1696,8 +1677,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .orElse(null);
 
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler.inlineImports(
-                        stylesCss.getParentFile(), stylesCss, themeJson)));
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImportsForThemes(stylesCss.getParentFile(),
+                                stylesCss, themeJson)));
             }
         } catch (IOException e) {
             throw new RuntimeException(

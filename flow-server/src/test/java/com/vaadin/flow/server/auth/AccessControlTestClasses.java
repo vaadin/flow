@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.auth;
 
 import jakarta.annotation.security.DenyAll;
@@ -454,4 +453,13 @@ public class AccessControlTestClasses {
             implements RouterLayout {
     }
 
+    @Tag(Tag.DIV)
+    public static class NoPermitParent extends Component
+            implements RouterLayout {
+    }
+
+    @PermitAll
+    @Route(value = "permitall", layout = NoPermitParent.class)
+    public static class PermitAllWithEmptyParentView extends Component {
+    }
 }

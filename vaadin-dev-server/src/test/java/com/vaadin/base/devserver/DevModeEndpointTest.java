@@ -1,14 +1,24 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.base.devserver;
 
-import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
-import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
-import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import jakarta.servlet.ServletRegistration;
 
 import java.io.File;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,25 +26,29 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.servlet.ServletRegistration;
-
-import com.vaadin.base.devserver.startup.AbstractDevModeTest;
-import com.vaadin.base.devserver.startup.DevModeStartupListener;
-import com.vaadin.flow.di.ResourceProvider;
-import com.vaadin.flow.internal.DevModeHandlerManager;
-import com.vaadin.flow.server.VaadinServlet;
-import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-
-import org.apache.commons.io.FileUtils;
+import net.jcip.annotations.NotThreadSafe;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import net.jcip.annotations.NotThreadSafe;
+import com.vaadin.base.devserver.startup.AbstractDevModeTest;
+import com.vaadin.base.devserver.startup.DevModeStartupListener;
+import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.server.VaadinServletContext;
+import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
+
+import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
+import static com.vaadin.flow.server.Constants.TARGET;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubNode;
+import static com.vaadin.flow.testutil.FrontendStubs.createStubViteServer;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @NotThreadSafe
 public class DevModeEndpointTest extends AbstractDevModeTest {
@@ -95,7 +109,7 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
         Mockito.when(servletContext.getClassLoader())
                 .thenReturn(this.getClass().getClassLoader());
 
-        FileUtils.forceMkdir(new File(baseDir, "src/main/java"));
+        Files.createDirectories(new File(baseDir, "src/main/java").toPath());
 
         devModeStartupListener = new DevModeStartupListener();
     }
@@ -107,13 +121,23 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 .toFile();
 
         Assert.assertFalse(generatedOpenApiJson.exists());
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
+                .mockStatic(FrontendBuildUtils.class,
+                        Mockito.CALLS_REAL_METHODS);
+        try {
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(true);
+            frontendBuildUtils.when(() -> FrontendBuildUtils
+                    .isHillaUsed(Mockito.any(), Mockito.any()))
+                    .thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
+        } finally {
+            frontendUtils.close();
+            frontendBuildUtils.close();
         }
         Assert.assertTrue("Should generate OpenAPI spec if Endpoint is used.",
                 generatedOpenApiJson.exists());
@@ -133,19 +157,31 @@ public class DevModeEndpointTest extends AbstractDevModeTest {
                 Mockito.anyString())).thenReturn(src.getAbsolutePath());
 
         File ts1 = new File(baseDir,
-                DEFAULT_PROJECT_FRONTEND_GENERATED_DIR + "MyEndpoint.ts");
-        File ts2 = new File(baseDir, DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
-                + "connect-client.default.ts");
+                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
+                        + "MyEndpoint.ts");
+        File ts2 = new File(baseDir,
+                FrontendUtils.DEFAULT_PROJECT_FRONTEND_GENERATED_DIR
+                        + "connect-client.default.ts");
 
         assertFalse(ts1.exists());
         assertFalse(ts2.exists());
-        try (MockedStatic<FrontendUtils> util = Mockito
-                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
-                    Mockito.any())).thenReturn(true);
+        MockedStatic<FrontendUtils> frontendUtils = Mockito
+                .mockStatic(FrontendUtils.class, Mockito.CALLS_REAL_METHODS);
+        MockedStatic<FrontendBuildUtils> frontendBuildUtils = Mockito
+                .mockStatic(FrontendBuildUtils.class,
+                        Mockito.CALLS_REAL_METHODS);
+        try {
+            frontendUtils.when(() -> FrontendUtils.isHillaUsed(Mockito.any()))
+                    .thenReturn(true);
+            frontendBuildUtils.when(() -> FrontendBuildUtils
+                    .isHillaUsed(Mockito.any(), Mockito.any()))
+                    .thenReturn(true);
             devModeStartupListener.onStartup(classes, servletContext);
             handler = getDevModeHandler();
             waitForDevServer();
+        } finally {
+            frontendUtils.close();
+            frontendBuildUtils.close();
         }
         assertTrue(ts1.exists());
         assertTrue(ts2.exists());

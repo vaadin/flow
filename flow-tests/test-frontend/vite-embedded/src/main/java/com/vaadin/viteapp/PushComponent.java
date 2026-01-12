@@ -15,18 +15,17 @@
  */
 package com.vaadin.viteapp;
 
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.page.Push;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.vaadin.flow.component.AttachEvent;
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.DetachEvent;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.WebComponentExporter;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.page.Push;
 import com.vaadin.flow.component.webcomponent.WebComponent;
 
 public class PushComponent extends Div {

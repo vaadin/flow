@@ -33,7 +33,6 @@ import com.vaadin.flow.server.VaadinContext;
  * depends on {@link Lookup} presence.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @FunctionalInterface

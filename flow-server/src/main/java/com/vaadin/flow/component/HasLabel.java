@@ -37,7 +37,6 @@ import com.vaadin.flow.dom.ElementConstants;
  * }</pre>
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface HasLabel extends HasElement {
     /**

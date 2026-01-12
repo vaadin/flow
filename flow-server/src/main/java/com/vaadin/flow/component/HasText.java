@@ -43,7 +43,6 @@ public interface HasText extends HasElement {
      * Represents <code>"white-space"</code> style values.
      *
      * @author Vaadin Ltd
-     * @since
      *
      */
     enum WhiteSpace {

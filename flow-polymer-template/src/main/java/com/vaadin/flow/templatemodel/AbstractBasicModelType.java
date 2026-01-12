@@ -16,12 +16,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import tools.jackson.databind.JsonNode;
+
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.nodefeature.ElementPropertyMap;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 /**
  * Common abstract class with generic functionality for basic mode type.
@@ -64,8 +64,8 @@ public abstract class AbstractBasicModelType<T> implements ModelType {
     }
 
     @Override
-    public JsonValue toJson() {
-        return Json.create(type.getSimpleName());
+    public JsonNode toJson() {
+        return JacksonUtils.createNode(type.getSimpleName());
     }
 
     @Override

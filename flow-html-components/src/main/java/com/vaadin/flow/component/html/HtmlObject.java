@@ -26,15 +26,14 @@ import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
-import com.vaadin.flow.server.DownloadHandler;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.StreamResourceRegistry;
+import com.vaadin.flow.server.streams.AbstractDownloadHandler;
+import com.vaadin.flow.server.streams.DownloadHandler;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @Tag(Tag.OBJECT)
@@ -104,7 +103,9 @@ public class HtmlObject extends HtmlContainer implements
      *            the resource value, not null
      * @param type
      *            a type attribute value
+     * @deprecated use {@link #HtmlObject(DownloadHandler,String)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type) {
         setData(data);
         setType(type);
@@ -125,7 +126,10 @@ public class HtmlObject extends HtmlContainer implements
      *            a type attribute value
      * @param params
      *            parameter components
+     * @deprecated use {@link #HtmlObject(DownloadHandler,String, Param...)}
+     *             instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, String type,
             Param... params) {
         setData(data);
@@ -138,7 +142,12 @@ public class HtmlObject extends HtmlContainer implements
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
      *
-     * @see #setData(AbstractStreamResource)
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
+     *
+     * @see #setData(DownloadHandler)
      * @see #setType(String)
      *
      * @param data
@@ -155,6 +164,11 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
      *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
+     *
      * @see #setData(String)
      * @see #setType(String)
      * @see #add(Component...)
@@ -168,10 +182,56 @@ public class HtmlObject extends HtmlContainer implements
      *            parameter components
      */
     public HtmlObject(DownloadHandler data, String type, Param... params) {
-        setData(new StreamResourceRegistry.ElementStreamResource(data,
-                this.getElement()));
+        setData(data);
         setType(type);
         add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a handler that defines the data to be set to this object
+     *            component
+     * @param params
+     *            parameter components
+     */
+    public HtmlObject(DownloadHandler data, Param... params) {
+        setData(data);
+        add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with given data
+     * resource, type value and "param" components.
+     *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
+     *
+     * @see #setData(String)
+     * @see #setType(String)
+     * @see #add(Component...)
+     *
+     *
+     * @param data
+     *            a handler that defines the data to be set to this object
+     *            component
+     */
+    public HtmlObject(DownloadHandler data) {
+        setData(data);
     }
 
     /**
@@ -200,7 +260,9 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            the resource value, not {@code null}
+     * @deprecated use {@link #HtmlObject(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data) {
         setData(data);
     }
@@ -216,7 +278,9 @@ public class HtmlObject extends HtmlContainer implements
      *            the resource value, not {@code null}
      * @param params
      *            parameter components
+     * @deprecated use {@link #HtmlObject(DownloadHandler,Param...)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public HtmlObject(AbstractStreamResource data, Param... params) {
         setData(data);
         add(params);
@@ -237,22 +301,32 @@ public class HtmlObject extends HtmlContainer implements
      *
      * @param data
      *            a "data" attribute value,, not {@code null}
+     * @deprecated use {@link #setData(DownloadHandler)} instead
      */
+    @Deprecated(since = "24.8", forRemoval = true)
     public void setData(AbstractStreamResource data) {
         getElement().setAttribute("data", data);
     }
 
     /**
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
-     * value .
+     * value.
+     *
+     * Sets the <code>Content-Disposition</code> header to <code>inline</code>
+     * for pre-defined download handlers, created by factory methods in
+     * {@link DownloadHandler}, as well as for other
+     * {@link AbstractDownloadHandler} implementations.
      *
      * @param data
-     *            a "data" attribute value,, not {@code null}
+     *            a "data" attribute value, not {@code null}
      */
     public void setData(DownloadHandler data) {
-        getElement().setAttribute("data",
-                new StreamResourceRegistry.ElementStreamResource(data,
-                        this.getElement()));
+        if (data instanceof AbstractDownloadHandler<?> handler) {
+            // change disposition to inline in pre-defined handlers,
+            // where it is 'attachment' by default
+            handler.inline();
+        }
+        getElement().setAttribute("data", data);
     }
 
     /**
@@ -261,7 +335,7 @@ public class HtmlObject extends HtmlContainer implements
      * @return the "data" attribute value
      *
      * @see #setData(String)
-     * @see #setData(AbstractStreamResource)
+     * @see #setData(DownloadHandler)
      */
     public String getData() {
         return get(dataDescriptor);

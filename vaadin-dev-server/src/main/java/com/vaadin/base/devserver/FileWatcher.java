@@ -34,8 +34,9 @@ public class FileWatcher {
 
     private DirectoryWatcher watcher;
 
-    private static ExecutorService executorService = Executors
-            .newCachedThreadPool();
+    private static final ExecutorService executorService = Executors
+            .newCachedThreadPool(
+                    new NamedDaemonThreadFactory("vaadin-file-watcher"));
 
     /**
      * Creates an instance of the file watcher for the given directory.
@@ -50,6 +51,7 @@ public class FileWatcher {
      * @param watchDirectory
      *            the directory to watch for changes, cannot be empty
      * @throws IOException
+     *             if an error occurs while setting up the watcher
      */
     public FileWatcher(SerializableConsumer<File> onChangeConsumer,
             File watchDirectory) throws IOException {

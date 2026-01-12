@@ -44,8 +44,15 @@ internal class PrepareFrontendInputProperties(
 
     @Input
     @Optional
-    fun getWebpackOutputDirectory(): Provider<String> =
-        config.webpackOutputDirectory
+    fun getFrontendOutputDirectory(): Provider<String> =
+        config.frontendOutputDirectory
+            .filterExists()
+            .absolutePath
+
+    @Input
+    @Optional
+    fun getResourcesOutputDirectory(): Provider<String> =
+        config.resourcesOutputDirectory
             .filterExists()
             .absolutePath
 
@@ -53,7 +60,8 @@ internal class PrepareFrontendInputProperties(
     fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
-    fun getFrontendDirectory(): Provider<String> = config.frontendDirectory.absolutePath
+    fun getFrontendDirectory(): Provider<String> =
+        config.frontendDirectory.absolutePath
 
     @Input
     fun getGenerateBundle(): Provider<Boolean> = config.generateBundle
@@ -83,6 +91,10 @@ internal class PrepareFrontendInputProperties(
     @Input
     fun getRequireHomeNodeExec(): Provider<Boolean> =
         config.requireHomeNodeExec
+
+    @Input
+    @Optional
+    fun getNodeFolder(): Provider<String> = config.nodeFolder
 
     @Input
     fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
@@ -123,9 +135,6 @@ internal class PrepareFrontendInputProperties(
 
     @Input
     fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
-
-    @Input
-    fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
 
     @Input
     fun getProjectBuildDir(): Provider<String> = config.projectBuildDir

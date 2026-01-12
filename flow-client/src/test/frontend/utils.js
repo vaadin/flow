@@ -3,12 +3,12 @@ if (intern.environment === 'node') {
   /* global require, global */
 
   if (!global.fetch) {
-    const {fetch, Request, Response, Headers} = require('node-fetch');
-    Object.assign(global, {fetch, Request, Response, Headers});
+    const { fetch, Request, Response, Headers } = require('node-fetch');
+    Object.assign(global, { fetch, Request, Response, Headers });
   }
 }
 
-intern.registerPlugin('sinon', async() => {
+intern.registerPlugin('sinon', async () => {
   const chai = intern.getPlugin('chai');
 
   let sinon;
@@ -25,19 +25,19 @@ intern.registerPlugin('sinon', async() => {
     delete window.sinon;
     delete window.chai;
   }
-  return {sinon};
+  return { sinon };
 });
 
-intern.registerPlugin('fetchMock', async() => {
+intern.registerPlugin('fetchMock', async () => {
   if (intern.environment === 'node') {
     /* global require */
     const fetchMock = require('fetch-mock');
-    return {fetchMock};
+    return { fetchMock };
   } else {
     /* global window, fetchMock */
     await intern.loadScript('node_modules/fetch-mock/dist/es5/client-bundle.js');
     const fetchMockLocal = fetchMock;
     fetchMock = undefined;
-    return {fetchMock: fetchMockLocal};
+    return { fetchMock: fetchMockLocal };
   }
 });

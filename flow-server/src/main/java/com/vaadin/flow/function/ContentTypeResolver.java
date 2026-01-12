@@ -15,10 +15,10 @@
  */
 package com.vaadin.flow.function;
 
+import jakarta.servlet.ServletContext;
+
 import java.io.Serializable;
 import java.util.function.BiFunction;
-
-import jakarta.servlet.ServletContext;
 
 import com.vaadin.flow.server.StreamResource;
 

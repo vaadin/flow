@@ -1,2 +1,2 @@
 window.messages = window.messages || [];
-window.messages.push("eager-module.js");
+window.messages.push('eager-module.js');

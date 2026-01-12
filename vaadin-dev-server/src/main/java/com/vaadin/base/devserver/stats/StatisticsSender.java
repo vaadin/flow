@@ -16,19 +16,18 @@
 package com.vaadin.base.devserver.stats;
 
 import java.io.IOException;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  * Handles sending of telemetry data.
@@ -67,7 +66,7 @@ public class StatisticsSender {
      */
     String getLastServerMessage(ObjectNode json) {
         return json.has(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asText()
+                ? json.get(StatisticsConstants.FIELD_SERVER_MESSAGE).asString()
                 : null;
     }
 
@@ -159,7 +158,7 @@ public class StatisticsSender {
      */
     String getLastSendStatus(ObjectNode json) {
         try {
-            return json.get(StatisticsConstants.FIELD_LAST_STATUS).asText();
+            return json.get(StatisticsConstants.FIELD_LAST_STATUS).asString();
         } catch (Exception e) {
             // Use default value in case of any problems
             getLogger().debug(
@@ -207,7 +206,7 @@ public class StatisticsSender {
         String stringData;
         try {
             stringData = JsonHelpers.getJsonMapper().writeValueAsString(json);
-        } catch (JsonProcessingException e) {
+        } catch (JacksonException e) {
             getLogger().debug("Error converting statistics to a string", e);
             return null;
         }
@@ -222,7 +221,7 @@ public class StatisticsSender {
                 global.setValue(StatisticsConstants.FIELD_LAST_SENT,
                         System.currentTimeMillis());
                 global.setValue(StatisticsConstants.FIELD_LAST_STATUS, response
-                        .get(StatisticsConstants.FIELD_LAST_STATUS).asText());
+                        .get(StatisticsConstants.FIELD_LAST_STATUS).asString());
 
                 // Use different interval, if requested in response or default
                 // to 24H
@@ -245,7 +244,7 @@ public class StatisticsSender {
                                 .isTextual()) {
                     String msg = response
                             .get(StatisticsConstants.FIELD_SERVER_MESSAGE)
-                            .asText();
+                            .asString();
                     global.setValue(StatisticsConstants.FIELD_SERVER_MESSAGE,
                             msg);
                     message.set(msg);
@@ -254,7 +253,7 @@ public class StatisticsSender {
             });
 
             // If data was sent ok, clear the existing project data
-            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asText()
+            if (response.get(StatisticsConstants.FIELD_LAST_STATUS).asString()
                     .startsWith("200:")) {
                 storage.clearAllProjectData();
             }

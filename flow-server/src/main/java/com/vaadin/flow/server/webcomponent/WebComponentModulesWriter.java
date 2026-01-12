@@ -21,7 +21,6 @@ import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
@@ -30,8 +29,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import org.apache.commons.io.FileUtils;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.WebComponentExporter;
@@ -121,11 +118,9 @@ public final class WebComponentModulesWriter implements Serializable {
         String fileName = tag + ".js";
         Path generatedFile = outputDirectory.toPath().resolve(fileName);
         try {
-            FileUtils.forceMkdir(generatedFile.getParent().toFile());
-            Files.write(generatedFile,
-                    Collections
-                            .singletonList(generateModule(factory, themeName)),
-                    StandardCharsets.UTF_8);
+            Files.createDirectories(generatedFile.getParent());
+            Files.write(generatedFile, Collections
+                    .singletonList(generateModule(factory, themeName)));
         } catch (IOException e) {
             throw new UncheckedIOException(String.format(
                     "Failed to create web component module file '%s'",

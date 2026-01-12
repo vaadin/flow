@@ -28,7 +28,6 @@ import com.vaadin.flow.component.UI;
  * parameters here.
  *
  * @author Vaadin Ltd
- * @since
  */
 public class InitParameters implements Serializable {
 
@@ -42,11 +41,6 @@ public class InitParameters implements Serializable {
     public static final String SERVLET_PARAMETER_PRODUCTION_MODE = "productionMode";
 
     public static final String SERVLET_PARAMETER_INITIAL_UIDL = "eagerServerLoad";
-    /**
-     * Enable dev server is deprecated. use {@link #FRONTEND_HOTDEPLOY}
-     */
-    @Deprecated
-    public static final String SERVLET_PARAMETER_ENABLE_DEV_SERVER = "enableDevServer";
     public static final String SERVLET_PARAMETER_REUSE_DEV_SERVER = "reuseDevServer";
     public static final String SERVLET_PARAMETER_REQUEST_TIMING = "requestTiming";
     // Javadocs for VaadinService should be updated if this value is changed
@@ -133,7 +127,6 @@ public class InitParameters implements Serializable {
     /*
      * Configuration parameter name for enabling usage statistics.
      *
-     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_STATISTICS = "devmode.usageStatistics.enabled";
 
@@ -150,7 +143,6 @@ public class InitParameters implements Serializable {
      * ({@link #SERVLET_PARAMETER_DEVMODE_ENABLE_DEV_TOOLS} is set to {@code
      * false}), the live reload will be disabled as well.
      *
-     * @since
      */
     public static final String SERVLET_PARAMETER_DEVMODE_ENABLE_LIVE_RELOAD = "devmode.liveReload.enabled";
 
@@ -167,7 +159,6 @@ public class InitParameters implements Serializable {
      * {@link com.vaadin.flow.component.UI} instances will be serialized.
      * Otherwise, it won't be serialized.
      *
-     * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_SERIALIZE_SESSION = "devmode.sessionSerialization.enabled";
 
@@ -175,7 +166,6 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for enabling component tracking in
      * development mode. If not set, tracking is enabled by default.
      *
-     * @since
      */
     public static final String APPLICATION_PARAMETER_DEVMODE_ENABLE_COMPONENT_TRACKER = "devmode.componentTracker.enabled";
 
@@ -205,17 +195,21 @@ public class InitParameters implements Serializable {
      * Configuration parameter name for requiring node executable installed in
      * home directory.
      *
-     * @since
      */
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
 
     /**
-     * Configuration parameter name for requiring node executable installed in
-     * home directory.
-     *
-     * @since
+     * Configuration parameter name for specifying the folder containing the
+     * Node.js executable.
+     * <p>
+     * When this parameter is set to a non-empty value, the Node.js binary will
+     * be exclusively used from the specified folder. If the binary is not found
+     * in this folder, an exception will be thrown with no fallback to global or
+     * alternative installations.
+     * <p>
+     * Example: "/usr/local/custom-node" or "C:\\custom\\node"
      */
-    public static final String NODE_AUTO_UPDATE = "node.auto.update";
+    public static final String NODE_FOLDER = "node.folder";
 
     /**
      * Configuration name for the parameter that sets the compiled web
@@ -230,7 +224,6 @@ public class InitParameters implements Serializable {
     /**
      * Configuration name for the build folder.
      *
-     * @since
      */
     public static final String BUILD_FOLDER = "build.folder";
 
@@ -238,7 +231,6 @@ public class InitParameters implements Serializable {
      * Packages, in addition to the internally used ones, to run postinstall
      * scripts for.
      *
-     * @since
      */
     public static final String ADDITIONAL_POSTINSTALL_PACKAGES = "npm.postinstallPackages";
 
@@ -272,6 +264,13 @@ public class InitParameters implements Serializable {
      * Configuration name for forcing optimized production bundle build.
      */
     public static final String COMPRESS_BUNDLE = "vaadin.compress.bundle";
+
+    /**
+     * Configuration name to enable adding a commercial banner to the
+     * application when commercial components are used without a valid license
+     * key.
+     */
+    public static final String COMMERCIAL_WITH_BANNER = "commercialWithBanner";
 
     /**
      * Configuration name for cleaning or leaving frontend files in build.

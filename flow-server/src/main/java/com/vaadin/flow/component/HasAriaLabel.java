@@ -50,7 +50,6 @@ import com.vaadin.flow.dom.ElementConstants;
  * details.
  *
  * @author Vaadin Ltd
- * @since
  */
 public interface HasAriaLabel extends HasElement {
     /**

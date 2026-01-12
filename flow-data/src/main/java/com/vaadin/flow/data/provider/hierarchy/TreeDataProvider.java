@@ -15,9 +15,13 @@
  */
 package com.vaadin.flow.data.provider.hierarchy;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.vaadin.flow.data.provider.InMemoryDataProvider;
@@ -44,10 +48,12 @@ public class TreeDataProvider<T>
 
     private SerializableComparator<T> sortOrder = null;
 
+    private HierarchyFormat hierarchyFormat = HierarchyFormat.NESTED;
+
     /**
      * Constructs a new TreeDataProvider.
      * <p>
-     * This data provider should be refreshed after making changes to the
+     * The data provider should be refreshed after making changes to the
      * underlying {@link TreeData} instance.
      *
      * @param treeData
@@ -55,8 +61,34 @@ public class TreeDataProvider<T>
      *            {@code null}
      */
     public TreeDataProvider(TreeData<T> treeData) {
-        Objects.requireNonNull(treeData, "treeData cannot be null");
-        this.treeData = treeData;
+        this.treeData = Objects.requireNonNull(treeData,
+                "treeData cannot be null");
+    }
+
+    /**
+     * Creates a new TreeDataProvider and configures it to return the
+     * hierarchical data in the specified format: {@link HierarchyFormat#NESTED}
+     * or {@link HierarchyFormat#FLATTENED}.
+     * <p>
+     * The data provider should be refreshed after making changes to the
+     * underlying {@link TreeData} instance.
+     *
+     * @param treeData
+     *            the backing {@link TreeData} for this provider, not
+     *            {@code null}
+     * @param hierarchyFormat
+     *            the hierarchy format to return data in, not {@code null}
+     */
+    public TreeDataProvider(TreeData<T> treeData,
+            HierarchyFormat hierarchyFormat) {
+        this(treeData);
+        this.hierarchyFormat = Objects.requireNonNull(hierarchyFormat,
+                "hierarchyFormat cannot be null");
+    }
+
+    @Override
+    public HierarchyFormat getHierarchyFormat() {
+        return hierarchyFormat;
     }
 
     /**
@@ -78,17 +110,32 @@ public class TreeDataProvider<T>
     }
 
     @Override
+    public T getParent(T item) {
+        Objects.requireNonNull(item, "Item cannot be null.");
+        try {
+            return getTreeData().getParent(item);
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    @Override
+    public int getDepth(T item) {
+        int depth = 0;
+        while ((item = treeData.getParent(item)) != null) {
+            depth++;
+        }
+        return depth;
+    }
+
+    @Override
     public int getChildCount(
             HierarchicalQuery<T, SerializablePredicate<T>> query) {
-        Stream<T> items;
+        Optional<SerializablePredicate<T>> combinedFilter = getCombinedFilter(
+                query.getFilter());
 
-        if (query.getParent() != null) {
-            items = treeData.getChildren(query.getParent()).stream();
-        } else {
-            items = treeData.getRootItems().stream();
-        }
-
-        return (int) getFilteredStream(items, query.getFilter())
+        return (int) flatten(query.getParent(), query.getExpandedItemIds(),
+                combinedFilter, Optional.empty()).stream()
                 .skip(query.getOffset()).limit(query.getLimit()).count();
     }
 
@@ -102,20 +149,17 @@ public class TreeDataProvider<T>
                     + "Did you forget to refresh this data provider after item removal?");
         }
 
-        Stream<T> childStream = getFilteredStream(
-                treeData.getChildren(query.getParent()).stream(),
+        Optional<SerializablePredicate<T>> combinedFilter = getCombinedFilter(
                 query.getFilter());
 
-        Optional<Comparator<T>> comparing = Stream
+        Optional<Comparator<T>> comparator = Stream
                 .of(query.getInMemorySorting(), sortOrder)
                 .filter(Objects::nonNull)
                 .reduce((c1, c2) -> c1.thenComparing(c2));
 
-        if (comparing.isPresent()) {
-            childStream = childStream.sorted(comparing.get());
-        }
-
-        return childStream.skip(query.getOffset()).limit(query.getLimit());
+        return flatten(query.getParent(), query.getExpandedItemIds(),
+                combinedFilter, comparator).stream().skip(query.getOffset())
+                .limit(query.getLimit());
     }
 
     @Override
@@ -140,18 +184,42 @@ public class TreeDataProvider<T>
         refreshAll();
     }
 
-    private Stream<T> getFilteredStream(Stream<T> stream,
+    private Optional<SerializablePredicate<T>> getCombinedFilter(
             Optional<SerializablePredicate<T>> queryFilter) {
-        final Optional<SerializablePredicate<T>> combinedFilter = filter != null
+        return filter != null
                 ? Optional.of(queryFilter.map(filter::and).orElse(filter))
                 : queryFilter;
-        return combinedFilter.map(
-                f -> stream.filter(element -> flatten(element).anyMatch(f)))
-                .orElse(stream);
     }
 
-    private Stream<T> flatten(T element) {
-        return Stream.concat(Stream.of(element), getTreeData()
-                .getChildren(element).stream().flatMap(this::flatten));
+    private List<T> flatten(T parent, Set<Object> expandedItemIds,
+            Optional<SerializablePredicate<T>> combinedFilter,
+            Optional<Comparator<T>> comparator) {
+        List<T> result = new ArrayList<>();
+        List<T> children = getTreeData().getChildren(parent);
+
+        if (comparator.isPresent()) {
+            children = children.stream().sorted(comparator.get()).toList();
+        }
+
+        for (T child : children) {
+            List<T> descendants = Collections.emptyList();
+            if (getHierarchyFormat().equals(HierarchyFormat.NESTED)
+                    || expandedItemIds.contains(getId(child))) {
+                descendants = flatten(child, expandedItemIds, combinedFilter,
+                        comparator);
+            }
+
+            boolean shouldInclude = combinedFilter.map(f -> f.test(child))
+                    .orElse(true) || descendants.size() > 0;
+            if (shouldInclude) {
+                result.add(child);
+            }
+            if (shouldInclude
+                    && getHierarchyFormat().equals(HierarchyFormat.FLATTENED)) {
+                result.addAll(descendants);
+            }
+        }
+
+        return result;
     }
 }

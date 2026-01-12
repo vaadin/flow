@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import junit.framework.AssertionFailedError;
@@ -406,4 +408,81 @@ public class BeanPropertySetTest {
         Assert.assertEquals(GenericIface.class, defs.get(2).getType());
     }
 
+    public interface HasSomething {
+        default String getSomething() {
+            return "something";
+        }
+
+        default void setSomething(String something) {
+            // do nothing
+        }
+
+    }
+
+    public interface HasName extends HasSomething {
+
+        default String getName() {
+            return this.getLastName() + ", " + this.getFirstName();
+        }
+
+        default void setName(String name) {
+            final Matcher matcher = Pattern.compile("^(.+), (.+)$")
+                    .matcher(name);
+            this.setLastName(matcher.group(1));
+            this.setFirstName(matcher.group(2));
+        }
+
+        String getLastName();
+
+        void setLastName(String lastName);
+
+        String getFirstName();
+
+        void setFirstName(String firstName);
+    }
+
+    public class MyClass implements HasName {
+
+        private String lastName;
+        private String firstName;
+
+        @Override
+        public String getLastName() {
+            return this.lastName;
+        }
+
+        @Override
+        public void setLastName(String lastName) {
+            this.lastName = lastName;
+        }
+
+        @Override
+        public String getFirstName() {
+            return this.firstName;
+        }
+
+        @Override
+        public void setFirstName(String firstName) {
+            this.firstName = firstName;
+        }
+    }
+
+    @Test
+    public void includesDefaultMethodsFromInterfaces() {
+        PropertySet<MyClass> set = BeanPropertySet.get(MyClass.class);
+
+        List<PropertyDefinition<MyClass, ?>> defs = set.getProperties()
+                .collect(Collectors.toList());
+
+        Assert.assertEquals(4, defs.size());
+        Assert.assertEquals("firstName", defs.get(0).getName());
+        Assert.assertEquals(String.class, defs.get(0).getType());
+        Assert.assertEquals("lastName", defs.get(1).getName());
+        Assert.assertEquals(String.class, defs.get(1).getType());
+        Assert.assertEquals("name", defs.get(2).getName());
+        Assert.assertEquals(String.class, defs.get(2).getType());
+        Assert.assertEquals("something", defs.get(3).getName());
+        Assert.assertEquals(String.class, defs.get(3).getType());
+
+    }
 }

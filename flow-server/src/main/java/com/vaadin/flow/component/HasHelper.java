@@ -56,14 +56,12 @@ public interface HasHelper extends HasElement {
      * that can be used, e.g., to inform to the users which values it expects.
      * Example: a text "The password must contain numbers" for the
      * PasswordField.
-     * </p>
      *
      * <p>
      * In case both {@link #setHelperText(String)} and
      * {@link #setHelperComponent(Component)} are used, only the element defined
      * by {@link #setHelperComponent(Component)} will be visible, regardless of
      * the order on which they are defined.
-     * </p>
      *
      * @param helperText
      *            the String value to set

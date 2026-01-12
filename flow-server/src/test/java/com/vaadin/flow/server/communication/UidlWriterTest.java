@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.server.communication;
 
+import jakarta.servlet.http.HttpServletRequest;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,13 +26,12 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import jakarta.servlet.http.HttpServletRequest;
 import net.jcip.annotations.NotThreadSafe;
 import org.junit.After;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentTest;
@@ -46,6 +47,7 @@ import com.vaadin.flow.component.internal.UIInternals.JavaScriptInvocation;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateTree;
 import com.vaadin.flow.router.ParentLayout;
@@ -58,7 +60,6 @@ import com.vaadin.flow.server.MockVaadinContext.RoutePathProviderImpl;
 import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.VaadinServletRequest;
 import com.vaadin.flow.server.VaadinSession;
-import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
@@ -446,7 +447,7 @@ public class UidlWriterTest {
         when(vaadinRequestMock.getHttpServletRequest())
                 .thenReturn(servletRequestMock);
 
-        ui.doInit(vaadinRequestMock, 1);
+        ui.doInit(vaadinRequestMock, 1, "foo");
         ui.getInternals().getRouter().initializeUI(ui,
                 UITest.requestToLocation(vaadinRequestMock));
 

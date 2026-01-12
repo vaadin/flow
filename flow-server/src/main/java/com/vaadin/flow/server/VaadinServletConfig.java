@@ -16,13 +16,13 @@
 package com.vaadin.flow.server;
 
 import jakarta.servlet.ServletConfig;
+
 import java.util.Enumeration;
 import java.util.Objects;
 
 /**
  * {@link VaadinConfig} implementation for Servlets.
  *
- * @since
  */
 public class VaadinServletConfig implements VaadinConfig {
 

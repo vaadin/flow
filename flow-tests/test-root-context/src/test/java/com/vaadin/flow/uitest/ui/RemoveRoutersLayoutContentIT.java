@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.uitest.ui;
 
 import java.util.List;
@@ -26,10 +25,10 @@ import org.openqa.selenium.WebElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
 
-import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_TO_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID;
-import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_TO_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID;
-import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_BACK_FROM_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID;
 import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_BACK_FROM_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID;
+import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_BACK_FROM_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID;
+import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_TO_ANOTHER_ROUTE_INSIDE_MAIN_LAYOUT_BUTTON_ID;
+import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.NAVIGATE_TO_ANOTHER_ROUTE_OUTSIDE_MAIN_LAYOUT_BUTTON_ID;
 import static com.vaadin.flow.uitest.servlet.RouterLayoutCustomScopeServlet.SUB_LAYOUT_ID;
 
 public class RemoveRoutersLayoutContentIT extends ChromeBrowserTest {

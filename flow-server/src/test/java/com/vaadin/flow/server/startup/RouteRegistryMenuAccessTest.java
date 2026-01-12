@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.startup;
 
 import jakarta.annotation.security.PermitAll;
@@ -44,11 +43,10 @@ import com.vaadin.flow.server.VaadinServletContext;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.server.auth.MenuAccessControl;
 import com.vaadin.flow.server.auth.NavigationAccessControl;
-import com.vaadin.flow.server.auth.ViewAccessChecker;
 
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class RouteRegistryMenuAccessTest {
 
@@ -156,40 +154,6 @@ public class RouteRegistryMenuAccessTest {
     @Test
     public void getRegisteredAccessibleMenuRoutes_withNavAccessControl_admin() {
         testAsAdmin(new NavigationAccessControl());
-    }
-
-    @Test
-    public void getRegisteredAccessibleMenuRoutes_withViewAccessChecker_anonymous() {
-        testAsAnonymous(new ViewAccessChecker());
-    }
-
-    @Test
-    public void getRegisteredAccessibleMenuRoutes_withViewAccessChecker_admin() {
-        testAsAdmin(new ViewAccessChecker());
-    }
-
-    @Test
-    public void getRegisteredAccessibleMenuRoutes_withNavAccessControlAndViewAccessChecker_admin() {
-        testAsAdmin(new NavigationAccessControl(), new ViewAccessChecker());
-    }
-
-    @Test
-    public void getRegisteredAccessibleMenuRoutes_withDisabledNavAccessControlAndViewAccessChecker_anonymous() {
-        setupForAnonymous();
-        var navAccessControl = new NavigationAccessControl();
-        navAccessControl.setEnabled(false);
-        var viewAccessControl = new ViewAccessChecker(false);
-        List<BeforeEnterListener> accessControls = List.of(navAccessControl,
-                viewAccessControl);
-
-        registry.clean();
-        registry.setRoute("hasmenu", MyMenuRoute.class,
-                Collections.emptyList());
-        Assert.assertEquals("One route should be registered.", 1,
-                registry.getRegisteredRoutes().size());
-        Assert.assertEquals("One accessible menu routes should be available.",
-                1, registry.getRegisteredAccessibleMenuRoutes(vaadinRequest,
-                        accessControls).size());
     }
 
     private void setupForAnonymous() {

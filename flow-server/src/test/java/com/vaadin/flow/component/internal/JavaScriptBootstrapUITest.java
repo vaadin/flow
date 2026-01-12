@@ -1,10 +1,28 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.component.internal;
 
-import java.io.Serializable;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.UUID;
 
+import net.bytebuddy.ByteBuddy;
+import net.bytebuddy.description.modifier.SyntheticState;
+import net.bytebuddy.description.modifier.Visibility;
+import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -176,6 +194,16 @@ public class JavaScriptBootstrapUITest {
                 Dirty.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute("product",
                 ProductView.class, Collections.emptyList());
+
+        Class<? extends ProductView> routeProxyClass = new ByteBuddy()
+                .subclass(ProductView.class)
+                .modifiers(Visibility.PUBLIC, SyntheticState.SYNTHETIC).make()
+                .load(ProductView.class.getClassLoader(),
+                        ClassLoadingStrategy.Default.WRAPPER)
+                .getLoaded();
+        mocks.getService().getRouter().getRegistry().setRoute("proxy-product",
+                routeProxyClass, Collections.emptyList());
+
         mocks.getService().getRouter().getRegistry().setRoute("exception",
                 FailOnException.class, Collections.emptyList());
         mocks.getService().getRouter().getRegistry().setRoute(
@@ -435,8 +463,8 @@ public class JavaScriptBootstrapUITest {
         Mockito.when(stateTree.getRootNode()).thenReturn(stateNode);
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         try (MockedStatic<MenuRegistry> menuRegistry = Mockito
                 .mockStatic(MenuRegistry.class)) {
@@ -451,7 +479,7 @@ public class JavaScriptBootstrapUITest {
             boolean reactEnabled = ui.getSession().getConfiguration()
                     .isReactEnabled();
 
-            final Serializable[] execValues = execArg.getValue();
+            final Object[] execValues = execArg.getValue();
             if (reactEnabled) {
                 assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
                 assertEquals(1, execValues.length);
@@ -494,8 +522,8 @@ public class JavaScriptBootstrapUITest {
         Page page = mockPage();
 
         ArgumentCaptor<String> execJs = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Serializable[]> execArg = ArgumentCaptor
-                .forClass(Serializable[].class);
+        ArgumentCaptor<Object[]> execArg = ArgumentCaptor
+                .forClass(Object[].class);
 
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
@@ -506,7 +534,7 @@ public class JavaScriptBootstrapUITest {
         boolean reactEnabled = ui.getSession().getConfiguration()
                 .isReactEnabled();
 
-        final Serializable[] execValues = execArg.getValue();
+        final Object[] execValues = execArg.getValue();
         if (reactEnabled) {
             assertEquals(REACT_PUSHSTATE_TO, execJs.getValue());
         } else {
@@ -522,6 +550,14 @@ public class JavaScriptBootstrapUITest {
         ui.navigate("empty");
         assertNull(ui.getInternals().getTitle());
         ui.navigate("product");
+        assertEquals("my-product", ui.getInternals().getTitle());
+    }
+
+    @Test
+    public void should_updatePageTitle_when_serverNavigationToProxyViewClass() {
+        ui.navigate("empty");
+        assertNull(ui.getInternals().getTitle());
+        ui.navigate("proxy-product");
         assertEquals("my-product", ui.getInternals().getTitle());
     }
 

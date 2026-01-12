@@ -34,7 +34,6 @@ package com.vaadin.flow.di;
  * is executed only once.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 @FunctionalInterface

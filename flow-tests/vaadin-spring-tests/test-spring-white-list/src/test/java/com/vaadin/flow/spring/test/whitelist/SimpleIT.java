@@ -13,16 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.test.whitelist;
+
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
 
 import com.vaadin.flow.component.button.testbench.ButtonElement;
 import com.vaadin.flow.component.textfield.testbench.TextFieldElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 import com.vaadin.testbench.TestBenchElement;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
 
 public class SimpleIT extends ChromeBrowserTest {
     @Before

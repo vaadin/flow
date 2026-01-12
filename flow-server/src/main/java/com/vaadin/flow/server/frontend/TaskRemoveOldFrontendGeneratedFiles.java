@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -29,22 +28,20 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.file.PathUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.ExecutionFailedException;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 
 /**
  * Deletes old files from frontend generated folder.
  * <p>
- * </p>
  * This task must be performed last, because it will delete all files in
  * frontend generated folder that have not been tracked by the
  * {@link GeneratedFilesSupport} instance provided by the current
  * {@link NodeTasks} execution.
  * <p>
- * </p>
  * For internal use only. May be renamed or removed in a future release.
  *
  * @see NodeTasks
@@ -104,7 +101,7 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                             @Override
                             public FileVisitResult postVisitDirectory(Path dir,
                                     IOException exc) throws IOException {
-                                if (PathUtils.isEmptyDirectory(dir)) {
+                                if (FileIOUtils.isEmptyDirectory(dir)) {
                                     Files.deleteIfExists(dir);
                                 }
                                 return FileVisitResult.CONTINUE;
@@ -155,6 +152,10 @@ public class TaskRemoveOldFrontendGeneratedFiles implements FallibleCommand {
                 frontendGeneratedFolder.resolve("file-routes.ts")));
         knownFiles.add(normalizePath(
                 frontendGeneratedFolder.resolve("file-routes.json")));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("css.generated.js")));
+        knownFiles.add(normalizePath(
+                frontendGeneratedFolder.resolve("css.generated.d.ts")));
         knownFiles.addAll(hillaGeneratedFiles());
         return path -> knownFiles.contains(path) || path.getFileName()
                 .toString().matches("theme(\\.(js|d\\.ts)|-.*\\.generated.js)");

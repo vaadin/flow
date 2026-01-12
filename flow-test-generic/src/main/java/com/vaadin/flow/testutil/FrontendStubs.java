@@ -267,8 +267,8 @@ public class FrontendStubs {
      */
     public static class ToolStubBuilder {
 
-        private static final String DEFAULT_NPM_VERSION = "10.9.0";
-        private static final String DEFAULT_NODE_VERSION = "22.12.0";
+        private static final String DEFAULT_NPM_VERSION = "11.12.13";
+        private static final String DEFAULT_NODE_VERSION = "24.18.0";
 
         private String version;
         private String cacheDir;
@@ -376,5 +376,22 @@ public class FrontendStubs {
      */
     public enum Tool {
         NODE, NPM
+    }
+
+    /**
+     * Resets the static node installation cache in FrontendTools using
+     * reflection. This ensures test isolation by clearing cached node paths
+     * between test runs.
+     *
+     * @throws Exception
+     *             if reflection fails
+     */
+    public static void resetFrontendToolsNodeCache() throws Exception {
+        Class<?> frontendToolsClass = Class
+                .forName("com.vaadin.flow.server.frontend.FrontendTools");
+        java.lang.reflect.Field activeNodeField = frontendToolsClass
+                .getDeclaredField("activeNodeInstallation");
+        activeNodeField.setAccessible(true);
+        activeNodeField.set(null, null);
     }
 }

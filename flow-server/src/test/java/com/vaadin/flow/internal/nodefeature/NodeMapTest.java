@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.internal.nodefeature;
 
 import java.io.Serializable;
@@ -27,8 +26,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.commons.lang3.SerializationUtils;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.StateNodeTest;
 import com.vaadin.flow.internal.StateTree;
@@ -36,9 +37,6 @@ import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.server.Command;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 // Using ElementStylePropertyMap since it closely maps to the underlying map
 public class NodeMapTest
@@ -116,6 +114,18 @@ public class NodeMapTest
 
         MapRemoveChange removeChange = (MapRemoveChange) removeChanges.get(0);
         Assert.assertEquals(KEY, removeChange.getKey());
+    }
+
+    @Test
+    public void testCollectChange_withSignalBinding() {
+        // Signal and Registration instances are irrelevant in this test.
+        nodeMap.put(KEY, new NodeMap.SignalBinding(null, null, "value"));
+        List<NodeChange> putChanges = collectChanges(nodeMap);
+
+        Assert.assertEquals(1, putChanges.size());
+        MapPutChange putChange = (MapPutChange) putChanges.get(0);
+        Assert.assertEquals(KEY, putChange.getKey());
+        Assert.assertEquals("value", putChange.getValue());
     }
 
     @Test
@@ -266,12 +276,12 @@ public class NodeMapTest
         nodeMap.put("boolean", Boolean.TRUE);
         nodeMap.put("number", Double.valueOf(5));
 
-        nodeMap.put("jsonString", Json.create("bar"));
-        nodeMap.put("jsonNull", Json.createNull());
-        nodeMap.put("jsonBoolean", Json.create(true));
-        nodeMap.put("jsonNumber", Json.create(5));
-        nodeMap.put("jsonObject", Json.createObject());
-        nodeMap.put("jsonArray", Json.createArray());
+        nodeMap.put("jsonString", JacksonUtils.writeValue("bar"));
+        nodeMap.put("jsonNull", JacksonUtils.nullNode());
+        nodeMap.put("jsonBoolean", JacksonUtils.writeValue(true));
+        nodeMap.put("jsonNumber", JacksonUtils.writeValue(5));
+        nodeMap.put("jsonObject", JacksonUtils.createObjectNode());
+        nodeMap.put("jsonArray", JacksonUtils.createArrayNode());
 
         Map<String, Object> values = new HashMap<>();
         nodeMap.keySet().forEach(key -> values.put(key, nodeMap.get(key)));
@@ -288,10 +298,11 @@ public class NodeMapTest
         values.keySet().forEach(key -> {
             if (key.startsWith("json")) {
                 // Json values are not equals
-                JsonValue originalValue = (JsonValue) nodeMap.get(key);
-                JsonValue copyValue = (JsonValue) copy.get(key);
+                BaseJsonNode originalValue = (BaseJsonNode) nodeMap.get(key);
+                BaseJsonNode copyValue = (BaseJsonNode) copy.get(key);
 
-                Assert.assertEquals(originalValue.toJson(), copyValue.toJson());
+                Assert.assertEquals(originalValue.toString(),
+                        copyValue.toString());
             } else {
                 Assert.assertEquals(nodeMap.get(key), copy.get(key));
             }

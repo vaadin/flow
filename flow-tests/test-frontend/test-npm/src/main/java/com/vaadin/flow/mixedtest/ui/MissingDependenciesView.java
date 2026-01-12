@@ -44,7 +44,7 @@ public class MissingDependenciesView extends Div {
         try {
             Component unreferenced = (Component) Class.forName(
                     "com.vaadin.flow.mixedtest.ui.MissingDependenciesView$Unreferenced")
-                    .newInstance();
+                    .getDeclaredConstructor().newInstance();
 
             // Uncomment to test behavior when the component is referenced
             // new Unreferenced();

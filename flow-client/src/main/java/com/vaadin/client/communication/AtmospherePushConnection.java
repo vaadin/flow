@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client.communication;
 
 import com.google.gwt.core.client.JavaScriptObject;
 import com.google.gwt.core.client.Scheduler;
+
 import com.vaadin.client.Command;
 import com.vaadin.client.Console;
 import com.vaadin.client.Registry;
@@ -703,7 +703,7 @@ public class AtmospherePushConnection implements PushConnection {
             JavaScriptObject config)
     /*-{
         var self = this;
-
+    
         config.url = uri;
         config.onOpen = $entry(function(response) {
             self.@com.vaadin.client.communication.AtmospherePushConnection::onOpen(*)(response);
@@ -734,7 +734,7 @@ public class AtmospherePushConnection implements PushConnection {
                 return self.@com.vaadin.client.communication.AtmospherePushConnection::getLastSeenServerSyncId(*)();
             }
         };
-
+    
         return $wnd.vaadinPush.atmosphere.subscribe(config);
     }-*/;
 

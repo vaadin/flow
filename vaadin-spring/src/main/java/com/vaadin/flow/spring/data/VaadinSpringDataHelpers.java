@@ -15,15 +15,17 @@
  */
 package com.vaadin.flow.spring.data;
 
-import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
-import com.vaadin.flow.data.provider.Query;
-import com.vaadin.flow.data.provider.SortDirection;
 import java.io.Serializable;
 import java.util.stream.Collectors;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.domain.Sort.Order;
 import org.springframework.data.repository.PagingAndSortingRepository;
+
+import com.vaadin.flow.data.provider.CallbackDataProvider.FetchCallback;
+import com.vaadin.flow.data.provider.Query;
+import com.vaadin.flow.data.provider.SortDirection;
 
 /**
  * Contains helper methods to work with Spring Data based back-ends and Vaadin
@@ -71,7 +73,6 @@ public interface VaadinSpringDataHelpers extends Serializable {
      * {@code Grid}. Usage example:
      * <p>
      * {@code grid.setItems(fromPagingRepository(repo));}
-     * <p>
      *
      * @param <T>
      *            the type of items to bind

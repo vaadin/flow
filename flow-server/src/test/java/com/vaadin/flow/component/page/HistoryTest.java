@@ -13,23 +13,19 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.component.page;
-
-import java.io.Serializable;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.Json;
-import elemental.json.JsonString;
 
 public class HistoryTest {
 
@@ -49,7 +45,7 @@ public class HistoryTest {
 
         private String expression;
 
-        private Serializable[] parameters;
+        private Object[] parameters;
 
         public TestPage(UI ui) {
             super(ui);
@@ -57,7 +53,7 @@ public class HistoryTest {
 
         @Override
         public PendingJavaScriptResult executeJs(String expression,
-                Serializable... parameters) {
+                Object... parameters) {
             this.expression = expression;
             this.parameters = parameters;
             return null;
@@ -92,21 +88,23 @@ public class HistoryTest {
 
     @Test
     public void pushState_locationWithQueryParameters_queryParametersRetained() {
-        history.pushState(Json.create("{foo:bar;}"), "context/view?param=4");
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
+                "context/view?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
                 page.expression);
-        Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString());
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
-        history.pushState(Json.create("{foo:bar;}"), "context/view/?param=4");
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
+                "context/view/?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_JS,
                 page.expression);
-        Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString());
         Assert.assertEquals("invalid location", "context/view/?param=4",
                 page.parameters[1]);
     }
@@ -180,21 +178,23 @@ public class HistoryTest {
     @Test
     public void pushState_locationWithQueryParameters_queryParametersRetained_react() {
         Mockito.when(configuration.isReactEnabled()).thenReturn(true);
-        history.pushState(Json.create("{foo:bar;}"), "context/view?param=4");
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
+                "context/view?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
                 page.expression);
-        Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString());
         Assert.assertEquals("invalid location", "context/view?param=4",
                 page.parameters[1]);
 
-        history.pushState(Json.create("{foo:bar;}"), "context/view/?param=4");
+        history.pushState(JacksonUtils.readTree("{'foo':'bar'}"),
+                "context/view/?param=4");
 
         Assert.assertEquals("push state JS not included", PUSH_STATE_REACT,
                 page.expression);
-        Assert.assertEquals("push state not included", "{foo:bar;}",
-                ((JsonString) page.parameters[0]).getString());
+        Assert.assertEquals("push state not included", "{\"foo\":\"bar\"}",
+                ((JsonNode) page.parameters[0]).toString());
         Assert.assertEquals("invalid location", "context/view/?param=4",
                 page.parameters[1]);
     }

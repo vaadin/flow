@@ -29,7 +29,6 @@ import com.vaadin.flow.server.startup.ApplicationConfiguration;
  * For internal use only. May be renamed or removed in a future release.
  *
  * @author Vaadin Ltd
- * @since
  *
  */
 public interface BrowserLiveReloadAccessor {

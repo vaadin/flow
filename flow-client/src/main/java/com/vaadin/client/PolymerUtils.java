@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.client;
 
 import com.vaadin.client.flow.StateNode;
@@ -381,7 +380,7 @@ public final class PolymerUtils {
     /*-{
         var isP2Element = (typeof $wnd.Polymer === 'function') && $wnd.Polymer.Element && htmlNode instanceof $wnd.Polymer.Element;
         var isP3Element = htmlNode.constructor.polymerElementVersion !== undefined;
-
+    
         return (isP2Element || isP3Element);
     }-*/;
 

@@ -15,9 +15,10 @@
  */
 package com.vaadin.flow.component;
 
-import com.vaadin.flow.server.Constants;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.vaadin.flow.server.Constants;
 
 public class HasSizeTest {
 

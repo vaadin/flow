@@ -31,14 +31,14 @@ import com.vaadin.flow.theme.AbstractTheme;
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
- * @since
  */
 class ThemeWrapper implements AbstractTheme, Serializable {
     private final Serializable instance;
 
     public ThemeWrapper(Class<? extends AbstractTheme> theme)
-            throws InstantiationException, IllegalAccessException {
-        instance = theme.newInstance();
+            throws InstantiationException, IllegalAccessException,
+            NoSuchMethodException, InvocationTargetException {
+        instance = theme.getDeclaredConstructor().newInstance();
     }
 
     @Override

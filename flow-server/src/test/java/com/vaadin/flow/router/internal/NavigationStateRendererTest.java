@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.router.internal;
 
-import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -28,7 +27,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import com.fasterxml.jackson.databind.node.BaseJsonNode;
 import net.bytebuddy.ByteBuddy;
 import net.bytebuddy.description.modifier.SyntheticState;
 import net.bytebuddy.description.modifier.Visibility;
@@ -39,6 +37,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.node.BaseJsonNode;
 
 import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.Component;
@@ -87,9 +87,6 @@ import com.vaadin.flow.server.startup.ApplicationRouteRegistry;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockDeploymentConfiguration;
 import com.vaadin.tests.util.MockUI;
-
-import elemental.json.Json;
-import elemental.json.JsonValue;
 
 @NotThreadSafe
 public class NavigationStateRendererTest {
@@ -366,7 +363,7 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 @Override
                 public PendingJavaScriptResult executeJs(String expression,
-                        Serializable... params) {
+                        Object... params) {
                     jsInvoked.set(true);
                     return super.executeJs(expression, params);
                 }
@@ -393,7 +390,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui1 = new MockUI(session);
@@ -462,7 +458,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a UI that contain a window name ROOT.123
         MockUI ui = new MockUI(session);
@@ -515,7 +510,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -561,7 +555,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -614,7 +607,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedView
         NavigationStateRenderer renderer = new NavigationStateRenderer(
@@ -646,7 +638,8 @@ public class NavigationStateRendererTest {
                 new Location(path,
                         new QueryParameters(Collections.singletonMap("b",
                                 Collections.emptyList()))),
-                ui, NavigationTrigger.ROUTER_LINK, Json.createObject(), false);
+                ui, NavigationTrigger.ROUTER_LINK,
+                new ObjectMapper().createObjectNode(), false);
         renderer.handle(event);
 
         Assert.assertFalse(ui.isClosing());
@@ -669,7 +662,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -727,7 +719,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -777,7 +768,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -826,7 +816,6 @@ public class NavigationStateRendererTest {
 
         // given a locked session
         MockVaadinSession session = new AlwaysLockedVaadinSession(service);
-        session.setConfiguration(new MockDeploymentConfiguration());
 
         // given a NavigationStateRenderer mapping to PreservedNestedView
         router = session.getService().getRouter();
@@ -906,7 +895,6 @@ public class NavigationStateRendererTest {
         // When using react router we have the sever do the update in all cases
         // to control the correct timing for url updates
         configuration.setReactEnabled(false);
-        session.setConfiguration(configuration);
 
         // given a NavigationStateRenderer mapping to RegularView
         new NavigationStateBuilder(router).withTarget(RegularView.class)
@@ -922,7 +910,8 @@ public class NavigationStateRendererTest {
             final Page page = new Page(this) {
                 final History history = new History(getUI().get()) {
                     @Override
-                    public void pushState(JsonValue state, Location location) {
+                    public void pushState(BaseJsonNode state,
+                            Location location) {
                         pushStateCalled.set(true);
                         pushStateLocations.add(location);
                     }

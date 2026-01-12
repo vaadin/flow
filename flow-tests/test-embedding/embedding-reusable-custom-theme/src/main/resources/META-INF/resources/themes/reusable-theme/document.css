@@ -1,8 +1,8 @@
 @font-face {
-    font-family: "Ostrich";
-    src: url("./font/ostrich-sans-regular.ttf") format("TrueType");
+  font-family: 'Ostrich';
+  src: url('./font/ostrich-sans-regular.ttf') format('TrueType');
 }
 
 .global {
-    color: blue;
+  color: blue;
 }

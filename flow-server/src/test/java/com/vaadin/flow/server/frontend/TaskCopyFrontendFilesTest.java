@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -24,12 +22,12 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.testutil.TestUtils;
 import com.vaadin.tests.util.MockOptions;
@@ -118,8 +116,9 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         task.execute();
 
         List<String> files = TestUtils.listFilesRecursively(frontendDepsFolder);
-        Assert.assertEquals(12, files.size());
+        Assert.assertEquals(19, files.size());
 
+        // Check some resources
         Assert.assertTrue("TS resource should have been copied from jar file",
                 files.contains("example.ts"));
 
@@ -162,6 +161,13 @@ public class TaskCopyFrontendFilesTest extends NodeUpdateTestUtil {
         Assert.assertTrue(
                 "JSX resource source map should have been copied from jar file",
                 files.contains("test.jsx.map"));
+
+        Assert.assertTrue("HTML resource should have been copied from jar file",
+                files.contains("ExampleTemplate.html"));
+
+        Assert.assertFalse(
+                "Resource from unsupported frontend folder location should not have been copied from jar file",
+                files.contains("ignored.js"));
 
         Assert.assertEquals("Generated files should have been tracked",
                 files.stream()

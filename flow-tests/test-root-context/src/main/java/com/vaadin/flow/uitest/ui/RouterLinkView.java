@@ -1,4 +1,21 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.uitest.ui;
+
+import tools.jackson.databind.JsonNode;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.Anchor;
@@ -6,8 +23,6 @@ import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementFactory;
 import com.vaadin.flow.router.Route;
-
-import elemental.json.JsonObject;
 
 @Route("com.vaadin.flow.uitest.ui.RouterLinkView")
 public class RouterLinkView extends AbstractDivView {
@@ -32,10 +47,10 @@ public class RouterLinkView extends AbstractDivView {
             queryParams.setText(
                     e.getLocation().getQueryParameters().getQueryString());
             if (e.getState().isPresent()) {
-                JsonObject state = ((JsonObject) e.getState().get());
-                if (state.hasKey("href")) {
+                JsonNode state = e.getState().get();
+                if (state.has("href")) {
                     UI.getCurrent().getPage().getHistory().pushState(null,
-                            state.getString("href"));
+                            state.get("href").textValue());
                 }
 
             }

@@ -19,7 +19,10 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import com.vaadin.flow.component.*;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.HasAriaLabel;
+import com.vaadin.flow.component.HtmlContainer;
+import com.vaadin.flow.component.Tag;
 
 /**
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is

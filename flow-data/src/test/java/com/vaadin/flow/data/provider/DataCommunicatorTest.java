@@ -40,6 +40,8 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -56,8 +58,6 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinServletService;
 import com.vaadin.flow.server.VaadinSession;
-
-import elemental.json.JsonValue;
 
 @RunWith(Parameterized.class)
 public class DataCommunicatorTest {
@@ -149,7 +149,7 @@ public class DataCommunicatorTest {
             }
 
             @Override
-            public void set(int start, List<JsonValue> items) {
+            public void set(int start, List<JsonNode> items) {
                 lastSet = Range.withLength(start, items.size());
             }
 
@@ -170,7 +170,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void communicator_with_0_items_should_not_refresh_all() {
-        dataCommunicator.setRequestedRange(0, 0);
+        dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
@@ -178,7 +178,7 @@ public class DataCommunicatorTest {
                 "Only requestAll should clear items. This may make us loop.",
                 lastClear);
 
-        dataCommunicator.setRequestedRange(0, 0);
+        dataCommunicator.setViewportRange(0, 0);
         fakeClientCommunication();
 
         Assert.assertEquals(Range.withLength(0, 0), lastSet);
@@ -191,14 +191,14 @@ public class DataCommunicatorTest {
     public void communicator_with_items_should_send_updates_but_not_refresh_all() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals(
                 "Expected request range for 50 items on first request.",
                 Range.withLength(0, 50), lastSet);
 
-        dataCommunicator.setRequestedRange(0, 70);
+        dataCommunicator.setViewportRange(0, 70);
         fakeClientCommunication();
 
         Assert.assertEquals("Expected request range for 20 new items.",
@@ -208,7 +208,7 @@ public class DataCommunicatorTest {
     @Test
     public void reattach_different_roundtrip_refresh_all() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals("Expected initial full reset.",
@@ -230,7 +230,7 @@ public class DataCommunicatorTest {
     @Test
     public void reattach_same_roundtrip_refresh_nothing() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals("Expected initial full reset.",
@@ -245,6 +245,33 @@ public class DataCommunicatorTest {
         fakeClientCommunication();
 
         Assert.assertNull("Expected no communication after reattach", lastSet);
+    }
+
+    @Test
+    public void refreshViewport_updatedRangeSent() {
+        var compositeDataGenerator = new CompositeDataGenerator<Item>();
+        dataCommunicator = new DataCommunicator<>(compositeDataGenerator,
+                arrayUpdater, data -> {
+                }, element.getNode()) {
+        };
+        dataCommunicator.setDataProvider(createDataProvider(), null);
+        dataCommunicator.setViewportRange(0, 6);
+
+        var count = new AtomicInteger(0);
+        compositeDataGenerator.addDataGenerator(new DataGenerator<Item>() {
+            @Override
+            public void generateData(Item item, ObjectNode json) {
+                json.put("count", String.valueOf(count.get()));
+            }
+        });
+
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
+        lastSet = null;
+
+        dataCommunicator.refreshViewport();
+        fakeClientCommunication();
+        Assert.assertEquals(Range.withLength(0, 6), lastSet);
     }
 
     @Test
@@ -277,7 +304,7 @@ public class DataCommunicatorTest {
     @Test
     public void setDataProvider_keyMapperIsReset() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals(0, dataCommunicator.getKeyMapper().get("1").id);
@@ -378,7 +405,7 @@ public class DataCommunicatorTest {
         ListDataProvider<Item> dataProvider = new ListDataProvider<>(items);
         dataCommunicator.setDataProvider(dataProvider, null);
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Item originalItem = items.get(0);
@@ -407,7 +434,7 @@ public class DataCommunicatorTest {
         // The first request will return size 50, but the actual fetch will
         // bring only 40 items. A new size query should then be performed, that
         // will return 40 instead
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals(40, lastSet.getEnd());
@@ -423,7 +450,7 @@ public class DataCommunicatorTest {
         dataProvider = Mockito.spy(dataProvider);
 
         dataCommunicator.setDataProvider(dataProvider, null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         Assert.assertTrue(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
@@ -445,7 +472,7 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(1)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
-        dataCommunicator.setRequestedRange(50, 50);
+        dataCommunicator.setViewportRange(50, 50);
 
         fakeClientCommunication();
 
@@ -474,7 +501,7 @@ public class DataCommunicatorTest {
         final int itemCountEstimateIncrease = 300;
         dataCommunicator
                 .setItemCountEstimateIncrease(itemCountEstimateIncrease);
-        dataCommunicator.setRequestedRange(150, 50);
+        dataCommunicator.setViewportRange(150, 50);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
@@ -510,7 +537,7 @@ public class DataCommunicatorTest {
 
         final int initialCountEstimate = 100;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
         fakeClientCommunication();
@@ -520,7 +547,7 @@ public class DataCommunicatorTest {
         Mockito.verify(dataProvider, Mockito.times(0)).size(Mockito.any());
         Mockito.verify(dataProvider, Mockito.times(1)).fetch(Mockito.any());
 
-        dataCommunicator.setRequestedRange(50, 50);
+        dataCommunicator.setViewportRange(50, 50);
 
         fakeClientCommunication();
 
@@ -538,14 +565,14 @@ public class DataCommunicatorTest {
 
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setDefinedSize(false);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         final int initialCountEstimate = 111;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
         Assert.assertFalse(dataCommunicator.isDefinedSize());
 
-        dataCommunicator.setRequestedRange(50, 100);
+        dataCommunicator.setViewportRange(50, 100);
         fakeClientCommunication();
 
         Assert.assertEquals(
@@ -561,7 +588,7 @@ public class DataCommunicatorTest {
         dataProvider = Mockito.spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
         int requestedRangeEnd = 50;
-        dataCommunicator.setRequestedRange(0, requestedRangeEnd);
+        dataCommunicator.setViewportRange(0, requestedRangeEnd);
 
         final int initialCountEstimate = 49;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
@@ -580,7 +607,7 @@ public class DataCommunicatorTest {
         dataProvider = Mockito.spy(dataProvider);
         dataCommunicator.setDataProvider(dataProvider, null);
         int rangeLength = 100;
-        dataCommunicator.setRequestedRange(400, rangeLength);
+        dataCommunicator.setViewportRange(400, rangeLength);
 
         final int initialCountEstimate = 300;
         dataCommunicator.setItemCountEstimate(initialCountEstimate);
@@ -605,7 +632,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
         final int itemCountEstimate = 1000;
         dataCommunicator.setItemCountEstimate(itemCountEstimate);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals(itemCountEstimate, dataCommunicator.getItemCount());
@@ -615,7 +642,7 @@ public class DataCommunicatorTest {
         // roundtrip where the client will request items because it received
         // less
         // items than expected
-        dataCommunicator.setRequestedRange(900, 100);
+        dataCommunicator.setViewportRange(900, 100);
         fakeClientCommunication();
 
         Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
@@ -639,7 +666,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
         final int itemCountEstimate = 1000;
         dataCommunicator.setItemCountEstimate(itemCountEstimate);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertEquals(exactSize, dataCommunicator.getItemCount());
@@ -655,14 +682,14 @@ public class DataCommunicatorTest {
     @Test
     public void getActiveItemOnIndex_activeRangeChanges_itemsReturned() {
         dataCommunicator.setDataProvider(createDataProvider(300), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
         Assert.assertEquals("Wrong active item", new Item(0),
                 dataCommunicator.getItem(0));
         Assert.assertEquals("Wrong active item", new Item(49),
                 dataCommunicator.getItem(49));
 
-        dataCommunicator.setRequestedRange(50, 50);
+        dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
         Assert.assertEquals("Wrong active item", new Item(50),
@@ -676,7 +703,7 @@ public class DataCommunicatorTest {
     @Test
     public void isItemActive_newItems() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
 
         Assert.assertFalse("Item should not be active",
                 dataCommunicator.isItemActive(new Item(0)));
@@ -690,7 +717,7 @@ public class DataCommunicatorTest {
         Assert.assertFalse("Item should not be active",
                 dataCommunicator.isItemActive(new Item(50)));
 
-        dataCommunicator.setRequestedRange(50, 50);
+        dataCommunicator.setViewportRange(50, 50);
         fakeClientCommunication();
 
         Assert.assertTrue("Item should be active",
@@ -703,7 +730,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withDefinedSizeAndCorrectIndex() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -732,7 +759,7 @@ public class DataCommunicatorTest {
     public void getItem_withDefinedSizeAndNegativeIndex() {
         expectedException.expect(IndexOutOfBoundsException.class);
         expectedException.expectMessage("Index must be non-negative");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -747,7 +774,7 @@ public class DataCommunicatorTest {
     public void getItem_withDefinedSizeAndEmptyDataset() {
         expectedException.expect(IndexOutOfBoundsException.class);
         expectedException.expectMessage("Requested index 0 on empty data.");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -763,7 +790,7 @@ public class DataCommunicatorTest {
         expectedException.expect(IndexOutOfBoundsException.class);
         expectedException.expectMessage(
                 "Given index 3 is outside of the accepted range '0 - 2'");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -779,7 +806,7 @@ public class DataCommunicatorTest {
         final Item initialFilter = new Item(1); // filters all except 2nd item
         final Item newFilter = new Item(2); // filters all except 3rd item
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         SerializableConsumer<Item> newFilterProvider = dataCommunicator
                 .setDataProvider(DataProvider.fromFilteringCallbacks(query -> {
                     query.getOffset();
@@ -801,7 +828,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withDefinedSizeAndSorting() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -834,7 +861,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withUndefinedSizeAndCorrectIndex() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2).mapToObj(Item::new)
                         .skip(query.getOffset()).limit(query.getLimit()),
@@ -849,7 +876,7 @@ public class DataCommunicatorTest {
         Assert.assertEquals("Wrong item on index 1", new Item(1),
                 dataCommunicator.getItem(1));
 
-        dataCommunicator.setRequestedRange(100, 50);
+        dataCommunicator.setViewportRange(100, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.range(0, 500).mapToObj(Item::new)
                         .skip(query.getOffset()).limit(query.getLimit()),
@@ -873,7 +900,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withUndefinedSizeAndEmptyDataset() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2).mapToObj(Item::new)
                         .skip(query.getOffset()).limit(query.getLimit()),
@@ -901,7 +928,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withUndefinedSizeAndIndexOutsideOfRange() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(
                 query -> IntStream.of(0, 1, 2, 3, 4).mapToObj(Item::new)
                         .skip(query.getOffset()).limit(query.getLimit()),
@@ -924,7 +951,7 @@ public class DataCommunicatorTest {
     public void getItem_withUndefinedSizeAndNegativeIndex() {
         expectedException.expect(IndexOutOfBoundsException.class);
         expectedException.expectMessage("Index must be non-negative");
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -941,7 +968,7 @@ public class DataCommunicatorTest {
         final Item initialFilter = new Item(1); // filters all except 2nd item
         final Item newFilter = new Item(2); // filters all except 3rd item
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         SerializableConsumer<Item> newFilterProvider = dataCommunicator
                 .setDataProvider(DataProvider.fromFilteringCallbacks(query -> {
                     query.getOffset();
@@ -965,7 +992,7 @@ public class DataCommunicatorTest {
 
     @Test
     public void getItem_withUndefinedSizeAndSorting() {
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDataProvider(DataProvider.fromCallbacks(query -> {
             query.getOffset();
             query.getLimit();
@@ -1052,7 +1079,7 @@ public class DataCommunicatorTest {
                 }));
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         // exact size
         fakeClientCommunication();
 
@@ -1062,7 +1089,7 @@ public class DataCommunicatorTest {
                 event.getItemCount());
         Assert.assertFalse(event.isItemCountEstimated());
         // no new event fired
-        dataCommunicator.setRequestedRange(450, 50);
+        dataCommunicator.setViewportRange(450, 50);
         fakeClientCommunication();
         Assert.assertNull(cachedEvent.get());
 
@@ -1098,7 +1125,7 @@ public class DataCommunicatorTest {
                 }));
         int exactCount = 500;
         dataCommunicator.setDataProvider(createDataProvider(exactCount), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         dataCommunicator.setDefinedSize(false);
         // initial estimate count of 200
         fakeClientCommunication();
@@ -1108,7 +1135,7 @@ public class DataCommunicatorTest {
                 event.getItemCount());
         Assert.assertTrue(event.isItemCountEstimated());
 
-        dataCommunicator.setRequestedRange(150, 50);
+        dataCommunicator.setViewportRange(150, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
@@ -1116,7 +1143,7 @@ public class DataCommunicatorTest {
                 event.getItemCount());
         Assert.assertTrue(event.isItemCountEstimated());
 
-        dataCommunicator.setRequestedRange(350, 50);
+        dataCommunicator.setViewportRange(350, 50);
         fakeClientCommunication();
 
         event = cachedEvent.getAndSet(null);
@@ -1124,7 +1151,7 @@ public class DataCommunicatorTest {
                 event.getItemCount());
         Assert.assertTrue(event.isItemCountEstimated());
 
-        dataCommunicator.setRequestedRange(550, 50);
+        dataCommunicator.setViewportRange(550, 50);
         fakeClientCommunication();
 
         // reaching exact size
@@ -1151,7 +1178,7 @@ public class DataCommunicatorTest {
         // Trigger flush() to set the assumedSize
         fakeClientCommunication();
 
-        dataCommunicator.setRequestedRange(0, 100);
+        dataCommunicator.setViewportRange(0, 100);
         // clean flushRequest
         fakeClientCommunication();
 
@@ -1372,11 +1399,39 @@ public class DataCommunicatorTest {
     }
 
     @Test
+    public void fetchFromProvider_itemCountLessThanTwoPages_getPageNotUsed_correctItemsReturned() {
+        List<Item> items = new ArrayList<>();
+        for (int i = 1; i <= 27; i++) {
+            items.add(new Item(i));
+        }
+
+        DataProvider<Item, Void> dataProvider = DataProvider
+                .fromCallbacks(query -> {
+                    int end = query.getOffset() + query.getPageSize();
+                    if (end > items.size()) {
+                        end = items.size();
+                    }
+                    return items.subList(query.getOffset(), end).stream();
+                }, query -> items.size());
+        dataCommunicator.setDataProvider(dataProvider, null);
+        dataCommunicator.setPageSize(20);
+
+        dataCommunicator.setDataProvider(dataProvider, null);
+        // request second page with correct db size.
+        Stream<Item> itemStream = dataCommunicator.fetchFromProvider(20, 7);
+        List<Item> itemList = itemStream.toList();
+
+        Assert.assertEquals(7, itemList.size());
+        Assert.assertEquals(new Item(21), itemList.get(0));
+
+    }
+
+    @Test
     public void fetchFromProvider_streamIsClosed() {
         AtomicBoolean streamIsClosed = new AtomicBoolean();
         dataCommunicator.setDataProvider(createDataProvider(streamIsClosed),
                 null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
 
         fakeClientCommunication();
 
@@ -1412,7 +1467,7 @@ public class DataCommunicatorTest {
                 .spy(DataProvider.ofItems(new Item(0)));
 
         dataCommunicator.setDataProvider(dataProvider, null);
-        dataCommunicator.setRequestedRange(0, 0);
+        dataCommunicator.setViewportRange(0, 0);
 
         fakeClientCommunication();
 
@@ -1423,7 +1478,7 @@ public class DataCommunicatorTest {
 
         // Switch back to normal mode
         dataCommunicator.setFetchEnabled(true);
-        dataCommunicator.setRequestedRange(0, 10);
+        dataCommunicator.setViewportRange(0, 10);
 
         fakeClientCommunication();
 
@@ -1448,7 +1503,7 @@ public class DataCommunicatorTest {
         Assert.assertNotNull("Expected initial filter to be set",
                 dataCommunicator.getFilter());
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertNotNull("Filter should be retained after data request",
@@ -1460,7 +1515,7 @@ public class DataCommunicatorTest {
         // Check that the filter change works properly
         filterConsumer.accept(item -> item.id > 2);
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertNotNull("Filter should be retained after data request",
@@ -1486,7 +1541,7 @@ public class DataCommunicatorTest {
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
                 item -> item.id > 1);
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
 
         Assert.assertTrue("Expected event to be triggered",
@@ -1504,7 +1559,7 @@ public class DataCommunicatorTest {
                 DataProvider.ofItems(new Item(1), new Item(2), new Item(3)),
                 item -> item.id > 1, false);
 
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
         fakeClientCommunication();
     }
 
@@ -1563,10 +1618,10 @@ public class DataCommunicatorTest {
         dataCommunicator.setDefinedSize(false);
 
         // Scroll forward to populate the DC cache (active items)
-        dataCommunicator.setRequestedRange(0, 100);
+        dataCommunicator.setViewportRange(0, 100);
         fakeClientCommunication();
 
-        dataCommunicator.setRequestedRange(100, 150);
+        dataCommunicator.setViewportRange(100, 150);
         fakeClientCommunication();
 
         // Apply the filter and force the requested range to be shifted back
@@ -1599,7 +1654,7 @@ public class DataCommunicatorTest {
                 super.reset();
             }
         };
-        dataCommunicator.setRequestedRange(0, 100);
+        dataCommunicator.setViewportRange(0, 100);
         AbstractDataProvider<Item, Object> dataProvider = createDataProvider();
         dataCommunicator.setDataProvider(dataProvider, null);
         // Add the component to a parent to trigger handle the attach event
@@ -1625,14 +1680,14 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setRequestedRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested() {
+    public void setViewportRange_defaultPageSize_tooMuchItemsRequested_maxItemsAllowedRequested() {
         DataProvider<Item, Object> dataProvider = Mockito
                 .spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);
         // More than allowed (500) items requested
-        dataCommunicator.setRequestedRange(0, 501);
+        dataCommunicator.setViewportRange(0, 501);
         fakeClientCommunication();
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
@@ -1652,7 +1707,7 @@ public class DataCommunicatorTest {
                 .spy(createDataProvider(1000));
         dataCommunicator.setDataProvider(dataProvider, null);
         dataCommunicator.setPageSize(2);
-        dataCommunicator.setRequestedRange(0, 1000);
+        dataCommunicator.setViewportRange(0, 1000);
         fakeClientCommunication();
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
@@ -1663,7 +1718,7 @@ public class DataCommunicatorTest {
     }
 
     @Test
-    public void setRequestedRange_customPageSize_customPageSizeConsidered_itemsRequested() {
+    public void setViewportRange_customPageSize_customPageSizeConsidered_itemsRequested() {
         int newPageSize = 300;
         dataCommunicator.setPageSize(newPageSize);
 
@@ -1672,7 +1727,7 @@ public class DataCommunicatorTest {
         dataCommunicator.setDataProvider(dataProvider, null);
         // Paging is disabled for easier check of requested amount of items
         dataCommunicator.setPagingEnabled(false);
-        dataCommunicator.setRequestedRange(0, newPageSize * 2);
+        dataCommunicator.setViewportRange(0, newPageSize * 2);
         fakeClientCommunication();
 
         ArgumentCaptor<Query> queryCaptor = ArgumentCaptor
@@ -1693,7 +1748,7 @@ public class DataCommunicatorTest {
     @Test
     public void reattach_differentUI_requestFlushExecuted() {
         dataCommunicator.setDataProvider(createDataProvider(), null);
-        dataCommunicator.setRequestedRange(0, 50);
+        dataCommunicator.setViewportRange(0, 50);
 
         MockUI newUI = new MockUI();
         // simulates preserve on refresh

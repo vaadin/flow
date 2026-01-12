@@ -5,24 +5,12 @@
       <pluginExecutionFilter>
         <goals>
           <goal>validate</goal>
+          <goal>prepare-frontend</goal>
           <goal>build-frontend</goal>
         </goals>
       </pluginExecutionFilter>
       <action>
         <ignore></ignore>
-      </action>
-    </pluginExecution>
-    <pluginExecution>
-      <pluginExecutionFilter>
-        <goals>
-          <goal>prepare-frontend</goal>
-        </goals>
-      </pluginExecutionFilter>
-      <action>
-        <execute>
-          <runOnIncremental>false</runOnIncremental>
-          <runOnConfiguration>true</runOnConfiguration>
-        </execute>
       </action>
     </pluginExecution>
   </pluginExecutions>

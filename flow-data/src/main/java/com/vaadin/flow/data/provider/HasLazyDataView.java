@@ -28,7 +28,6 @@ import java.util.Collection;
  *            filter type
  * @param <V>
  *            DataView type
- * @since
  */
 public interface HasLazyDataView<T, F, V extends LazyDataView<T>>
         extends Serializable {

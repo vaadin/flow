@@ -10,9 +10,7 @@ export class HelloWorldView extends LitElement {
   static styles = [styles];
 
   render() {
-    return html`
-      <vaadin-text-field label="Your name" @value-changed="${this.nameChanged}"></vaadin-text-field>
-    `;
+    return html` <vaadin-text-field label="Your name" @value-changed="${this.nameChanged}"></vaadin-text-field> `;
   }
   nameChanged(e: CustomEvent) {
     this.name = e.detail.value;

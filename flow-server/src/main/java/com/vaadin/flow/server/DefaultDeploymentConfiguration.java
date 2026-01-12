@@ -13,10 +13,8 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -30,8 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.experimental.Feature;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.function.DeploymentConfiguration;
-import com.vaadin.flow.internal.hilla.EndpointRequestUtil;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -274,13 +271,14 @@ public class DefaultDeploymentConfiguration
     }
 
     @Override
-    public boolean frontendHotdeploy() {
-        return frontendHotdeploy;
+    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
+        return sessionLockCheckStrategy;
     }
 
     @Override
-    public SessionLockCheckStrategy getSessionLockCheckStrategy() {
-        return sessionLockCheckStrategy;
+    public Mode getMode() {
+        return frontendHotdeploy ? Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                : super.getMode();
     }
 
     /**
@@ -444,7 +442,9 @@ public class DefaultDeploymentConfiguration
     }
 
     private boolean automaticHotdeployDefault() {
-        return FrontendUtils.isHillaUsed(getFrontendFolder());
+        return Mode.DEVELOPMENT_FRONTEND_LIVERELOAD
+                .equals(getParentConfiguration().getMode())
+                || FrontendUtils.isHillaUsed(getFrontendFolder());
     }
 
 }

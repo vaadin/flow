@@ -1,12 +1,27 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.spring.flowsecurity;
 
 import jakarta.servlet.ServletContext;
 
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -17,7 +32,8 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.UrlUtil;
@@ -26,23 +42,29 @@ import com.vaadin.flow.spring.VaadinConfigurationProperties;
 import com.vaadin.flow.spring.flowsecurity.data.UserInfo;
 import com.vaadin.flow.spring.flowsecurity.service.UserInfoService;
 import com.vaadin.flow.spring.flowsecurity.views.LoginView;
-import com.vaadin.flow.spring.security.VaadinWebSecurity;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
+import static com.vaadin.flow.spring.security.VaadinSecurityConfigurer.vaadin;
 
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = false, jsr250Enabled = true, securedEnabled = true)
 @Configuration
-public class SecurityConfig extends VaadinWebSecurity {
+@Profile("default")
+public class SecurityConfig {
 
-    @Autowired
-    private UserInfoService userInfoService;
+    private final UserInfoService userInfoService;
 
-    @Autowired
-    private ServletContext servletContext;
+    private final ServletContext servletContext;
 
-    @Autowired
-    private VaadinConfigurationProperties vaadinConfigurationProperties;
+    private final VaadinConfigurationProperties vaadinConfigurationProperties;
+
+    public SecurityConfig(UserInfoService userInfoService,
+            ServletContext servletContext,
+            VaadinConfigurationProperties vaadinConfigurationProperties) {
+        this.userInfoService = userInfoService;
+        this.servletContext = servletContext;
+        this.vaadinConfigurationProperties = vaadinConfigurationProperties;
+    }
 
     public String getLogoutSuccessUrl() {
         String logoutSuccessUrl;
@@ -59,27 +81,31 @@ public class SecurityConfig extends VaadinWebSecurity {
         return logoutSuccessUrl;
     }
 
-    @Override
-    public void configure(HttpSecurity http) throws Exception {
+    @Bean
+    SecurityFilterChain vaadinSecurityFilterChain(HttpSecurity http) {
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(new AntPathRequestMatcher("/admin-only/**"))
+
+                .requestMatchers(
+                        PathPatternRequestMatcher.pathPattern("/admin-only/**"))
                 .hasAnyRole(ROLE_ADMIN)
-                .requestMatchers(new AntPathRequestMatcher("/public/**"))
+                .requestMatchers(
+                        PathPatternRequestMatcher.pathPattern("/public/**"))
                 .permitAll());
-        super.configure(http);
-        if (getLogoutSuccessUrl().equals("/")) {
-            // Test the default url with empty context path
-            setLoginView(http, LoginView.class);
-        } else {
-            setLoginView(http, LoginView.class, getLogoutSuccessUrl());
-        }
-        http.logout(cfg -> cfg
-                .addLogoutHandler((request, response, authentication) -> {
-                    UI ui = UI.getCurrent();
-                    ui.accessSynchronously(() -> ui.getPage()
-                            .setLocation(UrlUtil.getServletPathRelative(
-                                    getLogoutSuccessUrl(), request)));
-                }));
+        http.with(vaadin(), cfg -> {
+            String logoutSuccessUrl = getLogoutSuccessUrl();
+            if (logoutSuccessUrl.equals("/")) {
+                cfg.loginView(LoginView.class);
+            } else {
+                cfg.loginView(LoginView.class, logoutSuccessUrl);
+            }
+            cfg.addLogoutHandler((request, response, authentication) -> {
+                UI ui = UI.getCurrent();
+                ui.accessSynchronously(() -> ui.getPage().setLocation(
+                        UrlUtil.getServletPathRelative(getLogoutSuccessUrl(),
+                                request)));
+            });
+        });
+        return http.build();
     }
 
     @Bean

@@ -13,11 +13,11 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.spring.security;
 
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletRequestWrapper;
+
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.HashSet;
@@ -109,19 +109,19 @@ public class VaadinRolePrefixHolder implements Serializable {
                 .findFirst().ifPresent(this::resetRolePrefix);
     }
 
-    private void resetRolePrefix(
+    void resetRolePrefix(
             SecurityContextHolderAwareRequestFilter securityContextHolderAwareRequestFilter) {
         resetRolePrefix(securityContextHolderAwareRequestFilter,
                 SecurityContextHolderAwareRequestFilter.class);
     }
 
-    private void resetRolePrefix(
+    void resetRolePrefix(
             SecurityContextHolderAwareRequestWrapper securityContextHolderAwareRequestWrapper) {
         resetRolePrefix(securityContextHolderAwareRequestWrapper,
                 SecurityContextHolderAwareRequestWrapper.class);
     }
 
-    private void resetRolePrefix(Object source, Class<?> type) {
+    void resetRolePrefix(Object source, Class<?> type) {
         if (source != null) {
             try {
                 Field field = FieldUtils.getField(type, "rolePrefix");

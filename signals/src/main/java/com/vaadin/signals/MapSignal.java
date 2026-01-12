@@ -39,7 +39,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the element type
  */
-public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
+public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -194,7 +194,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that the given child is mapped to the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link #runInTransaction(Runnable) transaction}. The result of the
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given child is a
      * mapped to the given key in this map when the operation is processed.
      *
@@ -206,7 +206,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
      * @return an operation containing the eventual result
      */
     public SignalOperation<Void> verifyKey(String key,
-            Signal<?> expectedChild) {
+            AbstractSignal<?> expectedChild) {
         return submitKeyCondition(Objects.requireNonNull(key),
                 expectedChild.id());
     }
@@ -214,7 +214,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is a mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link #runInTransaction(Runnable) transaction}. The result of the
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given key has a
      * mapping in this map when the operation is processed.
      *
@@ -229,7 +229,7 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is no mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link #runInTransaction(Runnable) transaction}. The result of the
+     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
      * returned operation will be resolved as successful if the given key has no
      * mapping in this map when the operation is processed.
      *
@@ -279,6 +279,18 @@ public class MapSignal<T> extends Signal<Map<String, ValueSignal<T>>> {
         return super.asNode();
     }
 
+    /**
+     * Helper method to convert a map of child node IDs to a map of signal
+     * instances using the provided factory function.
+     *
+     * @param <T>
+     *            the signal type
+     * @param node
+     *            the node data containing the map of child IDs
+     * @param factory
+     *            the factory function to create signal instances from IDs
+     * @return an unmodifiable map of signal instances, not <code>null</code>
+     */
     static <T extends Signal<?>> Map<String, T> children(Data node,
             Function<Id, T> factory) {
         LinkedHashMap<String, T> children = new LinkedHashMap<String, T>();

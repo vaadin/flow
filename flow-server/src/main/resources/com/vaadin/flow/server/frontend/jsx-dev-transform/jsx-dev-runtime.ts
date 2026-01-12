@@ -16,7 +16,7 @@ export function jsxDEV(
 
     const reactElement: any = reactJsxDEV(type, props, key, isStatic, source, self);
     if (source && !reactElement._source) {
-      // When running with React 19, put the source information on the _debugInfo array, 
+      // When running with React 19, put the source information on the _debugInfo array,
       // which will be transferred to the fiber node by React
       reactElement._debugInfo ??= [];
       reactElement._debugInfo.source = source;

@@ -12,9 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- *
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -35,9 +33,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
-import org.mockito.Mockito;
 
-import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.frontend.scanner.ChunkInfo;
 import com.vaadin.flow.server.frontend.scanner.ClassFinder;
 import com.vaadin.flow.server.frontend.scanner.FrontendDependencies;
@@ -45,9 +42,9 @@ import com.vaadin.flow.theme.AbstractTheme;
 import com.vaadin.flow.theme.ThemeDefinition;
 import com.vaadin.tests.util.MockOptions;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.NODE_MODULES;
 import static com.vaadin.flow.server.Constants.TARGET;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.NODE_MODULES;
 
 public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
@@ -155,17 +152,17 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
 
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
-        MatcherAssert.assertThat(content, CoreMatchers.allOf(
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/main-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/client-side-template.js';"),
-                CoreMatchers.containsString(
-                        "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"),
-                CoreMatchers.containsString(
-                        "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';"),
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/main-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/client-side-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import 'Frontend/theme/myTheme/subfolder/sub-template.js';"));
+        MatcherAssert.assertThat(content, CoreMatchers.containsString(
+                "import '@vaadin/vaadin-button/src/vaadin-button.js';"));
+        MatcherAssert.assertThat(content,
                 CoreMatchers.not(CoreMatchers.containsString(
-                        "import 'theme/myTheme/wrong-themed-template.js';"))));
+                        "import 'theme/myTheme/wrong-themed-template.js';")));
     }
 
     @Test
@@ -176,7 +173,7 @@ public class UpdateThemedImportsTest extends NodeUpdateTestUtil {
         String content = FileUtils.readFileToString(importsFile,
                 Charset.defaultCharset());
         int count = StringUtils.countMatches(content,
-                "import '@vaadin/vaadin-button/theme/myTheme/vaadin-button.js';");
+                "import '@vaadin/vaadin-button/src/vaadin-button.js';");
         Assert.assertEquals(
                 "Import entries in the imports file should be unique.", 1,
                 count);

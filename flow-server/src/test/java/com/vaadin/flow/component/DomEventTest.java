@@ -18,12 +18,12 @@ package com.vaadin.flow.component;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.junit.Assert;
 import org.junit.Test;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.JsonNodeType;
+import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.dom.DebouncePhase;
 import com.vaadin.flow.dom.Element;
@@ -32,8 +32,6 @@ import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.change.MapPutChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.internal.nodefeature.ElementListenerMap;
-
-import elemental.json.JsonObject;
 
 public class DomEventTest {
     @DomEvent("event")
@@ -148,10 +146,6 @@ public class DomEventTest {
             Assert.assertEquals(expectedIdentifier,
                     filterSetting.get(i + 1).textValue());
         }
-    }
-
-    private void assertFilter(String expectedFilter,
-            JsonObject filterSettings) {
     }
 
     private <T extends ComponentEvent<Component>> JsonNode getEventSettings(

@@ -1,46 +1,29 @@
+/*
+ * Copyright 2000-2025 Vaadin Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
+ */
 package com.vaadin.flow.server.frontend;
 
 import java.io.Serializable;
 import java.util.List;
 
 import com.vaadin.flow.server.frontend.scanner.FrontendDependenciesScanner;
-import com.vaadin.flow.theme.ThemeDefinition;
 
 /**
  * Implemented by classes that want to modify the bootstrap typescript.
  */
 public interface TypeScriptBootstrapModifier extends Serializable {
-
-    /**
-     * Modifies the bootstrap typescript by mutating the parameter.
-     *
-     * @param bootstrapTypeScript
-     *            the input typescript split into lines
-     * @param productionMode
-     *            true if building for production, false otherwise
-     * @deprecated use {@link #modify(List, boolean, ThemeDefinition)} instead
-     */
-    @Deprecated
-    default void modify(List<String> bootstrapTypeScript,
-            boolean productionMode) {
-
-    }
-
-    /**
-     * Modifies the bootstrap typescript by mutating the parameter.
-     *
-     * @param bootstrapTypeScript
-     *            the input typescript split into lines
-     * @param productionMode
-     *            true if building for production, false otherwise
-     * @param themeDefinition
-     *            the theme used by the application
-     */
-    @Deprecated
-    default void modify(List<String> bootstrapTypeScript,
-            boolean productionMode, ThemeDefinition themeDefinition) {
-        modify(bootstrapTypeScript, productionMode);
-    }
 
     /**
      * Modifies the bootstrap typescript by mutating the parameter.
@@ -54,8 +37,6 @@ public interface TypeScriptBootstrapModifier extends Serializable {
      */
     default void modify(List<String> bootstrapTypeScript, Options options,
             FrontendDependenciesScanner frontendDependenciesScanner) {
-        modify(bootstrapTypeScript, options.isProductionMode(),
-                frontendDependenciesScanner.getThemeDefinition());
     }
 
 }

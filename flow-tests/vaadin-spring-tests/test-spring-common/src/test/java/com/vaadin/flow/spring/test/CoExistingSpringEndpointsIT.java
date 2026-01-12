@@ -43,7 +43,21 @@ public class CoExistingSpringEndpointsIT extends AbstractSpringTest {
         getDriver().get(getContextRootURL() + "/oauth2/authorize");
         // This only asserts that Flow routes do not overwrite other spring
         // paths
+        String pageSource = getDriver().getPageSource();
         Assert.assertTrue(
-                getDriver().getPageSource().contains("type=Bad Request"));
+                whiteLabelPageError(pageSource) || jettyPageError(pageSource));
+    }
+
+    private static boolean whiteLabelPageError(String pageSource) {
+        return pageSource.contains("Whitelabel Error Page")
+                && pageSource.contains("type=Bad Request");
+    }
+
+    // ErrorMvcAutoConfiguration is not imported anymore if
+    // spring-boot-web-sever is not present. This usually happens when packaging
+    // the application as a WAR
+    private static boolean jettyPageError(String pageSource) {
+        return pageSource.contains("Jetty")
+                && pageSource.contains("HTTP ERROR 400 [invalid_request]");
     }
 }

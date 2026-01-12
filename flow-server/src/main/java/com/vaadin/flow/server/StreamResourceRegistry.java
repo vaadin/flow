@@ -25,6 +25,7 @@ import java.util.Optional;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
+import com.vaadin.flow.server.streams.ElementRequestHandler;
 
 /**
  * Registry for {@link StreamResource} instances.
@@ -123,7 +124,7 @@ public class StreamResourceRegistry implements Serializable {
     public StreamRegistration registerResource(
             ElementRequestHandler elementRequestHandler) {
         return registerResource(elementRequestHandler,
-                UI.getCurrent().getElement());
+                UI.getCurrentOrThrow().getElement());
     }
 
     /**
@@ -148,12 +149,7 @@ public class StreamResourceRegistry implements Serializable {
             ElementRequestHandler elementRequestHandler, Element owner) {
         AbstractStreamResource wrappedResource = new ElementStreamResource(
                 elementRequestHandler, owner);
-        session.checkHasLock(
-                "Session needs to be locked when registering stream resources.");
-        StreamRegistration registration = new Registration(this,
-                wrappedResource.getId(), wrappedResource.getName());
-        res.put(registration.getResourceUri(), wrappedResource);
-        return registration;
+        return registerResource(wrappedResource);
     }
 
     /**

@@ -26,21 +26,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
 
-import org.apache.commons.compress.utils.Lists;
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
+import com.vaadin.flow.internal.FrontendUtils.UnknownVersionException;
+import com.vaadin.flow.internal.FrontendVersion;
 import com.vaadin.flow.internal.Pair;
+import com.vaadin.flow.internal.Platform;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
-import com.vaadin.flow.server.frontend.FrontendUtils.UnknownVersionException;
-import com.vaadin.flow.server.frontend.installer.InstallationException;
 import com.vaadin.flow.server.frontend.installer.NodeInstaller;
-import com.vaadin.flow.server.frontend.installer.Platform;
 import com.vaadin.flow.server.frontend.installer.ProxyConfig;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 
@@ -64,22 +64,13 @@ public class FrontendTools {
      * the installed version is older than {@link #SUPPORTED_NODE_VERSION}, i.e.
      * {@value #SUPPORTED_NODE_MAJOR_VERSION}.{@value #SUPPORTED_NODE_MINOR_VERSION}.
      */
-    public static final String DEFAULT_NODE_VERSION = "v22.15.0";
+    public static final String DEFAULT_NODE_VERSION = "v24.12.0";
     /**
      * This is the version shipped with the default Node version.
      */
-    public static final String DEFAULT_NPM_VERSION = "10.9.2";
+    public static final String DEFAULT_NPM_VERSION = "11.6.2";
 
-    public static final String DEFAULT_PNPM_VERSION = "8.6.11";
-
-    public static final String INSTALL_NODE_LOCALLY = "%n  $ mvn com.github.eirslett:frontend-maven-plugin:1.10.0:install-node-and-npm "
-            + "-DnodeVersion=\"" + DEFAULT_NODE_VERSION + "\" ";
-
-    public static final String NPM_BIN_PATH = FrontendUtils.isWindows()
-            ? "node/node_modules/npm/bin/"
-            : "node/lib/node_modules/npm/bin/";
-
-    private static final String NPM_BIN_LINUX_LEGACY_PATH = "node/node_modules/npm/bin/";
+    public static final String DEFAULT_PNPM_VERSION = "10.28.0";
 
     private static final String MSG_PREFIX = "%n%n======================================================================================================";
     private static final String MSG_SUFFIX = "%n======================================================================================================%n";
@@ -94,34 +85,35 @@ public class FrontendTools {
             + "%nInstall bun by following the instruction at https://bun.sh "
             + MSG_SUFFIX;
 
-    private static final String LOCAL_NODE_NOT_FOUND = MSG_PREFIX
-            + "%nVaadin requires Node.js and npm to be installed. The %s directory already contains 'node' but it's either not a file "
-            + "or not a 'node' executable. Please check the %s directory and clean it up: remove '%s'."
-            + "%n then run the application or Maven goal again." + MSG_SUFFIX;
-
     private static final String BAD_VERSION = MSG_PREFIX
             + "%nYour installed '%s' version (%s) is known to have problems." //
-            + "%nPlease update to a new one either:"
-            + "%n  - by following the https://nodejs.org/en/download/ guide to install it globally"
-            + "%s"
-            + "%n  - or by running the frontend-maven-plugin goal to install it in this project:"
-            + INSTALL_NODE_LOCALLY + "%n" //
+            + "%nPlease update it%s." + "%n" //
             + FrontendUtils.DISABLE_CHECK //
             + MSG_SUFFIX;
 
-    private static final List<FrontendVersion> BAD_NPM_VERSIONS = Collections
+    private static final List<@NonNull FrontendVersion> BAD_NPM_VERSIONS = Collections
             .singletonList(new FrontendVersion("9.2.0"));
 
-    private static final FrontendVersion WHITESPACE_ACCEPTING_NPM_VERSION = new FrontendVersion(
-            7, 0);
-
-    private static final int SUPPORTED_NODE_MAJOR_VERSION = 20;
+    private static final int SUPPORTED_NODE_MAJOR_VERSION = 24;
     private static final int SUPPORTED_NODE_MINOR_VERSION = 0;
-    private static final int SUPPORTED_NPM_MAJOR_VERSION = 9;
-    private static final int SUPPORTED_NPM_MINOR_VERSION = 6;
+    /**
+     * Maximum supported Node.js major version. Versions with a higher major
+     * version are not tested and may not be compatible.
+     */
+    public static final int MAX_SUPPORTED_NODE_MAJOR_VERSION = 24;
+    private static final int SUPPORTED_NPM_MAJOR_VERSION = 11;
+    private static final int SUPPORTED_NPM_MINOR_VERSION = 3;
 
-    static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
+    public static final FrontendVersion SUPPORTED_NODE_VERSION = new FrontendVersion(
             SUPPORTED_NODE_MAJOR_VERSION, SUPPORTED_NODE_MINOR_VERSION);
+
+    /**
+     * Minimum Node.js version for auto-installed versions in ~/.vaadin. Global
+     * installations are accepted if they meet SUPPORTED_NODE_VERSION, but
+     * auto-installed versions must meet this higher threshold.
+     */
+    public static final FrontendVersion MINIMUM_AUTO_INSTALLED_NODE = new FrontendVersion(
+            24, 10, 0);
 
     private static final FrontendVersion SUPPORTED_NPM_VERSION = new FrontendVersion(
             SUPPORTED_NPM_MAJOR_VERSION, SUPPORTED_NPM_MINOR_VERSION);
@@ -169,13 +161,19 @@ public class FrontendTools {
 
     private final FrontendToolsLocator frontendToolsLocator = new FrontendToolsLocator();
 
+    // The active node installation - shared across all FrontendTools instances
+    private static volatile NodeResolver.ActiveNodeInstallation activeNodeInstallation;
+
+    // Lock object for synchronizing node resolution
+    private static final Object RESOLUTION_LOCK = new Object();
+
     private final String nodeVersion;
     private final URI nodeDownloadRoot;
 
     private final boolean ignoreVersionChecks;
-    private boolean forceAlternativeNode;
+    private final boolean forceAlternativeNode;
     private final boolean useGlobalPnpm;
-    private final boolean autoUpdate;
+    private final String nodeFolder;
 
     /**
      * Creates an instance of the class using the {@code baseDir} as a base
@@ -200,7 +198,7 @@ public class FrontendTools {
         this.ignoreVersionChecks = settings.isIgnoreVersionChecks();
         this.forceAlternativeNode = settings.isForceAlternativeNode();
         this.useGlobalPnpm = settings.isUseGlobalPnpm();
-        this.autoUpdate = settings.isAutoUpdate();
+        this.nodeFolder = settings.getNodeFolder();
     }
 
     /**
@@ -215,72 +213,6 @@ public class FrontendTools {
     public FrontendTools(ApplicationConfiguration applicationConfiguration,
             File projectRoot) {
         this(createSettings(applicationConfiguration, projectRoot));
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            boolean forceAlternativeNode) {
-        this(baseDir, alternativeDirGetter, DEFAULT_NODE_VERSION,
-                URI.create(Platform.guess().getNodeDownloadRoot()),
-                forceAlternativeNode, false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The Node.js version to be used when Node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download Node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the Node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                false, false);
     }
 
     /**
@@ -322,62 +254,15 @@ public class FrontendTools {
             String nodeVersion, URI nodeDownloadRoot,
             boolean forceAlternativeNode, boolean useGlobalPnpm) {
         this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
-                forceAlternativeNode, useGlobalPnpm, false);
-    }
-
-    /**
-     * Creates an instance of the class using the {@code baseDir} as a base
-     * directory to locate the tools and the directory returned by the
-     * {@code alternativeDirGetter} as a directory to install tools if they are
-     * not found and use it as an alternative tools location.
-     * <p>
-     * If {@code alternativeDir} is {@code null} tools won't be installed.
-     *
-     *
-     * @param baseDir
-     *            the base directory to locate the tools, not {@code null}
-     * @param alternativeDirGetter
-     *            the getter for a directory where tools will be installed if
-     *            they are not found globally or in the {@code baseDir}, may be
-     *            {@code null}
-     * @param nodeVersion
-     *            The Node.js version to be used when Node.js is installed
-     *            automatically by Vaadin, for example <code>"v16.0.0"</code>.
-     *            Use {@value #DEFAULT_NODE_VERSION} by default.
-     * @param nodeDownloadRoot
-     *            Download Node.js from this URL. Handy in heavily firewalled
-     *            corporate environments where the Node.js download can be
-     *            provided from an intranet mirror. Use
-     *            {@link NodeInstaller#DEFAULT_NODEJS_DOWNLOAD_ROOT} by default.
-     * @param forceAlternativeNode
-     *            force usage of node executable from alternative directory
-     * @param useGlobalPnpm
-     *            use globally installed pnpm instead of the default one (see
-     *            {@link #DEFAULT_PNPM_VERSION})
-     * @param autoUpdate
-     *            update node in {@link #alternativeDirGetter} if version older
-     *            than the current default
-     *            {@value FrontendTools#DEFAULT_NODE_VERSION}
-     * @deprecated use
-     *             {@link FrontendTools#FrontendTools(FrontendToolsSettings)}
-     *             instead, as it simplifies configuring the frontend tools and
-     *             gives the default values to configuration parameters.
-     */
-    @Deprecated
-    public FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
-            String nodeVersion, URI nodeDownloadRoot,
-            boolean forceAlternativeNode, boolean useGlobalPnpm,
-            boolean autoUpdate) {
-        this(baseDir, alternativeDirGetter, nodeVersion, nodeDownloadRoot,
                 "true".equalsIgnoreCase(System.getProperty(
                         FrontendUtils.PARAM_IGNORE_VERSION_CHECKS)),
-                forceAlternativeNode, useGlobalPnpm, autoUpdate);
+                forceAlternativeNode, useGlobalPnpm, null);
     }
 
     FrontendTools(String baseDir, Supplier<String> alternativeDirGetter,
             String nodeVersion, URI nodeDownloadRoot,
             boolean ignoreVersionChecks, boolean forceAlternativeNode,
-            boolean useGlobalPnpm, boolean autoUpdate) {
+            boolean useGlobalPnpm, String nodeFolder) {
         this.baseDir = Objects.requireNonNull(baseDir);
         this.alternativeDirGetter = alternativeDirGetter;
         this.nodeVersion = Objects.requireNonNull(nodeVersion);
@@ -385,7 +270,7 @@ public class FrontendTools {
         this.ignoreVersionChecks = ignoreVersionChecks;
         this.forceAlternativeNode = forceAlternativeNode;
         this.useGlobalPnpm = useGlobalPnpm;
-        this.autoUpdate = autoUpdate;
+        this.nodeFolder = nodeFolder;
     }
 
     private static FrontendToolsSettings createSettings(
@@ -393,22 +278,22 @@ public class FrontendTools {
             File projectRoot) {
         boolean useHomeNodeExec = applicationConfiguration.getBooleanProperty(
                 InitParameters.REQUIRE_HOME_NODE_EXECUTABLE, false);
-        boolean nodeAutoUpdate = applicationConfiguration
-                .getBooleanProperty(InitParameters.NODE_AUTO_UPDATE, false);
         boolean useGlobalPnpm = applicationConfiguration.getBooleanProperty(
                 InitParameters.SERVLET_PARAMETER_GLOBAL_PNPM, false);
+        String nodeFolder = applicationConfiguration
+                .getStringProperty(InitParameters.NODE_FOLDER, null);
         final String nodeVersion = applicationConfiguration.getStringProperty(
                 NODE_VERSION, FrontendTools.DEFAULT_NODE_VERSION);
         final String nodeDownloadRoot = applicationConfiguration
                 .getStringProperty(NODE_DOWNLOAD_ROOT,
-                        Platform.guess().getNodeDownloadRoot());
+                        NodeInstaller.getDownloadRoot(Platform.guess()));
 
         FrontendToolsSettings settings = new FrontendToolsSettings(
                 projectRoot.getAbsolutePath(),
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setForceAlternativeNode(useHomeNodeExec);
-        settings.setAutoUpdate(nodeAutoUpdate);
         settings.setUseGlobalPnpm(useGlobalPnpm);
+        settings.setNodeFolder(nodeFolder);
         settings.setNodeVersion(nodeVersion);
         settings.setNodeDownloadRoot(URI.create(nodeDownloadRoot));
         settings.setIgnoreVersionChecks(false);
@@ -421,149 +306,39 @@ public class FrontendTools {
      * @return the full path to the executable
      */
     public String getNodeExecutable() {
-        Pair<String, String> nodeCommands = getNodeCommands();
-        File file = getExecutable(baseDir, nodeCommands.getSecond());
-        if (file == null && !forceAlternativeNode) {
-            file = frontendToolsLocator.tryLocateTool(nodeCommands.getFirst())
-                    .orElse(null);
-        }
-        file = rejectUnsupportedNodeVersion(file);
-        if (file == null) {
-            file = updateAlternateIfNeeded(getExecutable(getAlternativeDir(),
-                    nodeCommands.getSecond()));
-        }
-        if (file == null && alternativeDirGetter != null) {
-            getLogger().info("Couldn't find {}. Installing Node and npm to {}.",
-                    nodeCommands.getFirst(), getAlternativeDir());
-            file = new File(installNode(nodeVersion, nodeDownloadRoot));
-        }
-        if (file == null) {
-            // This should never happen, because node is automatically installed
-            // if not detected globally or at project level
-            throw new IllegalStateException("Node not found");
-        }
-        return file.getAbsolutePath();
+        return ensureNodeResolved().nodeExecutable();
     }
 
     /**
-     * Update installed node version if installed version is not supported.
-     * <p>
-     * Also update is {@code auto.update} flag set and installed version is
-     * older than the current default version.
+     * Ensures that node has been resolved and cached. Uses double-checked
+     * locking to ensure thread-safe lazy initialization.
      *
-     * @param file
-     *            node executable
-     * @return node executable after possible installation of new version
+     * @return the active node installation information
      */
-    private File updateAlternateIfNeeded(File file) {
-        if (file == null) {
-            return null;
+    private NodeResolver.ActiveNodeInstallation ensureNodeResolved() {
+        NodeResolver.ActiveNodeInstallation active = activeNodeInstallation;
+        if (active != null) {
+            return active;
         }
-        // If auto-update flag set or installed node older than minimum
-        // supported
-        try {
-            List<String> versionCommand = Lists.newArrayList();
-            versionCommand.add(file.getAbsolutePath());
-            versionCommand.add("--version"); // NOSONAR
-            final FrontendVersion installedNodeVersion = FrontendUtils
-                    .getVersion("node", versionCommand);
 
-            boolean installDefault = false;
-            final FrontendVersion defaultVersion = new FrontendVersion(
-                    nodeVersion);
-            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
-                getLogger().info("Updating unsupported node version {} to {}",
-                        installedNodeVersion.getFullVersion(),
-                        defaultVersion.getFullVersion());
-                installDefault = true;
-            } else if (autoUpdate
-                    && installedNodeVersion.isOlderThan(defaultVersion)) {
-                getLogger().info(
-                        "Updating current installed node version from {} to {}",
-                        installedNodeVersion.getFullVersion(),
-                        defaultVersion.getFullVersion());
-                installDefault = true;
+        synchronized (RESOLUTION_LOCK) {
+            // Double-check after acquiring lock
+            active = activeNodeInstallation;
+            if (active != null) {
+                return active;
             }
-            if (installDefault) {
-                file = new File(installNode(nodeVersion, nodeDownloadRoot));
-            }
-        } catch (UnknownVersionException e) {
-            getLogger().error("Failed to get version for installed node.", e);
-        }
-        return file;
-    }
 
-    /**
-     * Ensures that given node executable is supported by Vaadin.
-     *
-     * Returns the input executable if version is supported, otherwise
-     * {@literal null}.
-     *
-     * @param nodeExecutable
-     *            node executable to be checked
-     * @return input node executable if supported, otherwise {@literal null}.
-     */
-    private File rejectUnsupportedNodeVersion(File nodeExecutable) {
-        if (nodeExecutable == null) {
-            return null;
-        }
-        try {
-            List<String> versionCommand = Lists.newArrayList();
-            versionCommand.add(nodeExecutable.getAbsolutePath());
-            versionCommand.add("--version"); // NOSONAR
-            final FrontendVersion installedNodeVersion = FrontendUtils
-                    .getVersion("node", versionCommand);
-
-            if (installedNodeVersion.isOlderThan(SUPPORTED_NODE_VERSION)) {
-                getLogger().info(
-                        "{} Node.js version {} is older than the required minimum version {}. Using Node.js from {}.",
-                        nodeExecutable.getPath().startsWith(baseDir)
-                                ? "The project-specific"
-                                : "The globally installed",
-                        installedNodeVersion.getFullVersion(),
-                        SUPPORTED_NODE_VERSION.getFullVersion(),
-                        alternativeDirGetter.get());
-                // Global node is not supported use alternative for everything
-                forceAlternativeNode = true;
-                return null;
-            }
-        } catch (UnknownVersionException e) {
-            getLogger().error("Failed to get version for installed node.", e);
-        }
-        return nodeExecutable;
-    }
-
-    /**
-     * Locate <code>node</code> executable from the alternative directory given.
-     *
-     * <p>
-     * The difference between {@link #getNodeExecutable()} and this method in a
-     * search algorithm: {@link #getNodeExecutable()} first searches executable
-     * in the base/alternative directory and fallbacks to the globally installed
-     * if it's not found there. The {@link #forceAlternativeNodeExecutable()}
-     * doesn't search for globally installed executable. It tries to find it in
-     * the installation directory and if it's not found it downloads and
-     * installs it there.
-     *
-     * @see #getNodeExecutable()
-     *
-     * @return the full path to the executable
-     */
-    public String forceAlternativeNodeExecutable() {
-        Pair<String, String> nodeCommands = getNodeCommands();
-        String dir = getAlternativeDir();
-        File file = new File(dir, nodeCommands.getSecond());
-        if (file.exists()) {
-            if (!frontendToolsLocator.verifyTool(file)) {
+            // Perform resolution
+            if (alternativeDirGetter == null) {
                 throw new IllegalStateException(
-                        String.format(LOCAL_NODE_NOT_FOUND, dir, dir,
-                                file.getAbsolutePath()));
+                        "Node not found and no alternative directory configured for installation");
             }
-            return updateAlternateIfNeeded(file).getAbsolutePath();
-        } else {
-            getLogger().info("Node not found in {}. Installing node {}.", dir,
-                    nodeVersion);
-            return installNode(nodeVersion, nodeDownloadRoot);
+
+            NodeResolver resolver = new NodeResolver(getAlternativeDir(),
+                    nodeVersion, nodeDownloadRoot, forceAlternativeNode,
+                    getProxies(), nodeFolder);
+            activeNodeInstallation = resolver.resolve();
+            return activeNodeInstallation;
         }
     }
 
@@ -614,42 +389,51 @@ public class FrontendTools {
         if (ignoreVersionChecks) {
             return;
         }
-        Pair<FrontendVersion, String> foundNodeVersionAndExe = null;
+        // Node version is already validated by NodeResolver, which ensures
+        // we have a suitable version (either from global PATH or auto-installed
+        // to ~/.vaadin). Just log which node we're using.
         try {
-            foundNodeVersionAndExe = getNodeVersionAndExecutable();
-            FrontendVersion foundNodeVersion = foundNodeVersionAndExe
-                    .getFirst();
+            Pair<FrontendVersion, String> foundNodeVersionAndExe = getNodeVersionAndExecutable();
             getLogger().debug("Using node {} located at {}",
-                    foundNodeVersion.getFullVersion(),
+                    foundNodeVersionAndExe.getFirst().getFullVersion(),
                     foundNodeVersionAndExe.getSecond());
-            FrontendUtils.validateToolVersion("node", foundNodeVersion,
-                    SUPPORTED_NODE_VERSION);
         } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if node is new enough", e);
-        } catch (IllegalStateException ise) {
-            if (foundNodeVersionAndExe != null) {
-                getLogger().info("Validated node from '{}'",
-                        foundNodeVersionAndExe.getSecond());
-            }
-            throw ise;
+            getLogger().warn("Error checking node version", e);
         }
 
+        // Validate npm version (npm comes bundled with node)
         try {
             FrontendVersion foundNpmVersion = getNpmVersion();
             getLogger().debug("Using npm {} located at {}",
                     foundNpmVersion.getFullVersion(),
                     getNpmExecutable(false).get(0));
-            FrontendUtils.validateToolVersion("npm", foundNpmVersion,
-                    SUPPORTED_NPM_VERSION);
+
+            // If npm is too old, this is an internal configuration error - the
+            // node version we accept/install should always come with a suitable
+            // npm
+            if (foundNpmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
+                throw new IllegalStateException(String.format(
+                        "Internal error: npm version %s is older than required %s. "
+                                + "This should not happen as Node %s should bundle a compatible npm version. "
+                                + "Please report this issue.",
+                        foundNpmVersion.getFullVersion(),
+                        SUPPORTED_NPM_VERSION.getFullVersion(),
+                        DEFAULT_NODE_VERSION));
+            }
+
             checkForFaultyNpmVersion(foundNpmVersion);
         } catch (UnknownVersionException e) {
-            getLogger().warn("Error checking if npm is new enough", e);
+            getLogger().warn("Error checking npm version", e);
         }
 
     }
 
     /**
      * Gets the version of the node executable.
+     *
+     * @return the version of the node executable
+     * @throws UnknownVersionException
+     *             if the node version cannot be determined
      */
     public FrontendVersion getNodeVersion() throws UnknownVersionException {
         return getNodeVersionAndExecutable().getFirst();
@@ -663,35 +447,6 @@ public class FrontendTools {
         nodeVersionCommand.add("--version"); // NOSONAR
         return new Pair<>(FrontendUtils.getVersion("node", nodeVersionCommand),
                 executable);
-    }
-
-    /**
-     * Install node and npm.
-     *
-     * @param nodeVersion
-     *            node version to install
-     * @param downloadRoot
-     *            optional download root for downloading node. May be a
-     *            filesystem file or a URL see
-     *            {@link NodeInstaller#setNodeDownloadRoot(URI)}.
-     * @return node installation path
-     */
-    protected String installNode(String nodeVersion, URI downloadRoot) {
-        NodeInstaller nodeInstaller = new NodeInstaller(
-                new File(getAlternativeDir()), getProxies())
-                .setNodeVersion(nodeVersion);
-        if (downloadRoot != null) {
-            nodeInstaller.setNodeDownloadRoot(downloadRoot);
-        }
-
-        try {
-            nodeInstaller.install();
-        } catch (InstallationException e) {
-            throw new IllegalStateException("Failed to install Node", e);
-        }
-
-        return new File(nodeInstaller.getInstallDirectory(),
-                getNodeCommands().getFirst()).toString();
     }
 
     /**
@@ -713,44 +468,6 @@ public class FrontendTools {
                     "by updating your global npm installation with `npm install -g npm@latest`");
             throw new IllegalStateException(badNpmVersion);
         }
-    }
-
-    /**
-     * Checks whether the currently installed npm version accepts/properly
-     * processes the path to a given folder.
-     * <p>
-     * For example, the older versions of npm don't accept whitespaces in
-     * folders path.
-     *
-     * @param folder
-     *            the folder to check.
-     * @return <code>true</code>, if the current version of npm accepts the
-     *         given folder path, <code>false</code> if it causes issues.
-     */
-    boolean folderIsAcceptableByNpm(File folder) {
-        Objects.requireNonNull(folder);
-        boolean hidden = folder.isHidden()
-                || folder.getPath().contains(File.separator + ".");
-        if (!hidden && (!folder.exists() || !folder.isDirectory())) {
-            getLogger().warn(
-                    "Failed to check whether npm accepts the folder '{}', because the folder doesn't exist or not a directory",
-                    folder);
-            return true;
-        }
-
-        if (FrontendUtils.isWindows()
-                && folder.getAbsolutePath().matches(".*[\\s+].*")) {
-            try {
-                FrontendVersion foundNpmVersion = getNpmVersion();
-                // npm < 7.0.0 doesn't accept whitespaces in path
-                return foundNpmVersion
-                        .isEqualOrNewer(WHITESPACE_ACCEPTING_NPM_VERSION);
-            } catch (UnknownVersionException e) {
-                getLogger().warn("Error checking if npm accepts path '{}'",
-                        folder, e);
-            }
-        }
-        return true;
     }
 
     /**
@@ -830,7 +547,10 @@ public class FrontendTools {
      * https://github.com/vaadin/flow/issues/12649
      *
      * @return the flags
+     * @deprecated Webpack is not used anymore, this method is obsolete and have
+     *             no replacements.
      */
+    @Deprecated(forRemoval = true, since = "24.8")
     public Map<String, String> getWebpackNodeEnvironment() {
         Map<String, String> environment = new HashMap<>();
         ProcessBuilder processBuilder = new ProcessBuilder()
@@ -857,22 +577,6 @@ public class FrontendTools {
         return environment;
     }
 
-    private File getExecutable(String dir, String location) {
-        File file = new File(dir, location);
-        if (frontendToolsLocator.verifyTool(file)) {
-            return file;
-        }
-        return null;
-    }
-
-    private Pair<String, String> getNodeCommands() {
-        if (FrontendUtils.isWindows()) {
-            return new Pair<>("node.exe", "node/node.exe");
-        } else {
-            return new Pair<>("node", "node/node");
-        }
-    }
-
     private Logger getLogger() {
         return LoggerFactory.getLogger(FrontendTools.class);
     }
@@ -897,80 +601,31 @@ public class FrontendTools {
 
     private List<String> getNpmCliToolExecutable(BuildTool cliTool,
             String... flags) {
-        // First look for *-cli.js script in project/node_modules
-        List<String> returnCommand = getNpmScriptCommand(baseDir,
-                cliTool.getScript());
-        boolean alternativeDirChecked = false;
-        if (returnCommand.isEmpty() && forceAlternativeNode) {
-            // First look for *-cli.js script in ~/.vaadin/node/node_modules
-            // only if alternative node takes precedence over all other location
-            returnCommand = getNpmScriptCommand(getAlternativeDir(),
-                    cliTool.getScript());
-            alternativeDirChecked = true;
-        }
-        if (returnCommand.isEmpty()) {
-            // Otherwise look for regular `npm`/`npx` global search path
-            Optional<String> command = frontendToolsLocator
-                    .tryLocateTool(cliTool.getCommand())
-                    .map(File::getAbsolutePath);
-            if (command.isPresent()) {
-                returnCommand = Collections.singletonList(command.get());
-                if (!alternativeDirChecked && cliTool.equals(BuildTool.NPM)) {
-                    try {
-                        List<String> npmVersionCommand = new ArrayList<>(
-                                returnCommand);
-                        npmVersionCommand.add("--version"); // NOSONAR
-                        final FrontendVersion npmVersion = FrontendUtils
-                                .getVersion("npm", npmVersionCommand);
-                        if (npmVersion.isOlderThan(SUPPORTED_NPM_VERSION)) {
-                            // Global npm is older than SUPPORTED_NPM_VERSION.
-                            // Using npm from ~/.vaadin
-                            returnCommand = new ArrayList<>();
-                            // Force installation if not installed
-                            forceAlternativeNodeExecutable();
-                        }
-                    } catch (UnknownVersionException uve) {
-                        getLogger().error("Could not determine npm version",
-                                uve);
-                        // Use from alternate directory if global
-                        // version check failed
-                        returnCommand = new ArrayList<>();
-                        // Force installation if not installed
-                        // as the global version check failed
-                        forceAlternativeNodeExecutable();
-                    }
+        List<String> returnCommand = new ArrayList<>();
+
+        // For npm/npx, we always use the resolved node installation
+        if (cliTool.equals(BuildTool.NPM) || cliTool.equals(BuildTool.NPX)) {
+            NodeResolver.ActiveNodeInstallation active = ensureNodeResolved();
+            returnCommand.add(active.nodeExecutable());
+
+            if (cliTool.equals(BuildTool.NPM)) {
+                returnCommand.add(active.npmCliScript());
+            } else {
+                // NPX is in the same directory as npm, just different filename
+                File npmCliFile = new File(active.npmCliScript());
+                File npxCliFile = new File(npmCliFile.getParentFile(),
+                        "npx-cli.js");
+                if (!npxCliFile.exists()) {
+                    throw new IllegalStateException(
+                            "npx-cli.js not found at expected location: "
+                                    + npxCliFile.getAbsolutePath());
                 }
+                returnCommand.add(npxCliFile.getAbsolutePath());
             }
-        }
-        if (!alternativeDirChecked && returnCommand.isEmpty()) {
-            // Use alternative if global is not found and alternative location
-            // is not yet checked
-            returnCommand = getNpmScriptCommand(getAlternativeDir(),
-                    cliTool.getScript());
-            // force alternative to not check global again for these tools
-            forceAlternativeNode = true;
         }
 
         if (flags.length > 0) {
-            returnCommand = new ArrayList<>(returnCommand);
             Collections.addAll(returnCommand, flags);
-        }
-        return returnCommand;
-    }
-
-    private List<String> getNpmScriptCommand(String dir, String scriptName) {
-        // If `node` is not found in PATH, `node/node_modules/npm/bin/npm` will
-        // not work because it's a shell or windows script that looks for node
-        // and will fail. Thus we look for the `npm-cli` node script instead
-        File file = new File(dir, NPM_BIN_PATH + scriptName);
-        if (!FrontendUtils.isWindows() && !file.canRead()) {
-            file = new File(dir, NPM_BIN_LINUX_LEGACY_PATH + scriptName);
-        }
-        List<String> returnCommand = new ArrayList<>();
-        if (file.canRead()) {
-            // We return a two element list with node binary and npm-cli script
-            returnCommand.add(getNodeBinary());
-            returnCommand.add(file.getAbsolutePath());
         }
         return returnCommand;
     }
@@ -1091,11 +746,7 @@ public class FrontendTools {
      * @return the path to the node binary
      */
     public String getNodeBinary() {
-        if (forceAlternativeNode) {
-            return forceAlternativeNodeExecutable();
-        } else {
-            return getNodeExecutable();
-        }
+        return getNodeExecutable();
     }
 
     private String removeLineBreaks(String str) {

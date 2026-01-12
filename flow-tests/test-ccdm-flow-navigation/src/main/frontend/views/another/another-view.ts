@@ -13,8 +13,6 @@ export class AboutView extends LitElement {
   }
 
   render() {
-    return html`
-      <div id="another-content">Another</div>
-    `;
+    return html` <div id="another-content">Another</div> `;
   }
 }

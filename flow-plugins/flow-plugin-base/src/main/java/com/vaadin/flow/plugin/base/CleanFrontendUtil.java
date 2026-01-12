@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.plugin.base;
 
 import java.io.File;
@@ -22,12 +21,13 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import org.apache.commons.io.FileUtils;
+import tools.jackson.databind.node.ObjectNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 
 /**
  * Utility class for cleaning the frontend files to a clean state.
@@ -38,6 +38,7 @@ public class CleanFrontendUtil {
     public static final String DEPENDENCIES = "dependencies";
     public static final String DEV_DEPENDENCIES = "devDependencies";
     public static final String OVERRIDES = "overrides";
+    public static final String PNPM = "pnpm";
 
     /**
      * Exception thrown when cleaning the frontend fails.
@@ -61,7 +62,7 @@ public class CleanFrontendUtil {
      */
     public static void runCleaning(PluginAdapterBase adapter,
             CleanOptions options) throws CleanFrontendException {
-        if (FrontendUtils.isHillaUsed(adapter.frontendDirectory(),
+        if (FrontendBuildUtils.isHillaUsed(adapter.frontendDirectory(),
                 adapter.getClassFinder())) {
             options.withRemovePackageLock(false).withRemoveNodeModules(false);
         }
@@ -207,6 +208,9 @@ public class CleanFrontendUtil {
         ObjectNode devDependencies = (ObjectNode) packageJson
                 .get(DEV_DEPENDENCIES);
         ObjectNode overridesSection = (ObjectNode) packageJson.get(OVERRIDES);
+        ObjectNode pnpmOverridesSection = packageJson.has(PNPM)
+                ? (ObjectNode) packageJson.get(PNPM).get(OVERRIDES)
+                : null;
 
         if (packageJson.has(VAADIN)) {
             ObjectNode vaadin = (ObjectNode) packageJson.get(VAADIN);
@@ -219,6 +223,7 @@ public class CleanFrontendUtil {
             cleanObject(dependencies, vaadinDependencies);
             cleanObject(devDependencies, vaadinDevDependencies);
             cleanObject(overridesSection, vaadinDependencies, false);
+            cleanObject(pnpmOverridesSection, vaadinDependencies, false);
 
             packageJson.remove(VAADIN);
         }

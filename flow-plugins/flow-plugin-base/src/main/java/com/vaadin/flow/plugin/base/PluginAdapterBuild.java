@@ -99,7 +99,7 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
      * Checks if the artifact defined by given coordinates is a dependency of
      * the project, present at runtime.
      * <p>
-     * </p>
+     *
      * If the dependency is missing or in invalid scope, the method produces a
      * message containing the necessary instructions to fix the project and
      * notifies the caller by invoking the provided message consumer, if
@@ -118,4 +118,12 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer);
 
+    /**
+     * The resources output directory for META-INF/resources in the classes
+     * output directory.
+     *
+     * @return the META-INF/resources directory, usually
+     *         {output}/classes/META-INF/resources
+     */
+    File resourcesOutputDirectory();
 }
