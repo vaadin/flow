@@ -1281,13 +1281,12 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
-        if (feature.hasBinding()) {
-            throw new BindingActiveException(
-                    "setText is not allowed while a binding for text exists.");
-        }
-
+        getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
+            if (feature.hasBinding()) {
+                throw new BindingActiveException(
+                        "setText is not allowed while a binding for text exists.");
+            }
+        });
         setTextContent(textContent);
 
         return this;
