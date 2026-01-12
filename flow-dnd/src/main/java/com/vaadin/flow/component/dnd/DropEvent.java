@@ -18,7 +18,6 @@ package com.vaadin.flow.component.dnd;
 import java.util.Optional;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.DomEvent;
 import com.vaadin.flow.component.EventData;
@@ -32,11 +31,10 @@ import com.vaadin.flow.component.dnd.internal.DndUtil;
  *            Type of the drop target component.
  * @author Vaadin Ltd
  * @see DropTarget#addDropListener(com.vaadin.flow.component.ComponentEventListener)
- * @author Vaadin Ltd
  * @since 2.0
  */
 @DomEvent("drop")
-public class DropEvent<T extends Component> extends ComponentEvent<T> {
+public class DropEvent<T extends Component> extends AbstractDnDEvent<T> {
 
     private final EffectAllowed effectAllowed;
     private final String dropEffect;
@@ -52,10 +50,16 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      *            side, <code>false</code> otherwise
      * @param effectAllowed
      *            the effect allowed by the drag source
+     * @param clientX
+     *            the x coordinate of the mouse pointer relative to the viewport
+     * @param clientY
+     *            the y coordinate of the mouse pointer relative to the viewport
      */
     public DropEvent(T source, boolean fromClient,
-            @EventData("event.dataTransfer.effectAllowed") String effectAllowed) {
-        super(source, fromClient);
+            @EventData("event.dataTransfer.effectAllowed") String effectAllowed,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY) {
+        super(source, fromClient, clientX, clientY);
 
         this.effectAllowed = EffectAllowed.fromString(effectAllowed);
         // capture drop effect from server side, since it is meant for drag
@@ -111,14 +115,5 @@ public class DropEvent<T extends Component> extends ComponentEvent<T> {
      */
     public Optional<Component> getDragSourceComponent() {
         return Optional.ofNullable(dragSourceComponent);
-    }
-
-    /**
-     * Returns the drop target component where the drop event occurred.
-     *
-     * @return Component on which a drag source was dropped.
-     */
-    public T getComponent() {
-        return getSource();
     }
 }

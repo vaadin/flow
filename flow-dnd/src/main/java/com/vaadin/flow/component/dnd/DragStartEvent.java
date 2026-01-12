@@ -16,8 +16,8 @@
 package com.vaadin.flow.component.dnd;
 
 import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.ComponentEvent;
 import com.vaadin.flow.component.DomEvent;
+import com.vaadin.flow.component.EventData;
 
 /**
  * HTML5 drag start event, fired when the user starts dragging a drag source.
@@ -26,11 +26,10 @@ import com.vaadin.flow.component.DomEvent;
  *            Type of the component that is dragged.
  * @author Vaadin Ltd
  * @see DragSource#addDragStartListener(com.vaadin.flow.component.ComponentEventListener)
- * @author Vaadin Ltd
  * @since 2.0
  */
 @DomEvent("dragstart")
-public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
+public class DragStartEvent<T extends Component> extends AbstractDnDEvent<T> {
 
     /**
      * Creates a drag start event.
@@ -40,18 +39,15 @@ public class DragStartEvent<T extends Component> extends ComponentEvent<T> {
      * @param fromClient
      *            <code>true</code> if the event originated from the client
      *            side, <code>false</code> otherwise
+     * @param clientX
+     *            the x coordinate of the mouse pointer relative to the viewport
+     * @param clientY
+     *            the y coordinate of the mouse pointer relative to the viewport
      */
-    public DragStartEvent(T source, boolean fromClient) {
-        super(source, fromClient);
-    }
-
-    /**
-     * Returns the drag source component where the dragstart event occurred.
-     *
-     * @return Component which is dragged.
-     */
-    public T getComponent() {
-        return getSource();
+    public DragStartEvent(T source, boolean fromClient,
+            @EventData("event.clientX") int clientX,
+            @EventData("event.clientY") int clientY) {
+        super(source, fromClient, clientX, clientY);
     }
 
     /**
