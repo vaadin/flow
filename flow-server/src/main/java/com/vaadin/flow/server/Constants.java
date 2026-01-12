@@ -134,8 +134,7 @@ public final class Constants implements Serializable {
 
     /**
      * Constant for setting the pinned supported version of pnpm to be used by
-     * default (see
-     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * default.
      */
     public static final boolean GLOBAL_PNPM_DEFAULT = false;
 

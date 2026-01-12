@@ -1436,8 +1436,8 @@ public class Binder<BEAN> implements Serializable {
                     && getField() instanceof HasValidator) {
                 HasValidator<FIELDVALUE> hasValidatorField = (HasValidator<FIELDVALUE>) getField();
                 onValidationStatusChange = hasValidatorField
-                        .addValidationStatusChangeListener(
-                                event -> this.validate());
+                        .addValidationStatusChangeListener(event -> getBinder()
+                                .handleFieldValueChange(this));
             }
 
             this.getter = getter;

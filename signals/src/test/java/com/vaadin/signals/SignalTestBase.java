@@ -157,6 +157,5 @@ public class SignalTestBase {
 
         currentResultNotifier.remove();
         currentEffectDispatcher.remove();
-        SignalFactory.IN_MEMORY_SHARED.clear();
     }
 }
