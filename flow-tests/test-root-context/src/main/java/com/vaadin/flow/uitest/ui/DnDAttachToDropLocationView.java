@@ -29,10 +29,10 @@ import com.vaadin.flow.uitest.servlet.ViewTestLayout;
  * Uses getOffsetX/Y for drop position and getDragStartOffsetX/Y to account for
  * where the user grabbed the item, resulting in natural drag behavior.
  */
-@Route(value = "com.vaadin.flow.uitest.ui.DnDAttachToDropLocation", layout = ViewTestLayout.class)
-public class DnDAttachToDropLocation extends Div {
+@Route(value = "com.vaadin.flow.uitest.ui.DnDAttachToDropLocationView", layout = ViewTestLayout.class)
+public class DnDAttachToDropLocationView extends Div {
 
-    public DnDAttachToDropLocation() {
+    public DnDAttachToDropLocationView() {
         // Create a palette of draggable items
         Div palette = new Div() {{
             getStyle().setDisplay(Style.Display.FLEX);
@@ -75,7 +75,6 @@ public class DnDAttachToDropLocation extends Div {
         public ColoredItem(String label, String color) {
             super(label);
             getStyle().setPadding("5px");
-            getStyle().setBorder("1px solid black");
             getStyle().setBackgroundColor(color);
             getStyle().setColor("white");
         }
@@ -91,7 +90,6 @@ public class DnDAttachToDropLocation extends Div {
         public Canvas() {
             getStyle().setPosition(Style.Position.RELATIVE);
             getStyle().setBackgroundColor("lightyellow");
-            getStyle().setBorder("2px dashed gray");
             setHeight("400px");
             setWidth("600px");
 
