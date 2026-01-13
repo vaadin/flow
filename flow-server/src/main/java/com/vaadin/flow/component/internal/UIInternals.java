@@ -1515,13 +1515,13 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Set the flow reference element for the client outlet element.
-     *
-     * @param wrapperElement
-     *            server element for the client outlet element
+     * Create flow reference for the client outlet element if not already
+     * generated.
      */
-    public void setWrapperElement(Element wrapperElement) {
-        this.wrapperElement = wrapperElement;
+    public void createWrapperElement() {
+        if (wrapperElement == null) {
+            this.wrapperElement = new Element(getContainerTag());
+        }
     }
 
     /**

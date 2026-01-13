@@ -243,9 +243,7 @@ public class UI extends Component
         getInternals().setFullAppId(appId);
 
         if (this.isNavigationSupported()) {
-            // Create flow reference for the client outlet element
-            internals.setWrapperElement(
-                    new Element(getInternals().getContainerTag()));
+            internals.createWrapperElement();
 
             // Connect server with client
             getElement().getStateProvider().appendVirtualChild(
