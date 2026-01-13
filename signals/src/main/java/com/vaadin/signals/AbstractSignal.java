@@ -17,7 +17,6 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
@@ -318,8 +317,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     /**
      * Submits a command for this signal and updates the given operation without
      * a value once the command result is confirmed. This is a shorthand for
-     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
-     * operations that don't have a result value.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of operations that don't have a result value.
      *
      * @param <O>
      *            the operation type
@@ -380,8 +379,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     /**
      * Submits a command for this signal and updates the created operation
      * without a value once the command result is confirmed. This is a shorthand
-     * for {@link #submit(SignalCommand, Function, SignalOperation)} in the case
-     * of using the default operation type and no result value.
+     * for {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in
+     * the case of using the default operation type and no result value.
      *
      * @param command
      *            the command to submit, not <code>null</code>

@@ -28,6 +28,7 @@ import com.vaadin.signals.NodeSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
@@ -37,9 +38,9 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
  * changed for any of the signals that were used when computing the previous
  * value. If the computation callback throws a {@link RuntimeException}, then
  * that exception will be re-thrown when accessing the value of this signal. An
- * {@link Signal#effect(Runnable) effect} or computed signal that uses the value
- * from a computed signal will not be invalidated if the computation is run
- * again but produces the same value as before.
+ * {@link Signal#effect(EffectAction) effect} or computed signal that uses the
+ * value from a computed signal will not be invalidated if the computation is
+ * run again but produces the same value as before.
  *
  * @param <T>
  *            the value type
