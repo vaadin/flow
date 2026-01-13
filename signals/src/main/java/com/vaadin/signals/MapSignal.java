@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
@@ -194,9 +195,10 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that the given child is mapped to the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given child is a
-     * mapped to the given key in this map when the operation is processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given
+     * child is a mapped to the given key in this map when the operation is
+     * processed.
      *
      *
      * @param key
@@ -214,9 +216,9 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is a mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given key has a
-     * mapping in this map when the operation is processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given key
+     * has a mapping in this map when the operation is processed.
      *
      * @param key
      *            the key to check, not <code>null</code>
@@ -229,9 +231,9 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is no mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given key has no
-     * mapping in this map when the operation is processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given key
+     * has no mapping in this map when the operation is processed.
      *
      * @param key
      *            the key to check, not <code>null</code>

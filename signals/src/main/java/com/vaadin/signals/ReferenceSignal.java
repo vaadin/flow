@@ -61,10 +61,20 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
     // package-protected for testing
     final ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * Creates a new reference signal with the given initial value.
+     *
+     * @param initialValue
+     *            the initial value, may be <code>null</code>
+     */
     public ReferenceSignal(T initialValue) {
         this.value = initialValue;
     }
 
+    /**
+     * Creates a new reference signal with an initial value of
+     * <code>null</code>.
+     */
     public ReferenceSignal() {
         this(null);
     }

@@ -22,6 +22,7 @@ import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
@@ -300,10 +301,10 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given child is at the given position in this list. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given child is a
-     * child of this list and at the given position when the operation is
-     * processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given
+     * child is a child of this list and at the given position when the
+     * operation is processed.
      *
      * @param child
      *            the child to test, not <code>null</code>
@@ -320,10 +321,10 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given signal is a child in this list. This operation is
      * only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given child is a
-     * child of this list and at the given position when the operation is
-     * processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given
+     * child is a child of this list and at the given position when the
+     * operation is processed.
      *
      * @param child
      *            the child to look for test, not <code>null</code>

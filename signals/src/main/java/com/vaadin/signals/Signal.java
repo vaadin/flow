@@ -34,9 +34,9 @@ import com.vaadin.signals.operations.TransactionOperation;
  * A signal is a reactive value holder with automatic subscription and
  * unsubscription of listeners.
  * <p>
- * Reactivity is based on {@link Signal#effect(Runnable)} callbacks that detect
- * the signals used during invocation. The callback will be run again whenever
- * there's a change to any of the signal instances used in the previous
+ * Reactivity is based on {@link Signal#effect(EffectAction)} callbacks that
+ * detect the signals used during invocation. The callback will be run again
+ * whenever there's a change to any of the signal instances used in the previous
  * invocation. Detection is based on running {@link #value()}.
  * {@link #untracked(ValueSupplier)} can be used to read the value within an
  * effect without registering a dependency.
@@ -61,9 +61,9 @@ public interface Signal<T> {
      * transaction depend on the value so that the transaction fails in case the
      * signal value is changed concurrently.
      * <p>
-     * Reading the value inside an {@link #effect(Runnable)} or
-     * {@link #computed(Supplier)} callback sets up that effect or computed
-     * signal to depend on the signal.
+     * Reading the value inside an {@link #effect(EffectAction)} or
+     * {@link #computed(SignalComputation)} callback sets up that effect or
+     * computed signal to depend on the signal.
      *
      * @return the signal value
      */
@@ -92,8 +92,9 @@ public interface Signal<T> {
      * <p>
      * The computed signal does not perform any caching but will instead run the
      * callback every time the signal value is read. Use
-     * {@link #computed(Supplier)} to create a computed signal that caches the
-     * result of running the callback until the value of any dependency changes.
+     * {@link #computed(SignalComputation)} to create a computed signal that
+     * caches the result of running the callback until the value of any
+     * dependency changes.
      *
      * @param <C>
      *            the computed signal type
@@ -135,8 +136,8 @@ public interface Signal<T> {
      * and only if the previously computed value might have been invalidated by
      * dependent signal changes. If the computation callback throws a
      * {@link RuntimeException}, then that exception will be re-thrown when
-     * accessing the signal value. An {@link Signal#effect(Runnable) effect} or
-     * computed signal that uses the value from a computed signal will not be
+     * accessing the signal value. An {@link Signal#effect(EffectAction) effect}
+     * or computed signal that uses the value from a computed signal will not be
      * invalidated if the computation is run again but produces the same value
      * as before.
      *
@@ -177,7 +178,7 @@ public interface Signal<T> {
      * whether the transaction was successfully committed once the status is
      * confirmed.
      *
-     * @see #runInTransaction(Runnable)
+     * @see #runInTransaction(ValueSupplier)
      *
      * @param <T>
      *            the type returned by the supplier
