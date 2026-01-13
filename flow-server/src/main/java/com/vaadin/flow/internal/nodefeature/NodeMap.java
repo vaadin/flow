@@ -26,6 +26,9 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.dom.ElementEffect;
+import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.internal.change.EmptyChange;
 import com.vaadin.flow.internal.change.MapPutChange;
@@ -33,6 +36,7 @@ import com.vaadin.flow.internal.change.MapRemoveChange;
 import com.vaadin.flow.internal.change.NodeChange;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.util.UniqueSerializable;
+import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.Signal;
 
 /**
@@ -230,6 +234,10 @@ public abstract class NodeMap extends NodeFeature {
      *         no value stored, or if <code>null</code> is stored as a value
      */
     protected Serializable get(String key) {
+        return doGet(key);
+    }
+
+    private Serializable doGet(String key) {
         setAccessed(key);
         if (values == null) {
             return null;
@@ -532,4 +540,60 @@ public abstract class NodeMap extends NodeFeature {
         return values instanceof SingleValue;
     }
 
+    /**
+     * Binds the given signal to the given key. <code>null</code> signal unbinds
+     * existing binding.
+     *
+     * @param owner
+     *            the element owning the key, not <code>null</code>
+     * @param key
+     *            the key of the node map
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @param <T>
+     *            the type of the signal value
+     * 
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding for the
+     *             given key
+     * 
+     */
+    protected <T> void bindSignal(Element owner, String key, Signal<T> signal,
+            SerializableBiConsumer<Element, T> setter) {
+        SignalBinding previousSignalBinding;
+        if (doGet(key) instanceof SignalBinding binding) {
+            previousSignalBinding = binding;
+        } else {
+            previousSignalBinding = null;
+        }
+        if (signal != null && previousSignalBinding != null
+                && previousSignalBinding.signal() != null) {
+            throw new BindingActiveException();
+        }
+
+        Registration registration = signal != null
+                ? ElementEffect.bind(owner, signal, setter)
+                : null;
+        if (signal == null && previousSignalBinding != null) {
+            if (previousSignalBinding.registration() != null) {
+                previousSignalBinding.registration().remove();
+            }
+            put(key, get(key), false);
+        } else {
+            put(key, new SignalBinding(signal, registration, get(key)), false);
+        }
+    }
+
+    /**
+     * Checks whether there is a signal binding for the given key.
+     * 
+     * @param key
+     *            the key to check
+     * @return true if there is an active signal binding, false otherwise
+     */
+    public boolean hasSignal(String key) {
+        return doGet(key) instanceof SignalBinding binding
+                && binding.signal() != null && binding.registration() != null;
+    }
 }

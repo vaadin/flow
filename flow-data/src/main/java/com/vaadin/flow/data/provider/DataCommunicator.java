@@ -436,6 +436,14 @@ public class DataCommunicator<T> implements Serializable {
     }
 
     /**
+     * Regenerates and resends data for all items in the current viewport.
+     */
+    protected void refreshViewport() {
+        resendEntireRange = true;
+        requestFlush();
+    }
+
+    /**
      * Confirm update with the given {@code updateId}.
      *
      * @param updateId

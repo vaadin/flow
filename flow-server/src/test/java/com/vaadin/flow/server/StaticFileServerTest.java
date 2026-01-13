@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
@@ -74,12 +75,12 @@ import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.ResponseWriter;
 import com.vaadin.tests.util.TestUtil;
 
+import static com.vaadin.flow.internal.FrontendUtils.DEFAULT_FRONTEND_DIR;
+import static com.vaadin.flow.internal.FrontendUtils.PARAM_FRONTEND_DIR;
 import static com.vaadin.flow.server.Constants.POLYFILLS_DEFAULT_VALUE;
 import static com.vaadin.flow.server.Constants.STATISTICS_JSON_DEFAULT;
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_STATISTICS_JSON;
-import static com.vaadin.flow.server.frontend.FrontendUtils.DEFAULT_FRONTEND_DIR;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PARAM_FRONTEND_DIR;
 
 @NotThreadSafe
 public class StaticFileServerTest implements Serializable {
@@ -1250,6 +1251,30 @@ public class StaticFileServerTest implements Serializable {
 
         setupRequestURI("", "", "/themes/my-theme/styles.css");
         Assert.assertFalse(fileServer.serveStaticResource(request, response));
+    }
+
+    @Test
+    public void frameworkStaticFolder_withoutEndingSlash_doesNotServeStaticResource()
+            throws IOException {
+        // Test framework static folders without / at the end,
+        // that they do not return a result
+        for (String publicInternalFolderPath : HandlerHelper
+                .getPublicInternalFolderPaths()) {
+            Assert.assertTrue(publicInternalFolderPath.startsWith("/"));
+            Assert.assertFalse(publicInternalFolderPath.endsWith("/**"));
+
+            setupRequestURI("", "", publicInternalFolderPath);
+            Mockito.when(
+                    servletService.getStaticResource(publicInternalFolderPath))
+                    .thenReturn(URI
+                            .create("file:///" + publicInternalFolderPath + "/")
+                            .toURL());
+
+            Assert.assertFalse(
+                    publicInternalFolderPath
+                            + " should not be a static resource.",
+                    fileServer.serveStaticResource(request, response));
+        }
     }
 
     private static class CapturingServletOutputStream

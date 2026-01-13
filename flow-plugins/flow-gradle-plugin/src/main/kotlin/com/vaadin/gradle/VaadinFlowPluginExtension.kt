@@ -23,9 +23,9 @@ import com.vaadin.flow.server.Constants
 import com.vaadin.flow.server.InitParameters
 import com.vaadin.flow.server.frontend.FrontendTools
 import com.vaadin.flow.server.frontend.FrontendToolsSettings
-import com.vaadin.flow.server.frontend.FrontendUtils
+import com.vaadin.flow.internal.FrontendUtils
 import com.vaadin.flow.server.frontend.installer.NodeInstaller
-import com.vaadin.flow.server.frontend.installer.Platform
+import com.vaadin.flow.internal.Platform
 import groovy.lang.Closure
 import groovy.lang.DelegatesTo
 import org.gradle.api.Action
@@ -35,6 +35,7 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.internal.component.external.model.ModuleComponentArtifactIdentifier
+import java.net.URI
 
 public abstract class VaadinFlowPluginExtension @Inject constructor(private val project: Project) {
     /**
@@ -147,6 +148,18 @@ public abstract class VaadinFlowPluginExtension @Inject constructor(private val 
      * Defaults to false.
      */
     public abstract val requireHomeNodeExec: Property<Boolean>
+
+    /**
+     * The folder containing the Node.js executable to use.
+     *
+     * When specified, Node.js will be exclusively used from this folder.
+     * If the binary is not found, the build will fail with no fallback.
+     *
+     * Example: "/usr/local/custom-node" or "C:\custom\node"
+     *
+     * Defaults to null (use default node resolution).
+     */
+    public abstract val nodeFolder: Property<String>
 
     /**
      * Whether or not insert the initial Uidl object in the bootstrap index.html. Defaults to false.
@@ -482,6 +495,10 @@ public class PluginEffectiveConfiguration(
         extension.requireHomeNodeExec
             .convention(false)
 
+    public val nodeFolder: Property<String> =
+        extension.nodeFolder
+            .convention(null as String?)
+
     public val eagerServerLoad: Provider<Boolean> = extension.eagerServerLoad
         .convention(false)
         .overrideWithSystemPropertyFlag(project, "vaadin.eagerServerLoad")
@@ -514,7 +531,7 @@ public class PluginEffectiveConfiguration(
         .convention(FrontendTools.DEFAULT_NODE_VERSION)
 
     public val nodeDownloadRoot: Property<String> = extension.nodeDownloadRoot
-        .convention(Platform.guess().nodeDownloadRoot)
+        .convention(NodeInstaller.getDownloadRoot(Platform.guess()))
 
     public val resourceOutputDirectory: Property<File> =
         extension.resourceOutputDirectory
@@ -622,10 +639,19 @@ public class PluginEffectiveConfiguration(
             )
 
     public val toolsSettings: Provider<FrontendToolsSettings> = npmFolder.map {
-        FrontendToolsSettings(it.absolutePath) {
+        val frontendToolsSettings = FrontendToolsSettings(it.absolutePath) {
             FrontendUtils.getVaadinHomeDirectory()
                 .absolutePath
         }
+
+        frontendToolsSettings.nodeDownloadRoot = URI.create(nodeDownloadRoot.get())
+        frontendToolsSettings.nodeVersion = nodeVersion.get()
+        frontendToolsSettings.isUseGlobalPnpm = useGlobalPnpm.get()
+        frontendToolsSettings.isForceAlternativeNode = requireHomeNodeExec.get()
+        frontendToolsSettings.nodeFolder = nodeFolder.orNull
+        frontendToolsSettings.isIgnoreVersionChecks = frontendIgnoreVersionChecks.get()
+
+        frontendToolsSettings
     }
 
     /**

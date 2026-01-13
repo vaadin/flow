@@ -1,11 +1,11 @@
 name: Flow Validation
 on:
   push:
-    branches: [main, '24.9', '24.8', '24.7', '23.6']
+    branches: [main, '25.0', '24.9', '24.8', '23.6']
   workflow_dispatch:
   pull_request_target:
     types: [opened, synchronize, reopened]
-    branches: [main, '24.9', '24.8', '24.7', '23.6']
+    branches: [main]
 permissions:
   contents: read
 concurrency:
@@ -352,6 +352,7 @@ jobs:
 
           version_change="0.0.0"
 
+          summary=()
           for file in ${diff_files}
           do
               echo "  Verifying file '${file}'..."
@@ -360,9 +361,20 @@ jobs:
               if [[ "${version_change}" < "${temp_version_change}" ]]; then
                   version_change=${temp_version_change}
               fi
+          
+              if [[ "${temp_version_change}" > "0.0.1" ]]; then
+                summary+=("${file} :: ${temp_version_change}")
+              fi
           done
-
+          
           echo "Discovered version change: ${version_change}"
+          
+          if [[ "${version_change}" > "0.0.1" ]]; then
+            echo "### Significant API changes summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            printf '%s\n' "${summary[@]}" >> $GITHUB_STEP_SUMMARY
+          fi
 
           # Get current labels
           current_labels=$(gh api repos/${{ github.repository }}/issues/${{ env._PR_NUMBER }}/labels --jq '.[].name')

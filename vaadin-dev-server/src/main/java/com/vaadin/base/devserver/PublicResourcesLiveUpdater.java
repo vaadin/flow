@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
 import com.vaadin.flow.internal.ActiveStyleSheetTracker;
 import com.vaadin.flow.internal.BrowserLiveReload;
 import com.vaadin.flow.internal.BrowserLiveReloadAccessor;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**

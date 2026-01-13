@@ -3,7 +3,7 @@ name: Sonar PR Analysis
 on:
   pull_request_target:
     types: [opened, synchronize, reopened]
-    branches: [main, '24.9', '24.8', '24.7', '23.6']
+    branches: [main]
 
 concurrency:
   group: sonar-pr-${{ github.event.pull_request.number }}
