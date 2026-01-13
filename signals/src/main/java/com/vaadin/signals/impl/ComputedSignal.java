@@ -18,9 +18,6 @@ package com.vaadin.signals.impl;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.function.SignalComputation;
-
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
@@ -30,6 +27,8 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SignalComputation;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
 /**
@@ -158,13 +157,14 @@ public class ComputedSignal<T> extends AbstractSignal<T> {
             public CleanupCallback onNextChange(TransientListener listener) {
                 CleanupCallback uncount = countActiveExternalListener();
 
-                CleanupCallback superCleanup = superUsage.onNextChange(immediate -> {
-                    boolean listenToNext = listener.invoke(immediate);
-                    if (!listenToNext) {
-                        uncount.cleanup();
-                    }
-                    return listenToNext;
-                });
+                CleanupCallback superCleanup = superUsage
+                        .onNextChange(immediate -> {
+                            boolean listenToNext = listener.invoke(immediate);
+                            if (!listenToNext) {
+                                uncount.cleanup();
+                            }
+                            return listenToNext;
+                        });
 
                 return () -> {
                     superCleanup.cleanup();

@@ -42,6 +42,7 @@ public class CommandsAndHandlers {
          */
         void handle(CommandResult result);
     }
+
     private final List<SignalCommand> commands = new ArrayList<>();
     private final Map<Id, CommandResultHandler> resultHandlers = new HashMap<>();
 

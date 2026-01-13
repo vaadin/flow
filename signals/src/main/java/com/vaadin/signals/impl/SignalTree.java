@@ -20,16 +20,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiConsumer;
-
-import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.function.ValueSupplier;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.ValueSupplier;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 
 /**
  * Provides thread-safe access to a tree of signal nodes and a way of listening
@@ -40,8 +38,7 @@ import com.vaadin.signals.SignalCommand;
  */
 public abstract class SignalTree {
     /**
-     * Receives notifications about processed signal commands and their
-     * results.
+     * Receives notifications about processed signal commands and their results.
      */
     @FunctionalInterface
     public interface CommandSubscriber {
@@ -234,7 +231,8 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the observer before it's
      *         triggered, not <code>null</code>
      */
-    public CleanupCallback observeNextChange(Id nodeId, TransientListener observer) {
+    public CleanupCallback observeNextChange(Id nodeId,
+            TransientListener observer) {
         assert nodeId != null;
         assert observer != null;
 
@@ -386,8 +384,7 @@ public abstract class SignalTree {
      * @return a callback that can be used to remove the subscriber, not
      *         <code>null</code>
      */
-    public CleanupCallback subscribeToProcessed(
-            CommandSubscriber subscriber) {
+    public CleanupCallback subscribeToProcessed(CommandSubscriber subscriber) {
         assert subscriber != null;
         return getWithLock(() -> {
             subscribers.add(subscriber);
@@ -409,7 +406,8 @@ public abstract class SignalTree {
         assert hasLock();
         for (var command : commands) {
             for (var subscriber : subscribers) {
-                subscriber.onCommandProcessed(command, results.get(command.commandId()));
+                subscriber.onCommandProcessed(command,
+                        results.get(command.commandId()));
             }
         }
     }

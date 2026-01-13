@@ -38,8 +38,8 @@ import com.vaadin.signals.operations.TransactionOperation;
  * the signals used during invocation. The callback will be run again whenever
  * there's a change to any of the signal instances used in the previous
  * invocation. Detection is based on running {@link #value()}.
- * {@link #untracked(ValueSupplier)} can be used to read the value within an effect
- * without registering a dependency.
+ * {@link #untracked(ValueSupplier)} can be used to read the value within an
+ * effect without registering a dependency.
  * <p>
  * This interface can be used for creating simple computed signals as a lambda
  * function that uses other signals. This kind of signal is more limited than

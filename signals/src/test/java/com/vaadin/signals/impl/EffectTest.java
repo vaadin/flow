@@ -563,7 +563,8 @@ public class EffectTest extends SignalTestBase {
                     }
 
                     @Override
-                    public CleanupCallback onNextChange(TransientListener listener) {
+                    public CleanupCallback onNextChange(
+                            TransientListener listener) {
                         /*
                          * Emulate race condition by injecting an unrelated
                          * write at the moment when the effect starts listening

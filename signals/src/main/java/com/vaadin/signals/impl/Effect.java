@@ -21,9 +21,9 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
-import com.vaadin.signals.SignalEnvironment;
 
 /**
  * Applies a side effect based on signal value changes. An effect is a callback

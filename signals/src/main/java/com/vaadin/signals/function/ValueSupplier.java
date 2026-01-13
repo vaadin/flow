@@ -21,9 +21,9 @@ import com.vaadin.signals.Signal;
  * Supplies a value within a specific context such as a transaction or
  * lock-protected block.
  * <p>
- * This is used when the result of an operation needs to be returned, such as
- * in transactional operations where you want to both modify signals and return
- * a value.
+ * This is used when the result of an operation needs to be returned, such as in
+ * transactional operations where you want to both modify signals and return a
+ * value.
  *
  * @param <T>
  *            the supplied value type

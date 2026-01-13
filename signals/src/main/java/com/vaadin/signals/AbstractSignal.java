@@ -19,14 +19,13 @@ import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.function.Function;
 
-import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.function.CommandValidator;
-
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.CommandResult;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.StagedTransaction;
@@ -208,8 +207,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the validator to merge, not <code>null</code>
      * @return a combined validator, not <code>null</code>
      */
-    protected CommandValidator mergeValidators(
-            CommandValidator validator) {
+    protected CommandValidator mergeValidators(CommandValidator validator) {
         CommandValidator own = validator();
         if (own == ANYTHING_GOES) {
             return validator;
@@ -340,8 +338,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     /**
      * Submits a command for this signal and creates and insert operation that
      * is updated once the command result is confirmed. This is a shorthand for
-     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the case of
-     * insert operations.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of insert operations.
      *
      * @param <I>
      *            the insert operation type
@@ -354,16 +352,16 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      */
     protected <I extends AbstractSignal<?>> InsertOperation<I> submitInsert(
             SignalCommand command, ChildSignalFactory<I> childFactory) {
-        return submitVoidOperation(command,
-                new InsertOperation<>(childFactory.create(command.commandId())));
+        return submitVoidOperation(command, new InsertOperation<>(
+                childFactory.create(command.commandId())));
     }
 
     /**
      * Submits a command for this signal and uses the provided result converter
      * to updates the created operation once the command result is confirmed.
      * This is a shorthand for
-     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the case of
-     * using the default operation type.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of using the default operation type.
      *
      * @param <R>
      *            the operation result value

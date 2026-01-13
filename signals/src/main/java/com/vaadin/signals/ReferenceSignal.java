@@ -39,8 +39,9 @@ import com.vaadin.signals.operations.SignalOperation;
  * multiple threads.
  * <p>
  * The signal can also be used with mutable values in which case no thread
- * safety is provided. Mutations must be done through {@link #modify(ValueModifier)}
- * to ensure dependents are informed after the modification is applied.
+ * safety is provided. Mutations must be done through
+ * {@link #modify(ValueModifier)} to ensure dependents are informed after the
+ * modification is applied.
  * <p>
  * Reference signals can't be used inside signal transactions.
  * <p>

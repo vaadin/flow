@@ -20,9 +20,8 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import com.vaadin.signals.function.CommandValidator;
-
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
@@ -168,8 +167,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected ListSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+    protected ListSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }

@@ -31,8 +31,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 
-import com.vaadin.signals.function.SignalUpdater;
-
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.NullNode;
@@ -63,6 +61,7 @@ import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.SignalCommand.ValueCondition;
+import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.CommandResult.Reject;
@@ -286,8 +285,7 @@ public class MutableTreeRevision extends TreeRevision {
                     Collections.unmodifiableList(list), node.mapChildren());
         }
 
-        private void attach(Id parentId, Id childId,
-                ChildAttacher attacher) {
+        private void attach(Id parentId, Id childId, ChildAttacher attacher) {
             if (result != null) {
                 return;
             }
@@ -863,7 +861,8 @@ public class MutableTreeRevision extends TreeRevision {
             var opResult = manipulator.handleCommand(command);
             if (manipulator.subCommandResults != null
                     && resultCollector != null) {
-                manipulator.subCommandResults.forEach(resultCollector::dispatch);
+                manipulator.subCommandResults
+                        .forEach(resultCollector::dispatch);
             }
             return opResult;
         }).orElseGet(() -> CommandResult.fail("Node not found"));

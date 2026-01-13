@@ -62,8 +62,7 @@ public class NumberSignal extends ValueSignal<Double> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NumberSignal(SignalTree tree, Id id,
-            CommandValidator validator) {
+    protected NumberSignal(SignalTree tree, Id id, CommandValidator validator) {
         super(tree, id, validator, Double.class);
     }
 

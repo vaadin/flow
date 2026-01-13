@@ -24,8 +24,8 @@ import com.vaadin.signals.SignalCommand;
  * Used to enforce access control, readonly constraints, or custom business
  * rules.
  * <p>
- * Validators can be composed using the {@link #and(CommandValidator)} method
- * to require multiple validation rules to pass.
+ * Validators can be composed using the {@link #and(CommandValidator)} method to
+ * require multiple validation rules to pass.
  */
 @FunctionalInterface
 public interface CommandValidator {

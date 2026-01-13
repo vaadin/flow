@@ -18,10 +18,9 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Objects;
 
+import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.SignalUpdater;
-
-import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.impl.Transaction;
@@ -84,8 +83,8 @@ public class ValueSignal<T> extends AbstractSignal<T>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    protected ValueSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> valueType) {
+    protected ValueSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }

@@ -20,11 +20,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
-
-import com.vaadin.signals.function.CommandValidator;
 import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
@@ -72,8 +71,8 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected MapSignal(SignalTree tree, Id id,
-            CommandValidator validator, Class<T> elementType) {
+    protected MapSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
