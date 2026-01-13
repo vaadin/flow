@@ -38,7 +38,7 @@ import com.vaadin.flow.function.SerializablePredicate;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Map for element property values.
@@ -87,7 +87,8 @@ public class ElementPropertyMap extends AbstractPropertyMap {
      * @exception PropertyChangeDeniedException
      *                if the property change is disallowed due to the property
      *                not being set as synchronized, or the signal bound to the
-     *                property is not a ValueSignal and can not thus be updated
+     *                property is not a WritableSignal and can not thus be
+     *                updated
      */
     public Runnable deferredUpdateFromClient(String key, Serializable value)
             throws PropertyChangeDeniedException {
@@ -613,11 +614,11 @@ public class ElementPropertyMap extends AbstractPropertyMap {
             SignalBinding binding = (SignalBinding) super.get(key);
             putResult = putWithDeferredChangeEvent(key, new SignalBinding(
                     binding.signal(), binding.registration(), value), false);
-            if (binding.signal() instanceof ValueSignal valueSignal) {
+            if (binding.signal() instanceof WritableSignal valueSignal) {
                 valueSignal.value(value);
             } else {
                 throw new PropertyChangeDeniedException(String.format(
-                        "Signal bound to property '%s' is not a ValueSignal, "
+                        "Signal bound to property '%s' is not a WritableSignal, "
                                 + "cannot update its value from the client.",
                         key));
             }
