@@ -141,6 +141,7 @@ public class UIInternalsTest {
                 vaadinService);
         internals.setSession(session);
         Mockito.when(ui.getSession()).thenReturn(session);
+        Mockito.when(ui.getInternals()).thenReturn(internals);
     }
 
     @Test

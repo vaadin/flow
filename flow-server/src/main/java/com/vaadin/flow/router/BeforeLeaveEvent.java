@@ -77,9 +77,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
-                if (event.getUI().wrapperElement != null) {
+                if (event.getUI().getInternals().getWrapperElement() != null) {
                     // See UI.SERVER_CONNECTED and acknowledgeClient.
-                    event.getUI().wrapperElement
+                    event.getUI().getInternals().getWrapperElement()
                             .executeJs("this.serverConnected($0)", false);
                 }
 
@@ -96,10 +96,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
-            if (handler != null && event != null
-                    && event.getUI().wrapperElement != null) {
+            if (handler != null && event != null && event.getUI().getInternals()
+                    .getWrapperElement() != null) {
                 // See UI.SERVER_CONNECTED and cancelClient.
-                event.getUI().wrapperElement
+                event.getUI().getInternals().getWrapperElement()
                         .executeJs("this.serverConnected($0)", true);
             }
         }
