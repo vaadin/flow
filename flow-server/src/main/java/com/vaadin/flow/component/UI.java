@@ -244,11 +244,12 @@ public class UI extends Component
 
         if (this.isNavigationSupported()) {
             // Create flow reference for the client outlet element
-            wrapperElement = new Element(getInternals().getContainerTag());
+            internals.setWrapperElement(
+                    new Element(getInternals().getContainerTag()));
 
             // Connect server with client
             getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), wrapperElement,
+                    getElement().getNode(), internals.getWrapperElement(),
                     NodeProperties.INJECT_BY_ID, appId);
 
             getEventBus().addListener(BrowserLeaveNavigationEvent.class,
@@ -1683,7 +1684,7 @@ public class UI extends Component
     @Override
     public Stream<Component> getChildren() {
         // server-side routing
-        if (wrapperElement == null) {
+        if (internals.getWrapperElement() == null) {
             return super.getChildren();
         }
 
@@ -1691,8 +1692,9 @@ public class UI extends Component
         // child, its children need to be included separately (there should only
         // be one)
         Stream.Builder<Component> childComponents = Stream.builder();
-        wrapperElement.getChildren().forEach(childElement -> ComponentUtil
-                .findComponents(childElement, childComponents::add));
+        internals.getWrapperElement().getChildren()
+                .forEach(childElement -> ComponentUtil
+                        .findComponents(childElement, childComponents::add));
         super.getChildren().forEach(childComponents::add);
         return childComponents.build();
     }
@@ -1724,7 +1726,6 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
-    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
@@ -1971,11 +1972,11 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        wrapperElement.executeJs("this.serverPaused()");
+        internals.getWrapperElement().executeJs("this.serverPaused()");
     }
 
     private void serverConnected(boolean cancel) {
-        wrapperElement.executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
     }
 
     private void navigateToPlaceholder(Location location) {

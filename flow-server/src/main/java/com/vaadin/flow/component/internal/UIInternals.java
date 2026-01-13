@@ -232,6 +232,8 @@ public class UIInternals implements Serializable {
 
     private ArrayDeque<Component> modalComponentStack;
 
+    private Element wrapperElement;
+
     /**
      * Creates a new instance for the given UI.
      *
@@ -1510,5 +1512,24 @@ public class UIInternals implements Serializable {
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
+    }
+
+    /**
+     * Set the flow reference element for the client outlet element.
+     *
+     * @param wrapperElement
+     *            server element for the client outlet element
+     */
+    public void setWrapperElement(Element wrapperElement) {
+        this.wrapperElement = wrapperElement;
+    }
+
+    /**
+     * Get outlet element reference wrapper if set.
+     * 
+     * @return wrapperElement if set else {@code null}
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
     }
 }
