@@ -60,9 +60,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private static String getTemplate(String string) {
-        try {
-            return StringUtil.toUTF8String(
-                    TaskUpdateVite.class.getResourceAsStream(string));
+        try (InputStream resourceAsStream = TaskUpdateVite.class
+                .getResourceAsStream(string)) {
+            return StringUtil.toUTF8String(resourceAsStream);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
@@ -95,12 +95,12 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
                     "Replacing vite.config.ts with the default version as the React plugin is now automatically included");
         }
 
-        InputStream resource = this.getClass().getClassLoader()
-                .getResourceAsStream(FrontendUtils.VITE_CONFIG);
-        Files.copy(resource, configFile.toPath(),
-                StandardCopyOption.REPLACE_EXISTING);
-        log().debug("Created vite configuration file: '{}'", configFile);
-
+        try (InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_CONFIG)) {
+            Files.copy(resource, configFile.toPath(),
+                    StandardCopyOption.REPLACE_EXISTING);
+            log().debug("Created vite configuration file: '{}'", configFile);
+        }
     }
 
     private boolean replaceWithDefault(File configFile) throws IOException {
@@ -118,26 +118,29 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
         // Always overwrite this
         File generatedConfigFile = new File(options.getNpmFolder(),
                 FrontendUtils.VITE_GENERATED_CONFIG);
-        InputStream resource = this.getClass().getClassLoader()
-                .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG);
-        String template = StringUtil.toUTF8String(resource);
+        try (InputStream resource = this.getClass().getClassLoader()
+                .getResourceAsStream(FrontendUtils.VITE_GENERATED_CONFIG)) {
+            String template = StringUtil.toUTF8String(resource);
 
-        template = template
-                .replace("#settingsImport#",
-                        "./" + options.getBuildDirectoryName() + "/"
-                                + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
-                .replace("#buildFolder#",
-                        "./" + options.getBuildDirectoryName())
-                .replace("#webComponentTags#",
-                        webComponentTags == null || webComponentTags.isEmpty()
-                                ? ""
-                                : String.join(";", webComponentTags))
-                .replace("#frontendExtraFileExtensions#",
-                        getFrontendExtraFileExtensions());
-        template = updateFileSystemRouterVitePlugin(template);
-        template = updateTailwindCssVitePlugin(template);
+            template = template
+                    .replace("#settingsImport#",
+                            "./" + options.getBuildDirectoryName() + "/"
+                                    + TaskUpdateSettingsFile.DEV_SETTINGS_FILE)
+                    .replace("#buildFolder#",
+                            "./" + options.getBuildDirectoryName())
+                    .replace("#webComponentTags#",
+                            webComponentTags == null
+                                    || webComponentTags.isEmpty()
+                                            ? ""
+                                            : String.join(";",
+                                                    webComponentTags))
+                    .replace("#frontendExtraFileExtensions#",
+                            getFrontendExtraFileExtensions());
+            template = updateFileSystemRouterVitePlugin(template);
+            template = updateTailwindCssVitePlugin(template);
 
-        FileIOUtils.writeIfChanged(generatedConfigFile, template);
+            FileIOUtils.writeIfChanged(generatedConfigFile, template);
+        }
         log().debug("Created vite generated configuration file: '{}'",
                 generatedConfigFile);
     }

@@ -16,6 +16,7 @@
 package com.vaadin.flow.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.nio.charset.StandardCharsets;
 import java.util.Properties;
@@ -68,9 +69,9 @@ public class Version implements Serializable {
         String flowVersion = "9.9.9.INTERNAL-DEBUG-BUILD";
         String buildTimestamp = "";
         Properties properties = new Properties();
-        try {
-            properties.load(
-                    Version.class.getResourceAsStream("version.properties"));
+        try (InputStream resourceAsStream = Version.class
+                .getResourceAsStream("version.properties")) {
+            properties.load(resourceAsStream);
             flowVersion = properties.getProperty("flow.version");
             buildTimestamp = properties.getProperty("flow.build.timestamp");
         } catch (IOException e) {
