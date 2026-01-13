@@ -3,6 +3,11 @@ on:
   push:
     branches: [main, '25.0', '24.9', '24.8', '23.6']
   workflow_dispatch:
+    inputs:
+      target_branch:
+        description: 'Target branch for comparison'
+        required: false
+        default: 'main'
   pull_request_target:
     types: [opened, synchronize, reopened]
     branches: [main]
@@ -361,14 +366,14 @@ jobs:
               if [[ "${version_change}" < "${temp_version_change}" ]]; then
                   version_change=${temp_version_change}
               fi
-          
+
               if [[ "${temp_version_change}" > "0.0.1" ]]; then
                 summary+=("${file} :: ${temp_version_change}")
               fi
           done
-          
+
           echo "Discovered version change: ${version_change}"
-          
+
           if [[ "${version_change}" > "0.0.1" ]]; then
             echo "### Significant API changes summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
