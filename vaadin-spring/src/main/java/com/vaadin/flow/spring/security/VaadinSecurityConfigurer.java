@@ -317,7 +317,7 @@ public final class VaadinSecurityConfigurer
      * no protected page was previously accessed. Works only together with
      * {@link #loginView(String)} or {@link #oauth2LoginPage(String)} and their
      * variants.
-     * 
+     *
      * @param defaultSuccessUrl
      *            the default success url
      * @return the current configurer instance for method chaining
@@ -333,7 +333,7 @@ public final class VaadinSecurityConfigurer
      * always redirects to this URL; otherwise, only when no protected page was
      * previously accessed. Works only together with {@link #loginView(String)}
      * or {@link #oauth2LoginPage(String)} and their variants.
-     * 
+     *
      * @param defaultSuccessUrl
      *            the default success url
      * @param alwaysUse

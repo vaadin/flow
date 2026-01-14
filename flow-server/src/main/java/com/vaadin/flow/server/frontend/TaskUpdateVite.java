@@ -18,11 +18,11 @@ package com.vaadin.flow.server.frontend;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -59,10 +59,9 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     }
 
     private static String getTemplate(String string) {
-        try {
-            return IOUtils.toString(
-                    TaskUpdateVite.class.getResourceAsStream(string),
-                    StandardCharsets.UTF_8);
+        try (InputStream resourceAsStream = TaskUpdateVite.class
+                .getResourceAsStream(string)) {
+            return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
