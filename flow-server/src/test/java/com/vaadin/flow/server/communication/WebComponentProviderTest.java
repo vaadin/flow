@@ -108,8 +108,8 @@ public class WebComponentProviderTest {
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         Mockito.doAnswer(i -> i.getArgument(1, Supplier.class).get())
                 .when(context).getAttribute(
-                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper"
-                                .equals(aClass.getSimpleName())),
+                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper" // NOSONAR
+                                .equals(aClass.getSimpleName())), // NOSONAR
                         any()); // NOSONAR protected class
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
