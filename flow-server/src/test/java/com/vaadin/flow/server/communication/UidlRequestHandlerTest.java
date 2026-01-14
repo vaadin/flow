@@ -100,7 +100,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
+                "{\"meta\":{\"sessionExpired\":true}}",
                 responseContent);
     }
 
@@ -123,7 +123,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
+                "{\"meta\":{\"sessionExpired\":true}}",
                 responseContent);
     }
 
@@ -204,7 +204,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String v7Uidl = uidl.get("execute").get(2).get(1).textValue();
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
@@ -225,7 +225,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
@@ -246,7 +246,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -270,7 +270,7 @@ public class UidlRequestHandlerTest {
         String expected = uidl.toString();
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String actual = uidl.toString();
 

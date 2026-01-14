@@ -2083,17 +2083,13 @@ public abstract class VaadinService implements Serializable {
             json.set("locales", JacksonUtils.createObjectNode());
             json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            return wrapJsonForClient(json);
+            return json.toString();
         } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(JacksonUtils.createObjectNode());
+            return JacksonUtils.createObjectNode().toString();
         }
 
-    }
-
-    private static String wrapJsonForClient(ObjectNode json) {
-        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -2115,7 +2111,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toString();
     }
 
     /**

@@ -193,7 +193,7 @@ public class SystemErrorHandler {
 
                 int uiId = registry.getApplicationConfiguration().getUIId();
                 ValueMap json = MessageHandler
-                        .parseWrappedJson(xhr.getResponseText());
+                        .parseJson(xhr.getResponseText());
                 int newUiId = json.getInt(ApplicationConstants.UI_ID);
                 if (newUiId != uiId) {
                     Console.debug("UI ID switched from " + uiId + " to "

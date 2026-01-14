@@ -118,12 +118,11 @@ public class XhrConnection {
             Console.debug("Server visit took "
                     + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
-            // for(;;);["+ realJson +"]"
             String responseText = xhr.getResponseText();
 
-            ValueMap json = MessageHandler.parseWrappedJson(responseText);
+            ValueMap json = MessageHandler.parseJson(responseText);
             if (json == null) {
-                // Invalid string (not wrapped as expected or can't parse)
+                // Invalid JSON string
                 registry.getConnectionStateHandler().xhrInvalidContent(
                         new XhrConnectionError(xhr, payload, null));
                 return;
