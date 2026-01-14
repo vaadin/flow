@@ -15,6 +15,8 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.ClickEvent;
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.ComponentEventListener;
@@ -22,6 +24,7 @@ import com.vaadin.flow.component.Focusable;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing a <code>&lt;button&gt;</code> element.
@@ -47,6 +50,18 @@ public class NativeButton extends HtmlContainer implements
      */
     public NativeButton(String text) {
         setText(text);
+    }
+
+    /**
+     * Creates a button with its text content bound to the given signal.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public NativeButton(Signal<String> textSignal) {
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 
     /**

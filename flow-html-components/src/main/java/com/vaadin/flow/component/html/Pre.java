@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing a <code>&lt;pre&gt;</code> element.
@@ -54,5 +57,18 @@ public class Pre extends HtmlContainer implements ClickNotifier<Pre> {
     public Pre(String text) {
         super();
         setText(text);
+    }
+
+    /**
+     * Creates a new preformatted text component with its text content bound to
+     * the given signal.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public Pre(Signal<String> textSignal) {
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 }

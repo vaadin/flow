@@ -23,6 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
@@ -75,6 +76,19 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         if (legendText != null && !legendText.isEmpty()) {
             addComponentAsFirst(new Legend(legendText));
         }
+    }
+
+    /**
+     * Creates a new fieldset with its text content bound to the given signal.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public FieldSet(Signal<String> textSignal) {
+        this();
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 
     /**
