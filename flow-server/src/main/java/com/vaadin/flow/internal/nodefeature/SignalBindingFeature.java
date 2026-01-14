@@ -33,6 +33,7 @@ public class SignalBindingFeature extends ServerSideFeature {
 
     public static final String ENABLED = "enabled";
     public static final String VALUE = "value";
+    public static final String THEMES = "themes/";
 
     private Map<String, SignalBinding> values;
 
@@ -80,6 +81,29 @@ public class SignalBindingFeature extends ServerSideFeature {
         SignalBinding binding = values.get(key);
         return binding != null && binding.signal != null
                 && binding.registration != null;
+    }
+
+    /**
+     * Clears all bindings with keys starting with the given prefix.
+     *
+     * @param keyPrefix
+     *            the key prefix
+     */
+    public void clearBindings(String keyPrefix) {
+        if (values == null) {
+            return;
+        }
+        values.entrySet().removeIf(entry -> {
+            String key = entry.getKey();
+            if (key.startsWith(keyPrefix)) {
+                SignalBinding binding = entry.getValue();
+                if (binding != null && binding.registration != null) {
+                    binding.registration.remove();
+                }
+                return true;
+            }
+            return false;
+        });
     }
 
     /**
