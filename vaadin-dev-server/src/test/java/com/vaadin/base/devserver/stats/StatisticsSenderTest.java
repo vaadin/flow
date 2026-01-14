@@ -20,7 +20,6 @@ import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
 
 import com.sun.net.httpserver.HttpServer;
-import org.apache.commons.io.IOUtils;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -184,8 +183,9 @@ public class StatisticsSenderTest extends AbstractStatisticsTest {
             HttpServer httpServer = HttpServer.create(
                     new InetSocketAddress(PortProber.findFreePort()), 0);
             httpServer.createContext("/", exchange -> {
-                this.lastRequestContent = IOUtils.toString(
-                        exchange.getRequestBody(), Charset.defaultCharset());
+                this.lastRequestContent = new String(
+                        exchange.getRequestBody().readAllBytes(),
+                        Charset.defaultCharset());
                 exchange.sendResponseHeaders(status, response.length());
                 exchange.getResponseBody().write(response.getBytes());
                 exchange.close();

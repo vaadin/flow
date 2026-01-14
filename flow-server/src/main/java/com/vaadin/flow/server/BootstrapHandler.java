@@ -67,8 +67,12 @@ import com.vaadin.flow.di.ResourceProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.internal.AnnotationReader;
 import com.vaadin.flow.internal.BootstrapHandlerHelper;
+import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.DevBundleUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.ReflectTools;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.internal.UsageStatisticsExporter;
 import com.vaadin.flow.router.InvalidLocationException;
 import com.vaadin.flow.router.Location;
@@ -78,10 +82,6 @@ import com.vaadin.flow.server.communication.AtmospherePushConnection;
 import com.vaadin.flow.server.communication.IndexHtmlRequestHandler;
 import com.vaadin.flow.server.communication.PushConnectionFactory;
 import com.vaadin.flow.server.communication.UidlWriter;
-import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.VaadinUriResolver;
@@ -89,8 +89,8 @@ import com.vaadin.flow.shared.communication.PushMode;
 import com.vaadin.flow.shared.ui.Dependency;
 import com.vaadin.flow.shared.ui.LoadMode;
 
+import static com.vaadin.flow.internal.FrontendUtils.EXPORT_CHUNK;
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
-import static com.vaadin.flow.server.frontend.FrontendUtils.EXPORT_CHUNK;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 /**
@@ -516,7 +516,7 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         }
 
         if (isVaadinStaticFileRequest(request)) {
-            // Do not allow routes inside /VAADIN/
+            // Do not allow routes inside /VAADIN/ or reserved static folders
             return false;
         }
 
@@ -557,7 +557,8 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
     }
 
     /**
-     * Checks whether the request is a request for /VAADIN/*.
+     * Checks whether the request is a request for /VAADIN/* or other reserved
+     * static folder. (/themes, /assets, /aura, /lumo)
      * <p>
      * Warning: This assumes that the VaadinRequest is targeted for a
      * VaadinServlet and does no further checks to validate this.
@@ -572,8 +573,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
      *         otherwise
      */
     public static boolean isVaadinStaticFileRequest(VaadinRequest request) {
-        return request.getPathInfo() != null
-                && request.getPathInfo().startsWith("/" + VAADIN_MAPPING);
+        return request.getPathInfo() != null && HandlerHelper
+                .getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> request.getPathInfo().startsWith(path));
     }
 
     /**
@@ -1509,18 +1511,18 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         VaadinRequest request = context.getRequest();
         // Parameter appended to JS to bypass caches after version upgrade.
         String versionQueryParam = "?v=" + Version.getBuildHash();
-        // Load client-side dependencies for push support
-        String pushJSPath = BootstrapHandlerHelper.getServiceUrl(request) + "/";
 
+        String pushJs;
         if (request.getService().getDeploymentConfiguration()
                 .isProductionMode()) {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_JS;
         } else {
-            pushJSPath += ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
+            pushJs = ApplicationConstants.VAADIN_PUSH_DEBUG_JS;
         }
 
-        pushJSPath += versionQueryParam;
-        return pushJSPath;
+        // Use direct path - the <base href> already points to the servlet root,
+        // so VAADIN/... resolves correctly to {context}/{servlet}/VAADIN/...
+        return pushJs + versionQueryParam;
     }
 
     protected static void setupErrorDialogs(Element style) {
@@ -1563,8 +1565,23 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
         String statsJson = DevBundleUtils.findBundleStatsJson(
                 config.getProjectFolder(), config.getBuildFolder());
         Objects.requireNonNull(statsJson,
-                "Frontend development bundle is expected to be in the project"
-                        + " or on the classpath, but not found.");
+                """
+                        Frontend development bundle is expected to be in the project or on the classpath, but not found.
+                        Add 'com.vaadin:vaadin-dev' dependency to let Vaadin re-use the pre-compiled development bundle
+                        or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                        Maven:
+                            <dependency>
+                                <groupId>com.vaadin</groupId>
+                                <artifactId>vaadin-dev</artifactId>
+                            </dependency>
+
+                        Gradle:
+                            dependencies {
+                                implementation('com.vaadin:vaadin-dev')
+                            }
+
+                        """);
         return JacksonUtils.readTree(statsJson);
     }
 
@@ -1660,8 +1677,9 @@ public class BootstrapHandler extends SynchronizedRequestHandler {
                         .orElse(null);
 
                 // Inline CSS into style tag to have hot module reload feature
-                element.appendChild(new DataNode(CssBundler.inlineImports(
-                        stylesCss.getParentFile(), stylesCss, themeJson)));
+                element.appendChild(new DataNode(CssBundler
+                        .inlineImportsForThemes(stylesCss.getParentFile(),
+                                stylesCss, themeJson)));
             }
         } catch (IOException e) {
             throw new RuntimeException(

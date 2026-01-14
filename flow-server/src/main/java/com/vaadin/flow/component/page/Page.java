@@ -23,11 +23,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.function.Function;
-
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.JsonNodeType;
-import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.component.Direction;
 import com.vaadin.flow.component.UI;
@@ -86,6 +81,49 @@ public class Page implements Serializable {
         }
 
         ui.getInternals().setTitle(title);
+    }
+
+    /**
+     * Sets the color scheme for the page.
+     * <p>
+     * The color scheme is applied via both a theme attribute and the
+     * color-scheme CSS property on the html element. The theme attribute allows
+     * CSS to target different color schemes (e.g.,
+     * {@code html[theme~="dark"]}), while the color-scheme property ensures
+     * browser UI adaptation works even for custom themes that don't define
+     * their own color-scheme CSS rules.
+     *
+     * @param colorScheme
+     *            the color scheme to set (e.g., ColorScheme.Value.DARK,
+     *            ColorScheme.Value.LIGHT), or {@code null} to reset to NORMAL
+     */
+    public void setColorScheme(ColorScheme.Value colorScheme) {
+        if (colorScheme == null || colorScheme == ColorScheme.Value.NORMAL) {
+            executeJs("""
+                    document.documentElement.removeAttribute('theme');
+                    document.documentElement.style.colorScheme = '';
+                    """);
+            getExtendedClientDetails().setColorScheme(ColorScheme.Value.NORMAL);
+        } else {
+            executeJs("""
+                    document.documentElement.setAttribute('theme', $0);
+                    document.documentElement.style.colorScheme = $1;
+                    """, colorScheme.getThemeValue(), colorScheme.getValue());
+            getExtendedClientDetails().setColorScheme(colorScheme);
+        }
+    }
+
+    /**
+     * Gets the color scheme for the page.
+     * <p>
+     * Note that this method returns the server-side cached value and will not
+     * detect color scheme changes made directly via JavaScript or browser
+     * developer tools.
+     *
+     * @return the color scheme value, never {@code null}
+     */
+    public ColorScheme.Value getColorScheme() {
+        return getExtendedClientDetails().getColorScheme();
     }
 
     /**
@@ -482,75 +520,51 @@ public class Page implements Serializable {
     }
 
     /**
+     * Gets the extended client details, such as screen resolution and time zone
+     * information.
+     * <p>
+     * Browser details are automatically collected and sent during UI
+     * initialization, making them immediately available. In normal operation,
+     * this method returns complete details right after the UI is created.
+     * <p>
+     * If details are not yet available, this method returns a placeholder
+     * instance with default values (dimensions set to -1). If you need to fetch
+     * the actual values in such cases, use
+     * {@link ExtendedClientDetails#refresh(SerializableConsumer)} to explicitly
+     * retrieve updated values from the browser.
+     * <p>
+     * To refresh the cached values with updated data from the browser at any
+     * time, use {@link ExtendedClientDetails#refresh(SerializableConsumer)}.
+     *
+     * @return the extended client details (never {@code null})
+     */
+    public ExtendedClientDetails getExtendedClientDetails() {
+        return ui.getInternals().getExtendedClientDetails();
+    }
+
+    /**
      * Obtain extended client side details, such as time screen and time zone
      * information, via callback. If already obtained, the callback is called
      * directly. Otherwise, a client-side roundtrip will be carried out.
      *
      * @param receiver
      *            the callback to which the details are provided
+     * @deprecated Use {@link #getExtendedClientDetails()} to get the cached
+     *             details, or
+     *             {@link ExtendedClientDetails#refresh(SerializableConsumer)}
+     *             to refresh the cached values.
      */
+    @Deprecated
     public void retrieveExtendedClientDetails(
             ExtendedClientDetailsReceiver receiver) {
-        final ExtendedClientDetails cachedDetails = ui.getInternals()
-                .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            receiver.receiveDetails(cachedDetails);
-            return;
+        ExtendedClientDetails details = getExtendedClientDetails();
+        if (details.getScreenWidth() != -1) {
+            // Already fetched and complete, call receiver immediately
+            receiver.receiveDetails(details);
+        } else {
+            // Placeholder with default values, trigger refresh
+            details.refresh(receiver::receiveDetails);
         }
-        final String js = "return Vaadin.Flow.getBrowserDetailsParameters();";
-        final SerializableConsumer<JsonNode> resultHandler = json -> {
-            handleExtendedClientDetailsResponse(json);
-            receiver.receiveDetails(
-                    ui.getInternals().getExtendedClientDetails());
-        };
-        final SerializableConsumer<String> errorHandler = err -> {
-            throw new RuntimeException("Unable to retrieve extended "
-                    + "client details. JS error is '" + err + "'");
-        };
-        executeJs(js).then(resultHandler, errorHandler);
-    }
-
-    private void handleExtendedClientDetailsResponse(JsonNode json) {
-        ExtendedClientDetails cachedDetails = ui.getInternals()
-                .getExtendedClientDetails();
-        if (cachedDetails != null) {
-            return;
-        }
-        if (!(json instanceof ObjectNode)) {
-            throw new RuntimeException("Expected a JSON object");
-        }
-        final ObjectNode jsonObj = (ObjectNode) json;
-
-        // Note that JSON returned is a plain string -> string map, the actual
-        // parsing of the fields happens in ExtendedClient's constructor. If a
-        // field is missing or the wrong type, pass on null for default.
-        final Function<String, String> getStringElseNull = key -> {
-            final JsonNode jsValue = jsonObj.get(key);
-            if (jsValue != null
-                    && JsonNodeType.STRING.equals(jsValue.getNodeType())) {
-                return jsValue.asString();
-            } else {
-                return null;
-            }
-        };
-        ui.getInternals()
-                .setExtendedClientDetails(new ExtendedClientDetails(
-                        getStringElseNull.apply("v-sw"),
-                        getStringElseNull.apply("v-sh"),
-                        getStringElseNull.apply("v-ww"),
-                        getStringElseNull.apply("v-wh"),
-                        getStringElseNull.apply("v-bw"),
-                        getStringElseNull.apply("v-bh"),
-                        getStringElseNull.apply("v-tzo"),
-                        getStringElseNull.apply("v-rtzo"),
-                        getStringElseNull.apply("v-dstd"),
-                        getStringElseNull.apply("v-dston"),
-                        getStringElseNull.apply("v-tzid"),
-                        getStringElseNull.apply("v-curdate"),
-                        getStringElseNull.apply("v-td"),
-                        getStringElseNull.apply("v-pr"),
-                        getStringElseNull.apply("v-wn"),
-                        getStringElseNull.apply("v-np")));
     }
 
     /**

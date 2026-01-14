@@ -28,7 +28,7 @@ import org.openqa.selenium.devtools.SeleniumCdpConnection;
 import org.openqa.selenium.devtools.idealized.Domains;
 import org.openqa.selenium.devtools.idealized.target.model.SessionID;
 import org.openqa.selenium.devtools.idealized.target.model.TargetID;
-import org.openqa.selenium.devtools.v139.network.Network;
+import org.openqa.selenium.devtools.v141.network.Network;
 import org.openqa.selenium.remote.Augmenter;
 import org.openqa.selenium.remote.RemoteWebDriver;
 
@@ -51,7 +51,7 @@ public class DevToolsWrapper {
      */
     public void setOfflineEnabled(Boolean isEnabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.emulateNetworkConditions(isEnabled, -1, -1, -1,
                 Optional.empty(), Optional.empty(), Optional.empty(),
                 Optional.empty()));
@@ -66,7 +66,7 @@ public class DevToolsWrapper {
      */
     public void setCacheDisabled(Boolean isDisabled) {
         sendToAllTargets(Network.enable(Optional.empty(), Optional.empty(),
-                Optional.empty(), Optional.empty()));
+                Optional.empty(), Optional.empty(), Optional.empty()));
         sendToAllTargets(Network.setCacheDisabled(isDisabled));
     }
 

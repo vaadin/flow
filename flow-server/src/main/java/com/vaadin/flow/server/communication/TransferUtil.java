@@ -37,6 +37,7 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.internal.UrlUtil;
 import com.vaadin.flow.internal.streams.UploadCompleteEvent;
 import com.vaadin.flow.internal.streams.UploadStartEvent;
+import com.vaadin.flow.server.DefaultErrorHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
 import com.vaadin.flow.server.VaadinSession;
@@ -44,6 +45,7 @@ import com.vaadin.flow.server.streams.TransferContext;
 import com.vaadin.flow.server.streams.TransferProgressListener;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
+import com.vaadin.flow.server.streams.UploadResult;
 
 /**
  * Utility class with methods for handling transfer of upload and download
@@ -165,11 +167,11 @@ public final class TransferUtil {
                                 part);
                         handleUploadRequest(handler, event);
                     }
-                    handler.responseHandled(true, response);
+                    handler.responseHandled(new UploadResult(true, response));
                 } else {
                     LoggerFactory.getLogger(UploadHandler.class)
                             .warn("Multipart request has no parts");
-                    handler.responseHandled(false, response);
+                    handler.responseHandled(new UploadResult(false, response));
                 }
             } else {
                 String fileName = extractFilenameFromXhrRequest(request);
@@ -180,7 +182,7 @@ public final class TransferUtil {
                         owner, null);
 
                 handleUploadRequest(handler, event);
-                handler.responseHandled(true, response);
+                handler.responseHandled(new UploadResult(true, response));
             }
         } catch (UploadSizeLimitExceededException
                 | UploadFileSizeLimitExceededException
@@ -201,11 +203,18 @@ public final class TransferUtil {
             }
             LoggerFactory.getLogger(UploadHandler.class)
                     .warn("File upload failed.", e);
-            handler.responseHandled(false, response);
+            handler.responseHandled(new UploadResult(false, response, e));
         } catch (Exception e) {
-            LoggerFactory.getLogger(UploadHandler.class)
-                    .error("Exception during upload", e);
-            handler.responseHandled(false, response);
+            if (DefaultErrorHandler.SOCKET_EXCEPTIONS
+                    .contains(e.getClass().getName())) {
+                // Client aborted the upload, no need to log an error
+                LoggerFactory.getLogger(UploadHandler.class)
+                        .debug("Client aborted the upload", e);
+            } else {
+                LoggerFactory.getLogger(UploadHandler.class)
+                        .error("Exception during upload", e);
+            }
+            handler.responseHandled(new UploadResult(false, response, e));
         }
     }
 

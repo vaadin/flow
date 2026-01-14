@@ -526,11 +526,24 @@ public class VaadinServletContextInitializer
             devModeHandlerManager = lookup.lookup(DevModeHandlerManager.class);
             if (devModeHandlerManager == null) {
                 throw new RuntimeException(
-                        "no DevModeHandlerManager implementation found but "
-                                + "but dev server enabled. Either disable by "
-                                + "setting vaadin.frontend.hotdeploy=false (and "
-                                + "run the build-frontend maven goal) or "
-                                + "include the vaadin-dev-server dependency");
+                        """
+                                'vaadin-dev-server' not found.
+                                You might be missing a dependency:
+
+                                Maven:
+                                    <dependency>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-dev</artifactId>
+                                        <optional>true</optional>
+                                    </dependency>
+
+                                Gradle:
+                                    dependencies {
+                                        developmentOnly('com.vaadin:vaadin-dev')
+                                    }
+
+                                See https://vaadin.com/docs/latest/flow/configuration/development-mode#development-mode for more details.
+                                """);
             }
             if (devModeHandlerManager.getDevModeHandler() != null) {
                 /*

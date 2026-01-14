@@ -46,14 +46,14 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ObjectNode;
 
 import com.vaadin.flow.di.Lookup;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.flow.server.ExecutionFailedException;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FileIOUtils;
+import com.vaadin.flow.server.frontend.ExecutionFailedException;
 import com.vaadin.flow.server.frontend.FrontendTools;
 import com.vaadin.flow.server.frontend.FrontendToolsSettings;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.server.frontend.NodeTasks;
 import com.vaadin.flow.server.frontend.Options;
 import com.vaadin.flow.server.frontend.ProdBundleUtils;
@@ -85,8 +85,6 @@ import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
-import static com.vaadin.flow.server.frontend.FrontendUtils.GENERATED;
-import static com.vaadin.flow.server.frontend.FrontendUtils.TOKEN_FILE;
 
 /**
  * Util class provides all methods a Plugin will need.
@@ -124,7 +122,8 @@ public class BuildFrontendUtil {
      */
     public static File getTokenFile(PluginAdapterBase adapter) {
 
-        return new File(adapter.servletResourceOutputDirectory(), TOKEN_FILE);
+        return new File(adapter.servletResourceOutputDirectory(),
+                FrontendUtils.TOKEN_FILE);
     }
 
     /**
@@ -146,7 +145,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
 
         ClassFinder classFinder = adapter.getClassFinder();
         Lookup lookup = adapter.createLookup(classFinder);
@@ -166,8 +164,8 @@ public class BuildFrontendUtil {
                         getGeneratedFrontendDirectory(adapter))
                 .withNodeVersion(adapter.nodeVersion())
                 .withNodeDownloadRoot(nodeDownloadRootURI)
-                .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                 .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                .withNodeFolder(adapter.nodeFolder())
                 .setJavaResourceFolder(adapter.javaResourceFolder())
                 .withProductionMode(false).withReact(adapter.isReactEnabled())
                 .withFrontendExtraFileExtensions(
@@ -210,9 +208,9 @@ public class BuildFrontendUtil {
                 () -> FrontendUtils.getVaadinHomeDirectory().getAbsolutePath());
         settings.setNodeDownloadRoot(adapter.nodeDownloadRoot());
         settings.setNodeVersion(adapter.nodeVersion());
-        settings.setAutoUpdate(adapter.nodeAutoUpdate());
         settings.setUseGlobalPnpm(adapter.useGlobalPnpm());
         settings.setForceAlternativeNode(adapter.requireHomeNodeExec());
+        settings.setNodeFolder(adapter.nodeFolder());
         settings.setIgnoreVersionChecks(
                 adapter.isFrontendIgnoreVersionChecks());
 
@@ -231,7 +229,7 @@ public class BuildFrontendUtil {
         // For forked processes not accessing to System.properties we leave a
         // token file with the information about the build
         File token = new File(adapter.servletResourceOutputDirectory(),
-                TOKEN_FILE);
+                FrontendUtils.TOKEN_FILE);
         ObjectNode buildInfo = JacksonUtils.createObjectNode();
         buildInfo.put(SERVLET_PARAMETER_PRODUCTION_MODE, false);
         buildInfo.put(SERVLET_PARAMETER_INITIAL_UIDL,
@@ -268,6 +266,9 @@ public class BuildFrontendUtil {
                 adapter.bunEnable());
         buildInfo.put(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE,
                 adapter.requireHomeNodeExec());
+        if (adapter.nodeFolder() != null) {
+            buildInfo.put(InitParameters.NODE_FOLDER, adapter.nodeFolder());
+        }
 
         buildInfo.put(InitParameters.BUILD_FOLDER, adapter.buildFolder());
 
@@ -359,9 +360,9 @@ public class BuildFrontendUtil {
                     .withFrontendGeneratedFolder(
                             getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeFolder(adapter.nodeFolder())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withCiBuild(adapter.ciBuild())
@@ -374,7 +375,9 @@ public class BuildFrontendUtil {
                     .withFrontendIgnoreVersionChecks(
                             adapter.isFrontendIgnoreVersionChecks())
                     .withFrontendDependenciesScanner(frontendDependencies)
-                    .withCommercialBanner(adapter.isCommercialBannerEnabled());
+                    .withCommercialBanner(adapter.isCommercialBannerEnabled())
+                    .withMetaInfResourcesDirectory(
+                            adapter.resourcesOutputDirectory());
             new NodeTasks(options).execute();
         } catch (ExecutionFailedException exception) {
             throw exception;
@@ -432,9 +435,9 @@ public class BuildFrontendUtil {
                     .withFrontendGeneratedFolder(
                             getGeneratedFrontendDirectory(adapter))
                     .withHomeNodeExecRequired(adapter.requireHomeNodeExec())
+                    .withNodeFolder(adapter.nodeFolder())
                     .withNodeVersion(adapter.nodeVersion())
                     .withNodeDownloadRoot(nodeDownloadRootURI)
-                    .setNodeAutoUpdate(adapter.nodeAutoUpdate())
                     .setJavaResourceFolder(adapter.javaResourceFolder())
                     .withPostinstallPackages(adapter.postinstallPackages())
                     .withBundleBuild(true)
@@ -485,7 +488,7 @@ public class BuildFrontendUtil {
                 .startsWith(adapter.frontendDirectory().toPath())) {
             // Possibly move frontend folder.
             File frontendDirectory = getFrontendDirectory(adapter);
-            return new File(frontendDirectory, GENERATED);
+            return new File(frontendDirectory, FrontendUtils.GENERATED);
         }
         // Return given generated folder
         return adapter.generatedTsFolder();
@@ -507,7 +510,6 @@ public class BuildFrontendUtil {
 
         FrontendToolsSettings settings = getFrontendToolsSettings(adapter);
         FrontendTools tools = new FrontendTools(settings);
-        tools.validateNodeAndNpmVersion();
         BuildFrontendUtil.runVite(adapter, tools);
         String tokenContent = "";
         File tokenFile = getTokenFile(adapter);
@@ -570,12 +572,7 @@ public class BuildFrontendUtil {
                     toolName, buildExecutable.getAbsolutePath()));
         }
 
-        String nodePath;
-        if (adapter.requireHomeNodeExec()) {
-            nodePath = frontendTools.forceAlternativeNodeExecutable();
-        } else {
-            nodePath = frontendTools.getNodeExecutable();
-        }
+        String nodePath = frontendTools.getNodeExecutable();
 
         List<String> command = new ArrayList<>();
         command.add(nodePath);

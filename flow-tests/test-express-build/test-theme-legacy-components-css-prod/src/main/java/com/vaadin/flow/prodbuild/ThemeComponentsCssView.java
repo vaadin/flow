@@ -34,7 +34,7 @@ public class ThemeComponentsCssView extends Div {
     // If no <theme>/components/vaadin-horizontal-layout.css files are present,
     // the bundle will not be rebuilt.
     @JsModule("@vaadin/horizontal-layout")
-    @NpmPackage(value = "@vaadin/horizontal-layout", version = "24.1.0")
+    @NpmPackage(value = "@vaadin/horizontal-layout", version = "25.0.0-rc1")
     @Tag("vaadin-horizontal-layout")
     public static class MyComponent extends Component {
         public MyComponent() {

@@ -30,7 +30,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.DoubleNode;
@@ -62,6 +61,7 @@ import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.SignalCommand.ValueCondition;
+import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.CommandResult.Reject;
@@ -70,6 +70,39 @@ import com.vaadin.signals.impl.CommandResult.Reject;
  * A tree revision that can be mutated by applying signal commands.
  */
 public class MutableTreeRevision extends TreeRevision {
+    /**
+     * Dispatches command results to their handlers.
+     */
+    @FunctionalInterface
+    interface CommandDispatcher {
+        /**
+         * Dispatches a command result.
+         *
+         * @param command
+         *            the command ID, not <code>null</code>
+         * @param result
+         *            the command result, not <code>null</code>
+         */
+        void dispatch(Id command, CommandResult result);
+    }
+
+    /**
+     * Attaches a child node to a parent node.
+     */
+    @FunctionalInterface
+    interface ChildAttacher {
+        /**
+         * Attaches a child to the parent node.
+         *
+         * @param parentNode
+         *            the parent node data, not <code>null</code>
+         * @param childId
+         *            the child node ID to attach, not <code>null</code>
+         * @return the modified parent node data, not <code>null</code>
+         */
+        Data attach(Data parentNode, Id childId);
+    }
+
     /**
      * Gathers and collects all state related to applying a single command. With
      * transactions, previously applied commands might end up rolled back if a
@@ -147,9 +180,9 @@ public class MutableTreeRevision extends TreeRevision {
             });
         }
 
-        private void updateData(Id nodeId, UnaryOperator<Data> updater) {
+        private void updateData(Id nodeId, SignalUpdater<Data> updater) {
             useData(nodeId, (node, id) -> {
-                Data updatedNode = updater.apply(node);
+                Data updatedNode = updater.update(node);
                 if (updatedNode != node) {
                     updatedNodes.put(id, updatedNode);
                 }
@@ -252,8 +285,7 @@ public class MutableTreeRevision extends TreeRevision {
                     Collections.unmodifiableList(list), node.mapChildren());
         }
 
-        private void attach(Id parentId, Id childId,
-                BiFunction<Data, Id, Data> attacher) {
+        private void attach(Id parentId, Id childId, ChildAttacher attacher) {
             if (result != null) {
                 return;
             }
@@ -281,7 +313,7 @@ public class MutableTreeRevision extends TreeRevision {
                 // done by useData
                 detachedNodes.remove(resolvedChildId);
 
-                Data updated = attacher.apply(node, resolvedChildId);
+                Data updated = attacher.attach(node, resolvedChildId);
                 if (result == null) {
                     Data child = data(resolvedChildId).get();
 
@@ -823,13 +855,14 @@ public class MutableTreeRevision extends TreeRevision {
      *            ignore results
      */
     public void apply(SignalCommand command,
-            BiConsumer<Id, CommandResult> resultCollector) {
+            CommandDispatcher resultCollector) {
         CommandResult result = data(command.targetNodeId()).map(data -> {
             TreeManipulator manipulator = new TreeManipulator(command);
             var opResult = manipulator.handleCommand(command);
             if (manipulator.subCommandResults != null
                     && resultCollector != null) {
-                manipulator.subCommandResults.forEach(resultCollector);
+                manipulator.subCommandResults
+                        .forEach(resultCollector::dispatch);
             }
             return opResult;
         }).orElseGet(() -> CommandResult.fail("Node not found"));
@@ -850,7 +883,7 @@ public class MutableTreeRevision extends TreeRevision {
         }
 
         if (resultCollector != null) {
-            resultCollector.accept(command.commandId(), result);
+            resultCollector.dispatch(command.commandId(), result);
         }
 
         assert assertValidTree();

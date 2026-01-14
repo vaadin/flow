@@ -18,7 +18,6 @@ package com.vaadin.base.devserver;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ProcessHandle.Info;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -28,10 +27,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.vaadin.flow.internal.StringUtil;
 import com.vaadin.open.OSUtils;
 import com.vaadin.open.Open;
 
@@ -179,8 +178,7 @@ public final class OpenInCurrentIde {
         Process process = pb.start();
         int exitCode = process.waitFor();
         if (exitCode != 0) {
-            String output = IOUtils.toString(process.getInputStream(),
-                    StandardCharsets.UTF_8);
+            String output = StringUtil.toUTF8String(process.getInputStream());
             throw new IOException(
                     "Command " + cmd + " terminated with exit code " + exitCode
                             + ".\nOutput:\n" + output);

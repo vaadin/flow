@@ -28,8 +28,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.access.WebInvocationPrivilegeEvaluator;
 import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.context.ContextConfiguration;
@@ -153,19 +151,13 @@ class UrlMappingSpringAccessPathCheckerTest {
     public static class TestConfig {
 
         @Bean
-        SpringAccessPathChecker urlMappingPpathAccessChecker(
+        SpringAccessPathChecker urlMappingPathAccessChecker(
                 WebInvocationPrivilegeEvaluator evaluator) {
             return new SpringAccessPathChecker(evaluator, "/url-mapping/*");
         }
 
         @Bean
-        AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer httpServletRequestTransformer() {
-            return new PathPatternRequestTransformer();
-        }
-
-        @Bean
-        public SecurityFilterChain testingFilterChain(HttpSecurity http)
-                throws Exception {
+        public SecurityFilterChain testingFilterChain(HttpSecurity http) {
             // @formatter:off
             var matcherBuilder = PathPatternRequestMatcher.withDefaults();
             http.authorizeHttpRequests(cfg -> cfg

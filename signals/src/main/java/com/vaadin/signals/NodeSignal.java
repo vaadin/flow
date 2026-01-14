@@ -18,7 +18,6 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import tools.jackson.databind.JsonNode;
@@ -26,6 +25,7 @@ import tools.jackson.databind.JsonNode;
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
@@ -147,8 +147,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NodeSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator) {
+    protected NodeSignal(SignalTree tree, Id id, CommandValidator validator) {
         super(tree, id, validator);
     }
 
@@ -395,7 +394,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the validator to use, not <code>null</code>
      * @return a new node signal that uses the validator, not <code>null</code>
      */
-    public NodeSignal withValidator(Predicate<SignalCommand> validator) {
+    public NodeSignal withValidator(CommandValidator validator) {
         return new NodeSignal(tree(), id(), mergeValidators(validator));
     }
 

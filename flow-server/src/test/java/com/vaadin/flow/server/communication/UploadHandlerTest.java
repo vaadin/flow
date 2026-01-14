@@ -73,6 +73,7 @@ import com.vaadin.flow.server.streams.TemporaryFileUploadHandler;
 import com.vaadin.flow.server.streams.UploadEvent;
 import com.vaadin.flow.server.streams.UploadHandler;
 import com.vaadin.flow.server.streams.UploadMetadata;
+import com.vaadin.flow.server.streams.UploadResult;
 import com.vaadin.flow.shared.ApplicationConstants;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
@@ -502,8 +503,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -536,8 +536,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -578,8 +577,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };
@@ -611,8 +609,7 @@ public class UploadHandlerTest {
             }
 
             @Override
-            public void responseHandled(boolean success,
-                    VaadinResponse response) {
+            public void responseHandled(UploadResult result) {
                 handled.set(true);
             }
         };

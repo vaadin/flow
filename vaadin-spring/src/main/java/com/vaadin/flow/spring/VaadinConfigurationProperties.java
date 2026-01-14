@@ -67,6 +67,23 @@ public class VaadinConfigurationProperties {
     }
 
     /**
+     * Gets the allowed packages using the given environment.
+     *
+     * This is needed only when VaadinConfigurationProperties is not available
+     * for injection, e.g. in AOT processors.
+     *
+     * @param environment
+     *            the application environment
+     * @return the allowed packages or an empty list if none is defined
+     */
+    public static List<String> getAllowedPackages(Environment environment) {
+        return Binder.get(environment)
+                .bind("vaadin", VaadinConfigurationProperties.class)
+                .map(VaadinConfigurationProperties::getAllowedPackages)
+                .orElse(Collections.emptyList());
+    }
+
+    /**
      * Base URL mapping of the Vaadin servlet.
      */
     private String urlMapping = "/*";

@@ -26,6 +26,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -39,7 +40,6 @@ import java.util.Set;
 import java.util.function.Function;
 
 import net.jcip.annotations.NotThreadSafe;
-import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
@@ -53,11 +53,12 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -327,10 +328,10 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
     }
 
     private String getFlowGeneratedImports() throws IOException {
-        return FileUtils.readFileToString(
-                FrontendUtils.getFlowGeneratedImports(new File(npmFolder,
-                        FrontendUtils.DEFAULT_FRONTEND_DIR)),
-                StandardCharsets.UTF_8);
+        return Files.readString(FrontendUtils
+                .getFlowGeneratedImports(
+                        new File(npmFolder, FrontendUtils.DEFAULT_FRONTEND_DIR))
+                .toPath(), StandardCharsets.UTF_8);
     }
 
     @Test
@@ -367,9 +368,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                    FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                         Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
@@ -435,9 +436,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                    FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                         Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();

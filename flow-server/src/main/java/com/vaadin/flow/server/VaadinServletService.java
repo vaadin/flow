@@ -103,9 +103,22 @@ public class VaadinServletService extends VaadinService {
                         }, () -> handlers.add(devModeHandler));
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
                 getLogger()
-                        .warn("no DevModeHandlerManager implementation found "
-                                + "but dev server enabled. Include the "
-                                + "com.vaadin.vaadin-dev-server dependency.");
+                        .warn("""
+                                'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin:vaadin-dev' dependency
+                                or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                                Maven:
+                                    <dependency>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-dev</artifactId>
+                                    </dependency>
+
+                                Gradle:
+                                    dependencies {
+                                        implementation('com.vaadin:vaadin-dev')
+                                    }
+
+                                """);
             }
         }
 

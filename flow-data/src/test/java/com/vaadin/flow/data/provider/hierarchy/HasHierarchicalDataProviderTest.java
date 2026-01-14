@@ -224,7 +224,12 @@ public class HasHierarchicalDataProviderTest {
 
         @Override
         public Stream<String> getItems() {
-            return null;
+            return Stream.of("foo", "bar");
+        }
+
+        @Override
+        public Stream<String> getItems(int offset, int limit) {
+            return getItems().skip(offset).limit(limit);
         }
 
         @Override

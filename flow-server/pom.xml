@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-server</artifactId>
   <packaging>jar</packaging>
@@ -14,7 +14,6 @@
   <dependencies>
 
     <!-- Project dependencies -->
-
     <dependency>
       <groupId>com.vaadin</groupId>
       <artifactId>flow-push</artifactId>
@@ -76,6 +75,13 @@
     <dependency>
       <groupId>commons-io</groupId>
       <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-compress</artifactId>
+      <version>1.28.0</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>tools.jackson.core</groupId>
@@ -92,13 +98,6 @@
       <artifactId>jsoup</artifactId>
       <version>${jsoup.version}</version>
     </dependency>
-
-    <!-- Byte code analysis -->
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
-    </dependency>
-
     <!-- Small reflection library -->
     <dependency>
       <groupId>com.vaadin.external</groupId>
@@ -106,18 +105,6 @@
       <version>1.2.0.vaadin1</version>
     </dependency>
 
-    <!-- Download libraries -->
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-compress</artifactId>
-      <version>1.28.0</version>
-      <exclusions>
-        <exclusion>
-          <groupId>commons-io</groupId>
-          <artifactId>commons-io</artifactId>
-        </exclusion>
-      </exclusions>
-    </dependency>
     <!-- TESTING DEPENDENCIES -->
     <dependency>
       <groupId>com.vaadin</groupId>
@@ -184,6 +171,13 @@
             </manifest>
           </archive>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.karaf.tooling</groupId>

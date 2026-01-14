@@ -118,4 +118,12 @@ public interface PluginAdapterBuild extends PluginAdapterBase {
     boolean checkRuntimeDependency(String groupId, String artifactId,
             Consumer<String> missingDependencyMessageConsumer);
 
+    /**
+     * The resources output directory for META-INF/resources in the classes
+     * output directory.
+     *
+     * @return the META-INF/resources directory, usually
+     *         {output}/classes/META-INF/resources
+     */
+    File resourcesOutputDirectory();
 }

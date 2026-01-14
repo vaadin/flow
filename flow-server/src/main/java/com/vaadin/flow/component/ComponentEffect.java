@@ -32,6 +32,7 @@ import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.impl.Effect;
 
 /**
@@ -39,7 +40,7 @@ import com.vaadin.signals.impl.Effect;
  * context of a given component's life-cycle.
  * <p>
  * It ultimately creates a Signal effect, i.e. a call to
- * {@link Signal#effect(Runnable)}, that is automatically enabled when a
+ * {@link Signal#effect(EffectAction)}, that is automatically enabled when a
  * component is attached and disabled when the component is detached.
  * Additionally it provides methods to bind signals to component according to a
  * given value setting function.
@@ -71,7 +72,7 @@ public final class ComponentEffect {
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
      *
-     * @see Signal#effect(Runnable)
+     * @see Signal#effect(EffectAction)
      * @param <C>
      *            the type of the component
      * @param owner
@@ -105,7 +106,7 @@ public final class ComponentEffect {
      *         Span::setVisible);
      * </pre>
      *
-     * @see Signal#effect(Runnable)
+     * @see Signal#effect(EffectAction)
      * @param owner
      *            the owner component for which the effect is applied, must not
      *            be <code>null</code>

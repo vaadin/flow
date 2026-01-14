@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,7 +43,11 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEvent;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.WebComponentExporter;
 import com.vaadin.flow.component.page.AppShellConfigurator;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.internal.ReflectTools;
 import com.vaadin.flow.router.HasErrorParameter;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Layout;
@@ -50,6 +55,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.server.PWA;
+import com.vaadin.flow.server.auth.MenuAccessControl;
 
 /**
  * Bean factory initialization AOT processor for Vaadin applications.
@@ -116,20 +122,22 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
                 registerSubTypes(hints, pkg, Component.class);
                 registerSubTypes(hints, pkg, RouterLayout.class);
-                registerSubTypes(hints, pkg, HasErrorParameter.class);
+                registerSubTypes(hints, pkg, HasErrorParameter.class,
+                        VaadinBeanFactoryInitializationAotProcessor::getExceptionTypeFromHasErrorParameter);
                 registerSubTypes(hints, pkg, ComponentEvent.class);
                 registerSubTypes(hints, pkg, HasUrlParameter.class);
                 registerSubTypes(hints, pkg,
                         "com.vaadin.flow.data.converter.Converter");
+                registerSubTypes(hints, pkg, WebComponentExporter.class);
+                registerSubTypes(hints, pkg, I18NProvider.class);
+                registerSubTypes(hints, pkg, MenuAccessControl.class);
             }
         };
     }
 
     private void registerSubTypes(RuntimeHints hints, String pkg,
             Class<?> cls) {
-        for (var c : getSubtypesOf(pkg, cls)) {
-            registerType(hints, c);
-        }
+        registerSubTypes(hints, pkg, cls, null);
     }
 
     private void registerSubTypes(RuntimeHints hints, String pkg,
@@ -144,6 +152,28 @@ public class VaadinBeanFactoryInitializationAotProcessor
             // you do not
             // have flow-data
         }
+    }
+
+    private void registerSubTypes(RuntimeHints hints, String pkg, Class<?> cls,
+            Function<Class<?>, Set<Class<?>>> relatedTypesExtractor) {
+        for (var c : getSubtypesOf(pkg, cls)) {
+            registerType(hints, c);
+            if (relatedTypesExtractor != null) {
+                for (var related : relatedTypesExtractor.apply(c)) {
+                    registerType(hints, related);
+                }
+            }
+        }
+    }
+
+    // Visible for testing
+    static Set<Class<?>> getExceptionTypeFromHasErrorParameter(Class<?> clazz) {
+        Class<?> exceptionType = ReflectTools.getGenericInterfaceType(clazz,
+                HasErrorParameter.class);
+        if (exceptionType != null) {
+            return Set.of(exceptionType);
+        }
+        return Set.of();
     }
 
     private static List<String> getPackagesWithRoutes(BeanFactory beanFactory) {
@@ -187,10 +217,38 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 registeredClasses.add(c.getName());
                 logger.debug("Registering a bean for route class {}",
                         c.getName());
-                AbstractBeanDefinition beanDefinition = BeanDefinitionBuilder
-                        .rootBeanDefinition(c).setScope("prototype")
-                        .getBeanDefinition();
+                AbstractBeanDefinition beanDefinition = createPrototypeBeanDefinition(
+                        c);
                 beanFactory.registerBeanDefinition(c.getName(), beanDefinition);
+
+                // Layouts classes are instantiated programmatically, and they
+                // might need to be
+                // managed by Spring (e.g. because of @PostConstruct annotated
+                // methods)
+                Set<Class<? extends RouterLayout>> definedLayouts = new HashSet<>();
+                if (c.isAnnotationPresent(Route.class)) {
+                    definedLayouts.add(c.getAnnotation(Route.class).layout());
+                }
+                if (c.isAnnotationPresent(RouteAlias.class)) {
+                    definedLayouts
+                            .add(c.getAnnotation(RouteAlias.class).layout());
+                } else if (c.isAnnotationPresent(RouteAlias.Container.class)) {
+                    for (RouteAlias alias : c
+                            .getAnnotation(RouteAlias.Container.class)
+                            .value()) {
+                        definedLayouts.add(alias.layout());
+                    }
+                }
+                definedLayouts.removeIf(
+                        layout -> registeredClasses.contains(layout.getName())
+                                || layout == RouterLayout.class
+                                || UI.class.isAssignableFrom(layout));
+                for (Class<? extends RouterLayout> layout : definedLayouts) {
+                    beanFactory.registerBeanDefinition(layout.getName(),
+                            createPrototypeBeanDefinition(layout));
+                    registeredClasses.add(layout.getName());
+                }
+
             }
         }
 
@@ -199,9 +257,16 @@ public class VaadinBeanFactoryInitializationAotProcessor
 
     }
 
-    private static Collection<Class<?>> getRouteTypesFor(String packageName) {
+    private static AbstractBeanDefinition createPrototypeBeanDefinition(
+            Class<?> c) {
+        return BeanDefinitionBuilder.rootBeanDefinition(c).setScope("prototype")
+                .getBeanDefinition();
+    }
+
+    // Visible for testing
+    Collection<Class<?>> getRouteTypesFor(String packageName) {
         return getAnnotatedClasses(packageName, Route.class, RouteAlias.class,
-                Layout.class);
+                RouteAlias.Container.class, Layout.class);
     }
 
     private void registerResources(RuntimeHints hints, Class<?> c) {
@@ -221,6 +286,10 @@ public class VaadinBeanFactoryInitializationAotProcessor
         }
         MemberCategory[] memberCategories = MemberCategory.values();
         hints.reflection().registerType(c, memberCategories);
+        // Resource hints are needed for ClassPathScanner in
+        // VaadinServletContextInitializer to discover classes at runtime
+        // in native builds (GraalVM)
+        registerResources(hints, c);
     }
 
     private static List<String> getPackages(BeanFactory beanFactory) {
@@ -325,7 +394,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
                 "sun.java2d.SunGraphics2D" };
     }
 
-    private static Collection<Class<?>> getAnnotatedClasses(String basePackage,
+    // Visible for testing
+    Collection<Class<?>> getAnnotatedClasses(String basePackage,
             Class<?>... annotations) {
         Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(
@@ -349,7 +419,8 @@ public class VaadinBeanFactoryInitializationAotProcessor
         return result;
     }
 
-    private static Collection<Class<?>> getSubtypesOf(String basePackage,
+    // Visible for testing
+    Collection<Class<?>> getSubtypesOf(String basePackage,
             Class<?> parentType) {
         Set<Class<?>> result = new HashSet<>();
         ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(

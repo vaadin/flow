@@ -26,7 +26,8 @@ public class TestDatePicker
     private String label = null;
 
     public TestDatePicker() {
-        super(null, LocalDate::parse, LocalDate::toString);
+        super(null, LocalDate::parse,
+                value -> value != null ? value.toString() : null);
     }
 
     public TestDatePicker(String label) {

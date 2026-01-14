@@ -281,6 +281,11 @@ public class ResourceLoader {
                     || "import".equalsIgnoreCase(rel)) && href != null
                     && href.length() != 0) {
                 loadedResources.add(href);
+                // Handle stylesheet loaded by AppShellRegistry
+                String dependencyId = linkElement.getAttribute("data-id");
+                if (dependencyId != null) {
+                    dependencyIdToResourceKey.set(dependencyId, href);
+                }
             }
         }
     }

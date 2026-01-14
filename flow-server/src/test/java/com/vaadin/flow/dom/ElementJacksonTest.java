@@ -155,8 +155,11 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ignore.add("getShadowRoot");
 
         // ignore signal binding methods
+        ignore.add("bindEnabled");
+        ignore.add("bindProperty");
         ignore.add("bindAttribute");
         ignore.add("bindText");
+        ignore.add("bindVisible");
 
         assertMethodsReturnType(Element.class, ignore);
     }
@@ -2339,6 +2342,18 @@ public class ElementJacksonTest extends AbstractNodeTest {
         ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
 
         assertPendingJs(ui, "return $0.method($1,$2)", element, "foo", 123);
+    }
+
+    @Test
+    public void callFunctionWithBean() {
+        UI ui = new MockUI();
+        Element element = ElementFactory.createDiv();
+        SimpleBean bean = new SimpleBean();
+        element.callJsFunction("method", bean);
+        ui.getElement().appendChild(element);
+        ui.getInternals().getStateTree().runExecutionsBeforeClientResponse();
+
+        assertPendingJs(ui, "return $0.method($1)", element, bean);
     }
 
     @Test

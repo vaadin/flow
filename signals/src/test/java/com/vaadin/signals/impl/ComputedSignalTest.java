@@ -28,6 +28,7 @@ import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.function.EffectAction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -137,6 +138,20 @@ public class ComputedSignalTest extends SignalTestBase {
     }
 
     @Test
+    void not_booleanInputs_negatedOutputs() {
+        ValueSignal<Boolean> signal = new ValueSignal<>(Boolean.TRUE);
+        Signal<Boolean> negated = Signal.not(signal);
+
+        assertFalse(negated.value());
+
+        signal.value(false);
+        assertTrue(negated.value());
+
+        signal.value(null);
+        assertNull(negated.value());
+    }
+
+    @Test
     void callback_updateOtherSignal_signalUpdated() {
         ValueSignal<String> other = new ValueSignal<>("value");
 
@@ -236,7 +251,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
         // Explicit class to allow capturing a reference without making the
         // variable effectively final
-        class CapturingRunnable implements Runnable {
+        class CapturingRunnable implements EffectAction {
             private final Signal<String> signal;
 
             CapturingRunnable(Signal<String> signal) {
@@ -244,12 +259,12 @@ public class ComputedSignalTest extends SignalTestBase {
             }
 
             @Override
-            public void run() {
+            public void execute() {
                 invocations.add(signal.value());
             }
         }
 
-        Signal.effect(new CapturingRunnable(signal)).run();
+        Signal.effect(new CapturingRunnable(signal)).cleanup();
 
         assertEquals(List.of("value"), invocations);
 

@@ -78,7 +78,7 @@ public class VaadinRouteScope extends AbstractScope {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
             String key = getUIStoreKey(ui);
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 ui.getPage().retrieveExtendedClientDetails(
                         det -> relocateStore(ui, key));
             }
@@ -119,10 +119,10 @@ public class VaadinRouteScope extends AbstractScope {
         private String getUIStoreKey(UI ui) {
             ExtendedClientDetails details = ui.getInternals()
                     .getExtendedClientDetails();
-            if (details == null) {
+            if (details.getWindowName() == null) {
                 return "uid-" + ui.getUIId();
             } else {
-                return "win-" + getWindowName(ui);
+                return "win-" + details.getWindowName();
             }
         }
 
@@ -448,9 +448,6 @@ public class VaadinRouteScope extends AbstractScope {
     private static String getWindowName(UI ui) {
         ExtendedClientDetails details = ui.getInternals()
                 .getExtendedClientDetails();
-        if (details == null) {
-            return null;
-        }
         return details.getWindowName();
     }
 

@@ -21,6 +21,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.internal.PendingJavaScriptInvocation;
+import com.vaadin.flow.component.page.Page;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.server.MockServletServiceSessionSetup;
@@ -28,6 +29,8 @@ import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinSession;
 
 public class MockUI extends UI {
+
+    private Page page;
 
     public MockUI() {
         this(findOrCreateSession());
@@ -40,6 +43,18 @@ public class MockUI extends UI {
 
     public MockUI(Router router) {
         this(createSession(router));
+    }
+
+    @Override
+    public Page getPage() {
+        if (this.page != null) {
+            return this.page;
+        }
+        return super.getPage();
+    }
+
+    public void setPage(Page page) {
+        this.page = page;
     }
 
     @Override

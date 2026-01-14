@@ -19,7 +19,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>test-embedding</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-test-embedding-theme-variant</artifactId>
   <packaging>war</packaging>

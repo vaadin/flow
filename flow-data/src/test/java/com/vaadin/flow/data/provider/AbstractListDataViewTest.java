@@ -49,6 +49,7 @@ import com.vaadin.flow.tests.data.bean.Item;
 
 import static com.vaadin.flow.tests.server.ClassesSerializableUtils.serializeAndDeserialize;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThrows;
 
 public class AbstractListDataViewTest {
 
@@ -1386,6 +1387,23 @@ public class AbstractListDataViewTest {
         }
     }
 
+    @Test
+    public void getItems_withOffsetAndLimit_subsetReturned() {
+        // items: first, middle, last
+        Stream<String> stream = dataView.getItems(1, 1);
+        Assert.assertEquals("middle", stream.findFirst().orElse(null));
+    }
+
+    @Test
+    public void getItems_withOffsetAndLimit_largerLimit_returnsAvailable() {
+        // items: first, middle, last
+        Stream<String> stream = dataView.getItems(1, 10);
+        List<String> list = stream.collect(Collectors.toList());
+        Assert.assertEquals(2, list.size());
+        Assert.assertEquals("middle", list.get(0));
+        Assert.assertEquals("last", list.get(1));
+    }
+
     private Collection<Item> getTestItems() {
         return new ArrayList<>(Arrays.asList(new Item(1L, "value1", "descr1"),
                 new Item(2L, "value2", "descr2"),
@@ -1394,5 +1412,23 @@ public class AbstractListDataViewTest {
 
     @Tag("test-component")
     private static class TestComponent extends Component {
+    }
+
+    @Test
+    public void getItems_withNegativeOffset_throwsException() {
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(-1, 10));
+        Assert.assertEquals("Offset must be non-negative",
+                exception.getMessage());
+    }
+
+    @Test
+    public void getItems_withNegativeLimit_throwsException() {
+        IndexOutOfBoundsException exception = assertThrows(
+                IndexOutOfBoundsException.class,
+                () -> dataView.getItems(0, -1));
+        Assert.assertEquals("Limit must be non-negative",
+                exception.getMessage());
     }
 }

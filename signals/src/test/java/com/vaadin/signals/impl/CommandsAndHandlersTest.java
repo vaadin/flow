@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Consumer;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +28,7 @@ import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.CommandResult.Accept;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -61,7 +61,7 @@ public class CommandsAndHandlersTest {
     @Test
     void constructor_singleCommandAndHandler_hasCommandAndHandler() {
         SignalCommand command = TestUtil.writeRootValueCommand();
-        Consumer<CommandResult> handler = dummyHandler();
+        CommandResultHandler handler = dummyHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(command,
                 handler);
@@ -76,10 +76,10 @@ public class CommandsAndHandlersTest {
     void constructor_multipleCommandsAndHandlers_hasCopiesOfEverything() {
         SignalCommand c1 = TestUtil.writeRootValueCommand();
         SignalCommand c2 = TestUtil.writeRootValueCommand();
-        Consumer<CommandResult> handler = dummyHandler();
+        CommandResultHandler handler = dummyHandler();
 
         List<SignalCommand> list = Arrays.asList(c1, c2);
-        Map<Id, Consumer<CommandResult>> map = new HashMap<>();
+        Map<Id, CommandResultHandler> map = new HashMap<>();
         map.put(c1.commandId(), handler);
 
         CommandsAndHandlers commands = new CommandsAndHandlers(list, map);
@@ -97,7 +97,7 @@ public class CommandsAndHandlersTest {
         SignalCommand c1 = TestUtil.writeRootValueCommand();
         SignalCommand c2 = TestUtil.writeRootValueCommand();
         SignalCommand c3 = TestUtil.writeRootValueCommand();
-        Consumer<CommandResult> handler = dummyHandler();
+        CommandResultHandler handler = dummyHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(
                 List.of(c1, c2, c3), Map.of(c2.commandId(), handler));
@@ -192,8 +192,8 @@ public class CommandsAndHandlersTest {
     void add_otherCommands_added() {
         SignalCommand c1 = TestUtil.writeRootValueCommand();
         SignalCommand c2 = TestUtil.writeRootValueCommand();
-        Consumer<CommandResult> h1 = dummyHandler();
-        Consumer<CommandResult> h2 = dummyHandler();
+        CommandResultHandler h1 = dummyHandler();
+        CommandResultHandler h2 = dummyHandler();
 
         CommandsAndHandlers commands = new CommandsAndHandlers(c1, h1);
         commands.add(new CommandsAndHandlers(c2, h2));
@@ -203,17 +203,17 @@ public class CommandsAndHandlersTest {
                 commands.getResultHandlers());
     }
 
-    static class ResultHandler implements Consumer<CommandResult> {
+    static class ResultHandler implements CommandResultHandler {
         CommandResult result;
 
         @Override
-        public void accept(CommandResult result) {
+        public void handle(CommandResult result) {
             assertNull(this.result);
             this.result = result;
         }
     }
 
-    private static Consumer<CommandResult> dummyHandler() {
+    private static CommandResultHandler dummyHandler() {
         return ignore -> {
         };
     }

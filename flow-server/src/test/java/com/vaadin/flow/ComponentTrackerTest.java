@@ -17,6 +17,7 @@ package com.vaadin.flow;
 
 import java.lang.reflect.Field;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.junit.After;
@@ -71,7 +72,7 @@ public class ComponentTrackerTest {
         Component1 c1 = new Component1();
         Component c2;
         c2 = new Component1();
-        int c1Line = 71;
+        int c1Line = 72;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
         assertCreateLocation(c2, c1Line + 2, getClass().getName());
@@ -85,7 +86,7 @@ public class ComponentTrackerTest {
 
         Layout layout = new Layout(c1);
 
-        int c1Line = 82;
+        int c1Line = 83;
 
         assertCreateLocation(c1, c1Line, getClass().getName());
 
@@ -107,7 +108,7 @@ public class ComponentTrackerTest {
         Component c2 = new Component1();
         Component c3 = new Component1();
 
-        int c1Line = 106;
+        int c1Line = 107;
         assertCreateLocation(c1, c1Line, getClass().getName());
 
         ComponentTracker.refreshLocation(ComponentTracker.findCreate(c1), 3);
@@ -140,6 +141,49 @@ public class ComponentTrackerTest {
 
         Assert.assertTrue(isCleared(createMap));
         Assert.assertTrue(isCleared(attachMap));
+    }
+
+    @Test
+    public void ordinalValueSet() {
+        Component1 c1 = new Component1();
+        Component c2 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c1);
+        layout.add(c2);
+        assertCreateLocationOrdinalValueLower(c1, c2);
+        assertAttachLocationOrdinalValueLower(c1, c2);
+    }
+
+    @Test
+    public void attachOrderChangesOrdinal() {
+        Component1 c1 = new Component1();
+        Component c2 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c2);
+        layout.add(c1);
+        assertCreateLocationOrdinalValueLower(c1, c2);
+        assertAttachLocationOrdinalValueLower(c2, c1);
+    }
+
+    @Test
+    public void createOrderChangesOrdinal() {
+        Component c2 = new Component1();
+        Component1 c1 = new Component1();
+        Layout layout = new Layout();
+        layout.add(c1);
+        layout.add(c2);
+        assertCreateLocationOrdinalValueLower(c2, c1);
+        assertAttachLocationOrdinalValueLower(c1, c2);
+    }
+
+    @Test
+    public void componentsHaveDifferentOrdinalWhenCreatedInSameLine() {
+        var components = new Component[] { new Component1(), new Component1() };
+        new Layout(components);
+        assertCreateLocation(components[0], 181, getClass().getName());
+        assertCreateLocation(components[1], 181, getClass().getName());
+        assertCreateLocationOrdinalValueLower(components[0], components[1]);
+        assertAttachLocationOrdinalValueLower(components[0], components[1]);
     }
 
     private boolean isCleared(Map<?, ?> map) throws InterruptedException {
@@ -182,6 +226,38 @@ public class ComponentTrackerTest {
         return Stream.of(locations).filter(
                 l -> l.className().equals(ComponentTrackerTest.class.getName()))
                 .findFirst().orElseThrow();
-
     }
+
+    private void assertLocationValueIsLower(
+            Component componentWithLowerOrdinalVal,
+            Component componentWithHigherOrdinalVal,
+            Function<Component, Location> findLocationFn,
+            Function<Component, Location[]> findLocationArrFn) {
+        Location locationC1 = findLocationFn
+                .apply(componentWithLowerOrdinalVal);
+        Location locationC2 = findLocationFn
+                .apply(componentWithHigherOrdinalVal);
+        Assert.assertTrue(locationC2.ordinal() > locationC1.ordinal());
+
+        Location locationFromArrayC1 = getLocationFromArray(
+                findLocationArrFn.apply(componentWithLowerOrdinalVal));
+        Location locationFromArrayC2 = getLocationFromArray(
+                findLocationArrFn.apply(componentWithHigherOrdinalVal));
+
+        Assert.assertTrue(
+                locationFromArrayC2.ordinal() > locationFromArrayC1.ordinal());
+    }
+
+    private void assertCreateLocationOrdinalValueLower(Component c1,
+            Component c2) {
+        assertLocationValueIsLower(c1, c2, ComponentTracker::findCreate,
+                ComponentTracker::findCreateLocations);
+    }
+
+    private void assertAttachLocationOrdinalValueLower(Component c1,
+            Component c2) {
+        assertLocationValueIsLower(c1, c2, ComponentTracker::findAttach,
+                ComponentTracker::findAttachLocations);
+    }
+
 }

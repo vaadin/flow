@@ -1,1 +1,0 @@
-throw new Error('Unexpected use of the bundle!');

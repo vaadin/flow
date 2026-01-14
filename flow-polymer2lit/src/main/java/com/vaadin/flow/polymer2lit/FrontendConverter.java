@@ -17,17 +17,19 @@ package com.vaadin.flow.polymer2lit;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.FrontendUtils.CommandExecutionException;
 import com.vaadin.flow.server.frontend.FrontendTools;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils.CommandExecutionException;
 
 /**
  * A converter that converts Polymer-based {@code *.js} source files to Lit.
@@ -47,8 +49,11 @@ public class FrontendConverter implements AutoCloseable {
         this.frontendTools = frontendTools;
         this.tempDirPath = Files.createTempDirectory("converter");
         this.converterTempPath = tempDirPath.resolve("converter.js");
-        Files.copy(getClass().getResourceAsStream(CONVERTER_EXECUTABLE_PATH),
-                converterTempPath);
+        try (InputStream resourceAsStream = getClass()
+                .getResourceAsStream(CONVERTER_EXECUTABLE_PATH)) {
+            Files.copy(resourceAsStream, converterTempPath,
+                    StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     @Override

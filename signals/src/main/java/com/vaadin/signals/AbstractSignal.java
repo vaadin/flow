@@ -17,14 +17,14 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
-import java.util.function.Function;
-import java.util.function.Predicate;
 
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.CommandResult;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.StagedTransaction;
@@ -49,9 +49,45 @@ import com.vaadin.signals.operations.SignalOperation;
  *            the signal value type
  */
 public abstract class AbstractSignal<T> implements Signal<T> {
+    /**
+     * Converts a command result into a specific value type.
+     *
+     * @param <T>
+     *            the result value type
+     */
+    @FunctionalInterface
+    protected interface ResultConverter<T> {
+        /**
+         * Converts an accepted command result into a result value.
+         *
+         * @param accept
+         *            the accepted command result, not <code>null</code>
+         * @return the converted value, may be <code>null</code>
+         */
+        T convert(CommandResult.Accept accept);
+    }
+
+    /**
+     * Creates a child signal instance from a node ID.
+     *
+     * @param <I>
+     *            the child signal type
+     */
+    @FunctionalInterface
+    protected interface ChildSignalFactory<I extends AbstractSignal<?>> {
+        /**
+         * Creates a child signal instance for the given node ID.
+         *
+         * @param childId
+         *            the node ID for the child signal, not <code>null</code>
+         * @return the child signal instance, not <code>null</code>
+         */
+        I create(Id childId);
+    }
+
     private final SignalTree tree;
     private final Id id;
-    private final Predicate<SignalCommand> validator;
+    private final CommandValidator validator;
 
     private static final ObjectMapper OBJECT_MAPPER;
     static {
@@ -63,7 +99,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * enable using <code>==</code> to detect and optimize cases where no
      * validation is applied.
      */
-    protected static final Predicate<SignalCommand> ANYTHING_GOES = anything -> true;
+    protected static final CommandValidator ANYTHING_GOES = CommandValidator.ACCEPT_ALL;
 
     /**
      * Creates a new signal instance with the given id and validator for the
@@ -80,7 +116,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            not <code>null</code>
      */
     protected AbstractSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator) {
+            CommandValidator validator) {
         this.tree = Objects.requireNonNull(tree);
         this.validator = Objects.requireNonNull(validator);
         this.id = Objects.requireNonNull(id);
@@ -135,13 +171,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         return value;
     }
 
-    /**
-     * Reads the value without setting up any dependencies. This method returns
-     * the same value as {@link #value()} but without creating a dependency when
-     * used inside a transaction, effect or computed signal.
-     *
-     * @return the signal value
-     */
+    @Override
     public T peek() {
         return extractValue(data(Transaction.getCurrent()));
     }
@@ -162,7 +192,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *
      * @return the used validator, not <code>null</code>
      */
-    protected Predicate<SignalCommand> validator() {
+    protected CommandValidator validator() {
         return validator;
     }
 
@@ -176,9 +206,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      *            the validator to merge, not <code>null</code>
      * @return a combined validator, not <code>null</code>
      */
-    protected Predicate<SignalCommand> mergeValidators(
-            Predicate<SignalCommand> validator) {
-        Predicate<SignalCommand> own = validator();
+    protected CommandValidator mergeValidators(CommandValidator validator) {
+        CommandValidator own = validator();
         if (own == ANYTHING_GOES) {
             return validator;
         } else if (validator == ANYTHING_GOES) {
@@ -231,7 +260,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
         } else if (command instanceof SignalCommand.TransactionCommand tx) {
             return tx.commands().stream().allMatch(this::isValid);
         } else {
-            return validator().test(command);
+            return validator().isValid(command);
         }
     }
 
@@ -257,7 +286,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the provided operation, for chaining
      */
     protected <R, O extends SignalOperation<R>> O submit(SignalCommand command,
-            Function<CommandResult.Accept, R> resultConverter, O operation) {
+            ResultConverter<R> resultConverter, O operation) {
         // Remove is issued through the parent but targets the child
         assert command instanceof SignalCommand.RemoveCommand
                 || id().equals(command.targetNodeId());
@@ -272,7 +301,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
             operation.result().completeAsync(() -> {
                 if (result instanceof CommandResult.Accept accept) {
                     return new SignalOperation.Result<>(
-                            resultConverter.apply(accept));
+                            resultConverter.convert(accept));
                 } else if (result instanceof CommandResult.Reject reject) {
                     return new SignalOperation.Error<>(reject.reason());
                 } else {
@@ -288,8 +317,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     /**
      * Submits a command for this signal and updates the given operation without
      * a value once the command result is confirmed. This is a shorthand for
-     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
-     * operations that don't have a result value.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of operations that don't have a result value.
      *
      * @param <O>
      *            the operation type
@@ -308,8 +337,8 @@ public abstract class AbstractSignal<T> implements Signal<T> {
     /**
      * Submits a command for this signal and creates and insert operation that
      * is updated once the command result is confirmed. This is a shorthand for
-     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
-     * insert operations.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of insert operations.
      *
      * @param <I>
      *            the insert operation type
@@ -321,17 +350,17 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the created insert operation, not <code>null</code>
      */
     protected <I extends AbstractSignal<?>> InsertOperation<I> submitInsert(
-            SignalCommand command, Function<Id, I> childFactory) {
-        return submitVoidOperation(command,
-                new InsertOperation<>(childFactory.apply(command.commandId())));
+            SignalCommand command, ChildSignalFactory<I> childFactory) {
+        return submitVoidOperation(command, new InsertOperation<>(
+                childFactory.create(command.commandId())));
     }
 
     /**
      * Submits a command for this signal and uses the provided result converter
      * to updates the created operation once the command result is confirmed.
      * This is a shorthand for
-     * {@link #submit(SignalCommand, Function, SignalOperation)} in the case of
-     * using the default operation type.
+     * {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in the
+     * case of using the default operation type.
      *
      * @param <R>
      *            the operation result value
@@ -343,15 +372,15 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * @return the created operation instance, not <code>null</code>
      */
     protected <R> SignalOperation<R> submit(SignalCommand command,
-            Function<CommandResult.Accept, R> resultConverter) {
+            ResultConverter<R> resultConverter) {
         return submit(command, resultConverter, new SignalOperation<R>());
     }
 
     /**
      * Submits a command for this signal and updates the created operation
      * without a value once the command result is confirmed. This is a shorthand
-     * for {@link #submit(SignalCommand, Function, SignalOperation)} in the case
-     * of using the default operation type and no result value.
+     * for {@link #submit(SignalCommand, ResultConverter, SignalOperation)} in
+     * the case of using the default operation type and no result value.
      *
      * @param command
      *            the command to submit, not <code>null</code>
@@ -409,7 +438,7 @@ public abstract class AbstractSignal<T> implements Signal<T> {
             }
 
             @Override
-            public Runnable onNextChange(TransientListener listener) {
+            public CleanupCallback onNextChange(TransientListener listener) {
                 SignalTree tree = tree();
 
                 /*

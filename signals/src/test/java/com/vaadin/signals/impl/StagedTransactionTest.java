@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +34,7 @@ import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
 import com.vaadin.signals.impl.StagedTransaction.ResultCollector;
 import com.vaadin.signals.impl.Transaction.Type;
@@ -76,14 +76,14 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        Consumer<CommandResult> c3 = collector.registerDependency(d3);
-        c2.accept(CommandResult.ok());
-        collector.registerDependency(d1).accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        CommandResultHandler c3 = collector.registerDependency(d3);
+        c2.handle(CommandResult.ok());
+        collector.registerDependency(d1).handle(CommandResult.ok());
 
         assertNull(resultHolder.get());
 
-        c3.accept(CommandResult.ok());
+        c3.handle(CommandResult.ok());
 
         assertTrue(resultHolder.get().successful());
     }
@@ -99,17 +99,17 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        Consumer<CommandResult> c3 = collector.registerDependency(d3);
-        c2.accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        CommandResultHandler c3 = collector.registerDependency(d3);
+        c2.handle(CommandResult.ok());
 
         assertNull(resultHolder.get());
 
-        collector.registerDependency(d1).accept(CommandResult.fail("reason"));
+        collector.registerDependency(d1).handle(CommandResult.fail("reason"));
 
         assertFalse(resultHolder.get().successful());
 
-        c3.accept(CommandResult.ok());
+        c3.handle(CommandResult.ok());
 
         assertFalse(resultHolder.get().successful(),
                 "Completing last dependency should not make the result successful");
@@ -126,13 +126,13 @@ public class StagedTransactionTest {
         ResultCollector collector = new ResultCollector(List.of(d1, d2, d3),
                 resultHolder::set);
 
-        Consumer<CommandResult> c2 = collector.registerDependency(d2);
-        c2.accept(CommandResult.ok());
+        CommandResultHandler c2 = collector.registerDependency(d2);
+        c2.handle(CommandResult.ok());
 
-        collector.registerDependency(d1).accept(CommandResult.ok());
+        collector.registerDependency(d1).handle(CommandResult.ok());
 
         assertThrows(AssertionError.class, () -> {
-            c2.accept(CommandResult.ok());
+            c2.handle(CommandResult.ok());
         });
     }
 
@@ -362,7 +362,7 @@ public class StagedTransactionTest {
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -386,13 +386,13 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).textValue(),
+                    TestUtil.readTransactionRootValue(tree).asString(),
                     "Should take inner transaction changes into account");
         });
 
         assertTrue(operation.result().get().successful());
         assertEquals("update",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -411,12 +411,12 @@ public class StagedTransactionTest {
                     TestUtil.writeRootValueCommand("unexpected"));
 
             assertEquals("update",
-                    TestUtil.readTransactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -437,12 +437,12 @@ public class StagedTransactionTest {
             }, Type.WRITE_THROUGH);
 
             assertEquals("unexpected",
-                    TestUtil.readTransactionRootValue(tree).textValue());
+                    TestUtil.readTransactionRootValue(tree).asString());
         });
 
         assertFalse(operation.result().get().successful());
         assertEquals("unexpected",
-                TestUtil.readConfirmedRootValue(tree).textValue());
+                TestUtil.readConfirmedRootValue(tree).asString());
     }
 
     @Test
@@ -464,7 +464,7 @@ public class StagedTransactionTest {
         tree.confirm(List.of(TestUtil.writeRootValueCommand("expected")));
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirmSubmitted();
 
@@ -485,12 +485,12 @@ public class StagedTransactionTest {
         });
 
         assertEquals("update",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirm(List.of(TestUtil.writeRootValueCommand("unexpected")));
 
         assertEquals("unexpected",
-                TestUtil.readSubmittedRootValue(tree).textValue());
+                TestUtil.readSubmittedRootValue(tree).asString());
 
         tree.confirmSubmitted();
 

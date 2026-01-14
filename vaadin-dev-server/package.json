@@ -8,16 +8,17 @@
   },
   "devDependencies": {
     "@koa/cors": "^5.0.0",
-    "@open-wc/dev-server-hmr": "^0.1.2-next.0",
-    "@rollup/plugin-typescript": "^11.1.1",
-    "@vaadin/overlay": "24.2.0-alpha9",
-    "@web/dev-server": "^0.1.35",
-    "@web/dev-server-esbuild": "^0.3.3",
-    "prettier": "^2.8.4",
-    "tslib": "^2.5.3",
-    "vite": "^5.4.8"
+    "@open-wc/dev-server-hmr": "^0.2.0",
+    "@rollup/plugin-typescript": "^12.3.0",
+    "@vaadin/overlay": "24.9.5",
+    "@web/dev-server": "^0.4.6",
+    "@web/dev-server-esbuild": "^1.0.4",
+    "prettier": "^3.6.2",
+    "tslib": "^2.8.1",
+    "typescript": "^5.9.3",
+    "vite": "^7.2.2"
   },
   "dependencies": {
-    "lit": "^2.6.1"
+    "lit": "^3.3.1"
   }
 }

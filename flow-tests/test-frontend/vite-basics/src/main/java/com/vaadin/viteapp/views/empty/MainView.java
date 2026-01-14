@@ -15,7 +15,6 @@
  */
 package com.vaadin.viteapp.views.empty;
 
-import com.vaadin.flow.component.HtmlComponent;
 import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.html.Div;
@@ -30,8 +29,6 @@ import com.vaadin.flow.uitest.ui.dependencies.ThemableTextField;
 @JsModule("./jsonloader.js")
 @JsModule("@vaadin/test-package-outside-npm/index.js")
 @JsModule("@vaadin/test-package2-outside-npm/index.js")
-@JsModule("./testscopebuttonloader.js")
-@JsModule("./testscopemaploader.js")
 @JsModule("./importdir.js")
 @JsModule("./bad.ts")
 @JsModule("./testfile.css.js")
@@ -84,9 +81,6 @@ public class MainView extends Div {
         Paragraph outsideStatus = new Paragraph();
         outsideStatus.setId(OUTSIDE_RESULT);
         add(outsideStatus);
-
-        add(new HtmlComponent("testscope-button"));
-        add(new HtmlComponent("testscope-map"));
 
         ThemableTextField textField = new ThemableTextField();
         textField.setId("themedfield");

@@ -51,6 +51,7 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
     private static final String VIEW_IMPORTED_DIV_BG_COLOR = "rgba(205, 133, 63, 1)";
     private static final String VIEW_NESTED_IMPORTED_DIV_BG_COLOR = "rgba(255, 127, 80, 1)";
     private final Map<Path, byte[]> styleSheetRestore = new HashMap<>();
+    private static final String DIV_BG_COLOR_BEFORE_DELETE = "rgba(0, 255, 0, 1)";
 
     private Path resourcesPath;
     private Path updatedImagePath;
@@ -101,6 +102,8 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
 
         assertImageIsReloaded("appshell-image", "css/images/gobo.png");
         assertImageIsReloaded("view-image", "css/images/viking.png");
+
+        assertStyleSheetIsRemoved();
     }
 
     private void assertStyleSheetIsReloaded(String styledDivID,
@@ -129,22 +132,39 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                 "Expected background image " + expectedImagePath + " but got "
                         + backgroundImage,
                 backgroundImage.contains(expectedImagePath));
-        Assert.assertFalse("Image should not have cache killer parameter",
-                backgroundImage.contains("v-hotreload"));
 
         triggerReloadImage(styledDivID);
 
         Assert.assertEquals("Page should not be reloaded", getInitialAttachId(),
                 getAttachId());
 
-        waitUntil(d -> $("div").id(styledDivID).getCssValue("backgroundImage")
-                .contains("v-hotreload"));
         backgroundImage = $("div").id(styledDivID)
                 .getCssValue("backgroundImage").replaceAll(
                         "(?i).*url\\s*\\(\\s*['\"]?([^'\"]+)['\"]?\\s*\\).*",
                         "$1");
         waitUntilContentMatches(backgroundImage,
                 Files.readAllBytes(updatedImagePath));
+    }
+
+    private void assertStyleSheetIsRemoved() throws IOException {
+        String initialBgColor = $("div").id("view-style-deleted")
+                .getCssValue("backgroundColor");
+        // Before deletion, the element should be styled (i.e., not the
+        // default/transparent)
+        Assert.assertEquals(
+                "Precondition failed: element should be styled before deletion",
+                DIV_BG_COLOR_BEFORE_DELETE, initialBgColor);
+
+        triggerDelete();
+
+        Assert.assertEquals("Page should not be reloaded", getInitialAttachId(),
+                getAttachId());
+
+        waitUntil(d -> {
+            var newBgColor = $("div").id("view-style-deleted")
+                    .getCssValue("backgroundColor");
+            return !DIV_BG_COLOR_BEFORE_DELETE.equals(newBgColor);
+        });
     }
 
     private void triggerReloadStyleSheet(String styledDivID)
@@ -160,14 +180,6 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
                 writer.write(content);
                 writer.flush();
             }
-        };
-        triggerReload(styledDivID, updater);
-    }
-
-    private void triggerReloadImage(String styledDivID) throws IOException {
-        ThrowingConsumer<Path> updater = path -> {
-            Files.copy(updatedImagePath, path,
-                    StandardCopyOption.REPLACE_EXISTING);
         };
         triggerReload(styledDivID, updater);
     }
@@ -194,6 +206,35 @@ public class StylesheetLiveReloadIT extends AbstractLiveReloadIT {
         // Make sure the servlet container returns the updated content
         waitUntilContentMatches(
                 getRootURL() + "/context/" + resourceRelativePath, content);
+        button.click();
+    }
+
+    private void triggerReloadImage(String styledDivID) throws IOException {
+        ThrowingConsumer<Path> updater = path -> {
+            Files.copy(updatedImagePath, path,
+                    StandardCopyOption.REPLACE_EXISTING);
+        };
+        triggerReload(styledDivID, updater);
+    }
+
+    private void triggerDelete() throws IOException {
+        TestBenchElement button = $("button").id("delete-view-style-deleted");
+        String resourceRelativePath = button
+                .getDomAttribute("test-resource-file-path");
+        Assert.assertNotNull(
+                "No test-resource-file-path attribute found for button "
+                        + button,
+                resourceRelativePath);
+
+        Path resourcePath = resourcesPath
+                .resolve(resourceRelativePath.replace('/', File.separatorChar));
+        Assert.assertTrue("Resource file not found: " + resourcePath,
+                Files.exists(resourcePath));
+
+        styleSheetRestore.put(resourcePath, Files.readAllBytes(resourcePath));
+        Files.delete(resourcePath);
+
+        waitUntil(driver -> !Files.exists(resourcePath));
         button.click();
     }
 

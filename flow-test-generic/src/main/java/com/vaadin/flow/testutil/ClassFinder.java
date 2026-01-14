@@ -49,7 +49,8 @@ public abstract class ClassFinder {
 
     protected boolean isTestClassPath(String classPath) {
         File file = new File(classPath);
-        return "test-classes".equals(file.getName());
+        return "test-classes".equals(file.getName())
+                || file.getName().matches(".*-tests\\.jar");
     }
 
     protected static boolean isFunctionalType(Type type) {

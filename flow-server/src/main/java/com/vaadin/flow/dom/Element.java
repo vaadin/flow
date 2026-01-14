@@ -51,6 +51,8 @@ import com.vaadin.flow.dom.impl.ThemeListImpl;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.internal.JavaScriptSemantics;
 import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.internal.nodefeature.TextBindingFeature;
 import com.vaadin.flow.internal.nodefeature.VirtualChildrenList;
 import com.vaadin.flow.server.AbstractStreamResource;
@@ -849,6 +851,52 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the given property and keeps the
+     * property value synchronized with the signal value while the element is in
+     * attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds existing
+     * binding.
+     * <p>
+     * Same rules apply for the property name and value from the bound Signal as
+     * in {@link #setProperty(String, String)}.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the property
+     * value manually throws {@link BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Supported data types for the signal are the same as for the various
+     * {@code setProperty} methods in this class: {@link String},
+     * {@link Boolean}, {@link Double}, {@link BaseJsonNode}, {@link Object}
+     * (bean), {@link List} and {@link Map}. Typed Lists and Maps are not
+     * supported, i.e. the signal must be of type {@code Signal<List<?>>} or
+     * {@code Signal<Map<?,?>}.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindProperty("mol", signal);
+     * signal.value("42"); // The element now has property mol="42"
+     * </pre>
+     *
+     * @param name
+     *            the name of the property
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setProperty(String, String)
+     */
+    public void bindProperty(String name, Signal<?> signal) {
+        verifySetPropertyName(name);
+
+        getStateProvider().bindPropertySignal(this, name, signal);
+    }
+
+    /**
      * Adds a property change listener which is triggered when the property's
      * value is updated on the server side.
      * <p>
@@ -946,10 +994,6 @@ public class Element extends Node<Element> {
     public String getProperty(String name, String defaultValue) {
         Object value = getPropertyRaw(name);
         if (value == null || value instanceof NullNode) {
-            return defaultValue;
-        } else if (value instanceof JsonNode) {
-            return ((JsonNode) value).toString();
-        } else if (value instanceof NullNode) {
             return defaultValue;
         } else if (value instanceof Number) {
             double doubleValue = ((Number) value).doubleValue();
@@ -1237,23 +1281,22 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
-        if (feature.hasBinding()) {
-            throw new BindingActiveException(
-                    "setText is not allowed while a binding for text exists.");
-        }
-
-        if (textContent == null) {
-            // Browsers work this way
-            textContent = "";
-        }
+        getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
+            if (feature.hasBinding()) {
+                throw new BindingActiveException(
+                        "setText is not allowed while a binding for text exists.");
+            }
+        });
         setTextContent(textContent);
 
         return this;
     }
 
     private void setTextContent(String textContent) {
+        if (textContent == null) {
+            // Browsers work this way
+            textContent = "";
+        }
         if (isTextNode()) {
             getStateProvider().setTextContent(getNode(), textContent);
         } else {
@@ -1279,7 +1322,7 @@ public class Element extends Node<Element> {
      * signal value changes have no effect. <code>null</code> signal unbinds the
      * existing binding.
      * <p>
-     * While a Signal is bound to an attribute, any attempt to set the text
+     * While a Signal is bound to a property, any attempt to set the text
      * content manually throws
      * {@link com.vaadin.signals.BindingActiveException}. Same happens when
      * trying to bind a new Signal while one is already bound.
@@ -1592,11 +1635,11 @@ public class Element extends Node<Element> {
         String paramPlaceholderString = IntStream.range(1, arguments.length + 1)
                 .mapToObj(i -> "$" + i).collect(Collectors.joining(","));
         // Inject the element as $0
-        Serializable[] jsParameters;
+        Object[] jsParameters;
         if (arguments.length == 0) {
-            jsParameters = new Serializable[] { this };
+            jsParameters = new Object[] { this };
         } else {
-            jsParameters = new Serializable[arguments.length + 1];
+            jsParameters = new Object[arguments.length + 1];
             jsParameters[0] = this;
             System.arraycopy(arguments, 0, jsParameters, 1, arguments.length);
         }
@@ -1758,6 +1801,39 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the <code>visible</code> property of
+     * this element and keeps property synchronized with the signal value while
+     * the element is in attached state. When the element is in detached state,
+     * signal value changes have no effect. <code>null</code> signal unbinds the
+     * existing binding.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the visibility
+     * manually with {@link #setVisible(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindVisible(signal);
+     * signal.value(false); // The element is set hidden
+     * </pre>
+     *
+     * @param visibleSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setVisible(boolean)
+     */
+    public void bindVisible(Signal<Boolean> visibleSignal) {
+        getStateProvider().bindVisibleSignal(this, visibleSignal);
+    }
+
+    /**
      * Sets the element visibility value.
      *
      * Also executes pending javascript invocations, if their execution was
@@ -1783,6 +1859,60 @@ public class Element extends Node<Element> {
     }
 
     /**
+     * Binds a {@link Signal}'s value to the enabled state of this element and
+     * keeps the state synchronized with the signal value while the element is
+     * in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to an enabled state, any attempt to set the state
+     * manually with {@link #setEnabled(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Element element = new Element("span");
+     * getElement().appendChild(element);
+     * element.bindEnabled(signal);
+     * signal.value(false); // The element is disabled
+     * </pre>
+     *
+     * @param enabledSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setEnabled(boolean)
+     */
+    public void bindEnabled(Signal<Boolean> enabledSignal) {
+        SignalBindingFeature feature = getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (enabledSignal == null) {
+            feature.removeBinding(SignalBindingFeature.ENABLED);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(this, enabledSignal,
+                    (element, value) -> setEnabledInternal(value));
+            feature.setBinding(SignalBindingFeature.ENABLED, registration,
+                    enabledSignal);
+        }
+    }
+
+    private void setEnabledInternal(final Boolean enabled) {
+        boolean booleanEnabled = enabled != null ? enabled : false;
+        getNode().setEnabled(booleanEnabled);
+
+        informEnabledStateChange(booleanEnabled, this);
+    }
+
+    /**
      * Sets the enabled state of the element.
      *
      * @param enabled
@@ -1790,9 +1920,14 @@ public class Element extends Node<Element> {
      * @return the element
      */
     public Element setEnabled(final boolean enabled) {
-        getNode().setEnabled(enabled);
-
-        informEnabledStateChange(enabled, this);
+        getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.ENABLED)) {
+                        throw new BindingActiveException(
+                                "setEnabled is not allowed while a binding for enabled state exists.");
+                    }
+                });
+        setEnabledInternal(enabled);
         return getSelf();
     }
 
@@ -1907,4 +2042,12 @@ public class Element extends Node<Element> {
         return getSelf();
     }
 
+    private <T extends NodeFeature> Optional<T> getFeatureIfInitialized(
+            Class<T> featureClass) {
+        try {
+            return getNode().getFeatureIfInitialized(featureClass);
+        } catch (IllegalStateException e) {
+            return Optional.empty();
+        }
+    }
 }

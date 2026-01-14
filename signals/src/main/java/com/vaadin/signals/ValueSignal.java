@@ -17,11 +17,11 @@ package com.vaadin.signals;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.impl.Transaction;
@@ -37,7 +37,8 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractSignal<T> {
+public class ValueSignal<T> extends AbstractSignal<T>
+        implements WritableSignal<T> {
     private final Class<T> valueType;
 
     /**
@@ -83,21 +84,13 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    protected ValueSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> valueType) {
+    protected ValueSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }
 
-    /**
-     * Sets the value of this signal. The result of the returned operation will
-     * be resolved with the previous value at the time when this operation was
-     * confirmed.
-     *
-     * @param value
-     *            the value to set
-     * @return an operation containing the eventual result
-     */
+    @Override
     public SignalOperation<T> value(T value) {
         assert value == null || valueType.isInstance(value);
 
@@ -121,20 +114,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
         return data.value();
     }
 
-    /**
-     * Sets the value of this signal if and only if the signal has the expected
-     * value at the time when the operation is confirmed. This is the signal
-     * counterpart to {@link AtomicReference#compareAndSet(Object, Object)}. The
-     * result of the returned operation will be resolved as successful if the
-     * expected value was present and resolved as unsuccessful if any other
-     * value was present when the operation is processed.
-     *
-     * @param expectedValue
-     *            the expected value
-     * @param newValue
-     *            the new value
-     * @return an operation containing the eventual result
-     */
+    @Override
     public SignalOperation<Void> replace(T expectedValue, T newValue) {
         var condition = new SignalCommand.ValueCondition(Id.random(), id(),
                 toJson(expectedValue));
@@ -145,31 +125,8 @@ public class ValueSignal<T> extends AbstractSignal<T> {
                 List.of(condition, set)));
     }
 
-    /**
-     * Updates the signal value based on the given callback. The callback
-     * receives the current signal value and returns the new value to use. If
-     * the original value has changed by the time this change is confirmed, then
-     * the returned value is ignored and the callback is run again with the new
-     * value as input. This process is repeated until cancelled or until the
-     * update succeeds without conflicting changes.
-     * <p>
-     * The process can be cancelled through the returned operation instance.
-     * Note that canceling will only prevent further retries but the change will
-     * still be made if the currently running attempt succeeds.
-     * <p>
-     * The result of the returned operation will be resolved with the previous
-     * value at the time when a successful update operation was confirmed.
-     * <p>
-     * Update operations cannot participate in transactions since any retry
-     * would occur after the original transaction has already been committed.
-     * For this reason, the whole operation completely bypasses all transaction
-     * handling.
-     *
-     * @param updater
-     *            the value update callback, not <code>null</code>
-     * @return an operation containing the eventual result
-     */
-    public CancelableOperation<T> update(UnaryOperator<T> updater) {
+    @Override
+    public CancelableOperation<T> update(SignalUpdater<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
         tryUpdate(updater, operation);
@@ -177,7 +134,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
         return operation;
     }
 
-    private void tryUpdate(UnaryOperator<T> updater,
+    private void tryUpdate(SignalUpdater<T> updater,
             CancelableOperation<T> operation) {
         if (operation.isCancelled()) {
             operation.result().cancel(false);
@@ -192,7 +149,7 @@ public class ValueSignal<T> extends AbstractSignal<T> {
             T value = peek();
             verifyValue(value);
 
-            T newValue = updater.apply(value);
+            T newValue = updater.update(value);
             return value(newValue);
         }).returnValue();
 
@@ -210,10 +167,10 @@ public class ValueSignal<T> extends AbstractSignal<T> {
     /**
      * Checks that this signal has the expected value. This operation is only
      * meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the expected value
-     * was present and resolved as unsuccessful if any other value was present
-     * when the operation is processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the expected
+     * value was present and resolved as unsuccessful if any other value was
+     * present when the operation is processed.
      *
      * @param expectedValue
      *            the expected value
@@ -239,21 +196,19 @@ public class ValueSignal<T> extends AbstractSignal<T> {
      *            the validator to use, not <code>null</code>
      * @return a new value signal that uses the validator, not <code>null</code>
      */
-    public ValueSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public ValueSignal<T> withValidator(CommandValidator validator) {
         return new ValueSignal<>(tree(), id(), mergeValidators(validator),
                 valueType);
     }
 
-    /**
-     * Wraps this signal to not accept changes.
-     * <p>
-     * This signal will keep its current configuration and changes applied
-     * through this instance will be visible through the wrapped instance.
-     *
-     * @return the new readonly value signal, not <code>null</code>
-     */
+    @Override
     public ValueSignal<T> asReadonly() {
-        return withValidator(anything -> false);
+        /*
+         * While this method could semantically be declared to return a less
+         * specific type that doesn't provide mutator methods, that would also
+         * remove access to e.g. the verifyValue method.
+         */
+        return withValidator(CommandValidator.REJECT_ALL);
     }
 
     public NodeSignal asNode() {

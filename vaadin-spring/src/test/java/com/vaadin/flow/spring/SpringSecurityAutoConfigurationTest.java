@@ -33,7 +33,6 @@ import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.boot.test.context.assertj.AssertableWebApplicationContext;
 import org.springframework.boot.test.context.runner.WebApplicationContextRunner;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Import;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -53,7 +52,6 @@ import com.vaadin.flow.server.auth.RoutePathAccessChecker;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.SpringNavigationAccessControl;
-import com.vaadin.flow.spring.security.VaadinAwareSecurityContextHolderStrategyConfiguration;
 import com.vaadin.flow.spring.security.VaadinSecurityConfigurer;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -250,12 +248,11 @@ class SpringSecurityAutoConfigurationTest {
     }
 
     @EnableWebSecurity
-    @Import(VaadinAwareSecurityContextHolderStrategyConfiguration.class)
     private static class BaseSecurityClass {
 
         @Bean
         public SecurityFilterChain vaadinSecurityFilterChain(
-                HttpSecurity httpSecurity) throws Exception {
+                HttpSecurity httpSecurity) {
             return httpSecurity.with(VaadinSecurityConfigurer.vaadin(),
                     Customizer.withDefaults()).build();
         }

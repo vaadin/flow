@@ -56,9 +56,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
     protected abstract TransferContext getTransferContext(T transferEvent);
 
     /**
-     * UI that the transfer was started with. Set from onStart(context).
-     * <p>
-     * protected for tests to set the ui.
+     * UI that the transfer was started with. Set from context if not given.
      */
     private UI ui;
 
@@ -112,6 +110,9 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
+                if (ui == null) {
+                    setTransferUI(context.getUI());
+                }
                 ui.access(startHandler::run);
             }
         });
@@ -137,7 +138,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onStart(TransferContext context) {
-                ui.access(() -> startHandler.accept(context));
+                uiAccess(context, () -> startHandler.accept(context));
             }
         });
         return (R) this;
@@ -169,7 +170,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
-                ui.access(() -> progressHandler.accept(context,
+                uiAccess(context, () -> progressHandler.accept(context,
                         transferredBytes, totalBytes));
             }
 
@@ -226,7 +227,7 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
             @Override
             public void onProgress(TransferContext context,
                     long transferredBytes, long totalBytes) {
-                ui.access(() -> progressHandler.accept(transferredBytes,
+                uiAccess(context, () -> progressHandler.accept(transferredBytes,
                         totalBytes));
             }
 
@@ -287,13 +288,15 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                ui.access(() -> completeOrTerminateHandler.accept(false));
+                uiAccess(context,
+                        () -> completeOrTerminateHandler.accept(false));
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                ui.access(() -> completeOrTerminateHandler.accept(true));
+                uiAccess(context,
+                        () -> completeOrTerminateHandler.accept(true));
             }
         });
         return (R) this;
@@ -325,14 +328,14 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         addTransferProgressListenerInternal(new TransferProgressListener() {
             @Override
             public void onError(TransferContext context, IOException reason) {
-                ui.access(() -> completeOrTerminateHandler.accept(context,
-                        false));
+                uiAccess(context, () -> completeOrTerminateHandler
+                        .accept(context, false));
             }
 
             @Override
             public void onComplete(TransferContext context,
                     long transferredBytes) {
-                ui.access(
+                uiAccess(context,
                         () -> completeOrTerminateHandler.accept(context, true));
             }
         });
@@ -404,6 +407,13 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
         }
     }
 
+    protected void uiAccess(TransferContext context, final Command command) {
+        if (ui == null) {
+            setTransferUI(context.getUI());
+        }
+        ui.access(command);
+    }
+
     /**
      * A wrapper for {@link TransferProgressListener} that ensures that UI
      * updates in transfer progress listeners are pushed to client
@@ -421,24 +431,25 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
 
         @Override
         public void onStart(TransferContext context) {
-            ui.access(() -> delegate.onStart(context));
+            uiAccess(context, () -> delegate.onStart(context));
         }
 
         @Override
         public void onProgress(TransferContext context, long transferredBytes,
                 long totalBytes) {
-            ui.access(() -> delegate.onProgress(context, transferredBytes,
-                    totalBytes));
+            uiAccess(context, () -> delegate.onProgress(context,
+                    transferredBytes, totalBytes));
         }
 
         @Override
         public void onError(TransferContext context, IOException reason) {
-            ui.access(() -> delegate.onError(context, reason));
+            uiAccess(context, () -> delegate.onError(context, reason));
         }
 
         @Override
         public void onComplete(TransferContext context, long transferredBytes) {
-            ui.access(() -> delegate.onComplete(context, transferredBytes));
+            uiAccess(context,
+                    () -> delegate.onComplete(context, transferredBytes));
         }
 
         @Override
@@ -448,6 +459,14 @@ public abstract class TransferProgressAwareHandler<T, R extends TransferProgress
 
         protected void setTransferUI(UI ui) {
             this.ui = ui;
+        }
+
+        protected void uiAccess(TransferContext context,
+                final Command command) {
+            if (ui == null) {
+                setTransferUI(context.getUI());
+            }
+            ui.access(command);
         }
     }
 }

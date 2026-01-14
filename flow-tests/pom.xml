@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>flow-tests</artifactId>
   <packaging>pom</packaging>
@@ -28,6 +28,7 @@
     <license.skipDownloadLicenses>true</license.skipDownloadLicenses>
 
     <maven.deploy.skip>true</maven.deploy.skip>
+    <flow.apicmp.skip>true</flow.apicmp.skip>
     <!-- Used in the tests, should be overridden for each module to support
             concurrent running of test modules. -->
     <server.port>8888</server.port>
@@ -77,6 +78,16 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-util</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -227,7 +238,7 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.0</version>
         <configuration>
           <archive>
             <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

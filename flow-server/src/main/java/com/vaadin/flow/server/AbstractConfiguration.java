@@ -20,9 +20,9 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import com.vaadin.flow.server.frontend.BundleUtils;
-import com.vaadin.flow.server.frontend.FileIOUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.BundleUtils;
+import com.vaadin.flow.internal.FileIOUtils;
+import com.vaadin.flow.internal.FrontendUtils;
 
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_DISABLE_XSRF_PROTECTION;
 
@@ -136,8 +136,7 @@ public interface AbstractConfiguration extends Serializable {
     }
 
     /**
-     * Returns whether globally installed pnpm is used or the default one (see
-     * {@link com.vaadin.flow.server.frontend.FrontendTools#DEFAULT_PNPM_VERSION}).
+     * Returns whether globally installed pnpm is used or the default one.
      *
      * @return {@code true} if globally installed pnpm is used, {@code false} if
      *         the default one is used.

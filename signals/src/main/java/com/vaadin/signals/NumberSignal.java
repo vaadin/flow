@@ -17,8 +17,8 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 import java.util.function.IntFunction;
-import java.util.function.Predicate;
 
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -62,8 +62,7 @@ public class NumberSignal extends ValueSignal<Double> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NumberSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator) {
+    protected NumberSignal(SignalTree tree, Id id, CommandValidator validator) {
         super(tree, id, validator, Double.class);
     }
 
@@ -135,7 +134,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * @return a new number signal that uses the validator, not
      *         <code>null</code>
      */
-    public NumberSignal withValidator(Predicate<SignalCommand> validator) {
+    public NumberSignal withValidator(CommandValidator validator) {
         return new NumberSignal(tree(), id(), mergeValidators(validator));
     }
 
@@ -148,6 +147,11 @@ public class NumberSignal extends ValueSignal<Double> {
      * @return the new readonly number signal, not <code>null</code>
      */
     public NumberSignal asReadonly() {
+        /*
+         * While this method could semantically be declared to return a less
+         * specific type that doesn't provide mutator methods, that would also
+         * remove access to e.g. the valueAsInt method.
+         */
         return withValidator(anything -> false);
     }
 

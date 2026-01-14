@@ -17,7 +17,6 @@ package com.vaadin.flow.spring.flowsecurity;
 
 import jakarta.servlet.ServletContext;
 
-import java.security.Principal;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +33,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.DefaultSecurityFilterChain;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.AuthorizationManagerWebInvocationPrivilegeEvaluator;
-import org.springframework.security.web.access.PathPatternRequestTransformer;
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 
 import com.vaadin.flow.component.UI;
@@ -49,8 +46,8 @@ import com.vaadin.flow.spring.flowsecurity.views.LoginView;
 import com.vaadin.flow.spring.security.AuthenticationContext;
 import com.vaadin.flow.spring.security.NavigationAccessControlConfigurer;
 import com.vaadin.flow.spring.security.RequestUtil;
-import com.vaadin.flow.spring.security.SpringAccessPathChecker;
 import com.vaadin.flow.spring.security.UidlRedirectStrategy;
+import com.vaadin.flow.spring.security.VaadinSavedRequestAwareAuthenticationSuccessHandler;
 
 import static com.vaadin.flow.spring.flowsecurity.service.UserInfoService.ROLE_ADMIN;
 
@@ -84,14 +81,8 @@ public class SecurityConfig {
     }
 
     @Bean
-    AuthorizationManagerWebInvocationPrivilegeEvaluator.HttpServletRequestTransformer customRequestTransformer() {
-        return SpringAccessPathChecker.principalAwareRequestTransformer(
-                new PathPatternRequestTransformer());
-    }
-
-    @Bean
     public SecurityFilterChain webFilterChain(HttpSecurity http,
-            AuthenticationContext authenticationContext) throws Exception {
+            AuthenticationContext authenticationContext) {
         // Setup
         http.csrf(AbstractHttpConfigurer::disable); // simple for testing
         // purpose
@@ -99,14 +90,6 @@ public class SecurityConfig {
         // configuration provided by VaadinSecurityConfigurer
         // @formatter:off
         http.authorizeHttpRequests(auth -> auth
-                // Ensures that SpringPathAccessChecker does not fail when matchers get Principal from HTTP request
-                .requestMatchers(request -> {
-                    Principal principal = request.getUserPrincipal();
-                    if (principal == null) {
-                        // Do nothing, just avoid IDE complain about not used variable
-                    }
-                    return false; // no need to match rule, we just want to access principal.
-                }).denyAll()
                 // Permit access to static resources
                 .requestMatchers(PathRequest.toStaticResources().atCommonLocations())
                 .permitAll()
@@ -153,7 +136,9 @@ public class SecurityConfig {
         });
 
         // Custom login page with form authentication
-        http.formLogin(cfg -> cfg.loginPage("/my/login/page").permitAll());
+        http.formLogin(cfg -> cfg.loginPage("/my/login/page").successHandler(
+                new VaadinSavedRequestAwareAuthenticationSuccessHandler())
+                .permitAll());
         DefaultSecurityFilterChain filterChain = http.build();
         // Test application uses AuthenticationContext, configure it with
         // the logout handlers

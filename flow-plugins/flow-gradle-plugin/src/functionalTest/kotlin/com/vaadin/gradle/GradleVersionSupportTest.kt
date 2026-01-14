@@ -61,7 +61,7 @@ class GradleVersionSupportTest(private val versionUnderTest: GradleVersion) : Ab
                 implementation("org.slf4j:slf4j-simple:$slf4jVersion")
             }
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """
         )

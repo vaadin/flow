@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.AbstractField;
@@ -25,9 +26,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Encapsulates all the logic required for a typical field implementation. This
@@ -132,6 +138,13 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      *            the value to set
      */
     public void setValue(T value) {
+        getFeatureIfInitialized(SignalBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding(SignalBindingFeature.VALUE)) {
+                        throw new BindingActiveException(
+                                "setValue is not allowed while a binding for value state exists.");
+                    }
+                });
         setValue(value, false, false);
     }
 
@@ -167,6 +180,53 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             return;
         }
         setValue(newModelValue, true, fromClient);
+    }
+
+    /**
+     * Binds a {@link WritableSignal}'s value to the value state of the field
+     * and keeps the state synchronized with the signal value while the element
+     * is in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to a value state, any attempt to set the state
+     * manually with {@link #setValue(Object)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * While a Signal is bound to a value state and the element is in attached
+     * state, setting the value with {@link #setModelValue(Object, boolean)}, or
+     * when a change originates from the client, will update the signal value.
+     *
+     * @param valueSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setValue(Object)
+     * @see #setModelValue(Object, boolean)
+     */
+    public void bindValue(WritableSignal<T> valueSignal) {
+        SignalBindingFeature feature = component.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (valueSignal == null) {
+            feature.removeBinding(SignalBindingFeature.VALUE);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.VALUE)) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(
+                    component.getElement(), valueSignal,
+                    (element, value) -> setValueFromSignal(value));
+            feature.setBinding(SignalBindingFeature.VALUE, registration,
+                    valueSignal);
+        }
+    }
+
+    private void setValueFromSignal(T value) {
+        setValue(value != null ? value : getEmptyValue(), false, false);
     }
 
     private void setValue(T newValue, boolean fromInternal,
@@ -206,6 +266,18 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
+        if (fromInternal || fromClient) {
+            // update signal value if value is from client or from internal
+            // change.
+            getFeatureIfInitialized(SignalBindingFeature.class)
+                    .ifPresent(feature -> {
+                        if (component.isAttached()) {
+                            feature.updateWritableSignalValue(
+                                    SignalBindingFeature.VALUE, newValue);
+                        }
+                    });
+        }
+
         ComponentUtil.fireEvent(component,
                 createValueChange(oldValue, fromClient));
     }
@@ -225,5 +297,15 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         }
 
         return valueSetFromPresentationUpdate;
+    }
+
+    private <FEATURE extends NodeFeature> Optional<FEATURE> getFeatureIfInitialized(
+            Class<FEATURE> featureClass) {
+        try {
+            return component.getElement().getNode()
+                    .getFeatureIfInitialized(featureClass);
+        } catch (IllegalStateException e) {
+            return Optional.empty();
+        }
     }
 }
