@@ -29,6 +29,7 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.impl.CommandResult.Reject;
+import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
@@ -60,7 +61,7 @@ public class StagedTransaction extends Transaction {
             this.resultHandler = resultHandler;
         }
 
-        public Consumer<CommandResult> registerDependency(Object dependency) {
+        public CommandResultHandler registerDependency(Object dependency) {
             assert unresolvedDependencies.contains(dependency);
 
             return result -> {
@@ -221,7 +222,7 @@ public class StagedTransaction extends Transaction {
 
         CommandsAndHandlers change = openTrees.get(tree).staged;
 
-        HashMap<Id, Consumer<CommandResult>> handlers = new HashMap<>(
+        HashMap<Id, CommandResultHandler> handlers = new HashMap<>(
                 change.getResultHandlers());
         handlers.put(txId, collector.registerDependency(tree));
 
@@ -245,7 +246,7 @@ public class StagedTransaction extends Transaction {
 
     @Override
     public void include(SignalTree tree, SignalCommand command,
-            Consumer<CommandResult> resultHandler, boolean applyToTree) {
+            CommandResultHandler resultHandler, boolean applyToTree) {
         if (committing) {
             outer.include(tree, command, resultHandler, applyToTree);
             return;
