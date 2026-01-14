@@ -100,8 +100,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "{\"meta\":{\"sessionExpired\":true}}",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
@@ -123,8 +122,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "{\"meta\":{\"sessionExpired\":true}}",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
