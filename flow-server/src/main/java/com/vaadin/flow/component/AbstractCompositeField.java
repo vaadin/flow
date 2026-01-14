@@ -20,6 +20,7 @@ import java.util.Objects;
 import com.vaadin.flow.component.AbstractField.ComponentValueChangeEvent;
 import com.vaadin.flow.component.internal.AbstractFieldSupport;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * An abstract field class that is backed by a composite component.
@@ -150,4 +151,8 @@ public abstract class AbstractCompositeField<C extends Component, S extends Abst
         return fieldSupport.valueEquals(value1, value2);
     }
 
+    @Override
+    public void bindValue(WritableSignal<T> valueSignal) {
+        fieldSupport.bindValue(valueSignal);
+    }
 }
