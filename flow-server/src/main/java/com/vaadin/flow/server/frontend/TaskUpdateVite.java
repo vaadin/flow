@@ -61,8 +61,7 @@ public class TaskUpdateVite implements FallibleCommand, Serializable {
     private static String getTemplate(String string) {
         try (InputStream resourceAsStream = TaskUpdateVite.class
                 .getResourceAsStream(string)) {
-            return IOUtils.toString(resourceAsStream,
-                    StandardCharsets.UTF_8);
+            return IOUtils.toString(resourceAsStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
