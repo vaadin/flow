@@ -85,6 +85,7 @@ public class WebComponentProviderTest {
     WebComponentConfigurationRegistry registry;
 
     @Before
+    @SuppressWarnings("java:S1872") // FeatureFlagsWrapper is protected class
     public void init() {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
@@ -108,9 +109,9 @@ public class WebComponentProviderTest {
         Mockito.when(context.getAttribute(Lookup.class)).thenReturn(lookup);
         Mockito.doAnswer(i -> i.getArgument(1, Supplier.class).get())
                 .when(context).getAttribute(
-                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper" // NOSONAR
-                                .equals(aClass.getSimpleName())), // NOSONAR
-                        any()); // NOSONAR protected class
+                        ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper"
+                                .equals(aClass.getSimpleName())),
+                        any());
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
