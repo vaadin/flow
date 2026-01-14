@@ -110,7 +110,7 @@ public class WebComponentProviderTest {
                 .when(context).getAttribute(
                         ArgumentMatchers.argThat(aClass -> "FeatureFlagsWrapper"
                                 .equals(aClass.getSimpleName())),
-                        any());
+                        any()); // NOSONAR protected class
         VaadinService.setCurrent(service);
         Mockito.when(service.getInstantiator())
                 .thenReturn(new MockInstantiator());
