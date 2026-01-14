@@ -18,6 +18,7 @@ package com.vaadin.flow.server.frontend;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UncheckedIOException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -105,18 +106,23 @@ public final class BundleUtils {
             return cached;
         }
 
-        InputStream stats = BundleUtils.class.getClassLoader()
-                .getResourceAsStream("META-INF/VAADIN/config/stats.json");
-        if (stats == null) {
-            cached = JacksonUtils.createObjectNode();
-        } else {
-            try {
-                cached = JacksonUtils.readTree(StringUtil.toUTF8String(stats));
-            } catch (IOException e) {
-                getLogger().warn(
-                        "Unable to parse META-INF/VAADIN/config/stats.json", e);
+        try (InputStream stats = BundleUtils.class.getClassLoader()
+                .getResourceAsStream("META-INF/VAADIN/config/stats.json")) {
+            if (stats == null) {
                 cached = JacksonUtils.createObjectNode();
+            } else {
+                try {
+                    cached = JacksonUtils
+                            .readTree(StringUtil.toUTF8String(stats));
+                } catch (IOException e) {
+                    getLogger().warn(
+                            "Unable to parse META-INF/VAADIN/config/stats.json",
+                            e);
+                    cached = JacksonUtils.createObjectNode();
+                }
             }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
         }
 
         cachedStatsJson = cached;
