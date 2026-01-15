@@ -85,6 +85,7 @@ public class WebComponentProviderTest {
     WebComponentConfigurationRegistry registry;
 
     @Before
+    @SuppressWarnings("java:S1872") // FeatureFlagsWrapper is protected class
     public void init() {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
