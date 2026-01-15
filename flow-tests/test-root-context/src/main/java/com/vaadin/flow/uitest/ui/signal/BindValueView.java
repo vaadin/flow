@@ -40,10 +40,9 @@ public class BindValueView extends Div {
         Div counterDiv = new Div();
         counterDiv.setId("counter");
 
-        Div signalValueInfoDiv = new Div();
+        Div signalValueInfoDiv = new Div(
+                signal.map(value -> "Signal: " + value));
         signalValueInfoDiv.setId("signal-value-info");
-        signalValueInfoDiv.getElement()
-                .bindText(signal.map(value -> "Signal: " + value));
 
         TestInput target = new TestInput();
         target.setId("target");
