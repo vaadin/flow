@@ -16,6 +16,7 @@
 package com.vaadin.flow.component;
 
 import java.io.Serializable;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Assert;
@@ -110,15 +111,26 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     }
 
     @Test
-    public void bindValue_setValueAndBindValueWhileBindingIsActive_throwException() {
+    public void bindValue_bindValueWhileBindingIsActive_throwException() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
         input.bindValue(new ValueSignal<>("foo"));
 
-        assertThrows(BindingActiveException.class, () -> input.setValue("bar"));
         assertThrows(BindingActiveException.class,
                 () -> input.bindValue(new ValueSignal<>("bar")));
         assertEquals("foo", input.getValue());
+    }
+
+    @Test
+    public void bindValue_setValueWhileBindingIsActive_signalUpdated() {
+        TestInput input = new TestInput();
+        UI.getCurrent().add(input);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal);
+
+        input.setValue("bar");
+        assertEquals("bar", input.getValue());
+        assertEquals("bar", signal.peek());
     }
 
     @Test
@@ -202,6 +214,40 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         input.bindValue(signal);
 
         Assert.assertEquals("foo", listenerValue.get());
+    }
+
+    @Test
+    public void bindValue_setValue_countEffectExecutions() {
+        TestInput input = new TestInput();
+
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        input.bindValue(signal);
+
+        AtomicInteger counter = new AtomicInteger(0);
+        ComponentEffect.effect(input, () -> {
+            signal.value();
+            counter.incrementAndGet();
+        });
+
+        Assert.assertEquals(0, counter.get());
+        UI.getCurrent().add(input);
+        // effect run once on attach
+        Assert.assertEquals(1, counter.get());
+
+        input.setValue("bar");
+        Assert.assertEquals(2, counter.get());
+
+        input.setValue("bar");
+        Assert.assertEquals(2, counter.get());
+
+        input.setValue("foo");
+        Assert.assertEquals(3, counter.get());
+
+        signal.value("baz");
+        Assert.assertEquals(4, counter.get());
+
+        input.setValue("baz");
+        Assert.assertEquals(4, counter.get());
     }
 
     @Test
