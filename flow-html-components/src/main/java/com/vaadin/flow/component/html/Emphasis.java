@@ -15,10 +15,13 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
+
 import com.vaadin.flow.component.ClickNotifier;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing a <code>&lt;em&gt;</code> element.
@@ -55,5 +58,17 @@ public class Emphasis extends HtmlContainer implements ClickNotifier<Emphasis> {
     public Emphasis(String text) {
         super();
         setText(text);
+    }
+
+    /**
+     * Creates a new emphasis with its text content bound to the given signal.
+     *
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public Emphasis(Signal<String> textSignal) {
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 }
