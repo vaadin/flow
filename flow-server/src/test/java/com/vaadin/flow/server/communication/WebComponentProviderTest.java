@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -85,6 +85,7 @@ public class WebComponentProviderTest {
     WebComponentConfigurationRegistry registry;
 
     @Before
+    @SuppressWarnings("java:S1872") // FeatureFlagsWrapper is protected class
     public void init() {
         MockitoAnnotations.initMocks(this);
         registry = setUpRegistry(); // same code as used for local variables in
