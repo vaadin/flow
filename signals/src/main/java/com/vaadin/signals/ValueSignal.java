@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,10 +17,11 @@ package com.vaadin.signals;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.impl.Transaction;
@@ -83,8 +84,8 @@ public class ValueSignal<T> extends AbstractSignal<T>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    protected ValueSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> valueType) {
+    protected ValueSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
     }
@@ -125,7 +126,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
     }
 
     @Override
-    public CancelableOperation<T> update(UnaryOperator<T> updater) {
+    public CancelableOperation<T> update(SignalUpdater<T> updater) {
         CancelableOperation<T> operation = new CancelableOperation<>();
 
         tryUpdate(updater, operation);
@@ -133,7 +134,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
         return operation;
     }
 
-    private void tryUpdate(UnaryOperator<T> updater,
+    private void tryUpdate(SignalUpdater<T> updater,
             CancelableOperation<T> operation) {
         if (operation.isCancelled()) {
             operation.result().cancel(false);
@@ -148,7 +149,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
             T value = peek();
             verifyValue(value);
 
-            T newValue = updater.apply(value);
+            T newValue = updater.update(value);
             return value(newValue);
         }).returnValue();
 
@@ -166,10 +167,10 @@ public class ValueSignal<T> extends AbstractSignal<T>
     /**
      * Checks that this signal has the expected value. This operation is only
      * meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the expected value
-     * was present and resolved as unsuccessful if any other value was present
-     * when the operation is processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the expected
+     * value was present and resolved as unsuccessful if any other value was
+     * present when the operation is processed.
      *
      * @param expectedValue
      *            the expected value
@@ -195,7 +196,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      *            the validator to use, not <code>null</code>
      * @return a new value signal that uses the validator, not <code>null</code>
      */
-    public ValueSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public ValueSignal<T> withValidator(CommandValidator validator) {
         return new ValueSignal<>(tree(), id(), mergeValidators(validator),
                 valueType);
     }
@@ -207,7 +208,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
          * specific type that doesn't provide mutator methods, that would also
          * remove access to e.g. the verifyValue method.
          */
-        return withValidator(anything -> false);
+        return withValidator(CommandValidator.REJECT_ALL);
     }
 
     public NodeSignal asNode() {

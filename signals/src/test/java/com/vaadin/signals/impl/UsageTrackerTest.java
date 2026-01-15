@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,6 +24,7 @@ import org.junit.jupiter.api.Test;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 
@@ -187,12 +188,12 @@ public class UsageTrackerTest extends SignalTestBase {
         TestUsage b = new TestUsage();
 
         CombinedUsage usage = new CombinedUsage(List.of(a, b));
-        Runnable cleanup = usage.onNextChange(immediate -> false);
+        CleanupCallback cleanup = usage.onNextChange(immediate -> false);
 
         assertEquals(1, a.listeners.size());
         assertEquals(1, b.listeners.size());
 
-        cleanup.run();
+        cleanup.cleanup();
         assertEquals(0, a.listeners.size());
         assertEquals(0, b.listeners.size());
     }
@@ -241,10 +242,10 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedNonRepeatingListener_immediatelyNotifiedThenRemoved() {
         TestUsage a = new TestUsage() {
             @Override
-            public Runnable onNextChange(TransientListener listener) {
-                Runnable runnable = super.onNextChange(listener);
+            public CleanupCallback onNextChange(TransientListener listener) {
+                CleanupCallback cleanup = super.onNextChange(listener);
                 listener.invoke(true);
-                return runnable;
+                return cleanup;
             }
         };
         TestUsage b = new TestUsage();
@@ -266,10 +267,10 @@ public class UsageTrackerTest extends SignalTestBase {
     void combinedOnNextChange_immediatelyNotifiedRepeatingListener_immediatelyNotifiedAndKeptInUse() {
         TestUsage a = new TestUsage() {
             @Override
-            public Runnable onNextChange(TransientListener listener) {
-                Runnable runnable = super.onNextChange(listener);
+            public CleanupCallback onNextChange(TransientListener listener) {
+                CleanupCallback cleanup = super.onNextChange(listener);
                 listener.invoke(true);
-                return runnable;
+                return cleanup;
             }
         };
         TestUsage b = new TestUsage();
@@ -297,7 +298,7 @@ public class UsageTrackerTest extends SignalTestBase {
         }
 
         @Override
-        public Runnable onNextChange(TransientListener listener) {
+        public CleanupCallback onNextChange(TransientListener listener) {
             listeners.add(listener);
 
             return () -> listeners.remove(listener);
