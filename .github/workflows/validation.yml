@@ -7,7 +7,9 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 permissions:
-  contents: read
+  contents: write
+  pull-requests: write
+  issues: write
 concurrency:
   group: ${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
@@ -20,7 +22,200 @@ env:
   # PRs use github.base_ref, pushes use github.ref_name
   JAVA_VERSION: ${{ (startsWith(github.base_ref || github.ref_name, '23.') && '11') || (startsWith(github.base_ref || github.ref_name, '24.') && '17') || '21' }}
 jobs:
+  formatter:
+    name: Format code
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    outputs:
+      changes_committed: ${{ steps.commit-changes.outputs.changes_committed }}
+
+    steps:
+      - name: Check for required token
+        if: github.event_name == 'pull_request_target'
+        run: |
+          if [ -z "${{ secrets.VAADIN_BOT_TOKEN }}" ]; then
+            echo "::error::VAADIN_BOT_TOKEN secret is required for formatter to trigger workflows after committing changes"
+            exit 1
+          fi
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.ref || github.ref }}
+          repository: ${{ github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.full_name || github.repository }}
+          token: ${{ github.event_name == 'pull_request_target' && secrets.VAADIN_BOT_TOKEN || github.token }}
+          fetch-depth: 2
+
+      - name: Check if last commit was from formatter bot
+        id: check-loop
+        run: |
+          last_commit_author=$(git log -1 --pretty=format:'%an')
+          echo "Last commit author: $last_commit_author"
+
+          if [ "$last_commit_author" = "github-actions[bot]" ]; then
+            echo "Last commit was from formatter bot - formatting verification passed"
+            echo "loop_detected=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "loop_detected=false" >> $GITHUB_OUTPUT
+
+      - name: Set up JDK
+        if: steps.check-loop.outputs.loop_detected == 'false'
+        uses: actions/setup-java@v4
+        with:
+          java-version: "${{ env.JAVA_VERSION }}"
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Detect changed files and modules
+        if: steps.check-loop.outputs.loop_detected == 'false'
+        id: changed-files
+        run: |
+          # Get the target branch (default to main if not in PR)
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            TARGET_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
+          else
+            TARGET_BRANCH="origin/main"
+          fi
+
+          echo "Fetching target branch: $TARGET_BRANCH"
+          git fetch origin ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.ref || 'main' }} --depth=1
+
+          # Get list of changed Java files
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR $TARGET_BRANCH...HEAD | grep '\.java$' || true)
+          CHANGED_COUNT=$(echo "$CHANGED_FILES" | grep -c '\.java$' || echo "0")
+
+          echo "changed_count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
+
+          if [ "$CHANGED_COUNT" -gt 0 ]; then
+            echo "Changed Java files ($CHANGED_COUNT):"
+            echo "$CHANGED_FILES"
+            echo "changed_files<<EOF" >> $GITHUB_OUTPUT
+            echo "$CHANGED_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            # Detect affected Maven modules
+            # Extract unique module paths from changed files
+            MODULES=$(echo "$CHANGED_FILES" | sed 's|/src/.*||' | sort -u | paste -sd "," -)
+            MODULE_COUNT=$(echo "$MODULES" | tr ',' '\n' | wc -l | xargs)
+
+            echo "Affected modules ($MODULE_COUNT): $MODULES"
+            echo "modules=$MODULES" >> $GITHUB_OUTPUT
+            echo "module_count=$MODULE_COUNT" >> $GITHUB_OUTPUT
+          else
+            echo "No Java files changed, skipping formatter"
+          fi
+
+      - name: Run formatter
+        if: steps.check-loop.outputs.loop_detected == 'false' && steps.changed-files.outputs.changed_count != '0'
+        id: formatter
+        run: |
+          echo "Running formatter on ${{ steps.changed-files.outputs.changed_count }} changed files in ${{ steps.changed-files.outputs.module_count }} modules..."
+
+          # Get the target branch for ratchetFrom
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            RATCHET_FROM="origin/${{ github.event.pull_request.base.ref }}"
+          else
+            RATCHET_FROM="origin/main"
+          fi
+
+          echo "Using ratchetFrom: $RATCHET_FROM"
+
+          # Get the list of modules to format
+          MODULES="${{ steps.changed-files.outputs.modules }}"
+          echo "Formatting modules: $MODULES"
+
+          # Run spotless only on affected modules with ratchetFrom
+          mvn -B -q spotless:apply -pl "$MODULES" -P benchmark -Dspotless.ratchet.from=$RATCHET_FROM 2>&1 | grep -v null || true
+
+          # Check for modified files
+          files=$(git status --porcelain | awk '{print $2}')
+          modified=$(echo "$files" | wc -w | xargs)
+
+          echo "modified=$modified" >> $GITHUB_OUTPUT
+
+          if [ "$modified" -gt 0 ]; then
+            echo "Modified files:"
+            echo "$files"
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo "$files" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Commit and push changes
+        id: commit-changes
+        if: github.event_name == 'pull_request_target' && steps.check-loop.outputs.loop_detected == 'false' && steps.changed-files.outputs.changed_count != '0' && steps.formatter.outputs.modified != '0'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Add only the files modified by the formatter
+          git add -u
+          git commit -m "chore: apply code formatting with spotless"
+
+          git push
+
+          echo "changes_committed=true" >> $GITHUB_OUTPUT
+          echo "✅ Formatting changes committed and pushed. Workflow will retrigger automatically." >> $GITHUB_STEP_SUMMARY
+
+      - name: Find existing comment
+        if: github.event_name == 'pull_request_target'
+        uses: peter-evans/find-comment@v3
+        id: find-comment
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- tc-formatter -->'
+
+      - name: Create or update comment for committed changes
+        if: github.event_name == 'pull_request_target' && steps.formatter.outputs.modified != '0'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-comment.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          edit-mode: replace
+          body: |
+            <!-- tc-formatter -->
+            ### ✅ Formatter Auto-Applied
+
+            Formatting issues were detected and **automatically fixed**. Changes have been committed to this PR.
+
+            The formatting changes affected **${{ steps.formatter.outputs.modified }} files**.
+
+            Files modified:
+            ```
+            ${{ steps.formatter.outputs.files }}
+            ```
+
+            Please pull the latest changes before continuing work on this branch.
+
+      - name: Delete comment if formatting is correct
+        if: github.event_name == 'pull_request_target' && steps.formatter.outputs.modified == '0' && steps.find-comment.outputs.comment-id != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: ${{ steps.find-comment.outputs.comment-id }}
+            })
+
+      - name: Stop workflow if changes were committed
+        if: steps.commit-changes.outputs.changes_committed == 'true'
+        run: |
+          echo "::notice::Formatting changes committed. Stopping this workflow run. A new workflow will be triggered automatically."
+          exit 1
+
+      - name: Fail if formatting issues exist (check-only mode)
+        if: github.event_name != 'pull_request_target' && steps.changed-files.outputs.changed_count != '0' && steps.formatter.outputs.modified != '0'
+        run: |
+          echo "::error::There are ${{ steps.formatter.outputs.modified }} files with format errors"
+          echo "Please run 'mvn spotless:apply' locally and commit the changes"
+          exit 1
+
   build:
+    needs: formatter
+    if: always() && (needs.formatter.result == 'success' || needs.formatter.result == 'skipped')
     environment: ${{ github.event.pull_request.head.repo.fork && 'pr-tests' || '' }}
     timeout-minutes: 30
     runs-on: ubuntu-24.04
