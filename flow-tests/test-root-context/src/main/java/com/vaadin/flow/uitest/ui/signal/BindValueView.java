@@ -20,7 +20,6 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.uitest.servlet.ViewTestLayout;
-import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
 
 /**
@@ -55,11 +54,7 @@ public class BindValueView extends Div {
 
         NativeButton changeInputValueButton = new NativeButton(
                 "setValue(\"foo\")", e -> {
-                    try {
-                        target.setValue("foo");
-                    } catch (BindingActiveException ex) {
-                        valueInfoDiv.setText("BindingActiveException");
-                    }
+                    target.setValue("foo");
                 });
         changeInputValueButton.setId("change-value-button");
 

@@ -138,14 +138,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      *            the value to set
      */
     public void setValue(T value) {
-        getFeatureIfInitialized(SignalBindingFeature.class)
-                .ifPresent(feature -> {
-                    if (feature.hasBinding(SignalBindingFeature.VALUE)) {
-                        throw new BindingActiveException(
-                                "setValue is not allowed while a binding for value state exists.");
-                    }
-                });
-        setValue(value, false, false);
+        setValue(value, false, false, false);
     }
 
     /**
@@ -179,7 +172,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             pendingValueFromPresentation = newModelValue;
             return;
         }
-        setValue(newModelValue, true, fromClient);
+        setValue(newModelValue, true, fromClient, false);
     }
 
     /**
@@ -189,14 +182,14 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      * changes have no effect. <code>null</code> signal unbinds the existing
      * binding.
      * <p>
-     * While a Signal is bound to a value state, any attempt to set the state
-     * manually with {@link #setValue(Object)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
-     * trying to bind a new Signal while one is already bound.
+     * While a Signal is bound to a value state, any attempt to bind a new
+     * Signal while one is already bound throws
+     * {@link com.vaadin.signals.BindingActiveException}.
      * <p>
      * While a Signal is bound to a value state and the element is in attached
-     * state, setting the value with {@link #setModelValue(Object, boolean)}, or
-     * when a change originates from the client, will update the signal value.
+     * state, setting the value with {@link #setValue(Object)},
+     * {@link #setModelValue(Object, boolean)}, or when a change originates from
+     * the client, will update the signal value.
      *
      * @param valueSignal
      *            the signal to bind or <code>null</code> to unbind any existing
@@ -226,11 +219,11 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     }
 
     private void setValueFromSignal(T value) {
-        setValue(value != null ? value : getEmptyValue(), false, false);
+        setValue(value != null ? value : getEmptyValue(), false, false, true);
     }
 
-    private void setValue(T newValue, boolean fromInternal,
-            boolean fromClient) {
+    private void setValue(T newValue, boolean fromInternal, boolean fromClient,
+            boolean fromSignal) {
         if (fromClient && component.isReadOnly()) {
             applyValue(bufferedValue);
             return;
@@ -266,9 +259,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
-        if (fromInternal || fromClient) {
-            // update signal value if value is from client or from internal
-            // change.
+        if (!fromSignal) {
+            // update signal value
             getFeatureIfInitialized(SignalBindingFeature.class)
                     .ifPresent(feature -> {
                         if (component.isAttached()) {
