@@ -56,6 +56,18 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
             this();
             setText(text);
         }
+
+        /**
+         * Creates a new legend with its text content bound to the given signal.
+         *
+         * @param textSignal
+         *            the signal to bind the legend text to, not {@code null}
+         * @see #bindText(Signal)
+         */
+        public Legend(Signal<String> textSignal) {
+            Objects.requireNonNull(textSignal, "textSignal must not be null");
+            bindText(textSignal);
+        }
     }
 
     /**
@@ -79,16 +91,14 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
     }
 
     /**
-     * Creates a new fieldset with its text content bound to the given signal.
+     * Creates a new fieldset with its legend text bound to the given signal.
      *
      * @param textSignal
-     *            the signal to bind, not {@code null}
+     *            the legend text signal to bind to, not {@code null}
      * @see #bindText(Signal)
      */
     public FieldSet(Signal<String> textSignal) {
-        this();
-        Objects.requireNonNull(textSignal, "textSignal must not be null");
-        bindText(textSignal);
+        addComponentAsFirst(new Legend(textSignal));
     }
 
     /**

@@ -80,7 +80,6 @@ public class NativeLabel extends HtmlContainer {
      * @see #bindText(Signal)
      */
     public NativeLabel(Signal<String> textSignal) {
-        this();
         Objects.requireNonNull(textSignal, "textSignal must not be null");
         bindText(textSignal);
     }
