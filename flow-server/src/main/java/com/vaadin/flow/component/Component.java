@@ -607,7 +607,7 @@ public abstract class Component
      * add(visaSection);
      * // using lambda expression as a computed signal
      * visaSection.bindVisible(() -> needsVisaSignal.value()
-     *         && visaTypeSignal.value() == VisaType.H1B);
+     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
      * </pre>
      *
      * @param visibleSignal
