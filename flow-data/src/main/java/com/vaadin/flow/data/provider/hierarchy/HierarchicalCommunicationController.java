@@ -115,6 +115,17 @@ public class HierarchicalCommunicationController<T> implements Serializable {
     }
 
     public void flush() {
+        // Skip flush if parent is no longer expanded (race condition
+        // protection)
+        // This can happen when an item is collapsed before the scheduled flush
+        // executes, preventing IndexOutOfBoundsException in getJsonItems()
+        if (parentKey != null) {
+            T parentItem = keyMapper.get(parentKey);
+            if (parentItem != null && !mapper.isExpanded(parentItem)) {
+                return;
+            }
+        }
+
         Set<String> oldActive = new HashSet<>(activeKeyOrder);
 
         assumedSize = mapper.countChildItems(keyMapper.get(parentKey));
