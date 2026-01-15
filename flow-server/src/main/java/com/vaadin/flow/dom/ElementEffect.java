@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,6 +26,7 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.impl.Effect;
 
 /**
@@ -33,7 +34,7 @@ import com.vaadin.signals.impl.Effect;
  * context of a given element's life-cycle.
  * <p>
  * It ultimately creates a Signal effect, i.e. a call to
- * {@link Signal#effect(Runnable)}, that is automatically enabled when an
+ * {@link Signal#effect(EffectAction)}, that is automatically enabled when an
  * element is attached and disabled when the element is detached. Additionally,
  * it provides methods to bind signals to element according to a given value
  * setting function.
@@ -87,7 +88,7 @@ public final class ElementEffect {
      * effect.remove(); // to remove the effect when no longer needed
      * </pre>
      *
-     * @see Signal#effect(Runnable)
+     * @see Signal#effect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
@@ -119,7 +120,7 @@ public final class ElementEffect {
      *         Element::setVisible);
      * </pre>
      *
-     * @see Signal#effect(Runnable)
+     * @see Signal#effect(EffectAction)
      * @param owner
      *            the owner element for which the effect is applied, must not be
      *            <code>null</code>
@@ -150,7 +151,7 @@ public final class ElementEffect {
                 .get();
         UI ui = parentComponent.getUI().get();
 
-        Runnable errorHandlingEffectFunction = () -> {
+        EffectAction errorHandlingEffectFunction = () -> {
             try {
                 effectFunction.run();
             } catch (Exception e) {

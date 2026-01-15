@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -20,9 +20,10 @@ import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.Consumer;
-import java.util.function.UnaryOperator;
 
+import com.vaadin.signals.function.CleanupCallback;
+import com.vaadin.signals.function.SignalUpdater;
+import com.vaadin.signals.function.ValueModifier;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.TransientListener;
 import com.vaadin.signals.impl.UsageTracker;
@@ -38,8 +39,9 @@ import com.vaadin.signals.operations.SignalOperation;
  * multiple threads.
  * <p>
  * The signal can also be used with mutable values in which case no thread
- * safety is provided. Mutations must be done through {@link #modify(Consumer)}
- * to ensure dependents are informed after the modification is applied.
+ * safety is provided. Mutations must be done through
+ * {@link #modify(ValueModifier)} to ensure dependents are informed after the
+ * modification is applied.
  * <p>
  * Reference signals can't be used inside signal transactions.
  * <p>
@@ -59,10 +61,20 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
     // package-protected for testing
     final ReentrantLock lock = new ReentrantLock();
 
+    /**
+     * Creates a new reference signal with the given initial value.
+     *
+     * @param initialValue
+     *            the initial value, may be <code>null</code>
+     */
     public ReferenceSignal(T initialValue) {
         this.value = initialValue;
     }
 
+    /**
+     * Creates a new reference signal with an initial value of
+     * <code>null</code>.
+     */
     public ReferenceSignal() {
         this(null);
     }
@@ -108,7 +120,7 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
             }
 
             @Override
-            public Runnable onNextChange(TransientListener listener) {
+            public CleanupCallback onNextChange(TransientListener listener) {
                 lock.lock();
                 try {
                     if (hasChanges()) {
@@ -224,14 +236,14 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
      */
     @Override
     public synchronized CancelableOperation<T> update(
-            UnaryOperator<T> updater) {
+            SignalUpdater<T> updater) {
         Objects.requireNonNull(updater);
         lock.lock();
         try {
             checkPreconditions();
 
             T oldValue = this.value;
-            T newValue = updater.apply(oldValue);
+            T newValue = updater.update(oldValue);
             if (newValue != oldValue) {
                 setAndNotify(newValue);
             }
@@ -255,12 +267,12 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
      * exception can be thrown either from this method or from the other invoked
      * method. This can happen even if the other method is safe for concurrent
      * use.
-     * 
+     *
      * @param modifier
      *            a callback that receives the current value to modify, not
      *            <code>null</code>
      */
-    public void modify(Consumer<T> modifier) {
+    public void modify(ValueModifier<T> modifier) {
         Objects.requireNonNull(modifier);
 
         if (!lock.tryLock()) {
@@ -276,7 +288,7 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
 
         boolean completed = false;
         try {
-            modifier.accept(value);
+            modifier.modify(value);
 
             completed = true;
         } finally {

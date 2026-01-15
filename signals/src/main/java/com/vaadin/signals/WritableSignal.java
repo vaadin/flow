@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -16,8 +16,8 @@
 package com.vaadin.signals;
 
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.UnaryOperator;
 
+import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -79,7 +79,7 @@ public interface WritableSignal<T> extends Signal<T> {
      *            the value update callback, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    CancelableOperation<T> update(UnaryOperator<T> updater);
+    CancelableOperation<T> update(SignalUpdater<T> updater);
 
     /**
      * Wraps this signal to not accept changes.
