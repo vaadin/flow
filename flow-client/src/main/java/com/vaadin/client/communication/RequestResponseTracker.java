@@ -122,17 +122,11 @@ public class RequestResponseTracker {
             registry.getMessageSender().sendInvocationsToServer();
         }
 
-        // deferring to avoid hiding the loading indicator and showing it again
-        // shortly thereafter
-        Scheduler.get().scheduleDeferred(() -> {
-            boolean terminated = registry.getUILifecycle().isTerminated();
-            boolean requestNowOrSoon = hasActiveRequest()
-                    || registry.getServerRpcQueue().isFlushPending();
-
-            if (terminated || !requestNowOrSoon) {
-                ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
-            }
-        });
+        // Always reset loading indicator when request ends.
+        // Client-side component will handle timing for each request independently.
+        // This ensures rapid successive requests get individual timing instead of
+        // accumulating time across requests.
+        ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
         fireEvent(new ResponseHandlingEndedEvent());
     }
