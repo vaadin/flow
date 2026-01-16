@@ -148,8 +148,6 @@ public class DAUUtilsTest {
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
 
-            // remove JSON wrap
-            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
             JsonNode json = JacksonUtils.readTree(response).get("meta")
                     .get("appError");
 
@@ -185,7 +183,6 @@ public class DAUUtilsTest {
             String response = DAUUtils.jsonEnforcementResponse(request,
                     new DauEnforcementException(
                             new EnforcementException("STOP")));
-            response = response.replace("for(;;);[", "").replaceFirst("]$", "");
             JsonNode json = JacksonUtils.readTree(response).get("meta")
                     .get("appError");
 

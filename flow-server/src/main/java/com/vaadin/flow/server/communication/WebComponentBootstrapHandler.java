@@ -639,7 +639,7 @@ public class WebComponentBootstrapHandler extends BootstrapHandler {
                 context.getUI().getCsrfToken());
         json.put(ApplicationConstants.UIDL_PUSH_ID,
                 context.getUI().getSession().getPushId());
-        String responseString = "for(;;);[" + json + "]";
+        String responseString = json.toString();
 
         try {
             VaadinService service = request.getService();

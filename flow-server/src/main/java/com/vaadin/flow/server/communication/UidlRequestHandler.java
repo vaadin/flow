@@ -174,8 +174,7 @@ public class UidlRequestHandler extends SynchronizedRequestHandler
 
         removeOffendingMprHashFragment(uidl);
 
-        // some dirt to prevent cross site scripting
-        String responseString = "for(;;);[" + uidl + "]";
+        String responseString = uidl.toString();
         ui.getInternals().setLastRequestResponse(responseString);
         writer.write(responseString);
     }
