@@ -4708,10 +4708,8 @@ public class RouterTest extends RoutingTestBase {
         @Override
         public void afterNavigation(AfterNavigationEvent event) {
             events.add(event);
-            if (event.getLocation().getPath().equals("error")) {
-                throw new RuntimeException(
-                        "Exception in MainLayout afterNavigation");
-            }
+            throw new RuntimeException(
+                    "Exception in MainLayout afterNavigation");
         }
     }
 
