@@ -36,9 +36,11 @@ import tools.jackson.databind.node.ObjectNode;
 import com.vaadin.flow.internal.JacksonUtils;
 import com.vaadin.flow.server.HandlerHelper;
 import com.vaadin.flow.server.HttpStatusCode;
+import com.vaadin.flow.server.SessionExpiredHandler;
 import com.vaadin.flow.server.SynchronizedRequestHandler;
 import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.VaadinResponse;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.JsonConstants;
 
@@ -66,7 +68,8 @@ import static com.vaadin.flow.i18n.DefaultI18NProvider.BUNDLE_FOLDER;
  * @author Vaadin Ltd
  * @since 24.4
  */
-public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
+public class TranslationFileRequestHandler extends SynchronizedRequestHandler
+        implements SessionExpiredHandler {
 
     static final String LANGUAGE_TAG_PARAMETER_NAME = "langtag";
 
@@ -93,9 +96,46 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        handleTranslationRequest(session.getService(), request, response);
+        return true;
+    }
+
+    /**
+     * Handles translation file requests when the session has expired or does
+     * not exist. Since translations are stateless (they only depend on the
+     * {@link I18NProvider} and locale), they can be served without requiring an
+     * active session.
+     *
+     * @param request
+     *            the request to handle
+     * @param response
+     *            the response object to which a response can be written
+     * @return {@code true} if the request was handled, {@code false} if this
+     *         handler does not handle the given request type
+     * @throws IOException
+     *             if an IO error occurred
+     */
+    @Override
+    public boolean handleSessionExpired(VaadinRequest request,
+            VaadinResponse response) throws IOException {
+        if (!canHandleRequest(request)) {
+            return false;
+        }
+        handleTranslationRequest(request.getService(), request, response);
+        return true;
+    }
+
+    @Override
+    protected boolean canHandleRequest(VaadinRequest request) {
+        return HandlerHelper.isRequestType(request,
+                HandlerHelper.RequestType.TRANSLATION_FILE);
+    }
+
+    private void handleTranslationRequest(VaadinService service,
+            VaadinRequest request, VaadinResponse response) throws IOException {
         if (i18NProvider == null) {
-            handleMissingI18NProvider(session, response);
-            return true;
+            handleMissingI18NProvider(service, response);
+            return;
         }
         var locale = getLocale(request);
         var chunks = request.getParameterMap().get(CHUNK_PARAMETER_NAME);
@@ -106,13 +146,6 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         } else {
             handleFound(locale, response, translations);
         }
-        return true;
-    }
-
-    @Override
-    protected boolean canHandleRequest(VaadinRequest request) {
-        return HandlerHelper.isRequestType(request,
-                HandlerHelper.RequestType.TRANSLATION_FILE);
     }
 
     private void handleFound(Locale locale, VaadinResponse response,
@@ -128,11 +161,10 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler {
         response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
     }
 
-    private void handleMissingI18NProvider(VaadinSession session,
+    private void handleMissingI18NProvider(VaadinService service,
             VaadinResponse response) throws IOException {
         String errorMessage = "Missing I18nProvider implementation, loading translations is not supported.";
-        if (session.getService().getDeploymentConfiguration()
-                .isProductionMode()) {
+        if (service.getDeploymentConfiguration().isProductionMode()) {
             response.setStatus(HttpStatusCode.NOT_FOUND.getCode());
         } else {
             response.sendError(HttpStatusCode.NOT_IMPLEMENTED.getCode(),
