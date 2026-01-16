@@ -13,7 +13,6 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-
 package com.vaadin.flow.server.frontend;
 
 import java.io.File;
@@ -60,6 +59,7 @@ public class NodeTasks implements FallibleCommand {
     // without depending on when they are added.
     private static final List<Class<? extends FallibleCommand>> commandOrder =
         Collections.unmodifiableList(Arrays.asList(
+            TaskPrepareProdBundle.class,
             TaskGeneratePackageJson.class,
             TaskGenerateIndexHtml.class,
             TaskGenerateIndexTs.class,
@@ -89,7 +89,6 @@ public class NodeTasks implements FallibleCommand {
             TaskCopyTemplateFiles.class,
             TaskGenerateBootstrap.class,
             TaskRunDevBundleBuild.class,
-            TaskPrepareProdBundle.class,
             TaskCleanFrontendFiles.class,
             TaskRemoveOldFrontendGeneratedFiles.class
         ));
