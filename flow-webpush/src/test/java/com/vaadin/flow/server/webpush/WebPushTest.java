@@ -33,7 +33,7 @@ public class WebPushTest {
 
     // This test should fail when a new interaso WebPush with fix is added.
     @Test
-    public void negativeSignumPublicKey_throwsException() {
+    public void negativeSignumPrivateKey_throwsException() {
         InvalidKeyException invalidKeyException = Assert.assertThrows(
                 InvalidKeyException.class,
                 () -> VapidKeys.fromUncompressedBytes(PUBLIC_KEY, PRIVATE_KEY));
