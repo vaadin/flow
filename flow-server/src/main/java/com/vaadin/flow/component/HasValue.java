@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -239,10 +239,13 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * signal value changes have no effect. <code>null</code> signal unbinds the
      * existing binding.
      * <p>
-     * While a Signal is bound to a value state, any attempt to set the state
-     * manually with {@link #setValue(Object)} throws
-     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
-     * trying to bind a new Signal while one is already bound.
+     * While a Signal is bound to a value state, any attempt to bind a new
+     * Signal while one is already bound throws
+     * {@link com.vaadin.signals.BindingActiveException}.
+     * <p>
+     * While a Signal is bound to a value state and the element is in attached
+     * state, setting the value with {@link #setValue(Object)} or when a change
+     * originates from the client, will update the signal value.
      * <p>
      * Example of usage:
      *
