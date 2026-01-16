@@ -81,7 +81,7 @@ public class WebPush {
             if (e.getClass().equals(InvalidKeySpecException.class)) {
                 // Create from Base64 encoded strings of uncompressed bytes as
                 // generated for webpush-java library
-                vapidKeys = VapidKeys.fromUncompressedBytes(publicKey,
+                vapidKeys = WebPushVapidUtil.loadVapidKeys(publicKey,
                         privateKey);
             } else {
                 throw e;
