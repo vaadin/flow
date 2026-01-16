@@ -19,8 +19,6 @@ import com.google.web.bindery.event.shared.Event;
 import com.google.web.bindery.event.shared.EventBus;
 import com.google.web.bindery.event.shared.HandlerRegistration;
 
-import com.google.gwt.core.client.Scheduler;
-
 import com.vaadin.client.ConnectionIndicator;
 import com.vaadin.client.Registry;
 import com.vaadin.client.communication.MessageSender.ResynchronizationState;
@@ -123,8 +121,10 @@ public class RequestResponseTracker {
         }
 
         // Always reset loading indicator when request ends.
-        // Client-side component will handle timing for each request independently.
-        // This ensures rapid successive requests get individual timing instead of
+        // Client-side component will handle timing for each request
+        // independently.
+        // This ensures rapid successive requests get individual timing instead
+        // of
         // accumulating time across requests.
         ConnectionIndicator.setState(ConnectionIndicator.CONNECTED);
 
