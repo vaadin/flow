@@ -4748,7 +4748,7 @@ public class RouterTest extends RoutingTestBase {
         // Should fall back to InternalServerError instead of the custom error
         // view
         assertExceptionComponent(InternalServerError.class,
-                "Error view rendering failed");
+                "There was an exception while trying to navigate to 'error' with the exception message 'Exception in MainLayout afterNavigation'");
 
         // Verify that MainLayout's afterNavigation was called at least once
         Assert.assertFalse(
