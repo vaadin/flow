@@ -341,9 +341,10 @@ public class Router implements Serializable {
             // Error view threw an exception - fall back to
             // InternalServerError
             logger.error(
-                    "Exception occurred while rendering error view for '{}'. "
+                    "Exception occurred while rendering error view '{}' for '{}'. "
                             + "Falling back to InternalServerError.",
-                    location.getPath(), errorHandlingException);
+                    lookupResult.getNavigationTarget(), location.getPath(),
+                    errorHandlingException);
 
             // Render InternalServerError as fallback with original
             // exception as render error is logged
