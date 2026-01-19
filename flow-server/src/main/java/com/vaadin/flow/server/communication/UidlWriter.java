@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,7 +33,6 @@ import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.ArrayNode;
 import tools.jackson.databind.node.ObjectNode;
@@ -221,15 +220,8 @@ public class UidlWriter implements Serializable {
 
         if (!pendingSendToClient.isEmpty()) {
             groupDependenciesByLoadMode(pendingSendToClient, context)
-                    .forEach((loadMode, dependencies) -> {
-                        try {
-                            response.set(loadMode.name(),
-                                    JacksonUtils.getMapper()
-                                            .readTree(dependencies.toString()));
-                        } catch (JacksonException e) {
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    .forEach((loadMode, dependencies) -> response
+                            .set(loadMode.name(), dependencies));
         }
         dependencyList.clearPendingSendToClient();
     }

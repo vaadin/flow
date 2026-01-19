@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2022 Vaadin Ltd
+ *    Copyright 2000-2026 Vaadin Ltd
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
 
                 vaadin {
-                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                    eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
         """.trimIndent())
@@ -104,7 +104,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
                 }
 
                 vaadin {
-                    nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                    eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
                 }
             }
         """.trimIndent())
@@ -161,7 +161,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
 
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
             }
         """.trimIndent())
 
@@ -212,7 +212,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
 
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
                 applicationIdentifier = 'MY_APP_ID'
             }
         """.trimIndent())
@@ -266,7 +266,7 @@ class MiscMultiModuleTest : AbstractGradleTest() {
             }
 
             vaadin {
-                nodeAutoUpdate = true // test the vaadin{} block by changing some innocent property with limited side-effect
+                eagerServerLoad = false // test the vaadin{} block by changing some innocent property with limited side-effect
                 applicationIdentifier = 'MY_APP_ID'
             }
         """.trimIndent())

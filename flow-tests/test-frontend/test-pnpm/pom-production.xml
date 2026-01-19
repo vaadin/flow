@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-pnpm-production</artifactId>
     <name>Flow tests in pnpm and production mode</name>
@@ -79,7 +79,6 @@
                 <configuration>
                     <generatedDependencies>${flow.dev.dependencies.folder}/${flow.dev.dependencies.file}</generatedDependencies>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
                     <pnpmEnable>true</pnpmEnable>
                 </configuration>
             </plugin>

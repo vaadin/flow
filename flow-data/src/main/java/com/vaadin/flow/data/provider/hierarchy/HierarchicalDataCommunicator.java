@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -98,6 +98,7 @@ import com.vaadin.flow.internal.StateNode;
 public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private final Set<Object> expandedItemIds = new HashSet<>();
     private final StateNode stateNode;
+    private final KeyMapper<T> keyMapper;
     private final ArrayUpdater arrayUpdater;
     private final DataGenerator<T> dataGenerator;
     private final SerializableSupplier<ValueProvider<T, String>> uniqueKeyProviderSupplier;
@@ -136,9 +137,8 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
         this.arrayUpdater = arrayUpdater;
         this.dataGenerator = dataGenerator;
         this.uniqueKeyProviderSupplier = uniqueKeyProviderSupplier;
-
-        KeyMapperWrapper<T> keyMapperWrapper = new KeyMapperWrapper<>();
-        setKeyMapper(keyMapperWrapper);
+        this.keyMapper = new KeyMapperWrapper<>();
+        setKeyMapper(keyMapper);
 
         setDataProvider(new TreeDataProvider<>(new TreeData<>()), null);
 
@@ -174,7 +174,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     public void reset() {
         if (rootCache != null) {
             rootCache = null;
-            getKeyMapper().removeAll();
+            keyMapper.removeAll();
             dataGenerator.destroyAllData();
         }
 
@@ -230,7 +230,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                             """);
         }
 
-        getKeyMapper().refresh(item);
+        keyMapper.refresh(item);
         dataGenerator.refreshData(item);
 
         if (rootCache == null) {
@@ -257,8 +257,14 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @Override
+    protected void refreshViewport() {
+        requestFlush().invalidateViewport();
+    }
+
+    @Override
     public Stream<T> fetchFromProvider(int offset, int limit) {
-        return fetchDataProviderChildren(null, Range.withLength(offset, limit));
+        return fetchDataProviderChildren(null, Range.withLength(offset, limit))
+                .stream();
     }
 
     @Override
@@ -464,7 +470,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
 
     private JsonNode generateItemJson(T item) {
         ObjectNode json = JacksonUtils.createObjectNode();
-        json.put("key", getKeyMapper().key(item));
+        json.put("key", keyMapper.key(item));
         dataGenerator.generateData(item, json);
         return json;
     }
@@ -519,8 +525,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     private void preloadRange(Cache<T> cache, int start, int length) {
         var range = Range.withLength(start, length)
                 .restrictTo(Range.withLength(0, cache.getSize()));
-        var items = fetchDataProviderChildren(cache.getParentItem(), range)
-                .toList();
+        var items = fetchDataProviderChildren(cache.getParentItem(), range);
         cache.setItems(range.getStart(), items);
     }
 
@@ -712,6 +717,7 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             return;
         }
 
+        // Collect IDs of items that are currently in the viewport
         HashSet<Object> viewportItemIds = new HashSet<>();
         for (int i = viewportRange.getStart(); i < viewportRange
                 .getEnd(); i++) {
@@ -729,9 +735,18 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
             viewportItemIds.add(getDataProvider().getId(item));
         }
 
-        // Remove items from the cache, keyMapper, and dataGenerator
-        rootCache.removeDescendantItemIf((item) -> {
-            return !viewportItemIds.contains(getDataProvider().getId(item));
+        // Collect items that have an active key in the keyMapper but
+        // are no longer in the viewport
+        var itemsToRemove = keyMapper.objects().stream().filter((item) -> {
+            var itemId = getDataProvider().getId(item);
+            return !viewportItemIds.contains(itemId);
+        }).toList();
+
+        // Remove those items from the keyMapper and dataGenerator to
+        // release any associated client-side resources.
+        itemsToRemove.forEach((item) -> {
+            dataGenerator.destroyData(item);
+            keyMapper.remove(item);
         });
     }
 
@@ -786,16 +801,24 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
     }
 
     @SuppressWarnings("unchecked")
-    private Stream<T> fetchDataProviderChildren(T parent, Range range) {
+    private List<T> fetchDataProviderChildren(T parent, Range range) {
         var query = buildQuery(parent, range.getStart(), range.length());
 
-        return ((HierarchicalDataProvider<T, Object>) getDataProvider())
-                .fetchChildren(query).peek((item) -> {
-                    if (item == null) {
-                        throw new IllegalStateException(
-                                "Data provider returned a null item. Null values are not supported");
-                    }
-                });
+        var items = ((HierarchicalDataProvider<T, Object>) getDataProvider())
+                .fetchChildren(query).toList();
+        if (items.size() > range.length()) {
+            throw new IllegalStateException(
+                    """
+                            Data provider returned more items than requested. Requested %d but got %d. \
+                            Make sure that your data provider respects the offset and limit in HierarchicalQuery.
+                            """
+                            .formatted(range.length(), items.size()));
+        }
+        if (items.contains(null)) {
+            throw new IllegalStateException(
+                    "Data provider returned a null item. Null values are not supported");
+        }
+        return items;
     }
 
     @SuppressWarnings("unchecked")
@@ -820,9 +843,9 @@ public class HierarchicalDataCommunicator<T> extends DataCommunicator<T> {
                 void onItemRemoved(T item) {
                     super.onItemRemoved(item);
 
-                    if (getKeyMapper().has(item)) {
+                    if (keyMapper.has(item)) {
                         dataGenerator.destroyData(item);
-                        getKeyMapper().remove(item);
+                        keyMapper.remove(item);
                     }
                 }
             };

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -39,6 +39,7 @@ import org.springframework.web.socket.server.standard.ServerEndpointExporter;
 
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.VaadinServlet;
+import com.vaadin.flow.spring.springnative.ClientCallableAotProcessor;
 import com.vaadin.flow.spring.springnative.VaadinBeanFactoryInitializationAotProcessor;
 
 /**
@@ -61,6 +62,11 @@ public class SpringBootAutoConfiguration {
     @Bean
     static VaadinBeanFactoryInitializationAotProcessor flowBeanFactoryInitializationAotProcessor() {
         return new VaadinBeanFactoryInitializationAotProcessor();
+    }
+
+    @Bean
+    static ClientCallableAotProcessor flowClientCallableFactoryInitializationAotProcessor() {
+        return new ClientCallableAotProcessor();
     }
 
     /**

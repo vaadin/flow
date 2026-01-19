@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -33,7 +33,7 @@ import java.lang.annotation.Target;
  * Example usage:
  *
  * <pre>
- * &#64;ColorScheme(ColorScheme.Value.DARK)
+ * &#64;ColorScheme(ColorScheme.Value.SYSTEM)
  * public class AppShell implements AppShellConfigurator {
  * }
  * </pre>
@@ -98,7 +98,20 @@ public @interface ColorScheme {
          * system preferences, or other meta tags like
          * {@code <meta name="color-scheme" content="dark">}.
          */
-        NORMAL("normal");
+        NORMAL("normal"),
+
+        /**
+         * Use the system's preferred color scheme. Supports both light and dark
+         * modes, adapting to operating system or browser preferences. Defaults
+         * to light mode when system preference cannot be determined.
+         * <p>
+         * This provides a more intuitive name than LIGHT_DARK for the common
+         * use case of following system preferences. It is functionally
+         * equivalent to LIGHT_DARK, both mapping to the CSS value "light dark".
+         *
+         * @see #LIGHT_DARK
+         */
+        SYSTEM("light dark");
 
         private final String value;
 

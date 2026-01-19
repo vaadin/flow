@@ -1,5 +1,5 @@
 /**
- *    Copyright 2000-2025 Vaadin Ltd.
+ *    Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,13 @@ internal class PrepareFrontendInputProperties(
             .absolutePath
 
     @Input
+    @Optional
+    fun getResourcesOutputDirectory(): Provider<String> =
+        config.resourcesOutputDirectory
+            .filterExists()
+            .absolutePath
+
+    @Input
     fun getNpmFolder(): Provider<String> = config.npmFolder.absolutePath
 
     @Input
@@ -84,6 +91,10 @@ internal class PrepareFrontendInputProperties(
     @Input
     fun getRequireHomeNodeExec(): Provider<Boolean> =
         config.requireHomeNodeExec
+
+    @Input
+    @Optional
+    fun getNodeFolder(): Provider<String> = config.nodeFolder
 
     @Input
     fun getEagerServerLoad(): Provider<Boolean> = config.eagerServerLoad
@@ -124,9 +135,6 @@ internal class PrepareFrontendInputProperties(
 
     @Input
     fun getNodeDownloadRoot(): Provider<String> = config.nodeDownloadRoot
-
-    @Input
-    fun getNodeAutoUpdate(): Provider<Boolean> = config.nodeAutoUpdate
 
     @Input
     fun getProjectBuildDir(): Provider<String> = config.projectBuildDir

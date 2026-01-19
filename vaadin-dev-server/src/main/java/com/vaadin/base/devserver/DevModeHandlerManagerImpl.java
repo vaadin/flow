@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,11 +36,11 @@ import com.vaadin.base.devserver.startup.DevModeInitializer;
 import com.vaadin.base.devserver.startup.DevModeStartupListener;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
+import com.vaadin.flow.internal.ThemeUtils;
 import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.Mode;
 import com.vaadin.flow.server.VaadinContext;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.ThemeUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -113,6 +114,7 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             ApplicationConfiguration config = ApplicationConfiguration
                     .get(context);
             startWatchingThemeFolder(context, config);
+            startWatchingPublicResourcesFolders(context, config);
             watchExternalDependencies(context, config);
             setFullyStarted(true);
         }, executorService);
@@ -162,6 +164,29 @@ public class DevModeHandlerManagerImpl implements DevModeHandlerManager {
             }
         } catch (Exception e) {
             getLogger().error("Failed to start live-reload for theme files", e);
+        }
+    }
+
+    // package-private for testing
+    void startWatchingPublicResourcesFolders(VaadinContext context,
+            ApplicationConfiguration config) {
+        try {
+            File projectFolder = config.getProjectFolder();
+            File resourceFolder = config.getJavaResourceFolder();
+            List<String> locations = Stream.concat(Stream
+                    .of("META-INF/resources", "resources", "static", "public")
+                    .map(location -> new File(resourceFolder, location)),
+                    Stream.of(new File(projectFolder, "src/main/webapp")))
+                    .filter(root -> root.exists() && root.isDirectory())
+                    .filter(File::exists)
+                    .map(staticResourceFolder -> FrontendUtils
+                            .getUnixPath(staticResourceFolder.toPath()))
+                    .toList();
+            registerWatcherShutdownCommand(
+                    new PublicResourcesLiveUpdater(locations, context));
+        } catch (Exception e) {
+            getLogger().error(
+                    "Failed to start live-reload for public CSS resources", e);
         }
     }
 

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,11 +26,12 @@ import java.util.function.Function;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.UsageStatistics;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
+import static com.vaadin.flow.internal.FrontendUtils.PROJECT_BASEDIR;
 import static com.vaadin.flow.server.Constants.COMMERCIAL_BANNER_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_APPLICATION_PROPERTIES_TOKEN;
 import static com.vaadin.flow.server.Constants.CONNECT_JAVA_SOURCE_FOLDER_TOKEN;
@@ -56,7 +57,6 @@ import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_INITIAL_UIDL;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_PRODUCTION_MODE;
 import static com.vaadin.flow.server.InitParameters.SERVLET_PARAMETER_REUSE_DEV_SERVER;
-import static com.vaadin.flow.server.frontend.FrontendUtils.PROJECT_BASEDIR;
 
 /**
  * A configuration factory base logic which reads the token file.
@@ -241,6 +241,14 @@ public class AbstractConfigurationFactory implements Serializable {
                     String.valueOf(buildInfo
                             .get(InitParameters.REQUIRE_HOME_NODE_EXECUTABLE)
                             .booleanValue()));
+        }
+        if (params.get(InitParameters.NODE_FOLDER) == null
+                && buildInfo.has(InitParameters.NODE_FOLDER)) {
+            String nodeFolder = buildInfo.get(InitParameters.NODE_FOLDER)
+                    .asString();
+            if (nodeFolder != null && !nodeFolder.isEmpty()) {
+                params.put(InitParameters.NODE_FOLDER, nodeFolder);
+            }
         }
     }
 

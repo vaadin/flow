@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -256,7 +256,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_toggleItemOutsideRange_flatSizeNotUpdated() {
+    public void setViewportRange_toggleItemOutsideViewport_flatSizeNotUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 10);
         fakeClientCommunication();
@@ -275,7 +275,7 @@ public class HierarchicalDataCommunicatorViewportTest
     }
 
     @Test
-    public void setViewportRange_expandItemOutsideRange_adjustRangeToIncludeItem_flatSizeUpdated() {
+    public void setViewportRange_expandItemOutsideViewport_moveItemIntoViewport_flatSizeUpdated() {
         populateTreeData(treeData, 100, 2, 2);
         dataCommunicator.setViewportRange(0, 6);
         fakeClientCommunication();
@@ -291,6 +291,28 @@ public class HierarchicalDataCommunicatorViewportTest
         dataCommunicator.setViewportRange(94, 6);
         fakeClientCommunication();
         assertArrayUpdateSize(102);
+    }
+
+    @Test
+    public void setViewportRange_expandItem_moveItemOutOfViewport_collapseItem_flatSizeUpdated() {
+        populateTreeData(treeData, 100, 2, 2);
+        dataCommunicator.expand(new Item("Item 0"));
+        dataCommunicator.setViewportRange(0, 6);
+        fakeClientCommunication();
+        assertArrayUpdateSize(102);
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.setViewportRange(101, 1);
+        fakeClientCommunication();
+        dataCommunicator.confirmUpdate(captureArrayUpdateId());
+        fakeClientCommunication();
+
+        Mockito.clearInvocations(arrayUpdater, arrayUpdate);
+
+        dataCommunicator.collapse(new Item("Item 0"));
+        fakeClientCommunication();
+        assertArrayUpdateSize(100);
     }
 
     @Test

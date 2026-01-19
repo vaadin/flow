@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -100,8 +100,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
@@ -123,8 +122,7 @@ public class UidlRequestHandlerTest {
 
         // response shouldn't contain async
         Assert.assertEquals("Invalid response",
-                "for(;;);[{\"meta\":{\"sessionExpired\":true}}]",
-                responseContent);
+                "{\"meta\":{\"sessionExpired\":true}}", responseContent);
     }
 
     @Test
@@ -204,7 +202,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String v7Uidl = uidl.get("execute").get(2).get(1).textValue();
         assertFalse(v7Uidl.contains("http://localhost:9998/#!away"));
@@ -225,7 +223,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, 'http://localhost:9998/#!away'));",
@@ -246,7 +244,7 @@ public class UidlRequestHandlerTest {
         handler.writeUidl(ui, writer, false);
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         assertEquals(
                 "setTimeout(() => history.pushState(null, null, location.pathname + location.search + '#!away'));",
@@ -270,7 +268,7 @@ public class UidlRequestHandlerTest {
         String expected = uidl.toString();
 
         String out = writer.toString();
-        uidl = JacksonUtils.readTree(out.substring(9, out.length() - 1));
+        uidl = JacksonUtils.readTree(out);
 
         String actual = uidl.toString();
 

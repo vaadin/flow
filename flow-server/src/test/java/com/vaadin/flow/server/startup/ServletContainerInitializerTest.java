@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -149,7 +149,9 @@ public class ServletContainerInitializerTest extends ClassFinder {
 
     private Stream<String> getExcludedPatterns() {
         return Stream.of("com\\.vaadin\\.flow\\..*osgi\\..*",
-                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl");
+                "com\\.vaadin\\.flow\\.server\\.startup\\.LookupInitializer\\$OsgiLookupImpl",
+                // Shaded third-party libraries
+                "com\\.vaadin\\.frontendtools\\.internal\\..*");
     }
 
     private boolean isBadSubType(Class<?> clazz) {

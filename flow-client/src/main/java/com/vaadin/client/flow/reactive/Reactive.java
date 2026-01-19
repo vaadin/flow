@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -100,34 +100,42 @@ public class Reactive {
         if (flushing) {
             return;
         }
+
+        if (flushListeners == null) {
+            flushListeners = JsCollections.array();
+        }
+
+        if (postFlushListeners == null) {
+            postFlushListeners = JsCollections.array();
+        }
+
+        int flushListenerIndex = 0;
+        int postFlushListenerIndex = 0;
+
         try {
             flushing = true;
-            while (hasFlushListeners() || hasPostFlushListeners()) {
+
+            while (flushListenerIndex < flushListeners.length()
+                    || postFlushListenerIndex < postFlushListeners.length()) {
                 // Purge all flush listeners
-                while (hasFlushListeners()) {
-                    FlushListener oldestListener = flushListeners.remove(0);
-                    oldestListener.flush();
+                while (flushListenerIndex < flushListeners.length()) {
+                    flushListeners.get(flushListenerIndex).flush();
+                    flushListenerIndex++;
                 }
 
                 // Purge one post flush listener, then look if there are new
-                // flush
                 // listeners to purge
-                if (hasPostFlushListeners()) {
-                    FlushListener oldestListener = postFlushListeners.remove(0);
-                    oldestListener.flush();
+                if (postFlushListenerIndex < postFlushListeners.length()) {
+                    postFlushListeners.get(postFlushListenerIndex).flush();
+                    postFlushListenerIndex++;
                 }
             }
         } finally {
             flushing = false;
+
+            flushListeners.splice(0, flushListenerIndex);
+            postFlushListeners.splice(0, postFlushListenerIndex);
         }
-    }
-
-    private static boolean hasPostFlushListeners() {
-        return postFlushListeners != null && !postFlushListeners.isEmpty();
-    }
-
-    private static boolean hasFlushListeners() {
-        return flushListeners != null && !flushListeners.isEmpty();
     }
 
     /**

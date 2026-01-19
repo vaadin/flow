@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -194,13 +194,6 @@ public interface PluginAdapterBase {
     URI nodeDownloadRoot() throws URISyntaxException;
 
     /**
-     * Whether the alternative node may be auto-updated or not.
-     *
-     * @return {@code true} to update node if older than default
-     */
-    boolean nodeAutoUpdate();
-
-    /**
      * The node.js version to be used when node.js is installed automatically by
      * Vaadin, for example `"v12.18.3"`. Defaults to null which uses the
      * Vaadin-default node version - see {@link FrontendTools} for details.
@@ -264,6 +257,16 @@ public interface PluginAdapterBase {
      * @return boolean
      */
     boolean requireHomeNodeExec();
+
+    /**
+     * The folder containing the Node.js executable.
+     * <p>
+     * When returned value is non-null and non-empty, Node.js will be
+     * exclusively used from this folder. If not found, build will fail.
+     *
+     * @return the node folder path, or null to use default resolution
+     */
+    String nodeFolder();
 
     /**
      * Defines the output directory for generated non-served resources, such as

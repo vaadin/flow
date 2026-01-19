@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -102,9 +102,23 @@ public class VaadinServletService extends VaadinService {
                             handlers.add(idx, devModeHandler);
                         }, () -> handlers.add(devModeHandler));
             } else if (mode == Mode.DEVELOPMENT_FRONTEND_LIVERELOAD) {
-                getLogger().warn(
-                        "DevModeHandlerManager not found, but dev server is enabled. "
-                                + "Add 'com.vaadin.vaadin-dev-server' dependency or include it transitively via 'com.vaadin.vaadin-dev'.");
+                getLogger()
+                        .warn("""
+                                'vaadin-dev-server' not found, but dev server is enabled. Add 'com.vaadin:vaadin-dev' dependency
+                                or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+
+                                Maven:
+                                    <dependency>
+                                        <groupId>com.vaadin</groupId>
+                                        <artifactId>vaadin-dev</artifactId>
+                                    </dependency>
+
+                                Gradle:
+                                    dependencies {
+                                        implementation('com.vaadin:vaadin-dev')
+                                    }
+
+                                """);
             }
         }
 

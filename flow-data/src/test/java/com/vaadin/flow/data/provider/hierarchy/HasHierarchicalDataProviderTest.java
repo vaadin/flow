@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -224,7 +224,12 @@ public class HasHierarchicalDataProviderTest {
 
         @Override
         public Stream<String> getItems() {
-            return null;
+            return Stream.of("foo", "bar");
+        }
+
+        @Override
+        public Stream<String> getItems(int offset, int limit) {
+            return getItems().skip(offset).limit(limit);
         }
 
         @Override

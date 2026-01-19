@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -118,12 +118,11 @@ public class XhrConnection {
             Console.debug("Server visit took "
                     + Profiler.getRelativeTimeString(requestStartTime) + "ms");
 
-            // for(;;);["+ realJson +"]"
             String responseText = xhr.getResponseText();
 
-            ValueMap json = MessageHandler.parseWrappedJson(responseText);
+            ValueMap json = MessageHandler.parseJson(responseText);
             if (json == null) {
-                // Invalid string (not wrapped as expected or can't parse)
+                // Invalid JSON string
                 registry.getConnectionStateHandler().xhrInvalidContent(
                         new XhrConnectionError(xhr, payload, null));
                 return;

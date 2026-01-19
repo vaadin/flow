@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -28,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.FilterType;
 import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -45,7 +46,9 @@ public class I18NProviderInstantiationTest {
     private ApplicationContext context;
 
     @Configuration
-    @ComponentScan
+    @ComponentScan(useDefaultFilters = false, includeFilters = {
+            @ComponentScan.Filter(classes = { I18NTestProvider.class,
+                    I18NTestProvider1.class }, type = FilterType.ASSIGNABLE_TYPE) })
     public static class I18NTestConfig {
 
     }

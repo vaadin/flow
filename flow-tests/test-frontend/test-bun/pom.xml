@@ -4,7 +4,7 @@
     <parent>
         <artifactId>test-frontend</artifactId>
         <groupId>com.vaadin</groupId>
-        <version>25.0-SNAPSHOT</version>
+        <version>25.1-SNAPSHOT</version>
     </parent>
     <artifactId>flow-test-bun-dev-mode</artifactId>
     <name>Flow tests in bun and development mode</name>
@@ -45,6 +45,7 @@
                         <fileset>
                             <directory>${project.basedir}</directory>
                             <includes>
+                                <include>bun.lock*</include>
                                 <include>package.json</include>
                                 <include>types.d.ts</include>
                                 <include>tsconfig.json</include>
@@ -74,7 +75,6 @@
                 <artifactId>flow-maven-plugin</artifactId>
                 <configuration>
                     <requireHomeNodeExec>true</requireHomeNodeExec>
-                    <nodeAutoUpdate>true</nodeAutoUpdate>
                 </configuration>
             </plugin>
             <!-- Run jetty before integration tests, and stop after -->

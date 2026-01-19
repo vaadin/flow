@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -458,6 +458,19 @@ public interface ElementStateProvider extends Serializable {
      *            the visitor to apply to the node
      */
     void visit(StateNode node, NodeVisitor visitor);
+
+    /**
+     * Binds the given signal to the <code>visible</code> property.
+     * <code>null</code> signal unbinds existing binding.
+     *
+     * @param owner
+     *            the owner element for which the signal is bound, not
+     *            <code>null</code>
+     * @param signal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     */
+    void bindVisibleSignal(Element owner, Signal<Boolean> signal);
 
     /**
      * Sets the {@code node} visibility.

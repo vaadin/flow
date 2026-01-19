@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -47,9 +47,9 @@ import org.mockito.Mockito;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.singletonMap;

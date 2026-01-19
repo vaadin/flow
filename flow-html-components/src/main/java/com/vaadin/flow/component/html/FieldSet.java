@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -23,6 +23,7 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasAriaLabel;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.Tag;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents an HTML <code>&lt;fieldset&gt;</code> element. This component is
@@ -55,6 +56,18 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
             this();
             setText(text);
         }
+
+        /**
+         * Creates a new legend with its text content bound to the given signal.
+         *
+         * @param textSignal
+         *            the signal to bind the legend text to, not {@code null}
+         * @see #bindText(Signal)
+         */
+        public Legend(Signal<String> textSignal) {
+            Objects.requireNonNull(textSignal, "textSignal must not be null");
+            bindText(textSignal);
+        }
     }
 
     /**
@@ -75,6 +88,17 @@ public class FieldSet extends HtmlContainer implements HasAriaLabel {
         if (legendText != null && !legendText.isEmpty()) {
             addComponentAsFirst(new Legend(legendText));
         }
+    }
+
+    /**
+     * Creates a new fieldset with its legend text bound to the given signal.
+     *
+     * @param textSignal
+     *            the legend text signal to bind to, not {@code null}
+     * @see #bindText(Signal)
+     */
+    public FieldSet(Signal<String> textSignal) {
+        addComponentAsFirst(new Legend(textSignal));
     }
 
     /**

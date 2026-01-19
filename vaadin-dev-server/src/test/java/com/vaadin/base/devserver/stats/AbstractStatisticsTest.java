@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,9 @@ package com.vaadin.base.devserver.stats;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.mockito.Mockito;
 
@@ -49,7 +50,8 @@ public abstract class AbstractStatisticsTest {
                 TestUtils.getTestResource(testResourceName).getFile());
         File result = File.createTempFile("test", "json");
         result.deleteOnExit();
-        FileUtils.copyFile(original, result);
+        Files.copy(original.toPath(), result.toPath(),
+                StandardCopyOption.REPLACE_EXISTING);
         return result;
     }
 

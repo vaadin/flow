@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -29,6 +29,7 @@ public class ColorSchemeTest {
         Assert.assertEquals("dark light",
                 ColorScheme.Value.DARK_LIGHT.getValue());
         Assert.assertEquals("normal", ColorScheme.Value.NORMAL.getValue());
+        Assert.assertEquals("light dark", ColorScheme.Value.SYSTEM.getValue());
     }
 
     @Test
@@ -44,6 +45,8 @@ public class ColorSchemeTest {
                 ColorScheme.Value.LIGHT_DARK.getThemeValue());
         Assert.assertEquals("dark-light",
                 ColorScheme.Value.DARK_LIGHT.getThemeValue());
+        Assert.assertEquals("light-dark",
+                ColorScheme.Value.SYSTEM.getThemeValue());
     }
 
     @Test
@@ -74,5 +77,16 @@ public class ColorSchemeTest {
                 ColorScheme.Value.fromString("invalid"));
         Assert.assertEquals(ColorScheme.Value.NORMAL,
                 ColorScheme.Value.fromString("light-dark"));
+    }
+
+    @Test
+    public void fromString_lightDark_returnsLightDarkNotSystem() {
+        // Ensure backward compatibility: parsing "light dark" returns
+        // LIGHT_DARK
+        Assert.assertEquals(ColorScheme.Value.LIGHT_DARK,
+                ColorScheme.Value.fromString("light dark"));
+        // SYSTEM and LIGHT_DARK should be functionally equivalent
+        Assert.assertEquals(ColorScheme.Value.LIGHT_DARK.getValue(),
+                ColorScheme.Value.SYSTEM.getValue());
     }
 }

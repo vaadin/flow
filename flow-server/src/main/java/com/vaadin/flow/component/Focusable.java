@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -144,6 +144,23 @@ public interface Focusable<T extends Component>
             element.executeJs("setTimeout(function(){$0.focus($1)},0)", element,
                     json);
         }
+    }
+
+    // for binary compatibility with the previous Vaadin versions
+    /**
+     * Calls the <code>focus</code> function at the client using default focus
+     * options, making the component keyboard focused.
+     * <p>
+     * Uses default browser behavior, i.e.,
+     * {@link com.vaadin.flow.component.FocusOption.FocusVisible#DEFAULT} and
+     * {@link com.vaadin.flow.component.FocusOption.PreventScroll#DEFAULT}.
+     *
+     * @see <a href=
+     *      "https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/focus">focus
+     *      at MDN</a>
+     */
+    default void focus() {
+        focus(new FocusOption[0]);
     }
 
     /**

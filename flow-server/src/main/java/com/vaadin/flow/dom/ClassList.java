@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -75,6 +75,9 @@ public interface ClassList extends Set<String>, Serializable {
      *             thrown when there is already an existing binding
      * @since 25.0
      */
-    void bind(String name, Signal<Boolean> signal);
+    default void bind(String name, Signal<Boolean> signal) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    };
 
 }

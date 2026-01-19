@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,43 @@ public class TailwindCssIT extends ChromeBrowserTest {
 
         var h1 = view.findElement(By.tagName("h1"));
         Assert.assertEquals("Tailwind CSS does work!", h1.getText());
+    }
+
+    @Test
+    public void tailwindCssWorks_customThemeDirective() {
+        openView();
+
+        var customRedElement = findElement(By.id("custom-theme-red"));
+        String redColor = customRedElement.getCssValue("color");
+        // red should be rgba(255, 0, 0, 1)
+        Assert.assertTrue("Expected red color, got: " + redColor,
+                redColor.startsWith("rgba(255, 0, 0, 1"));
+
+        var customBlueElement = findElement(By.id("custom-theme-blue"));
+        String blueColor = customBlueElement.getCssValue("color");
+        // #1e40af is rgba(30, 64, 175, 1)
+        Assert.assertTrue("Expected custom blue color, got: " + blueColor,
+                blueColor.startsWith("rgba(30, 64, 175, 1"));
+    }
+
+    @Test
+    public void generatedTailwindCssContainsCustomImport() {
+        open();
+        waitForDevServer();
+
+        // Verify that the generated tailwind.css file contains the custom
+        // import
+        var tailwindCssContent = (String) executeScript(
+                """
+                        return Array.from(document.styleSheets)
+                            .map(s => Array.from(s.cssRules).map(r => r.cssText))
+                            .find(rules => rules.find(rule => rule.startsWith('@layer properties')))
+                            .join('\\n');
+                        """);
+        Assert.assertNotNull("Tailwind CSS should be loaded",
+                tailwindCssContent);
+        Assert.assertFalse("Tailwind CSS content should not be empty",
+                tailwindCssContent.isEmpty());
     }
 
     private WebElement openView() {

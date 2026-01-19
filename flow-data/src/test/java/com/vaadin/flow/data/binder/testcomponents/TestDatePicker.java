@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -26,7 +26,8 @@ public class TestDatePicker
     private String label = null;
 
     public TestDatePicker() {
-        super(null, LocalDate::parse, LocalDate::toString);
+        super(null, LocalDate::parse,
+                value -> value != null ? value.toString() : null);
     }
 
     public TestDatePicker(String label) {

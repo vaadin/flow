@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -243,5 +243,31 @@ public class FocusableTest {
                 paramJson.contains("\"preventScroll\":false"));
         Assert.assertTrue("Should set focusVisible to false",
                 paramJson.contains("\"focusVisible\":false"));
+    }
+
+    @Test
+    public void focus_withoutOptions_generatesCorrectJS() {
+        ui.add(component);
+        component.focus();
+
+        List<PendingJavaScriptInvocation> invocations = ui
+                .dumpPendingJsInvocations();
+        Assert.assertEquals(1, invocations.size());
+
+        String expression = invocations.getFirst().getInvocation()
+                .getExpression();
+        Assert.assertTrue("Should contain setTimeout wrapper",
+                expression.contains("setTimeout"));
+        Assert.assertTrue("Should contain focus call without parameters",
+                expression.contains(".focus()"));
+        Assert.assertFalse("Should not contain focus call with parameter",
+                expression.contains(".focus($1)"));
+
+        // Check the parameters
+        List<Object> params = invocations.getFirst().getInvocation()
+                .getParameters();
+        Assert.assertEquals(
+                "Should have exactly 1 parameter (the element node and wrapped parameter)",
+                2, params.size());
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,7 +56,7 @@ public final class Reflector {
             "org.eclipse.sisu");
     // Dependency required by the plugin but not provided by Flow at runtime
     private static final Set<String> REQUIRED_PLUGIN_DEPENDENCIES = Set.of(
-            "org.reflections:reflections:jar",
+            "io.github.classgraph:classgraph:jar",
             "org.zeroturnaround:zt-exec:jar");
     private static final ScopeArtifactFilter PRODUCTION_SCOPE_FILTER = new ScopeArtifactFilter(
             Artifact.SCOPE_COMPILE_PLUS_RUNTIME);

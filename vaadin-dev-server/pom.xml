@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.vaadin</groupId>
     <artifactId>flow-project</artifactId>
-    <version>25.0-SNAPSHOT</version>
+    <version>25.1-SNAPSHOT</version>
   </parent>
   <artifactId>vaadin-dev-server</artifactId>
   <packaging>jar</packaging>
@@ -30,8 +30,9 @@
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
-      <artifactId>flow-archive-extractor</artifactId>
+      <artifactId>flow-build-tools</artifactId>
       <version>${project.version}</version>
+      <classifier>shaded</classifier>
     </dependency>
     <dependency>
       <groupId>com.vaadin</groupId>
@@ -46,12 +47,18 @@
     <dependency>
       <groupId>com.github.javaparser</groupId>
       <artifactId>javaparser-core</artifactId>
-      <version>3.27.1</version>
+      <version>3.28.0</version>
     </dependency>
     <dependency>
       <groupId>io.methvin</groupId>
       <artifactId>directory-watcher</artifactId>
       <version>0.19.1</version>
+    </dependency>
+    <!-- Needed for security annotations -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- API dependencies -->
@@ -84,6 +91,14 @@
       <groupId>com.vaadin</groupId>
       <artifactId>flow-test-util</artifactId>
       <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.vaadin</groupId>
+      <artifactId>flow-server</artifactId>
+      <version>${project.version}</version>
+      <type>test-jar</type>
       <scope>test</scope>
     </dependency>
 
@@ -128,7 +143,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>exec-maven-plugin</artifactId>
-        <version>3.6.2</version>
+        <version>3.6.3</version>
         <executions>
           <execution>
             <id>npm-install</id>

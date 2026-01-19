@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,12 +73,24 @@ public class SignalOperation<T> {
         }
     }
 
-    private final CompletableFuture<ResultOrError<T>> result = new CompletableFuture<>();
+    private final CompletableFuture<ResultOrError<T>> result;
 
     /**
-     * Creates a new signal operation.
+     * Creates a new signal operation that will get a result later.
      */
     public SignalOperation() {
+        result = new CompletableFuture<>();
+    }
+
+    /**
+     * Creates a new signal operation that already has a result.
+     * 
+     * @param resultOrError
+     *            the result of the operation, not <code>null</code>
+     */
+    public SignalOperation(ResultOrError<T> resultOrError) {
+        assert resultOrError != null;
+        result = CompletableFuture.completedFuture(resultOrError);
     }
 
     /**

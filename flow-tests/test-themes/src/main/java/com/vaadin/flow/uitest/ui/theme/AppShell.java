@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.uitest.ui.theme;
 
+import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.component.dependency.StyleSheet;
 import com.vaadin.flow.component.page.AppShellConfigurator;
@@ -28,5 +29,6 @@ import com.vaadin.flow.uitest.ui.dependencies.TestVersion;
         "svgs/regular/**:npm/icons" })
 @LoadDependenciesOnStartup
 @StyleSheet("context://aura/fake-aura.css")
+@CssImport("@vaadin/vaadin-lumo-styles/utility.css")
 public class AppShell implements AppShellConfigurator {
 }

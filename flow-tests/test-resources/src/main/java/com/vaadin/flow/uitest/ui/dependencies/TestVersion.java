@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,7 +17,7 @@ package com.vaadin.flow.uitest.ui.dependencies;
 
 public class TestVersion {
 
-    public static final String VAADIN = "25.0.0-alpha16";
+    public static final String VAADIN = "25.0.0-rc1";
     public static final String FONTAWESOME = "5.15.1";
 
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,8 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a
@@ -571,6 +573,52 @@ public abstract class Component
     public static <T extends Component> T from(Element element,
             Class<T> componentType) {
         return ComponentUtil.componentFromElement(element, componentType, true);
+    }
+
+    /**
+     * Binds a {@link Signal}'s value to the <code>visible</code> property of
+     * this component and keeps property synchronized with the signal value
+     * while the component is in attached state. When the element is in detached
+     * state, signal value changes have no effect. <code>null</code> signal
+     * unbinds the existing binding.
+     * <p>
+     * While a Signal is bound to a property, any attempt to set the visibility
+     * manually with {@link #setVisible(boolean)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. Same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * Span component = new Span();
+     * add(component);
+     * component.bindVisible(signal);
+     * signal.value(false); // The component is set hidden
+     * </pre>
+     *
+     * or with the multiple boolean conditions:
+     *
+     * <pre>
+     * WritableSignal&lt;Boolean&gt; needsVisaSignal = new ReferenceSignal&lt;&gt;(false);
+     * WritableSignal&lt;VisaType&gt; visaTypeSignal = new ReferenceSignal&lt;&gt;(
+     *         VisaType.H1B);
+     * VerticalLayout visaSection = new VerticalLayout();
+     * add(visaSection);
+     * // using lambda expression as a computed signal
+     * visaSection.bindVisible(() -> needsVisaSignal.value()
+     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
+     * </pre>
+     *
+     * @param visibleSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setVisible(boolean)
+     */
+    public void bindVisible(Signal<Boolean> visibleSignal) {
+        getElement().bindVisible(visibleSignal);
     }
 
     /**
