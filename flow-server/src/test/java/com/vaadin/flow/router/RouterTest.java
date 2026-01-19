@@ -2981,14 +2981,11 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(FailOnException.class);
         setErrorNavigationTargets(FailingErrorHandler.class);
 
-        try {
-            ui.navigate("exception");
-            Assert.fail("No runtime exception was thrown from navigation");
-        } catch (Exception re) {
-            Assert.assertNull(
-                    "Last handled location should have been cleared even though navigation failed",
-                    ui.getInternals().getLastHandledLocation());
-        }
+        ui.navigate("exception");
+
+        Assert.assertNull(
+                "Last handled location should have been cleared even though navigation failed",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test

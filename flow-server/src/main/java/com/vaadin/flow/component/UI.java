@@ -73,7 +73,6 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -2046,36 +2045,12 @@ public class UI extends Component
             adjustPageTitle();
 
         } catch (Exception exception) {
-            handleExceptionNavigation(location, exception);
+            getInternals().getRouter().handleExceptionNavigation(this, location,
+                    exception, NavigationTrigger.CLIENT_SIDE,
+                    (BaseJsonNode) null);
         } finally {
             getInternals().clearLastHandledNavigation();
         }
-    }
-
-    private boolean handleExceptionNavigation(Location location,
-            Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getInternals()
-                .getRouter().getErrorNavigationTarget(exception);
-        if (maybeLookupResult.isPresent()) {
-            ErrorTargetEntry lookupResult = maybeLookupResult.get();
-
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    exception.getMessage());
-            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                    new NavigationStateBuilder(getInternals().getRouter())
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
-
-            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    getInternals().getRouter(), location, this,
-                    NavigationTrigger.CLIENT_SIDE, errorParameter);
-
-            errorStateRenderer.handle(errorNavigationEvent);
-        } else {
-            throw new RuntimeException(exception);
-        }
-        return isPostponed();
     }
 
     private boolean isPostponed() {

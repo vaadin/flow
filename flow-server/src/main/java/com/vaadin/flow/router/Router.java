@@ -284,7 +284,27 @@ public class Router implements Serializable {
                 "Couldn't find route for '" + location.getPath() + "'");
     }
 
-    private int handleExceptionNavigation(UI ui, Location location,
+    /**
+     * Render error view for exception. Finds view to render based on the
+     * exception type. Exception view is chosen for matching exception and if no
+     * match is found choose by extended type.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            current UI instance
+     * @param location
+     *            target location for failing navigation
+     * @param exception
+     *            exception thrown
+     * @param trigger
+     *            navigation trigger
+     * @param state
+     *            navigation state info
+     * @return the HTTP status code to return to the client if handling an
+     *         initial rendering request
+     */
+    public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
             BaseJsonNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
