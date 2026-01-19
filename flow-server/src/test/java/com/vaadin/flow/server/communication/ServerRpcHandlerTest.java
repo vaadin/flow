@@ -128,7 +128,7 @@ public class ServerRpcHandlerTest {
         handler.handleRpc(ui, msg, request);
     }
 
-    @Test(expected = UnsupportedOperationException.class)
+    @Test(expected = ServerRpcHandler.MessageIdSyncException.class)
     public void handleRpc_unexpectedMessage_throw()
             throws InvalidUIDLSecurityKeyException, IOException {
         String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":1}";
@@ -138,6 +138,29 @@ public class ServerRpcHandlerTest {
         ui.getInternals().setSession(session);
 
         handler.handleRpc(ui, msg, request);
+    }
+
+    @Test
+    public void handleRpc_unexpectedMessage_exceptionContainsCorrectIds()
+            throws InvalidUIDLSecurityKeyException, IOException {
+        String msg = "{\"" + ApplicationConstants.CLIENT_TO_SERVER_ID + "\":5}";
+        ServerRpcHandler handler = new ServerRpcHandler();
+
+        ui = new UI();
+        ui.getInternals().setSession(session);
+        // Set the last processed ID to 0, so expected is 1
+        ui.getInternals().setLastProcessedClientToServerId(0,
+                MessageDigestUtil.sha256(""));
+
+        try {
+            handler.handleRpc(ui, msg, request);
+            Assert.fail("Expected MessageIdSyncException");
+        } catch (ServerRpcHandler.MessageIdSyncException e) {
+            Assert.assertEquals(1, e.getExpectedId());
+            Assert.assertEquals(5, e.getReceivedId());
+            Assert.assertTrue(e.getMessage().contains("Expected: 1"));
+            Assert.assertTrue(e.getMessage().contains("got: 5"));
+        }
     }
 
     @Test(expected = DauEnforcementException.class)
