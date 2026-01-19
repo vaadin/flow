@@ -223,8 +223,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     private void setValueFromSignal(T value) {
         try {
             valueSetFromSignal = true;
-            // call setValue(T) to support overrides
-            setValue(value);
+            // call component's setValue(T) to support overrides
+            component.setValue(value);
         } finally {
             valueSetFromSignal = false;
         }

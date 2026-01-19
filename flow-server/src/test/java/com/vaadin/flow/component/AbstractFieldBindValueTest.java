@@ -73,6 +73,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
 
         signal.value(null);
         assertNull(input.getValue());
+        assertEquals(3, input.setValueCounter);
     }
 
     @Test
@@ -289,6 +290,8 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     @Tag(Tag.INPUT)
     private static class TestInput extends AbstractField<TestInput, String> {
 
+        int setValueCounter = 0;
+
         public TestInput() {
             this("");
         }
@@ -300,6 +303,12 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         @Override
         protected void setPresentationValue(String newPresentationValue) {
             // NOP
+        }
+
+        @Override
+        public void setValue(String value) {
+            super.setValue(value);
+            setValueCounter++;
         }
     }
 
