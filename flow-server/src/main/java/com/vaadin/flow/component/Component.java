@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -595,6 +595,19 @@ public abstract class Component
      * add(component);
      * component.bindVisible(signal);
      * signal.value(false); // The component is set hidden
+     * </pre>
+     *
+     * or with the multiple boolean conditions:
+     *
+     * <pre>
+     * WritableSignal&lt;Boolean&gt; needsVisaSignal = new ReferenceSignal&lt;&gt;(false);
+     * WritableSignal&lt;VisaType&gt; visaTypeSignal = new ReferenceSignal&lt;&gt;(
+     *         VisaType.H1B);
+     * VerticalLayout visaSection = new VerticalLayout();
+     * add(visaSection);
+     * // using lambda expression as a computed signal
+     * visaSection.bindVisible(() -> needsVisaSignal.value()
+     *         &amp;&amp; visaTypeSignal.value() == VisaType.H1B);
      * </pre>
      *
      * @param visibleSignal

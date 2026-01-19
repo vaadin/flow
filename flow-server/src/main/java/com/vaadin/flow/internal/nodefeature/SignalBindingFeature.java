@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,7 @@ import java.util.Map;
 import com.vaadin.flow.internal.StateNode;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.Signal;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Node feature for binding {@link Signal}s to various properties of a node.
@@ -30,7 +31,10 @@ import com.vaadin.signals.Signal;
  */
 public class SignalBindingFeature extends ServerSideFeature {
 
+    public static final String CLASSES = "classes/";
     public static final String ENABLED = "enabled";
+    public static final String VALUE = "value";
+    public static final String THEMES = "themes/";
 
     private Map<String, SignalBinding> values;
 
@@ -81,6 +85,29 @@ public class SignalBindingFeature extends ServerSideFeature {
     }
 
     /**
+     * Clears all bindings with keys starting with the given prefix.
+     *
+     * @param keyPrefix
+     *            the key prefix
+     */
+    public void clearBindings(String keyPrefix) {
+        if (values == null) {
+            return;
+        }
+        values.entrySet().removeIf(entry -> {
+            String key = entry.getKey();
+            if (key.startsWith(keyPrefix)) {
+                SignalBinding binding = entry.getValue();
+                if (binding != null && binding.registration != null) {
+                    binding.registration.remove();
+                }
+                return true;
+            }
+            return false;
+        });
+    }
+
+    /**
      * Removes the binding for the given key.
      * 
      * @param key
@@ -97,9 +124,37 @@ public class SignalBindingFeature extends ServerSideFeature {
         values.remove(key);
     }
 
+    /**
+     * Updates the value of the writable signal bound to the given key.
+     * 
+     * @param key
+     *            the key
+     * @param value
+     *            the new value
+     * @param <T>
+     *            the type of the value
+     */
+    public <T> void updateWritableSignalValue(String key, T value) {
+        if (hasBinding(SignalBindingFeature.VALUE)) {
+            Signal<T> signal = getSignal(key);
+            if (signal instanceof WritableSignal<T> writableSignal) {
+                writableSignal.value(value);
+            }
+        }
+    }
+
+    private <T> Signal<T> getSignal(String key) {
+        if (values == null) {
+            return null;
+        }
+        SignalBinding binding = values.get(key);
+        return binding != null ? (Signal<T>) values.get(key).signal : null;
+    }
+
     private void ensureValues() {
         if (values == null) {
             values = new HashMap<>();
         }
     }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -31,6 +31,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.tests.util.MockUI;
 
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
@@ -49,6 +50,8 @@ public abstract class SignalsUnitTest {
     private MockedStatic<FeatureFlags> featureFlagStaticMock;
 
     protected LinkedList<ErrorEvent> events;
+
+    private MockUI ui;
 
     @BeforeClass
     public static void init() {
@@ -73,8 +76,10 @@ public abstract class SignalsUnitTest {
 
     @After
     public void after() {
+        assertTrue(events.isEmpty());
         close(featureFlagStaticMock);
         events = null;
+        ui = null;
     }
 
     private static void featureFlagEnabled(
@@ -98,7 +103,9 @@ public abstract class SignalsUnitTest {
         var session = new MockVaadinSession(service);
         session.lock();
 
-        var ui = new MockUI(session);
+        // UI is set to field to avoid too eager GC due to WeakReference in
+        // CurrentInstance.
+        ui = new MockUI(session);
         var events = new LinkedList<ErrorEvent>();
         session.setErrorHandler(events::add);
 

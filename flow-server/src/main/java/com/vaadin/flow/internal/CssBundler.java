@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -191,6 +191,53 @@ public class CssBundler {
     private static String inlineImports(File baseFolder, File cssFile,
             Set<String> assetAliases, BundleFor bundleFor, String contextPath,
             File nodeModulesFolder) throws IOException {
+        List<String> cyclicImportWarnings = new ArrayList<>();
+        String result = inlineImports(baseFolder, cssFile, assetAliases,
+                bundleFor, contextPath, nodeModulesFolder, new HashSet<>(),
+                cyclicImportWarnings);
+
+        // Log single summary if cycles were detected
+        if (!cyclicImportWarnings.isEmpty()) {
+            getLogger().warn(
+                    "Cyclic CSS @import statements detected and skipped:{}  - {}",
+                    System.lineSeparator(),
+                    String.join(System.lineSeparator() + "  - ",
+                            cyclicImportWarnings));
+        }
+        return result;
+    }
+
+    /**
+     * Internal implementation with cycle detection support.
+     *
+     * @param baseFolder
+     *            base folder used for resolving relative paths
+     * @param cssFile
+     *            the CSS file to process
+     * @param assetAliases
+     *            theme asset aliases (only used when rewriting URLs)
+     * @param bundleFor
+     *            defines a way how bundler resolves url(...)
+     * @param contextPath
+     *            that url() are rewritten to and rebased onto
+     * @param nodeModulesFolder
+     *            the node_modules folder for resolving npm package imports
+     * @param visitedFiles
+     *            set of canonical paths already processed (for cycle detection)
+     * @param cyclicImportWarnings
+     *            list to collect cycle warnings for summary logging
+     */
+    private static String inlineImports(File baseFolder, File cssFile,
+            Set<String> assetAliases, BundleFor bundleFor, String contextPath,
+            File nodeModulesFolder, Set<String> visitedFiles,
+            List<String> cyclicImportWarnings) throws IOException {
+
+        // Track current file as visited using canonical path
+        String canonicalPath = cssFile.getCanonicalPath();
+        if (!visitedFiles.add(canonicalPath)) {
+            // Already processed - cycle detected, will be logged in summary
+            return "";
+        }
 
         String content = Files.readString(cssFile.toPath());
         if (bundleFor == BundleFor.THEMES) {
@@ -222,9 +269,22 @@ public class CssBundler {
                         cssFile.getParentFile(), nodeModulesFolder);
                 if (potentialFile != null && potentialFile.exists()) {
                     try {
+                        // Check for cycle before recursing
+                        String importedPath = potentialFile.getCanonicalPath();
+                        if (visitedFiles.contains(importedPath)) {
+                            // Cycle detected - file already inlined, just skip
+                            cyclicImportWarnings.add(String.format(
+                                    "'%s' imports already processed '%s'",
+                                    cssFile.toPath().normalize()
+                                            .toAbsolutePath(),
+                                    potentialFile.toPath().normalize()
+                                            .toAbsolutePath()));
+                            return "";
+                        }
                         return Matcher.quoteReplacement(inlineImports(
                                 baseFolder, potentialFile, assetAliases,
-                                bundleFor, contextPath, nodeModulesFolder));
+                                bundleFor, contextPath, nodeModulesFolder,
+                                visitedFiles, cyclicImportWarnings));
                     } catch (IOException e) {
                         getLogger().warn("Unable to inline import: {}",
                                 result.group());

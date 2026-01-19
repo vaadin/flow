@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -1281,13 +1281,12 @@ public class Element extends Node<Element> {
      *             if a binding has been set on the text content of this element
      */
     public Element setText(String textContent) {
-        TextBindingFeature feature = getNode()
-                .getFeature(TextBindingFeature.class);
-        if (feature.hasBinding()) {
-            throw new BindingActiveException(
-                    "setText is not allowed while a binding for text exists.");
-        }
-
+        getFeatureIfInitialized(TextBindingFeature.class).ifPresent(feature -> {
+            if (feature.hasBinding()) {
+                throw new BindingActiveException(
+                        "setText is not allowed while a binding for text exists.");
+            }
+        });
         setTextContent(textContent);
 
         return this;

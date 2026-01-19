@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -238,25 +238,28 @@ public class JavaScriptBootstrapUITest {
     public void should_allow_navigation() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         // Dirty view is allowed after clean view
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.SPAN,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
     }
 
     @Test
     public void should_navigate_when_endingSlash() {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true, "/clean/", "", "",
                 null, ""));
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
     }
 
     @Test
@@ -322,50 +325,54 @@ public class JavaScriptBootstrapUITest {
     public void should_prevent_navigation_on_dirty() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.SPAN,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         // clean view cannot be rendered after dirty
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         // an error route cannot be rendered after dirty
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/errr", "", "", null, ""));
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
     }
 
     @Test
     public void should_remove_content_on_leaveNavigation() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         ui.leaveNavigation(
                 new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
 
-        assertEquals(0, ui.wrapperElement.getChildCount());
+        assertEquals(0, ui.getInternals().getWrapperElement().getChildCount());
     }
 
     @Test
     public void should_keep_content_on_leaveNavigation_postpone() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/dirty", "", "", null, ""));
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.SPAN,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         ui.leaveNavigation(
                 new BrowserLeaveNavigationEvent(ui, true, "/client-view", ""));
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H1,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.SPAN,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H1, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
     }
 
     @Test
@@ -397,9 +404,10 @@ public class JavaScriptBootstrapUITest {
         ui.browserNavigate(new BrowserNavigateEvent(ui, true,
                 "/forwardToServerSideViewOnBeforeEnter", "", "", null, ""));
 
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         ui.navigate("product");
         assertEquals("my-product", ui.getInternals().getTitle());
@@ -407,17 +415,20 @@ public class JavaScriptBootstrapUITest {
                 ui.getChildren().findFirst().get().getId().get());
 
         ui.navigate("forwardToServerSideViewOnBeforeEnter");
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
     }
 
     @Test
     public void should_show_error_page() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/err", "", "", null, ""));
-        assertEquals(Tag.DIV, ui.wrapperElement.getChild(0).getTag());
-        assertTrue(ui.wrapperElement.toString().contains("Available routes:"));
+        assertEquals(Tag.DIV,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertTrue(ui.getInternals().getWrapperElement().toString()
+                .contains("Available routes:"));
     }
 
     @Test
@@ -514,9 +525,10 @@ public class JavaScriptBootstrapUITest {
     public void server_should_not_doClientRoute_when_navigatingToServer() {
         ui.browserNavigate(
                 new BrowserNavigateEvent(ui, true, "/clean", "", "", null, ""));
-        assertEquals(Tag.HEADER, ui.wrapperElement.getChild(0).getTag());
-        assertEquals(Tag.H2,
-                ui.wrapperElement.getChild(0).getChild(0).getTag());
+        assertEquals(Tag.HEADER,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
+        assertEquals(Tag.H2, ui.getInternals().getWrapperElement().getChild(0)
+                .getChild(0).getTag());
 
         ui = Mockito.spy(ui);
         Page page = mockPage();
@@ -528,7 +540,8 @@ public class JavaScriptBootstrapUITest {
         // Dirty view is allowed after clean view
         ui.navigate("dirty");
         // A server navigation happens
-        assertEquals(Tag.SPAN, ui.wrapperElement.getChild(0).getTag());
+        assertEquals(Tag.SPAN,
+                ui.getInternals().getWrapperElement().getChild(0).getTag());
         Mockito.verify(page).executeJs(execJs.capture(), execArg.capture());
 
         boolean reactEnabled = ui.getSession().getConfiguration()

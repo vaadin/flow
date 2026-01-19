@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -2083,17 +2083,13 @@ public abstract class VaadinService implements Serializable {
             json.set("locales", JacksonUtils.createObjectNode());
             json.set("meta", meta);
             json.put(ApplicationConstants.SERVER_SYNC_ID, -1);
-            return wrapJsonForClient(json);
+            return json.toString();
         } catch (Exception e) {
             getLogger().warn(
                     "Error creating critical notification JSON message", e);
-            return wrapJsonForClient(JacksonUtils.createObjectNode());
+            return JacksonUtils.createObjectNode().toString();
         }
 
-    }
-
-    private static String wrapJsonForClient(ObjectNode json) {
-        return "for(;;);[" + json.toString() + "]";
     }
 
     /**
@@ -2115,7 +2111,7 @@ public abstract class VaadinService implements Serializable {
         }
 
         meta.put(JsonConstants.META_SESSION_EXPIRED, true);
-        return wrapJsonForClient(json);
+        return json.toString();
     }
 
     /**
