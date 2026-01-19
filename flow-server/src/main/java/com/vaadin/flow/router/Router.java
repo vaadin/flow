@@ -294,7 +294,10 @@ public class Router implements Serializable {
             // No error target available throw runtime exception
             // this is usually only possible when routeRegistry is not
             // ApplicationRouteRegistry
-            throw new RuntimeException(exception);
+            String message = String.format(
+                    "No error view found for exception '%s'",
+                    exception.getClass().getName());
+            throw new RuntimeException(message, exception);
         }
 
         ErrorTargetEntry lookupResult = maybeLookupResult.get();

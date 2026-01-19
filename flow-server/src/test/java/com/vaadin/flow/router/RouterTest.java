@@ -4750,10 +4750,11 @@ public class RouterTest extends RoutingTestBase {
         assertExceptionComponent(InternalServerError.class,
                 "There was an exception while trying to navigate to 'error' with the exception message 'Exception in MainLayout afterNavigation'");
 
-        // Verify that MainLayout's afterNavigation was called at least once
-        Assert.assertFalse(
-                "MainLayout's afterNavigation should have been called",
-                ThrowingMainLayout.events.isEmpty());
+        // Verify that MainLayout's afterNavigation was called two times.
+        // Once for navigation and once for error view.
+        Assert.assertEquals(
+                "MainLayout's afterNavigation should have been called twice", 2,
+                ThrowingMainLayout.events.size());
     }
 
 }
