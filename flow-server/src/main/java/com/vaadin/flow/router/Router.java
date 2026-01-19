@@ -36,6 +36,7 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 
 import com.fasterxml.jackson.databind.node.BaseJsonNode;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import elemental.json.JsonValue;
@@ -351,29 +352,82 @@ public class Router implements Serializable {
                 "Couldn't find route for '" + location.getPath() + "'");
     }
 
-    private int handleExceptionNavigation(UI ui, Location location,
+    /**
+     * Render error view for exception. Finds view to render based on the
+     * exception type. Exception view is chosen for matching exception and if no
+     * match is found choose by extended type.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            current UI instance
+     * @param location
+     *            target location for failing navigation
+     * @param exception
+     *            exception thrown
+     * @param trigger
+     *            navigation trigger
+     * @param state
+     *            navigation state info
+     * @return the HTTP status code to return to the client if handling an
+     *         initial rendering request
+     */
+    public int handleExceptionNavigation(UI ui, Location location,
             Exception exception, NavigationTrigger trigger,
             BaseJsonNode state) {
         Optional<ErrorTargetEntry> maybeLookupResult = getErrorNavigationTarget(
                 exception);
 
-        if (maybeLookupResult.isPresent()) {
-            ErrorTargetEntry lookupResult = maybeLookupResult.get();
+        if (maybeLookupResult.isEmpty()) {
+            // No error target available throw runtime exception
+            // this is usually only possible when routeRegistry is not
+            // ApplicationRouteRegistry
+            String message = String.format(
+                    "No error view found for exception '%s'",
+                    exception.getClass().getName());
+            throw new RuntimeException(message, exception);
+        }
 
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    exception.getMessage());
-            ErrorStateRenderer handler = new ErrorStateRenderer(
-                    new NavigationStateBuilder(this)
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
+        ErrorTargetEntry lookupResult = maybeLookupResult.get();
 
-            ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(
-                    this, location, ui, trigger, errorParameter, state);
+        ErrorParameter<?> errorParameter = new ErrorParameter<>(
+                lookupResult.getHandledExceptionType(), exception,
+                exception.getMessage());
+        ErrorStateRenderer handler = new ErrorStateRenderer(
+                new NavigationStateBuilder(this)
+                        .withTarget(lookupResult.getNavigationTarget())
+                        .build());
 
+        ErrorNavigationEvent navigationEvent = new ErrorNavigationEvent(this,
+                location, ui, trigger, errorParameter, state);
+
+        try {
             return handler.handle(navigationEvent);
-        } else {
-            throw new RuntimeException(exception);
+        } catch (Exception errorHandlingException) {
+            Logger logger = LoggerFactory.getLogger(Router.class);
+
+            // Error view threw an exception - fall back to
+            // InternalServerError
+            logger.error(
+                    "Exception occurred while rendering error view '{}' for '{}'. "
+                            + "Falling back to InternalServerError.",
+                    lookupResult.getNavigationTarget(), location.getPath(),
+                    errorHandlingException);
+
+            // Render InternalServerError as fallback with original
+            // exception as render error is logged
+            ErrorParameter<?> fallbackParameter = new ErrorParameter<>(
+                    Exception.class, exception, exception.getMessage());
+            ErrorStateRenderer fallbackHandler = new ErrorStateRenderer(
+                    new NavigationStateBuilder(this)
+                            .withTarget(InternalServerError.class).build());
+
+            ErrorNavigationEvent fallbackEvent = new ErrorNavigationEvent(this,
+                    location, ui, trigger, fallbackParameter, state);
+
+            // If InternalServerError also throws, let it propagate -
+            // nothing more we can do
+            return fallbackHandler.handle(fallbackEvent);
         }
     }
 
