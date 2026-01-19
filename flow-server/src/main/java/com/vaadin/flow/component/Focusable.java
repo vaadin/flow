@@ -139,27 +139,27 @@ public interface Focusable<T extends Component>
         if (json == null) {
             // No options, call focus() without arguments
             element.executeJs("""
-                setTimeout(function(){
-                    try {
-                       $0._nextFocusIsFromClient = false;
-                       $0.focus();
-                    } finally {
-                       $0._nextFocusIsFromClient = true;
-                    }
-                },0)
-                """, element);
+                    setTimeout(function(){
+                        try {
+                           $0._nextFocusIsFromClient = false;
+                           $0.focus();
+                        } finally {
+                           $0._nextFocusIsFromClient = true;
+                        }
+                    },0)
+                    """, element);
         } else {
             // Call focus with options object passed as parameter
             element.executeJs("""
-                setTimeout(function(){
-                    try {
-                       $0._nextFocusIsFromClient = false;
-                       $0.focus($1);
-                    } finally {
-                       $0._nextFocusIsFromClient = true;
-                    }
-                },0)
-                """, element, json);
+                    setTimeout(function(){
+                        try {
+                           $0._nextFocusIsFromClient = false;
+                           $0.focus($1);
+                        } finally {
+                           $0._nextFocusIsFromClient = true;
+                        }
+                    },0)
+                    """, element, json);
         }
     }
 
