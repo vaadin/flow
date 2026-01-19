@@ -63,6 +63,8 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     private boolean valueSetFromPresentationUpdate;
     private T pendingValueFromPresentation;
 
+    private boolean valueSetFromSignal;
+
     /**
      * Creates a new field support.
      *
@@ -138,7 +140,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      *            the value to set
      */
     public void setValue(T value) {
-        setValue(value, false, false, false);
+        setValue(value, false, false);
     }
 
     /**
@@ -172,7 +174,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             pendingValueFromPresentation = newModelValue;
             return;
         }
-        setValue(newModelValue, true, fromClient, false);
+        setValue(newModelValue, true, fromClient);
     }
 
     /**
@@ -219,11 +221,17 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
     }
 
     private void setValueFromSignal(T value) {
-        setValue(value != null ? value : getEmptyValue(), false, false, true);
+        try {
+            valueSetFromSignal = true;
+            // call setValue(T) to support overrides
+            setValue(value);
+        } finally {
+            valueSetFromSignal = false;
+        }
     }
 
-    private void setValue(T newValue, boolean fromInternal, boolean fromClient,
-            boolean fromSignal) {
+    private void setValue(T newValue, boolean fromInternal,
+            boolean fromClient) {
         if (fromClient && component.isReadOnly()) {
             applyValue(bufferedValue);
             return;
@@ -259,7 +267,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
-        if (!fromSignal) {
+        if (!valueSetFromSignal) {
             // update signal value
             getFeatureIfInitialized(SignalBindingFeature.class)
                     .ifPresent(feature -> {

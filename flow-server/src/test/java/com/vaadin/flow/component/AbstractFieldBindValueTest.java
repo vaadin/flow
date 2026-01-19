@@ -28,6 +28,7 @@ import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 
 public class AbstractFieldBindValueTest extends SignalsUnitTest {
@@ -70,9 +71,8 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         signal.value("bar");
         assertEquals("bar", input.getValue());
 
-        // null transforms to default value ""
         signal.value(null);
-        assertEquals("", input.getValue());
+        assertNull(input.getValue());
     }
 
     @Test
@@ -273,10 +273,14 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         Assert.assertEquals("bar", input.getValue());
         Assert.assertEquals("bar", listenerValue.get());
 
-        // null defaults to defaultValue
+        // null is not allowed in TestPropertyInput. Default value is "".
         signal.value(null);
-        Assert.assertEquals("", input.getValue());
-        Assert.assertEquals("", listenerValue.get());
+        // value doesn't change
+        Assert.assertEquals("bar", input.getValue());
+        Assert.assertEquals("bar", listenerValue.get());
+        Assert.assertEquals(1, events.size());
+        // clear events for next verification in SignalsUnitTest.after
+        events.clear();
     }
 
     /**
