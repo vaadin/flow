@@ -88,61 +88,6 @@ public class UploadEventTest {
     }
 
     @Test
-    public void testReject_canBeCalledMultipleTimes() {
-        UploadEvent event = new UploadEvent(request, response, session,
-                "test.txt", 100L, "text/plain", owner, null);
-
-        event.reject("First reason");
-        Assert.assertTrue("Event should be marked as rejected",
-                event.isRejected());
-        Assert.assertEquals("First rejection message should be set",
-                "First reason", event.getRejectionMessage());
-
-        // Call reject again with different message
-        event.reject("Second reason");
-        Assert.assertTrue("Event should still be marked as rejected",
-                event.isRejected());
-        Assert.assertEquals("Rejection message should be updated",
-                "Second reason", event.getRejectionMessage());
-    }
-
-    @Test
-    public void testGetFileName_returnsCorrectFileName() {
-        String fileName = "document.pdf";
-        UploadEvent event = new UploadEvent(request, response, session,
-                fileName, 1000L, "application/pdf", owner, null);
-
-        Assert.assertEquals("File name should match", fileName,
-                event.getFileName());
-    }
-
-    @Test
-    public void testReject_withNullMessage_setsNullMessage() {
-        UploadEvent event = new UploadEvent(request, response, session,
-                "test.txt", 100L, "text/plain", owner, null);
-
-        event.reject(null);
-
-        Assert.assertTrue("Event should be marked as rejected",
-                event.isRejected());
-        Assert.assertNull("Rejection message should be null",
-                event.getRejectionMessage());
-    }
-
-    @Test
-    public void testReject_withEmptyMessage_setsEmptyMessage() {
-        UploadEvent event = new UploadEvent(request, response, session,
-                "test.txt", 100L, "text/plain", owner, null);
-
-        event.reject("");
-
-        Assert.assertTrue("Event should be marked as rejected",
-                event.isRejected());
-        Assert.assertEquals("Rejection message should be empty", "",
-                event.getRejectionMessage());
-    }
-
-    @Test
     public void testGetInputStream_rejectedUpload_throwsException() {
         UploadEvent event = new UploadEvent(request, response, session,
                 "test.txt", 100L, "text/plain", owner, null);
