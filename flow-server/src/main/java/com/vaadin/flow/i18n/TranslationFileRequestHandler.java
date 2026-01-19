@@ -118,11 +118,11 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean handleSessionExpired(VaadinRequest request,
             VaadinResponse response) throws IOException {
-        if (!canHandleRequest(request)) {
-            return false;
+        if (canHandleRequest(request)) {
+            handleTranslationRequest(request.getService(), request, response);
+            return true;
         }
-        handleTranslationRequest(request.getService(), request, response);
-        return true;
+        return false;
     }
 
     @Override
