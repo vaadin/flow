@@ -382,7 +382,7 @@ public class Router implements Serializable {
      *            the UI to update, not {@code null}
      * @param location
      *            the navigation location, not {@code null}
-     * @param event
+     * @param navigationEvent
      *            the navigation event to pass to the handler
      * @param handler
      *            the navigation handler to execute
