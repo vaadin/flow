@@ -2981,14 +2981,11 @@ public class RouterTest extends RoutingTestBase {
         setNavigationTargets(FailOnException.class);
         setErrorNavigationTargets(FailingErrorHandler.class);
 
-        try {
-            ui.navigate("exception");
-            Assert.fail("No runtime exception was thrown from navigation");
-        } catch (Exception re) {
-            Assert.assertNull(
-                    "Last handled location should have been cleared even though navigation failed",
-                    ui.getInternals().getLastHandledLocation());
-        }
+        ui.navigate("exception");
+
+        Assert.assertNull(
+                "Last handled location should have been cleared even though navigation failed",
+                ui.getInternals().getLastHandledLocation());
     }
 
     @Test
@@ -4695,6 +4692,66 @@ public class RouterTest extends RoutingTestBase {
 
     private void navigate(String url) {
         router.navigate(ui, new Location(url), NavigationTrigger.PROGRAMMATIC);
+    }
+
+    // Test classes for exception in error view's parent layout afterNavigation
+    @Tag(Tag.DIV)
+    @Layout
+    public static class ThrowingMainLayout extends Component
+            implements RouterLayout, AfterNavigationObserver {
+
+        static List<AfterNavigationEvent> events = new ArrayList<>();
+
+        @Override
+        public void afterNavigation(AfterNavigationEvent event) {
+            events.add(event);
+            throw new RuntimeException(
+                    "Exception in MainLayout afterNavigation");
+        }
+    }
+
+    @Route(value = "error", layout = ThrowingMainLayout.class)
+    @Tag(Tag.DIV)
+    public static class TriggerErrorView extends Component {
+    }
+
+    @Tag(Tag.DIV)
+    @ParentLayout(ThrowingMainLayout.class)
+    public static class ErrorViewWithThrowingLayout extends Component
+            implements HasErrorParameter<RuntimeException> {
+
+        @Override
+        public int setErrorParameter(BeforeEnterEvent event,
+                ErrorParameter<RuntimeException> parameter) {
+            getElement().setText("An unexpected error occurred");
+            return HttpStatusCode.INTERNAL_SERVER_ERROR.getCode();
+        }
+    }
+
+    @Test
+    public void exception_in_error_view_parent_layout_afterNavigation_falls_back_to_InternalServerError()
+            throws InvalidRouteConfigurationException {
+        ThrowingMainLayout.events.clear();
+        setNavigationTargets(TriggerErrorView.class);
+        setErrorNavigationTargets(ErrorViewWithThrowingLayout.class);
+
+        int result = router.navigate(ui, new Location("error"),
+                NavigationTrigger.PROGRAMMATIC);
+
+        Assert.assertEquals(
+                "Navigation should complete with internal server error status.",
+                HttpStatusCode.INTERNAL_SERVER_ERROR.getCode(), result);
+
+        // Should fall back to InternalServerError instead of the custom error
+        // view
+        assertExceptionComponent(InternalServerError.class,
+                "There was an exception while trying to navigate to 'error' with the exception message 'Exception in MainLayout afterNavigation'");
+
+        // Verify that MainLayout's afterNavigation was called two times.
+        // Once for navigation and once for error view.
+        Assert.assertEquals(
+                "MainLayout's afterNavigation should have been called twice", 2,
+                ThrowingMainLayout.events.size());
     }
 
 }
