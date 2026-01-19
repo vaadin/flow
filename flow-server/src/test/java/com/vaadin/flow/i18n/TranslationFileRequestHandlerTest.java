@@ -54,6 +54,8 @@ import com.vaadin.flow.shared.ApplicationConstants;
 @NotThreadSafe
 public class TranslationFileRequestHandlerTest {
 
+    private final VaadinService service = Mockito.mock(VaadinService.class);
+
     private final VaadinSession session = Mockito.mock(VaadinSession.class);
 
     private final VaadinRequest request = Mockito.mock(VaadinRequest.class);
@@ -397,7 +399,6 @@ public class TranslationFileRequestHandlerTest {
     private void mockService(boolean isProductionMode) {
         Instantiator instantiator = Mockito.mock(Instantiator.class);
         Mockito.when(instantiator.getI18NProvider()).thenReturn(i18NProvider);
-        VaadinService service = Mockito.mock(VaadinService.class);
         Mockito.when(service.getInstantiator()).thenReturn(instantiator);
         DeploymentConfiguration configuration = Mockito
                 .mock(DeploymentConfiguration.class);
@@ -405,7 +406,10 @@ public class TranslationFileRequestHandlerTest {
                 .thenReturn(isProductionMode);
         Mockito.when(service.getDeploymentConfiguration())
                 .thenReturn(configuration);
-        Mockito.when(session.getService()).thenReturn(service);
+        Mockito.when(request.getService()).thenReturn(service);
+        // Just a guard to ensure the handler never uses VaadinSession
+        Mockito.when(session.getService()).thenThrow(new IllegalStateException(
+                "TranslationFileRequestHandler should not use Vaadin session."));
     }
 
     private void mockRequestService(boolean isProductionMode) {
@@ -453,7 +457,7 @@ public class TranslationFileRequestHandlerTest {
         // Create handler without I18NProvider
         createTranslationFiles(true);
         mockResponse();
-        mockRequestService(false);
+        mockService(false);
         handler = new TranslationFileRequestHandler(null, urlClassLoader);
 
         setRequestParams("fi",
@@ -475,7 +479,7 @@ public class TranslationFileRequestHandlerTest {
         // Create handler without I18NProvider
         createTranslationFiles(true);
         mockResponse();
-        mockRequestService(true);
+        mockService(true);
         handler = new TranslationFileRequestHandler(null, urlClassLoader);
 
         setRequestParams("fi",

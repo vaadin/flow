@@ -96,7 +96,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
     @Override
     public boolean synchronizedHandleRequest(VaadinSession session,
             VaadinRequest request, VaadinResponse response) throws IOException {
-        handleTranslationRequest(session.getService(), request, response);
+        handleTranslationRequest(request.getService(), request, response);
         return true;
     }
 
@@ -133,6 +133,7 @@ public class TranslationFileRequestHandler extends SynchronizedRequestHandler
 
     private void handleTranslationRequest(VaadinService service,
             VaadinRequest request, VaadinResponse response) throws IOException {
+        assert service != null : "VaadinService cannot be null";
         if (i18NProvider == null) {
             handleMissingI18NProvider(service, response);
             return;
