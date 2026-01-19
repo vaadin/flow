@@ -25,6 +25,7 @@ import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.Result;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
+import com.vaadin.signals.shared.AbstractSignal;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

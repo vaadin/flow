@@ -24,9 +24,9 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Tests for binding theme attribute presence to a Signal using ThemeList.bind.

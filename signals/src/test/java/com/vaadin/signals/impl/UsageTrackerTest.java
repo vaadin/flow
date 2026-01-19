@@ -15,18 +15,22 @@
  */
 package com.vaadin.signals.impl;
 
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,7 +40,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class UsageTrackerTest extends SignalTestBase {
     @Test
     void hasChanges_runInTransaction_readsFromTransaction() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -63,7 +67,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_readValueInCallback_tracked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -75,7 +79,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_peekInCallback_notTracked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.peek();
@@ -87,7 +91,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void track_peekConfirmedInCallback_notTracked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.peekConfirmed();
@@ -99,7 +103,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void untracked_useValue_notRegistered() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {
@@ -114,7 +118,7 @@ public class UsageTrackerTest extends SignalTestBase {
 
     @Test
     void untracked_writeInCallback_allowedNoUsageTracked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             Signal.untracked(() -> {

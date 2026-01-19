@@ -16,6 +16,7 @@
 package com.vaadin.signals;
 
 import com.vaadin.signals.impl.SignalTree;
+import com.vaadin.signals.shared.AbstractSignal;
 
 /**
  * Utility class for accessing/using signals internal API.

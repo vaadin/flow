@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.function;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Represents a cleanup operation that can be invoked to unregister a listener,

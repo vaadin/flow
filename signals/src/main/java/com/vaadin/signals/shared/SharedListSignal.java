@@ -13,14 +13,17 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.SignalTree;
@@ -31,13 +34,13 @@ import com.vaadin.signals.operations.SignalOperation;
 /**
  * A signal containing a list of values. Supports atomic updates to the list
  * structure. Each value in the list is accessed as a separate
- * {@link ValueSignal} instance which enables atomic updates to the value of
+ * {@link SharedValueSignal} instance which enables atomic updates to the value of
  * that list entry.
  *
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
+public class SharedListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -147,7 +150,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public ListSignal(Class<T> elementType) {
+    public SharedListSignal(Class<T> elementType) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -168,18 +171,18 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected ListSignal(SignalTree tree, Id id, CommandValidator validator,
+    protected SharedListSignal(SignalTree tree, Id id, CommandValidator validator,
             Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
 
-    private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+    private SharedValueSignal<T> child(Id childId) {
+        return new SharedValueSignal<T>(tree(), childId, validator(), elementType);
     }
 
     @Override
-    protected List<ValueSignal<T>> extractValue(Data data) {
+    protected List<SharedValueSignal<T>> extractValue(Data data) {
         if (data == null) {
             return List.of();
         } else {
@@ -200,7 +203,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertFirst(T value) {
+    public InsertOperation<SharedValueSignal<T>> insertFirst(T value) {
         return insertAt(value, ListPosition.first());
     }
 
@@ -229,7 +232,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertLast(T value) {
+    public InsertOperation<SharedValueSignal<T>> insertLast(T value) {
         return insertAt(value, ListPosition.last());
     }
 
@@ -244,7 +247,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertAt(T value, ListPosition at) {
+    public InsertOperation<SharedValueSignal<T>> insertAt(T value, ListPosition at) {
         return submitInsert(
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
                         toJson(value), Objects.requireNonNull(at)),
@@ -281,7 +284,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> remove(ValueSignal<T> child) {
+    public SignalOperation<Void> remove(SharedValueSignal<T> child) {
         // Override to make public
         return super.remove(child);
     }
@@ -301,7 +304,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given child is at the given position in this list. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the given
      * child is a child of this list and at the given position when the
      * operation is processed.
@@ -321,7 +324,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given signal is a child in this list. This operation is
      * only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the given
      * child is a child of this list and at the given position when the
      * operation is processed.
@@ -350,8 +353,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new list signal that uses the validator, not <code>null</code>
      */
-    public ListSignal<T> withValidator(CommandValidator validator) {
-        return new ListSignal<>(tree(), id(), mergeValidators(validator),
+    public SharedListSignal<T> withValidator(CommandValidator validator) {
+        return new SharedListSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }
 
@@ -364,7 +367,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *
      * @return the new readonly list signal, not <code>null</code>
      */
-    public ListSignal<T> asReadonly() {
+    public SharedListSignal<T> asReadonly() {
         return withValidator(anything -> false);
     }
 
@@ -375,7 +378,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof ListSignal<?> other
+        return this == obj || obj instanceof SharedListSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())
@@ -389,8 +392,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
 
     @Override
     public String toString() {
-        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
-                .collect(Collectors.joining(", ", "ListSignal[", "]"));
+        return peek().stream().map(SharedValueSignal::peek).map(Objects::toString)
+                .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
     }
 
 }

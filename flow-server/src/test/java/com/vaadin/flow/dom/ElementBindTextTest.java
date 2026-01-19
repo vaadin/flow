@@ -36,9 +36,9 @@ import com.vaadin.flow.server.ErrorEvent;
 import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -178,7 +178,7 @@ public class ElementBindTextTest {
     public void bindText_initialNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        ValueSignal<String> signal = new ValueSignal<>();
         element.bindText(signal);
         assertEquals("", element.getText());
         Assert.assertTrue(events.isEmpty());

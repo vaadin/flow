@@ -19,6 +19,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import com.vaadin.signals.impl.SignalTree;
+import com.vaadin.signals.shared.AbstractSignal;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;

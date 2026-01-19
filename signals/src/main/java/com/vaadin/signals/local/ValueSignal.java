@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.local;
 
 import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.signals.core.WritableSignal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
@@ -32,7 +33,11 @@ import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 
 /**
- * A writable signal that holds a reference to an object.
+ * A local writable signal that holds a reference to an object.
+ * <p>
+ * Local signals are non-serializable and use simple lock-based synchronization.
+ * They are designed for UI-local state that doesn't need to be synchronized
+ * across cluster nodes.
  * <p>
  * Changing the signal to reference another immutable value is an atomic
  * operation. It is safe to concurrently read and write the signal value from
@@ -43,15 +48,15 @@ import com.vaadin.signals.operations.SignalOperation;
  * {@link #modify(ValueModifier)} to ensure dependents are informed after the
  * modification is applied.
  * <p>
- * Reference signals can't be used inside signal transactions.
+ * Local signals can't be used inside signal transactions.
  * <p>
  * All operation objects returned from methods on this class are resolved
  * immediately.
- * 
+ *
  * @param <T>
  *            the signal value type
  */
-public class ReferenceSignal<T> implements WritableSignal<T> {
+public class ValueSignal<T> implements WritableSignal<T> {
 
     private T value;
     private int version;
@@ -62,20 +67,20 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
     final ReentrantLock lock = new ReentrantLock();
 
     /**
-     * Creates a new reference signal with the given initial value.
+     * Creates a new local value signal with the given initial value.
      *
      * @param initialValue
      *            the initial value, may be <code>null</code>
      */
-    public ReferenceSignal(T initialValue) {
+    public ValueSignal(T initialValue) {
         this.value = initialValue;
     }
 
     /**
-     * Creates a new reference signal with an initial value of
+     * Creates a new local value signal with an initial value of
      * <code>null</code>.
      */
-    public ReferenceSignal() {
+    public ValueSignal() {
         this(null);
     }
 
@@ -84,7 +89,7 @@ public class ReferenceSignal<T> implements WritableSignal<T> {
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
-                    "ReferenceSignal cannot be used inside signal transactions.");
+                    "Local signals cannot be used inside signal transactions.");
         }
 
         if (modifyRunning) {

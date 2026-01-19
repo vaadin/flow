@@ -19,7 +19,7 @@ import java.util.Arrays;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Represents {@link Component} which has theme attribute.

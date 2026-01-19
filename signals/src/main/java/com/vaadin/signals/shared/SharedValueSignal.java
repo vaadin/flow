@@ -13,12 +13,15 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.List;
 import java.util.Objects;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.core.WritableSignal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.TransactionTask;
@@ -37,7 +40,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public class ValueSignal<T> extends AbstractSignal<T>
+public class SharedValueSignal<T> extends AbstractSignal<T>
         implements WritableSignal<T> {
     private final Class<T> valueType;
 
@@ -50,7 +53,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      *            the initial value to use, not <code>null</code>
      */
     @SuppressWarnings("unchecked")
-    public ValueSignal(T initialValue) {
+    public SharedValueSignal(T initialValue) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 (Class<T>) initialValue.getClass());
         value(initialValue);
@@ -63,7 +66,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    public ValueSignal(Class<T> valueType) {
+    public SharedValueSignal(Class<T> valueType) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 Objects.requireNonNull(valueType));
     }
@@ -84,7 +87,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
      * @param valueType
      *            the value type, not <code>null</code>
      */
-    protected ValueSignal(SignalTree tree, Id id, CommandValidator validator,
+    protected SharedValueSignal(SignalTree tree, Id id, CommandValidator validator,
             Class<T> valueType) {
         super(tree, id, validator);
         this.valueType = Objects.requireNonNull(valueType);
@@ -167,7 +170,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
     /**
      * Checks that this signal has the expected value. This operation is only
      * meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the expected
      * value was present and resolved as unsuccessful if any other value was
      * present when the operation is processed.
@@ -196,13 +199,13 @@ public class ValueSignal<T> extends AbstractSignal<T>
      *            the validator to use, not <code>null</code>
      * @return a new value signal that uses the validator, not <code>null</code>
      */
-    public ValueSignal<T> withValidator(CommandValidator validator) {
-        return new ValueSignal<>(tree(), id(), mergeValidators(validator),
+    public SharedValueSignal<T> withValidator(CommandValidator validator) {
+        return new SharedValueSignal<>(tree(), id(), mergeValidators(validator),
                 valueType);
     }
 
     @Override
-    public ValueSignal<T> asReadonly() {
+    public SharedValueSignal<T> asReadonly() {
         /*
          * While this method could semantically be declared to return a less
          * specific type that doesn't provide mutator methods, that would also
@@ -220,7 +223,7 @@ public class ValueSignal<T> extends AbstractSignal<T>
     public boolean equals(Object obj) {
         // Explicitly checking getClass() to avoid accidental equality with
         // NumberSignal
-        return this == obj || obj instanceof ValueSignal<?> other
+        return this == obj || obj instanceof SharedValueSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())
@@ -235,6 +238,6 @@ public class ValueSignal<T> extends AbstractSignal<T>
 
     @Override
     public String toString() {
-        return "ValueSignal[" + peek() + "]";
+        return "SharedValueSignal[" + peek() + "]";
     }
 }

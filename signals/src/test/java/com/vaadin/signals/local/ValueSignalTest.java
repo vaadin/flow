@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.local;
 
 import java.util.ConcurrentModificationException;
 import java.util.concurrent.Semaphore;
@@ -23,6 +23,10 @@ import java.util.function.BooleanSupplier;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.core.WritableSignal;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
@@ -36,25 +40,25 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class ReferenceSignalTest extends SignalTestBase {
+public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void constructor_noArgs_nullValue() {
-        ReferenceSignal<Object> signal = new ReferenceSignal<>();
+        ValueSignal<Object> signal = new ValueSignal<>();
 
         assertNull(signal.value());
     }
 
     @Test
     void constructor_initialValue_initialValueUsed() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("value");
+        ValueSignal<String> signal = new ValueSignal<>("value");
 
         assertEquals("value", signal.value());
     }
 
     @Test
     void setValue_valueUsed() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>();
+        ValueSignal<String> signal = new ValueSignal<>();
         signal.value("value");
 
         assertEquals("value", signal.value());
@@ -62,7 +66,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void setValue_oldValueInResult() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         SignalOperation<String> operation = signal.value("update");
 
@@ -72,7 +76,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void replace_expectedValue_valueUpdated() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         SignalOperation<Void> operation = signal.replace("initial", "update");
 
@@ -82,7 +86,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void replace_otherValue_valueNotUpdated() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         SignalOperation<Void> operation = signal.replace("other", "update");
 
@@ -92,7 +96,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void update_updatesTheValue() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         CancelableOperation<String> operation = signal.update(oldValue -> {
             assertEquals("initial", oldValue);
@@ -107,7 +111,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void update_callbackThrows_exceptionPropagated() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         RuntimeException theException = new RuntimeException();
 
@@ -123,7 +127,7 @@ public class ReferenceSignalTest extends SignalTestBase {
     @Test
     void modify_modifiesValue_valueModified() {
         String[] holder = new String[] { "initial" };
-        ReferenceSignal<String[]> signal = new ReferenceSignal<>(holder);
+        ValueSignal<String[]> signal = new ValueSignal<>(holder);
 
         signal.modify(value -> {
             assertSame(holder, value);
@@ -136,7 +140,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void asReadonly_notWritable() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
         assertFalse(readonly instanceof WritableSignal<String>);
@@ -144,7 +148,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void asReadonly_changeSignal_readonlyUpdated() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
         Signal<String> readonly = signal.asReadonly();
 
         signal.value("update");
@@ -153,7 +157,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_setNewValue_changeDetected() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -176,7 +180,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_updateSameValue_noChangeDetected() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -197,7 +201,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_listenToChangedUsage_initialFlagSet() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -217,7 +221,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_keepListening_listenerKept() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -242,7 +246,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_stopAfterInitial_stopped() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -264,7 +268,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_stopAfterSubsequent_stopped() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -285,7 +289,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_anyModify_detectedAsAChange() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -298,7 +302,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void usageTracker_peek_noUsageDetected() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Usage usage = UsageTracker.track(() -> {
             signal.peek();
@@ -309,7 +313,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void concurrency_updateHoldsLock() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         signal.update(value -> {
             assertTrue(signal.lock.isHeldByCurrentThread());
@@ -320,7 +324,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void concurrency_lockHeld_operationsAreBlocked() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
         signal.lock.lock();
 
         AtomicInteger completed = new AtomicInteger();
@@ -364,7 +368,7 @@ public class ReferenceSignalTest extends SignalTestBase {
     @Test
     void concurrency_modifyWhileLocked_modifyThrowsEagerly()
             throws InterruptedException {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Thread lockThread = Thread.startVirtualThread(() -> signal.lock.lock());
         // Wait until locked
@@ -379,7 +383,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void concurrency_otherUsageWhileModifying_otherUsageThrows() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         Semaphore modifyStarted = new Semaphore(0);
         Semaphore modifyCanProceed = new Semaphore(0);
@@ -415,7 +419,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void transactions_readSignalInTransaction_throws() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {
@@ -426,7 +430,7 @@ public class ReferenceSignalTest extends SignalTestBase {
 
     @Test
     void transactions_writeSignalInTransaction_throws() {
-        ReferenceSignal<String> signal = new ReferenceSignal<>("initial");
+        ValueSignal<String> signal = new ValueSignal<>("initial");
 
         assertThrows(IllegalStateException.class, () -> {
             Signal.runInTransaction(() -> {

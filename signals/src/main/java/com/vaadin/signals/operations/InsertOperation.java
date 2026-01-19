@@ -17,7 +17,7 @@ package com.vaadin.signals.operations;
 
 import java.util.Objects;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * An operation that inserts a new child signal into a list or map. In addition

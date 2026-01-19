@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,7 +21,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand.SetCommand;
+import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;
@@ -29,6 +33,7 @@ import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
+import com.vaadin.signals.SignalCommand;
 
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;
@@ -40,16 +45,16 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ValueSignalTest extends SignalTestBase {
+public class SharedValueSignalTest extends SignalTestBase {
     /*
      * Note that there's no test specific to the generic Signal class but most
      * of that functionality is instead tested through its simplest subclass,
-     * i.e. ValueSignal
+     * i.e. SharedValueSignal
      */
 
     @Test
     void constructor_type_noValueAndTypeIsUsed() {
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        SharedValueSignal<String> signal = new SharedValueSignal<>(String.class);
         assertNull(signal.value());
 
         signal.value("a string");
@@ -57,7 +62,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
-            ValueSignal<Object> raw = ((ValueSignal) signal);
+            SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
             raw.value(new Object());
         });
@@ -66,7 +71,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void constructor_initialValue_valueUsedAndTypeIsInferred() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         assertEquals("initial", signal.value());
 
         signal.value("a string");
@@ -74,7 +79,7 @@ public class ValueSignalTest extends SignalTestBase {
 
         assertThrows(AssertionError.class, () -> {
             @SuppressWarnings({ "rawtypes", "unchecked" })
-            ValueSignal<Object> raw = ((ValueSignal) signal);
+            SharedValueSignal<Object> raw = ((SharedValueSignal) signal);
 
             raw.value(new Object());
         });
@@ -85,7 +90,7 @@ public class ValueSignalTest extends SignalTestBase {
     void constructor_nullType_throws() {
         assertThrows(NullPointerException.class, () -> {
             Class<String> type = null;
-            new ValueSignal<>(type);
+            new SharedValueSignal<>(type);
         });
     }
 
@@ -93,14 +98,14 @@ public class ValueSignalTest extends SignalTestBase {
     void constructor_nullInitialValue_throws() {
         assertThrows(NullPointerException.class, () -> {
             String initial = null;
-            new ValueSignal<>(initial);
+            new SharedValueSignal<>(initial);
         });
     }
 
     @Test
     void value_mutateValueInstance_signalValueUnaffected() {
         String[] array = { "initial" };
-        ValueSignal<String[]> signal = new ValueSignal<>(array);
+        SharedValueSignal<String[]> signal = new SharedValueSignal<>(array);
 
         array[0] = "modified";
         assertEquals("initial", signal.value()[0]);
@@ -111,7 +116,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void value_hasPrevious_previousInResult() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         SignalOperation<String> operation = signal.value("update");
         assertEquals("update", signal.value());
@@ -122,7 +127,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void peekConfirmed_hasUnconfirmedChange_changeIngored() {
-        AsyncValueSignal signal = new AsyncValueSignal();
+        AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
         signal.value("update");
 
         assertEquals("update", signal.value());
@@ -135,7 +140,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void replace_expectedValue_successfulResult() {
-        ValueSignal<String> signal = new ValueSignal<>("expected");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
         assertEquals("update", signal.value());
@@ -145,7 +150,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void replace_unexpectedValue_failedlResult() {
-        ValueSignal<String> signal = new ValueSignal<>("unexpected");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("unexpected");
 
         SignalOperation<Void> operation = signal.replace("expected", "update");
         assertEquals("unexpected", signal.value());
@@ -155,7 +160,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_noConflict_updatedWithPreviousValueInResult() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
         CancelableOperation<String> operation = signal.update(previous -> {
             assertEquals("initial", previous);
@@ -167,7 +172,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_cancelWithConflict_noFurtherInvocationsAndCancelledResult() {
-        AsyncValueSignal signal = new AsyncValueSignal();
+        AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
 
         CancelableOperation<String> operation = signal.update(previous -> {
             assertNull(previous);
@@ -187,7 +192,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_cancelWithoutConflict_succeeds() {
-        AsyncValueSignal signal = new AsyncValueSignal();
+        AsyncSharedValueSignal signal = new AsyncSharedValueSignal();
 
         CancelableOperation<String> operation = signal.update(previous -> {
             assertNull(previous);
@@ -204,7 +209,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void update_conflictsNoCancel_eventuallySucceeds() {
-        ValueSignal<Integer> signal = new ValueSignal<>(Integer.valueOf(0));
+        SharedValueSignal<Integer> signal = new SharedValueSignal<>(Integer.valueOf(0));
 
         CancelableOperation<Integer> operation = signal.update(previous -> {
             if (previous < 5) {
@@ -223,7 +228,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void verifyValue_expectedValue_operationSuccessful() {
-        ValueSignal<String> signal = new ValueSignal<>("expected");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("expected");
 
         SignalOperation<Void> operation = signal.verifyValue("expected");
 
@@ -232,7 +237,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void verifyValue_unexpectedValue_operationSuccessful() {
-        ValueSignal<String> signal = new ValueSignal<>("unexpected");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("unexpected");
 
         SignalOperation<Void> operation = signal.verifyValue("expected");
 
@@ -241,10 +246,10 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_acceptsOperation_operationAccepted() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<SignalCommand> validatedCommands = new ArrayList<>();
 
-        ValueSignal<String> wrapper = signal.withValidator(command -> {
+        SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             validatedCommands.add(command);
             return true;
         });
@@ -259,9 +264,9 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_rejectsNullValues_nullRejectedAndOtherAccepted() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        ValueSignal<String> wrapper = signal.withValidator(command -> {
+        SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             if (command instanceof SetCommand set) {
                 return !set.value().isNull();
             }
@@ -280,9 +285,9 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_changeThroughOriginal_validatorNotInvokedAndWrapperUpdated() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        ValueSignal<String> wrapper = signal.withValidator(command -> {
+        SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             throw new RuntimeException();
         });
 
@@ -293,9 +298,9 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_verifyCommand_validatorNotInvoked() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
 
-        ValueSignal<String> wrapper = signal.withValidator(command -> {
+        SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             throw new RuntimeException();
         });
 
@@ -305,10 +310,10 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_inTransaction_validatorInvokedForChildren() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         List<SignalCommand> validatedCommands = new ArrayList<>();
 
-        ValueSignal<String> wrapper = signal.withValidator(command -> {
+        SharedValueSignal<String> wrapper = signal.withValidator(command -> {
             validatedCommands.add(command);
             return true;
         });
@@ -323,8 +328,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void readonly_makeChanges_changesRejected() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
-        ValueSignal<String> readonly = signal.asReadonly();
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
+        SharedValueSignal<String> readonly = signal.asReadonly();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.value("Update");
@@ -335,7 +340,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_changingSignalValue_usageDetectsValueChange() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
@@ -359,7 +364,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_repeatingChangeListener_usageDetectsFollowingValueChange() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
@@ -380,7 +385,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_noOpChange_listenerNotNotifiedButRemainsActive() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
@@ -403,7 +408,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_unrelatedChange_listenerNotNotifiedButRemainsActive() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger count = new AtomicInteger();
 
         Usage usage = UsageTracker.track(() -> {
@@ -426,7 +431,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_registerAfterChange_listenerCalledImmediately() {
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         AtomicInteger falseCount = new AtomicInteger();
         AtomicInteger trueCount = new AtomicInteger();
 
@@ -455,8 +460,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_removeSignalAfterTracking_hasNoChanges() {
-        ListSignal<String> list = new ListSignal<>(String.class);
-        ValueSignal<String> signal = list.insertLast("value").signal();
+        SharedListSignal<String> list = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> signal = list.insertLast("value").signal();
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -469,8 +474,8 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_removeSignalBeforeTracking_hasNoChanges() {
-        ListSignal<String> list = new ListSignal<>(String.class);
-        ValueSignal<String> signal = list.insertLast("value").signal();
+        SharedListSignal<String> list = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> signal = list.insertLast("value").signal();
 
         list.remove(signal);
 
@@ -485,7 +490,7 @@ public class ValueSignalTest extends SignalTestBase {
     void result_successfulOperation_resolvedThroughResultNotifier() {
         TestExecutor notifier = useTestResultNotifier();
 
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        SharedValueSignal<String> signal = new SharedValueSignal<>(String.class);
         SignalOperation<String> operation = signal.value("update");
 
         assertFalse(operation.result().isDone());
@@ -500,7 +505,7 @@ public class ValueSignalTest extends SignalTestBase {
     void result_failingOperation_resolvedThroughResultNotifier() {
         TestExecutor notifier = useTestResultNotifier();
 
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        SharedValueSignal<String> signal = new SharedValueSignal<>(String.class);
         SignalOperation<Void> operation = signal.replace("other", "update");
 
         assertFalse(operation.result().isDone());
@@ -558,7 +563,7 @@ public class ValueSignalTest extends SignalTestBase {
     @Test
     void transaction_withFailingSupplier_supplierIsRunAndReturnValueAccessible() {
         AtomicInteger inCount = new AtomicInteger();
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<String> operation = Signal.runInTransaction(() -> {
             assertTrue(Transaction.inTransaction());
@@ -576,7 +581,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_readValue_readThroughTransaction() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         Signal.runInTransaction(() -> {
             // Read to make signal participate in transaction
@@ -593,7 +598,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_writeValue_writtenThroughTransaction() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         Signal.runInTransaction(() -> {
             signal.value("update");
@@ -607,7 +612,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_readInTransactionAndChangeOutside_transactionFails() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
             signal.value(signal.value() + " update");
@@ -623,7 +628,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_peekInTransactionAndChangeOutside_transactionSuccessful() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
             signal.value(signal.peek() + " update");
@@ -639,7 +644,7 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void transaction_peekConfirmedInTransactionAndChangeOutside_transactionSuccessful() {
-        ValueSignal<String> signal = new ValueSignal<>("value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("value");
 
         TransactionOperation<Void> operation = Signal.runInTransaction(() -> {
             signal.value(signal.peekConfirmed() + " update");
@@ -655,19 +660,19 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode() {
-        ValueSignal<String> signal = new ValueSignal<>(String.class);
+        SharedValueSignal<String> signal = new SharedValueSignal<>(String.class);
         assertEquals(signal, signal);
 
-        ValueSignal<String> copy = new ValueSignal<>(signal.tree(), signal.id(),
+        SharedValueSignal<String> copy = new SharedValueSignal<>(signal.tree(), signal.id(),
                 signal.validator(), String.class);
         assertEquals(signal, copy);
         assertEquals(signal.hashCode(), copy.hashCode());
 
-        ValueSignal<String> asValue = signal.asNode().asValue(String.class);
+        SharedValueSignal<String> asValue = signal.asNode().asValue(String.class);
         assertEquals(signal, asValue);
         assertEquals(signal.hashCode(), asValue.hashCode());
 
-        assertNotEquals(signal, new ValueSignal<>(String.class));
+        assertNotEquals(signal, new SharedValueSignal<>(String.class));
         assertNotEquals(signal, signal.asReadonly());
         assertNotEquals(signal, signal.asNode());
         assertNotEquals(signal, signal.asNode().asValue(Double.class));
@@ -675,13 +680,13 @@ public class ValueSignalTest extends SignalTestBase {
 
     @Test
     void toString_includesValue() {
-        ValueSignal<String> signal = new ValueSignal<>("signal value");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("signal value");
 
-        assertEquals("ValueSignal[signal value]", signal.toString());
+        assertEquals("SharedValueSignal[signal value]", signal.toString());
     }
 
-    public static class AsyncValueSignal extends ValueSignal<String> {
-        public AsyncValueSignal() {
+    public static class AsyncSharedValueSignal extends SharedValueSignal<String> {
+        public AsyncSharedValueSignal() {
             super(new AsyncTestTree(), Id.ZERO, ANYTHING_GOES, String.class);
         }
 

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.core;
 
 import java.util.Objects;
 
@@ -244,7 +244,7 @@ public interface Signal<T> {
     /**
      * Runs the given supplier without tracking dependencies for signals that
      * are read within the supplier. This has the same effect as
-     * {@link AbstractSignal#peek()} but is effective for an entire code block
+     * {@link com.vaadin.signals.shared.AbstractSignal#peek()} but is effective for an entire code block
      * rather than just a single invocation.
      *
      * @param <T>

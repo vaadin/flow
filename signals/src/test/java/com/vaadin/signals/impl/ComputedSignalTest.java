@@ -15,6 +15,10 @@
  */
 package com.vaadin.signals.impl;
 
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+
 import java.lang.ref.WeakReference;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -24,11 +28,11 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.AbstractSignal;
-import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.EffectAction;
+import com.vaadin.signals.shared.AbstractSignal;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -55,7 +59,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void value_readSignal_runLazily() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         ArrayList<String> invocations = new ArrayList<>();
 
@@ -79,7 +83,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void value_noOpChange_notRunAgain() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<String> signal = Signal.computed(() -> {
@@ -98,7 +102,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void map_mapComputedSignal_valueIsMapped() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         Signal<Integer> computed = Signal
                 .computed(() -> source.value().length());
@@ -110,7 +114,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void map_mapMappedSignal_valueIsMapped() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         Signal<Integer> computed = source.map(String::length);
 
@@ -121,7 +125,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void map_countCallbackInvocations_invocationsAreNotCached() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<Integer> computed = source.map(value -> {
@@ -139,7 +143,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void not_booleanInputs_negatedOutputs() {
-        ValueSignal<Boolean> signal = new ValueSignal<>(Boolean.TRUE);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(Boolean.TRUE);
         Signal<Boolean> negated = Signal.not(signal);
 
         assertFalse(negated.value());
@@ -153,7 +157,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void callback_updateOtherSignal_signalUpdated() {
-        ValueSignal<String> other = new ValueSignal<>("value");
+        SharedValueSignal<String> other = new SharedValueSignal<>("value");
 
         Signal<String> signal = Signal.computed((() -> {
             other.value("update");
@@ -168,7 +172,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void effect_changeComputedDependency_effectRunAgain() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<String> signal = Signal.computed(() -> {
@@ -192,7 +196,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void effect_noOpChangeInComputedDependency_effectNotRunAgainButRemainsActive() {
-        ValueSignal<String> source = new ValueSignal<>("value1");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value1");
         AtomicInteger count = new AtomicInteger();
 
         Signal<Integer> signal = Signal.computed(() -> {
@@ -220,7 +224,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void effect_signalUpdatedInTransaction_effectIsUpdated() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         AtomicInteger computeCount = new AtomicInteger();
         Signal<String> signal = Signal.computed(() -> {
@@ -243,7 +247,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void effect_closedEffect_computedGarbageCollected() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
 
         Signal<String> signal = Signal.computed(() -> source.value());
 
@@ -276,7 +280,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void transaction_readInCommittedTransaction_notCoumptedAgainAfterTransaction() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<String> signal = Signal.computed(() -> {
@@ -300,7 +304,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void transaction_readInAbortedTransaction_notCoumptedAgainAfterTransaction() {
-        ValueSignal<String> source = new ValueSignal<>("value");
+        SharedValueSignal<String> source = new SharedValueSignal<>("value");
         AtomicInteger count = new AtomicInteger();
 
         Signal<String> signal = Signal.computed(() -> {
@@ -340,7 +344,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void lambda_computesValue_computedNotCached() {
-        ValueSignal<Integer> signal = new ValueSignal<>(1);
+        SharedValueSignal<Integer> signal = new SharedValueSignal<>(1);
 
         AtomicInteger count = new AtomicInteger();
 
@@ -364,7 +368,7 @@ public class ComputedSignalTest extends SignalTestBase {
 
     @Test
     void exceptionHandling_callbackThrows_rethrowWhenReading() {
-        ValueSignal<Boolean> shouldThrow = new ValueSignal<>(false);
+        SharedValueSignal<Boolean> shouldThrow = new SharedValueSignal<>(false);
 
         AtomicInteger count = new AtomicInteger();
         Signal<Boolean> computed = Signal.computed(() -> {

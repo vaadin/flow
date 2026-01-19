@@ -18,7 +18,7 @@ package com.vaadin.flow.dom;
 import java.io.Serializable;
 import java.util.Set;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Representation of the class names for an {@link Element}.

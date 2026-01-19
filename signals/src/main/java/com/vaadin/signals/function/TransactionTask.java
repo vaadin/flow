@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.function;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Represents a task to be executed within a signal transaction context. All

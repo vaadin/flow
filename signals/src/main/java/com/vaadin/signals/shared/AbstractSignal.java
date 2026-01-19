@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -22,7 +22,11 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.signals.Id;
+import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.CommandResult;
@@ -48,7 +52,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the signal value type
  */
-public abstract class AbstractSignal<T> implements Signal<T> {
+public abstract class AbstractSignal<T> implements com.vaadin.signals.core.Signal<T> {
     /**
      * Converts a command result into a specific value type.
      *
@@ -248,13 +252,16 @@ public abstract class AbstractSignal<T> implements Signal<T> {
      * validator. Condition commands are always considered valid, transaction
      * commands are valid if all nested commands are valid, and other commands
      * are validated using the configured validator.
+     * <p>
+     * <strong>Note</strong>: This is internal API and may change or be removed
+     * in future releases.
      *
      * @param command
      *            the command to validate, not <code>null</code>
      * @return <code>true</code> if the command is valid, <code>false</code>
      *         otherwise
      */
-    boolean isValid(SignalCommand command) {
+    public boolean isValid(SignalCommand command) {
         if (command instanceof SignalCommand.ConditionCommand) {
             return true;
         } else if (command instanceof SignalCommand.TransactionCommand tx) {
@@ -403,10 +410,13 @@ public abstract class AbstractSignal<T> implements Signal<T> {
 
     /**
      * Gets the signal tree that stores the value for this signal.
+     * <p>
+     * <strong>Note</strong>: This is internal API and may change or be removed
+     * in future releases.
      *
      * @return the signal tree, not <code>null</code>
      */
-    protected SignalTree tree() {
+    public SignalTree tree() {
         return tree;
     }
 

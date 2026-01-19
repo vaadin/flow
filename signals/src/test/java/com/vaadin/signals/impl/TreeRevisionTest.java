@@ -15,6 +15,10 @@
  */
 package com.vaadin.signals.impl;
 
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,9 +26,9 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;

@@ -23,7 +23,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.vaadin.flow.dom.ClassList;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Immutable class list implementation.

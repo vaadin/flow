@@ -15,6 +15,10 @@
  */
 package com.vaadin.signals.impl;
 
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -27,7 +31,6 @@ import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
@@ -37,6 +40,7 @@ import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
 import com.vaadin.signals.impl.SignalTree.Type;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

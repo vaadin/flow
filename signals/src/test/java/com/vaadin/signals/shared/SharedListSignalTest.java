@@ -13,19 +13,23 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.ListSignal.ListPosition;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;
@@ -37,10 +41,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class ListSignalTest extends SignalTestBase {
+public class SharedListSignalTest extends SignalTestBase {
     @Test
     void constructor_initialValue_isEmpty() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         int size = signal.value().size();
 
@@ -49,7 +53,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertFirst_twoInserts_insertedInOrder() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         signal.insertFirst("a");
         signal.insertFirst("b");
@@ -59,7 +63,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertFirst_concurrentInserts_insertedInConfirmOrder() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         signal.insertFirst("initial");
         Signal.runInTransaction(() -> {
@@ -77,7 +81,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertLast_twoInserts_insertedInOrder() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         signal.insertLast("a");
         signal.insertLast("b");
@@ -87,7 +91,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertLast_concurrentInserts_insertedInConfirmOrder() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         signal.insertLast("initial");
         Signal.runInTransaction(() -> {
@@ -110,11 +114,11 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertAt_validLocation_insertSuccessful() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first").signal();
         signal.insertLast("last").signal();
 
-        InsertOperation<ValueSignal<String>> operation = signal
+        InsertOperation<SharedValueSignal<String>> operation = signal
                 .insertAt("afterLast", ListPosition.before(null));
 
         assertSuccess(operation);
@@ -123,11 +127,11 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insertAt_invalidLocation_insertFailed() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> first = signal.insertFirst("first").signal();
-        ValueSignal<String> last = signal.insertLast("last").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertFirst("first").signal();
+        SharedValueSignal<String> last = signal.insertLast("last").signal();
 
-        InsertOperation<ValueSignal<String>> operation = signal
+        InsertOperation<SharedValueSignal<String>> operation = signal
                 .insertAt("invalid", ListPosition.between(last, first));
 
         assertFailure(operation);
@@ -136,10 +140,10 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void insert_updateUnconfirmedInsertedSignal_valueUpdated() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
-        ValueSignal<String> child = Transaction.runInTransaction(() -> {
-            ValueSignal<String> childInner = signal.insertLast("insert")
+        SharedValueSignal<String> child = Transaction.runInTransaction(() -> {
+            SharedValueSignal<String> childInner = signal.insertLast("insert")
                     .signal();
 
             assertEquals(0, signal.peekConfirmed().size());
@@ -156,10 +160,10 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void moveTo_validLocation_moveSuccessful() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first").signal();
-        ValueSignal<String> middle = signal.insertLast("middle").signal();
-        ValueSignal<String> last = signal.insertLast("last").signal();
+        SharedValueSignal<String> middle = signal.insertLast("middle").signal();
+        SharedValueSignal<String> last = signal.insertLast("last").signal();
 
         SignalOperation<Void> operation = signal.moveTo(middle,
                 ListPosition.after(last));
@@ -170,10 +174,10 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void moveTo_invalidLocation_moveFailed() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> first = signal.insertFirst("first").signal();
-        ValueSignal<String> middle = signal.insertLast("middle").signal();
-        ValueSignal<String> last = signal.insertLast("last").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertFirst("first").signal();
+        SharedValueSignal<String> middle = signal.insertLast("middle").signal();
+        SharedValueSignal<String> last = signal.insertLast("last").signal();
 
         SignalOperation<Void> operation = signal.moveTo(middle,
                 ListPosition.between(last, first));
@@ -184,8 +188,8 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void remove_existingChild_removeSuccessful() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> first = signal.insertFirst("first").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertFirst("first").signal();
         signal.insertLast("last").signal();
 
         SignalOperation<Void> operation = signal.remove(first);
@@ -196,10 +200,10 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void remove_nonExtistentChild_removeFails() {
-        ListSignal<String> other = new ListSignal<>(String.class);
-        ValueSignal<String> child = other.insertLast("child").signal();
+        SharedListSignal<String> other = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> child = other.insertLast("child").signal();
 
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertLast("child");
 
         SignalOperation<Void> operation = signal.remove(child);
@@ -209,7 +213,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void clear_listWithChildren_listCleared() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first").signal();
         signal.insertLast("last").signal();
 
@@ -221,9 +225,9 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void verifyPosition_correctPosition_successful() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> first = signal.insertFirst("first").signal();
-        ValueSignal<String> last = signal.insertLast("last").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertFirst("first").signal();
+        SharedValueSignal<String> last = signal.insertLast("last").signal();
 
         SignalOperation<Void> operation = signal.verifyPosition(last,
                 ListPosition.after(first));
@@ -233,9 +237,9 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void verifyPosition_invalidPosition_failure() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> first = signal.insertFirst("first").signal();
-        ValueSignal<String> last = signal.insertLast("last").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> first = signal.insertFirst("first").signal();
+        SharedValueSignal<String> last = signal.insertLast("last").signal();
 
         SignalOperation<Void> operation = signal.verifyPosition(last,
                 ListPosition.before(first));
@@ -245,8 +249,8 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void verifyChild_isChild_successful() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
-        ValueSignal<String> child = signal.insertFirst("child").signal();
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
+        SharedValueSignal<String> child = signal.insertFirst("child").signal();
 
         SignalOperation<Void> operation = signal.verifyChild(child);
 
@@ -255,55 +259,55 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void verifyChild_isNotChild_failure() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("child").signal();
 
         SignalOperation<Void> operation = signal
-                .verifyChild(new ValueSignal<>("child"));
+                .verifyChild(new SharedValueSignal<>("child"));
 
         assertFailure(operation);
     }
 
     @Test
     void value_modifyListInstance_isImmutable() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first");
 
-        List<ValueSignal<String>> value = signal.value();
+        List<SharedValueSignal<String>> value = signal.value();
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            value.add(new ValueSignal<>("new"));
+            value.add(new SharedValueSignal<>("new"));
         });
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            value.set(0, new ValueSignal<>("new"));
+            value.set(0, new SharedValueSignal<>("new"));
         });
     }
 
     @Test
     void value_changeSignalBeforeIterating_iteratesOldState() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertFirst("first");
 
-        List<ValueSignal<String>> value = signal.value();
+        List<SharedValueSignal<String>> value = signal.value();
 
         signal.insertLast("last");
 
-        List<String> list = value.stream().map(ValueSignal::value).toList();
+        List<String> list = value.stream().map(SharedValueSignal::value).toList();
         assertEquals(List.of("first"), list);
     }
 
     @Test
     void withValidator_spyingValidator_seesParentAndChildOperations() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         List<SignalCommand> validatedCommands = new ArrayList<>();
 
-        ListSignal<String> wrapper = signal.withValidator(command -> {
+        SharedListSignal<String> wrapper = signal.withValidator(command -> {
             validatedCommands.add(command);
             return true;
         });
 
-        ValueSignal<String> child = wrapper.insertFirst("child").signal();
+        SharedValueSignal<String> child = wrapper.insertFirst("child").signal();
 
         assertEquals(1, validatedCommands.size());
         assertInstanceOf(SignalCommand.InsertCommand.class,
@@ -317,11 +321,11 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void readonly_makeChangesToListAndChild_allChangesRejected() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertLast("child");
 
-        ListSignal<String> readonly = signal.asReadonly();
-        ValueSignal<String> readonlyChild = readonly.value().get(0);
+        SharedListSignal<String> readonly = signal.asReadonly();
+        SharedValueSignal<String> readonlyChild = readonly.value().get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -336,7 +340,7 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_changeDifferentValues_onlyListChangeDetected() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -351,19 +355,19 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         assertEquals(signal, signal);
 
-        ListSignal<String> copy = new ListSignal<>(signal.tree(), signal.id(),
+        SharedListSignal<String> copy = new SharedListSignal<>(signal.tree(), signal.id(),
                 signal.validator(), String.class);
         assertEquals(signal, copy);
         assertEquals(signal.hashCode(), copy.hashCode());
 
-        ListSignal<String> asList = signal.asNode().asList(String.class);
+        SharedListSignal<String> asList = signal.asNode().asList(String.class);
         assertEquals(signal, asList);
         assertEquals(signal.hashCode(), asList.hashCode());
 
-        assertNotEquals(signal, new ListSignal<>(String.class));
+        assertNotEquals(signal, new SharedListSignal<>(String.class));
         assertNotEquals(signal, signal.asReadonly());
         assertNotEquals(signal, signal.asNode());
         assertNotEquals(signal, signal.asNode().asList(Double.class));
@@ -371,13 +375,13 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode_children() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
 
-        ValueSignal<String> operationChild = signal.insertLast("value")
+        SharedValueSignal<String> operationChild = signal.insertLast("value")
                 .signal();
-        ValueSignal<String> other = signal.insertLast("other").signal();
+        SharedValueSignal<String> other = signal.insertLast("other").signal();
 
-        ValueSignal<String> valueChild = signal.value().get(0);
+        SharedValueSignal<String> valueChild = signal.value().get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -387,16 +391,16 @@ public class ListSignalTest extends SignalTestBase {
 
     @Test
     void toString_includesValue() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         signal.insertLast("one");
         signal.insertLast("two");
 
-        assertEquals("ListSignal[one, two]", signal.toString());
+        assertEquals("SharedListSignal[one, two]", signal.toString());
     }
 
-    static void assertChildren(ListSignal<String> signal,
+    static void assertChildren(SharedListSignal<String> signal,
             String... expectedValue) {
-        List<String> value = signal.value().stream().map(ValueSignal::value)
+        List<String> value = signal.value().stream().map(SharedValueSignal::value)
                 .toList();
 
         assertEquals(List.of(expectedValue), value);

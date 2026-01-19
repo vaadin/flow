@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,12 +22,15 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.ListSignal.ListPosition;
-import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.NodeSignal.NodeSignalState;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;
@@ -71,7 +74,7 @@ public class NodeSignalTest extends SignalTestBase {
     void asValue_updateValueThroughWrapper_valueUpdated() {
         NodeSignal signal = new NodeSignal();
 
-        ValueSignal<String> asValue = signal.asValue(String.class);
+        SharedValueSignal<String> asValue = signal.asValue(String.class);
         assertEquals(null, asValue.value());
 
         asValue.value("update");
@@ -82,14 +85,14 @@ public class NodeSignalTest extends SignalTestBase {
     void asValue_incompatibleValue_getterThrows() {
         NodeSignal signal = new NodeSignal();
 
-        ValueSignal<String> asString = signal.asValue(String.class);
+        SharedValueSignal<String> asString = signal.asValue(String.class);
         asString.value("update");
 
         assertThrows(RuntimeException.class, () -> {
             signal.value().value(Double.class);
         });
 
-        ValueSignal<Double> asDouble = signal.asValue(Double.class);
+        SharedValueSignal<Double> asDouble = signal.asValue(Double.class);
         assertThrows(RuntimeException.class, () -> {
             asDouble.value();
         });
@@ -111,7 +114,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void asList_insertThroughWrapper_valueUpdated() {
         NodeSignal signal = new NodeSignal();
-        ListSignal<String> asList = signal.asList(String.class);
+        SharedListSignal<String> asList = signal.asList(String.class);
 
         asList.insertLast("last");
 
@@ -124,11 +127,11 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void asList_insertThroughNode_wrapperUpdated() {
         NodeSignal signal = new NodeSignal();
-        ListSignal<String> asList = signal.asList(String.class);
+        SharedListSignal<String> asList = signal.asList(String.class);
 
         signal.insertChildWithValue("last", ListPosition.last());
 
-        List<ValueSignal<String>> value = asList.value();
+        List<SharedValueSignal<String>> value = asList.value();
         assertEquals(1, value.size());
 
         assertEquals("last", value.get(0).value());
@@ -137,7 +140,7 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void asMap_putThroughWrapper_valueUpdate() {
         NodeSignal signal = new NodeSignal();
-        MapSignal<String> asMap = signal.asMap(String.class);
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
 
         asMap.put("key", "value");
 
@@ -151,11 +154,11 @@ public class NodeSignalTest extends SignalTestBase {
     @Test
     void asMap_putThroughNode_wrapperUpdated() {
         NodeSignal signal = new NodeSignal();
-        MapSignal<String> asMap = signal.asMap(String.class);
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
 
         signal.putChildWithValue("key", "value");
 
-        Map<String, ValueSignal<String>> value = asMap.value();
+        Map<String, SharedValueSignal<String>> value = asMap.value();
 
         assertEquals(Set.of("key"), value.keySet());
         assertEquals("value", value.get("key").value());

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -22,7 +22,10 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
@@ -34,13 +37,13 @@ import com.vaadin.signals.operations.SignalOperation;
 /**
  * A signal containing a map of values with string keys. Supports atomic updates
  * to the map structure. Each value in the map is accessed as a separate
- * {@link ValueSignal} instance which enables atomic updates to the value of
+ * {@link SharedValueSignal} instance which enables atomic updates to the value of
  * that map entry.
  *
  * @param <T>
  *            the element type
  */
-public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
+public class SharedMapSignal<T> extends AbstractSignal<Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -51,7 +54,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public MapSignal(Class<T> elementType) {
+    public SharedMapSignal(Class<T> elementType) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -72,18 +75,18 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected MapSignal(SignalTree tree, Id id, CommandValidator validator,
+    protected SharedMapSignal(SignalTree tree, Id id, CommandValidator validator,
             Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
 
-    private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+    private SharedValueSignal<T> child(Id childId) {
+        return new SharedValueSignal<T>(tree(), childId, validator(), elementType);
     }
 
     @Override
-    protected Map<String, ValueSignal<T>> extractValue(Data data) {
+    protected Map<String, SharedValueSignal<T>> extractValue(Data data) {
         if (data == null) {
             return Map.of();
         } else {
@@ -147,7 +150,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
-    public InsertOperation<ValueSignal<T>> putIfAbsent(String key, T value) {
+    public InsertOperation<SharedValueSignal<T>> putIfAbsent(String key, T value) {
         return submitInsert(
                 new SignalCommand.PutIfAbsentCommand(Id.random(), id(), null,
                         Objects.requireNonNull(key), toJson(value)),
@@ -195,7 +198,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that the given child is mapped to the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the given
      * child is a mapped to the given key in this map when the operation is
      * processed.
@@ -216,7 +219,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is a mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the given key
      * has a mapping in this map when the operation is processed.
      *
@@ -231,7 +234,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     /**
      * Checks that there is no mapping for the given key in this map. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * {@link com.vaadin.signals.core.Signal#runInTransaction(TransactionTask) transaction}. The result
      * of the returned operation will be resolved as successful if the given key
      * has no mapping in this map when the operation is processed.
      *
@@ -258,8 +261,8 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new map signal that uses the validator, not <code>null</code>
      */
-    public MapSignal<T> withValidator(CommandValidator validator) {
-        return new MapSignal<>(tree(), id(), mergeValidators(validator),
+    public SharedMapSignal<T> withValidator(CommandValidator validator) {
+        return new SharedMapSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }
 
@@ -272,7 +275,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      *
      * @return the new readonly map signal, not <code>null</code>
      */
-    public MapSignal<T> asReadonly() {
+    public SharedMapSignal<T> asReadonly() {
         return withValidator(anything -> false);
     }
 
@@ -305,7 +308,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof MapSignal<?> other
+        return this == obj || obj instanceof SharedMapSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())
@@ -321,7 +324,7 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
     public String toString() {
         return peek().entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue().value())
-                .collect(Collectors.joining(", ", "MapSignal[", "]"));
+                .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 
 }
