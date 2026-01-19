@@ -322,10 +322,10 @@ public class Router implements Serializable {
                             + "Falling back to InternalServerError.",
                     location.getPath(), errorHandlingException);
 
-            // Render InternalServerError as fallback
+            // Render InternalServerError as fallback with original
+            // exception as render error is logged
             ErrorParameter<?> fallbackParameter = new ErrorParameter<>(
-                    Exception.class, errorHandlingException,
-                    "Error view rendering failed");
+                    Exception.class, exception, exception.getMessage());
             ErrorStateRenderer fallbackHandler = new ErrorStateRenderer(
                     new NavigationStateBuilder(this)
                             .withTarget(InternalServerError.class).build());
