@@ -82,8 +82,7 @@ public class TranslationFileRequestHandlerTest {
     private I18NProvider i18NProvider;
 
     @Before
-    public void configure()
-            throws IOException, NoSuchFieldException, IllegalAccessException {
+    public void configure() throws IOException {
         initTranslationsFolder();
     }
 
@@ -410,17 +409,6 @@ public class TranslationFileRequestHandlerTest {
         // Just a guard to ensure the handler never uses VaadinSession
         Mockito.when(session.getService()).thenThrow(new IllegalStateException(
                 "TranslationFileRequestHandler should not use Vaadin session."));
-    }
-
-    private void mockRequestService(boolean isProductionMode) {
-        VaadinService service = Mockito.mock(VaadinService.class);
-        DeploymentConfiguration configuration = Mockito
-                .mock(DeploymentConfiguration.class);
-        Mockito.when(configuration.isProductionMode())
-                .thenReturn(isProductionMode);
-        Mockito.when(service.getDeploymentConfiguration())
-                .thenReturn(configuration);
-        Mockito.when(request.getService()).thenReturn(service);
     }
 
     @Test
