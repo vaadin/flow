@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,6 +32,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.springframework.beans.BeanInstantiationException;
+import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.springframework.beans.factory.NoUniqueBeanDefinitionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -277,8 +279,8 @@ public class SpringInstantiatorTest {
     public void getOrCreateBean_noBeansGivenCannotInstantiate_throwsExceptionWithoutHint() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(Number.class))
-                .thenReturn(new String[] {});
+        Mockito.when(context.getBean(Number.class))
+                .thenThrow(NoSuchBeanDefinitionException.class);
         Mockito.when(context.getAutowireCapableBeanFactory()
                 .createBean(Number.class))
                 .thenThrow(new BeanInstantiationException(Number.class,
@@ -299,8 +301,8 @@ public class SpringInstantiatorTest {
     public void getOrCreateBean_multipleBeansGivenCannotInstantiate_throwsExceptionWithHint() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(Number.class))
-                .thenReturn(new String[] { "one", "two" });
+        Mockito.when(context.getBean(Number.class))
+                .thenThrow(NoUniqueBeanDefinitionException.class);
         Mockito.when(context.getAutowireCapableBeanFactory()
                 .createBean(Number.class))
                 .thenThrow(new BeanInstantiationException(Number.class,
@@ -334,8 +336,8 @@ public class SpringInstantiatorTest {
     public void getOrCreateBean_multipleBeansGivenButCanInstantiate_noException() {
         ApplicationContext context = Mockito.mock(ApplicationContext.class,
                 Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(context.getBeanNamesForType(String.class))
-                .thenReturn(new String[] { "one", "two" });
+        Mockito.when(context.getBean(String.class))
+                .thenThrow(NoUniqueBeanDefinitionException.class);
         Mockito.when(context.getAutowireCapableBeanFactory()
                 .createBean(String.class)).thenReturn("string");
         SpringInstantiator instantiator = new SpringInstantiator(null, context);

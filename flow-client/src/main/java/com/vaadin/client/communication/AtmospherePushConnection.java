@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -393,9 +393,9 @@ public class AtmospherePushConnection implements PushConnection {
      */
     protected void onMessage(AtmosphereResponse response) {
         String message = response.getResponseBody();
-        ValueMap json = MessageHandler.parseWrappedJson(message);
+        ValueMap json = MessageHandler.parseJson(message);
         if (json == null) {
-            // Invalid string (not wrapped as expected)
+            // Invalid JSON string
             getConnectionStateHandler().pushInvalidContent(this, message);
             return;
         } else {

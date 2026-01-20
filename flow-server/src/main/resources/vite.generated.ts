@@ -29,7 +29,6 @@ import checker from 'vite-plugin-checker';
 import postcssLit from '#buildFolder#/plugins/rollup-plugin-postcss-lit-custom/rollup-plugin-postcss-lit.js';
 import vaadinI18n from '#buildFolder#/plugins/rollup-plugin-vaadin-i18n/rollup-plugin-vaadin-i18n.js';
 import serviceWorkerPlugin from '#buildFolder#/plugins/vite-plugin-service-worker';
-import vaadinBundlesPlugin from '#buildFolder#/plugins/vite-plugin-vaadin-bundles';
 
 import { visualizer } from 'rollup-plugin-visualizer';
 import reactPlugin from '@vitejs/plugin-react';
@@ -413,9 +412,12 @@ function preserveUsageStats() {
     transform(src: string, id: string) {
       if (id.includes('vaadin-usage-statistics')) {
         if (src.includes('vaadin-dev-mode:start')) {
-          const newSrc = src.replace(DEV_MODE_START_REGEXP, '/*! vaadin-dev-mode:start');
+          const expectedComment = '/*! vaadin-dev-mode:start';
+          const newSrc = src.replace(DEV_MODE_START_REGEXP, expectedComment);
           if (newSrc === src) {
-            console.error('Comment replacement failed to change anything');
+            if (!src.includes(expectedComment)) {
+              console.error('vaadin-dev-mode:start tag not found');
+            }
           } else if (!newSrc.match(DEV_MODE_CODE_REGEXP)) {
             console.error('New comment fails to match original regexp');
           } else {
@@ -521,9 +523,6 @@ export const vaadinConfig: UserConfigFn = (env) => {
     },
     plugins: [
       productionMode && brotli(),
-      devMode && vaadinBundlesPlugin({
-        nodeModulesFolder
-      }),
       devMode && showRecompileReason(),
       settings.offlineEnabled && serviceWorkerPlugin({
         srcPath: settings.clientServiceWorkerSource,

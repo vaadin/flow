@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -66,12 +66,16 @@ public class NodeFeatureRegistry {
                 NodeFeatures.ELEMENT_DATA);
         registerFeature(TextNodeMap.class, TextNodeMap::new,
                 NodeFeatures.TEXT_NODE);
-        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
-                NodeFeatures.TEXT_BINDING);
         registerFeature(ModelList.class, ModelList::new,
                 NodeFeatures.TEMPLATE_MODELLIST);
         registerFeature(BasicTypeValue.class, BasicTypeValue::new,
                 NodeFeatures.BASIC_TYPE_VALUE);
+
+        /* Signal binding features */
+        registerFeature(TextBindingFeature.class, TextBindingFeature::new,
+                NodeFeatures.TEXT_BINDING);
+        registerFeature(SignalBindingFeature.class, SignalBindingFeature::new,
+                NodeFeatures.SIGNAL_BINDING);
 
         /* Common element features */
         registerFeature(ElementChildrenList.class, ElementChildrenList::new,

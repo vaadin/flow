@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,9 +56,6 @@ import elemental.json.JsonObject;
  * @since 1.0
  */
 public class MessageHandler {
-
-    public static final String JSON_COMMUNICATION_PREFIX = "for(;;);[";
-    public static final String JSON_COMMUNICATION_SUFFIX = "]";
 
     /**
      * The value of an undefined sync id.
@@ -816,30 +813,7 @@ public class MessageHandler {
     }
 
     /**
-     * Strips the JSON wrapping from the given json string with wrapping.
-     *
-     * If the given string is not wrapped as expected, returns null
-     *
-     * @param jsonWithWrapping
-     *            the JSON received from the server
-     * @return an unwrapped JSON string or null if the given string was not
-     *         wrapped
-     */
-    public static String stripJSONWrapping(String jsonWithWrapping) {
-        if (jsonWithWrapping == null) {
-            return null;
-        }
-
-        if (!jsonWithWrapping.startsWith(JSON_COMMUNICATION_PREFIX)
-                || !jsonWithWrapping.endsWith(JSON_COMMUNICATION_SUFFIX)) {
-            return null;
-        }
-        return jsonWithWrapping.substring(JSON_COMMUNICATION_PREFIX.length(),
-                jsonWithWrapping.length() - JSON_COMMUNICATION_SUFFIX.length());
-    }
-
-    /**
-     * Unwraps and parses the given JSON, originating from the server.
+     * Parses the given JSON from the server.
      *
      * @param jsonText
      *            the json from the server
@@ -866,18 +840,6 @@ public class MessageHandler {
     /*-{
        return JSON.parse(jsonText);
     }-*/;
-
-    /**
-     * Parse the given wrapped JSON, received from the server, to a ValueMap.
-     *
-     * @param wrappedJsonText
-     *            the json, wrapped as done by the server
-     * @return a ValueMap, or null if the wrapping was incorrect or json could
-     *         not be parsed
-     */
-    public static ValueMap parseWrappedJson(String wrappedJsonText) {
-        return parseJson(stripJSONWrapping(wrappedJsonText));
-    }
 
     private static final native double getFetchStartTime()
     /*-{

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -44,12 +44,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.function.DeploymentConfiguration;
+import com.vaadin.flow.internal.DevBundleUtils;
 import com.vaadin.flow.internal.DevModeHandler;
 import com.vaadin.flow.internal.DevModeHandlerManager;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.internal.ResponseWriter;
-import com.vaadin.flow.server.frontend.DevBundleUtils;
-import com.vaadin.flow.server.frontend.FrontendUtils;
-import com.vaadin.flow.server.frontend.ThemeUtils;
+import com.vaadin.flow.internal.ThemeUtils;
 
 import static com.vaadin.flow.server.Constants.VAADIN_MAPPING;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
@@ -255,6 +255,9 @@ public class StaticFileServer implements StaticFileHandler {
             // Directories are not static resources although
             // servletContext.getResource will return a URL for them, at
             // least with Jetty
+            return false;
+        } else if (HandlerHelper.getPublicInternalFolderPaths().stream()
+                .anyMatch(path -> filenameWithPath.equals(path))) {
             return false;
         }
 

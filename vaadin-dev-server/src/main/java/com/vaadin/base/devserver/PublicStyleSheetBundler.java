@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -24,8 +24,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.vaadin.flow.server.frontend.CssBundler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.internal.CssBundler;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**

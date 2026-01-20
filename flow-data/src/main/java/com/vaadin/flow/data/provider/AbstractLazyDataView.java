@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -110,6 +110,33 @@ public abstract class AbstractLazyDataView<T> extends AbstractDataView<T>
         DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
         return verifiedDataCommunicator.getDataProvider()
                 .fetch(getQueryForAllItems());
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Stream<T> getItems(final int offset, final int limit) {
+        if (offset < 0) {
+            throw new IndexOutOfBoundsException("Offset must be non-negative");
+        }
+        if (limit < 0) {
+            throw new IndexOutOfBoundsException("Limit must be non-negative");
+        }
+        if (limit == 0) {
+            return Stream.empty();
+        }
+        DataCommunicator<T> verifiedDataCommunicator = getDataCommunicator();
+        if (verifiedDataCommunicator.isDefinedSize()) {
+            int count = verifiedDataCommunicator.getItemCount();
+            if (offset >= count) {
+                return Stream.empty();
+            }
+            int effectiveLimit = Math.min(limit, count - offset);
+            return verifiedDataCommunicator.getDataProvider()
+                    .fetch(verifiedDataCommunicator.buildQuery(offset,
+                            effectiveLimit));
+        }
+        return verifiedDataCommunicator.getDataProvider()
+                .fetch(verifiedDataCommunicator.buildQuery(offset, limit));
     }
 
     @Override

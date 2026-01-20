@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -257,6 +257,16 @@ public interface PluginAdapterBase {
      * @return boolean
      */
     boolean requireHomeNodeExec();
+
+    /**
+     * The folder containing the Node.js executable.
+     * <p>
+     * When returned value is non-null and non-empty, Node.js will be
+     * exclusively used from this folder. If not found, build will fail.
+     *
+     * @return the node folder path, or null to use default resolution
+     */
+    String nodeFolder();
 
     /**
      * Defines the output directory for generated non-served resources, such as

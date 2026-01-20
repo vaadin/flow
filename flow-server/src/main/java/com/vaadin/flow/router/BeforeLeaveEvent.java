@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -77,9 +77,9 @@ public class BeforeLeaveEvent extends BeforeEvent {
                                     + "Use UI.access() to execute any UI related code from a separate thread properly");
                 }
 
-                if (event.getUI().wrapperElement != null) {
+                if (event.getUI().getInternals().getWrapperElement() != null) {
                     // See UI.SERVER_CONNECTED and acknowledgeClient.
-                    event.getUI().wrapperElement
+                    event.getUI().getInternals().getWrapperElement()
                             .executeJs("this.serverConnected($0)", false);
                 }
 
@@ -96,10 +96,10 @@ public class BeforeLeaveEvent extends BeforeEvent {
          */
         public void cancel() {
             BeforeLeaveEvent.this.continueNavigationAction = null;
-            if (handler != null && event != null
-                    && event.getUI().wrapperElement != null) {
+            if (handler != null && event != null && event.getUI().getInternals()
+                    .getWrapperElement() != null) {
                 // See UI.SERVER_CONNECTED and cancelClient.
-                event.getUI().wrapperElement
+                event.getUI().getInternals().getWrapperElement()
                         .executeJs("this.serverConnected($0)", true);
             }
         }

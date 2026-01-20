@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -42,7 +42,6 @@ import com.vaadin.flow.router.RoutePathProvider;
 import com.vaadin.flow.server.StaticFileHandlerFactory;
 import com.vaadin.flow.server.VaadinContext;
 import com.vaadin.flow.server.VaadinServletContext;
-import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
 
 /**
  * Standard servlet initializer for collecting all SPI implementations.
@@ -54,7 +53,6 @@ import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
  */
 @HandlesTypes({ ResourceProvider.class, InstantiatorFactory.class,
         DeprecatedPolymerPublishedEventHandler.class,
-        EndpointGeneratorTaskFactory.class,
         ApplicationConfigurationFactory.class, AbstractLookupInitializer.class,
         AppShellPredicate.class, StaticFileHandlerFactory.class,
         DevModeHandlerManager.class, BrowserLiveReloadAccessor.class,

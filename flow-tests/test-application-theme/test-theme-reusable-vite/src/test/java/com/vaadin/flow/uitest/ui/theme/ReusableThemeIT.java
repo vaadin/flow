@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -52,7 +52,7 @@ public class ReusableThemeIT extends ChromeBrowserTest {
         getDriver().get(getRootURL() + "/path/themes/no-copy/no-copy.txt");
         String source = driver.getPageSource();
         Matcher m = Pattern.compile(
-                ".*Could not navigate to.*themes/no-copy/no-copy.txt.*",
+                ".*HTTP ERROR 404 Request was not handled by any registered handler.*",
                 Pattern.DOTALL).matcher(source);
         Assert.assertTrue("no-copy theme should not be handled", m.matches());
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.component.internal;
 
 import java.io.Serializable;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.vaadin.flow.component.AbstractCompositeField;
 import com.vaadin.flow.component.AbstractField;
@@ -25,9 +26,14 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.ComponentEventListener;
 import com.vaadin.flow.component.ComponentUtil;
 import com.vaadin.flow.component.HasValue;
+import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiPredicate;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.nodefeature.NodeFeature;
+import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.WritableSignal;
 
 /**
  * Encapsulates all the logic required for a typical field implementation. This
@@ -132,7 +138,7 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
      *            the value to set
      */
     public void setValue(T value) {
-        setValue(value, false, false);
+        setValue(value, false, false, false);
     }
 
     /**
@@ -166,11 +172,58 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             pendingValueFromPresentation = newModelValue;
             return;
         }
-        setValue(newModelValue, true, fromClient);
+        setValue(newModelValue, true, fromClient, false);
     }
 
-    private void setValue(T newValue, boolean fromInternal,
-            boolean fromClient) {
+    /**
+     * Binds a {@link WritableSignal}'s value to the value state of the field
+     * and keeps the state synchronized with the signal value while the element
+     * is in attached state. When the element is in detached state, signal value
+     * changes have no effect. <code>null</code> signal unbinds the existing
+     * binding.
+     * <p>
+     * While a Signal is bound to a value state, any attempt to bind a new
+     * Signal while one is already bound throws
+     * {@link com.vaadin.signals.BindingActiveException}.
+     * <p>
+     * While a Signal is bound to a value state and the element is in attached
+     * state, setting the value with {@link #setValue(Object)},
+     * {@link #setModelValue(Object, boolean)}, or when a change originates from
+     * the client, will update the signal value.
+     *
+     * @param valueSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setValue(Object)
+     * @see #setModelValue(Object, boolean)
+     */
+    public void bindValue(WritableSignal<T> valueSignal) {
+        SignalBindingFeature feature = component.getElement().getNode()
+                .getFeature(SignalBindingFeature.class);
+
+        if (valueSignal == null) {
+            feature.removeBinding(SignalBindingFeature.VALUE);
+        } else {
+            if (feature.hasBinding(SignalBindingFeature.VALUE)) {
+                throw new BindingActiveException();
+            }
+
+            Registration registration = ElementEffect.bind(
+                    component.getElement(), valueSignal,
+                    (element, value) -> setValueFromSignal(value));
+            feature.setBinding(SignalBindingFeature.VALUE, registration,
+                    valueSignal);
+        }
+    }
+
+    private void setValueFromSignal(T value) {
+        setValue(value != null ? value : getEmptyValue(), false, false, true);
+    }
+
+    private void setValue(T newValue, boolean fromInternal, boolean fromClient,
+            boolean fromSignal) {
         if (fromClient && component.isReadOnly()) {
             applyValue(bufferedValue);
             return;
@@ -206,6 +259,17 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
             }
         }
 
+        if (!fromSignal) {
+            // update signal value
+            getFeatureIfInitialized(SignalBindingFeature.class)
+                    .ifPresent(feature -> {
+                        if (component.isAttached()) {
+                            feature.updateWritableSignalValue(
+                                    SignalBindingFeature.VALUE, newValue);
+                        }
+                    });
+        }
+
         ComponentUtil.fireEvent(component,
                 createValueChange(oldValue, fromClient));
     }
@@ -225,5 +289,15 @@ public class AbstractFieldSupport<C extends Component & HasValue<ComponentValueC
         }
 
         return valueSetFromPresentationUpdate;
+    }
+
+    private <FEATURE extends NodeFeature> Optional<FEATURE> getFeatureIfInitialized(
+            Class<FEATURE> featureClass) {
+        try {
+            return component.getElement().getNode()
+                    .getFeatureIfInitialized(featureClass);
+        } catch (IllegalStateException e) {
+            return Optional.empty();
+        }
     }
 }

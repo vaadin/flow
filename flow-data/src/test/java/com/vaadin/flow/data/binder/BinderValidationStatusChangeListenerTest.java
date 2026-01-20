@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -182,6 +182,43 @@ public class BinderValidationStatusChangeListenerTest
         // in the binding is not working anymore, errors are not cleared:
         Assert.assertEquals(1, componentErrors.size());
         Assert.assertEquals(INVALID_DATE_FORMAT, componentErrors.get(field));
+    }
+
+    @Test
+    public void fieldWithHasValidator_validationStatusChangesToTrueWithNullValue_beanIsUpdated() {
+        // Setup: bind field to bean with an initial date value
+        var field = new TestHasValidatorDatePicker.DataPickerHasValidatorOverridden();
+        LocalDate initialDate = LocalDate.of(2023, 1, 15);
+        item.setBirthDate(initialDate);
+        binder.bind(field, BIRTH_DATE_PROPERTY);
+        binder.setBean(item);
+
+        // Verify initial state
+        Assert.assertEquals(initialDate, item.getBirthDate());
+        Assert.assertEquals(initialDate, field.getValue());
+
+        // Simulate: user enters invalid input (field keeps null value
+        // internally,
+        // validation fails)
+        // field.setValue(null);
+        field.fireValidationStatusChangeEvent(false);
+
+        // Bean should still have old value since validation failed
+        Assert.assertEquals(1, componentErrors.size());
+        Assert.assertEquals(initialDate, item.getBirthDate());
+
+        // Simulate: user clears the field to null (which is now accepted)
+        // Field value is already null, but validation now passes
+        field.setValue(null);
+        field.fireValidationStatusChangeEvent(true);
+
+        // Error should be cleared
+        Assert.assertEquals(0, componentErrors.size());
+
+        // Bug: Bean should be updated to null, but currently it's not
+        Assert.assertNull(
+                "Bean property should be updated to null when validation passes",
+                item.getBirthDate());
     }
 
 }

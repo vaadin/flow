@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -19,6 +19,7 @@ import java.util.Arrays;
 
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ThemeList;
+import com.vaadin.signals.Signal;
 
 /**
  * Represents {@link Component} which has theme attribute.
@@ -63,6 +64,7 @@ public interface HasTheme extends HasElement {
      *            string to remove all theme names
      */
     default void setThemeName(String themeName) {
+        getThemeNames().clear(); // clears bound signals
         getElement().setAttribute("theme", themeName);
     }
 
@@ -135,5 +137,40 @@ public interface HasTheme extends HasElement {
      */
     default void removeThemeNames(String... themeNames) {
         getThemeNames().removeAll(Arrays.asList(themeNames));
+    }
+
+    /**
+     * Binds the presence of the given theme name to the provided signal so that
+     * the theme name is added when the signal value is {@code true} and removed
+     * when the value is {@code false}.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the given theme name. When unbinding, the current presence of the
+     * theme name is left unchanged.
+     * <p>
+     * While a binding for the given theme name is active, manual calls to
+     * {@link #addThemeName(String)}, {@link #removeThemeName(String)},
+     * {@link #setThemeName(String, boolean)},
+     * {@link #addThemeNames(String...)}, {@link #removeThemeNames(String...)}
+     * or equivalents in {@link ThemeList} for that name will throw a
+     * {@code com.vaadin.flow.dom.BindingActiveException}. Bindings are
+     * lifecycle-aware and only active while the owning {@link Element} is in
+     * attached state; they are deactivated while the element is in detached
+     * state.
+     * <p>
+     * Bulk operations that indiscriminately replace or clear the theme list
+     * (for example {@link ThemeList#clear()} or setting the {@code theme}
+     * attribute via {@link #setThemeName(String)}) clear all bindings.
+     *
+     * @param name
+     *            the theme name to bind, not {@code null} or blank
+     * @param signal
+     *            the boolean signal to bind to, or {@code null} to unbind
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @since 25.1
+     */
+    default void bindThemeName(String name, Signal<Boolean> signal) {
+        getThemeNames().bind(name, signal);
     }
 }

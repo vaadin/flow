@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -53,11 +53,12 @@ import com.vaadin.flow.component.dependency.JsModule;
 import com.vaadin.flow.component.page.AppShellConfigurator;
 import com.vaadin.flow.di.Lookup;
 import com.vaadin.flow.di.ResourceProvider;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.InitParameters;
 import com.vaadin.flow.server.LoadDependenciesOnStartup;
 import com.vaadin.flow.server.frontend.EndpointGeneratorTaskFactory;
-import com.vaadin.flow.server.frontend.FrontendUtils;
+import com.vaadin.flow.server.frontend.FrontendBuildUtils;
 import com.vaadin.flow.server.startup.ApplicationConfiguration;
 import com.vaadin.flow.server.startup.VaadinInitializerException;
 
@@ -367,9 +368,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
                     javaSourceFolder.getRoot().getAbsolutePath());
 
             Assert.assertFalse(generatedOpenApiJson.exists());
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                    FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                         Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();
@@ -435,9 +436,9 @@ public class DevModeInitializerTest extends DevModeInitializerTestBase {
             System.setProperty("vaadin." + CONNECT_JAVA_SOURCE_FOLDER_TOKEN,
                     javaSourceFolder.getRoot().getAbsolutePath());
 
-            try (MockedStatic<FrontendUtils> util = Mockito.mockStatic(
-                    FrontendUtils.class, Mockito.CALLS_REAL_METHODS)) {
-                util.when(() -> FrontendUtils.isHillaUsed(Mockito.any(),
+            try (MockedStatic<FrontendBuildUtils> util = Mockito.mockStatic(
+                    FrontendBuildUtils.class, Mockito.CALLS_REAL_METHODS)) {
+                util.when(() -> FrontendBuildUtils.isHillaUsed(Mockito.any(),
                         Mockito.any())).thenReturn(true);
                 devModeStartupListener.onStartup(classes, servletContext);
                 handler = getDevModeHandler();

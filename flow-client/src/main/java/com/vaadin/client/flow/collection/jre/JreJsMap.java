@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,7 +15,7 @@
  */
 package com.vaadin.client.flow.collection.jre;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -35,7 +35,7 @@ import com.vaadin.client.flow.collection.JsMap;
  */
 @Deprecated
 public class JreJsMap<K, V> extends JsMap<K, V> {
-    private Map<K, V> values = new HashMap<>();
+    private Map<K, V> values = new LinkedHashMap<>();
 
     @Override
     public JsMap<K, V> set(K key, V value) {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -22,6 +22,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.AccessDeniedException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Enumeration;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -79,19 +81,24 @@ public final class DefaultArchiveExtractor implements ArchiveExtractor {
 
     private void extractZipArchive(File archiveFile, File destinationDirectory)
             throws IOException {
-        ZipFile zipFile = new ZipFile(archiveFile);
-        try {
+
+        Path destinationPath = Paths.get(destinationDirectory.getAbsolutePath())
+                .normalize();
+        try (ZipFile zipFile = new ZipFile(archiveFile)) {
             Enumeration<? extends ZipEntry> entries = zipFile.entries();
             while (entries.hasMoreElements()) {
-                ZipEntry entry = entries.nextElement();
-                final File destPath = new File(destinationDirectory
-                        + File.separator + entry.getName());
-                prepDestination(destPath, entry.isDirectory());
+                ZipEntry zipEntry = entries.nextElement();
 
-                copyZipFileContents(zipFile, entry, destPath);
+                final Path destPath = destinationPath
+                        .resolve(zipEntry.getName()).normalize();
+                if (!destPath.startsWith(destinationPath)) {
+                    throw new IOException("Entry is outside of the target dir: "
+                            + zipEntry.getName());
+                }
+                prepDestination(destPath.toFile(), zipEntry.isDirectory());
+
+                copyZipFileContents(zipFile, zipEntry, destPath.toFile());
             }
-        } finally {
-            zipFile.close();
         }
     }
 

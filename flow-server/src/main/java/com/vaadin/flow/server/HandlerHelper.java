@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -32,11 +32,12 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.vaadin.flow.component.UI;
+import com.vaadin.flow.internal.FrontendUtils;
 import com.vaadin.flow.server.communication.PwaHandler;
 import com.vaadin.flow.server.communication.StreamRequestHandler;
-import com.vaadin.flow.server.frontend.FrontendUtils;
 import com.vaadin.flow.shared.ApplicationConstants;
 
 /**
@@ -147,6 +148,8 @@ public class HandlerHelper implements Serializable {
 
     private static final String[] publicResourcesRoot;
     private static final String[] publicResources;
+    private static final List<String> publicInternalFolderPaths;
+
     static {
         List<String> resources = new ArrayList<>();
         resources.add("/" + PwaConfiguration.DEFAULT_PATH);
@@ -168,6 +171,18 @@ public class HandlerHelper implements Serializable {
         rootResources.add("/favicon.ico");
         publicResourcesRoot = rootResources
                 .toArray(new String[rootResources.size()]);
+
+        List<String> resourcesPath = new ArrayList<>();
+        Stream.concat(resources.stream(), rootResources.stream())
+                .filter(resource -> resource.endsWith("/**"))
+                .map(resource -> resource.replace("/**", ""))
+                .forEach(resourcesPath::add);
+        for (String resource : getPublicResourcesRequiringSecurityContext()) {
+            if (resource.endsWith("/**")) {
+                resourcesPath.add(resource.replace("/**", ""));
+            }
+        }
+        publicInternalFolderPaths = resourcesPath;
     }
 
     private HandlerHelper() {
@@ -542,6 +557,10 @@ public class HandlerHelper implements Serializable {
      */
     public static String[] getPublicResourcesRoot() {
         return publicResourcesRoot;
+    }
+
+    public static List<String> getPublicInternalFolderPaths() {
+        return publicInternalFolderPaths;
     }
 
     /**

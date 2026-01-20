@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -73,7 +73,6 @@ import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
 import com.vaadin.flow.router.internal.ErrorStateRenderer;
-import com.vaadin.flow.router.internal.ErrorTargetEntry;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -243,12 +242,11 @@ public class UI extends Component
         getInternals().setFullAppId(appId);
 
         if (this.isNavigationSupported()) {
-            // Create flow reference for the client outlet element
-            wrapperElement = new Element(getInternals().getContainerTag());
+            internals.createWrapperElement();
 
             // Connect server with client
             getElement().getStateProvider().appendVirtualChild(
-                    getElement().getNode(), wrapperElement,
+                    getElement().getNode(), internals.getWrapperElement(),
                     NodeProperties.INJECT_BY_ID, appId);
 
             getEventBus().addListener(BrowserLeaveNavigationEvent.class,
@@ -1683,7 +1681,7 @@ public class UI extends Component
     @Override
     public Stream<Component> getChildren() {
         // server-side routing
-        if (wrapperElement == null) {
+        if (internals.getWrapperElement() == null) {
             return super.getChildren();
         }
 
@@ -1691,8 +1689,9 @@ public class UI extends Component
         // child, its children need to be included separately (there should only
         // be one)
         Stream.Builder<Component> childComponents = Stream.builder();
-        wrapperElement.getChildren().forEach(childElement -> ComponentUtil
-                .findComponents(childElement, childComponents::add));
+        internals.getWrapperElement().getChildren()
+                .forEach(childElement -> ComponentUtil
+                        .findComponents(childElement, childComponents::add));
         super.getChildren().forEach(childComponents::add);
         return childComponents.build();
     }
@@ -1724,7 +1723,6 @@ public class UI extends Component
             window.dispatchEvent(new CustomEvent('vaadin-router-go', { detail: url}));
             """;
 
-    public Element wrapperElement;
     private NavigationState clientViewNavigationState;
     private boolean navigationInProgress = false;
 
@@ -1971,11 +1969,11 @@ public class UI extends Component
     }
 
     private void serverPaused() {
-        wrapperElement.executeJs("this.serverPaused()");
+        internals.getWrapperElement().executeJs("this.serverPaused()");
     }
 
     private void serverConnected(boolean cancel) {
-        wrapperElement.executeJs(SERVER_CONNECTED, cancel);
+        internals.getWrapperElement().executeJs(SERVER_CONNECTED, cancel);
     }
 
     private void navigateToPlaceholder(Location location) {
@@ -2046,36 +2044,12 @@ public class UI extends Component
             adjustPageTitle();
 
         } catch (Exception exception) {
-            handleExceptionNavigation(location, exception);
+            getInternals().getRouter().handleExceptionNavigation(this, location,
+                    exception, NavigationTrigger.CLIENT_SIDE,
+                    (BaseJsonNode) null);
         } finally {
             getInternals().clearLastHandledNavigation();
         }
-    }
-
-    private boolean handleExceptionNavigation(Location location,
-            Exception exception) {
-        Optional<ErrorTargetEntry> maybeLookupResult = getInternals()
-                .getRouter().getErrorNavigationTarget(exception);
-        if (maybeLookupResult.isPresent()) {
-            ErrorTargetEntry lookupResult = maybeLookupResult.get();
-
-            ErrorParameter<?> errorParameter = new ErrorParameter<>(
-                    lookupResult.getHandledExceptionType(), exception,
-                    exception.getMessage());
-            ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                    new NavigationStateBuilder(getInternals().getRouter())
-                            .withTarget(lookupResult.getNavigationTarget())
-                            .build());
-
-            ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                    getInternals().getRouter(), location, this,
-                    NavigationTrigger.CLIENT_SIDE, errorParameter);
-
-            errorStateRenderer.handle(errorNavigationEvent);
-        } else {
-            throw new RuntimeException(exception);
-        }
-        return isPostponed();
     }
 
     private boolean isPostponed() {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -69,11 +69,17 @@ public final class VaadinAwareSecurityContextHolderStrategy
         if (session == null || session.getSession() == null) {
             return Optional.empty();
         }
-        Object securityContext = session.getSession().getAttribute(
-                HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
-        if (securityContext instanceof SecurityContext) {
-            return Optional.of((SecurityContext) securityContext);
-        } else {
+        try {
+            Object securityContext = session.getSession().getAttribute(
+                    HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);
+            if (securityContext instanceof SecurityContext context) {
+                return Optional.of(context);
+            } else {
+                return Optional.empty();
+            }
+        } catch (IllegalStateException ignored) {
+            // Session throws IllegalStateException when accessing
+            // attributes of an invalid session
             return Optional.empty();
         }
     }

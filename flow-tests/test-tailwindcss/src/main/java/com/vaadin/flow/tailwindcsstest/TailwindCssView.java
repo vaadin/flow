@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -43,6 +43,19 @@ public class TailwindCssView extends Div {
         h1.add(" work!");
 
         main.add(h1);
+
+        // Test custom @theme directive
+        var customThemeDiv = new Div();
+        customThemeDiv.setText("Custom Theme Colors");
+        customThemeDiv.addClassName("text-my-theme");
+        customThemeDiv.setId("custom-theme-red");
+
+        var customBlueDiv = new Div();
+        customBlueDiv.setText("Custom Blue");
+        customBlueDiv.addClassName("text-custom-blue");
+        customBlueDiv.setId("custom-theme-blue");
+
+        main.add(customThemeDiv, customBlueDiv);
 
         add(main);
     }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,6 +17,7 @@ package com.vaadin.flow.data.provider.hierarchy;
 
 import java.util.Arrays;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -48,6 +49,16 @@ public class HierarchicalDataCommunicatorDataGenerationTest
         dataCommunicator.setDataProvider(treeDataProvider, null);
 
         compositeDataGenerator.addDataGenerator(dataGenerator);
+
+        Mockito.doAnswer((invocation) -> {
+            Item item = invocation.getArgument(0);
+
+            Assert.assertTrue(
+                    "Item should be in keyMapper when generateData is called",
+                    dataCommunicator.getKeyMapper().has(item));
+
+            return null;
+        }).when(dataGenerator).destroyData(Mockito.any());
     }
 
     @Test
@@ -152,25 +163,5 @@ public class HierarchicalDataCommunicatorDataGenerationTest
                 .destroyData(new Item("Item 0-1"));
         Mockito.verify(dataGenerator, Mockito.never())
                 .destroyData(new Item("Item 1"));
-    }
-
-    @Test
-    public void collapseItems_destroyDataCalledBeforeItemRemovedFromKeyMapper() {
-        populateTreeData(treeData, 4, 2, 2);
-        dataCommunicator.expand(
-                Arrays.asList(new Item("Item 0"), new Item("Item 0-0")));
-        dataCommunicator.setViewportRange(0, 4);
-        fakeClientCommunication();
-
-        Mockito.doAnswer((invocation) -> {
-            Item item = invocation.getArgument(0);
-            if (!dataCommunicator.getKeyMapper().has(item)) {
-                throw new AssertionError(
-                        "Item should still be in keyMapper when destroyData is called");
-            }
-            return null;
-        }).when(dataGenerator).destroyData(Mockito.any());
-
-        dataCommunicator.collapse(new Item("Item 0"));
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -215,6 +215,9 @@ internal class GradlePluginAdapter private constructor(
 
     override fun requireHomeNodeExec(): Boolean =
         config.requireHomeNodeExec.get()
+
+    override fun nodeFolder(): String? =
+        config.nodeFolder.orNull
 
     override fun servletResourceOutputDirectory(): File {
         // when running a task which runs before processResources, we need to

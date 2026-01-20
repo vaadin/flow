@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,8 +17,8 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 import java.util.function.IntFunction;
-import java.util.function.Predicate;
 
+import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.operations.SignalOperation;
 
@@ -62,8 +62,7 @@ public class NumberSignal extends ValueSignal<Double> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NumberSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator) {
+    protected NumberSignal(SignalTree tree, Id id, CommandValidator validator) {
         super(tree, id, validator, Double.class);
     }
 
@@ -135,7 +134,7 @@ public class NumberSignal extends ValueSignal<Double> {
      * @return a new number signal that uses the validator, not
      *         <code>null</code>
      */
-    public NumberSignal withValidator(Predicate<SignalCommand> validator) {
+    public NumberSignal withValidator(CommandValidator validator) {
         return new NumberSignal(tree(), id(), mergeValidators(validator));
     }
 

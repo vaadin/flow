@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -56,6 +56,7 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.impl.BasicElementStateProvider;
 import com.vaadin.flow.function.DeploymentConfiguration;
 import com.vaadin.flow.function.SerializableConsumer;
+import com.vaadin.flow.internal.BundleUtils;
 import com.vaadin.flow.internal.ConstantPool;
 import com.vaadin.flow.internal.JacksonCodec;
 import com.vaadin.flow.internal.StateNode;
@@ -83,7 +84,6 @@ import com.vaadin.flow.server.Command;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.server.communication.PushConnection;
-import com.vaadin.flow.server.frontend.BundleUtils;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.flow.shared.communication.PushMode;
 
@@ -231,6 +231,8 @@ public class UIInternals implements Serializable {
     private ExtendedClientDetails extendedClientDetails = null;
 
     private ArrayDeque<Component> modalComponentStack;
+
+    private Element wrapperElement;
 
     /**
      * Creates a new instance for the given UI.
@@ -1510,5 +1512,24 @@ public class UIInternals implements Serializable {
      */
     public DeploymentConfiguration getDeploymentConfiguration() {
         return getSession().getService().getDeploymentConfiguration();
+    }
+
+    /**
+     * Create flow reference for the client outlet element if not already
+     * generated.
+     */
+    public void createWrapperElement() {
+        if (wrapperElement == null) {
+            this.wrapperElement = new Element(getContainerTag());
+        }
+    }
+
+    /**
+     * Get outlet element reference wrapper if set.
+     * 
+     * @return wrapperElement if set else {@code null}
+     */
+    public Element getWrapperElement() {
+        return wrapperElement;
     }
 }

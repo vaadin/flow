@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -527,21 +527,22 @@ public class VaadinServletContextInitializer
             if (devModeHandlerManager == null) {
                 throw new RuntimeException(
                         """
-                                'vaadin-dev-server' not found, but dev server is enabled.
-                                Either disable by setting vaadin.frontend.hotdeploy=false (and run the build-frontend maven goal)
-                                or add 'com.vaadin:vaadin-dev' dependency or 'com.vaadin:vaadin-dev-server' for minimal working configuration.
+                                'vaadin-dev-server' not found.
+                                You might be missing a dependency:
 
                                 Maven:
                                     <dependency>
                                         <groupId>com.vaadin</groupId>
                                         <artifactId>vaadin-dev</artifactId>
+                                        <optional>true</optional>
                                     </dependency>
 
                                 Gradle:
                                     dependencies {
-                                        implementation('com.vaadin:vaadin-dev')
+                                        developmentOnly('com.vaadin:vaadin-dev')
                                     }
 
+                                See https://vaadin.com/docs/latest/flow/configuration/development-mode#development-mode for more details.
                                 """);
             }
             if (devModeHandlerManager.getDevModeHandler() != null) {

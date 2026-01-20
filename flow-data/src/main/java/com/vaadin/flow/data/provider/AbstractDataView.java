@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.data.provider;
 
+import java.util.Collections;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -152,6 +153,22 @@ public abstract class AbstractDataView<T> implements DataView<T> {
     @Override
     public Stream<T> getItems() {
         return dataProviderSupplier.get().fetch(new Query<>());
+    }
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @Override
+    public Stream<T> getItems(final int offset, final int limit) {
+        if (offset < 0) {
+            throw new IndexOutOfBoundsException("Offset must be non-negative");
+        }
+        if (limit < 0) {
+            throw new IndexOutOfBoundsException("Limit must be non-negative");
+        }
+        if (limit == 0) {
+            return Stream.empty();
+        }
+        return dataProviderSupplier.get().fetch(
+                new Query(offset, limit, Collections.emptyList(), null, null));
     }
 
     @Override

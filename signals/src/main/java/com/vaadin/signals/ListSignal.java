@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -18,10 +18,11 @@ package com.vaadin.signals;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.function.CommandValidator;
+import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
@@ -167,8 +168,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected ListSignal(SignalTree tree, Id id,
-            Predicate<SignalCommand> validator, Class<T> elementType) {
+    protected ListSignal(SignalTree tree, Id id, CommandValidator validator,
+            Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -300,10 +301,10 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given child is at the given position in this list. This
      * operation is only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given child is a
-     * child of this list and at the given position when the operation is
-     * processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given
+     * child is a child of this list and at the given position when the
+     * operation is processed.
      *
      * @param child
      *            the child to test, not <code>null</code>
@@ -320,10 +321,10 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
     /**
      * Checks that the given signal is a child in this list. This operation is
      * only meaningful to use as a condition in a
-     * {@link Signal#runInTransaction(Runnable) transaction}. The result of the
-     * returned operation will be resolved as successful if the given child is a
-     * child of this list and at the given position when the operation is
-     * processed.
+     * {@link Signal#runInTransaction(TransactionTask) transaction}. The result
+     * of the returned operation will be resolved as successful if the given
+     * child is a child of this list and at the given position when the
+     * operation is processed.
      *
      * @param child
      *            the child to look for test, not <code>null</code>
@@ -349,7 +350,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new list signal that uses the validator, not <code>null</code>
      */
-    public ListSignal<T> withValidator(Predicate<SignalCommand> validator) {
+    public ListSignal<T> withValidator(CommandValidator validator) {
         return new ListSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }

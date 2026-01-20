@@ -1,5 +1,5 @@
 /*
- * Copyright 2000-2025 Vaadin Ltd.
+ * Copyright 2000-2026 Vaadin Ltd.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -197,6 +197,19 @@ public class InitParameters implements Serializable {
      *
      */
     public static final String REQUIRE_HOME_NODE_EXECUTABLE = "require.home.node";
+
+    /**
+     * Configuration parameter name for specifying the folder containing the
+     * Node.js executable.
+     * <p>
+     * When this parameter is set to a non-empty value, the Node.js binary will
+     * be exclusively used from the specified folder. If the binary is not found
+     * in this folder, an exception will be thrown with no fallback to global or
+     * alternative installations.
+     * <p>
+     * Example: "/usr/local/custom-node" or "C:\\custom\\node"
+     */
+    public static final String NODE_FOLDER = "node.folder";
 
     /**
      * Configuration name for the parameter that sets the compiled web
