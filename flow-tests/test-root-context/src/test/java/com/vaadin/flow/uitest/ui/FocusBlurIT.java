@@ -24,11 +24,6 @@ import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class FocusBlurIT extends ChromeBrowserTest {
 
-    @Override
-    protected String getTestPath() {
-        return "/com.vaadin.flow.uitest.ui.FocusBlurView";
-    }
-
     @Test
     public void focusAndBlur_serverSideFiredEvents_isFromClientFalse() {
         open();
