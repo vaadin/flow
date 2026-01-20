@@ -17,6 +17,8 @@ package com.vaadin.flow.component;
 
 import java.io.Serializable;
 
+import com.vaadin.signals.Signal;
+
 /**
  * A component that supports input validation.
  * <p>
@@ -70,18 +72,48 @@ public interface HasValidation extends Serializable {
      * invalid state for the Web Component. Which means that there is no need to
      * clean up the message when component becomes valid (otherwise it may lead
      * to undesired visual effects).
+     * <p>
+     * While a signal binding for the error message is active, calls to this
+     * method throw a {@code com.vaadin.signals.BindingActiveException}.
      *
      * @param errorMessage
      *            a new error message
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing signal binding
      */
     void setErrorMessage(String errorMessage);
 
     /**
-     * Gets current error message from the component.
+     * Gets the current error message from the component.
      *
      * @return current error message
      */
     String getErrorMessage();
+
+    /**
+     * Binds the component's error message to the provided signal so that the
+     * error message is kept in sync with the signal's current value.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding.
+     * When unbinding, the current error message is left unchanged.
+     * <p>
+     * While a binding is active, manual calls to
+     * {@link #setErrorMessage(String)} throw a
+     * {@code com.vaadin.signals.BindingActiveException}. Bindings are
+     * lifecycle-aware and only active while the owning {@link Component} is in
+     * attached state; they are deactivated while the component is in detached
+     * state.
+     *
+     * @param signal
+     *            the signal providing error messages, or {@code null} to unbind
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @since 25.1
+     */
+    default void bindErrorMessage(Signal<String> signal) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    }
 
     /**
      * Sets the validity of the component input.
