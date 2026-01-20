@@ -73,8 +73,8 @@ public interface FocusNotifier<T extends Component> extends Serializable {
          * @see ComponentEvent
          */
         public FocusEvent(C source, boolean fromClient,
-                @EventData("event.target._nextFocusIsFromClient") boolean eventFromClient) {
-            super(source, eventFromClient);
+                @EventData("event.target._nextFocusIsFromClient") Boolean eventFromClient) {
+            super(source, eventFromClient != null ? eventFromClient : fromClient);
         }
     }
 
