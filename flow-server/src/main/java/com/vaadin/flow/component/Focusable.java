@@ -189,7 +189,16 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().callJsFunction("blur");
+        getElement().executeJs("""
+                setTimeout(function(){
+                    try {
+                        $0._nextBlurIsFromClient = false;
+                        $0.blur();
+                    } finally {
+                       $0._nextBlurIsFromClient = true;
+                    }
+                },0)
+                """, getElement());
     }
 
     /**
