@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package org.vaadin.addons.tatu.com.vaadin.flow.uitest.ui;
+package com.vaadin.flow.uitest.ui;
 
 import org.junit.Assert;
 import org.junit.Test;
