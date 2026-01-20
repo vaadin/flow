@@ -2035,7 +2035,7 @@ public class UI extends Component
         JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
                 navigationState);
         getInternals().getRouter().executeNavigation(this, location,
-                navigationEvent, renderer, () -> {
+                navigationEvent, renderer, (httpStatus) -> {
                     forwardToClientUrl = renderer.getClientForwardRoute();
                     adjustPageTitle();
                 });

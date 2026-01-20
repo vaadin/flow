@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -285,8 +286,7 @@ public class Router implements Serializable {
                     "Couldn't find route for '" + location.getPath() + "'");
         }
 
-        return executeNavigation(ui, location, navigationEvent, handler, () -> {
-        });
+        return executeNavigation(ui, location, navigationEvent, handler, null);
     }
 
     /**
@@ -393,12 +393,12 @@ public class Router implements Serializable {
      */
     public int executeNavigation(UI ui, Location location,
             NavigationEvent navigationEvent, NavigationHandler handler,
-            Runnable onSuccess) {
+            Consumer<Integer> onSuccess) {
         ui.getInternals().setLastHandledNavigation(location);
         try {
             int result = handler.handle(navigationEvent);
             if (onSuccess != null) {
-                onSuccess.run();
+                onSuccess.accept(result);
             }
             return result;
         } catch (Exception exception) {
