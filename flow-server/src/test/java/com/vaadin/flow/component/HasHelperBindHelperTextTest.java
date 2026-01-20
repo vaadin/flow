@@ -15,95 +15,16 @@
  */
 package com.vaadin.flow.component;
 
-import java.util.LinkedList;
-
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
-import org.mockito.MockedStatic;
 
-import com.vaadin.experimental.FeatureFlags;
-import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.flow.server.ErrorEvent;
-import com.vaadin.flow.server.MockVaadinServletService;
-import com.vaadin.flow.server.MockVaadinSession;
-import com.vaadin.flow.server.VaadinService;
+import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
-import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.mockStatic;
-import static org.mockito.Mockito.when;
 
-public class HasHelperBindHelperTextTest {
-
-    private static MockVaadinServletService service;
-
-    private MockedStatic<FeatureFlags> featureFlagStaticMock;
-
-    private LinkedList<ErrorEvent> events;
-
-    @BeforeClass
-    public static void init() {
-        var featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        service = new MockVaadinServletService();
-        close(featureFlagStaticMock);
-    }
-
-    @AfterClass
-    public static void clean() {
-        CurrentInstance.clearAll();
-        service.destroy();
-    }
-
-    @Before
-    public void before() {
-        featureFlagStaticMock = mockStatic(FeatureFlags.class);
-        featureFlagEnabled(featureFlagStaticMock);
-        events = mockLockedSessionWithErrorHandler();
-    }
-
-    @After
-    public void after() {
-        close(featureFlagStaticMock);
-        events = null;
-    }
-
-    private static void featureFlagEnabled(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        FeatureFlags flags = mock(FeatureFlags.class);
-        when(flags.isEnabled(FeatureFlags.FLOW_FULLSTACK_SIGNALS.getId()))
-                .thenReturn(true);
-        featureFlagStaticMock.when(() -> FeatureFlags.get(any()))
-                .thenReturn(flags);
-    }
-
-    private static void close(
-            MockedStatic<FeatureFlags> featureFlagStaticMock) {
-        CurrentInstance.clearAll();
-        featureFlagStaticMock.close();
-    }
-
-    private LinkedList<ErrorEvent> mockLockedSessionWithErrorHandler() {
-        VaadinService.setCurrent(service);
-
-        var session = new MockVaadinSession(service);
-        session.lock();
-
-        new MockUI(session);
-        var events = new LinkedList<ErrorEvent>();
-        session.setErrorHandler(events::add);
-
-        return events;
-    }
+public class HasHelperBindHelperTextTest extends SignalsUnitTest {
 
     @Tag("div")
     public static class HasHelperComponent extends Component
@@ -123,8 +44,6 @@ public class HasHelperBindHelperTextTest {
 
         signal.value("help-2");
         assertEquals("help-2", c.getElement().getProperty("helperText"));
-
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -137,7 +56,6 @@ public class HasHelperBindHelperTextTest {
 
         assertThrows(BindingActiveException.class,
                 () -> c.setHelperText("manual"));
-        Assert.assertTrue(events.isEmpty());
     }
 
     @Test
@@ -154,6 +72,5 @@ public class HasHelperBindHelperTextTest {
 
         // After unbinding, value should remain as before
         assertEquals("a", c.getElement().getProperty("helperText"));
-        Assert.assertTrue(events.isEmpty());
     }
 }
