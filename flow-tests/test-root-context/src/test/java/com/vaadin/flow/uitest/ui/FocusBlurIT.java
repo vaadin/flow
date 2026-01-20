@@ -21,7 +21,6 @@ import org.junit.Test;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
-import com.vaadin.testbench.parallel.BrowserUtil;
 
 public class FocusBlurIT extends ChromeBrowserTest {
 
@@ -32,10 +31,6 @@ public class FocusBlurIT extends ChromeBrowserTest {
 
     @Test
     public void focusAndBlur_serverSideFiredEvents_isFromClientFalse() {
-        if (!BrowserUtil.isChrome(getDesiredCapabilities())) {
-            // limit this test for being executed in one browser only
-            return;
-        }
         open();
 
         $(NativeButtonElement.class).id("focus").click();
