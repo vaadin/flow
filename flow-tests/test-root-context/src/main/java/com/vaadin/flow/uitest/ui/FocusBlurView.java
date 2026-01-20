@@ -20,8 +20,9 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.FocusBlurView")
+@Route(value = "com.vaadin.flow.uitest.ui.FocusBlurView", layout = ViewTestLayout.class)
 public class FocusBlurView extends Div {
 
     public FocusBlurView() {
