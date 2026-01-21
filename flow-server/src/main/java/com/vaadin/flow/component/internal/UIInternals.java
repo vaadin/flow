@@ -1206,6 +1206,21 @@ public class UIInternals implements Serializable {
     }
 
     /**
+     * Checks if an error view is currently being displayed.
+     * An error view is a component that implements HasErrorParameter.
+     *
+     * @return true if showing an error view, false otherwise
+     */
+    public boolean isShowingErrorView() {
+        if (routerTargetChain.isEmpty()) {
+            return false;
+        }
+        // The first element in the chain is the actual view component
+        HasElement target = routerTargetChain.get(0);
+        return target instanceof com.vaadin.flow.router.HasErrorParameter;
+    }
+
+    /**
      * Check if we have already started navigation to some location on this
      * roundtrip.
      *
