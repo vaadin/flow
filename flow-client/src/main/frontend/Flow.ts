@@ -128,9 +128,7 @@ export class Flow {
     this.baseRegex = new RegExp(
       `^${
         // IE11 does not support document.baseURI
-        escapeRegExp(
-          decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
-        )
+        escapeRegExp((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
       }`
     );
     this.appShellTitle = document.title;
@@ -437,9 +435,9 @@ export class Flow {
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
 
-      const requestPath = `?v-r=init&location=${encodeURIComponent(
-        this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      const requestPath = `?v-r=init&location=${this.getFlowRoutePath(location)}&query=${encodeURIComponent(
+        this.getFlowRouteQuery(location)
+      )}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 
