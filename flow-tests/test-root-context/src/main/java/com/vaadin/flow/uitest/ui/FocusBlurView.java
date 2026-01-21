@@ -37,7 +37,7 @@ public class FocusBlurView extends Div {
         clientSideTest.setId("client-side");
         add(serverSideTest, clientSideTest);
     }
-    
+
     private void createTest(boolean serverEvents) {
         Input input = new Input();
         input.addFocusListener(event -> {
