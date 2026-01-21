@@ -18,7 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -393,7 +393,7 @@ public class Router implements Serializable {
      */
     public int executeNavigation(UI ui, Location location,
             NavigationEvent navigationEvent, NavigationHandler handler,
-            Consumer<Integer> onSuccess) {
+            IntConsumer onSuccess) {
         ui.getInternals().setLastHandledNavigation(location);
         try {
             int result = handler.handle(navigationEvent);
