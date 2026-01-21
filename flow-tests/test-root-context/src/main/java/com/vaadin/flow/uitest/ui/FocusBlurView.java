@@ -20,18 +20,33 @@ import com.vaadin.flow.component.html.Input;
 import com.vaadin.flow.component.html.NativeButton;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.uitest.servlet.ViewTestLayout;
 
-@Route(value = "com.vaadin.flow.uitest.ui.FocusBlurView", layout = ViewTestLayout.class)
+@Route(value = "com.vaadin.flow.uitest.ui.FocusBlurView")
 public class FocusBlurView extends Div {
 
     public FocusBlurView() {
+        NativeButton serverSideTest = new NativeButton("Server Side Events");
+        serverSideTest.addClickListener(event -> {
+            createTest(true);
+        });
+        serverSideTest.setId("server-side");
+        NativeButton clientSideTest = new NativeButton("Client Side Events");
+        clientSideTest.addClickListener(event -> {
+            createTest(false);
+        });
+        clientSideTest.setId("client-side");
+        add(serverSideTest, clientSideTest);
+    }
+    
+    private void createTest(boolean serverEvents) {
         Input input = new Input();
         input.addFocusListener(event -> {
             Span span = new Span("Focused: " + event.isFromClient());
             span.setId("focus-event");
             add(span);
+            if (serverEvents) {
             input.blur();
+            }
         });
         input.addBlurListener(event -> {
             Span span = new Span("Blurred: " + event.isFromClient());
