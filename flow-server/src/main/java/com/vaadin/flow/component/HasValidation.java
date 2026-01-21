@@ -126,9 +126,14 @@ public interface HasValidation extends Serializable {
      * enabling manual validation mode with
      * {@link #setManualValidation(boolean)} to avoid potential conflicts
      * between your custom validation and the component's built-in validation.
+     * <p>
+     * While a signal binding for the invalid state is active, calls to this
+     * method throw a {@code com.vaadin.signals.BindingActiveException}.
      *
      * @param invalid
      *            new value for component input validity
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing signal binding
      */
     void setInvalid(boolean invalid);
 
@@ -139,4 +144,29 @@ public interface HasValidation extends Serializable {
      * @return whether the component input is valid
      */
     boolean isInvalid();
+
+    /**
+     * Binds the component's invalid state to the provided signal so that the
+     * invalid flag is kept in sync with the signal's current value.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding.
+     * When unbinding, the current invalid state is left unchanged.
+     * <p>
+     * While a binding is active, manual calls to {@link #setInvalid(boolean)}
+     * throw a {@code com.vaadin.signals.BindingActiveException}. Bindings are
+     * lifecycle-aware and only active while the owning component is in the
+     * attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param signal
+     *            the signal providing invalid state flags, or {@code null} to
+     *            unbind
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @since 25.1
+     */
+    default void bindInvalid(Signal<Boolean> signal) {
+        // experimental API, do not force implementation
+        throw new UnsupportedOperationException();
+    }
 }
