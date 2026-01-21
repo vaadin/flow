@@ -25,10 +25,22 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class FocusBlurIT extends ChromeBrowserTest {
+    
+    @Override
+    public int getDeploymentPort() {
+        return 8080;
+    }
+
+    @Override
+    protected String getTestPath() {
+        return "/com.vaadin.flow.uitest.ui.FocusBlurView";
+    }
 
     @Test
     public void focusAndBlur_serverSideFiredEvents_isFromClientFalse() {
         open();
+
+        $(NativeButtonElement.class).id("server-side").click();
 
         $(NativeButtonElement.class).id("focus").click();
         SpanElement focusEvent = $(SpanElement.class).id("focus-event");
@@ -41,6 +53,8 @@ public class FocusBlurIT extends ChromeBrowserTest {
     @Test
     public void focusAndBlur_clientSideFiredEvents_isFromClientTrue() {
         open();
+
+        $(NativeButtonElement.class).id("client-side").click();
 
         var input = $(InputTextElement.class).id("input");
         input.click();
