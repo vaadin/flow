@@ -45,7 +45,7 @@ public class FocusBlurView extends Div {
             span.setId("focus-event");
             add(span);
             if (serverEvents) {
-            input.blur();
+                input.blur();
             }
         });
         input.addBlurListener(event -> {
