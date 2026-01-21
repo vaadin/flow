@@ -38,7 +38,7 @@ public class FocusBlurIT extends ChromeBrowserTest {
     }
 
     @Test
-    void focusAndBlur_clientSideFiredEvents_isFromClientTrue() {
+    public void focusAndBlur_clientSideFiredEvents_isFromClientTrue() {
         open();
 
         var input = $(InputTextElement.class).id("input");
