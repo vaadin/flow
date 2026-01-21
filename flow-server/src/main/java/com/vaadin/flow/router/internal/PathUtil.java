@@ -63,8 +63,8 @@ public class PathUtil implements Serializable {
      * other special characters.
      * <p>
      * This method is designed for processing paths where individual segments
-     * may contain URL-encoded data that should be preserved after decoding.
-     * For example, a path segment containing {@code %2F} will be decoded to
+     * may contain URL-encoded data that should be preserved after decoding. For
+     * example, a path segment containing {@code %2F} will be decoded to
      * {@code /}, but this slash will not be treated as a path separator.
      *
      * @param path
@@ -82,8 +82,7 @@ public class PathUtil implements Serializable {
             return Collections.emptyList();
 
         } else {
-            return Arrays.stream(segments)
-                    .map(UrlUtil::decodeURIComponent)
+            return Arrays.stream(segments).map(UrlUtil::decodeURIComponent)
                     .collect(Collectors.toUnmodifiableList());
         }
     }

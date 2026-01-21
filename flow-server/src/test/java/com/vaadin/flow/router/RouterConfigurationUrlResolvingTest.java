@@ -154,9 +154,9 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         // Example: If you want a parameter value of "a/b" (with actual slash)
         // you must encode it before passing to getUrl()
-        String parameterWithSlash = "a%2Fb";  // %2F will be preserved in URL
-        Assert.assertEquals("wild/a%2Fb",
-                routeConfiguration.getUrl(WildParameter.class, parameterWithSlash));
+        String parameterWithSlash = "a%2Fb"; // %2F will be preserved in URL
+        Assert.assertEquals("wild/a%2Fb", routeConfiguration
+                .getUrl(WildParameter.class, parameterWithSlash));
 
         // Unencoded slashes are treated as path separators
         Assert.assertEquals("wild/a/b",
@@ -164,8 +164,8 @@ public class RouterConfigurationUrlResolvingTest extends RoutingTestBase {
 
         // Other special characters should also be pre-encoded if needed
         String parameterWithQuestion = "test%3Fquestion";
-        Assert.assertEquals("wild/test%3Fquestion",
-                routeConfiguration.getUrl(WildParameter.class, parameterWithQuestion));
+        Assert.assertEquals("wild/test%3Fquestion", routeConfiguration
+                .getUrl(WildParameter.class, parameterWithQuestion));
     }
 
     @Test

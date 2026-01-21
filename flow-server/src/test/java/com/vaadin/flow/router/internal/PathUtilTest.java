@@ -68,7 +68,8 @@ public class PathUtilTest {
 
     @Test
     public void getSegmentsListWithDecoding_decodesEncodedSlashes() {
-        // Test that %2F in a segment is decoded to / but doesn't split the segment
+        // Test that %2F in a segment is decoded to / but doesn't split the
+        // segment
         List<String> segments = PathUtil
                 .getSegmentsListWithDecoding("path%2Fwith%2Fslashes");
         Assert.assertEquals("Should have one segment", 1, segments.size());
