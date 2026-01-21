@@ -18,10 +18,12 @@ package com.vaadin.flow.component;
 import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
+import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 
 /**
  * Unit tests for
@@ -115,5 +117,37 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         // Manual updates should work after unbind
         component.setPlaceholder("manual");
         assertEquals("manual", component.getPlaceholder());
+    }
+
+    @Test
+    public void setPlaceholder_whileBindingActive_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.bindPlaceholder(signal);
+        assertEquals("foo", component.getPlaceholder());
+
+        try {
+            component.setPlaceholder("bar");
+            fail("Expected BindingActiveException when setting placeholder while binding is active");
+        } catch (BindingActiveException expected) {
+            // expected
+        }
+    }
+
+    @Test
+    public void bindPlaceholder_againWhileActive_throwsBindingActiveException() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        component.bindPlaceholder(signal);
+        assertEquals("foo", component.getPlaceholder());
+
+        try {
+            component.bindPlaceholder(new ValueSignal<>("bar"));
+            fail("Expected BindingActiveException when binding a new signal while a binding is active");
+        } catch (BindingActiveException expected) {
+            // expected
+        }
     }
 }
