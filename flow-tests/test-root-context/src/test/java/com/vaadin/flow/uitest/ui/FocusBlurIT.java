@@ -25,7 +25,7 @@ import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
 
 public class FocusBlurIT extends ChromeBrowserTest {
-    
+
     @Test
     public void focusAndBlur_serverSideFiredEvents_isFromClientFalse() {
         open();
