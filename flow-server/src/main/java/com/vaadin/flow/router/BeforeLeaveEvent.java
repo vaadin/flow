@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.List;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 
 /**
@@ -115,7 +116,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeLeaveEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, layouts);
     }
@@ -132,7 +134,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
      * @param layouts
      *            navigation layout chain, not <code>null</code>
      */
-    public BeforeLeaveEvent(NavigationEvent event, Class<?> navigationTarget,
+    public BeforeLeaveEvent(NavigationEvent event,
+            Class<? extends Component> navigationTarget,
             RouteParameters parameters,
             List<Class<? extends RouterLayout>> layouts) {
         super(event, navigationTarget, parameters, layouts);
@@ -157,8 +160,8 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            <code>null</code>
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget, UI ui,
-            List<Class<? extends RouterLayout>> layouts) {
+            Location location, Class<? extends Component> navigationTarget,
+            UI ui, List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, ui, layouts);
     }
 
@@ -183,7 +186,7 @@ public class BeforeLeaveEvent extends BeforeEvent {
      *            <code>null</code>
      */
     public BeforeLeaveEvent(Router router, NavigationTrigger trigger,
-            Location location, Class<?> navigationTarget,
+            Location location, Class<? extends Component> navigationTarget,
             RouteParameters parameters, UI ui,
             List<Class<? extends RouterLayout>> layouts) {
         super(router, trigger, location, navigationTarget, parameters, ui,

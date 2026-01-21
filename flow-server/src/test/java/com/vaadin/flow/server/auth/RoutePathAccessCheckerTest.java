@@ -27,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.internal.Pair;
@@ -374,13 +375,14 @@ public class RoutePathAccessCheckerTest {
         Mockito.verifyNoInteractions(accessPathChecker);
     }
 
-    private AccessCheckResult checkAccess(Class<?> viewClass, User user) {
+    private AccessCheckResult checkAccess(Class<? extends Component> viewClass,
+            User user) {
         NavigationContext context = setupNavigationContext(viewClass, user);
         return this.routePathAccessChecker.check(context);
     }
 
-    private NavigationContext setupNavigationContext(Class<?> navigationTarget,
-            User user) {
+    private NavigationContext setupNavigationContext(
+            Class<? extends Component> navigationTarget, User user) {
         CurrentInstance.clearAll();
 
         Principal principal;
