@@ -18,6 +18,7 @@ package com.vaadin.flow.uitest.ui;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.vaadin.flow.component.html.testbench.InputTextElement;
 import com.vaadin.flow.component.html.testbench.NativeButtonElement;
 import com.vaadin.flow.component.html.testbench.SpanElement;
 import com.vaadin.flow.testutil.ChromeBrowserTest;
@@ -36,4 +37,18 @@ public class FocusBlurIT extends ChromeBrowserTest {
         Assert.assertEquals("Blurred: false", blurEvent.getText());
     }
 
+    @Test
+    void focusAndBlur_clientSideFiredEvents_isFromClientTrue() {
+        open();
+
+        var input = $(InputTextElement.class).id("input");
+        input.click();
+        input.sendKeys(Keys.TAB);
+
+        SpanElement focusEvent = $(SpanElement.class).id("focus-event");
+        SpanElement blurEvent = $(SpanElement.class).id("blur-event");
+
+        Assert.assertEquals("Focused: true", focusEvent.getText());
+        Assert.assertEquals("Blurred: true", blurEvent.getText());
+    }
 }
