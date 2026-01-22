@@ -78,18 +78,16 @@ public class Anchor extends HtmlContainer
 
     /**
      * Creates an anchor component with the given href and binds its text
-     * content to the given signal using {@link #bindText(Signal)}.
+     * content to the given signal.
      * <p>
-     * Binds a {@link Signal}'s value to the text content of this component and
-     * keeps the text content synchronized with the signal value while the
+     * Keeps the text content synchronized with the signal value while the
      * element is in the attached state. When the element is in the detached
-     * state, signal value changes have no effect. Passing {@code null} to
-     * {@link #bindText(Signal)} unbinds any existing binding.
+     * state, signal value changes have no effect.
      * <p>
-     * While a Signal is bound, any attempt to set the text content manually via
+     * While a signal is bound, any attempt to set the text content manually via
      * {@link #setText(String)} throws
      * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * trying to bind a new signal while one is already bound.
      *
      * @see #setHref(String)
      * @see #bindText(Signal)
@@ -98,6 +96,7 @@ public class Anchor extends HtmlContainer
      *            the href to set
      * @param textSignal
      *            the signal to bind, not {@code null}
+     * @since 25.1
      */
     public Anchor(String href, Signal<String> textSignal) {
         setHref(href);
@@ -173,19 +172,17 @@ public class Anchor extends HtmlContainer
 
     /**
      * Creates an anchor component with its text content bound to the given
-     * signal using {@link #bindText(Signal)} and a callback that handles data
-     * download from the server to the client when clicking this anchor.
+     * signal and a callback that handles data download from the server to the
+     * client when clicking this anchor.
      * <p>
-     * Binds a {@link Signal}'s value to the text content of this component and
-     * keeps the text content synchronized with the signal value while the
+     * Keeps the text content synchronized with the signal value while the
      * element is in the attached state. When the element is in the detached
-     * state, signal value changes have no effect. Passing {@code null} to
-     * {@link #bindText(Signal)} unbinds any existing binding.
+     * state, signal value changes have no effect.
      * <p>
-     * While a Signal is bound, any attempt to set the text content manually via
+     * While a signal is bound, any attempt to set the text content manually via
      * {@link #setText(String)} throws
      * {@link com.vaadin.signals.BindingActiveException}. The same happens when
-     * trying to bind a new Signal while one is already bound.
+     * trying to bind a new signal while one is already bound.
      * <p>
      * Sets the {@code download} attribute for the link when given a non-inline
      * handler implementing {@link AbstractDownloadHandler}. For custom handlers
@@ -198,6 +195,7 @@ public class Anchor extends HtmlContainer
      *            the callback that handles data download, not null
      * @param textSignal
      *            the signal to bind, not {@code null}
+     * @since 25.1
      */
     public Anchor(DownloadHandler downloadHandler, Signal<String> textSignal) {
         AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
