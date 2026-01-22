@@ -56,8 +56,6 @@ import com.vaadin.flow.internal.nodefeature.ReconnectDialogConfigurationMap;
 import com.vaadin.flow.router.AfterNavigationListener;
 import com.vaadin.flow.router.BeforeEnterListener;
 import com.vaadin.flow.router.BeforeLeaveListener;
-import com.vaadin.flow.router.ErrorNavigationEvent;
-import com.vaadin.flow.router.ErrorParameter;
 import com.vaadin.flow.router.EventUtil;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.Location;
@@ -73,7 +71,6 @@ import com.vaadin.flow.router.RouteParam;
 import com.vaadin.flow.router.RouteParameters;
 import com.vaadin.flow.router.Router;
 import com.vaadin.flow.router.RouterLayout;
-import com.vaadin.flow.router.internal.ErrorStateRenderer;
 import com.vaadin.flow.router.internal.HasUrlParameterFormat;
 import com.vaadin.flow.router.internal.PathUtil;
 import com.vaadin.flow.server.Command;
@@ -2028,7 +2025,11 @@ public class UI extends Component
             if (!isPostponed()) {
                 // Route does not exist, and current view does not prevent
                 // navigation thus an error page is shown
-                handleErrorNavigation(location);
+                NotFoundException notFoundException = new NotFoundException(
+                        "Couldn't find route for '" + location.getPath() + "'");
+                getInternals().getRouter().handleExceptionNavigation(this,
+                        location, notFoundException,
+                        NavigationTrigger.CLIENT_SIDE, null);
             }
 
         }
@@ -2048,27 +2049,16 @@ public class UI extends Component
 
     private void handleNavigation(Location location,
             NavigationState navigationState, NavigationTrigger trigger) {
-        try {
-            getInternals().setLastHandledNavigation(location);
-            NavigationEvent navigationEvent = new NavigationEvent(
-                    getInternals().getRouter(), location, this, trigger);
+        NavigationEvent navigationEvent = new NavigationEvent(
+                getInternals().getRouter(), location, this, trigger);
 
-            JavaScriptNavigationStateRenderer clientNavigationStateRenderer = new JavaScriptNavigationStateRenderer(
-                    navigationState);
-
-            clientNavigationStateRenderer.handle(navigationEvent);
-
-            forwardToClientUrl = clientNavigationStateRenderer
-                    .getClientForwardRoute();
-
-            adjustPageTitle();
-
-        } catch (Exception exception) {
-            getInternals().getRouter().handleExceptionNavigation(this, location,
-                    exception, NavigationTrigger.CLIENT_SIDE, null);
-        } finally {
-            getInternals().clearLastHandledNavigation();
-        }
+        JavaScriptNavigationStateRenderer renderer = new JavaScriptNavigationStateRenderer(
+                navigationState);
+        getInternals().getRouter().executeNavigation(this, location,
+                navigationEvent, renderer, (httpStatus) -> {
+                    forwardToClientUrl = renderer.getClientForwardRoute();
+                    adjustPageTitle();
+                });
     }
 
     private boolean isPostponed() {
@@ -2086,22 +2076,6 @@ public class UI extends Component
             getInternals().cancelPendingTitleUpdate();
             getInternals().setTitle(appShellTitle);
         }
-    }
-
-    private void handleErrorNavigation(Location location) {
-        NavigationState errorNavigationState = getInternals().getRouter()
-                .resolveRouteNotFoundNavigationTarget()
-                .orElse(getDefaultNavigationError());
-        ErrorStateRenderer errorStateRenderer = new ErrorStateRenderer(
-                errorNavigationState);
-        NotFoundException notFoundException = new NotFoundException(
-                "Couldn't find route for '" + location.getPath() + "'");
-        ErrorParameter<NotFoundException> errorParameter = new ErrorParameter<>(
-                NotFoundException.class, notFoundException);
-        ErrorNavigationEvent errorNavigationEvent = new ErrorNavigationEvent(
-                getInternals().getRouter(), location, this,
-                NavigationTrigger.CLIENT_SIDE, errorParameter);
-        errorStateRenderer.handle(errorNavigationEvent);
     }
 
     private NavigationState getDefaultNavigationError() {

@@ -18,6 +18,7 @@ package com.vaadin.flow.router;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.IntConsumer;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.JacksonUtils;
@@ -326,30 +327,34 @@ public class Router implements Serializable {
             boolean forceInstantiation, boolean recreateLayoutChain) {
         NavigationState newState = getRouteResolver()
                 .resolve(new ResolveRequest(this, location));
-        if (newState != null) {
-            NavigationEvent navigationEvent = new NavigationEvent(this,
-                    location, ui, trigger, state, false, forceInstantiation,
-                    recreateLayoutChain);
 
-            NavigationHandler handler = new NavigationStateRenderer(newState);
-            return handler.handle(navigationEvent);
+        NavigationEvent navigationEvent = null;
+        NavigationHandler handler = null;
+
+        if (newState != null) {
+            navigationEvent = new NavigationEvent(this, location, ui, trigger,
+                    state, false, forceInstantiation, recreateLayoutChain);
+
+            handler = new NavigationStateRenderer(newState);
         } else if (!location.getPath().isEmpty()) {
             Location slashToggledLocation = location.toggleTrailingSlash();
             NavigationState slashToggledState = getRouteResolver()
                     .resolve(new ResolveRequest(this, slashToggledLocation));
             if (slashToggledState != null) {
-                NavigationEvent navigationEvent = new NavigationEvent(this,
+                navigationEvent = new NavigationEvent(this,
                         slashToggledLocation, ui, trigger, state, false,
                         forceInstantiation, recreateLayoutChain);
 
-                NavigationHandler handler = new InternalRedirectHandler(
-                        slashToggledLocation);
-                return handler.handle(navigationEvent);
+                handler = new InternalRedirectHandler(slashToggledLocation);
             }
         }
 
-        throw new NotFoundException(
-                "Couldn't find route for '" + location.getPath() + "'");
+        if (navigationEvent == null || handler == null) {
+            throw new NotFoundException(
+                    "Couldn't find route for '" + location.getPath() + "'");
+        }
+
+        return executeNavigation(ui, location, navigationEvent, handler, null);
     }
 
     /**
@@ -428,6 +433,48 @@ public class Router implements Serializable {
             // If InternalServerError also throws, let it propagate -
             // nothing more we can do
             return fallbackHandler.handle(fallbackEvent);
+        }
+    }
+
+    /**
+     * Execute navigation with a pre-resolved handler and optional success
+     * callback.
+     * <p>
+     * This method handles the common navigation pattern of setting navigation
+     * state, executing the handler, running a success callback, and properly
+     * handling exceptions via {@link #handleExceptionNavigation}.
+     * <p>
+     * For internal use only. May be renamed or removed in a future release.
+     *
+     * @param ui
+     *            the UI to update, not {@code null}
+     * @param location
+     *            the navigation location, not {@code null}
+     * @param navigationEvent
+     *            the navigation event to pass to the handler
+     * @param handler
+     *            the navigation handler to execute
+     * @param onSuccess
+     *            optional callback to run after successful navigation (before
+     *            clearing navigation state), may be {@code null}
+     * @return the HTTP status code resulting from the navigation
+     */
+    public int executeNavigation(UI ui, Location location,
+            NavigationEvent navigationEvent, NavigationHandler handler,
+            IntConsumer onSuccess) {
+        ui.getInternals().setLastHandledNavigation(location);
+        try {
+            int result = handler.handle(navigationEvent);
+            if (onSuccess != null) {
+                onSuccess.accept(result);
+            }
+            return result;
+        } catch (Exception exception) {
+            return handleExceptionNavigation(ui, location, exception,
+                    navigationEvent.getTrigger(),
+                    navigationEvent.getState().orElse(null));
+        } finally {
+            ui.getInternals().clearLastHandledNavigation();
         }
     }
 
