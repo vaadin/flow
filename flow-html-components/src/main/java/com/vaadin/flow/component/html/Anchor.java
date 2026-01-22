@@ -31,6 +31,7 @@ import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.StreamResourceRegistry;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing an <code>&lt;a&gt;</code> element.
@@ -73,6 +74,35 @@ public class Anchor extends HtmlContainer
     public Anchor(String href, String text) {
         setHref(href);
         setText(text);
+    }
+
+    /**
+     * Creates an anchor component with the given href and binds its text
+     * content to the given signal using {@link #bindText(Signal)}.
+     * <p>
+     * Binds a {@link Signal}'s value to the text content of this component and
+     * keeps the text content synchronized with the signal value while the
+     * element is in the attached state. When the element is in the detached
+     * state, signal value changes have no effect. Passing {@code null} to
+     * {@link #bindText(Signal)} unbinds any existing binding.
+     * <p>
+     * While a Signal is bound, any attempt to set the text content manually via
+     * {@link #setText(String)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
+     * trying to bind a new Signal while one is already bound.
+     *
+     * @see #setHref(String)
+     * @see #bindText(Signal)
+     *
+     * @param href
+     *            the href to set
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     */
+    public Anchor(String href, Signal<String> textSignal) {
+        setHref(href);
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 
     /**
@@ -139,6 +169,43 @@ public class Anchor extends HtmlContainer
                 : AttachmentType.DOWNLOAD;
         setHref(downloadHandler, att);
         setText(text);
+    }
+
+    /**
+     * Creates an anchor component with its text content bound to the given
+     * signal using {@link #bindText(Signal)} and a callback that handles data
+     * download from the server to the client when clicking this anchor.
+     * <p>
+     * Binds a {@link Signal}'s value to the text content of this component and
+     * keeps the text content synchronized with the signal value while the
+     * element is in the attached state. When the element is in the detached
+     * state, signal value changes have no effect. Passing {@code null} to
+     * {@link #bindText(Signal)} unbinds any existing binding.
+     * <p>
+     * While a Signal is bound, any attempt to set the text content manually via
+     * {@link #setText(String)} throws
+     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Sets the {@code download} attribute for the link when given a non-inline
+     * handler implementing {@link AbstractDownloadHandler}. For custom handlers
+     * the mode {@link AttachmentType#DOWNLOAD} will be set.
+     *
+     * @see #setHref(DownloadHandler)
+     * @see #bindText(Signal)
+     *
+     * @param downloadHandler
+     *            the callback that handles data download, not null
+     * @param textSignal
+     *            the signal to bind, not {@code null}
+     */
+    public Anchor(DownloadHandler downloadHandler, Signal<String> textSignal) {
+        AttachmentType att = downloadHandler instanceof AbstractDownloadHandler
+                ? getLinkMode(downloadHandler)
+                : AttachmentType.DOWNLOAD;
+        setHref(downloadHandler, att);
+        Objects.requireNonNull(textSignal, "textSignal must not be null");
+        bindText(textSignal);
     }
 
     /**
