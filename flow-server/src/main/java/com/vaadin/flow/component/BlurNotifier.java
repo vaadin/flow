@@ -72,8 +72,10 @@ public interface BlurNotifier<T extends Component> extends Serializable {
          *            side, <code>false</code> otherwise
          * @see ComponentEvent
          */
-        public BlurEvent(C source, boolean fromClient) {
-            super(source, fromClient);
+        public BlurEvent(C source, boolean fromClient,
+                @EventData("event.target._nextBlurIsFromClient") Boolean eventFromClient) {
+            super(source,
+                    eventFromClient != null ? eventFromClient : fromClient);
         }
     }
 }
