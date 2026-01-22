@@ -112,8 +112,16 @@ public interface Focusable<T extends Component>
          * be ready by the time when the function is called.
          */
         Element element = getElement();
-        // Using $0 since "this" won't work inside the function
-        element.executeJs("setTimeout(function(){$0.focus()},0)", element);
+        element.executeJs("""
+                setTimeout(function(){
+                    try {
+                       $0._nextFocusIsFromClient = false;
+                       $0.focus();
+                    } finally {
+                       $0._nextFocusIsFromClient = true;
+                    }
+                },0)
+                """, element);
     }
 
     /**
@@ -125,7 +133,16 @@ public interface Focusable<T extends Component>
      *      at MDN</a>
      */
     default void blur() {
-        getElement().callJsFunction("blur");
+        getElement().executeJs("""
+                setTimeout(function(){
+                    try {
+                        $0._nextBlurIsFromClient = false;
+                        $0.blur();
+                    } finally {
+                       $0._nextBlurIsFromClient = true;
+                    }
+                },0)
+                """, getElement());
     }
 
     /**
