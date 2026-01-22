@@ -1206,8 +1206,8 @@ public class UIInternals implements Serializable {
     }
 
     /**
-     * Checks if an error view is currently being displayed.
-     * An error view is a component that implements HasErrorParameter.
+     * Checks if an error view is currently being displayed. An error view is a
+     * component that implements HasErrorParameter.
      *
      * @return true if showing an error view, false otherwise
      */

@@ -25,8 +25,8 @@ import com.vaadin.flow.server.VaadinSession;
 
 /**
  * Triggers UI refresh when hotswap occurs while an error view is displayed.
- * This ensures that fixing a broken class during development will refresh
- * the error page and attempt to re-navigate to the original location.
+ * This ensures that fixing a broken class during development will refresh the
+ * error page and attempt to re-navigate to the original location.
  * <p>
  * For internal use only. May be renamed or removed in a future release.
  *
