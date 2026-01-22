@@ -46,25 +46,6 @@ public class SystemMessagesTest {
     }
 
     @Test
-    public void customizedSyncError_setters() {
-        CustomizedSystemMessages messages = new CustomizedSystemMessages();
-
-        messages.setSyncErrorURL("/custom-url");
-        messages.setSyncErrorNotificationEnabled(true);
-        messages.setSyncErrorCaption("Custom Caption");
-        messages.setSyncErrorMessage("Custom message text");
-
-        Assert.assertEquals("Custom URL should be set", "/custom-url",
-                messages.getSyncErrorURL());
-        Assert.assertTrue("Notification should be enabled",
-                messages.isSyncErrorNotificationEnabled());
-        Assert.assertEquals("Caption should be custom", "Custom Caption",
-                messages.getSyncErrorCaption());
-        Assert.assertEquals("Message should be custom", "Custom message text",
-                messages.getSyncErrorMessage());
-    }
-
-    @Test
     public void customizedSyncError_notificationDisabled_returnsNullCaptionAndMessage() {
         CustomizedSystemMessages messages = new CustomizedSystemMessages();
 

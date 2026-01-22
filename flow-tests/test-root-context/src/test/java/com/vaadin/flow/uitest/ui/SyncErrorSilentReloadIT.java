@@ -46,11 +46,10 @@ public class SyncErrorSilentReloadIT extends ChromeBrowserTest {
         $(NativeButtonElement.class).id("trigger-action").click();
 
         // Page should reload silently without showing notification
-        // Wait for the page to reload - the buttons should be available again
-        waitUntil(driver -> {
-            // After silent reload, the page state is reset
-            return isElementPresent(By.id("enable-desync"));
-        });
+        // Wait for the page to reload - the desync simulation enabled messages
+        // should not be visible
+        waitForElementNotPresent(
+                By.xpath("//*[contains(text(),'Desync simulation enabled')]"));
 
         // Verify NO error notification was shown (it would still be visible if
         // shown)

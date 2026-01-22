@@ -15,7 +15,6 @@
  */
 package com.vaadin.flow.uitest.ui;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
@@ -79,13 +78,10 @@ public class SyncErrorIT extends ChromeBrowserTest {
         findElement(By.className("v-system-error")).click();
 
         // Page should reload - desync flag was reset to false by the view
-        // reload, so buttons should be available again
-        waitUntil(driver -> isElementPresent(By.id("enable-desync")));
-
-        // The "Desync simulation enabled" text should be gone after reload
-        // (but only if desync flag was reset externally or the view
-        // reinitializes)
-        // We just verify the page is functional again
-        Assert.assertTrue(isElementPresent(By.id("trigger-action")));
+        // reload, so notification and desync simulation enabled messages should
+        // not be visible
+        waitForElementNotPresent(By.className("v-system-error"));
+        waitForElementNotPresent(
+                By.xpath("//*[contains(text(),'Desync simulation enabled')]"));
     }
 }

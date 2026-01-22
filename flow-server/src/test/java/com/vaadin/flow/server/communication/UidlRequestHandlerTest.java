@@ -344,7 +344,8 @@ public class UidlRequestHandlerTest {
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
             public void handleRpc(UI ui, String requestBody,
-                    VaadinRequest request) {
+                    VaadinRequest request)
+                    throws ServerRpcHandler.MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
             }
         };
@@ -392,7 +393,7 @@ public class UidlRequestHandlerTest {
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
             public void handleRpc(UI ui, String requestBody,
-                    VaadinRequest request) {
+                    VaadinRequest request) throws MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
             }
         };
@@ -440,7 +441,7 @@ public class UidlRequestHandlerTest {
         ServerRpcHandler serverRpcHandler = new ServerRpcHandler() {
             @Override
             public void handleRpc(UI ui, String requestBody,
-                    VaadinRequest request) {
+                    VaadinRequest request) throws MessageIdSyncException {
                 throw new ServerRpcHandler.MessageIdSyncException(1, 5);
             }
         };

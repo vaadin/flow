@@ -238,7 +238,7 @@ public class SystemMessages implements Serializable {
      * Default value is {@literal null}.
      *
      * @return the URL to redirect to, or null to refresh the page
-     * @since 24.8
+     * @since 25.1
      */
     public String getSyncErrorURL() {
         return syncErrorURL;
@@ -257,7 +257,7 @@ public class SystemMessages implements Serializable {
      *
      * @return {@code true} to show the notification to the end user,
      *         {@code false} to redirect directly
-     * @since 24.8
+     * @since 25.1
      */
     public boolean isSyncErrorNotificationEnabled() {
         return syncErrorNotificationEnabled;
@@ -270,7 +270,7 @@ public class SystemMessages implements Serializable {
      * disabled.
      *
      * @return The caption to show or {@code null} to show no caption.
-     * @since 24.8
+     * @since 25.1
      */
     public String getSyncErrorCaption() {
         return (syncErrorNotificationEnabled ? syncErrorCaption : null);
@@ -283,7 +283,7 @@ public class SystemMessages implements Serializable {
      * disabled.
      *
      * @return The message to show or {@code null} to show no message.
-     * @since 24.8
+     * @since 25.1
      */
     public String getSyncErrorMessage() {
         return (syncErrorNotificationEnabled ? syncErrorMessage : null);

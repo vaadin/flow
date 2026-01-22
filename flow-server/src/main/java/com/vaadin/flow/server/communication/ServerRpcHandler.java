@@ -261,9 +261,9 @@ public class ServerRpcHandler implements Serializable {
      * session storage. When clients reconnect to a healthy pod, their message
      * ID exceeds what the server expects.
      *
-     * @since 24.8
+     * @since 25.1
      */
-    public static class MessageIdSyncException extends RuntimeException {
+    public static class MessageIdSyncException extends Exception {
 
         private final int expectedId;
         private final int receivedId;
@@ -320,7 +320,8 @@ public class ServerRpcHandler implements Serializable {
      *             the session.
      */
     public void handleRpc(UI ui, Reader reader, VaadinRequest request)
-            throws IOException, InvalidUIDLSecurityKeyException {
+            throws IOException, InvalidUIDLSecurityKeyException,
+            MessageIdSyncException {
         handleRpc(ui, SynchronizedRequestHandler.getRequestBody(reader),
                 request);
     }
@@ -340,7 +341,7 @@ public class ServerRpcHandler implements Serializable {
      *             the session.
      */
     public void handleRpc(UI ui, String message, VaadinRequest request)
-            throws InvalidUIDLSecurityKeyException {
+            throws InvalidUIDLSecurityKeyException, MessageIdSyncException {
         ui.getSession().setLastRequestTimestamp(System.currentTimeMillis());
 
         if (message == null || message.isEmpty()) {

@@ -217,7 +217,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      *
      * @param syncErrorURL
      *            the URL to redirect to, or null to refresh the page
-     * @since 24.8
+     * @since 25.1
      */
     public void setSyncErrorURL(String syncErrorURL) {
         this.syncErrorURL = syncErrorURL;
@@ -237,7 +237,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      * @param syncErrorNotificationEnabled
      *            {@code true} to show the notification to the end user,
      *            {@code false} to redirect directly
-     * @since 24.8
+     * @since 25.1
      */
     public void setSyncErrorNotificationEnabled(
             boolean syncErrorNotificationEnabled) {
@@ -249,7 +249,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      *
      * @param syncErrorCaption
      *            The caption to show or {@code null} to show no caption.
-     * @since 24.8
+     * @since 25.1
      */
     public void setSyncErrorCaption(String syncErrorCaption) {
         this.syncErrorCaption = syncErrorCaption;
@@ -260,7 +260,7 @@ public class CustomizedSystemMessages extends SystemMessages {
      *
      * @param syncErrorMessage
      *            The message to show or {@code null} to show no message.
-     * @since 24.8
+     * @since 25.1
      */
     public void setSyncErrorMessage(String syncErrorMessage) {
         this.syncErrorMessage = syncErrorMessage;

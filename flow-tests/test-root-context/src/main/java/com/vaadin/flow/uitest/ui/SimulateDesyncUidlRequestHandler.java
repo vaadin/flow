@@ -59,7 +59,8 @@ public class SimulateDesyncUidlRequestHandler extends UidlRequestHandler {
         return new ServerRpcHandler() {
             @Override
             public void handleRpc(UI ui, String message, VaadinRequest request)
-                    throws InvalidUIDLSecurityKeyException {
+                    throws InvalidUIDLSecurityKeyException,
+                    MessageIdSyncException {
                 VaadinSession session = ui.getSession();
                 if (isDesyncEnabled(session)) {
                     // Reset the flag so subsequent requests work normally
