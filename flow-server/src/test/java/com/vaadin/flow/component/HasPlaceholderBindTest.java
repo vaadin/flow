@@ -23,7 +23,7 @@ import com.vaadin.signals.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 /**
  * Unit tests for
@@ -126,13 +126,10 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-
-        try {
-            component.setPlaceholder("bar");
-            fail("Expected BindingActiveException when setting placeholder while binding is active");
-        } catch (BindingActiveException expected) {
-            // expected
-        }
+        assertThrows(
+                "Expected BindingActiveException when setting placeholder while binding is active",
+                BindingActiveException.class,
+                () -> component.setPlaceholder("bar"));
     }
 
     @Test
@@ -142,12 +139,9 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
-
-        try {
-            component.bindPlaceholder(new ValueSignal<>("bar"));
-            fail("Expected BindingActiveException when binding a new signal while a binding is active");
-        } catch (BindingActiveException expected) {
-            // expected
-        }
+        assertThrows(
+                "Expected BindingActiveException when binding a new signal while a binding is active",
+                BindingActiveException.class,
+                () -> component.bindPlaceholder(new ValueSignal<>("bar")));
     }
 }
