@@ -78,7 +78,11 @@ public class ThemeListImpl implements ThemeList, Serializable {
      */
     public ThemeListImpl(Element element) {
         this.element = element;
-        themes = Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
+        themes = readThemesFromAttribute();
+    }
+
+    private Set<String> readThemesFromAttribute() {
+        return Optional.ofNullable(element.getAttribute(THEME_ATTRIBUTE_NAME))
                 .map(value -> value.split(THEME_NAMES_DELIMITER))
                 .map(Stream::of)
                 .map(stream -> stream.filter(themeName -> !themeName.isEmpty())
@@ -109,6 +113,12 @@ public class ThemeListImpl implements ThemeList, Serializable {
     }
 
     private void internalSetPresence(String name, boolean set) {
+        // Constructor reads the initial themes state only once.
+        // Refresh themes from the attribute to ensure multiple ElementEffect
+        // bindings work correctly with the latest themes.
+        themes.clear();
+        themes.addAll(readThemesFromAttribute());
+
         boolean changed;
         if (set) {
             changed = themes.add(name);

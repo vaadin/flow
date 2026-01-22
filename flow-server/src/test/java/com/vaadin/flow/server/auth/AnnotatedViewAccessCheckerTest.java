@@ -25,6 +25,7 @@ import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -506,13 +507,14 @@ public class AnnotatedViewAccessCheckerTest {
         Assert.assertEquals(AccessCheckDecision.DENY, result.decision());
     }
 
-    private AccessCheckResult checkAccess(Class<?> viewClass, User user) {
+    private AccessCheckResult checkAccess(Class<? extends Component> viewClass,
+            User user) {
         NavigationContext context = setupNavigationContext(viewClass, user);
         return this.viewAccessChecker.check(context);
     }
 
-    static NavigationContext setupNavigationContext(Class<?> navigationTarget,
-            User user) {
+    static NavigationContext setupNavigationContext(
+            Class<? extends Component> navigationTarget, User user) {
         CurrentInstance.clearAll();
 
         Principal principal;
