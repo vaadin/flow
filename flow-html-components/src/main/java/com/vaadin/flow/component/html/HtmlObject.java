@@ -15,6 +15,7 @@
  */
 package com.vaadin.flow.component.html;
 
+import java.util.Objects;
 import java.util.Optional;
 
 import com.vaadin.flow.component.ClickNotifier;
@@ -24,11 +25,13 @@ import com.vaadin.flow.component.HasOrderedComponents;
 import com.vaadin.flow.component.HtmlContainer;
 import com.vaadin.flow.component.PropertyDescriptor;
 import com.vaadin.flow.component.PropertyDescriptors;
+import com.vaadin.flow.component.SignalPropertySupport;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.server.AbstractStreamResource;
 import com.vaadin.flow.server.StreamResource;
 import com.vaadin.flow.server.streams.AbstractDownloadHandler;
 import com.vaadin.flow.server.streams.DownloadHandler;
+import com.vaadin.signals.Signal;
 
 /**
  * Component representing a <code>&lt;object&gt;</code> element.
@@ -45,6 +48,9 @@ public class HtmlObject extends HtmlContainer implements
 
     private static final PropertyDescriptor<String, Optional<String>> typeDescriptor = PropertyDescriptors
             .optionalAttributeWithDefault("type", "");
+
+    private final SignalPropertySupport<String> dataProperty = SignalPropertySupport
+            .create(this, value -> set(dataDescriptor, value));
 
     /**
      * Creates a new <code>&lt;object&gt;</code> component.
@@ -72,7 +78,7 @@ public class HtmlObject extends HtmlContainer implements
 
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data, type
-     * attribute values and and "param" components.
+     * attribute values and "param" components.
      *
      * @see #setData(String)
      * @see #setType(String)
@@ -88,6 +94,45 @@ public class HtmlObject extends HtmlContainer implements
      */
     public HtmlObject(String data, String type, Param... params) {
         setData(data);
+        setType(type);
+        add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with its data
+     * attribute bound to the given signal and with the given type attribute.
+     *
+     * @param dataSignal
+     *            the signal to bind, not {@code null}
+     * @param type
+     *            a type attribute value
+     * @see #bindData(Signal)
+     * @see #setType(String)
+     */
+    public HtmlObject(Signal<String> dataSignal, String type) {
+        Objects.requireNonNull(dataSignal, "dataSignal must not be null");
+        dataProperty.bind(dataSignal);
+        setType(type);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with its data
+     * attribute bound to the given signal, the given type attribute and the
+     * provided "param" children.
+     *
+     * @param dataSignal
+     *            the signal to bind, not {@code null}
+     * @param type
+     *            a type attribute value
+     * @param params
+     *            parameter components
+     * @see #bindData(Signal)
+     * @see #setType(String)
+     * @see #add(Component...)
+     */
+    public HtmlObject(Signal<String> dataSignal, String type, Param... params) {
+        Objects.requireNonNull(dataSignal, "dataSignal must not be null");
+        dataProperty.bind(dataSignal);
         setType(type);
         add(params);
     }
@@ -141,7 +186,7 @@ public class HtmlObject extends HtmlContainer implements
      * Creates a new <code>&lt;object&gt;</code> component with given
      * {@link DownloadHandler} callback for providing an object data and type
      * value.
-     *
+     * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -163,7 +208,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     *
+     * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -190,7 +235,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     *
+     * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -215,7 +260,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Creates a new <code>&lt;object&gt;</code> component with given data
      * resource, type value and "param" components.
-     *
+     * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -249,6 +294,36 @@ public class HtmlObject extends HtmlContainer implements
      */
     public HtmlObject(String data, Param... params) {
         setData(data);
+        add(params);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with its data
+     * attribute bound to the given signal.
+     *
+     * @param dataSignal
+     *            the signal to bind, not {@code null}
+     * @see #bindData(Signal)
+     */
+    public HtmlObject(Signal<String> dataSignal) {
+        Objects.requireNonNull(dataSignal, "dataSignal must not be null");
+        dataProperty.bind(dataSignal);
+    }
+
+    /**
+     * Creates a new <code>&lt;object&gt;</code> component with its data
+     * attribute bound to the given signal and the provided "param" children.
+     *
+     * @param dataSignal
+     *            the signal to bind, not {@code null}
+     * @param params
+     *            parameter components
+     * @see #bindData(Signal)
+     * @see #add(Component...)
+     */
+    public HtmlObject(Signal<String> dataSignal, Param... params) {
+        Objects.requireNonNull(dataSignal, "dataSignal must not be null");
+        dataProperty.bind(dataSignal);
         add(params);
     }
 
@@ -311,7 +386,7 @@ public class HtmlObject extends HtmlContainer implements
     /**
      * Sets the URL for {@link DownloadHandler} callback as "data" attribute
      * value.
-     *
+     * <p>
      * Sets the <code>Content-Disposition</code> header to <code>inline</code>
      * for pre-defined download handlers, created by factory methods in
      * {@link DownloadHandler}, as well as for other
@@ -339,6 +414,42 @@ public class HtmlObject extends HtmlContainer implements
      */
     public String getData() {
         return get(dataDescriptor);
+    }
+
+    /**
+     * Binds a {@link com.vaadin.signals.Signal}'s value to the {@code data}
+     * attribute of this component and keeps the attribute synchronized with the
+     * signal value while the component is in the attached state. When the
+     * component is in the detached state, signal value changes have no effect.
+     * Passing {@code null} as the {@code signal} unbinds any existing binding.
+     * <p>
+     * Trying to bind a new signal while one is already bound throws
+     * {@link com.vaadin.signals.BindingActiveException}.
+     * <p>
+     * The semantics follow
+     * {@link com.vaadin.flow.component.HasText#bindText(Signal)} regarding
+     * lifecycle and unbinding.
+     * <p>
+     * Example of usage:
+     * 
+     * <pre>
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * HtmlObject component = new HtmlObject();
+     * add(component);
+     * component.bindData(signal);
+     * signal.value("/path/to/data"); // The component "data" attribute is set
+     *                                // accordingly
+     * </pre>
+     *
+     * @param dataSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setData(String)
+     */
+    public void bindData(Signal<String> dataSignal) {
+        dataProperty.bind(dataSignal);
     }
 
     /**
