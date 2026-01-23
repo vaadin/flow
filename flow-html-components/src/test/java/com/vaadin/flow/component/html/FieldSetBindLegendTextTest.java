@@ -73,4 +73,21 @@ public class FieldSetBindLegendTextTest extends SignalsUnitTest {
         // After unbinding, value should remain as before
         assertEquals("a", fieldSet.getLegend().getText());
     }
+
+    @Test
+    public void bindLegendText_attachedThenDetached_stopsUpdates() {
+        FieldSet fieldSet = new FieldSet();
+        UI.getCurrent().add(fieldSet);
+
+        ValueSignal<String> signal = new ValueSignal<>("a");
+        fieldSet.bindLegendText(signal);
+        assertEquals("a", fieldSet.getLegend().getText());
+
+        // Detach the component: lifecycle-aware binding should deactivate
+        UI.getCurrent().remove(fieldSet);
+
+        // Update value after detach – legend text should remain unchanged
+        signal.value("b");
+        assertEquals("a", fieldSet.getLegend().getText());
+    }
 }
