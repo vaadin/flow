@@ -23,7 +23,6 @@ import com.vaadin.signals.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
-import static org.junit.Assert.assertTrue;
 
 /**
  * Unit tests for Html.bindHtmlContent(Signal<String>).
@@ -42,7 +41,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -57,7 +55,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -75,7 +72,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         signal.value("<div id='c'>v2</div>");
         assertEquals("v2", html.getInnerHtml());
         assertEquals("c", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -90,7 +86,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
         assertEquals("init", html.getInnerHtml());
         assertEquals("a", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -108,7 +103,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -128,7 +122,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
 
         assertEquals("after2", html.getInnerHtml());
         assertEquals("c", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -139,14 +132,17 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
-        // sending null will cause the effect to throw; state should not change,
-        // and an error should be captured by SignalsUnitTest error handler
+        // sending null will cause NPE in setHtmlContent inside effect function;
+        // state should not change, and an error should be captured by
+        // SignalsUnitTest error handler
         signal.value(null);
 
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
         // one error captured
         assertEquals(1, events.size());
+        assertEquals(NullPointerException.class,
+                events.getFirst().getThrowable().getClass());
         // clear events for next verification in SignalsUnitTest.after
         events.clear();
     }
@@ -166,7 +162,6 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         signal.value("<div id='c'>ignored</div>");
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 
     @Test
@@ -201,6 +196,5 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // state unchanged
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));
-        assertTrue(events.isEmpty());
     }
 }

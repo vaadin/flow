@@ -60,8 +60,6 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  */
 public class Html extends Component {
 
-    private static final String HTML_BINDING_KEY = "htmlContent";
-
     private static final PropertyDescriptor<String, String> innerHtmlDescriptor = PropertyDescriptors
             .propertyWithDefault("innerHTML", "");
 
@@ -170,7 +168,7 @@ public class Html extends Component {
         getElement().getNode()
                 .getFeatureIfInitialized(SignalBindingFeature.class)
                 .ifPresent(feature -> {
-                    if (feature.hasBinding(HTML_BINDING_KEY)) {
+                    if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
                         throw new BindingActiveException(
                                 "setHtmlContent is not allowed while a binding for HTML content exists.");
                     }
@@ -266,15 +264,16 @@ public class Html extends Component {
                 .getFeature(SignalBindingFeature.class);
 
         if (htmlSignal == null) {
-            feature.removeBinding(HTML_BINDING_KEY);
+            feature.removeBinding(SignalBindingFeature.HTML_CONTENT);
         } else {
-            if (feature.hasBinding(HTML_BINDING_KEY)) {
+            if (feature.hasBinding(SignalBindingFeature.HTML_CONTENT)) {
                 throw new BindingActiveException();
             }
 
             Registration registration = ElementEffect.bind(getElement(),
                     htmlSignal, (element, value) -> setOuterHtml(value, true));
-            feature.setBinding(HTML_BINDING_KEY, registration, htmlSignal);
+            feature.setBinding(SignalBindingFeature.HTML_CONTENT, registration,
+                    htmlSignal);
         }
     }
 }
