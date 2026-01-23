@@ -16,7 +16,6 @@
 package com.vaadin.flow.component.html;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.junit.Test;
 
@@ -102,8 +101,8 @@ public class HtmlObjectBindDataTest {
     public void constructor_withSignalTypeAndParams_addsParams() {
         var p1 = new Param("a", "1");
         var p2 = new Param("b", "2");
-        var object = new HtmlObject(new ValueSignal<>("/data"),
-                "text/html", p1, p2);
+        var object = new HtmlObject(new ValueSignal<>("/data"), "text/html", p1,
+                p2);
 
         List<?> children = object.getChildren().toList();
         assertEquals(2, children.size());
