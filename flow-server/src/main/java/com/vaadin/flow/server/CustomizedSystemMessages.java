@@ -41,6 +41,8 @@ package com.vaadin.flow.server;
  * <li>Cookies disabled: the cookie support is disabled in the browser.
  * <li>Internal error: unhandled critical server error (e.g out of memory,
  * database crash)
+ * <li>Synchronization error: client and server are out of sync due to abrupt
+ * server termination (e.g., OOMKilled, SIGKILL) before UI state was saved
  * </ul>
  *
  * @since 1.0
@@ -205,6 +207,63 @@ public class CustomizedSystemMessages extends SystemMessages {
      */
     public void setCookiesDisabledMessage(String cookiesDisabledMessage) {
         this.cookiesDisabledMessage = cookiesDisabledMessage;
+    }
+
+    /**
+     * Sets the URL the user will be redirected to after dismissing a
+     * "synchronization error" message.
+     *
+     * Default value is {@literal null}.
+     *
+     * @param syncErrorURL
+     *            the URL to redirect to, or null to refresh the page
+     * @since 25.1
+     */
+    public void setSyncErrorURL(String syncErrorURL) {
+        this.syncErrorURL = syncErrorURL;
+    }
+
+    /**
+     * Sets whether a "synchronization error" notification should be shown to
+     * the end user. If the notification is disabled the user will be
+     * immediately redirected to the URL returned by {@link #getSyncErrorURL()}.
+     * <p>
+     * Synchronization errors occur when the client and server become out of
+     * sync, typically due to an abrupt server restart (e.g., OOMKilled,
+     * SIGKILL) before the UI state could be serialized.
+     *
+     * By default, the "synchronization error" notification is enabled.
+     *
+     * @param syncErrorNotificationEnabled
+     *            {@code true} to show the notification to the end user,
+     *            {@code false} to redirect directly
+     * @since 25.1
+     */
+    public void setSyncErrorNotificationEnabled(
+            boolean syncErrorNotificationEnabled) {
+        this.syncErrorNotificationEnabled = syncErrorNotificationEnabled;
+    }
+
+    /**
+     * Sets the caption to show in a "synchronization error" notification.
+     *
+     * @param syncErrorCaption
+     *            The caption to show or {@code null} to show no caption.
+     * @since 25.1
+     */
+    public void setSyncErrorCaption(String syncErrorCaption) {
+        this.syncErrorCaption = syncErrorCaption;
+    }
+
+    /**
+     * Sets the message to show in a "synchronization error" notification.
+     *
+     * @param syncErrorMessage
+     *            The message to show or {@code null} to show no message.
+     * @since 25.1
+     */
+    public void setSyncErrorMessage(String syncErrorMessage) {
+        this.syncErrorMessage = syncErrorMessage;
     }
 
 }
