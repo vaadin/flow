@@ -283,8 +283,7 @@ final class RouteSegment implements Serializable {
         Map<String, String> parameters = new HashMap<>();
 
         RouteTarget routeTarget = url == null ? null
-                : findRouteTarget(PathUtil.getSegmentsList(url),
-                        parameters);
+                : findRouteTarget(PathUtil.getSegmentsList(url), parameters);
 
         return new NavigationRouteTarget(url, routeTarget, parameters);
     }
