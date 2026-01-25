@@ -251,7 +251,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Example of usage:
      *
      * <pre>
-     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
+     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
      * Input component = new Input();
      * add(component);
      * component.bindValue(signal);
@@ -286,7 +286,7 @@ public interface HasValue<E extends ValueChangeEvent<V>, V>
      * Example of usage:
      *
      * <pre>
-     * SharedValueSignal&lt;Boolean&gt; signal = new SharedValueSignal&lt;&gt;(false);
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(false);
      * Input component = new Input();
      * add(component);
      * component.bindReadOnly(signal);

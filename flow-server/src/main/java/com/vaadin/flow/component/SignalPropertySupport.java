@@ -32,11 +32,11 @@ import com.vaadin.signals.core.Signal;
  * Example of usage:
  *
  * <pre>
- * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
+ * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
  * MyComponent component = new MyComponent();
  * add(component);
  * component.bindTextContent(signal);
- * signal.set("Hello"); // component content showing now "Content: Hello" text
+ * signal.value("Hello"); // component content showing now "Content: Hello" text
  * </pre>
  * 
  * <pre>

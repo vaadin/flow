@@ -115,7 +115,7 @@ public interface HasEnabled extends HasElement {
      * Example of usage:
      *
      * <pre>
-     * SharedValueSignal&lt;Boolean&gt; signal = new SharedValueSignal&lt;&gt;(true);
+     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
      * Span component = new Span();
      * add(component);
      * component.bindEnabled(signal);
