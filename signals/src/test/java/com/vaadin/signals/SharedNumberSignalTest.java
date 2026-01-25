@@ -27,24 +27,24 @@ import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class NumberSignalTest extends SignalTestBase {
+public class SharedNumberSignalTest extends SignalTestBase {
     @Test
     void constructor_noArgs_zeroValue() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
 
         assertEquals(0, signal.value());
     }
 
     @Test
     void constructor_initialValue_initialValue() {
-        NumberSignal signal = new NumberSignal(42);
+        SharedNumberSignal signal = new SharedNumberSignal(42);
 
         assertEquals(42, signal.value());
     }
 
     @Test
     void incrementBy_concurrentIncrements_allIncrementsConsidered() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
 
         SignalOperation<Double> operation = Signal.runInTransaction(() -> {
             SignalOperation<Double> operationInner = signal.incrementBy(1);
@@ -66,14 +66,14 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void valueAsInt_decimalValue_valueIsTruncated() {
-        NumberSignal signal = new NumberSignal(2.718);
+        SharedNumberSignal signal = new SharedNumberSignal(2.718);
 
         assertEquals(2, signal.valueAsInt());
     }
 
     @Test
     void value_intOverload_setsTheValue() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
 
         signal.value(2);
 
@@ -82,10 +82,10 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_spyingValidator_seesParentAndChildOperations() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
         List<SignalCommand> validatedCommands = new ArrayList<>();
 
-        NumberSignal wrapper = signal.withValidator(command -> {
+        SharedNumberSignal wrapper = signal.withValidator(command -> {
             validatedCommands.add(command);
             return true;
         });
@@ -99,9 +99,9 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void readonly_makeChangesToListAndChild_allChangesRejected() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
 
-        NumberSignal readonly = signal.asReadonly();
+        SharedNumberSignal readonly = signal.asReadonly();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.incrementBy(1);
@@ -110,7 +110,7 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void mapIntValue_simpleIntMapper_valueIsMapped() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
 
         Signal<Integer> doubled = signal.mapIntValue(value -> value * 2);
         assertEquals(0, doubled.value());
@@ -121,19 +121,19 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode() {
-        NumberSignal signal = new NumberSignal();
+        SharedNumberSignal signal = new SharedNumberSignal();
         assertEquals(signal, signal);
 
-        NumberSignal copy = new NumberSignal(signal.tree(), signal.id(),
-                signal.validator());
+        SharedNumberSignal copy = new SharedNumberSignal(signal.tree(),
+                signal.id(), signal.validator());
         assertEquals(signal, copy);
         assertEquals(signal.hashCode(), copy.hashCode());
 
-        NumberSignal asValue = signal.asNode().asNumber();
+        SharedNumberSignal asValue = signal.asNode().asNumber();
         assertEquals(signal, asValue);
         assertEquals(signal.hashCode(), asValue.hashCode());
 
-        assertNotEquals(signal, new NumberSignal());
+        assertNotEquals(signal, new SharedNumberSignal());
         assertNotEquals(signal, signal.asReadonly());
         assertNotEquals(signal, signal.asNode());
         assertNotEquals(signal, signal.asNode().asValue(Double.class));
@@ -142,9 +142,9 @@ public class NumberSignalTest extends SignalTestBase {
 
     @Test
     void toString_includesValue() {
-        NumberSignal signal = new NumberSignal(1);
+        SharedNumberSignal signal = new SharedNumberSignal(1);
 
-        assertEquals("NumberSignal[1.0]", signal.toString());
+        assertEquals("SharedNumberSignal[1.0]", signal.toString());
     }
 
 }

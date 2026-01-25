@@ -27,13 +27,13 @@ import com.vaadin.signals.operations.SignalOperation;
  * change. In addition to the regular {@link SharedValueSignal} operation, this
  * class also supports atomically incrementing the value.
  */
-public class NumberSignal extends SharedValueSignal<Double> {
+public class SharedNumberSignal extends SharedValueSignal<Double> {
 
     /**
      * Creates a new number signal with a zero value. The signal does not
      * support clustering.
      */
-    public NumberSignal() {
+    public SharedNumberSignal() {
         super(0d);
     }
 
@@ -44,7 +44,7 @@ public class NumberSignal extends SharedValueSignal<Double> {
      * @param initialValue
      *            the initial value
      */
-    public NumberSignal(double initialValue) {
+    public SharedNumberSignal(double initialValue) {
         super(Double.valueOf(initialValue));
     }
 
@@ -62,7 +62,8 @@ public class NumberSignal extends SharedValueSignal<Double> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NumberSignal(SignalTree tree, Id id, CommandValidator validator) {
+    protected SharedNumberSignal(SignalTree tree, Id id,
+            CommandValidator validator) {
         super(tree, id, validator, Double.class);
     }
 
@@ -134,8 +135,8 @@ public class NumberSignal extends SharedValueSignal<Double> {
      * @return a new number signal that uses the validator, not
      *         <code>null</code>
      */
-    public NumberSignal withValidator(CommandValidator validator) {
-        return new NumberSignal(tree(), id(), mergeValidators(validator));
+    public SharedNumberSignal withValidator(CommandValidator validator) {
+        return new SharedNumberSignal(tree(), id(), mergeValidators(validator));
     }
 
     /**
@@ -146,7 +147,7 @@ public class NumberSignal extends SharedValueSignal<Double> {
      *
      * @return the new readonly number signal, not <code>null</code>
      */
-    public NumberSignal asReadonly() {
+    public SharedNumberSignal asReadonly() {
         /*
          * While this method could semantically be declared to return a less
          * specific type that doesn't provide mutator methods, that would also
@@ -173,7 +174,7 @@ public class NumberSignal extends SharedValueSignal<Double> {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof NumberSignal other
+        return this == obj || obj instanceof SharedNumberSignal other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator());
@@ -186,6 +187,6 @@ public class NumberSignal extends SharedValueSignal<Double> {
 
     @Override
     public String toString() {
-        return "NumberSignal[" + peek() + "]";
+        return "SharedNumberSignal[" + peek() + "]";
     }
 }

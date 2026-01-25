@@ -219,7 +219,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
     @Override
     public boolean equals(Object obj) {
         // Explicitly checking getClass() to avoid accidental equality with
-        // NumberSignal
+        // SharedNumberSignal
         return this == obj || obj instanceof SharedValueSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())

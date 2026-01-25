@@ -200,8 +200,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *
      * @return this signal as a number signal, not <code>null</code>
      */
-    public NumberSignal asNumber() {
-        return new NumberSignal(tree(), id(), validator());
+    public SharedNumberSignal asNumber() {
+        return new SharedNumberSignal(tree(), id(), validator());
     }
 
     /**

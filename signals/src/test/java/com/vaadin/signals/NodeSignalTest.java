@@ -99,7 +99,7 @@ public class NodeSignalTest extends SignalTestBase {
     void asNumber_nullValue_readsAndIncrementsAsZero() {
         NodeSignal signal = new NodeSignal();
 
-        NumberSignal asNumber = signal.asNumber();
+        SharedNumberSignal asNumber = signal.asNumber();
         assertEquals(0, asNumber.value());
 
         asNumber.incrementBy(1);
