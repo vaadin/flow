@@ -27,9 +27,9 @@ import tools.jackson.databind.node.DoubleNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.function.CleanupCallback;

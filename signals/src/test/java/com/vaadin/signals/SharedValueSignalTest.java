@@ -459,7 +459,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_removeSignalAfterTracking_hasNoChanges() {
-        ListSignal<String> list = new ListSignal<>(String.class);
+        SharedListSignal<String> list = new SharedListSignal<>(String.class);
         SharedValueSignal<String> signal = list.insertLast("value").signal();
 
         Usage usage = UsageTracker.track(() -> {
@@ -473,7 +473,7 @@ public class SharedValueSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_removeSignalBeforeTracking_hasNoChanges() {
-        ListSignal<String> list = new ListSignal<>(String.class);
+        SharedListSignal<String> list = new SharedListSignal<>(String.class);
         SharedValueSignal<String> signal = list.insertLast("value").signal();
 
         list.remove(signal);

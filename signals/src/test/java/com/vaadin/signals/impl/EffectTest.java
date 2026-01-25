@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.SharedListSignal;
 import com.vaadin.signals.SharedMapSignal;
 import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.SharedValueSignalTest.AsyncSharedValueSignal;
@@ -80,7 +80,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeListStructure_effectRunAgain() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {
@@ -272,7 +272,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_readChildNodes_coveredByNextEffectInvocation() {
-        ListSignal<String> signal = new ListSignal<>(String.class);
+        SharedListSignal<String> signal = new SharedListSignal<>(String.class);
         ArrayList<List<String>> invocations = new ArrayList<>();
 
         Signal.effect(() -> {

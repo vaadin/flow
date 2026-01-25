@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SharedNodeSignal.SharedNodeSignalState;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
@@ -164,7 +164,7 @@ public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
         Id parentId = data.parent();
         return new SharedNodeSignalState(data.value(),
                 parentId != null ? child(parentId) : null,
-                ListSignal.children(data, this::child),
+                SharedListSignal.children(data, this::child),
                 SharedMapSignal.children(data, this::child));
     }
 
@@ -220,8 +220,8 @@ public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
      *            the element type, not <code>null</code>
      * @return this signal as a list signal, not <code>null</code>
      */
-    public <T> ListSignal<T> asList(Class<T> elementType) {
-        return new ListSignal<>(tree(), id(), validator(), elementType);
+    public <T> SharedListSignal<T> asList(Class<T> elementType) {
+        return new SharedListSignal<>(tree(), id(), validator(), elementType);
     }
 
     /**

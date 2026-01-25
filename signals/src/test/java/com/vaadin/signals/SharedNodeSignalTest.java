@@ -22,7 +22,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.ListSignal.ListPosition;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SharedNodeSignal.SharedNodeSignalState;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
@@ -111,7 +111,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void asList_insertThroughWrapper_valueUpdated() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        ListSignal<String> asList = signal.asList(String.class);
+        SharedListSignal<String> asList = signal.asList(String.class);
 
         asList.insertLast("last");
 
@@ -124,7 +124,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void asList_insertThroughNode_wrapperUpdated() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        ListSignal<String> asList = signal.asList(String.class);
+        SharedListSignal<String> asList = signal.asList(String.class);
 
         signal.insertChildWithValue("last", ListPosition.last());
 

@@ -37,10 +37,10 @@ import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.NumericNode;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.AdoptAsCommand;
 import com.vaadin.signals.SignalCommand.AdoptAtCommand;

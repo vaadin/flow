@@ -22,8 +22,8 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 
 import static org.junit.Assert.assertTrue;

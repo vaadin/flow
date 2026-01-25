@@ -26,11 +26,11 @@ import tools.jackson.databind.node.NullNode;
 import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.ListSignal;
-import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SharedListSignal;
+import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
@@ -177,7 +177,7 @@ public class MutableTreeRevisionTest {
     void insertCommand_emptyNode_onlyChild() {
         CommandResult result = applySingle(new SignalCommand.InsertCommand(
                 commandId, Id.ZERO, null, new StringNode("value"),
-                ListSignal.ListPosition.first()));
+                SharedListSignal.ListPosition.first()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -199,12 +199,12 @@ public class MutableTreeRevisionTest {
     void insertCommandFirst_otherEntry_insertedFirst() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.first()));
+                SharedListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        ListSignal.ListPosition.first()));
+                        SharedListSignal.ListPosition.first()));
 
         // Check result object
         Accept accept = assertAccepted(result);
@@ -222,11 +222,12 @@ public class MutableTreeRevisionTest {
     void insertCommandLast_otherEntry_insertedLast() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.first()));
+                SharedListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
-        CommandResult result = applySingle(new SignalCommand.InsertCommand(
-                inserted, Id.ZERO, null, null, ListSignal.ListPosition.last()));
+        CommandResult result = applySingle(
+                new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
+                        SharedListSignal.ListPosition.last()));
 
         // Check result object
         assertTrue(result.accepted());
@@ -239,12 +240,12 @@ public class MutableTreeRevisionTest {
     void insertCommand_afterOther_insertedAfter() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.first()));
+                SharedListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(other, null)));
+                        new SharedListSignal.ListPosition(other, null)));
 
         // Check result object
         assertTrue(result.accepted());
@@ -257,12 +258,12 @@ public class MutableTreeRevisionTest {
     void insertCommand_beforeOther_insertedBefore() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.first()));
+                SharedListSignal.ListPosition.first()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(null, other)));
+                        new SharedListSignal.ListPosition(null, other)));
 
         // Check result object
         assertTrue(result.accepted());
@@ -276,7 +277,7 @@ public class MutableTreeRevisionTest {
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(null, Id.random())));
+                        new SharedListSignal.ListPosition(null, Id.random())));
 
         // Check result object
         assertFalse(result.accepted());
@@ -290,7 +291,7 @@ public class MutableTreeRevisionTest {
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(Id.random(), null)));
+                        new SharedListSignal.ListPosition(Id.random(), null)));
 
         // Check result object
         assertFalse(result.accepted());
@@ -303,16 +304,16 @@ public class MutableTreeRevisionTest {
     void insertCommand_betweenAdjacent_insertedBetween() {
         Id other1 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other1, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id other2 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other2, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(other1, other2)));
+                        new SharedListSignal.ListPosition(other1, other2)));
 
         // Check result object
         assertTrue(result.accepted());
@@ -325,16 +326,16 @@ public class MutableTreeRevisionTest {
     void insertCommand_betweenNonAdjacent_reject() {
         Id other1 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other1, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id other2 = Id.random();
         applySingle(new SignalCommand.InsertCommand(other2, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id inserted = Id.random();
         CommandResult result = applySingle(
                 new SignalCommand.InsertCommand(inserted, Id.ZERO, null, null,
-                        new ListSignal.ListPosition(other2, other1)));
+                        new SharedListSignal.ListPosition(other2, other1)));
         // they are technically adjacent, but not in the expected order
 
         // Check result object
@@ -554,7 +555,7 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childAdoptsItsParent_reject() {
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, child, Id.ZERO, ListPosition.last()));
@@ -570,11 +571,11 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childAlreadyInParent_orderChanged() {
         Id other = Id.random();
         applySingle(new SignalCommand.InsertCommand(other, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, Id.ZERO, child, ListPosition.first()));
@@ -590,11 +591,11 @@ public class MutableTreeRevisionTest {
     void adoptAtCommand_childInAnotherParent_adopted() {
         Id target = Id.random();
         applySingle(new SignalCommand.InsertCommand(target, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         Id child = Id.random();
         applySingle(new SignalCommand.InsertCommand(child, Id.ZERO, null, null,
-                ListSignal.ListPosition.last()));
+                SharedListSignal.ListPosition.last()));
 
         CommandResult result = applySingle(new SignalCommand.AdoptAtCommand(
                 commandId, target, child, ListPosition.first()));

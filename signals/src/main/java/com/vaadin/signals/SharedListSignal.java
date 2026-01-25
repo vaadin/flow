@@ -37,7 +37,8 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
+public class SharedListSignal<T>
+        extends AbstractSignal<List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -147,7 +148,7 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public ListSignal(Class<T> elementType) {
+    public SharedListSignal(Class<T> elementType) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -168,8 +169,8 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected ListSignal(SignalTree tree, Id id, CommandValidator validator,
-            Class<T> elementType) {
+    protected SharedListSignal(SignalTree tree, Id id,
+            CommandValidator validator, Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -352,8 +353,8 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
      *            the validator to use, not <code>null</code>
      * @return a new list signal that uses the validator, not <code>null</code>
      */
-    public ListSignal<T> withValidator(CommandValidator validator) {
-        return new ListSignal<>(tree(), id(), mergeValidators(validator),
+    public SharedListSignal<T> withValidator(CommandValidator validator) {
+        return new SharedListSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }
 
@@ -366,7 +367,7 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
      *
      * @return the new readonly list signal, not <code>null</code>
      */
-    public ListSignal<T> asReadonly() {
+    public SharedListSignal<T> asReadonly() {
         return withValidator(anything -> false);
     }
 
@@ -377,7 +378,7 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof ListSignal<?> other
+        return this == obj || obj instanceof SharedListSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())
@@ -393,7 +394,7 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
     public String toString() {
         return peek().stream().map(SharedValueSignal::peek)
                 .map(Objects::toString)
-                .collect(Collectors.joining(", ", "ListSignal[", "]"));
+                .collect(Collectors.joining(", ", "SharedListSignal[", "]"));
     }
 
 }

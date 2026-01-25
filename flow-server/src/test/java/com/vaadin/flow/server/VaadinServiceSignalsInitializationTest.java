@@ -30,7 +30,7 @@ import com.vaadin.experimental.DisabledFeatureException;
 import com.vaadin.experimental.FeatureFlags;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.CurrentInstance;
-import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.SharedListSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.tests.util.AlwaysLockedVaadinSession;
 import com.vaadin.tests.util.MockUI;
@@ -95,7 +95,7 @@ public class VaadinServiceSignalsInitializationTest {
                     service);
             var ui = new MockUI(session);
             assertSame(ui, UI.getCurrent());
-            var signal = new ListSignal<>(String.class);
+            var signal = new SharedListSignal<>(String.class);
 
             record EffectExecution(UI ui, String threadName) {
             }

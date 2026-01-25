@@ -29,7 +29,7 @@ import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.SharedListSignal;
 import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.function.EffectAction;
@@ -131,22 +131,22 @@ public final class ComponentEffect {
     }
 
     /**
-     * Binds a {@link ListSignal} to a parent component using a child component
-     * factory. Each {@link SharedValueSignal} in the list corresponds to a
-     * child component within the parent.
+     * Binds a {@link SharedListSignal} to a parent component using a child
+     * component factory. Each {@link SharedValueSignal} in the list corresponds
+     * to a child component within the parent.
      * <p>
      * The parent component is automatically updated to reflect the structure of
-     * the {@link ListSignal}. Changes to the list, such as additions, removals,
-     * or reordering, will update the parent's children accordingly.
+     * the {@link SharedListSignal}. Changes to the list, such as additions,
+     * removals, or reordering, will update the parent's children accordingly.
      * <p>
      * The parent component must not contain any children that are not part of
-     * the {@link ListSignal}. If the parent has existing children when this
-     * method is called, or if it contains unrelated children after the list
-     * changes, an {@link IllegalStateException} will be thrown.
+     * the {@link SharedListSignal}. If the parent has existing children when
+     * this method is called, or if it contains unrelated children after the
+     * list changes, an {@link IllegalStateException} will be thrown.
      * <p>
      * New child components are created using the provided
      * <code>childFactory</code> function. This function takes a
-     * {@link SharedValueSignal} from the {@link ListSignal} and returns a
+     * {@link SharedValueSignal} from the {@link SharedListSignal} and returns a
      * corresponding {@link Component}. It shouldn't return <code>null</code>.
      * The {@link SharedValueSignal} can be further bound to the returned
      * component as needed. Note that <code>childFactory</code> is run inside a
@@ -156,7 +156,7 @@ public final class ComponentEffect {
      * Example of usage:
      *
      * <pre>
-     * ListSignal&lt;String&gt; taskList = new ListSignal&lt;&gt;(String.class);
+     * SharedListSignal&lt;String&gt; taskList = new SharedListSignal&lt;&gt;(String.class);
      *
      * UnorderedList component = new UnorderedList();
      *
@@ -178,14 +178,14 @@ public final class ComponentEffect {
      *            factory to create new component, must not be <code>null</code>
      * @param <T>
      *            the value type of the {@link SharedValueSignal}s in the
-     *            {@link ListSignal}
+     *            {@link SharedListSignal}
      * @param <PARENT>
      *            the type of the parent component
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
      */
     public static <T, PARENT extends Component & HasComponents> void bindChildren(
-            PARENT parent, ListSignal<T> list,
+            PARENT parent, SharedListSignal<T> list,
             SerializableFunction<SharedValueSignal<T>, Component> childFactory) {
         Objects.requireNonNull(parent, "Parent component cannot be null");
         Objects.requireNonNull(childFactory,
@@ -200,18 +200,18 @@ public final class ComponentEffect {
     }
 
     private static <T> void bindChildren(Component parentComponent,
-            Element parent, ListSignal<T> list,
+            Element parent, SharedListSignal<T> list,
             SerializableFunction<SharedValueSignal<T>, Element> childFactory) {
         Objects.requireNonNull(parentComponent,
                 "Parent component cannot be null");
         Objects.requireNonNull(parent, "Parent element cannot be null");
-        Objects.requireNonNull(list, "ListSignal cannot be null");
+        Objects.requireNonNull(list, "SharedListSignal cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child element factory cannot be null");
 
         if (parent.getChildCount() > 0) {
             throw new IllegalStateException(
-                    "Parent element must not have children when binding ListSignal to it");
+                    "Parent element must not have children when binding SharedListSignal to it");
         }
         // Create a child element cache outside the effect to persist elements
         // created by the child factory and avoid recreating them each time the
@@ -357,9 +357,9 @@ public final class ComponentEffect {
 
     /**
      * Record for
-     * {@link #bindChildren(Component, ListSignal, SerializableFunction)} effect
-     * to update children of a parent element according to a list of child
-     * signals.
+     * {@link #bindChildren(Component, SharedListSignal, SerializableFunction)}
+     * effect to update children of a parent element according to a list of
+     * child signals.
      *
      * @param parentElement
      *            parent element to update children for
