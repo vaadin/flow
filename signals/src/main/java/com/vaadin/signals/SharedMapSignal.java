@@ -23,6 +23,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.impl.CommandResult.NodeModification;

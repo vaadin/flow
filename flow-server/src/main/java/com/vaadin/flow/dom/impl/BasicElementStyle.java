@@ -22,8 +22,8 @@ import com.vaadin.flow.dom.ElementUtil;
 import com.vaadin.flow.dom.Style;
 import com.vaadin.flow.dom.StyleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementStylePropertyMap;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Implementation of {@link Style} for {@link BasicElementStateProvider}.

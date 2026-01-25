@@ -26,8 +26,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.AbstractSignal;
 import com.vaadin.signals.SharedValueSignal;
-import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.EffectAction;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

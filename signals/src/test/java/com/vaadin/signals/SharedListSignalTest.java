@@ -21,6 +21,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.SharedListSignal.ListPosition;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;

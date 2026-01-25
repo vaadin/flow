@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.function;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Transforms a signal value into another value, creating a derived signal. The

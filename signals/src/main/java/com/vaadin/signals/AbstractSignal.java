@@ -23,6 +23,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.CommandResult;

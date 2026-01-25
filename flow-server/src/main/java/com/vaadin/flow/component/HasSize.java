@@ -20,7 +20,7 @@ import java.util.Optional;
 import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementConstants;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 import static com.vaadin.flow.dom.ElementConstants.STYLE_HEIGHT;
 import static com.vaadin.flow.dom.ElementConstants.STYLE_WIDTH;

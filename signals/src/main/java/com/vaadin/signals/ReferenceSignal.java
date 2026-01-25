@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.signals.core.WritableSignal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;

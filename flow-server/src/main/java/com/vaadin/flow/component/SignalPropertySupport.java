@@ -20,8 +20,8 @@ import java.util.Objects;
 
 import com.vaadin.flow.function.SerializableConsumer;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Helper class for binding a {@link Signal} to a property of a

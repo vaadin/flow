@@ -43,8 +43,8 @@ import com.vaadin.flow.internal.LocaleUtil;
 import com.vaadin.flow.internal.nodefeature.ElementData;
 import com.vaadin.flow.server.Attributes;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
 
 /**
  * A Component is a higher level abstraction of an {@link Element} or a

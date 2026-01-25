@@ -22,8 +22,8 @@ import java.util.Optional;
 
 import com.vaadin.flow.component.HasValue.ValueChangeEvent;
 import com.vaadin.flow.shared.Registration;
-import com.vaadin.signals.Signal;
-import com.vaadin.signals.WritableSignal;
+import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.core.WritableSignal;
 
 /**
  * A generic interface for field components and other user interface objects

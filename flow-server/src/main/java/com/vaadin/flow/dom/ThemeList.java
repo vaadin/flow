@@ -19,7 +19,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Representation of the theme names for an {@link Element}.

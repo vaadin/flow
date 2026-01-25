@@ -17,8 +17,8 @@ package com.vaadin.flow.component;
 
 import com.vaadin.flow.dom.DisabledUpdateMode;
 import com.vaadin.flow.dom.DomListenerRegistration;
-import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.core.Signal;
 
 /**
  * A generic interface for components and other user interface objects that may

@@ -15,7 +15,7 @@
  */
 package com.vaadin.signals.function;
 
-import com.vaadin.signals.Signal;
+import com.vaadin.signals.core.Signal;
 
 /**
  * Represents an action to be executed as a signal effect. The action is run
