@@ -23,7 +23,7 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.ListSignal.ListPosition;
-import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.SharedNodeSignal.SharedNodeSignalState;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
@@ -38,13 +38,13 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-public class NodeSignalTest extends SignalTestBase {
+public class SharedNodeSignalTest extends SignalTestBase {
 
     @Test
     void constructor_initialValue_isEmpty() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignalState value = signal.value();
+        SharedNodeSignalState value = signal.value();
 
         assertNull(value.value(String.class));
         assertNull(value.parent());
@@ -54,14 +54,14 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void insertValue_emptyNode_getsChildNodeWithValue() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        InsertOperation<NodeSignal> operation = signal
+        InsertOperation<SharedNodeSignal> operation = signal
                 .insertChildWithValue("value", ListPosition.last());
 
         assertSuccess(operation);
 
-        List<NodeSignal> listChildren = signal.value().listChildren();
+        List<SharedNodeSignal> listChildren = signal.value().listChildren();
         assertEquals(1, listChildren.size());
         assertEquals(operation.signal().id(), listChildren.get(0).id());
         assertEquals("value", operation.signal().value().value(String.class));
@@ -69,7 +69,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asValue_updateValueThroughWrapper_valueUpdated() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
         SharedValueSignal<String> asValue = signal.asValue(String.class);
         assertEquals(null, asValue.value());
@@ -80,7 +80,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asValue_incompatibleValue_getterThrows() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
         SharedValueSignal<String> asString = signal.asValue(String.class);
         asString.value("update");
@@ -97,7 +97,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asNumber_nullValue_readsAndIncrementsAsZero() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
         SharedNumberSignal asNumber = signal.asNumber();
         assertEquals(0, asNumber.value());
@@ -110,12 +110,12 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asList_insertThroughWrapper_valueUpdated() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         ListSignal<String> asList = signal.asList(String.class);
 
         asList.insertLast("last");
 
-        List<NodeSignal> listChildren = signal.value().listChildren();
+        List<SharedNodeSignal> listChildren = signal.value().listChildren();
         assertEquals(1, listChildren.size());
 
         assertEquals("last", listChildren.get(0).value().value(String.class));
@@ -123,7 +123,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asList_insertThroughNode_wrapperUpdated() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         ListSignal<String> asList = signal.asList(String.class);
 
         signal.insertChildWithValue("last", ListPosition.last());
@@ -136,12 +136,13 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asMap_putThroughWrapper_valueUpdate() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         MapSignal<String> asMap = signal.asMap(String.class);
 
         asMap.put("key", "value");
 
-        Map<String, NodeSignal> mapChildren = signal.value().mapChildren();
+        Map<String, SharedNodeSignal> mapChildren = signal.value()
+                .mapChildren();
         assertEquals(Set.of("key"), mapChildren.keySet());
 
         assertEquals("value",
@@ -150,7 +151,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void asMap_putThroughNode_wrapperUpdated() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         MapSignal<String> asMap = signal.asMap(String.class);
 
         signal.putChildWithValue("key", "value");
@@ -168,11 +169,11 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void insertChild_emptyNode_insertsEmptyListChild() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        InsertOperation<NodeSignal> operation = signal
+        InsertOperation<SharedNodeSignal> operation = signal
                 .insertChild(ListPosition.last());
-        NodeSignal child = operation.signal();
+        SharedNodeSignal child = operation.signal();
 
         assertEquals(List.of(child), signal.value().listChildren());
         assertEquals(null, child.value().value(String.class));
@@ -180,20 +181,21 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void putChildIfAbsent_emptyNode_insertsEmptyMapChild() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        InsertOperation<NodeSignal> operation = signal.putChildIfAbsent("key");
-        NodeSignal child = operation.signal();
+        InsertOperation<SharedNodeSignal> operation = signal
+                .putChildIfAbsent("key");
+        SharedNodeSignal child = operation.signal();
         assertEquals(Map.of("key", child), signal.value().mapChildren());
         assertEquals(null, child.value().value(String.class));
     }
 
     @Test
     void adpotAt_existingChild_orderChanged() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignal a = signal.insertChild(ListPosition.last()).signal();
-        NodeSignal b = signal.insertChild(ListPosition.last()).signal();
+        SharedNodeSignal a = signal.insertChild(ListPosition.last()).signal();
+        SharedNodeSignal b = signal.insertChild(ListPosition.last()).signal();
 
         SignalOperation<Void> operation = signal.adoptAt(a,
                 ListPosition.last());
@@ -205,10 +207,12 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAt_nestedStructure_hierarchyChagned() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignal parent = signal.insertChild(ListPosition.last()).signal();
-        NodeSignal child = parent.insertChild(ListPosition.last()).signal();
+        SharedNodeSignal parent = signal.insertChild(ListPosition.last())
+                .signal();
+        SharedNodeSignal child = parent.insertChild(ListPosition.last())
+                .signal();
 
         assertEquals(parent, child.value().parent());
 
@@ -223,10 +227,12 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAt_addParentToChild_rejected() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignal parent = signal.insertChild(ListPosition.last()).signal();
-        NodeSignal child = parent.insertChild(ListPosition.last()).signal();
+        SharedNodeSignal parent = signal.insertChild(ListPosition.last())
+                .signal();
+        SharedNodeSignal child = parent.insertChild(ListPosition.last())
+                .signal();
 
         SignalOperation<Void> operation = child.adoptAt(parent,
                 ListPosition.first());
@@ -236,8 +242,8 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAt_adoptMapChild_noLongerMapChild() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putChildIfAbsent("key").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
 
         assertEquals(List.of(), signal.value().listChildren());
 
@@ -249,8 +255,8 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAs_existingChild_keyChanged() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putChildIfAbsent("key").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> operation = signal.adoptAs(child, "update");
 
@@ -261,9 +267,9 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAs_nestedStructure_hierarchyChanged() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal parent = signal.putChildIfAbsent("parent").signal();
-        NodeSignal child = parent.putChildIfAbsent("child").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal parent = signal.putChildIfAbsent("parent").signal();
+        SharedNodeSignal child = parent.putChildIfAbsent("child").signal();
 
         assertEquals(parent, child.value().parent());
 
@@ -278,9 +284,9 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAs_addParentToChild_rejected() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal parent = signal.putChildIfAbsent("parent").signal();
-        NodeSignal child = parent.putChildIfAbsent("child").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal parent = signal.putChildIfAbsent("parent").signal();
+        SharedNodeSignal child = parent.putChildIfAbsent("child").signal();
 
         SignalOperation<Void> operation = child.adoptAs(parent, "child");
 
@@ -289,8 +295,9 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void adoptAs_adoptListChild_noLongerListChild() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.insertChild(ListPosition.last()).signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal child = signal.insertChild(ListPosition.last())
+                .signal();
 
         assertEquals(Map.of(), signal.value().mapChildren());
 
@@ -303,9 +310,10 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void removeChildByNode_listAndMapNodes_nodesRemoved() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal listChild = signal.insertChild(ListPosition.last()).signal();
-        NodeSignal mapChild = signal.putChildIfAbsent("key").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
+                .signal();
+        SharedNodeSignal mapChild = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild(mapChild);
         assertSuccess(mapRemoveOp);
@@ -322,8 +330,8 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void removeChildByString_mapNode_nodeRemoved() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal child = signal.putChildIfAbsent("key").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal child = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> mapRemoveOp = signal.removeChild("key");
         assertSuccess(mapRemoveOp);
@@ -334,9 +342,10 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void clear_listAndMapNodes_nodesRemoved() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignal listChild = signal.insertChild(ListPosition.last()).signal();
-        NodeSignal mapChild = signal.putChildIfAbsent("key").signal();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignal listChild = signal.insertChild(ListPosition.last())
+                .signal();
+        SharedNodeSignal mapChild = signal.putChildIfAbsent("key").signal();
 
         SignalOperation<Void> operation = signal.clear();
         assertSuccess(operation);
@@ -349,8 +358,8 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void value_modifyStateInstance_isImmutable() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignalState value = signal.value();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignalState value = signal.value();
 
         assertThrows(UnsupportedOperationException.class, () -> {
             value.listChildren().clear();
@@ -362,8 +371,8 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void value_readStateAfterModifications_seesOldState() {
-        NodeSignal signal = new NodeSignal();
-        NodeSignalState value = signal.value();
+        SharedNodeSignal signal = new SharedNodeSignal();
+        SharedNodeSignalState value = signal.value();
 
         signal.asValue(String.class).value("value");
         signal.insertChild(ListPosition.last());
@@ -376,15 +385,15 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void withValidator_spyingValidator_seesParentAndChildOperations() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         List<SignalCommand> validatedCommands = new ArrayList<>();
 
-        NodeSignal wrapper = signal.withValidator(command -> {
+        SharedNodeSignal wrapper = signal.withValidator(command -> {
             validatedCommands.add(command);
             return true;
         });
 
-        NodeSignal child = wrapper
+        SharedNodeSignal child = wrapper
                 .insertChildWithValue("child", ListPosition.last()).signal();
 
         assertEquals(1, validatedCommands.size());
@@ -399,11 +408,11 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void readonly_makeChangesToRoottAndChild_allChangesRejected() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         signal.insertChildWithValue("child", ListPosition.last()).signal();
 
-        NodeSignal readonly = signal.asReadonly();
-        NodeSignal readonlyChild = readonly.value().listChildren().get(0);
+        SharedNodeSignal readonly = signal.asReadonly();
+        SharedNodeSignal readonlyChild = readonly.value().listChildren().get(0);
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -418,7 +427,7 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void usageTracking_changeDifferentValues_anyChangeDetected() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
         Usage usage = UsageTracker.track(() -> {
             signal.value();
@@ -442,30 +451,31 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
         assertEquals(signal, signal);
 
-        NodeSignal copy = new NodeSignal(signal.tree(), signal.id(),
+        SharedNodeSignal copy = new SharedNodeSignal(signal.tree(), signal.id(),
                 signal.validator());
         assertEquals(signal, copy);
         assertEquals(signal.hashCode(), copy.hashCode());
 
         assertEquals(signal, signal.asValue(String.class).asNode());
 
-        assertNotEquals(signal, new NodeSignal());
+        assertNotEquals(signal, new SharedNodeSignal());
         assertNotEquals(signal, signal.asReadonly());
         assertNotEquals(signal, signal.asList(Double.class));
     }
 
     @Test
     void equalsHashCode_listChildren() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignal operationChild = signal.insertChild(ListPosition.last())
+        SharedNodeSignal operationChild = signal
+                .insertChild(ListPosition.last()).signal();
+        SharedNodeSignal other = signal.insertChild(ListPosition.last())
                 .signal();
-        NodeSignal other = signal.insertChild(ListPosition.last()).signal();
 
-        NodeSignal valueChild = signal.value().listChildren().get(0);
+        SharedNodeSignal valueChild = signal.value().listChildren().get(0);
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -475,12 +485,13 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void equalsHashCode_mapChildren() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        NodeSignal operationChild = signal.putChildIfAbsent("child").signal();
-        NodeSignal other = signal.putChildIfAbsent("other").signal();
+        SharedNodeSignal operationChild = signal.putChildIfAbsent("child")
+                .signal();
+        SharedNodeSignal other = signal.putChildIfAbsent("other").signal();
 
-        NodeSignal valueChild = signal.value().mapChildren().get("child");
+        SharedNodeSignal valueChild = signal.value().mapChildren().get("child");
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -490,23 +501,22 @@ public class NodeSignalTest extends SignalTestBase {
 
     @Test
     void toString_includesValue() {
-        NodeSignal signal = new NodeSignal();
+        SharedNodeSignal signal = new SharedNodeSignal();
 
-        assertEquals("NodeSignal[]", signal.toString());
+        assertEquals("SharedNodeSignal[]", signal.toString());
 
         signal.asValue(String.class).value("value");
-        assertEquals("NodeSignal[value: \"value\"]", signal.toString());
+        assertEquals("SharedNodeSignal[value: \"value\"]", signal.toString());
 
         signal.insertChildWithValue("listChild", ListPosition.last());
-        assertEquals(
-                "NodeSignal[value: \"value\","
-                        + " listChildren: [NodeSignal[value: \"listChild\"]]]",
+        assertEquals("SharedNodeSignal[value: \"value\","
+                + " listChildren: [SharedNodeSignal[value: \"listChild\"]]]",
                 signal.toString());
 
         signal.putChildWithValue("key", "mapChild");
-        assertEquals("NodeSignal[value: \"value\","
-                + " listChildren: [NodeSignal[value: \"listChild\"]],"
-                + " mapChildren: [key = NodeSignal[value: \"mapChild\"]]]",
+        assertEquals("SharedNodeSignal[value: \"value\","
+                + " listChildren: [SharedNodeSignal[value: \"listChild\"]],"
+                + " mapChildren: [key = SharedNodeSignal[value: \"mapChild\"]]]",
                 signal.toString());
     }
 }

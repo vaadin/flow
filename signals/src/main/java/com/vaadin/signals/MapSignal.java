@@ -179,8 +179,8 @@ public class MapSignal<T>
 
     /**
      * Removes all entries from this map. Note that is this map shares data with
-     * a {@link NodeSignal} that has list children, then the list children will
-     * also be removed.
+     * a {@link SharedNodeSignal} that has list children, then the list children
+     * will also be removed.
      *
      * @return an operation containing the eventual result
      */
@@ -279,7 +279,7 @@ public class MapSignal<T>
         return withValidator(anything -> false);
     }
 
-    public NodeSignal asNode() {
+    public SharedNodeSignal asNode() {
         // Override to make public
         return super.asNode();
     }

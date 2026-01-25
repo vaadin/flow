@@ -495,18 +495,18 @@ public abstract class AbstractSignal<T> implements Signal<T> {
 
     /**
      * Converts this signal into a node signal. This allows further conversion
-     * into any specific signal type through the methods in {@link NodeSignal}.
-     * The converted signal is backed by the same underlying data and uses the
-     * same validator as this signal.
+     * into any specific signal type through the methods in
+     * {@link SharedNodeSignal}. The converted signal is backed by the same
+     * underlying data and uses the same validator as this signal.
      *
      * @return this signal as a node signal, not <code>null</code>
      */
-    protected NodeSignal asNode() {
+    protected SharedNodeSignal asNode() {
         // This method is protected to avoid exposing in cases where it doesn't
         // make sense
-        assert (!(this instanceof NodeSignal));
+        assert (!(this instanceof SharedNodeSignal));
 
-        return new NodeSignal(tree(), id(), validator());
+        return new SharedNodeSignal(tree(), id(), validator());
     }
 
     /**

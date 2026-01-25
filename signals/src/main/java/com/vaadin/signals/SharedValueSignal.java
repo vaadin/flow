@@ -211,7 +211,7 @@ public class SharedValueSignal<T> extends AbstractSignal<T>
         return withValidator(CommandValidator.REJECT_ALL);
     }
 
-    public NodeSignal asNode() {
+    public SharedNodeSignal asNode() {
         // Override to make public
         return super.asNode();
     }

@@ -290,8 +290,8 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
 
     /**
      * Removes all children from this list. Note that is this list shares data
-     * with a {@link NodeSignal} that has map children, then the map children
-     * will also be removed.
+     * with a {@link SharedNodeSignal} that has map children, then the map
+     * children will also be removed.
      *
      * @return an operation containing the eventual result
      */
@@ -370,7 +370,7 @@ public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
         return withValidator(anything -> false);
     }
 
-    public NodeSignal asNode() {
+    public SharedNodeSignal asNode() {
         // Override to make public
         return super.asNode();
     }

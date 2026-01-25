@@ -24,7 +24,7 @@ import tools.jackson.databind.JsonNode;
 
 import com.vaadin.signals.ListSignal.ListPosition;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.NodeSignal.NodeSignalState;
+import com.vaadin.signals.SharedNodeSignal.SharedNodeSignalState;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
@@ -51,16 +51,16 @@ import com.vaadin.signals.operations.SignalOperation;
  * methods to get an instance of that specific type that you can use for
  * applying some specific operation.
  */
-public class NodeSignal extends AbstractSignal<NodeSignalState> {
+public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.
      */
-    public static class NodeSignalState {
+    public static class SharedNodeSignalState {
         private final JsonNode value;
-        private final NodeSignal parent;
-        private final List<NodeSignal> listChildren;
-        private final Map<String, NodeSignal> mapChildren;
+        private final SharedNodeSignal parent;
+        private final List<SharedNodeSignal> listChildren;
+        private final Map<String, SharedNodeSignal> mapChildren;
 
         /**
          * Creates a new state snapshot based on the given JSON value, list
@@ -78,9 +78,9 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *            a map of children access by key, or an empty map if there
          *            are no map children. Not <code>null</code>.
          */
-        public NodeSignalState(JsonNode value, NodeSignal parent,
-                List<NodeSignal> listChildren,
-                Map<String, NodeSignal> mapChildren) {
+        public SharedNodeSignalState(JsonNode value, SharedNodeSignal parent,
+                List<SharedNodeSignal> listChildren,
+                Map<String, SharedNodeSignal> mapChildren) {
             this.value = value;
             this.parent = parent;
             this.listChildren = listChildren;
@@ -105,7 +105,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *
          * @return the parent node, or <code>null</code> for the root node
          */
-        public NodeSignal parent() {
+        public SharedNodeSignal parent() {
             return parent;
         }
 
@@ -114,7 +114,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *
          * @return a list of children, not <code>null</code>
          */
-        public List<NodeSignal> listChildren() {
+        public List<SharedNodeSignal> listChildren() {
             return listChildren;
         }
 
@@ -123,7 +123,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
          *
          * @return a map of children, not <code>null</code>
          */
-        public Map<String, NodeSignal> mapChildren() {
+        public Map<String, SharedNodeSignal> mapChildren() {
             return mapChildren;
         }
     }
@@ -132,7 +132,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * Creates a new empty node signal that serves as a root for a hierarchical
      * node structure. The signal does not support clustering.
      */
-    public NodeSignal() {
+    public SharedNodeSignal() {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES);
     }
 
@@ -147,21 +147,22 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the validator to check operations submitted to this singal,
      *            not <code>null</code>
      */
-    protected NodeSignal(SignalTree tree, Id id, CommandValidator validator) {
+    protected SharedNodeSignal(SignalTree tree, Id id,
+            CommandValidator validator) {
         super(tree, id, validator);
     }
 
-    private NodeSignal child(Id id) {
-        return new NodeSignal(tree(), id, validator());
+    private SharedNodeSignal child(Id id) {
+        return new SharedNodeSignal(tree(), id, validator());
     }
 
     @Override
-    protected NodeSignalState extractValue(Data data) {
+    protected SharedNodeSignalState extractValue(Data data) {
         if (data == null) {
             return null;
         }
         Id parentId = data.parent();
-        return new NodeSignalState(data.value(),
+        return new SharedNodeSignalState(data.value(),
                 parentId != null ? child(parentId) : null,
                 ListSignal.children(data, this::child),
                 MapSignal.children(data, this::child));
@@ -178,8 +179,9 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
 
     /**
      * Creates a value signal backed by the node value of this node. The value
-     * of the value signal is the same as {@link NodeSignalState#value(Class)}
-     * of this signal. The new signal uses the same validator as this signal.
+     * of the value signal is the same as
+     * {@link SharedNodeSignalState#value(Class)} of this signal. The new signal
+     * uses the same validator as this signal.
      *
      * @param <T>
      *            the value type
@@ -193,10 +195,10 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
 
     /**
      * Creates a number signal backed by the node value of this node. The value
-     * of the number signal is the same as {@link NodeSignalState#value(Class)}
-     * of this signal. The new signal uses the same validator as this signal.
-     * Accessing the value of the signal will throw an exception if the
-     * underlying value is not a JSON number.
+     * of the number signal is the same as
+     * {@link SharedNodeSignalState#value(Class)} of this signal. The new signal
+     * uses the same validator as this signal. Accessing the value of the signal
+     * will throw an exception if the underlying value is not a JSON number.
      *
      * @return this signal as a number signal, not <code>null</code>
      */
@@ -206,11 +208,11 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
 
     /**
      * Creates a list signal backed by the list children of this node. The value
-     * of the list signal is the same as {@link NodeSignalState#listChildren()}
-     * of this signal. The new signal uses the same validator as this signal.
-     * Accessing the value of child signal will throw an exception if the
-     * underlying value cannot be JSON deserialized as the provided element
-     * type.
+     * of the list signal is the same as
+     * {@link SharedNodeSignalState#listChildren()} of this signal. The new
+     * signal uses the same validator as this signal. Accessing the value of
+     * child signal will throw an exception if the underlying value cannot be
+     * JSON deserialized as the provided element type.
      *
      * @param <T>
      *            the element type
@@ -224,11 +226,11 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
 
     /**
      * Creates a map signal backed by the map children of this node. The value
-     * of the map signal is the same as {@link NodeSignalState#mapChildren()} of
-     * this signal. The new signal uses the same validator as this
-     * signal.Accessing the value of child signal will throw an exception if the
-     * underlying value cannot be JSON deserialized as the provided element
-     * type.
+     * of the map signal is the same as
+     * {@link SharedNodeSignalState#mapChildren()} of this signal. The new
+     * signal uses the same validator as this signal.Accessing the value of
+     * child signal will throw an exception if the underlying value cannot be
+     * JSON deserialized as the provided element type.
      *
      * @param <T>
      *            the element type
@@ -252,7 +254,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<NodeSignal> insertChildWithValue(Object value,
+    public InsertOperation<SharedNodeSignal> insertChildWithValue(Object value,
             ListPosition at) {
         return submitInsert(new SignalCommand.InsertCommand(Id.random(), id(),
                 null, toJson(value), at), this::child);
@@ -268,7 +270,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<NodeSignal> insertChild(ListPosition at) {
+    public InsertOperation<SharedNodeSignal> insertChild(ListPosition at) {
         return insertChildWithValue(null, at);
     }
 
@@ -304,7 +306,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
-    public InsertOperation<NodeSignal> putChildIfAbsent(String key) {
+    public InsertOperation<SharedNodeSignal> putChildIfAbsent(String key) {
         return submitInsert(new SignalCommand.PutIfAbsentCommand(Id.random(),
                 id(), null, Objects.requireNonNull(key), null), this::child);
     }
@@ -352,7 +354,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> removeChild(NodeSignal child) {
+    public SignalOperation<Void> removeChild(SharedNodeSignal child) {
         // Override to make public
         return super.remove(child);
     }
@@ -394,8 +396,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the validator to use, not <code>null</code>
      * @return a new node signal that uses the validator, not <code>null</code>
      */
-    public NodeSignal withValidator(CommandValidator validator) {
-        return new NodeSignal(tree(), id(), mergeValidators(validator));
+    public SharedNodeSignal withValidator(CommandValidator validator) {
+        return new SharedNodeSignal(tree(), id(), mergeValidators(validator));
     }
 
     /**
@@ -407,13 +409,13 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *
      * @return the new readonly node signal, not <code>null</code>
      */
-    public NodeSignal asReadonly() {
+    public SharedNodeSignal asReadonly() {
         return withValidator(anything -> false);
     }
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof NodeSignal other
+        return this == obj || obj instanceof SharedNodeSignal other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator());
@@ -426,9 +428,9 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder("NodeSignal[");
+        StringBuilder builder = new StringBuilder("SharedNodeSignal[");
 
-        NodeSignalState value = peek();
+        SharedNodeSignalState value = peek();
         if (value != null) {
             boolean needsComma = false;
 
@@ -443,7 +445,7 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
                 }
                 builder.append("listChildren: ")
                         .append(value.listChildren.stream()
-                                .map(NodeSignal::toString)
+                                .map(SharedNodeSignal::toString)
                                 .collect(Collectors.joining(", ", "[", "]")));
                 needsComma = true;
             }
