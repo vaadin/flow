@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -33,7 +33,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
         // attach before bindVisible
         UI.getCurrent().getElement().appendChild(element);
         assertTrue(element.isVisible());
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindVisible(signal);
 
         assertFalse(element.isVisible());
@@ -44,7 +44,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_elementAttachedAfter_bindingActive() {
         Element element = new Element("foo");
         assertTrue(element.isVisible());
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindVisible(signal);
         // attach after bindVisible
         UI.getCurrent().getElement().appendChild(element);
@@ -57,7 +57,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_elementAttached_bindingActive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindVisible(signal);
 
         // initially false
@@ -76,7 +76,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     @Test
     public void bindVisible_elementNotAttached_bindingInactive() {
         Element element = new Element("foo");
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         signal.value(false); // ignored
         assertTrue(element.isVisible());
@@ -87,7 +87,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_elementDetached_bindingInactive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
         signal.value(false); // ignored
@@ -100,7 +100,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_elementReAttached_bindingActivate() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         element.removeFromParent();
         signal.value(false);
@@ -114,12 +114,12 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_setVisibleAndBindVisibleWhileBindingIsActive_throwException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        element.bindVisible(new SharedValueSignal<>(true));
+        element.bindVisible(new ValueSignal<>(true));
 
         assertThrows(BindingActiveException.class,
                 () -> element.setVisible(false));
         assertThrows(BindingActiveException.class,
-                () -> element.bindVisible(new SharedValueSignal<>(true)));
+                () -> element.bindVisible(new ValueSignal<>(true)));
         assertTrue(element.isVisible());
         assertTrue(events.isEmpty());
     }
@@ -128,7 +128,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_withNullBinding_removesBinding() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         assertTrue(element.isVisible());
 
@@ -142,7 +142,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_withNullBinding_removesBindingPreserveState() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindVisible(signal);
         assertFalse(element.isVisible());
 
@@ -155,7 +155,7 @@ public class ElementBindVisibleTest extends SignalsUnitTest {
     public void bindVisible_withNullBinding_allowsSetVisible() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindVisible(signal);
         assertTrue(element.isVisible());
 

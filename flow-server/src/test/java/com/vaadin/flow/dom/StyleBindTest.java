@@ -35,7 +35,7 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -83,7 +83,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> color = new SharedValueSignal<>("red");
+        ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
         Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
@@ -103,7 +103,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> color = new SharedValueSignal<>("red");
+        ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
         Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
 
@@ -125,7 +125,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> color = new SharedValueSignal<>("red");
+        ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
 
         Assert.assertThrows(BindingActiveException.class,
@@ -140,8 +140,8 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> a = new SharedValueSignal<>("1");
-        SharedValueSignal<String> b = new SharedValueSignal<>("2");
+        ValueSignal<String> a = new ValueSignal<>("1");
+        ValueSignal<String> b = new ValueSignal<>("2");
         element.getStyle().bind("border-top-width", a);
         element.getStyle().bind("border-bottom-width", b);
 
@@ -167,7 +167,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> color = new SharedValueSignal<>("red");
+        ValueSignal<String> color = new ValueSignal<>("red");
         element.getStyle().bind("background-color", color);
         Assert.assertEquals("red", element.getStyle().get("backgroundColor"));
 
@@ -188,8 +188,8 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> a = new SharedValueSignal<>("10px");
-        SharedValueSignal<String> b = new SharedValueSignal<>("initial");
+        ValueSignal<String> a = new ValueSignal<>("10px");
+        ValueSignal<String> b = new ValueSignal<>("initial");
         element.getStyle().bind("margin-top", a);
         element.getStyle().bind("margin-bottom", b);
 
@@ -209,7 +209,7 @@ public class StyleBindTest {
 
         // Detach before any applying for c -> bind while detached -> no value
         // applied yet, get returns null
-        SharedValueSignal<String> c = new SharedValueSignal<>("5px");
+        ValueSignal<String> c = new ValueSignal<>("5px");
         UI.getCurrent().getElement().removeChild(element);
         element.getStyle().bind("padding-top", c);
         Assert.assertNull(element.getStyle().get("paddingTop"));
@@ -224,8 +224,7 @@ public class StyleBindTest {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> color = new SharedValueSignal<>(
-                "rgba(255, 0, 0, 1)");
+        ValueSignal<String> color = new ValueSignal<>("rgba(255, 0, 0, 1)");
         element.getStyle().bind("background-color", color);
         Assert.assertEquals("rgba(255, 0, 0, 1)",
                 element.getStyle().get("backgroundColor"));

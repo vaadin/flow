@@ -24,7 +24,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -38,7 +38,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
         // attach before bindEnabled
         UI.getCurrent().getElement().appendChild(element);
         assertTrue(element.isEnabled());
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindEnabled(signal);
 
         assertFalse(element.isEnabled());
@@ -48,7 +48,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_elementAttachedAfter_bindingActive() {
         Element element = new Element("foo");
         assertTrue(element.isEnabled());
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindEnabled(signal);
         // attach after bindEnabled
         UI.getCurrent().getElement().appendChild(element);
@@ -60,7 +60,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_elementAttached_bindingActive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.bindEnabled(signal);
 
         // initially false
@@ -78,7 +78,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     @Test
     public void bindEnabled_elementNotAttached_bindingInactive() {
         Element element = new Element("foo");
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         signal.value(false);
 
@@ -89,7 +89,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_elementDetached_bindingInactive() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
         signal.value(false); // ignored
@@ -101,7 +101,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_elementReAttached_bindingActivate() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         element.removeFromParent();
         signal.value(false);
@@ -114,12 +114,12 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_setEnabledAndBindEnabledWhileBindingIsActive_throwException() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        element.bindEnabled(new SharedValueSignal<>(true));
+        element.bindEnabled(new ValueSignal<>(true));
 
         assertThrows(BindingActiveException.class,
                 () -> element.setEnabled(false));
         assertThrows(BindingActiveException.class,
-                () -> element.bindEnabled(new SharedValueSignal<>(true)));
+                () -> element.bindEnabled(new ValueSignal<>(true)));
         assertTrue(element.isEnabled());
     }
 
@@ -127,7 +127,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_withNullBinding_removesBinding() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         assertTrue(element.isEnabled());
 
@@ -140,7 +140,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     public void bindEnabled_withNullBinding_allowsSetEnabled() {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
         assertTrue(element.isEnabled());
 
@@ -160,7 +160,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
                 .ifPresent(feature -> Assert.fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.bindEnabled(signal);
 
         element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)
@@ -171,7 +171,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     @Test
     public void bindEnabled_implicitlyDisabledComponent_isEnabledReturnsFalse() {
         TestComponent component = new TestComponent();
-        component.bindEnabled(new SharedValueSignal<>(true));
+        component.bindEnabled(new ValueSignal<>(true));
 
         TestComponent parent = new TestComponent();
         parent.setEnabled(false);
@@ -185,7 +185,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     @Test
     public void bindEnabled_implicitlyDisabledComponent_detach_componentBecomesEnabled() {
         TestComponent component = new TestComponent();
-        component.bindEnabled(new SharedValueSignal<>(true));
+        component.bindEnabled(new ValueSignal<>(true));
 
         TestComponent parent = new TestComponent();
         parent.add(component);
@@ -201,7 +201,7 @@ public class ElementBindEnabledTest extends SignalsUnitTest {
     @Test
     public void bindEnabled_explicitlyDisabledComponent_enableParent_componentRemainsDisabled() {
         TestComponent component = new TestComponent();
-        component.bindEnabled(new SharedValueSignal<>(false));
+        component.bindEnabled(new ValueSignal<>(false));
 
         TestComponent parent = new TestComponent();
         parent.add(component);

@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -35,7 +35,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         // attach before bind
         UI.getCurrent().add(html);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
@@ -46,7 +46,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     @Test
     public void bindHtmlContent_componentAttachedAfter_bindingActive() {
         Html html = new Html("<div id='a'>init</div>");
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
@@ -62,8 +62,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
-                "<div id='b'>v1</div>");
+        ValueSignal<String> signal = new ValueSignal<>("<div id='b'>v1</div>");
         html.bindHtmlContent(signal);
 
         assertEquals("v1", html.getInnerHtml());
@@ -78,7 +77,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     @Test
     public void bindHtmlContent_componentNotAttached_bindingInactive() {
         Html html = new Html("<div id='a'>init</div>");
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
@@ -93,7 +92,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_componentDetached_bindingInactive() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
         // detach
@@ -110,7 +109,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_componentReAttached_bindingActivate() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
         // detach
@@ -129,7 +128,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_withNullValue_recordsErrorAndDoesNotChange() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
@@ -152,7 +151,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_withNullBinding_removesBinding() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
         assertEquals("after", html.getInnerHtml());
@@ -169,7 +168,7 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_withNullBinding_allowsSetHtmlContent() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
         assertEquals("after", html.getInnerHtml());
@@ -186,14 +185,14 @@ public class HtmlBindHtmlContentTest extends SignalsUnitTest {
     public void bindHtmlContent_setterAndRebindWhileActive_throwException() {
         Html html = new Html("<div id='a'>init</div>");
         UI.getCurrent().add(html);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
+        ValueSignal<String> signal = new ValueSignal<>(
                 "<div id='b'>after</div>");
         html.bindHtmlContent(signal);
 
         assertThrows(BindingActiveException.class,
                 () -> html.setHtmlContent("<div id='c'>manual</div>"));
-        assertThrows(BindingActiveException.class, () -> html
-                .bindHtmlContent(new SharedValueSignal<>("<div>x</div>")));
+        assertThrows(BindingActiveException.class,
+                () -> html.bindHtmlContent(new ValueSignal<>("<div>x</div>")));
         // state unchanged
         assertEquals("after", html.getInnerHtml());
         assertEquals("b", html.getElement().getAttribute("id"));

@@ -36,7 +36,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.signals.core.BindingActiveException;
 import com.vaadin.signals.core.Signal;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -100,7 +100,7 @@ public class ElementBindAttributeTest {
     @Test
     public void bindAttribute_nullAttribute_throwException() {
         Element element = new Element("foo");
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
                 () -> element.bindAttribute(null, signal));
     }
@@ -108,7 +108,7 @@ public class ElementBindAttributeTest {
     @Test
     public void bindAttribute_illegalAttribute_throwException() {
         Element element = new Element("foo");
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
         assertThrows(IllegalArgumentException.class,
                 () -> element.bindAttribute("\"foo\"", signal));
     }
@@ -118,7 +118,7 @@ public class ElementBindAttributeTest {
         Element element = new Element("foo");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         element.bindAttribute("foobar", signal);
         Assert.assertTrue(events.isEmpty());
@@ -128,7 +128,7 @@ public class ElementBindAttributeTest {
     public void bindAttribute_componentNotAttached_bindingIgnored() {
         TestComponent component = new TestComponent();
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -140,7 +140,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -157,7 +157,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -170,7 +170,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
         assertEquals("bar", component.getElement().getAttribute("foo"));
@@ -192,7 +192,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -206,7 +206,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -220,7 +220,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
         signal.value("baz");
@@ -234,7 +234,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo", signal);
 
@@ -253,7 +253,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
 
         component.getElement().bindAttribute("attr1", signal);
         component.getElement().bindAttribute("attr2", signal);
@@ -273,8 +273,8 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal1 = new SharedValueSignal<>("foo");
-        SharedValueSignal<String> signal2 = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal1 = new ValueSignal<>("foo");
+        ValueSignal<String> signal2 = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("attr1", signal1);
         component.getElement().bindAttribute("attr2", signal2);
@@ -295,7 +295,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("bar");
+        ValueSignal<String> signal = new ValueSignal<>("bar");
 
         component.getElement().bindAttribute("foo",
                 signal.map(v -> "mapped-" + v));
@@ -325,7 +325,7 @@ public class ElementBindAttributeTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
 
         component.getElement().bindAttribute("foo",
                 signal.map(value -> value ? "" : null));

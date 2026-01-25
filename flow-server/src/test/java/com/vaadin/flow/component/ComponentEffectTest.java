@@ -38,8 +38,8 @@ import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.VaadinSession;
 import com.vaadin.flow.shared.Registration;
 import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.signals.shared.SharedListSignal;
-import com.vaadin.signals.shared.SharedValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -270,8 +270,7 @@ public class ComponentEffectTest {
     public void effect_componentAttachedAndDetached_effectEnabledAndDisabled() {
         runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
-            SharedValueSignal<String> signal = new SharedValueSignal<>(
-                    "initial");
+            ValueSignal<String> signal = new ValueSignal<>("initial");
             AtomicInteger count = new AtomicInteger();
             Registration registration = ComponentEffect.effect(component,
                     () -> {
@@ -317,8 +316,7 @@ public class ComponentEffectTest {
     public void bind_signalValueChanges_componentUpdated() {
         runWithFeatureFlagEnabled(() -> {
             TestComponent component = new TestComponent();
-            SharedValueSignal<String> signal = new SharedValueSignal<>(
-                    "initial");
+            ValueSignal<String> signal = new ValueSignal<>("initial");
 
             MockUI ui = new MockUI();
             ui.add(component);

@@ -35,7 +35,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.signals.core.BindingActiveException;
 import com.vaadin.signals.core.Signal;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -137,7 +137,7 @@ public class SignalPropertySupportTest {
     public void get_boundButNotAttached_valueNotSetInitially() {
         var component = new TestComponent();
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                     callCount.incrementAndGet();
@@ -153,7 +153,7 @@ public class SignalPropertySupportTest {
         var component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                     callCount.incrementAndGet();
@@ -196,7 +196,7 @@ public class SignalPropertySupportTest {
     @Test
     public void set_alreadyBound_throwException() {
         var component = new TestComponent();
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                     callCount.incrementAndGet();
@@ -215,7 +215,7 @@ public class SignalPropertySupportTest {
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, lastValue::set);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport
                 .bind(Signal.computed(() -> "computed-" + signal.value()));
         assertEquals("computed-foo", signalPropertySupport.get());
@@ -229,7 +229,7 @@ public class SignalPropertySupportTest {
 
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, lastValue::set);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport.bind(signal.map(value -> "mapped-" + value));
         assertEquals("mapped-foo", signalPropertySupport.get());
         assertEquals("mapped-foo", lastValue.get());
@@ -256,8 +256,8 @@ public class SignalPropertySupportTest {
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
-        signalPropertySupport.bind(new SharedValueSignal<>("foo"));
+        ValueSignal<String> signal = new ValueSignal<>("foo");
+        signalPropertySupport.bind(new ValueSignal<>("foo"));
         assertEquals("foo", signalPropertySupport.get());
         signalPropertySupport.bind(null);
         signal.value("bar");
@@ -272,10 +272,10 @@ public class SignalPropertySupportTest {
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        signalPropertySupport.bind(new SharedValueSignal<>("foo"));
+        signalPropertySupport.bind(new ValueSignal<>("foo"));
 
-        assertThrows(BindingActiveException.class, () -> signalPropertySupport
-                .bind(new SharedValueSignal<>("foo")));
+        assertThrows(BindingActiveException.class,
+                () -> signalPropertySupport.bind(new ValueSignal<>("foo")));
     }
 
     @Test
@@ -286,7 +286,7 @@ public class SignalPropertySupportTest {
         SignalPropertySupport<String> signalPropertySupport = SignalPropertySupport
                 .create(component, value -> {
                 });
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         signalPropertySupport.bind(signal);
         assertEquals("foo", signalPropertySupport.get());
         component.removeFromParent();

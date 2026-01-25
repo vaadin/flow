@@ -38,7 +38,7 @@ import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.signals.core.BindingActiveException;
 import com.vaadin.signals.core.Signal;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;
@@ -116,7 +116,7 @@ public class ElementBindTextTest {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         Signal<String> computedSignal = Signal
                 .computed(() -> "computed-" + signal.value());
         element.bindText(computedSignal);
@@ -129,7 +129,7 @@ public class ElementBindTextTest {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal.map(text -> "mapped-" + text));
 
         assertEquals("mapped-text", element.getText());
@@ -140,7 +140,7 @@ public class ElementBindTextTest {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         assertEquals("text", element.getText());
@@ -155,7 +155,7 @@ public class ElementBindTextTest {
     public void bindText_setTextWithExistingActiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         assertThrows(BindingActiveException.class,
@@ -166,7 +166,7 @@ public class ElementBindTextTest {
     public void bindText_setTextWithExistingInactiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         UI.getCurrent().getElement().removeChild(element);
@@ -178,8 +178,7 @@ public class ElementBindTextTest {
     public void bindText_initialNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>(
-                String.class);
+        ValueSignal<String> signal = new ValueSignal<>(null);
         element.bindText(signal);
         assertEquals("", element.getText());
         Assert.assertTrue(events.isEmpty());
@@ -189,7 +188,7 @@ public class ElementBindTextTest {
     public void bindText_setNullSignalValue_treatAsBlank() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
         signal.value(null);
         Assert.assertTrue(events.isEmpty());
@@ -200,10 +199,10 @@ public class ElementBindTextTest {
     public void bindText_bindTextWithExistingActiveBinding_throws() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
-        SharedValueSignal<String> signal2 = new SharedValueSignal<>("text2");
+        ValueSignal<String> signal2 = new ValueSignal<>("text2");
         assertThrows(BindingActiveException.class,
                 () -> element.bindText(signal2));
     }
@@ -212,11 +211,11 @@ public class ElementBindTextTest {
     public void bindText_bindTextWithExistingInactiveBinding_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         UI.getCurrent().getElement().removeChild(element);
-        SharedValueSignal<String> signal2 = new SharedValueSignal<>("text2");
+        ValueSignal<String> signal2 = new ValueSignal<>("text2");
         element.bindText(signal2);
     }
 
@@ -224,7 +223,7 @@ public class ElementBindTextTest {
     public void bindText_unbindText_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
 
         element.bindText(signal);
         element.bindText(null);
@@ -236,7 +235,7 @@ public class ElementBindTextTest {
     public void bindText_unbindText_allowsSetText() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
 
         element.bindText(signal);
         element.bindText(null);
@@ -248,7 +247,7 @@ public class ElementBindTextTest {
     @Test
     public void bindText_componentNotAttached_bindingIgnored() {
         Element element = new Element("span");
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         assertEquals("", element.getText());
@@ -258,7 +257,7 @@ public class ElementBindTextTest {
     public void bindText_componentAttached_returnsCorrectValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         assertEquals("text", element.getText());
@@ -278,7 +277,7 @@ public class ElementBindTextTest {
                 .ifPresent(feature -> Assert.fail(
                         "TextBindingFeature should not be initialized before binding a signal"));
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         element.bindText(signal);
 
         element.getNode().getFeatureIfInitialized(TextBindingFeature.class)
@@ -299,7 +298,7 @@ public class ElementBindTextTest {
         SpanWithHasText span = new SpanWithHasText();
         UI.getCurrent().add(span);
 
-        SharedValueSignal<String> signal = new SharedValueSignal<>("text");
+        ValueSignal<String> signal = new ValueSignal<>("text");
         span.bindText(signal);
         assertEquals("text", span.getText());
 

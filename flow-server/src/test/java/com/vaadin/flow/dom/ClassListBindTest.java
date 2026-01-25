@@ -21,7 +21,7 @@ import org.junit.Test;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Tests for binding CSS class presence to a Signal using ClassList.bind.
@@ -33,7 +33,7 @@ public class ClassListBindTest extends SignalsUnitTest {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
 
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.getClassList().bind("highlight", signal);
 
         // Initially false -> not present
@@ -50,7 +50,7 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         Element element = new Element("span");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.getClassList().bind("active", signal);
 
         // Detach element
@@ -69,7 +69,7 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void manualAddRemoveForBoundName_throwsBindingActiveException() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.getClassList().bind("locked", signal);
 
         Assert.assertThrows(BindingActiveException.class,
@@ -86,8 +86,8 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void clear_clearsBindingsSilently_andClearsClasses() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> a = new SharedValueSignal<>(true);
-        SharedValueSignal<Boolean> b = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> a = new ValueSignal<>(true);
+        ValueSignal<Boolean> b = new ValueSignal<>(true);
         element.getClassList().bind("a", a);
         element.getClassList().bind("b", b);
 
@@ -114,7 +114,7 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void setAttributeClass_bulkReplacement_clearsBindingsSilently() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> bound = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> bound = new ValueSignal<>(true);
         element.getClassList().bind("flag", bound);
         Assert.assertTrue(element.getClassList().contains("flag"));
 
@@ -134,7 +134,7 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void bindNull_unbindsAndKeepsLastAppliedPresence() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         element.getClassList().bind("badge", signal);
         Assert.assertTrue(element.getClassList().contains("badge"));
 
@@ -153,8 +153,8 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void rebinding_alreadyBound_throws() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> s1 = new SharedValueSignal<>(true);
-        SharedValueSignal<Boolean> s2 = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> s1 = new ValueSignal<>(true);
+        ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
         element.getClassList().bind("tag", s1);
         Assert.assertTrue(element.getClassList().contains("tag"));
@@ -167,7 +167,7 @@ public class ClassListBindTest extends SignalsUnitTest {
     public void internalUpdatesDoNotThrowOrRecurse() {
         Element element = new Element("div");
         UI.getCurrent().getElement().appendChild(element);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.getClassList().bind("spin", signal);
 
         // Flip to true a couple of times; should not throw and should not
@@ -194,7 +194,7 @@ public class ClassListBindTest extends SignalsUnitTest {
                 .ifPresent(feature -> Assert.fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         element.getClassList().bind("spin", signal);
 
         element.getNode().getFeatureIfInitialized(SignalBindingFeature.class)

@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.core.BindingActiveException;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -43,7 +43,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
 
         // Bind a signal and verify initial propagation
-        SharedValueSignal<String> signal = new SharedValueSignal<>("first");
+        ValueSignal<String> signal = new ValueSignal<>("first");
         component.bindPlaceholder(signal);
         assertEquals("first", component.getPlaceholder());
 
@@ -60,7 +60,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     public void bindPlaceholder_elementNotAttached_bindingInactive() {
         TestComponent component = new TestComponent();
         // Not attached yet
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         // No propagation while detached
         assertNull(component.getPlaceholder());
@@ -71,7 +71,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     @Test
     public void bindPlaceholder_attachAfterBinding_activatesAndAppliesLatest() {
         TestComponent component = new TestComponent();
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         // Update before attach
         signal.value("bar");
@@ -85,7 +85,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     public void bindPlaceholder_elementDetached_bindingInactive_andReactivatesOnAttach() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         // Initially propagated
         assertEquals("foo", component.getPlaceholder());
@@ -102,7 +102,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     public void bindPlaceholder_unbindWithNullSignal_keepsCurrentAndStopsUpdates() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("one");
+        ValueSignal<String> signal = new ValueSignal<>("one");
         component.bindPlaceholder(signal);
         assertEquals("one", component.getPlaceholder());
 
@@ -123,7 +123,7 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     public void setPlaceholder_whileBindingActive_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
         assertThrows(
@@ -136,12 +136,12 @@ public class HasPlaceholderBindTest extends SignalsUnitTest {
     public void bindPlaceholder_againWhileActive_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
+        ValueSignal<String> signal = new ValueSignal<>("foo");
         component.bindPlaceholder(signal);
         assertEquals("foo", component.getPlaceholder());
         assertThrows(
                 "Expected BindingActiveException when binding a new signal while a binding is active",
-                BindingActiveException.class, () -> component
-                        .bindPlaceholder(new SharedValueSignal<>("bar")));
+                BindingActiveException.class,
+                () -> component.bindPlaceholder(new ValueSignal<>("bar")));
     }
 }

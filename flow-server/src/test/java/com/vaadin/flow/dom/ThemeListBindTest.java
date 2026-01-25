@@ -26,7 +26,7 @@ import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.signals.core.BindingActiveException;
 import com.vaadin.signals.core.Signal;
-import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.local.ValueSignal;
 
 /**
  * Tests for binding theme attribute presence to a Signal using ThemeList.bind.
@@ -38,7 +38,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
 
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         component.bindThemeName("light", signal);
 
         // Initially false -> not present
@@ -55,7 +55,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void bindingInactiveWhenDetached_reactivatedOnAttach_appliesCurrentValue() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         component.bindThemeName("active", signal);
 
         // Detach element
@@ -74,7 +74,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void manualAddRemoveForBoundName_throwsBindingActiveException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindThemeName("locked", signal);
 
         Assert.assertThrows(BindingActiveException.class,
@@ -101,8 +101,8 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void clear_clearsBindingsSilently_andClearsThemes() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> a = new SharedValueSignal<>(true);
-        SharedValueSignal<Boolean> b = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> a = new ValueSignal<>(true);
+        ValueSignal<Boolean> b = new ValueSignal<>(true);
         component.bindThemeName("a", a);
         component.bindThemeName("b", b);
 
@@ -129,7 +129,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void setThemeName_bulkReplacement_clearsBindingsSilently() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> bound = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> bound = new ValueSignal<>(true);
         component.bindThemeName("flag", bound);
         Assert.assertTrue(component.hasThemeName("flag"));
 
@@ -152,7 +152,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void bindNull_unbindsAndKeepsLastAppliedPresence() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
+        ValueSignal<Boolean> signal = new ValueSignal<>(true);
         component.bindThemeName("badge", signal);
         Assert.assertTrue(component.hasThemeName("badge"));
 
@@ -171,8 +171,8 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void rebinding_alreadyBound_throws() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> s1 = new SharedValueSignal<>(true);
-        SharedValueSignal<Boolean> s2 = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> s1 = new ValueSignal<>(true);
+        ValueSignal<Boolean> s2 = new ValueSignal<>(false);
 
         component.bindThemeName("tag", s1);
         Assert.assertTrue(component.hasThemeName("tag"));
@@ -185,7 +185,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
     public void internalUpdatesDoNotThrowOrRecurse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
+        ValueSignal<Boolean> signal = new ValueSignal<>(false);
         component.bindThemeName("spin", signal);
 
         // Flip to true a couple of times; should not throw and should not
@@ -209,8 +209,7 @@ public class ThemeListBindTest extends SignalsUnitTest {
         enum DummyEnum {
             ONE, TWO, THREE
         }
-        SharedValueSignal<DummyEnum> signal = new SharedValueSignal<>(
-                DummyEnum.ONE);
+        ValueSignal<DummyEnum> signal = new ValueSignal<>(DummyEnum.ONE);
 
         Signal<Boolean> a = signal.map(v -> v == DummyEnum.ONE);
         Signal<Boolean> b = signal.map(v -> v == DummyEnum.TWO);
