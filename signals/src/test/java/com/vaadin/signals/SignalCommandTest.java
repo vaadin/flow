@@ -27,7 +27,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.StringNode;
 
-import com.vaadin.signals.SharedListSignal.ListPosition;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;

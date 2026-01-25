@@ -23,15 +23,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.SharedListSignal;
-import com.vaadin.signals.SharedMapSignal;
-import com.vaadin.signals.SharedValueSignal;
-import com.vaadin.signals.SharedValueSignalTest.AsyncSharedValueSignal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedMapSignal;
+import com.vaadin.signals.shared.SharedValueSignal;
+import com.vaadin.signals.shared.SharedValueSignalTest.AsyncSharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;

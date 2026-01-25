@@ -13,8 +13,9 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
+import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.impl.SignalTree;
 
 /**

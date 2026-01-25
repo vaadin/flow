@@ -13,20 +13,22 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.SharedListSignal.ListPosition;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;

@@ -13,11 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.Objects;
 import java.util.function.IntFunction;
 
+import com.vaadin.signals.Id;
+import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;

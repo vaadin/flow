@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.List;
 import java.util.Map;
@@ -22,14 +22,15 @@ import java.util.stream.Collectors;
 
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.SharedListSignal.ListPosition;
-import com.vaadin.signals.SharedNodeSignal.SharedNodeSignalState;
+import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 /**
  * A signal representing a node in a tree structure. The {@link #value()} of a
@@ -51,7 +52,8 @@ import com.vaadin.signals.operations.SignalOperation;
  * methods to get an instance of that specific type that you can use for
  * applying some specific operation.
  */
-public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
+public class SharedNodeSignal
+        extends AbstractSignal<SharedNodeSignal.SharedNodeSignalState> {
     /**
      * The snapshot of the state of a node signal. Gives access to the value and
      * child nodes.

@@ -25,6 +25,8 @@ import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.Result;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
+import com.vaadin.signals.shared.AbstractSignal;
+import com.vaadin.signals.shared.SignalUtils;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -86,6 +88,6 @@ public class TestUtil {
      * Helper to run package-private tree getter from tests in sub packages.
      */
     public static SignalTree tree(AbstractSignal<?> signal) {
-        return signal.tree();
+        return SignalUtils.treeOf(signal);
     }
 }

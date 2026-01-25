@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import java.util.Objects;
 import java.util.concurrent.Executor;
@@ -22,7 +22,11 @@ import tools.jackson.core.JacksonException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import com.vaadin.signals.Id;
+import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.CommandValidator;

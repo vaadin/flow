@@ -21,12 +21,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.core.Signal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.impl.UsageTracker.CombinedUsage;
 import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

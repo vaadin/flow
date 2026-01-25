@@ -29,7 +29,6 @@ import tools.jackson.databind.node.StringNode;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.function.CleanupCallback;
@@ -37,6 +36,7 @@ import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.impl.SignalTree.PendingCommit;
 import com.vaadin.signals.impl.SignalTree.Type;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

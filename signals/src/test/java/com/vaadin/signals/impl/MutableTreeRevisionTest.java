@@ -29,11 +29,11 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.SharedListSignal;
-import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
+import com.vaadin.signals.shared.SharedListSignal;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

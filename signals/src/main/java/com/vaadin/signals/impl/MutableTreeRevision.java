@@ -40,7 +40,6 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Alias;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.AdoptAsCommand;
 import com.vaadin.signals.SignalCommand.AdoptAtCommand;
@@ -65,6 +64,7 @@ import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.impl.CommandResult.Accept;
 import com.vaadin.signals.impl.CommandResult.NodeModification;
 import com.vaadin.signals.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 /**
  * A tree revision that can be mutated by applying signal commands.

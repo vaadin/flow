@@ -49,9 +49,9 @@ import com.vaadin.flow.server.MockVaadinServletService;
 import com.vaadin.flow.server.MockVaadinSession;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.shared.JsonConstants;
-import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.core.BindingActiveException;
 import com.vaadin.signals.core.Signal;
+import com.vaadin.signals.shared.SharedValueSignal;
 import com.vaadin.tests.util.MockUI;
 
 import static org.junit.Assert.assertEquals;

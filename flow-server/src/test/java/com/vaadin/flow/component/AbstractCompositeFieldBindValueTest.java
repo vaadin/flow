@@ -21,8 +21,8 @@ import org.junit.Test;
 import com.vaadin.flow.component.AbstractSinglePropertyFieldTest.StringField;
 import com.vaadin.flow.component.ComponentTest.TestDiv;
 import com.vaadin.flow.dom.SignalsUnitTest;
-import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.core.WritableSignal;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 public class AbstractCompositeFieldBindValueTest extends SignalsUnitTest {
 

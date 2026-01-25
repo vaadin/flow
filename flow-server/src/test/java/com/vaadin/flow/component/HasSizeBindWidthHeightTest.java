@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.Constants;
-import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.core.BindingActiveException;
+import com.vaadin.signals.shared.SharedValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;

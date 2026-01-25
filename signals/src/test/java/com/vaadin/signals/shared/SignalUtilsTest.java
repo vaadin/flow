@@ -13,11 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.shared;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.impl.SignalTree;
 
 import static org.junit.jupiter.api.Assertions.assertSame;

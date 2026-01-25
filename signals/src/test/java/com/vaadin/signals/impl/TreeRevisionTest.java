@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
-import com.vaadin.signals.SharedListSignal.ListPosition;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.shared.SharedListSignal.ListPosition;
 
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
