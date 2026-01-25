@@ -40,7 +40,7 @@ import com.vaadin.signals.operations.SignalOperation;
  * @param <T>
  *            the element type
  */
-public class MapSignal<T>
+public class SharedMapSignal<T>
         extends AbstractSignal<Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
@@ -52,7 +52,7 @@ public class MapSignal<T>
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    public MapSignal(Class<T> elementType) {
+    public SharedMapSignal(Class<T> elementType) {
         this(new SynchronousSignalTree(false), Id.ZERO, ANYTHING_GOES,
                 elementType);
     }
@@ -73,8 +73,8 @@ public class MapSignal<T>
      * @param elementType
      *            the element type, not <code>null</code>
      */
-    protected MapSignal(SignalTree tree, Id id, CommandValidator validator,
-            Class<T> elementType) {
+    protected SharedMapSignal(SignalTree tree, Id id,
+            CommandValidator validator, Class<T> elementType) {
         super(tree, id, validator);
         this.elementType = Objects.requireNonNull(elementType);
     }
@@ -261,8 +261,8 @@ public class MapSignal<T>
      *            the validator to use, not <code>null</code>
      * @return a new map signal that uses the validator, not <code>null</code>
      */
-    public MapSignal<T> withValidator(CommandValidator validator) {
-        return new MapSignal<>(tree(), id(), mergeValidators(validator),
+    public SharedMapSignal<T> withValidator(CommandValidator validator) {
+        return new SharedMapSignal<>(tree(), id(), mergeValidators(validator),
                 elementType);
     }
 
@@ -275,7 +275,7 @@ public class MapSignal<T>
      *
      * @return the new readonly map signal, not <code>null</code>
      */
-    public MapSignal<T> asReadonly() {
+    public SharedMapSignal<T> asReadonly() {
         return withValidator(anything -> false);
     }
 
@@ -308,7 +308,7 @@ public class MapSignal<T>
 
     @Override
     public boolean equals(Object obj) {
-        return this == obj || obj instanceof MapSignal<?> other
+        return this == obj || obj instanceof SharedMapSignal<?> other
                 && Objects.equals(tree(), other.tree())
                 && Objects.equals(id(), other.id())
                 && Objects.equals(validator(), other.validator())
@@ -324,7 +324,7 @@ public class MapSignal<T>
     public String toString() {
         return peek().entrySet().stream()
                 .map(entry -> entry.getKey() + "=" + entry.getValue().value())
-                .collect(Collectors.joining(", ", "MapSignal[", "]"));
+                .collect(Collectors.joining(", ", "SharedMapSignal[", "]"));
     }
 
 }

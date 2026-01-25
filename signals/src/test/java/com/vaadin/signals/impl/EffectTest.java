@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.ListSignal;
-import com.vaadin.signals.MapSignal;
+import com.vaadin.signals.SharedMapSignal;
 import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.SharedValueSignalTest.AsyncSharedValueSignal;
 import com.vaadin.signals.Signal;
@@ -98,7 +98,7 @@ public class EffectTest extends SignalTestBase {
 
     @Test
     void changeTracking_changeMapStructure_effectRunAgain() {
-        MapSignal<String> signal = new MapSignal<>(String.class);
+        SharedMapSignal<String> signal = new SharedMapSignal<>(String.class);
         ArrayList<Integer> invocations = new ArrayList<>();
 
         Signal.effect(() -> {

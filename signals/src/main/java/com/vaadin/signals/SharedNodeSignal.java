@@ -165,7 +165,7 @@ public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
         return new SharedNodeSignalState(data.value(),
                 parentId != null ? child(parentId) : null,
                 ListSignal.children(data, this::child),
-                MapSignal.children(data, this::child));
+                SharedMapSignal.children(data, this::child));
     }
 
     @Override
@@ -238,8 +238,8 @@ public class SharedNodeSignal extends AbstractSignal<SharedNodeSignalState> {
      *            the element type, not <code>null</code>
      * @return this signal as a map signal, not <code>null</code>
      */
-    public <T> MapSignal<T> asMap(Class<T> elementType) {
-        return new MapSignal<>(tree(), id(), validator(), elementType);
+    public <T> SharedMapSignal<T> asMap(Class<T> elementType) {
+        return new SharedMapSignal<>(tree(), id(), validator(), elementType);
     }
 
     /**

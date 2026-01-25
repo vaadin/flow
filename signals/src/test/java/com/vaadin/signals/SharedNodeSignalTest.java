@@ -137,7 +137,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void asMap_putThroughWrapper_valueUpdate() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        MapSignal<String> asMap = signal.asMap(String.class);
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
 
         asMap.put("key", "value");
 
@@ -152,7 +152,7 @@ public class SharedNodeSignalTest extends SignalTestBase {
     @Test
     void asMap_putThroughNode_wrapperUpdated() {
         SharedNodeSignal signal = new SharedNodeSignal();
-        MapSignal<String> asMap = signal.asMap(String.class);
+        SharedMapSignal<String> asMap = signal.asMap(String.class);
 
         signal.putChildWithValue("key", "value");
 
