@@ -20,7 +20,7 @@ import org.junit.Test;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.server.Constants;
 import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.SharedValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -38,7 +38,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
         assertNull(component.getWidth());
 
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
 
         assertEquals("200px", component.getWidth());
@@ -49,7 +49,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         assertNull(component.getWidth());
 
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         UI.getCurrent().add(component);
 
@@ -60,7 +60,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_elementAttached_bindingActive() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
 
         // initially "200px"
@@ -77,7 +77,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     @Test
     public void bindWidth_elementNotAttached_bindingInactive() {
         HasSizeComponent component = new HasSizeComponent();
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         signal.value("300px");
 
@@ -88,7 +88,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_elementDetached_bindingInactive() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         component.removeFromParent();
         signal.value("300px"); // ignored
@@ -100,7 +100,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_elementReAttached_bindingActivate() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         component.removeFromParent();
         signal.value("300px");
@@ -113,7 +113,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_setWidthWhileBindingIsActive_throwException() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        component.bindWidth(new ValueSignal<>("200px"));
+        component.bindWidth(new SharedValueSignal<>("200px"));
 
         assertThrows(BindingActiveException.class,
                 () -> component.setWidth("300px"));
@@ -132,10 +132,10 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_bindWidthWhileBindingIsActive_throwException() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        component.bindWidth(new ValueSignal<>("200px"));
+        component.bindWidth(new SharedValueSignal<>("200px"));
 
         assertThrows(BindingActiveException.class,
-                () -> component.bindWidth(new ValueSignal<>("300px")));
+                () -> component.bindWidth(new SharedValueSignal<>("300px")));
         assertThrows(BindingActiveException.class,
                 () -> component.setWidth("300px"));
         assertEquals("200px", component.getWidth());
@@ -145,7 +145,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_withNullBinding_removesBinding() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         assertEquals("200px", component.getWidth());
 
@@ -158,7 +158,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_withNullBinding_allowsSetWidth() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
         assertEquals("200px", component.getWidth());
 
@@ -171,7 +171,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_fullWidth_widthFullAttributeSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("100%");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("100%");
         component.bindWidth(signal);
 
         assertEquals("100%", component.getWidth());
@@ -183,7 +183,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_notFullWidth_widthFullAttributeNotSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
 
         assertEquals("200px", component.getWidth());
@@ -195,7 +195,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_changeFromFullWidthToOther_widthFullAttributeRemoved() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("100%");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("100%");
         component.bindWidth(signal);
 
         assertEquals("", component.getElement()
@@ -211,7 +211,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindWidth_changeFromOtherToFullWidth_widthFullAttributeSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindWidth(signal);
 
         assertNull(component.getElement()
@@ -229,7 +229,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
         assertNull(component.getHeight());
 
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
 
         assertEquals("200px", component.getHeight());
@@ -240,7 +240,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
         HasSizeComponent component = new HasSizeComponent();
         assertNull(component.getHeight());
 
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         UI.getCurrent().add(component);
 
@@ -251,7 +251,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_elementAttached_bindingActive() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
 
         // initially "200px"
@@ -268,7 +268,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     @Test
     public void bindHeight_elementNotAttached_bindingInactive() {
         HasSizeComponent component = new HasSizeComponent();
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         signal.value("300px");
 
@@ -279,7 +279,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_elementDetached_bindingInactive() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         component.removeFromParent();
         signal.value("300px"); // ignored
@@ -291,7 +291,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_elementReAttached_bindingActivate() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         component.removeFromParent();
         signal.value("300px");
@@ -304,7 +304,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_setHeightWhileBindingIsActive_throwException() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        component.bindHeight(new ValueSignal<>("200px"));
+        component.bindHeight(new SharedValueSignal<>("200px"));
 
         assertThrows(BindingActiveException.class,
                 () -> component.setHeight("300px"));
@@ -323,10 +323,10 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_bindHeightWhileBindingIsActive_throwException() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        component.bindHeight(new ValueSignal<>("200px"));
+        component.bindHeight(new SharedValueSignal<>("200px"));
 
         assertThrows(BindingActiveException.class,
-                () -> component.bindHeight(new ValueSignal<>("300px")));
+                () -> component.bindHeight(new SharedValueSignal<>("300px")));
         assertEquals("200px", component.getHeight());
     }
 
@@ -334,7 +334,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_withNullBinding_removesBinding() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         assertEquals("200px", component.getHeight());
 
@@ -347,7 +347,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_withNullBinding_allowsSetHeight() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
         assertEquals("200px", component.getHeight());
 
@@ -360,7 +360,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_fullHeight_heightFullAttributeSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("100%");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("100%");
         component.bindHeight(signal);
 
         assertEquals("100%", component.getHeight());
@@ -372,7 +372,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_notFullHeight_heightFullAttributeNotSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
 
         assertEquals("200px", component.getHeight());
@@ -384,7 +384,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_changeFromFullHeightToOther_heightFullAttributeRemoved() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("100%");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("100%");
         component.bindHeight(signal);
 
         assertEquals("", component.getElement()
@@ -400,7 +400,7 @@ public class HasSizeBindWidthHeightTest extends SignalsUnitTest {
     public void bindHeight_changeFromOtherToFullHeight_heightFullAttributeSet() {
         HasSizeComponent component = new HasSizeComponent();
         UI.getCurrent().add(component);
-        ValueSignal<String> signal = new ValueSignal<>("200px");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("200px");
         component.bindHeight(signal);
 
         assertNull(component.getElement()

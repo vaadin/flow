@@ -435,7 +435,7 @@ public interface HasSize extends HasElement {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("200px");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("200px");
      * Div component = new Div();
      * add(component);
      * component.bindWidth(signal);
@@ -475,7 +475,7 @@ public interface HasSize extends HasElement {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("200px");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("200px");
      * Div component = new Div();
      * add(component);
      * component.bindHeight(signal);

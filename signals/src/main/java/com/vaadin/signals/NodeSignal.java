@@ -187,8 +187,8 @@ public class NodeSignal extends AbstractSignal<NodeSignalState> {
      *            the value type, not <code>null</code>
      * @return this signal as a value signal, not <code>null</code>
      */
-    public <T> ValueSignal<T> asValue(Class<T> valueType) {
-        return new ValueSignal<>(tree(), id(), validator(), valueType);
+    public <T> SharedValueSignal<T> asValue(Class<T> valueType) {
+        return new SharedValueSignal<>(tree(), id(), validator(), valueType);
     }
 
     /**

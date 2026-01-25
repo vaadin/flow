@@ -19,8 +19,8 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.SharedValueSignal;
 import com.vaadin.signals.Signal;
-import com.vaadin.signals.ValueSignal;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
@@ -38,7 +38,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         UI.getCurrent().add(component);
         assertFalse(component.isReadOnly());
 
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
 
         assertTrue(component.isReadOnly());
@@ -49,7 +49,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
         TestComponent component = new TestComponent();
         assertFalse(component.isReadOnly());
 
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         // attach after bindReadOnly
         UI.getCurrent().add(component);
@@ -61,7 +61,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_elementAttached_bindingActive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
 
         // initially true
@@ -79,7 +79,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     @Test
     public void bindReadOnly_elementNotAttached_bindingInactive() {
         TestComponent component = new TestComponent();
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         signal.value(false);
 
@@ -90,7 +90,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_elementDetached_bindingInactive() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         component.removeFromParent();
         signal.value(false); // ignored
@@ -102,7 +102,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_elementReAttached_bindingActivate() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         component.removeFromParent();
         signal.value(false);
@@ -115,10 +115,10 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_bindOrSetReadOnlyWhileBindingIsActive_throwException() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        component.bindReadOnly(new ValueSignal<>(true));
+        component.bindReadOnly(new SharedValueSignal<>(true));
 
         assertThrows(BindingActiveException.class,
-                () -> component.bindReadOnly(new ValueSignal<>(false)));
+                () -> component.bindReadOnly(new SharedValueSignal<>(false)));
         assertThrows(BindingActiveException.class,
                 () -> component.setReadOnly(false));
         assertTrue(component.isReadOnly());
@@ -128,7 +128,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_withNullBinding_removesBinding() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         assertTrue(component.isReadOnly());
 
@@ -144,7 +144,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_withNullBinding_allowsSetReadOnly() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         assertTrue(component.isReadOnly());
 
@@ -158,7 +158,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_nullSignalValue_setsReadOnlyToFalse() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(true);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(true);
         component.bindReadOnly(signal);
         assertTrue(component.isReadOnly());
 
@@ -171,7 +171,7 @@ public class HasValueBindReadOnlyTest extends SignalsUnitTest {
     public void bindReadOnly_toggleSignalValue_readOnlyUpdates() {
         TestComponent component = new TestComponent();
         UI.getCurrent().add(component);
-        ValueSignal<Boolean> signal = new ValueSignal<>(false);
+        SharedValueSignal<Boolean> signal = new SharedValueSignal<>(false);
         component.bindReadOnly(signal);
         assertFalse(component.isReadOnly());
 

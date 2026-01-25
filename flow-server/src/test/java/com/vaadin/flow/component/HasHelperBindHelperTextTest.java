@@ -19,7 +19,7 @@ import org.junit.Test;
 
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.SharedValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
@@ -36,7 +36,7 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
-        ValueSignal<String> signal = new ValueSignal<>("");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("");
         c.bindHelperText(signal);
 
         signal.value("help-1");
@@ -51,7 +51,7 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
-        ValueSignal<String> signal = new ValueSignal<>("initial");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("initial");
         c.bindHelperText(signal);
 
         assertThrows(BindingActiveException.class,
@@ -63,7 +63,7 @@ public class HasHelperBindHelperTextTest extends SignalsUnitTest {
         HasHelperComponent c = new HasHelperComponent();
         UI.getCurrent().add(c);
 
-        ValueSignal<String> signal = new ValueSignal<>("a");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("a");
         c.bindHelperText(signal);
         assertEquals("a", c.getElement().getProperty("helperText"));
 

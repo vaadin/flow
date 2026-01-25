@@ -24,10 +24,10 @@ import com.vaadin.signals.operations.SignalOperation;
 
 /**
  * A signal containing a numeric value. The value is updated as a single atomic
- * change. In addition to the regular {@link ValueSignal} operation, this class
- * also supports atomically incrementing the value.
+ * change. In addition to the regular {@link SharedValueSignal} operation, this
+ * class also supports atomically incrementing the value.
  */
-public class NumberSignal extends ValueSignal<Double> {
+public class NumberSignal extends SharedValueSignal<Double> {
 
     /**
      * Creates a new number signal with a zero value. The signal does not

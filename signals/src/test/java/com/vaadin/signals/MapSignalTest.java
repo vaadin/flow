@@ -70,7 +70,7 @@ public class MapSignalTest extends SignalTestBase {
     void put_existingKey_oldEntryUpdated() {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "initial");
-        ValueSignal<String> child = signal.value().get("key");
+        SharedValueSignal<String> child = signal.value().get("key");
 
         SignalOperation<String> operation = signal.put("key", "update");
 
@@ -106,9 +106,9 @@ public class MapSignalTest extends SignalTestBase {
     void putIfAbsent_missingKey_newEntryCreated() {
         MapSignal<String> signal = new MapSignal<>(String.class);
 
-        InsertOperation<ValueSignal<String>> operation = signal
+        InsertOperation<SharedValueSignal<String>> operation = signal
                 .putIfAbsent("key", "value");
-        ValueSignal<String> child = operation.signal();
+        SharedValueSignal<String> child = operation.signal();
 
         assertSuccess(operation);
         assertEquals("value", child.value());
@@ -122,11 +122,11 @@ public class MapSignalTest extends SignalTestBase {
     void putIfAbsent_existingKey_noUpdateAndEntiresLinked() {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "value");
-        ValueSignal<String> child = signal.value().get("key");
+        SharedValueSignal<String> child = signal.value().get("key");
 
-        InsertOperation<ValueSignal<String>> operation = signal
+        InsertOperation<SharedValueSignal<String>> operation = signal
                 .putIfAbsent("key", "update");
-        ValueSignal<String> insertChild = operation.signal();
+        SharedValueSignal<String> insertChild = operation.signal();
 
         assertNotEquals(child.id(), insertChild.id());
 
@@ -241,10 +241,10 @@ public class MapSignalTest extends SignalTestBase {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "value");
 
-        Map<String, ValueSignal<String>> value = signal.value();
+        Map<String, SharedValueSignal<String>> value = signal.value();
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            value.put("key", new ValueSignal<>("update"));
+            value.put("key", new SharedValueSignal<>("update"));
         });
 
         assertThrows(UnsupportedOperationException.class, () -> {
@@ -259,7 +259,7 @@ public class MapSignalTest extends SignalTestBase {
         MapSignal<String> signal = new MapSignal<>(String.class);
         signal.put("key", "value");
 
-        Map<String, ValueSignal<String>> value = signal.value();
+        Map<String, SharedValueSignal<String>> value = signal.value();
 
         signal.put("key2", "value2");
 
@@ -294,7 +294,7 @@ public class MapSignalTest extends SignalTestBase {
         signal.put("key", "value");
 
         MapSignal<String> readonly = signal.asReadonly();
-        ValueSignal<String> readonlyChild = readonly.value().get("key");
+        SharedValueSignal<String> readonlyChild = readonly.value().get("key");
 
         assertThrows(UnsupportedOperationException.class, () -> {
             readonly.clear();
@@ -346,12 +346,12 @@ public class MapSignalTest extends SignalTestBase {
     void equalsHashCode_children() {
         MapSignal<String> signal = new MapSignal<>(String.class);
 
-        ValueSignal<String> operationChild = signal
+        SharedValueSignal<String> operationChild = signal
                 .putIfAbsent("child", "value").signal();
-        ValueSignal<String> other = signal.putIfAbsent("other", "other")
+        SharedValueSignal<String> other = signal.putIfAbsent("other", "other")
                 .signal();
 
-        ValueSignal<String> valueChild = signal.value().get("child");
+        SharedValueSignal<String> valueChild = signal.value().get("child");
 
         assertEquals(operationChild, valueChild);
         assertEquals(operationChild.hashCode(), valueChild.hashCode());
@@ -372,7 +372,7 @@ public class MapSignalTest extends SignalTestBase {
             String... expectedKeyValuePairs) {
         assertEquals(0, expectedKeyValuePairs.length % 2);
 
-        Map<String, ValueSignal<String>> value = signal.value();
+        Map<String, SharedValueSignal<String>> value = signal.value();
 
         assertEquals(expectedKeyValuePairs.length / 2, value.size());
 

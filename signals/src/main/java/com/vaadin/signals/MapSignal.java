@@ -34,13 +34,14 @@ import com.vaadin.signals.operations.SignalOperation;
 /**
  * A signal containing a map of values with string keys. Supports atomic updates
  * to the map structure. Each value in the map is accessed as a separate
- * {@link ValueSignal} instance which enables atomic updates to the value of
- * that map entry.
+ * {@link SharedValueSignal} instance which enables atomic updates to the value
+ * of that map entry.
  *
  * @param <T>
  *            the element type
  */
-public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
+public class MapSignal<T>
+        extends AbstractSignal<Map<String, SharedValueSignal<T>>> {
 
     private Class<T> elementType;
 
@@ -78,12 +79,13 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
         this.elementType = Objects.requireNonNull(elementType);
     }
 
-    private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+    private SharedValueSignal<T> child(Id childId) {
+        return new SharedValueSignal<T>(tree(), childId, validator(),
+                elementType);
     }
 
     @Override
-    protected Map<String, ValueSignal<T>> extractValue(Data data) {
+    protected Map<String, SharedValueSignal<T>> extractValue(Data data) {
         if (data == null) {
             return Map.of();
         } else {
@@ -147,7 +149,8 @@ public class MapSignal<T> extends AbstractSignal<Map<String, ValueSignal<T>>> {
      * @return an operation containing a signal for the entry and the eventual
      *         result
      */
-    public InsertOperation<ValueSignal<T>> putIfAbsent(String key, T value) {
+    public InsertOperation<SharedValueSignal<T>> putIfAbsent(String key,
+            T value) {
         return submitInsert(
                 new SignalCommand.PutIfAbsentCommand(Id.random(), id(), null,
                         Objects.requireNonNull(key), toJson(value)),

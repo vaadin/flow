@@ -590,7 +590,7 @@ public abstract class Component
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * SharedValueSignal&lt;Boolean&gt; signal = new SharedValueSignal&lt;&gt;(true);
      * Span component = new Span();
      * add(component);
      * component.bindVisible(signal);

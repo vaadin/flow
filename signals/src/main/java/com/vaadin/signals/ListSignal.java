@@ -31,13 +31,13 @@ import com.vaadin.signals.operations.SignalOperation;
 /**
  * A signal containing a list of values. Supports atomic updates to the list
  * structure. Each value in the list is accessed as a separate
- * {@link ValueSignal} instance which enables atomic updates to the value of
- * that list entry.
+ * {@link SharedValueSignal} instance which enables atomic updates to the value
+ * of that list entry.
  *
  * @param <T>
  *            the element type
  */
-public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
+public class ListSignal<T> extends AbstractSignal<List<SharedValueSignal<T>>> {
 
     /**
      * A list insertion position before and/or after the referenced entries. If
@@ -174,12 +174,13 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
         this.elementType = Objects.requireNonNull(elementType);
     }
 
-    private ValueSignal<T> child(Id childId) {
-        return new ValueSignal<T>(tree(), childId, validator(), elementType);
+    private SharedValueSignal<T> child(Id childId) {
+        return new SharedValueSignal<T>(tree(), childId, validator(),
+                elementType);
     }
 
     @Override
-    protected List<ValueSignal<T>> extractValue(Data data) {
+    protected List<SharedValueSignal<T>> extractValue(Data data) {
         if (data == null) {
             return List.of();
         } else {
@@ -200,7 +201,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertFirst(T value) {
+    public InsertOperation<SharedValueSignal<T>> insertFirst(T value) {
         return insertAt(value, ListPosition.first());
     }
 
@@ -229,7 +230,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertLast(T value) {
+    public InsertOperation<SharedValueSignal<T>> insertLast(T value) {
         return insertAt(value, ListPosition.last());
     }
 
@@ -244,7 +245,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      * @return an operation containing a signal for the inserted entry and the
      *         eventual result
      */
-    public InsertOperation<ValueSignal<T>> insertAt(T value, ListPosition at) {
+    public InsertOperation<SharedValueSignal<T>> insertAt(T value,
+            ListPosition at) {
         return submitInsert(
                 new SignalCommand.InsertCommand(Id.random(), id(), null,
                         toJson(value), Objects.requireNonNull(at)),
@@ -281,7 +283,7 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
      *            the child to remove, not <code>null</code>
      * @return an operation containing the eventual result
      */
-    public SignalOperation<Void> remove(ValueSignal<T> child) {
+    public SignalOperation<Void> remove(SharedValueSignal<T> child) {
         // Override to make public
         return super.remove(child);
     }
@@ -389,7 +391,8 @@ public class ListSignal<T> extends AbstractSignal<List<ValueSignal<T>>> {
 
     @Override
     public String toString() {
-        return peek().stream().map(ValueSignal::peek).map(Objects::toString)
+        return peek().stream().map(SharedValueSignal::peek)
+                .map(Objects::toString)
                 .collect(Collectors.joining(", ", "ListSignal[", "]"));
     }
 

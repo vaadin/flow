@@ -268,7 +268,7 @@ public class Element extends Node<Element> {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindAttribute("mol", signal);
@@ -874,7 +874,7 @@ public class Element extends Node<Element> {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindProperty("mol", signal);
@@ -1330,7 +1330,7 @@ public class Element extends Node<Element> {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindText(signal);
@@ -1815,7 +1815,7 @@ public class Element extends Node<Element> {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * SharedValueSignal&lt;Boolean&gt; signal = new SharedValueSignal&lt;&gt;(true);
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindVisible(signal);
@@ -1873,7 +1873,7 @@ public class Element extends Node<Element> {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;Boolean&gt; signal = new ValueSignal&lt;&gt;(true);
+     * SharedValueSignal&lt;Boolean&gt; signal = new SharedValueSignal&lt;&gt;(true);
      * Element element = new Element("span");
      * getElement().appendChild(element);
      * element.bindEnabled(signal);

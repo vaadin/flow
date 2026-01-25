@@ -71,7 +71,7 @@ public class NodeSignalTest extends SignalTestBase {
     void asValue_updateValueThroughWrapper_valueUpdated() {
         NodeSignal signal = new NodeSignal();
 
-        ValueSignal<String> asValue = signal.asValue(String.class);
+        SharedValueSignal<String> asValue = signal.asValue(String.class);
         assertEquals(null, asValue.value());
 
         asValue.value("update");
@@ -82,14 +82,14 @@ public class NodeSignalTest extends SignalTestBase {
     void asValue_incompatibleValue_getterThrows() {
         NodeSignal signal = new NodeSignal();
 
-        ValueSignal<String> asString = signal.asValue(String.class);
+        SharedValueSignal<String> asString = signal.asValue(String.class);
         asString.value("update");
 
         assertThrows(RuntimeException.class, () -> {
             signal.value().value(Double.class);
         });
 
-        ValueSignal<Double> asDouble = signal.asValue(Double.class);
+        SharedValueSignal<Double> asDouble = signal.asValue(Double.class);
         assertThrows(RuntimeException.class, () -> {
             asDouble.value();
         });
@@ -128,7 +128,7 @@ public class NodeSignalTest extends SignalTestBase {
 
         signal.insertChildWithValue("last", ListPosition.last());
 
-        List<ValueSignal<String>> value = asList.value();
+        List<SharedValueSignal<String>> value = asList.value();
         assertEquals(1, value.size());
 
         assertEquals("last", value.get(0).value());
@@ -155,7 +155,7 @@ public class NodeSignalTest extends SignalTestBase {
 
         signal.putChildWithValue("key", "value");
 
-        Map<String, ValueSignal<String>> value = asMap.value();
+        Map<String, SharedValueSignal<String>> value = asMap.value();
 
         assertEquals(Set.of("key"), value.keySet());
         assertEquals("value", value.get("key").value());

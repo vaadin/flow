@@ -177,7 +177,7 @@ public interface HasText extends HasElement {
      * Example of usage:
      *
      * <pre>
-     * ValueSignal&lt;String&gt; signal = new ValueSignal&lt;&gt;("");
+     * SharedValueSignal&lt;String&gt; signal = new SharedValueSignal&lt;&gt;("");
      * Span component = new Span("");
      * add(component);
      * component.bindText(signal);

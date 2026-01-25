@@ -25,7 +25,7 @@ import org.junit.Test;
 import com.vaadin.flow.dom.SignalsUnitTest;
 import com.vaadin.flow.internal.nodefeature.SignalBindingFeature;
 import com.vaadin.signals.BindingActiveException;
-import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.SharedValueSignal;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -39,7 +39,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         // attach before bindValue
         UI.getCurrent().add(input);
         assertEquals("", input.getValue());
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         assertEquals("foo", input.getValue());
@@ -49,7 +49,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_elementAttachedAfter_bindingActive() {
         TestInput input = new TestInput();
         assertEquals("", input.getValue());
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         // attach after bindValue
         UI.getCurrent().add(input);
@@ -61,7 +61,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_elementAttached_bindingActive() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         // initially "foo"
@@ -79,7 +79,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     @Test
     public void bindValue_elementNotAttached_bindingInactive() {
         TestInput input = new TestInput();
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         signal.value("bar");
 
@@ -90,7 +90,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_elementDetached_bindingInactive() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         input.removeFromParent();
         signal.value("bar"); // ignored
@@ -102,7 +102,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_elementReAttached_bindingActivate() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         input.removeFromParent();
         signal.value("bar");
@@ -115,10 +115,10 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_bindValueWhileBindingIsActive_throwException() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        input.bindValue(new ValueSignal<>("foo"));
+        input.bindValue(new SharedValueSignal<>("foo"));
 
         assertThrows(BindingActiveException.class,
-                () -> input.bindValue(new ValueSignal<>("bar")));
+                () -> input.bindValue(new SharedValueSignal<>("bar")));
         assertEquals("foo", input.getValue());
     }
 
@@ -126,7 +126,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_setValueWhileBindingIsActive_signalUpdated() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         input.setValue("bar");
@@ -138,7 +138,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_withNullBinding_removesBinding() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         assertEquals("foo", input.getValue());
 
@@ -154,7 +154,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_withNullBinding_allowsSetValue() {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
         assertEquals("foo", input.getValue());
 
@@ -175,7 +175,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
                 .ifPresent(feature -> Assert.fail(
                         "SignalBindingFeature should not be initialized before binding a signal"));
 
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         input.getElement().getNode()
@@ -189,7 +189,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
@@ -206,7 +206,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestInput input = new TestInput();
         UI.getCurrent().add(input);
 
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
@@ -221,7 +221,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
     public void bindValue_setValue_countEffectExecutions() {
         TestInput input = new TestInput();
 
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
         input.bindValue(signal);
 
         AtomicInteger counter = new AtomicInteger(0);
@@ -256,7 +256,7 @@ public class AbstractFieldBindValueTest extends SignalsUnitTest {
         TestPropertyInput input = new TestPropertyInput();
         UI.getCurrent().add(input);
 
-        ValueSignal<String> signal = new ValueSignal<>("foo");
+        SharedValueSignal<String> signal = new SharedValueSignal<>("foo");
 
         AtomicReference<Serializable> listenerValue = new AtomicReference<>();
         input.addValueChangeListener(
