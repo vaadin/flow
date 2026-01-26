@@ -48,7 +48,7 @@ public class EncodedParameterIT extends ChromeBrowserTest {
         element = findElement(By.id(DECODED_CONTENT));
 
         Assert.assertEquals(
-                "Element parameter should be received with encoding.", "a+b",
+                "Element parameter should decode to +.", "a+b",
                 element.getText());
     }
 
