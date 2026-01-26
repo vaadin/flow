@@ -25,6 +25,7 @@ import com.vaadin.flow.component.HasTheme;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.component.UI;
 import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
 
 /**
@@ -198,6 +199,38 @@ public class ThemeListBindTest extends SignalsUnitTest {
         signal.value(false);
         signal.value(false); // no-op update
         Assert.assertFalse(component.hasThemeName("spin"));
+    }
+
+    @Test
+    public void bindMultipleSignals() {
+        TestComponent component = new TestComponent();
+        UI.getCurrent().add(component);
+
+        enum DummyEnum {
+            ONE, TWO, THREE
+        }
+        ValueSignal<DummyEnum> signal = new ValueSignal<>(DummyEnum.ONE);
+
+        Signal<Boolean> a = signal.map(v -> v == DummyEnum.ONE);
+        Signal<Boolean> b = signal.map(v -> v == DummyEnum.TWO);
+        Signal<Boolean> c = signal.map(v -> v == DummyEnum.THREE);
+        component.bindThemeName("a", a);
+        component.bindThemeName("b", b);
+        component.bindThemeName("c", c);
+
+        Assert.assertTrue(component.hasThemeName("a"));
+        Assert.assertFalse(component.hasThemeName("b"));
+        Assert.assertFalse(component.hasThemeName("b"));
+
+        signal.value(DummyEnum.TWO);
+        Assert.assertFalse(component.hasThemeName("a"));
+        Assert.assertTrue(component.hasThemeName("b"));
+        Assert.assertFalse(component.hasThemeName("c"));
+
+        signal.value(DummyEnum.THREE);
+        Assert.assertFalse(component.hasThemeName("a"));
+        Assert.assertFalse(component.hasThemeName("b"));
+        Assert.assertTrue(component.hasThemeName("c"));
     }
 
     @Tag("span")

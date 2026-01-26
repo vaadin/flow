@@ -354,7 +354,7 @@ public class AccessControlTestClasses {
     }
 
     @PermitAll
-    public static class PermitAllGrandParentView {
+    public static class PermitAllGrandParentView extends Component {
     }
 
     public static class PermitAllParentView extends PermitAllGrandParentView {
@@ -367,7 +367,7 @@ public class AccessControlTestClasses {
 
     @AccessDeniedErrorRouter(rerouteToError = NotFoundException.class)
     @RolesAllowed("user")
-    public static class RolesAllowedUserGrandParentView {
+    public static class RolesAllowedUserGrandParentView extends Component {
     }
 
     public static class RolesAllowedUserParentView
@@ -380,7 +380,7 @@ public class AccessControlTestClasses {
     }
 
     @RolesAllowed("admin")
-    public static class RolesAllowedAdminGrandParentView {
+    public static class RolesAllowedAdminGrandParentView extends Component {
     }
 
     public static class RolesAllowedAdminParentView
@@ -393,7 +393,7 @@ public class AccessControlTestClasses {
     }
 
     @DenyAll
-    public static class DenyAllGrandParentView {
+    public static class DenyAllGrandParentView extends Component {
     }
 
     public static class DenyAllParentView extends DenyAllGrandParentView {
@@ -410,7 +410,7 @@ public class AccessControlTestClasses {
 
     @Route("no-annotation-denyall-as-interfaces-ignored")
     public static class NoAnnotationDenyAllAsInterfacesIgnoredView
-            implements CustomComponent {
+            extends Component implements CustomComponent {
     }
 
     @Route("no-annotation-permitall-from-parent-and-interfaces-ignored")
@@ -420,7 +420,7 @@ public class AccessControlTestClasses {
 
     @Tag(Tag.DIV)
     @AnonymousAllowed
-    public static class CustomErrorView
+    public static class CustomErrorView extends Component
             implements HasErrorParameter<NotFoundException> {
 
         @Override
@@ -431,7 +431,7 @@ public class AccessControlTestClasses {
     }
 
     @Tag(Tag.DIV)
-    public static class NotAnnotatedCustomErrorView
+    public static class NotAnnotatedCustomErrorView extends Component
             implements HasErrorParameter<NotFoundException> {
 
         @Override
