@@ -128,9 +128,7 @@ export class Flow {
     this.baseRegex = new RegExp(
       `^${
         // IE11 does not support document.baseURI
-        escapeRegExp(
-          decodeURIComponent((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
-        )
+        escapeRegExp((document.baseURI || (elm && elm.href) || '/').replace(/^https?:\/\/[^/]+/i, ''))
       }`
     );
     this.appShellTitle = document.title;
@@ -293,7 +291,10 @@ export class Flow {
   }
 
   private getFlowRoutePath(context: NavigationParameters | Location): string {
-    return decodeURIComponent(context.pathname).replace(this.baseRegex, '');
+    // Don't decode the pathname here - let the server handle decoding
+    // individual path segments. This preserves the distinction between
+    // literal slashes (path separators) and encoded slashes (%2F, data).
+    return context.pathname.replace(this.baseRegex, '');
   }
   private getFlowRouteQuery(context: NavigationParameters | Location): string {
     return (context.search && context.search.substring(1)) || '';
@@ -434,9 +435,9 @@ export class Flow {
         ? `&v-browserDetails=${encodeURIComponent(JSON.stringify(browserDetails))}`
         : '';
 
-      const requestPath = `?v-r=init&location=${encodeURIComponent(
-        this.getFlowRoutePath(location)
-      )}&query=${encodeURIComponent(this.getFlowRouteQuery(location))}${browserDetailsParam}`;
+      const requestPath = `?v-r=init&location=${this.getFlowRoutePath(location)}&query=${encodeURIComponent(
+        this.getFlowRouteQuery(location)
+      )}${browserDetailsParam}`;
 
       httpRequest.open('GET', requestPath);
 
