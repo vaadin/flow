@@ -83,6 +83,7 @@ import static com.vaadin.flow.server.Constants.PROJECT_FRONTEND_GENERATED_DIR_TO
 import static com.vaadin.flow.server.Constants.VAADIN_SERVLET_RESOURCES;
 import static com.vaadin.flow.server.Constants.VAADIN_WEBAPP_RESOURCES;
 import static com.vaadin.flow.server.InitParameters.NODE_DOWNLOAD_ROOT;
+import static com.vaadin.flow.server.InitParameters.NODE_FOLDER;
 import static com.vaadin.flow.server.InitParameters.NODE_VERSION;
 import static com.vaadin.flow.server.InitParameters.NPM_EXCLUDE_WEB_COMPONENTS;
 import static com.vaadin.flow.server.InitParameters.REACT_ENABLE;
@@ -310,6 +311,7 @@ public class DevModeInitializer implements Serializable {
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
                         DEFAULT_NODE_VERSION))
+                .withNodeFolder(config.getStringProperty(NODE_FOLDER, null))
                 .withNodeDownloadRoot(
                         URI.create(config.getStringProperty(NODE_DOWNLOAD_ROOT,
                                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
