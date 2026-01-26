@@ -38,6 +38,11 @@ public class ForwardingRequestWrapper extends HttpServletRequestWrapper {
 
     public ForwardingRequestWrapper(HttpServletRequest request) {
         super(request);
+        // Do not decode URLs to preserve encoded path separators (%2F).
+        // Decoding would cause incorrect baseHref calculation when paths
+        // contain encoded slashes (e.g., /a%2Fb should be one segment, not
+        // two).
+        urlPathHelper.setUrlDecode(false);
     }
 
     @Override
