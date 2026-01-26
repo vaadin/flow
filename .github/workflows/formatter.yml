@@ -13,6 +13,7 @@ concurrency:
 
 env:
   JAVA_VERSION: '21'
+  _HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
 permissions:
   contents: read
@@ -29,6 +30,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
+          ref: ${{ env._HEAD_SHA }}
           fetch-depth: 0
 
       - name: Set up JDK
