@@ -246,8 +246,11 @@ public interface HasComponents extends HasElement, HasEnabled {
      * @param <T>
      *            the value type of the {@link ValueSignal}s in the
      *            {@link ListSignal}
+     * @return a registration that can be used to remove the binding
      * @throws IllegalStateException
      *             thrown if this component isn't empty
+     * @throws BindingActiveException
+     *             thrown if a binding for children already exists
      */
     default <T> Registration bindChildren(ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Component> childFactory) {
