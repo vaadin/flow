@@ -28,7 +28,10 @@ import com.vaadin.flow.dom.Element;
 import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.StateNode;
+import com.vaadin.flow.internal.nodefeature.ChildrenBindingFeature;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
 import com.vaadin.signals.ListSignal;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.ValueSignal;
@@ -179,16 +182,20 @@ public final class ComponentEffect {
      *            {@link ListSignal}
      * @param <PARENT>
      *            the type of the parent component
+     * @return a {@link Registration} that can be used to remove the effect
+     *         function
      * @throws IllegalStateException
      *             thrown if parent component isn't empty
+     * @throws BindingActiveException
+     *             thrown if a binding is already active
      */
-    public static <T, PARENT extends Component & HasComponents> void bindChildren(
+    public static <T, PARENT extends Component & HasComponents> Registration bindChildren(
             PARENT parent, ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Component> childFactory) {
         Objects.requireNonNull(parent, "Parent component cannot be null");
         Objects.requireNonNull(childFactory,
                 "Child component factory cannot be null");
-        bindChildren(parent, parent.getElement(), list,
+        return bindChildren(parent, parent.getElement(), list,
                 // wrap childFactory to convert Component to Element
                 signalValue -> Optional
                         .ofNullable(childFactory.apply(signalValue))
@@ -197,7 +204,7 @@ public final class ComponentEffect {
                                 "ComponentEffect.bindChildren childFactory must not return null")));
     }
 
-    private static <T> void bindChildren(Component parentComponent,
+    private static <T> Registration bindChildren(Component parentComponent,
             Element parent, ListSignal<T> list,
             SerializableFunction<ValueSignal<T>, Element> childFactory) {
         Objects.requireNonNull(parentComponent,
@@ -216,9 +223,17 @@ public final class ComponentEffect {
         // effect runs due to signal changes.
         HashMap<ValueSignal<T>, Element> valueSignalToChildCache = new HashMap<>();
 
-        ComponentEffect.effect(parentComponent,
+        StateNode parentNode = parent.getNode();
+        ChildrenBindingFeature feature = parentNode
+                .getFeature(ChildrenBindingFeature.class);
+        if (feature.hasBinding() && parentNode.isAttached()) {
+            throw new BindingActiveException();
+        }
+        Registration registration = ComponentEffect.effect(parentComponent,
                 () -> runEffect(new BindChildrenEffectContext<>(parent,
                         list.value(), childFactory, valueSignalToChildCache)));
+        feature.setBinding(registration, list);
+        return registration;
     }
 
     private static <T> void runEffect(BindChildrenEffectContext<T> context) {

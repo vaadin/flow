@@ -24,6 +24,13 @@ import java.util.Objects;
 import org.slf4j.LoggerFactory;
 
 import com.vaadin.flow.dom.Element;
+import com.vaadin.flow.function.SerializableFunction;
+import com.vaadin.flow.internal.nodefeature.ChildrenBindingFeature;
+import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.BindingActiveException;
+import com.vaadin.signals.ListSignal;
+import com.vaadin.signals.ValueSignal;
+import com.vaadin.signals.impl.Effect;
 
 /**
  * A component to which the user can add and remove child components.
@@ -69,6 +76,14 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void add(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        getElement().getNode()
+                .getFeatureIfInitialized(ChildrenBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding()) {
+                        throw new BindingActiveException(
+                                "add is not allowed while a binding for children exists.");
+                    }
+                });
         components.stream()
                 .map(component -> Objects.requireNonNull(component,
                         "Component to add cannot be null"))
@@ -110,6 +125,14 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void remove(Collection<Component> components) {
         Objects.requireNonNull(components, "Components should not be null");
+        getElement().getNode()
+                .getFeatureIfInitialized(ChildrenBindingFeature.class)
+                .ifPresent(feature -> {
+                    if (feature.hasBinding()) {
+                        throw new BindingActiveException(
+                                "remove is not allowed while a binding for children exists.");
+                    }
+                });
         List<Component> toRemove = new ArrayList<>(components.size());
         for (Component component : components) {
             Objects.requireNonNull(component,
@@ -176,5 +199,64 @@ public interface HasComponents extends HasElement, HasEnabled {
      */
     default void addComponentAsFirst(Component component) {
         addComponentAtIndex(0, component);
+    }
+
+    /**
+     * Binds a {@link ListSignal} to this component using a child component
+     * factory. Each {@link ValueSignal} in the list corresponds to a child
+     * component within this component.
+     * <p>
+     * This component is automatically updated to reflect the structure of the
+     * {@link ListSignal}. Changes to the list, such as additions, removals, or
+     * reordering, will update this component's children accordingly.
+     * <p>
+     * This component must not contain any children that are not part of the
+     * {@link ListSignal}. If this component has existing children when this
+     * method is called, or if it contains unrelated children after the list
+     * changes, an {@link IllegalStateException} will be thrown.
+     * <p>
+     * New child components are created using the provided
+     * <code>childFactory</code> function. This function takes a
+     * {@link ValueSignal} from the {@link ListSignal} and returns a
+     * corresponding {@link Component}. It shouldn't return <code>null</code>.
+     * The {@link ValueSignal} can be further bound to the returned component as
+     * needed. Note that <code>childFactory</code> is run inside a
+     * {@link Effect}, and therefore {@link ValueSignal#value()} calls makes
+     * effect re-run automatically on signal value change.
+     * <p>
+     * Example of usage:
+     *
+     * <pre>
+     * ListSignal&lt;String&gt; taskList = new ListSignal&lt;&gt;(String.class);
+     *
+     * UnorderedList component = new UnorderedList();
+     *
+     * component.bindChildren(taskList, taskValueSignal -> {
+     *     var listItem = new ListItem();
+     *     ComponentEffect.bind(listItem, taskValueSignal, HasString::setText);
+     *     return listItem;
+     * });
+     * </pre>
+     *
+     * @param list
+     *            list signal to bind to the parent, must not be
+     *            <code>null</code>
+     * @param childFactory
+     *            factory to create new component, must not be <code>null</code>
+     * @param <T>
+     *            the value type of the {@link ValueSignal}s in the
+     *            {@link ListSignal}
+     * @throws IllegalStateException
+     *             thrown if this component isn't empty
+     */
+    default <T> Registration bindChildren(ListSignal<T> list,
+            SerializableFunction<ValueSignal<T>, Component> childFactory) {
+        if (this instanceof Component) {
+            var parent = (Component & HasComponents) this;
+            return ComponentEffect.bindChildren(parent, list, childFactory);
+        } else {
+            throw new UnsupportedOperationException(
+                    "bindChildren can only be used with components");
+        }
     }
 }
