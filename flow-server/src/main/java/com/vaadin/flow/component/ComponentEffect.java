@@ -233,7 +233,7 @@ public final class ComponentEffect {
                 () -> runEffect(new BindChildrenEffectContext<>(parent,
                         list.value(), childFactory, valueSignalToChildCache)));
         feature.setBinding(registration, list);
-        return registration;
+        return Registration.combine(registration, feature::removeBinding);
     }
 
     private static <T> void runEffect(BindChildrenEffectContext<T> context) {
