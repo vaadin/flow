@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.lang.ref.WeakReference;
 import java.time.Duration;
@@ -24,6 +24,8 @@ import java.util.concurrent.locks.LockSupport;
 
 import org.junit.jupiter.api.Test;
 
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.shared.AbstractSignal;
 import com.vaadin.signals.shared.SharedValueSignal;

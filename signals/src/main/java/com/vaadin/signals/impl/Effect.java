@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.vaadin.signals.SignalEnvironment;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 

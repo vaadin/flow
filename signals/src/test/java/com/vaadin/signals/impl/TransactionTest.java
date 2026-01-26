@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
+import com.vaadin.signals.Id;
+import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
-import com.vaadin.signals.Transaction.Type;
+import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.impl.Transaction.Type;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;

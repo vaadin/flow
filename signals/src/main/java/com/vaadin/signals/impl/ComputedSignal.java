@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -21,8 +21,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.POJONode;
 
+import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
-import com.vaadin.signals.UsageTracker.Usage;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;

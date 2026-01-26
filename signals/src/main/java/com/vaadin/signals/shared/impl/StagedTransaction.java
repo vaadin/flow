@@ -28,7 +28,7 @@ import java.util.stream.Stream;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
-import com.vaadin.signals.Transaction;
+import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 import com.vaadin.signals.shared.impl.CommandResult.Reject;

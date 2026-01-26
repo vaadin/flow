@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.Collection;

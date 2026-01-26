@@ -17,7 +17,11 @@ package com.vaadin.signals;
 
 import java.util.Objects;
 
-import com.vaadin.signals.Transaction.Type;
+import com.vaadin.signals.impl.ComputedSignal;
+import com.vaadin.signals.impl.Effect;
+import com.vaadin.signals.impl.Transaction;
+import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.impl.UsageTracker;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.EffectAction;
 import com.vaadin.signals.function.SignalComputation;

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,8 +21,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.Test;
 
-import com.vaadin.signals.UsageTracker.CombinedUsage;
-import com.vaadin.signals.UsageTracker.Usage;
+import com.vaadin.signals.Signal;
+import com.vaadin.signals.SignalTestBase;
+import com.vaadin.signals.impl.UsageTracker.CombinedUsage;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.shared.SharedValueSignal;
 

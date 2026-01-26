@@ -13,12 +13,13 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals;
+package com.vaadin.signals.impl;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.TransactionTask;
 import com.vaadin.signals.function.ValueSupplier;
 import com.vaadin.signals.operations.SignalOperation;

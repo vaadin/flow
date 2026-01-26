@@ -20,6 +20,7 @@ import java.util.concurrent.ExecutionException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
+import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.Result;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;

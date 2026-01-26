@@ -24,8 +24,8 @@ import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalTestBase;
-import com.vaadin.signals.UsageTracker;
-import com.vaadin.signals.UsageTracker.Usage;
+import com.vaadin.signals.impl.UsageTracker;
+import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.shared.SharedListSignal.ListPosition;
