@@ -713,8 +713,9 @@ public class ElementBindPropertyTest {
 
         // assert signal value updated
         assertEquals("Jack",
-                ((Map<?, ?>) signal.peek().getFirst()).get("name"));
-        assertEquals("John", ((Map<?, ?>) signal.peek().getLast()).get("name"));
+                ((JacksonUtilsTest.Person) signal.peek().getFirst()).name());
+        assertEquals("John",
+                ((JacksonUtilsTest.Person) signal.peek().getLast()).name());
         // assert property value not updated
         assertEquals("John",
                 getFromList(component, "foo", 0).get("name").asString());
@@ -803,8 +804,10 @@ public class ElementBindPropertyTest {
         signal.value(createPersonMap(createJack(), createJohn()));
 
         // assert signal value updated
-        assertEquals("Jack", ((Map<?, ?>) signal.peek().get("0")).get("name"));
-        assertEquals("John", ((Map<?, ?>) signal.peek().get("1")).get("name"));
+        assertEquals("Jack",
+                ((JacksonUtilsTest.Person) signal.peek().get("0")).name());
+        assertEquals("John",
+                ((JacksonUtilsTest.Person) signal.peek().get("1")).name());
         // assert property value not updated
         assertEquals("John",
                 getFromMap(component, "foo", "0").get("name").asString());
