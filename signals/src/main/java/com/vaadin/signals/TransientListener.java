@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals;
 
 /**
  * A listener that is expected to only be invoked the next time some event

@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,18 +23,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
 
-import com.vaadin.signals.Id;
-import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
-import com.vaadin.signals.TestUtil;
+import com.vaadin.signals.Transaction.Type;
 import com.vaadin.signals.function.TransactionTask;
-import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.Reject;
-import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
-import com.vaadin.signals.impl.Transaction.Type;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
+import com.vaadin.signals.shared.impl.AsynchronousSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.impl.CommandsAndHandlersTest.ResultHandler;
+import com.vaadin.signals.shared.impl.StagedTransaction;
+import com.vaadin.signals.shared.impl.SynchronousSignalTree;
+import com.vaadin.signals.shared.impl.TreeRevision;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

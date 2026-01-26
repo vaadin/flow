@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -61,10 +61,10 @@ import com.vaadin.signals.SignalCommand.SnapshotCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.SignalCommand.ValueCondition;
 import com.vaadin.signals.function.SignalUpdater;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.NodeModification;
-import com.vaadin.signals.impl.CommandResult.Reject;
 import com.vaadin.signals.shared.SharedListSignal.ListPosition;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandResult.NodeModification;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
 
 /**
  * A tree revision that can be mutated by applying signal commands.

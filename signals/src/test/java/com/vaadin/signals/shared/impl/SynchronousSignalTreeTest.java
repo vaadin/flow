@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.List;
 import java.util.Map;
@@ -32,11 +32,11 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
 import com.vaadin.signals.function.CleanupCallback;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.Reject;
-import com.vaadin.signals.impl.SignalTree.PendingCommit;
-import com.vaadin.signals.impl.SignalTree.Type;
 import com.vaadin.signals.shared.SharedListSignal.ListPosition;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.impl.SignalTree.PendingCommit;
+import com.vaadin.signals.shared.impl.SignalTree.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

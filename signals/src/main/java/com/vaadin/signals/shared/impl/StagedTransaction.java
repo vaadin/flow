@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -28,11 +28,12 @@ import java.util.stream.Stream;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
-import com.vaadin.signals.impl.CommandResult.Reject;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
-import com.vaadin.signals.impl.SignalTree.PendingCommit;
+import com.vaadin.signals.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
+import com.vaadin.signals.shared.impl.SignalTree.PendingCommit;
 
 /**
  * A conventional read-write transaction that stages commands to be submitted as

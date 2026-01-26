@@ -29,9 +29,9 @@ import com.vaadin.flow.dom.ElementEffect;
 import com.vaadin.flow.function.SerializableBiConsumer;
 import com.vaadin.flow.function.SerializableFunction;
 import com.vaadin.flow.shared.Registration;
+import com.vaadin.signals.Effect;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.function.EffectAction;
-import com.vaadin.signals.impl.Effect;
 import com.vaadin.signals.shared.SharedListSignal;
 import com.vaadin.signals.shared.SharedValueSignal;
 

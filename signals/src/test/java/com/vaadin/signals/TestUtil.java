@@ -20,13 +20,12 @@ import java.util.concurrent.ExecutionException;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.node.StringNode;
 
-import com.vaadin.signals.impl.SignalTree;
-import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.SignalOperation.Result;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
 import com.vaadin.signals.shared.AbstractSignal;
 import com.vaadin.signals.shared.SignalUtils;
+import com.vaadin.signals.shared.impl.SignalTree;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;

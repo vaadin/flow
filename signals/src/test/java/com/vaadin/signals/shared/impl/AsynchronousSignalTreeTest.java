@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,9 @@ import tools.jackson.databind.node.StringNode;
 
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.Reject;
-import com.vaadin.signals.impl.SignalTree.Type;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.impl.SignalTree.Type;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -37,7 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 public class AsynchronousSignalTreeTest {
 
     public static class AsyncTestTree extends AsynchronousSignalTree {
-        List<List<SignalCommand>> submitted = new ArrayList<>();
+        public List<List<SignalCommand>> submitted = new ArrayList<>();
 
         @Override
         protected void submit(List<SignalCommand> commands) {

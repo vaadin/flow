@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.SignalTree;
+import com.vaadin.signals.shared.impl.SignalTree;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;

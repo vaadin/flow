@@ -26,11 +26,11 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CommandValidator;
-import com.vaadin.signals.impl.SignalTree;
-import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.shared.SharedListSignal.ListPosition;
+import com.vaadin.signals.shared.impl.SignalTree;
+import com.vaadin.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal representing a node in a tree structure. The {@link #value()} of a

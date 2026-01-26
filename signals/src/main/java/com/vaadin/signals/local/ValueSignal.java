@@ -21,14 +21,14 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.vaadin.signals.Transaction;
+import com.vaadin.signals.TransientListener;
+import com.vaadin.signals.UsageTracker;
+import com.vaadin.signals.UsageTracker.Usage;
 import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.ValueModifier;
-import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.TransientListener;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 

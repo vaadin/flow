@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -33,12 +33,13 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
-import com.vaadin.signals.impl.CommandsAndHandlersTest.ResultHandler;
-import com.vaadin.signals.impl.StagedTransaction.ResultCollector;
-import com.vaadin.signals.impl.Transaction.Type;
+import com.vaadin.signals.Transaction;
+import com.vaadin.signals.Transaction.Type;
 import com.vaadin.signals.operations.SignalOperation.ResultOrError;
+import com.vaadin.signals.shared.impl.AsynchronousSignalTreeTest.AsyncTestTree;
+import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
+import com.vaadin.signals.shared.impl.CommandsAndHandlersTest.ResultHandler;
+import com.vaadin.signals.shared.impl.StagedTransaction.ResultCollector;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

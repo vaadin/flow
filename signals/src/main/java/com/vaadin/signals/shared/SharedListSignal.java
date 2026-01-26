@@ -26,10 +26,10 @@ import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.TransactionTask;
-import com.vaadin.signals.impl.SignalTree;
-import com.vaadin.signals.impl.SynchronousSignalTree;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.impl.SignalTree;
+import com.vaadin.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a list of values. Supports atomic updates to the list

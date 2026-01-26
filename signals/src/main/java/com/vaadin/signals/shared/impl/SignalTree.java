@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -25,9 +25,10 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.Node;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.TransientListener;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.ValueSupplier;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
+import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
 
 /**
  * Provides thread-safe access to a tree of signal nodes and a way of listening

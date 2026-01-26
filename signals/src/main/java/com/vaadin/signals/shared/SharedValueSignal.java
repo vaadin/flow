@@ -21,15 +21,15 @@ import java.util.Objects;
 import com.vaadin.signals.Id;
 import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.SignalCommand;
+import com.vaadin.signals.Transaction;
 import com.vaadin.signals.WritableSignal;
 import com.vaadin.signals.function.CommandValidator;
 import com.vaadin.signals.function.SignalUpdater;
 import com.vaadin.signals.function.TransactionTask;
-import com.vaadin.signals.impl.SignalTree;
-import com.vaadin.signals.impl.SynchronousSignalTree;
-import com.vaadin.signals.impl.Transaction;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.impl.SignalTree;
+import com.vaadin.signals.shared.impl.SynchronousSignalTree;
 
 /**
  * A signal containing a value. The value is updated as a single atomic change.

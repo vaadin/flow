@@ -13,7 +13,7 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -27,8 +27,8 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.TransactionCommand;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandsAndHandlers.CommandResultHandler;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandsAndHandlers.CommandResultHandler;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -203,8 +203,8 @@ public class CommandsAndHandlersTest {
                 commands.getResultHandlers());
     }
 
-    static class ResultHandler implements CommandResultHandler {
-        CommandResult result;
+    public static class ResultHandler implements CommandResultHandler {
+        public CommandResult result;
 
         @Override
         public void handle(CommandResult result) {

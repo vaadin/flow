@@ -27,13 +27,13 @@ import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalCommand.SetCommand;
 import com.vaadin.signals.SignalTestBase;
 import com.vaadin.signals.TestUtil;
-import com.vaadin.signals.impl.AsynchronousSignalTreeTest.AsyncTestTree;
-import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
+import com.vaadin.signals.Transaction;
+import com.vaadin.signals.UsageTracker;
+import com.vaadin.signals.UsageTracker.Usage;
 import com.vaadin.signals.operations.CancelableOperation;
 import com.vaadin.signals.operations.SignalOperation;
 import com.vaadin.signals.operations.TransactionOperation;
+import com.vaadin.signals.shared.impl.AsynchronousSignalTreeTest.AsyncTestTree;
 
 import static com.vaadin.signals.TestUtil.assertFailure;
 import static com.vaadin.signals.TestUtil.assertSuccess;

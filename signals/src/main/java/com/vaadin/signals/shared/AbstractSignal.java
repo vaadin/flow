@@ -28,18 +28,18 @@ import com.vaadin.signals.Node.Data;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.SignalEnvironment;
+import com.vaadin.signals.Transaction;
+import com.vaadin.signals.TransientListener;
+import com.vaadin.signals.UsageTracker;
+import com.vaadin.signals.UsageTracker.Usage;
 import com.vaadin.signals.function.CleanupCallback;
 import com.vaadin.signals.function.CommandValidator;
-import com.vaadin.signals.impl.CommandResult;
-import com.vaadin.signals.impl.SignalTree;
-import com.vaadin.signals.impl.StagedTransaction;
-import com.vaadin.signals.impl.Transaction;
-import com.vaadin.signals.impl.TransientListener;
-import com.vaadin.signals.impl.TreeRevision;
-import com.vaadin.signals.impl.UsageTracker;
-import com.vaadin.signals.impl.UsageTracker.Usage;
 import com.vaadin.signals.operations.InsertOperation;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.impl.CommandResult;
+import com.vaadin.signals.shared.impl.SignalTree;
+import com.vaadin.signals.shared.impl.StagedTransaction;
+import com.vaadin.signals.shared.impl.TreeRevision;
 
 /**
  * Base type for full-featured signals that are backed by a transactional signal

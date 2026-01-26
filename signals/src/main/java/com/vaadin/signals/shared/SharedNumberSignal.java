@@ -22,8 +22,8 @@ import com.vaadin.signals.Id;
 import com.vaadin.signals.Signal;
 import com.vaadin.signals.SignalCommand;
 import com.vaadin.signals.function.CommandValidator;
-import com.vaadin.signals.impl.SignalTree;
 import com.vaadin.signals.operations.SignalOperation;
+import com.vaadin.signals.shared.impl.SignalTree;
 
 /**
  * A signal containing a numeric value. The value is updated as a single atomic

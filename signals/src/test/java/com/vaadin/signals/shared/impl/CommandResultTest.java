@@ -13,16 +13,16 @@
  * License for the specific language governing permissions and limitations under
  * the License.
  */
-package com.vaadin.signals.impl;
+package com.vaadin.signals.shared.impl;
 
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
 import com.vaadin.signals.Id;
-import com.vaadin.signals.impl.CommandResult.Accept;
-import com.vaadin.signals.impl.CommandResult.NodeModification;
-import com.vaadin.signals.impl.CommandResult.Reject;
+import com.vaadin.signals.shared.impl.CommandResult.Accept;
+import com.vaadin.signals.shared.impl.CommandResult.NodeModification;
+import com.vaadin.signals.shared.impl.CommandResult.Reject;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
