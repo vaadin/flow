@@ -28,10 +28,13 @@ import com.vaadin.flow.component.PropertyDescriptors;
 import com.vaadin.flow.component.Tag;
 import com.vaadin.flow.data.value.HasValueChangeMode;
 import com.vaadin.flow.data.value.ValueChangeMode;
+import com.vaadin.flow.dom.Element;
+import com.vaadin.signals.NumberSignal;
+import com.vaadin.signals.Signal;
 
 /**
  * Creates a new input element with type "range".
- *
+ * <p>
  * Note: Slider doesn't support the read-only mode and will disable itself
  * instead.
  */
@@ -146,6 +149,38 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
+     * Binds a signal's value to the "min" attribute so that the attribute is
+     * updated when the signal's value is updated.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the "min" attribute. When unbinding, the current attribute value is
+     * left unchanged.
+     * <p>
+     * While a binding for the "min" attribute is active, any attempt to set the
+     * attribute manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param minSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setMin(double)
+     * @see Element#bindAttribute(String, Signal)
+     *
+     * @since 25.1
+     */
+    public void bindMin(NumberSignal minSignal) {
+        getElement().bindAttribute("min",
+                minSignal == null ? null : minSignal.map(Object::toString));
+    }
+
+    /**
      * Gets the maximum value.
      *
      * @return the maximum value, defaults to 100.
@@ -165,13 +200,45 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     }
 
     /**
+     * Binds a signal's value to the "max" attribute so that the attribute is
+     * updated when the signal's value is updated.
+     * <p>
+     * Passing {@code null} as the {@code signal} removes any existing binding
+     * for the "max" attribute. When unbinding, the current attribute value is
+     * left unchanged.
+     * <p>
+     * While a binding for the "max" attribute is active, any attempt to set the
+     * attribute manually throws
+     * {@link com.vaadin.signals.BindingActiveException}. The same happens when
+     * trying to bind a new Signal while one is already bound.
+     * <p>
+     * Bindings are lifecycle-aware and only active while this component is in
+     * the attached state; they are deactivated while the component is in the
+     * detached state.
+     *
+     * @param maxSignal
+     *            the signal to bind or <code>null</code> to unbind any existing
+     *            binding
+     * @throws com.vaadin.signals.BindingActiveException
+     *             thrown when there is already an existing binding
+     * @see #setMax(double)
+     * @see Element#bindAttribute(String, Signal)
+     *
+     * @since 25.1
+     */
+    public void bindMax(NumberSignal maxSignal) {
+        getElement().bindAttribute("max",
+                maxSignal == null ? null : maxSignal.map(Object::toString));
+    }
+
+    /**
      * The step attribute is a number that specifies the granularity that the
      * value must adhere to.
-     *
+     * <p>
      * The step attribute can also be set to null. This step value means that no
      * stepping interval is implied and any value is allowed in the specified
      * range
-     *
+     * <p>
      * The default stepping value for range inputs is 1, allowing only integers
      * to be entered, unless the stepping base is not an integer; for example,
      * if you set min to -10 and value to 1.5, then a step of 1 will allow only
@@ -188,11 +255,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
     /**
      * The step attribute is a number that specifies the granularity that the
      * value must adhere to.
-     *
+     * <p>
      * The step attribute can also be set to null. This step value means that no
      * stepping interval is implied and any value is allowed in the specified
      * range
-     *
+     * <p>
      * The default stepping value for range inputs is 1, allowing only integers
      * to be entered, unless the stepping base is not an integer; for example,
      * if you set min to -10 and value to 1.5, then a step of 1 will allow only
@@ -208,14 +275,14 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     /**
      * Sets the orientation of the range slider.
-     *
+     * <p>
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
      * Attribute</a>. Since the vertical orientation is not standardized yet,
      * this feature is not guaranteed to work on every browser. We found this
      * feature to work on Firefox 120+, Chromium 119+, Edge 119+ and Safari
      * 17.1+.
-     *
+     * <p>
      * The orient attribute defines the orientation of the range slider. Values
      * include horizontal, meaning the range is rendered horizontally, and
      * vertical, where the range is rendered vertically.
@@ -248,11 +315,11 @@ public class RangeInput extends AbstractSinglePropertyField<RangeInput, Double>
 
     /**
      * Gets the orientation of the range slider.
-     *
+     * <p>
      * <a href=
      * "https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range#non-standard_attributes">Non-standard
      * Attribute</a>.
-     *
+     * <p>
      * The orient attribute defines the orientation of the range slider. Values
      * include horizontal, meaning the range is rendered horizontally, and
      * vertical, where the range is rendered vertically.
