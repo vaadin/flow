@@ -67,23 +67,53 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Compute target branch
+        if: steps.check-loop.outputs.loop_detected == 'false'
+        id: target-branch
+        env:
+          GH_TOKEN: ${{ secrets.VAADIN_BOT_TOKEN || github.token }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
+            TARGET_BRANCH="${{ github.event.pull_request.base.ref }}"
+            PR_NUMBER="${{ github.event.pull_request.number }}"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            # Try to find PR for this branch
+            PR_INFO=$(gh pr view --json baseRefName,number 2>/dev/null || echo "")
+            if [ -n "$PR_INFO" ]; then
+              TARGET_BRANCH=$(echo "$PR_INFO" | jq -r '.baseRefName')
+              PR_NUMBER=$(echo "$PR_INFO" | jq -r '.number')
+              echo "Found open PR #$PR_NUMBER targeting: $TARGET_BRANCH"
+            else
+              TARGET_BRANCH="main"
+              PR_NUMBER=""
+            fi
+          else
+            # Push event - use the branch being pushed to
+            TARGET_BRANCH="main"
+            PR_NUMBER=""
+          fi
+
+          echo "target_branch=$TARGET_BRANCH" >> $GITHUB_OUTPUT
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "Target branch: $TARGET_BRANCH, PR number: $PR_NUMBER"
+
       - name: Detect changed files and modules
         if: steps.check-loop.outputs.loop_detected == 'false'
         id: changed-files
+        shell: bash
         run: |
-          # Get the target branch (default to main if not in PR)
-          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            TARGET_BRANCH="origin/${{ github.event.pull_request.base.ref }}"
-          else
-            TARGET_BRANCH="origin/main"
-          fi
+          TARGET_BRANCH="${{ steps.target-branch.outputs.target_branch }}"
 
           echo "Fetching target branch: $TARGET_BRANCH"
-          git fetch origin ${{ github.event_name == 'pull_request_target' && github.event.pull_request.base.ref || 'main' }} --depth=1
+          git fetch origin $TARGET_BRANCH --depth=1
 
           # Get list of changed Java files
-          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR $TARGET_BRANCH...HEAD | grep '\.java$' || true)
-          CHANGED_COUNT=$(echo "$CHANGED_FILES" | grep -c '\.java$' || echo "0")
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMR origin/$TARGET_BRANCH..HEAD | grep '\.java$' || true)
+          if [ -n "$CHANGED_FILES" ]; then
+            CHANGED_COUNT=$(echo "$CHANGED_FILES" | wc -l | xargs)
+          else
+            CHANGED_COUNT=0
+          fi
 
           echo "changed_count=$CHANGED_COUNT" >> $GITHUB_OUTPUT
 
@@ -112,13 +142,7 @@ jobs:
         run: |
           echo "Running formatter on ${{ steps.changed-files.outputs.changed_count }} changed files in ${{ steps.changed-files.outputs.module_count }} modules..."
 
-          # Get the target branch for ratchetFrom
-          if [ "${{ github.event_name }}" = "pull_request_target" ]; then
-            RATCHET_FROM="origin/${{ github.event.pull_request.base.ref }}"
-          else
-            RATCHET_FROM="origin/main"
-          fi
-
+          RATCHET_FROM="origin/${{ steps.target-branch.outputs.target_branch }}"
           echo "Using ratchetFrom: $RATCHET_FROM"
 
           # Get the list of modules to format
@@ -205,6 +229,49 @@ jobs:
         run: |
           echo "::notice::Formatting changes committed. Stopping this workflow run. A new workflow will be triggered automatically."
           exit 1
+
+      - name: Find existing format comment (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch' && steps.target-branch.outputs.pr_number != ''
+        uses: peter-evans/find-comment@v3
+        id: find-format-comment
+        with:
+          issue-number: ${{ steps.target-branch.outputs.pr_number }}
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- tc-formatter-dispatch -->'
+
+      - name: Create or update format error comment (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch' && steps.target-branch.outputs.pr_number != '' && steps.formatter.outputs.modified != '0'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.find-format-comment.outputs.comment-id }}
+          issue-number: ${{ steps.target-branch.outputs.pr_number }}
+          edit-mode: replace
+          body: |
+            <!-- tc-formatter-dispatch -->
+            ### ❌ Formatting Check Failed
+
+            There are **${{ steps.formatter.outputs.modified }} files** with formatting issues.
+
+            Please run the following command locally and commit the changes:
+            ```bash
+            mvn spotless:apply
+            ```
+
+            Files with formatting issues:
+            ```
+            ${{ steps.formatter.outputs.files }}
+            ```
+
+      - name: Delete format comment if formatting is correct (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch' && steps.target-branch.outputs.pr_number != '' && steps.formatter.outputs.modified == '0' && steps.find-format-comment.outputs.comment-id != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: ${{ steps.find-format-comment.outputs.comment-id }}
+            })
 
       - name: Fail if formatting issues exist (check-only mode)
         if: github.event_name != 'pull_request_target' && steps.changed-files.outputs.changed_count != '0' && steps.formatter.outputs.modified != '0'
@@ -424,7 +491,7 @@ jobs:
       issues: read
       checks: write
       pull-requests: write
-    if: ${{ failure() || success() }}
+    if: ${{ (failure() || success()) && needs.unit-tests.result != 'skipped' && needs.it-tests.result != 'skipped' }}
     needs: [unit-tests, it-tests]
     runs-on: ubuntu-24.04
     steps:
@@ -556,14 +623,14 @@ jobs:
               if [[ "${version_change}" < "${temp_version_change}" ]]; then
                   version_change=${temp_version_change}
               fi
-          
+
               if [[ "${temp_version_change}" > "0.0.1" ]]; then
                 summary+=("${file} :: ${temp_version_change}")
               fi
           done
-          
+
           echo "Discovered version change: ${version_change}"
-          
+
           if [[ "${version_change}" > "0.0.1" ]]; then
             echo "### Significant API changes summary" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
