@@ -311,8 +311,7 @@ public class DevModeInitializer implements Serializable {
                 .withNpmExcludeWebComponents(npmExcludeWebComponents)
                 .withNodeVersion(config.getStringProperty(NODE_VERSION,
                         DEFAULT_NODE_VERSION))
-                .withNodeFolder(config.getStringProperty(NODE_FOLDER,
-                        null))
+                .withNodeFolder(config.getStringProperty(NODE_FOLDER, null))
                 .withNodeDownloadRoot(
                         URI.create(config.getStringProperty(NODE_DOWNLOAD_ROOT,
                                 NodeInstaller.DEFAULT_NODEJS_DOWNLOAD_ROOT)));
