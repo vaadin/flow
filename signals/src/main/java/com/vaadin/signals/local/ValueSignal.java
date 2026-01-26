@@ -87,7 +87,7 @@ public class ValueSignal<T> implements WritableSignal<T> {
 
         if (Transaction.inTransaction()) {
             throw new IllegalStateException(
-                    "Local signals cannot be used inside signal transactions.");
+                    "ValueSignal cannot be used inside signal transactions.");
         }
 
         if (modifyRunning) {
